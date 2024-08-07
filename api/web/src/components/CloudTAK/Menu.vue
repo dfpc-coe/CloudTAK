@@ -46,11 +46,11 @@
                         @click='push("/menu/settings")'
                     >
                         <IconSettings
-                            title='Open Settings Panel'
                             v-tooltip='{
                                 content: "Display Settings",
                                 placement: "left",
                             }'
+                            title='Open Settings Panel'
                             :class='{ "mx-2": compact }'
                             :size='compact ? 40 : 32'
                             :stroke='1'
@@ -70,11 +70,11 @@
                         @click='push("/menu/overlays")'
                     >
                         <IconBoxMultiple
-                            title='Open Overlays Panel'
                             v-tooltip='{
                                 content: "Overlays",
                                 placement: "left",
                             }'
+                            title='Open Overlays Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
@@ -94,11 +94,11 @@
                         @click='push("/menu/contacts")'
                     >
                         <IconUsers
-                            title='Open Contacts Panel'
                             v-tooltip='{
                                 content: "Contacts",
                                 placement: "left",
                             }'
+                            title='Open Contacts Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
@@ -118,11 +118,11 @@
                         @click='push("/menu/basemaps")'
                     >
                         <IconMap
-                            title='Open Basemaps Panel'
                             v-tooltip='{
                                 content: "Basemaps",
                                 placement: "left",
                             }'
+                            title='Open Basemaps Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
@@ -142,11 +142,11 @@
                         @click='push("/menu/missions")'
                     >
                         <IconAmbulance
-                            title='Open Data Syncs Panel'
                             v-tooltip='{
                                 content: "Data Sync",
                                 placement: "left",
                             }'
+                            title='Open Data Syncs Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
@@ -166,11 +166,11 @@
                         @click='push("/menu/packages")'
                     >
                         <IconPackages
-                            title='Open Data Packages Panel'
                             v-tooltip='{
                                 content: "Data Packages",
                                 placement: "left",
                             }'
+                            title='Open Data Packages Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
@@ -190,11 +190,11 @@
                         @click='push("/menu/channels")'
                     >
                         <IconAffiliate
-                            title='Open Channels Panel'
                             v-tooltip='{
                                 content: "Channels",
                                 placement: "left",
                             }'
+                            title='Open Channels Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
@@ -214,11 +214,11 @@
                         @click='push("/menu/videos")'
                     >
                         <IconVideo
-                            title='Open Videos Panel'
                             v-tooltip='{
                                 content: "Videos",
                                 placement: "left",
                             }'
+                            title='Open Videos Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
@@ -238,11 +238,11 @@
                         @click='push("/menu/chats")'
                     >
                         <IconMessage
-                            title='Open Chats Panel'
                             v-tooltip='{
                                 content: "Chats",
                                 placement: "left",
                             }'
+                            title='Open Chats Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
@@ -262,11 +262,11 @@
                         @click='push("/menu/files")'
                     >
                         <IconFiles
-                            title='Open Files Panel'
                             v-tooltip='{
                                 content: "Your Files",
                                 placement: "left",
                             }'
+                            title='Open Files Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
@@ -286,11 +286,11 @@
                         @click='push("/menu/imports")'
                     >
                         <IconFileImport
-                            title='Open Imports Panel'
                             v-tooltip='{
                                 content: "Imports",
                                 placement: "left",
                             }'
+                            title='Open Imports Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
@@ -310,11 +310,11 @@
                         @click='push("/menu/iconsets")'
                     >
                         <IconPhoto
-                            title='Open Iconsets Panel'
                             v-tooltip='{
                                 content: "Iconsets",
                                 placement: "left",
                             }'
+                            title='Open Iconsets Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
@@ -336,11 +336,11 @@
                         @click='push("/menu/connections")'
                     >
                         <IconNetwork
-                            title='Open Connections Panel'
                             v-tooltip='{
                                 content: "Connections",
                                 placement: "left",
                             }'
+                            title='Open Connections Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
@@ -367,11 +367,11 @@
                         @click='push("/admin")'
                     >
                         <IconServerCog
-                            title='Open Server Admin Panel'
                             v-tooltip='{
                                 content: "Server Settings",
                                 placement: "left",
                             }'
+                            title='Open Server Admin Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
@@ -428,8 +428,8 @@
                         @click.stop.prevent='logout'
                     >
                         <IconLogout
-                            title='Logout'
                             v-tooltip='"Logout"'
+                            title='Logout'
                             :size='32'
                             :stroke='1'
                         />
