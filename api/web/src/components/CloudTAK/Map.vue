@@ -156,7 +156,7 @@
                     @click='locked.splice(0, locked.length)'
                 />
 
-                <div class='mt-3'>
+                <div v-if='!detectMobile' class='mt-3'>
                     <IconPlus
                         role='button'
                         tabindex="0"
@@ -558,6 +558,12 @@ export default {
     computed: {
         ...mapState(useMapStore, ['bearing', 'select', 'radial', 'isLoaded', 'selected']),
         ...mapState(useProfileStore, ['profile', 'notifications']),
+        detectMobile: function() {
+          return (
+            ( window.innerWidth <= 800 )
+            && ( window.innerHeight <= 600 )
+          );
+        },
         humanBearing: function() {
             if (this.bearing < 0) {
                 return Math.round(this.bearing * -1) + '°'
