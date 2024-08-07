@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.92.1 - 2024-08-06
+
+- :bug: `UI` Fix scrolling on backend
+
 ### v2.92.0 - 2024-08-06
 
 - :bug: `UI` Re-introduce CoT reset on channel change which was dropped when the menu router was introduced
