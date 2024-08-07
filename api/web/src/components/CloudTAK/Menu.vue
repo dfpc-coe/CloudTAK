@@ -37,6 +37,7 @@
                     style='height: calc(100% - 106px)'
                 >
                     <div
+                        role='button'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
@@ -45,6 +46,7 @@
                         @click='push("/menu/settings")'
                     >
                         <IconSettings
+                            title='Open Settings Panel'
                             v-tooltip='{
                                 content: "Display Settings",
                                 placement: "left",
@@ -68,6 +70,7 @@
                         @click='push("/menu/overlays")'
                     >
                         <IconBoxMultiple
+                            title='Open Overlays Panel'
                             v-tooltip='{
                                 content: "Overlays",
                                 placement: "left",
@@ -91,6 +94,7 @@
                         @click='push("/menu/contacts")'
                     >
                         <IconUsers
+                            title='Open Contacts Panel'
                             v-tooltip='{
                                 content: "Contacts",
                                 placement: "left",
@@ -114,6 +118,7 @@
                         @click='push("/menu/basemaps")'
                     >
                         <IconMap
+                            title='Open Basemaps Panel'
                             v-tooltip='{
                                 content: "Basemaps",
                                 placement: "left",
@@ -137,6 +142,7 @@
                         @click='push("/menu/missions")'
                     >
                         <IconAmbulance
+                            title='Open Data Syncs Panel'
                             v-tooltip='{
                                 content: "Data Sync",
                                 placement: "left",
@@ -160,6 +166,7 @@
                         @click='push("/menu/packages")'
                     >
                         <IconPackages
+                            title='Open Data Packages Panel'
                             v-tooltip='{
                                 content: "Data Packages",
                                 placement: "left",
@@ -183,6 +190,7 @@
                         @click='push("/menu/channels")'
                     >
                         <IconAffiliate
+                            title='Open Channels Panel'
                             v-tooltip='{
                                 content: "Channels",
                                 placement: "left",
@@ -206,6 +214,7 @@
                         @click='push("/menu/videos")'
                     >
                         <IconVideo
+                            title='Open Videos Panel'
                             v-tooltip='{
                                 content: "Videos",
                                 placement: "left",
@@ -229,6 +238,7 @@
                         @click='push("/menu/chats")'
                     >
                         <IconMessage
+                            title='Open Chats Panel'
                             v-tooltip='{
                                 content: "Chats",
                                 placement: "left",
@@ -252,6 +262,7 @@
                         @click='push("/menu/files")'
                     >
                         <IconFiles
+                            title='Open Files Panel'
                             v-tooltip='{
                                 content: "Your Files",
                                 placement: "left",
@@ -275,6 +286,7 @@
                         @click='push("/menu/imports")'
                     >
                         <IconFileImport
+                            title='Open Imports Panel'
                             v-tooltip='{
                                 content: "Imports",
                                 placement: "left",
@@ -298,6 +310,7 @@
                         @click='push("/menu/iconsets")'
                     >
                         <IconPhoto
+                            title='Open Iconsets Panel'
                             v-tooltip='{
                                 content: "Iconsets",
                                 placement: "left",
@@ -323,8 +336,9 @@
                         @click='push("/menu/connections")'
                     >
                         <IconNetwork
+                            title='Open Connections Panel'
                             v-tooltip='{
-                                content: "Integrations",
+                                content: "Connections",
                                 placement: "left",
                             }'
                             :class='{ "mx-2": compact }'
@@ -335,7 +349,7 @@
                             v-if='!compact'
                             class='mx-2'
                             style='font-size: 18px;'
-                        >Integrations</span>
+                        >Connections</span>
                         <span
                             v-if='!compact'
                             class='ms-auto badge border border-red bg-red text-white'
@@ -353,6 +367,7 @@
                         @click='push("/admin")'
                     >
                         <IconServerCog
+                            title='Open Server Admin Panel'
                             v-tooltip='{
                                 content: "Server Settings",
                                 placement: "left",
@@ -389,10 +404,12 @@
                     <div
                         style='width: calc(100% - 40px)'
                         class='py-2 d-flex align-items-center hover-dark cursor-pointer'
+                        role='button'
                         @click='$router.push("/profile")'
                     >
                         <div class='d-flex align-items-center'>
                             <IconUser
+                                title='User Icon'
                                 :size='32'
                                 :stroke='1'
                                 class='mx-2'
@@ -405,11 +422,13 @@
                     </div>
 
                     <div
+                        role='button'
                         style='width: 40px;'
                         class='py-2 px-2 ms-auto d-flex hover-dark cursor-pointer'
                         @click.stop.prevent='logout'
                     >
                         <IconLogout
+                            title='Logout'
                             v-tooltip='"Logout"'
                             :size='32'
                             :stroke='1'

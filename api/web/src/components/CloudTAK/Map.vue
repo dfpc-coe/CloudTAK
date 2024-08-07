@@ -29,6 +29,7 @@
                 />
                 <IconX
                     v-else
+                    tabindex="0"
                     title='Close Menu Button'
                     :size='40'
                     :stroke='1'
@@ -106,7 +107,7 @@
                 '
             >
                 <IconSearch
-                    tabindex="10"
+                    tabindex="0"
                     title='Search Button'
                     v-tooltip='"Search"'
                     :size='40'
