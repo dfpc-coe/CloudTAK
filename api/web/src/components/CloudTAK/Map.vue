@@ -137,6 +137,8 @@
                 <IconFocus2
                     v-if='!radial.cot && !locked.length'
                     v-tooltip='"Get Location"'
+                    role='button'
+                    tabindex="0"
                     title='Get Your Location button'
                     :size='40'
                     :stroke='1'
@@ -145,6 +147,8 @@
                 />
                 <IconLockAccess
                     v-else-if='!radial.cot'
+                    role='button'
+                    tabindex="0"
                     title='Map is locked to marker'
                     :size='40'
                     :stroke='1'
@@ -154,6 +158,8 @@
 
                 <div class='mt-3'>
                     <IconPlus
+                        role='button'
+                        tabindex="0"
                         v-tooltip='"Zoom In"'
                         title='Zoom In Button'
                         :size='40'
@@ -162,6 +168,8 @@
                         @click='setZoom(getZoom() + 1);'
                     />
                     <IconMinus
+                        role='button'
+                        tabindex="0"
                         v-tooltip='"Zoom Out"'
                         title='Zoom Out Button'
                         :size='40'
@@ -332,6 +340,8 @@
                     <template #default>
                         <div class='mx-2 cursor-pointer'>
                             <IconBell
+                                role='button'
+                                tabindex="0"
                                 :size='40'
                                 :stroke='1'
                                 title='Notifications Icon'
@@ -385,6 +395,8 @@
                 <TablerDropdown>
                     <template #default>
                         <IconPencil
+                            role='button'
+                            tabindex="0"
                             :size='40'
                             :stroke='1'
                             class='mx-2 cursor-pointer hover-button'
