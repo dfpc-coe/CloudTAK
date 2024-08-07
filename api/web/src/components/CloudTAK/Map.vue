@@ -18,9 +18,9 @@
                 style='z-index: 1; width: 60px; background-color: rgba(0, 0, 0, 0.5);'
             >
                 <IconMenu2
-                    tabindex="0"
-                    role="button"
                     v-if='noMenuShown'
+                    tabindex='0'
+                    role='button'
                     title='Open Menu Button'
                     :size='40'
                     :stroke='1'
@@ -29,7 +29,7 @@
                 />
                 <IconX
                     v-else
-                    tabindex="0"
+                    tabindex='0'
                     title='Close Menu Button'
                     :size='40'
                     :stroke='1'
@@ -107,9 +107,9 @@
                 '
             >
                 <IconSearch
-                    tabindex="0"
-                    title='Search Button'
                     v-tooltip='"Search"'
+                    tabindex='0'
+                    title='Search Button'
                     :size='40'
                     :stroke='1'
                     class='cursor-pointer hover-button mb-3'
@@ -122,8 +122,8 @@
                     @click='setBearing(0)'
                 >
                     <IconCircleArrowUp
-                        :alt='`Map Rotated to ${humanBearing}`'
                         v-tooltip='"Snap to North"'
+                        :alt='`Map Rotated to ${humanBearing}`'
                         :transform='`rotate(${360 - bearing})`'
                         :size='40'
                         :stroke='1'
@@ -138,7 +138,7 @@
                     v-if='!radial.cot && !locked.length'
                     v-tooltip='"Get Location"'
                     role='button'
-                    tabindex="0"
+                    tabindex='0'
                     title='Get Your Location button'
                     :size='40'
                     :stroke='1'
@@ -148,7 +148,7 @@
                 <IconLockAccess
                     v-else-if='!radial.cot'
                     role='button'
-                    tabindex="0"
+                    tabindex='0'
                     title='Map is locked to marker'
                     :size='40'
                     :stroke='1'
@@ -156,11 +156,14 @@
                     @click='locked.splice(0, locked.length)'
                 />
 
-                <div v-if='!detectMobile' class='mt-3'>
+                <div
+                    v-if='!detectMobile'
+                    class='mt-3'
+                >
                     <IconPlus
-                        role='button'
-                        tabindex="0"
                         v-tooltip='"Zoom In"'
+                        role='button'
+                        tabindex='0'
                         title='Zoom In Button'
                         :size='40'
                         :stroke='1'
@@ -168,9 +171,9 @@
                         @click='setZoom(getZoom() + 1);'
                     />
                     <IconMinus
-                        role='button'
-                        tabindex="0"
                         v-tooltip='"Zoom Out"'
+                        role='button'
+                        tabindex='0'
                         title='Zoom Out Button'
                         :size='40'
                         :stroke='1'
@@ -341,7 +344,7 @@
                         <div class='mx-2 cursor-pointer'>
                             <IconBell
                                 role='button'
-                                tabindex="0"
+                                tabindex='0'
                                 :size='40'
                                 :stroke='1'
                                 title='Notifications Icon'
@@ -396,7 +399,7 @@
                     <template #default>
                         <IconPencil
                             role='button'
-                            tabindex="0"
+                            tabindex='0'
                             :size='40'
                             :stroke='1'
                             class='mx-2 cursor-pointer hover-button'
