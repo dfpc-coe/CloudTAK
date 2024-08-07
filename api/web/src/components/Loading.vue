@@ -11,6 +11,7 @@
                                     style='margin-bottom: 24px;'
                                 >
                                     <img
+                                        alt='Agency Logo'
                                         src='/logo.png'
                                         height='150'
                                     >
