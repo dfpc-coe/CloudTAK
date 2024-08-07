@@ -18,7 +18,10 @@
                 style='z-index: 1; width: 60px; background-color: rgba(0, 0, 0, 0.5);'
             >
                 <IconMenu2
+                    tabindex="0"
+                    role="button"
                     v-if='noMenuShown'
+                    title='Open Menu Button'
                     :size='40'
                     :stroke='1'
                     class='mx-2 cursor-pointer hover-button'
@@ -26,6 +29,7 @@
                 />
                 <IconX
                     v-else
+                    title='Close Menu Button'
                     :size='40'
                     :stroke='1'
                     class='mx-2 cursor-pointer bg-dark'
@@ -57,12 +61,14 @@
                     >
                         <IconLocationOff
                             v-if='!profile.tak_loc'
+                            title='Set Your Location Button (No Location currently set)'
                             :size='20'
                             :stroke='1'
                             @click='setLocation'
                         />
                         <IconLocation
                             v-else
+                            title='Set Your Location Button'
                             :size='20'
                             :stroke='1'
                             @click='setLocation'
@@ -100,6 +106,8 @@
                 '
             >
                 <IconSearch
+                    tabindex="10"
+                    title='Search Button'
                     v-tooltip='"Search"'
                     :size='40'
                     :stroke='1'
@@ -113,6 +121,7 @@
                     @click='setBearing(0)'
                 >
                     <IconCircleArrowUp
+                        :alt='`Map Rotated to ${humanBearing}`'
                         v-tooltip='"Snap to North"'
                         :transform='`rotate(${360 - bearing})`'
                         :size='40'
@@ -127,6 +136,7 @@
                 <IconFocus2
                     v-if='!radial.cot && !locked.length'
                     v-tooltip='"Get Location"'
+                    title='Get Your Location button'
                     :size='40'
                     :stroke='1'
                     class='cursor-pointer hover-button'
@@ -134,6 +144,7 @@
                 />
                 <IconLockAccess
                     v-else-if='!radial.cot'
+                    title='Map is locked to marker'
                     :size='40'
                     :stroke='1'
                     class='cursor-pointer hover-button'
@@ -143,6 +154,7 @@
                 <div class='mt-3'>
                     <IconPlus
                         v-tooltip='"Zoom In"'
+                        title='Zoom In Button'
                         :size='40'
                         :stroke='1'
                         class='cursor-pointer hover-button'
@@ -150,6 +162,7 @@
                     />
                     <IconMinus
                         v-tooltip='"Zoom Out"'
+                        title='Zoom Out Button'
                         :size='40'
                         :stroke='1'
                         class='cursor-pointer hover-button'
@@ -216,6 +229,7 @@
                         type='button'
                         class='btn'
                     ><IconPoint
+                        title='Point Icon'
                         :size='40'
                         :stroke='1'
                     /></label>
@@ -319,6 +333,7 @@
                             <IconBell
                                 :size='40'
                                 :stroke='1'
+                                title='Notifications Icon'
                                 class='hover-button'
                             />
                             <span
@@ -356,6 +371,7 @@
                                     @click='$router.push(n.url)'
                                 >
                                     <IconMessage
+                                        title='Chat Message Icon'
                                         :size='32'
                                         :stroke='1'
                                     />
