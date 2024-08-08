@@ -396,7 +396,15 @@ export const useCOTStore = defineStore('cots', {
 
                 if (mission_cot) return;
 
-                this.pending.set(String(cot.id), cot);
+                const exists = this.cots.get(cot.id);
+                if (exists) {
+                    exists.update(cot)
+
+                    // TODO condition update depending on diff results
+                    this.pending.set(String(cot.id), exists);
+                } else {
+                    this.pending.set(String(cot.id), cot);
+                }
 
                 if (cot.properties && cot.properties.archived) {
                     await std('/api/profile/feature', { method: 'PUT', body: cot })
