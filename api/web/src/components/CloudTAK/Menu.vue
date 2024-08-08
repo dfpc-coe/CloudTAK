@@ -496,7 +496,8 @@ export default {
         IconMap
     },
     props: {
-        compact: Boolean
+        compact: Boolean,
+        mobileDetected: Boolean
     },
     methods: {
         push: function(path) {
