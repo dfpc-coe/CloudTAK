@@ -15,7 +15,7 @@
             v-for='feat in select.feats'
             :key='feat.properties.id'
             class='rounded col-12 d-flex align-items-center cursor-pointer hover-light'
-            @click='$emit("cot", feat.id)'
+            @click='$emit("selected", feat)'
         >
             <span class='ms-2'>
                 <IconPoint
@@ -58,6 +58,9 @@ export default {
         IconLine,
         IconPolygon
     },
+    emits: [
+        'selected'
+    ],
     computed: {
         ...mapState(useMapStore, ['select']),
     },

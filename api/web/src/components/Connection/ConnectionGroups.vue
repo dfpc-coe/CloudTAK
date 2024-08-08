@@ -159,8 +159,6 @@ export default {
                 method: 'PUT',
                 body: this.rawChannels
             });
-
-            this.$emit('reset');
         },
     }
 }
