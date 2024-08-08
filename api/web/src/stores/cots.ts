@@ -54,7 +54,7 @@ export const useCOTStore = defineStore('cots', {
             return videos;
         },
 
-        subChange: function(task: COT): void {
+        subChange: function(task: Feature): void {
             if (task.properties.type === 't-x-m-c' && task.properties.mission && task.properties.mission.missionChanges) {
                 let updateGuid;
 
