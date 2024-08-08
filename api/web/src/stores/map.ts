@@ -360,7 +360,7 @@ export const useMapStore = defineStore('cloudtak', {
             // If the call is coming from MultipleSelect, ensure this menu is closed
             this.select.feats = [];
 
-            if (!opts.mode) opts.mode = this.featureSource(feat);
+            if (!opts.mode) opts.mode = this.featureSource(feat) || 'feat';
 
             if (opts.point.x < 150 || opts.point.y < 150) {
                 const flyTo: mapgl.FlyToOptions = {
