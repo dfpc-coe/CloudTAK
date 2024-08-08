@@ -19,6 +19,9 @@
             >
                 <IconMenu2
                     v-if='noMenuShown'
+                    tabindex='0'
+                    role='button'
+                    title='Open Menu Button'
                     :size='40'
                     :stroke='1'
                     class='mx-2 cursor-pointer hover-button'
@@ -26,6 +29,8 @@
                 />
                 <IconX
                     v-else
+                    tabindex='0'
+                    title='Close Menu Button'
                     :size='40'
                     :stroke='1'
                     class='mx-2 cursor-pointer bg-dark'
@@ -57,12 +62,14 @@
                     >
                         <IconLocationOff
                             v-if='!profile.tak_loc'
+                            title='Set Your Location Button (No Location currently set)'
                             :size='20'
                             :stroke='1'
                             @click='setLocation'
                         />
                         <IconLocation
                             v-else
+                            title='Set Your Location Button'
                             :size='20'
                             :stroke='1'
                             @click='setLocation'
@@ -101,6 +108,8 @@
             >
                 <IconSearch
                     v-tooltip='"Search"'
+                    tabindex='0'
+                    title='Search Button'
                     :size='40'
                     :stroke='1'
                     class='cursor-pointer hover-button mb-3'
@@ -114,6 +123,7 @@
                 >
                     <IconCircleArrowUp
                         v-tooltip='"Snap to North"'
+                        :alt='`Map Rotated to ${humanBearing}`'
                         :transform='`rotate(${360 - bearing})`'
                         :size='40'
                         :stroke='1'
@@ -127,6 +137,9 @@
                 <IconFocus2
                     v-if='!radial.cot && !locked.length'
                     v-tooltip='"Get Location"'
+                    role='button'
+                    tabindex='0'
+                    title='Get Your Location button'
                     :size='40'
                     :stroke='1'
                     class='cursor-pointer hover-button'
@@ -134,15 +147,24 @@
                 />
                 <IconLockAccess
                     v-else-if='!radial.cot'
+                    role='button'
+                    tabindex='0'
+                    title='Map is locked to marker'
                     :size='40'
                     :stroke='1'
                     class='cursor-pointer hover-button'
                     @click='locked.splice(0, locked.length)'
                 />
 
-                <div class='mt-3'>
+                <div
+                    v-if='!detectMobile'
+                    class='mt-3'
+                >
                     <IconPlus
                         v-tooltip='"Zoom In"'
+                        role='button'
+                        tabindex='0'
+                        title='Zoom In Button'
                         :size='40'
                         :stroke='1'
                         class='cursor-pointer hover-button'
@@ -150,6 +172,9 @@
                     />
                     <IconMinus
                         v-tooltip='"Zoom Out"'
+                        role='button'
+                        tabindex='0'
+                        title='Zoom Out Button'
                         :size='40'
                         :stroke='1'
                         class='cursor-pointer hover-button'
@@ -216,6 +241,7 @@
                         type='button'
                         class='btn'
                     ><IconPoint
+                        title='Point Icon'
                         :size='40'
                         :stroke='1'
                     /></label>
@@ -317,8 +343,11 @@
                     <template #default>
                         <div class='mx-2 cursor-pointer'>
                             <IconBell
+                                role='button'
+                                tabindex='0'
                                 :size='40'
                                 :stroke='1'
+                                title='Notifications Icon'
                                 class='hover-button'
                             />
                             <span
@@ -356,6 +385,7 @@
                                     @click='$router.push(n.url)'
                                 >
                                     <IconMessage
+                                        title='Chat Message Icon'
                                         :size='32'
                                         :stroke='1'
                                     />
@@ -368,6 +398,8 @@
                 <TablerDropdown>
                     <template #default>
                         <IconPencil
+                            role='button'
+                            tabindex='0'
                             :size='40'
                             :stroke='1'
                             class='mx-2 cursor-pointer hover-button'
@@ -529,6 +561,12 @@ export default {
     computed: {
         ...mapState(useMapStore, ['bearing', 'select', 'radial', 'isLoaded', 'selected']),
         ...mapState(useProfileStore, ['profile', 'notifications']),
+        detectMobile: function() {
+          return (
+            ( window.innerWidth <= 800 )
+            && ( window.innerHeight <= 600 )
+          );
+        },
         humanBearing: function() {
             if (this.bearing < 0) {
                 return Math.round(this.bearing * -1) + '°'

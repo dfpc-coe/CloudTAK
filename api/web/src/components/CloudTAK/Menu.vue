@@ -37,6 +37,7 @@
                     style='height: calc(100% - 106px)'
                 >
                     <div
+                        role='button'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
@@ -49,6 +50,7 @@
                                 content: "Display Settings",
                                 placement: "left",
                             }'
+                            title='Open Settings Panel'
                             :class='{ "mx-2": compact }'
                             :size='compact ? 40 : 32'
                             :stroke='1'
@@ -72,6 +74,7 @@
                                 content: "Overlays",
                                 placement: "left",
                             }'
+                            title='Open Overlays Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
@@ -95,6 +98,7 @@
                                 content: "Contacts",
                                 placement: "left",
                             }'
+                            title='Open Contacts Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
@@ -118,6 +122,7 @@
                                 content: "Basemaps",
                                 placement: "left",
                             }'
+                            title='Open Basemaps Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
@@ -141,6 +146,7 @@
                                 content: "Data Sync",
                                 placement: "left",
                             }'
+                            title='Open Data Syncs Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
@@ -164,6 +170,7 @@
                                 content: "Data Packages",
                                 placement: "left",
                             }'
+                            title='Open Data Packages Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
@@ -187,6 +194,7 @@
                                 content: "Channels",
                                 placement: "left",
                             }'
+                            title='Open Channels Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
@@ -210,6 +218,7 @@
                                 content: "Videos",
                                 placement: "left",
                             }'
+                            title='Open Videos Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
@@ -233,6 +242,7 @@
                                 content: "Chats",
                                 placement: "left",
                             }'
+                            title='Open Chats Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
@@ -256,6 +266,7 @@
                                 content: "Your Files",
                                 placement: "left",
                             }'
+                            title='Open Files Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
@@ -279,6 +290,7 @@
                                 content: "Imports",
                                 placement: "left",
                             }'
+                            title='Open Imports Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
@@ -302,6 +314,7 @@
                                 content: "Iconsets",
                                 placement: "left",
                             }'
+                            title='Open Iconsets Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
@@ -324,9 +337,10 @@
                     >
                         <IconNetwork
                             v-tooltip='{
-                                content: "Integrations",
+                                content: "Connections",
                                 placement: "left",
                             }'
+                            title='Open Connections Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
@@ -335,7 +349,7 @@
                             v-if='!compact'
                             class='mx-2'
                             style='font-size: 18px;'
-                        >Integrations</span>
+                        >Connections</span>
                         <span
                             v-if='!compact'
                             class='ms-auto badge border border-red bg-red text-white'
@@ -357,6 +371,7 @@
                                 content: "Server Settings",
                                 placement: "left",
                             }'
+                            title='Open Server Admin Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
@@ -389,10 +404,12 @@
                     <div
                         style='width: calc(100% - 40px)'
                         class='py-2 d-flex align-items-center hover-dark cursor-pointer'
+                        role='button'
                         @click='$router.push("/profile")'
                     >
                         <div class='d-flex align-items-center'>
                             <IconUser
+                                title='User Icon'
                                 :size='32'
                                 :stroke='1'
                                 class='mx-2'
@@ -405,12 +422,14 @@
                     </div>
 
                     <div
+                        role='button'
                         style='width: 40px;'
                         class='py-2 px-2 ms-auto d-flex hover-dark cursor-pointer'
                         @click.stop.prevent='logout'
                     >
                         <IconLogout
                             v-tooltip='"Logout"'
+                            title='Logout'
                             :size='32'
                             :stroke='1'
                         />

@@ -48,6 +48,12 @@ export default async function router(schema: Schema, config: Config) {
 
             for (let i = 0; i < req.body.features.length; i++) {
                 req.body.features[i] = await style.feat(req.body.features[i])
+
+                if (!req.body.features[i].properties.flow) {
+                    req.body.features[i].properties.flow = {};
+                }
+
+                req.body.features[i].properties.flow[`CloudTAK-Layer-${req.params.layerid}`] = new Date().toISOString();
             }
 
             let pooledClient;

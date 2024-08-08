@@ -80,7 +80,8 @@ export default {
         },
         modelValue: {
             type: Array,
-            required: true
+            required: true,
+            description: 'A coordinate pair in GeoJSON format (lng,lat)'
         }
     },
     emits: [
@@ -90,7 +91,7 @@ export default {
     data: function() {
         return {
             mode: 'dd',
-            coordinateEntry: this.modelValue.join()
+            coordinateEntry: [this.modelValue[1], this.modelValue[0]].join(',')
         }
     },
     computed: {

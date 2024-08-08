@@ -56,7 +56,7 @@ export default {
             name: '',
             coordinates: [
                 Math.round(center.lng * 1000000) / 1000000,
-                Math.round(center.lat * 1000000) / 1000000
+                Math.round(center.lat * 1000000) / 1000000,
             ]
         };
     },

@@ -9,6 +9,7 @@
             >
                 <img
                     src='/logo.png'
+                    alt='Agency Logo'
                     height='150'
                 >
             </div>

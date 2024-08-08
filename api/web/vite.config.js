@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import vue from '@vitejs/plugin-vue'
+import icons from './public/logos/icons.js';
 
 export default defineConfig((configEnv) => ({
     plugins: [
@@ -12,11 +13,7 @@ export default defineConfig((configEnv) => ({
                 short_name: 'CloudTAK',
                 description: 'Cloud powered in-browser TAK Client',
                 theme_color: '#ffffff',
-                icons: [{
-                    src: './oublic/logo.png',
-                    sizes: '1000x1062',
-                    type: 'image/png'
-                }]
+                icons
             },
             devOptions: {
                 enabled: true

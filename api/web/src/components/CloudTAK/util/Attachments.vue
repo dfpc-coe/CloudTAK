@@ -41,8 +41,16 @@
             <template v-else>
                 <template v-for='file of files'>
                     <div class='col-12 hover-button px-2 py-2 d-flex align-items-center'>
-                        <IconPhoto v-if='[".png", ".jpg"].includes(file.ext)' :size='24' :stroke='1'/>
-                        <IconFile v-else :size='24' :stroke='1'/>
+                        <IconPhoto
+                            v-if='[".png", ".jpg"].includes(file.ext)'
+                            :size='24'
+                            :stroke='1'
+                        />
+                        <IconFile
+                            v-else
+                            :size='24'
+                            :stroke='1'
+                        />
 
                         <span
                             class='mx-2 text-truncate'
@@ -83,15 +91,6 @@ import {
 
 export default {
     name: 'COTAttachments',
-    props: {
-        attachments: {
-            type: Array,
-            required: true
-        },
-    },
-    emits: [
-        'attachment'
-    ],
     components: {
         Upload,
         IconPhoto,
@@ -101,8 +100,21 @@ export default {
         TablerLoading,
         TablerNone
     },
-    mounted: async function() {
-        await this.refresh();
+    props: {
+        attachments: {
+            type: Array,
+            required: true
+        },
+    },
+    emits: [
+        'attachment'
+    ],
+    data: function() {
+        return {
+            upload: false,
+            loading: true,
+            files: []
+        }
     },
     watch: {
         attachments: {
@@ -112,12 +124,8 @@ export default {
             }
         }
     },
-    data: function() {
-        return {
-            upload: false,
-            loading: true,
-            files: []
-        }
+    mounted: async function() {
+        await this.refresh();
     },
     methods: {
         refresh: async function() {
