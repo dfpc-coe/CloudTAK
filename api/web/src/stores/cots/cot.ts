@@ -59,36 +59,11 @@ export default class COT implements Feature {
 
         if (!feat.properties) feat.properties = {};
 
-        
-
-        if (this.properties.fill !== undefined)
-            feat.properties.fill = this.properties.fill;
-        if (this.properties['fill-opacity'] !== undefined)
-            feat.properties['fill-opacity'] = this.properties['fill-opacity'];
-        if (this.properties.stroke !== undefined)
-            feat.properties.stroke = this.properties.stroke;
-        if (this.properties.group !== undefined)
-            feat.properties.group = this.properties.group;
-        if (this.properties.icon !== undefined)
-            feat.properties.icon = this.properties.icon;
-        if (this.properties.course !== undefined)
-            feat.properties.course = this.properties.course;
-        if (this.properties['icon-opacity'] !== undefined)
-            feat.properties['icon-opacity'] = this.properties['icon-opacity'];
-        if (this.properties['stroke-opacity'] !== undefined)
-            feat.properties['stroke-opacity'] = this.properties['stroke-opacity'];
-        if (this.properties['marker-color'] !== undefined)
-            feat.properties['marker-color'] = this.properties['marker-color'];
-        if (this.properties['marker-radius'] !== undefined)
-            feat.properties['marker-radius'] = this.properties['marker-radius'];
-        if (this.properties['marker-opacity'] !== undefined)
-            feat.properties['marker-opacity'] = this.properties['marker-opacity'];
-        if (this.properties['circle-color'] !== undefined)
-            feat.properties['circle-color'] = this.properties['circle-color'];
-        if (this.properties['circle-radius'] !== undefined)
-            feat.properties['circle-radius'] = this.properties['circle-radius'];
-        if (this.properties['circle-opacity'] !== undefined)
-            feat.properties['circle-opacity'] = this.properties['circle-opacity'];
+        for (const prop of RENDERED_PROPERTIES) {        
+            if (this.properties[prop] !== undefined) {
+                feat.properties[prop] = this.properties[prop];
+            }
+        }
 
         return feat;
     }
