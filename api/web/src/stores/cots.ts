@@ -2,10 +2,10 @@
 * CotStore - Store & perform updates on all underlying CoT Features
 */
 
+import COT from './cots/cot.ts'
 import moment from 'moment';
 import { defineStore } from 'pinia'
 import type { GeoJSONSourceDiff } from 'maplibre-gl';
-import pointOnFeature from '@turf/point-on-feature';
 import { std, stdurl } from '../std.ts';
 import type { Feature } from '../types.ts';
 import type { FeatureCollection } from 'geojson';
@@ -20,13 +20,13 @@ type NestedArray = {
 
 export const useCOTStore = defineStore('cots', {
     state: (): {
-        cots: Map<string, Feature>;
+        cots: Map<string, COT>;
         hidden: Set<string>;
 
         // COTs are submitted to pending and picked up by the partial update code every .5s
-        pending: Map<string, Feature>;
+        pending: Map<string, COT>;
         pendingDelete: Set<string>;
-        subscriptions: Map<string, Map<string, Feature>>;
+        subscriptions: Map<string, Map<string, COT>>;
         subscriptionPending: Map<string, string>;
     } => {
         return {
@@ -43,8 +43,8 @@ export const useCOTStore = defineStore('cots', {
          * Iterate over cot messages and return list of CoTs
          * with Video Streams
          */
-        videos: function(): Set<Feature> {
-            const videos: Set<Feature> = new Set();
+        videos: function(): Set<COT> {
+            const videos: Set<COT> = new Set();
             for (const cot of this.cots.values()) {
                 if (cot.properties && cot.properties.video) {
                     videos.add(cot);
@@ -122,6 +122,8 @@ export const useCOTStore = defineStore('cots', {
             const display_stale = profileStore.profile ? profileStore.profile.display_stale : 'Immediate';
 
             for (const cot of this.cots.values()) {
+                const render = cot.as_rendered();
+
                 if (this.hidden.has(String(cot.id))) {
                     diff.remove.push(String(cot.id))
                 } else if (
@@ -144,33 +146,60 @@ export const useCOTStore = defineStore('cots', {
                         if (!['Point', 'Polygon', 'LineString'].includes(cot.geometry.type)) continue;
 
                         diff.update.push({
-                            id: String(cot.id),
-                            addOrUpdateProperties: Object.keys(cot.properties).map((key) => {
-                                return { key, value: cot.properties ? cot.properties[key] : '' }
+                            id: String(render.id),
+                            addOrUpdateProperties: Object.keys(render.properties).map((key) => {
+                                return { key, value: render.properties ? render.properties[key] : '' }
                             }),
-                            newGeometry: cot.geometry
+                            newGeometry: render.geometry
                         })
                     } else if (!now.isBefore(moment(cot.properties.stale)) && (cot.properties['icon-opacity'] !== 0.5 || cot.properties['marker-opacity'] !== 127)) {
-                        cot.properties['icon-opacity'] = 0.5;
-                        cot.properties['marker-opacity'] = 0.5;
+                        render.properties['icon-opacity'] = 0.5;
+                        render.properties['marker-opacity'] = 0.5;
 
-                        if (!['Point', 'Polygon', 'LineString'].includes(cot.geometry.type)) continue;
+                        if (!['Point', 'Polygon', 'LineString'].includes(render.geometry.type)) continue;
 
                         diff.update.push({
-                            id: String(cot.id),
-                            addOrUpdateProperties: Object.keys(cot.properties).map((key) => {
-                                return { key, value: cot.properties ? cot.properties[key] : '' }
+                            id: String(render.id),
+                            addOrUpdateProperties: Object.keys(render.properties).map((key) => {
+                                return { key, value: cot.properties ? render.properties[key] : '' }
                             }),
-                            newGeometry: cot.geometry
+                            newGeometry: render.geometry
                         })
                     }
                 }
             }
 
+            for (const cot of this.pending.values()) {
+                const render = cot.as_rendered();
+
+                if (this.cots.has(cot.id)) {
+                    diff.update.push({
+                        id: String(render.id),
+                        addOrUpdateProperties: Object.keys(render.properties).map((key) => {
+                            return { key, value: render.properties[key] }
+                        }),
+                        newGeometry: render.geometry
+                    })
+                } else {
+                    diff.add.push(render);
+                }
+
+                this.cots.set(cot.id, cot);
+            }
+
+            this.pending.clear();
+
+            for (const id of this.pendingDelete) {
+                diff.remove.push(id);
+                this.cots.delete(id);
+            }
+
+            this.pendingDelete.clear();
+
             return diff;
         },
 
-        paths(store?: Map<string, Feature>): Array<NestedArray> {
+        paths(store?: Map<string, COT>): Array<NestedArray> {
             if (!store) store = this.cots;
 
             const paths = new Set();
@@ -186,7 +215,7 @@ export const useCOTStore = defineStore('cots', {
             });
         },
 
-        markers(store?: Map<string, Feature>): Array<string> {
+        markers(store?: Map<string, COT>): Array<string> {
             if (!store) store = this.cots;
 
             const markers: Set<string> = new Set();
@@ -199,8 +228,8 @@ export const useCOTStore = defineStore('cots', {
             return Array.from(markers);
         },
 
-        markerFeatures(store: Map<string, Feature>, marker: string): Array<Feature> {
-            const feats: Set<Feature> = new Set();
+        markerFeatures(store: Map<string, COT>, marker: string): Array<COT> {
+            const feats: Set<COT> = new Set();
 
             for (const [key, value] of store) {
                 if (value.properties.group) continue;
@@ -214,8 +243,8 @@ export const useCOTStore = defineStore('cots', {
             return Array.from(feats);
         },
 
-        pathFeatures(store: Map<string, Feature>, path: string): Array<Feature> {
-            const feats: Set<Feature> = new Set();
+        pathFeatures(store: Map<string, COT>, path: string): Array<COT> {
+            const feats: Set<COT> = new Set();
 
             for (const [key, value] of store) {
                 if (value.path === path) {
@@ -226,7 +255,7 @@ export const useCOTStore = defineStore('cots', {
             return Array.from(feats);
         },
 
-        groups(store?: Map<string, Feature>): Array<string> {
+        groups(store?: Map<string, COT>): Array<string> {
             if (!store) store = this.cots;
 
             const groups: Set<string> = new Set();
@@ -237,10 +266,10 @@ export const useCOTStore = defineStore('cots', {
             return Array.from(groups);
         },
 
-        contacts(store?: Map<string, Feature>, group?: string): Array<Feature> {
+        contacts(store?: Map<string, COT>, group?: string): Array<COT> {
             if (!store) store = this.cots;
 
-            const contacts: Set<Feature> = new Set();
+            const contacts: Set<COT> = new Set();
             for (const [key, value] of store) {
                 if (value.properties.group) contacts.add(value);
             }
@@ -257,7 +286,7 @@ export const useCOTStore = defineStore('cots', {
             return list;
         },
 
-        async deletePath(path: string, store?: Map<string, Feature>): Promise<void> {
+        async deletePath(path: string, store?: Map<string, COT>): Promise<void> {
             if (!store) store = this.cots;
 
             const url = stdurl('/api/profile/feature')
@@ -274,10 +303,12 @@ export const useCOTStore = defineStore('cots', {
         /**
          * Return a FeatureCollection of a non-default CoT Store
          */
-        collection(store: Map<string, Feature>): FeatureCollection {
+        collection(store: Map<string, COT>): FeatureCollection {
             return {
                 type: 'FeatureCollection',
-                features: Array.from(store.values())
+                features: Array.from(store.values()).map((f: COT) => {
+                    return f.as_rendered();
+                })
             }
         },
 
@@ -286,7 +317,7 @@ export const useCOTStore = defineStore('cots', {
          */
         get: function(id: string, opts?: {
             clone: boolean
-        }): Feature | undefined {
+        }): COT | undefined {
             if (opts && opts.clone) {
                 return JSON.parse(JSON.stringify(this.cots.get(id)));
             } else {
@@ -334,115 +365,10 @@ export const useCOTStore = defineStore('cots', {
         },
 
         /**
-         * Consistent feature manipulation between add & update
-         */
-        style: function(feat: Feature): Feature {
-            //Vector Tiles only support integer IDs
-            feat.properties.id = feat.id;
-
-            if (!feat.properties.center) {
-                feat.properties.center = pointOnFeature(feat.geometry).geometry.coordinates;
-            }
-
-            if (!feat.properties.time) feat.properties.time = new Date().toISOString();
-            if (!feat.properties.start) feat.properties.start = new Date().toISOString();
-            if (!feat.properties.stale) feat.properties.stale = moment().add(10, 'minutes').toISOString();
-
-            if (!feat.properties.remarks) {
-                feat.properties.remarks = 'None';
-            }
-
-            if (!feat.properties.how && feat.properties.type.startsWith('u-')) {
-                feat.properties.how = 'h-g-i-g-o';
-            } else if (!feat.properties.how) {
-                feat.properties.how = 'm-p';
-            }
-
-            if (feat.geometry.type.includes('Point')) {
-                if (feat.properties.group) {
-                    feat.properties['icon-opacity'] = 0;
-
-                    if (feat.properties.group.name === 'Yellow') {
-                        feat.properties["marker-color"] = '#f59f00';
-                    } else if (feat.properties.group.name === 'Orange') {
-                        feat.properties["marker-color"] = '#f76707';
-                    } else if (feat.properties.group.name === 'Magenta') {
-                        feat.properties["marker-color"] = '#ea4c89';
-                    } else if (feat.properties.group.name === 'Red') {
-                        feat.properties["marker-color"] = '#d63939';
-                    } else if (feat.properties.group.name === 'Maroon') {
-                        feat.properties["marker-color"] = '#bd081c';
-                    } else if (feat.properties.group.name === 'Purple') {
-                        feat.properties["marker-color"] = '#ae3ec9';
-                    } else if (feat.properties.group.name === 'Dark Blue') {
-                        feat.properties["marker-color"] = '#0054a6';
-                    } else if (feat.properties.group.name === 'Blue') {
-                        feat.properties["marker-color"] = '#4299e1';
-                    } else if (feat.properties.group.name === 'Cyan') {
-                        feat.properties["marker-color"] = '#17a2b8';
-                    } else if (feat.properties.group.name === 'Teal') {
-                        feat.properties["marker-color"] = '#0ca678';
-                    } else if (feat.properties.group.name === 'Green') {
-                        feat.properties["marker-color"] = '#74b816';
-                    } else if (feat.properties.group.name === 'Dark Green') {
-                        feat.properties["marker-color"] = '#2fb344';
-                    } else if (feat.properties.group.name === 'Brown') {
-                        feat.properties["marker-color"] = '#dc4e41';
-                    } else {
-                        feat.properties["marker-color"] = '#ffffff';
-                    }
-
-                } else if (feat.properties.icon) {
-                    // Format of icon needs to change for spritesheet
-                    if (!feat.properties.icon.includes(':')) {
-                        feat.properties.icon = feat.properties.icon.replace('/', ':')
-                    }
-
-                    if (feat.properties.icon.endsWith('.png')) {
-                        feat.properties.icon = feat.properties.icon.replace(/.png$/, '');
-                    }
-
-                    const mapStore = useMapStore();
-                    if (mapStore.map && !mapStore.map.hasImage(feat.properties.icon)) {
-                        console.warn(`No Icon for: ${feat.id}::${feat.properties.icon} fallback to ${feat.properties.type}`);
-                        feat.properties.icon = `${feat.properties.type}`;
-                    }
-                } else {
-                    // TODO Only add icon if one actually exists in the spritejson
-                    if (!['u-d-p'].includes(feat.properties.type)) {
-                        feat.properties.icon = `${feat.properties.type}`;
-                    }
-                }
-            } else if (feat.geometry.type.includes('Line') || feat.geometry.type.includes('Polygon')) {
-                if (!feat.properties['stroke']) feat.properties.stroke = '#d63939';
-                if (!feat.properties['stroke-style']) feat.properties['stroke-style'] = 'solid';
-                if (!feat.properties['stroke-width']) feat.properties['stroke-width'] = 3;
-
-                if (!feat.properties['stroke-opacity'] === undefined) {
-                    feat.properties['stroke-opacity'] = 1;
-                }
-
-                if (feat.geometry.type.includes('Polygon')) {
-                    if (!feat.properties['fill']) feat.properties.fill = '#d63939';
-
-                    if (feat.properties['fill-opacity'] === undefined) {
-                        feat.properties['fill-opacity'] = 1;
-                    }
-                }
-            }
-
-            return feat;
-        },
-
-        /**
          * Add a CoT GeoJSON to the store and modify props to meet MapLibre style requirements
          */
         add: async function(feat: Feature, mission_guid?: string) {
-            if (!feat.id && !feat.properties.id) {
-                feat.id = self.crypto.randomUUID();
-            }
-
-            feat = this.style(feat);
+            feat = COT.style(feat);
 
             mission_guid = mission_guid || this.subscriptionPending.get(feat.id);
 
@@ -453,27 +379,32 @@ export const useCOTStore = defineStore('cots', {
                     this.subscriptions.set(mission_guid, cots);
                 }
 
-                cots.set(String(feat.id), feat);
+                const cot = new COT(feat);
+                cots.set(String(cot.id), cot);
 
                 const mapStore = useMapStore();
                 mapStore.updateMissionData(mission_guid);
             } else {
-                /**
-                 * Mission CoTs ideally go to the Mission Layer
-                 * TODO: This will only work with existing CoTs in the mission
-                 *       New CoTs will not be added to the proper layer
-                 */
-                let mission_cot = false;
+                let is_mission_cot = false;
                 for (const [key, value] of this.subscriptions) {
-                    if (value.has(feat.id)) {
-                        value.set(feat.id, feat);
-                        mission_cot = true;
+                    const mission_cot = value.get(feat.id);
+                    if (mission_cot) {
+                        mission_cot.update(feat);
+                        is_mission_cot = true;
                     }
                 }
 
-                if (mission_cot) return;
+                if (is_mission_cot) return;
 
-                this.pending.set(String(feat.id), feat);
+                const exists = this.cots.get(feat.id);
+                if (exists) {
+                    exists.update(feat)
+
+                    // TODO condition update depending on diff results
+                    this.pending.set(String(feat.id), exists);
+                } else {
+                    this.pending.set(String(feat.id), new COT(feat));
+                }
 
                 if (feat.properties && feat.properties.archived) {
                     await std('/api/profile/feature', { method: 'PUT', body: feat })

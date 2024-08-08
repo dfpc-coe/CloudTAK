@@ -157,7 +157,7 @@
                 />
 
                 <div
-                    v-if='!detectMobile'
+                    v-if='!mobileDetected'
                     class='mt-3'
                 >
                     <IconPlus
@@ -457,13 +457,20 @@
             </div>
 
             <SideMenu
-                v-if='isLoaded && !pointInput'
+                v-if='
+                    isLoaded
+                        && !pointInput
+                        && (
+                            (noMenuShown && !mobileDetected)
+                            || (!noMenuShown)
+                        )
+                '
                 :compact='noMenuShown'
             />
 
             <MultipleSelect
                 v-if='select.feats.length'
-                @cot='selectFeat($event)'
+                @selected='selectFeat($event)'
             />
 
             <RadialMenu
@@ -561,10 +568,12 @@ export default {
     computed: {
         ...mapState(useMapStore, ['bearing', 'select', 'radial', 'isLoaded', 'selected']),
         ...mapState(useProfileStore, ['profile', 'notifications']),
-        detectMobile: function() {
+        mobileDetected: function() {
+          //TODO: This needs to follow something like:
+          // https://stackoverflow.com/questions/47219272/how-can-i-monitor-changing-window-sizes-in-vue
           return (
-            ( window.innerWidth <= 800 )
-            && ( window.innerHeight <= 600 )
+            ( this.width <= 800 )
+            || ( this.height <= 800 )
           );
         },
         humanBearing: function() {
@@ -605,6 +614,11 @@ export default {
             this.$emit('err', new Error(evt.message));
         });
 
+        window.addEventListener('resize', () => {
+            this.height = window.innerHeight;
+            this.width = window.innerWidth;
+        });
+
         await this.mountMap();
 
         await Promise.all([
@@ -643,6 +657,8 @@ export default {
     data: function() {
         return {
             mode: 'Default',
+            height: window.innerHeight,
+            width: window.innerWidth,
             warnChannels: false,        // Show a popup if no channels are selected on load
             search: {
                 shown: false,
@@ -683,9 +699,15 @@ export default {
     },
     methods: {
         ...mapActions(useProfileStore, ['clearNotifications']),
-        selectFeat: function(uid) {
+        selectFeat: function(feat) {
             mapStore.select.feats = [];
-            this.$router.push(`/cot/${uid}`);
+            const source = mapStore.featureSource(feat);
+
+            if (source === 'cot') {
+                this.$router.push(`/cot/${feat.properties.id}`);
+            } else {
+                this.feat = feat;
+            }
         },
         closeAllMenu: function() {
             this.feat = false;
@@ -833,31 +855,6 @@ export default {
         updateCOT: async function() {
             try {
                 const diff = cotStore.diff();
-
-                for (const cot of cotStore.pending.values()) {
-                    if (cotStore.cots.has(cot.id)) {
-                        diff.update.push({
-                            id: cot.id,
-                            addOrUpdateProperties: Object.keys(cot.properties).map((key) => {
-                                return { key, value: cot.properties[key] }
-                            }),
-                            newGeometry: cot.geometry
-                        })
-                    } else {
-                        diff.add.push(cot);
-                    }
-
-                    cotStore.cots.set(cot.id, cot);
-                }
-
-                cotStore.pending.clear();
-
-                for (const id of cotStore.pendingDelete) {
-                    diff.remove.push(id);
-                    cotStore.cots.delete(id);
-                }
-
-                cotStore.pendingDelete.clear();
 
                 if (diff.add.length || diff.remove.length || diff.update.length) {
                     mapStore.map.getSource('-1').updateData(diff);
