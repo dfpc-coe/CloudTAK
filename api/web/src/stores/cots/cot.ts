@@ -3,40 +3,34 @@ import { useMapStore } from '../map.ts';
 import pointOnFeature from '@turf/point-on-feature';
 import moment from 'moment';
 import type { Static } from '@sinclair/typebox';
-import type { Feature as COTFeature } from '@tak-ps/node-cot';
 import type { Feature } from './../../types.ts'
+import type { Feature as GeoJSONFeature } from 'geojson'
 
 export default class COT implements Feature {
     id: string;
     path: string;
     type: 'Feature';
-    properties: Static<typeof COTFeature.Properties> & {
-        'id': string;
-        'icon-opacity'?: number;
-        'circle-opacity'?: number;
-        [index: string]: unknown
-    }
-
-    geometry: Static<typeof COTFeature.Geometry>;
+    properties: Feature["properties"];
+    geometry: Feature["geometry"];
 
     constructor(feat: Feature) {
         this.id = feat.id;
         this.type = feat.type;
         this.path = feat.path;
-        this.properties = feat.properties;
-        this.geometry = feat.geometry;
+        this.properties = feat["properties"];
+        this.geometry = feat["geometry"];
     }
 
     /**
      * The slimmer we can get the Features, the better
      * This returns the minium feature we need to actually style the COT in the vector tiles
      */
-    as_rendered(): Feature {
-        const feat: Feature = {
+    as_rendered(): GeoJSONFeature {
+        const feat: GeoJSONFeature = {
             id: this.id,
             type: this.type,
             properties: {
-                id: this.id,
+                id: this.id,        //Vector Tiles only support integer IDs so store in props
                 callsign: this.properties.callsign,
                 fill: this.properties.fill,
                 'fill-opacity': this.properties['fill-opacity'],
@@ -49,7 +43,10 @@ export default class COT implements Feature {
                 'stroke-opacity': this.properties['stroke-opacity'],
                 'marker-color': this.properties['marker-color'],
                 'marker-radius': this.properties['marker-radius'],
-                'marker-opacity': this.properties['marker-opacity']
+                'marker-opacity': this.properties['marker-opacity'],
+                'circle-color': this.properties['circle-color'],
+                'circle-radius': this.properties['circle-radius'],
+                'circle-opacity': this.properties['circle-opacity'],
             },
             geometry: this.geometry
         }
@@ -61,9 +58,6 @@ export default class COT implements Feature {
      * Consistent feature manipulation between add & update
      */
     static style(feat: Feature): Feature {
-        //Vector Tiles only support integer IDs
-        feat.properties.id = feat.id;
-
         if (!feat.properties.center) {
             feat.properties.center = pointOnFeature(feat.geometry).geometry.coordinates;
         }
