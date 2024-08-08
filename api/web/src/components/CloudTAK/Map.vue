@@ -459,11 +459,11 @@
             <SideMenu
                 v-if='
                     isLoaded
-                    && !pointInput
-                    && (
-                        (noMenuShown && !mobileDetected)
-                        || (!noMenuShown)
-                    )
+                        && !pointInput
+                        && (
+                            (noMenuShown && !mobileDetected)
+                            || (!noMenuShown)
+                        )
                 '
                 :compact='noMenuShown'
             />
@@ -614,7 +614,7 @@ export default {
             this.$emit('err', new Error(evt.message));
         });
 
-        window.addEventListener('resize', (evt) => {
+        window.addEventListener('resize', () => {
             this.height = window.innerHeight;
             this.width = window.innerWidth;
         });
