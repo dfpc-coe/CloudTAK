@@ -458,6 +458,7 @@
 
             <SideMenu
                 v-if='isLoaded && !pointInput'
+                :mobile='mobileDetected'
                 :compact='noMenuShown'
             />
 
