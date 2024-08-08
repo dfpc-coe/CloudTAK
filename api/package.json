@@ -42,7 +42,7 @@
         "@openaddresses/batch-generic": "19.2.0",
         "@openaddresses/batch-schema": "^10.7.0",
         "@openaddresses/cloudfriend": "^7.0.0",
-        "@sinclair/typebox": "^0.32.14",
+        "@sinclair/typebox": "^0.33.0",
         "@tak-ps/node-cot": "^10.0.0",
         "@tak-ps/node-tak": "^6.0.0",
         "@turf/bbox-polygon": "^7.0.0",
