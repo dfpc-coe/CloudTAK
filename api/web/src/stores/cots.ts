@@ -343,7 +343,9 @@ export const useCOTStore = defineStore('cots', {
 
             feat = COT.style(feat);
 
-            mission_guid = mission_guid || this.subscriptionPending.get(feat.id);
+            const cot = new COT(feat);
+
+            mission_guid = mission_guid || this.subscriptionPending.get(cot.id);
 
             if (mission_guid)  {
                 let cots = this.subscriptions.get(mission_guid);
@@ -352,7 +354,7 @@ export const useCOTStore = defineStore('cots', {
                     this.subscriptions.set(mission_guid, cots);
                 }
 
-                cots.set(String(feat.id), feat);
+                cots.set(String(cot.id), cot);
 
                 const mapStore = useMapStore();
                 mapStore.updateMissionData(mission_guid);
@@ -364,18 +366,18 @@ export const useCOTStore = defineStore('cots', {
                  */
                 let mission_cot = false;
                 for (const [key, value] of this.subscriptions) {
-                    if (value.has(feat.id)) {
-                        value.set(feat.id, feat);
+                    if (value.has(cot.id)) {
+                        value.set(cot.id, cot);
                         mission_cot = true;
                     }
                 }
 
                 if (mission_cot) return;
 
-                this.pending.set(String(feat.id), feat);
+                this.pending.set(String(cot.id), cot);
 
-                if (feat.properties && feat.properties.archived) {
-                    await std('/api/profile/feature', { method: 'PUT', body: feat })
+                if (cot.properties && cot.properties.archived) {
+                    await std('/api/profile/feature', { method: 'PUT', body: cot })
                 }
             }
         }

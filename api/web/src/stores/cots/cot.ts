@@ -6,7 +6,7 @@ import type { Static } from '@sinclair/typebox';
 import type { Feature as COTFeature } from '@tak-ps/node-cot';
 import type { Feature } from './../../types.ts'
 
-export default class COT {
+export default class COT implements Feature {
     id: string;
     path: string;
     type: 'Feature';
@@ -25,6 +25,36 @@ export default class COT {
         this.path = feat.path;
         this.properties = feat.properties;
         this.geometry = feat.geometry;
+    }
+
+    /**
+     * The slimmer we can get the Features, the better
+     * This returns the minium feature we need to actually style the COT in the vector tiles
+     */
+    as_rendered(): Feature {
+        const feat: Feature = {
+            id: this.id,
+            type: this.type,
+            properties: {
+                id: this.id,
+                callsign: this.properties.callsign,
+                fill: this.properties.fill,
+                'fill-opacity': this.properties['fill-opacity'],
+                stroke: this.properties.stroke,
+                group: this.properties.group,
+                icon: this.properties.icon,
+                course: this.properties.course,
+                'icon-opacity': this.properties['icon-opacity'],
+                'stroke-width': this.properties['stroke-width'],
+                'stroke-opacity': this.properties['stroke-opacity'],
+                'marker-color': this.properties['marker-color'],
+                'marker-radius': this.properties['marker-radius'],
+                'marker-opacity': this.properties['marker-opacity']
+            },
+            geometry: this.geometry
+        }
+
+        return feat;
     }
 
     /**
