@@ -157,7 +157,7 @@
                 />
 
                 <div
-                    v-if='!detectMobile'
+                    v-if='!mobileDetected'
                     class='mt-3'
                 >
                     <IconPlus
@@ -561,10 +561,12 @@ export default {
     computed: {
         ...mapState(useMapStore, ['bearing', 'select', 'radial', 'isLoaded', 'selected']),
         ...mapState(useProfileStore, ['profile', 'notifications']),
-        detectMobile: function() {
+        mobileDetected: function() {
+          //TODO: This needs to follow something like:
+          // https://stackoverflow.com/questions/47219272/how-can-i-monitor-changing-window-sizes-in-vue
           return (
             ( window.innerWidth <= 800 )
-            && ( window.innerHeight <= 600 )
+            && ( window.innerHeight <= 800 )
           );
         },
         humanBearing: function() {
