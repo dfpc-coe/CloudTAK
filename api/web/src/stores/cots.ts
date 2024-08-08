@@ -306,7 +306,9 @@ export const useCOTStore = defineStore('cots', {
         collection(store: Map<string, COT>): FeatureCollection {
             return {
                 type: 'FeatureCollection',
-                features: Array.from(store.values())
+                features: Array.from(store.values()).map((f: COT) => {
+                    return f.as_rendered();
+                })
             }
         },
 
@@ -384,11 +386,6 @@ export const useCOTStore = defineStore('cots', {
                 const mapStore = useMapStore();
                 mapStore.updateMissionData(mission_guid);
             } else {
-                /**
-                 * Mission CoTs ideally go to the Mission Layer
-                 * TODO: This will only work with existing CoTs in the mission
-                 *       New CoTs will not be added to the proper layer
-                 */
                 let mission_cot = false;
                 for (const [key, value] of this.subscriptions) {
                     if (value.has(cot.id)) {
