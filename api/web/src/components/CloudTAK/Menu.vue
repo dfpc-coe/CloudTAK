@@ -13,7 +13,6 @@
         <div class='position-relative h-100 container px-0'>
             <router-view
                 v-if='!["home", "home-menu"].includes($route.name)'
-                @reset='$emit("reset")'
             />
             <template v-else>
                 <div
@@ -499,7 +498,6 @@ export default {
     props: {
         compact: Boolean
     },
-    emits: ['resets'],
     methods: {
         push: function(path) {
             this.$router.push(path);
