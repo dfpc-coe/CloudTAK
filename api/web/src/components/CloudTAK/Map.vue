@@ -835,16 +835,18 @@ export default {
                 const diff = cotStore.diff();
 
                 for (const cot of cotStore.pending.values()) {
+                    const render = cot.as_rendered();
+
                     if (cotStore.cots.has(cot.id)) {
                         diff.update.push({
-                            id: cot.id,
-                            addOrUpdateProperties: Object.keys(cot.properties).map((key) => {
-                                return { key, value: cot.properties[key] }
+                            id: render.id,
+                            addOrUpdateProperties: Object.keys(render.properties).map((key) => {
+                                return { key, value: render.properties[key] }
                             }),
-                            newGeometry: cot.geometry
+                            newGeometry: render.geometry
                         })
                     } else {
-                        diff.add.push(cot);
+                        diff.add.push(render);
                     }
 
                     cotStore.cots.set(cot.id, cot);
