@@ -370,9 +370,7 @@ export const useCOTStore = defineStore('cots', {
         add: async function(feat: Feature, mission_guid?: string) {
             feat = COT.style(feat);
 
-            const cot = new COT(feat);
-
-            mission_guid = mission_guid || this.subscriptionPending.get(cot.id);
+            mission_guid = mission_guid || this.subscriptionPending.get(feat.id);
 
             if (mission_guid)  {
                 let cots = this.subscriptions.get(mission_guid);
@@ -381,6 +379,7 @@ export const useCOTStore = defineStore('cots', {
                     this.subscriptions.set(mission_guid, cots);
                 }
 
+                const cot = new COT(feat);
                 cots.set(String(cot.id), cot);
 
                 const mapStore = useMapStore();
@@ -388,26 +387,27 @@ export const useCOTStore = defineStore('cots', {
             } else {
                 let mission_cot = false;
                 for (const [key, value] of this.subscriptions) {
-                    if (value.has(cot.id)) {
-                        value.set(cot.id, cot);
+                    const mission_cot = value.get(feat.id);
+                    if (mission_cot) {
+                        mission_cot.update(feat);
                         mission_cot = true;
                     }
                 }
 
                 if (mission_cot) return;
 
-                const exists = this.cots.get(cot.id);
+                const exists = this.cots.get(feat.id);
                 if (exists) {
-                    exists.update(cot)
+                    exists.update(feat)
 
                     // TODO condition update depending on diff results
-                    this.pending.set(String(cot.id), exists);
+                    this.pending.set(String(feat.id), exists);
                 } else {
-                    this.pending.set(String(cot.id), cot);
+                    this.pending.set(String(feat.id), new COT(feat));
                 }
 
-                if (cot.properties && cot.properties.archived) {
-                    await std('/api/profile/feature', { method: 'PUT', body: cot })
+                if (feat.properties && feat.properties.archived) {
+                    await std('/api/profile/feature', { method: 'PUT', body: feat })
                 }
             }
         }
