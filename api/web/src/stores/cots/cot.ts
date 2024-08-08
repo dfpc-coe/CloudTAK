@@ -4,7 +4,10 @@ import pointOnFeature from '@turf/point-on-feature';
 import moment from 'moment';
 import type { Static } from '@sinclair/typebox';
 import type { Feature } from './../../types.ts'
-import type { Feature as GeoJSONFeature } from 'geojson'
+import type {
+    Feature as GeoJSONFeature,
+    Geometry as GeoJSONGeometry,
+} from 'geojson'
 
 export default class COT implements Feature {
     id: string;
@@ -25,8 +28,8 @@ export default class COT implements Feature {
      * The slimmer we can get the Features, the better
      * This returns the minium feature we need to actually style the COT in the vector tiles
      */
-    as_rendered(): GeoJSONFeature {
-        const feat: GeoJSONFeature = {
+    as_rendered(): GeoJSONFeature<GeoJSONGeometry, Record<string, unknown>> {
+        const feat: GeoJSONFeature<GeoJSONGeometry, Record<string, unknown>> = {
             id: this.id,
             type: this.type,
             properties: {
@@ -35,6 +38,8 @@ export default class COT implements Feature {
             },
             geometry: this.geometry
         };
+
+        if (!feat.properties) feat.properties = {};
 
         if (this.properties.fill !== undefined)
             feat.properties.fill = this.properties.fill;

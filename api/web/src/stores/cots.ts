@@ -174,7 +174,7 @@ export const useCOTStore = defineStore('cots', {
 
                 if (this.cots.has(cot.id)) {
                     diff.update.push({
-                        id: render.id,
+                        id: String(render.id),
                         addOrUpdateProperties: Object.keys(render.properties).map((key) => {
                             return { key, value: render.properties[key] }
                         }),
