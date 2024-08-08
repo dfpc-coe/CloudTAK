@@ -470,7 +470,7 @@
 
             <MultipleSelect
                 v-if='select.feats.length'
-                @cot='selectFeat($event)'
+                @selected='selectFeat($event)'
             />
 
             <RadialMenu
@@ -699,9 +699,15 @@ export default {
     },
     methods: {
         ...mapActions(useProfileStore, ['clearNotifications']),
-        selectFeat: function(uid) {
+        selectFeat: function(feat) {
             mapStore.select.feats = [];
-            this.$router.push(`/cot/${uid}`);
+            const source = mapStore.featureSource(feat);
+
+            if (source === 'cot') {
+                this.$router.push(`/cot/${feat.properties.id}`);
+            } else {
+                this.feat = feat;
+            }
         },
         closeAllMenu: function() {
             this.feat = false;

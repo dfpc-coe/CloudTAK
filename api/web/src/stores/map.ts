@@ -334,6 +334,22 @@ export const useMapStore = defineStore('cloudtak', {
                 }]
             }));
         },
+        /**
+         * Determine if the feature is from the CoT store or a clicked VT feature
+         */
+        featureSource: function(feat: MapGeoJSONFeature | Feature): string | void {
+            const clickMap: Map<string, { type: string, id: string }> = new Map();
+            for (const overlay of this.overlays) {
+                for (const c of overlay._clickable) {
+                    clickMap.set(c.id, c);
+                }
+            }
+
+            if (!('layer' in feat)) return;
+            const click = clickMap.get(feat.layer.id);
+            if (!click) return;
+            return click.type;
+        },
         radialClick: async function(feat: MapGeoJSONFeature | Feature, opts: {
             lngLat: LngLat;
             point: Point;
@@ -344,19 +360,7 @@ export const useMapStore = defineStore('cloudtak', {
             // If the call is coming from MultipleSelect, ensure this menu is closed
             this.select.feats = [];
 
-            if (!opts.mode) {
-                const clickMap: Map<string, { type: string, id: string }> = new Map();
-                for (const overlay of this.overlays) {
-                    for (const c of overlay._clickable) {
-                        clickMap.set(c.id, c);
-                    }
-                }
-
-                if (!('layer' in feat)) return;
-                const click = clickMap.get(feat.layer.id);
-                if (!click) return;
-                opts.mode = click.type;
-            }
+            if (!opts.mode) opts.mode = this.featureSource(feat);
 
             if (opts.point.x < 150 || opts.point.y < 150) {
                 const flyTo: mapgl.FlyToOptions = {
