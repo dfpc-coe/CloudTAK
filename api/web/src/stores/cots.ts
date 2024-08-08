@@ -2,10 +2,10 @@
 * CotStore - Store & perform updates on all underlying CoT Features
 */
 
+import COT from './cots/cot.ts'
 import moment from 'moment';
 import { defineStore } from 'pinia'
 import type { GeoJSONSourceDiff } from 'maplibre-gl';
-import pointOnFeature from '@turf/point-on-feature';
 import { std, stdurl } from '../std.ts';
 import type { Feature } from '../types.ts';
 import type { FeatureCollection } from 'geojson';
@@ -20,13 +20,13 @@ type NestedArray = {
 
 export const useCOTStore = defineStore('cots', {
     state: (): {
-        cots: Map<string, Feature>;
+        cots: Map<string, COT>;
         hidden: Set<string>;
 
         // COTs are submitted to pending and picked up by the partial update code every .5s
-        pending: Map<string, Feature>;
+        pending: Map<string, COT>;
         pendingDelete: Set<string>;
-        subscriptions: Map<string, Map<string, Feature>>;
+        subscriptions: Map<string, Map<string, COT>>;
         subscriptionPending: Map<string, string>;
     } => {
         return {
@@ -43,8 +43,8 @@ export const useCOTStore = defineStore('cots', {
          * Iterate over cot messages and return list of CoTs
          * with Video Streams
          */
-        videos: function(): Set<Feature> {
-            const videos: Set<Feature> = new Set();
+        videos: function(): Set<COT> {
+            const videos: Set<COT> = new Set();
             for (const cot of this.cots.values()) {
                 if (cot.properties && cot.properties.video) {
                     videos.add(cot);
@@ -54,7 +54,7 @@ export const useCOTStore = defineStore('cots', {
             return videos;
         },
 
-        subChange: function(task: Feature): void {
+        subChange: function(task: COT): void {
             if (task.properties.type === 't-x-m-c' && task.properties.mission && task.properties.mission.missionChanges) {
                 let updateGuid;
 
@@ -170,7 +170,7 @@ export const useCOTStore = defineStore('cots', {
             return diff;
         },
 
-        paths(store?: Map<string, Feature>): Array<NestedArray> {
+        paths(store?: Map<string, COT>): Array<NestedArray> {
             if (!store) store = this.cots;
 
             const paths = new Set();
@@ -186,7 +186,7 @@ export const useCOTStore = defineStore('cots', {
             });
         },
 
-        markers(store?: Map<string, Feature>): Array<string> {
+        markers(store?: Map<string, COT>): Array<string> {
             if (!store) store = this.cots;
 
             const markers: Set<string> = new Set();
@@ -199,8 +199,8 @@ export const useCOTStore = defineStore('cots', {
             return Array.from(markers);
         },
 
-        markerFeatures(store: Map<string, Feature>, marker: string): Array<Feature> {
-            const feats: Set<Feature> = new Set();
+        markerFeatures(store: Map<string, COT>, marker: string): Array<COT> {
+            const feats: Set<COT> = new Set();
 
             for (const [key, value] of store) {
                 if (value.properties.group) continue;
@@ -214,8 +214,8 @@ export const useCOTStore = defineStore('cots', {
             return Array.from(feats);
         },
 
-        pathFeatures(store: Map<string, Feature>, path: string): Array<Feature> {
-            const feats: Set<Feature> = new Set();
+        pathFeatures(store: Map<string, COT>, path: string): Array<COT> {
+            const feats: Set<COT> = new Set();
 
             for (const [key, value] of store) {
                 if (value.path === path) {
@@ -226,7 +226,7 @@ export const useCOTStore = defineStore('cots', {
             return Array.from(feats);
         },
 
-        groups(store?: Map<string, Feature>): Array<string> {
+        groups(store?: Map<string, COT>): Array<string> {
             if (!store) store = this.cots;
 
             const groups: Set<string> = new Set();
@@ -237,10 +237,10 @@ export const useCOTStore = defineStore('cots', {
             return Array.from(groups);
         },
 
-        contacts(store?: Map<string, Feature>, group?: string): Array<Feature> {
+        contacts(store?: Map<string, COT>, group?: string): Array<COT> {
             if (!store) store = this.cots;
 
-            const contacts: Set<Feature> = new Set();
+            const contacts: Set<COT> = new Set();
             for (const [key, value] of store) {
                 if (value.properties.group) contacts.add(value);
             }
@@ -257,7 +257,7 @@ export const useCOTStore = defineStore('cots', {
             return list;
         },
 
-        async deletePath(path: string, store?: Map<string, Feature>): Promise<void> {
+        async deletePath(path: string, store?: Map<string, COT>): Promise<void> {
             if (!store) store = this.cots;
 
             const url = stdurl('/api/profile/feature')
@@ -274,7 +274,7 @@ export const useCOTStore = defineStore('cots', {
         /**
          * Return a FeatureCollection of a non-default CoT Store
          */
-        collection(store: Map<string, Feature>): FeatureCollection {
+        collection(store: Map<string, COT>): FeatureCollection {
             return {
                 type: 'FeatureCollection',
                 features: Array.from(store.values())
@@ -286,7 +286,7 @@ export const useCOTStore = defineStore('cots', {
          */
         get: function(id: string, opts?: {
             clone: boolean
-        }): Feature | undefined {
+        }): COT | undefined {
             if (opts && opts.clone) {
                 return JSON.parse(JSON.stringify(this.cots.get(id)));
             } else {
@@ -334,107 +334,6 @@ export const useCOTStore = defineStore('cots', {
         },
 
         /**
-         * Consistent feature manipulation between add & update
-         */
-        style: function(feat: Feature): Feature {
-            //Vector Tiles only support integer IDs
-            feat.properties.id = feat.id;
-
-            if (!feat.properties.center) {
-                feat.properties.center = pointOnFeature(feat.geometry).geometry.coordinates;
-            }
-
-            if (!feat.properties.time) feat.properties.time = new Date().toISOString();
-            if (!feat.properties.start) feat.properties.start = new Date().toISOString();
-            if (!feat.properties.stale) feat.properties.stale = moment().add(10, 'minutes').toISOString();
-
-            if (!feat.properties.remarks) {
-                feat.properties.remarks = 'None';
-            }
-
-            if (!feat.properties.how && feat.properties.type.startsWith('u-')) {
-                feat.properties.how = 'h-g-i-g-o';
-            } else if (!feat.properties.how) {
-                feat.properties.how = 'm-p';
-            }
-
-            if (feat.geometry.type.includes('Point')) {
-                if (feat.properties.group) {
-                    feat.properties['icon-opacity'] = 0;
-
-                    if (feat.properties.group.name === 'Yellow') {
-                        feat.properties["marker-color"] = '#f59f00';
-                    } else if (feat.properties.group.name === 'Orange') {
-                        feat.properties["marker-color"] = '#f76707';
-                    } else if (feat.properties.group.name === 'Magenta') {
-                        feat.properties["marker-color"] = '#ea4c89';
-                    } else if (feat.properties.group.name === 'Red') {
-                        feat.properties["marker-color"] = '#d63939';
-                    } else if (feat.properties.group.name === 'Maroon') {
-                        feat.properties["marker-color"] = '#bd081c';
-                    } else if (feat.properties.group.name === 'Purple') {
-                        feat.properties["marker-color"] = '#ae3ec9';
-                    } else if (feat.properties.group.name === 'Dark Blue') {
-                        feat.properties["marker-color"] = '#0054a6';
-                    } else if (feat.properties.group.name === 'Blue') {
-                        feat.properties["marker-color"] = '#4299e1';
-                    } else if (feat.properties.group.name === 'Cyan') {
-                        feat.properties["marker-color"] = '#17a2b8';
-                    } else if (feat.properties.group.name === 'Teal') {
-                        feat.properties["marker-color"] = '#0ca678';
-                    } else if (feat.properties.group.name === 'Green') {
-                        feat.properties["marker-color"] = '#74b816';
-                    } else if (feat.properties.group.name === 'Dark Green') {
-                        feat.properties["marker-color"] = '#2fb344';
-                    } else if (feat.properties.group.name === 'Brown') {
-                        feat.properties["marker-color"] = '#dc4e41';
-                    } else {
-                        feat.properties["marker-color"] = '#ffffff';
-                    }
-
-                } else if (feat.properties.icon) {
-                    // Format of icon needs to change for spritesheet
-                    if (!feat.properties.icon.includes(':')) {
-                        feat.properties.icon = feat.properties.icon.replace('/', ':')
-                    }
-
-                    if (feat.properties.icon.endsWith('.png')) {
-                        feat.properties.icon = feat.properties.icon.replace(/.png$/, '');
-                    }
-
-                    const mapStore = useMapStore();
-                    if (mapStore.map && !mapStore.map.hasImage(feat.properties.icon)) {
-                        console.warn(`No Icon for: ${feat.id}::${feat.properties.icon} fallback to ${feat.properties.type}`);
-                        feat.properties.icon = `${feat.properties.type}`;
-                    }
-                } else {
-                    // TODO Only add icon if one actually exists in the spritejson
-                    if (!['u-d-p'].includes(feat.properties.type)) {
-                        feat.properties.icon = `${feat.properties.type}`;
-                    }
-                }
-            } else if (feat.geometry.type.includes('Line') || feat.geometry.type.includes('Polygon')) {
-                if (!feat.properties['stroke']) feat.properties.stroke = '#d63939';
-                if (!feat.properties['stroke-style']) feat.properties['stroke-style'] = 'solid';
-                if (!feat.properties['stroke-width']) feat.properties['stroke-width'] = 3;
-
-                if (!feat.properties['stroke-opacity'] === undefined) {
-                    feat.properties['stroke-opacity'] = 1;
-                }
-
-                if (feat.geometry.type.includes('Polygon')) {
-                    if (!feat.properties['fill']) feat.properties.fill = '#d63939';
-
-                    if (feat.properties['fill-opacity'] === undefined) {
-                        feat.properties['fill-opacity'] = 1;
-                    }
-                }
-            }
-
-            return feat;
-        },
-
-        /**
          * Add a CoT GeoJSON to the store and modify props to meet MapLibre style requirements
          */
         add: async function(feat: Feature, mission_guid?: string) {
@@ -442,7 +341,7 @@ export const useCOTStore = defineStore('cots', {
                 feat.id = self.crypto.randomUUID();
             }
 
-            feat = this.style(feat);
+            feat = COT.style(feat);
 
             mission_guid = mission_guid || this.subscriptionPending.get(feat.id);
 
