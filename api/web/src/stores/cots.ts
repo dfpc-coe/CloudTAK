@@ -385,16 +385,16 @@ export const useCOTStore = defineStore('cots', {
                 const mapStore = useMapStore();
                 mapStore.updateMissionData(mission_guid);
             } else {
-                let mission_cot = false;
+                let is_mission_cot = false;
                 for (const [key, value] of this.subscriptions) {
                     const mission_cot = value.get(feat.id);
                     if (mission_cot) {
                         mission_cot.update(feat);
-                        mission_cot = true;
+                        is_mission_cot = true;
                     }
                 }
 
-                if (mission_cot) return;
+                if (is_mission_cot) return;
 
                 const exists = this.cots.get(feat.id);
                 if (exists) {
