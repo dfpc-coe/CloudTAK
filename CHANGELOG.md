@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v2.94.0 - 2024-08-08
+
+- :bug: `UI` Route `feat` vs `cot` messages property from Multiple Select Comp.
+- :rocket: add COT container for incoming COTs to serve as a class for functions on a COT
+- :rocket: update the container on COT messages with same UID instead of replacing feature
+- :tada: Add `as_rendered` function to only encode the core properties required for map rendering
+
 ### v2.93.0 - 2024-08-07
 
 - :tada: `API` Add flow log tags to CloudTAK Layer data
