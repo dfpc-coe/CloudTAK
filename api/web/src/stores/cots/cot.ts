@@ -9,6 +9,24 @@ import type {
     Geometry as GeoJSONGeometry,
 } from 'geojson'
 
+export const RENDERED_PROPERTIES = [
+    'callsign',
+    'fill',
+    'fill-opacity',
+    'stroke',
+    'group',
+    'icon',
+    'course',
+    'icon-opacity',
+    'stroke-opacity',
+    'marker-color',
+    'marker-radius',
+    'marker-opacity',
+    'circle-color',
+    'circle-radius',
+    'circle-opacity'
+]
+
 export default class COT implements Feature {
     id: string;
     path: string;
@@ -40,6 +58,8 @@ export default class COT implements Feature {
         };
 
         if (!feat.properties) feat.properties = {};
+
+        
 
         if (this.properties.fill !== undefined)
             feat.properties.fill = this.properties.fill;
