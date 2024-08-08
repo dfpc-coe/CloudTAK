@@ -125,7 +125,7 @@ export const useMapStore = defineStore('cloudtak', {
             if (!oStore) return false
 
             const cotStore = useCOTStore();
-    
+
             const sub = cotStore.subscriptions.get(guid);
             if (!sub) throw new Error('Attempting to update mission which is not subscribed to');
 
