@@ -167,6 +167,33 @@ export const useCOTStore = defineStore('cots', {
                 }
             }
 
+            for (const cot of this.pending.values()) {
+                const render = cot.as_rendered();
+
+                if (this.cots.has(cot.id)) {
+                    diff.update.push({
+                        id: render.id,
+                        addOrUpdateProperties: Object.keys(render.properties).map((key) => {
+                            return { key, value: render.properties[key] }
+                        }),
+                        newGeometry: render.geometry
+                    })
+                } else {
+                    diff.add.push(render);
+                }
+
+                this.cots.set(cot.id, cot);
+            }
+
+            this.pending.clear();
+
+            for (const id of this.pendingDelete) {
+                diff.remove.push(id);
+                this.cots.delete(id);
+            }
+
+            this.pendingDelete.clear();
+
             return diff;
         },
 

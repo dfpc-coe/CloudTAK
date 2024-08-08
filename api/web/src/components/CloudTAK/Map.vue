@@ -837,33 +837,6 @@ export default {
             try {
                 const diff = cotStore.diff();
 
-                for (const cot of cotStore.pending.values()) {
-                    const render = cot.as_rendered();
-
-                    if (cotStore.cots.has(cot.id)) {
-                        diff.update.push({
-                            id: render.id,
-                            addOrUpdateProperties: Object.keys(render.properties).map((key) => {
-                                return { key, value: render.properties[key] }
-                            }),
-                            newGeometry: render.geometry
-                        })
-                    } else {
-                        diff.add.push(render);
-                    }
-
-                    cotStore.cots.set(cot.id, cot);
-                }
-
-                cotStore.pending.clear();
-
-                for (const id of cotStore.pendingDelete) {
-                    diff.remove.push(id);
-                    cotStore.cots.delete(id);
-                }
-
-                cotStore.pendingDelete.clear();
-
                 if (diff.add.length || diff.remove.length || diff.update.length) {
                     mapStore.map.getSource('-1').updateData(diff);
                 }
