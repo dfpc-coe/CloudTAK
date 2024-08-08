@@ -43,6 +43,26 @@ export default class COT implements Feature {
     }
 
     /**
+     * Update the COT and return a boolean as to whether the COT needs to be re-rendered
+     */
+    update(feat: Feature): boolean {
+        let changed = false;
+        for (const prop of RENDERED_PROPERTIES) {
+            if (this.properties[prop] !== feat.properties[prop]) {
+                changed = true;
+                break;
+            }
+        }
+
+        this.properties = feat["properties"];
+
+        //TODO Detect Geometry changes, use centroid?!
+        this.geometry = feat["geometry"];
+
+        return changed;
+    }
+
+    /**
      * The slimmer we can get the Features, the better
      * This returns the minium feature we need to actually style the COT in the vector tiles
      */
@@ -59,7 +79,7 @@ export default class COT implements Feature {
 
         if (!feat.properties) feat.properties = {};
 
-        for (const prop of RENDERED_PROPERTIES) {        
+        for (const prop of RENDERED_PROPERTIES) {
             if (this.properties[prop] !== undefined) {
                 feat.properties[prop] = this.properties[prop];
             }
