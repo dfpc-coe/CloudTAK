@@ -497,7 +497,6 @@ export default {
     },
     props: {
         compact: Boolean,
-        mobileDetected: Boolean
     },
     methods: {
         push: function(path) {

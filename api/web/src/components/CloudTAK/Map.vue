@@ -457,8 +457,14 @@
             </div>
 
             <SideMenu
-                v-if='isLoaded && !pointInput'
-                :mobile='mobileDetected'
+                v-if='
+                    isLoaded
+                    && !pointInput
+                    && (
+                        (noMenuShown && !mobileDetected)
+                        || (!noMenuShown)
+                    )
+                '
                 :compact='noMenuShown'
             />
 
@@ -566,8 +572,8 @@ export default {
           //TODO: This needs to follow something like:
           // https://stackoverflow.com/questions/47219272/how-can-i-monitor-changing-window-sizes-in-vue
           return (
-            ( window.innerWidth <= 800 )
-            && ( window.innerHeight <= 800 )
+            ( this.width <= 800 )
+            || ( this.height <= 800 )
           );
         },
         humanBearing: function() {
@@ -608,6 +614,11 @@ export default {
             this.$emit('err', new Error(evt.message));
         });
 
+        window.addEventListener('resize', (evt) => {
+            this.height = window.innerHeight;
+            this.width = window.innerWidth;
+        });
+
         await this.mountMap();
 
         await Promise.all([
@@ -646,6 +657,8 @@ export default {
     data: function() {
         return {
             mode: 'Default',
+            height: window.innerHeight,
+            width: window.innerWidth,
             warnChannels: false,        // Show a popup if no channels are selected on load
             search: {
                 shown: false,
