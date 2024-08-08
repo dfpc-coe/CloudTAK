@@ -12,7 +12,14 @@
 
 ### Pending Release
 
-### v2.92.1 - 2024-08-06
+### v2.93.0 - 2024-08-07
+
+- :tada: `API` Add flow log tags to CloudTAK Layer data
+- :tada: `UI` Use Lng/Lat in Coordinate boxes
+- :rocket: `UI` Add PWA logo and safari settings
+- :rocket: Start adding alt text and roles to buttons
+
+### v2.92.1 - 2024-08-07
 
 - :bug: `UI` Fix scrolling on backend
 
