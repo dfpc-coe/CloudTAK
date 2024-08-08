@@ -122,6 +122,8 @@ export const useCOTStore = defineStore('cots', {
             const display_stale = profileStore.profile ? profileStore.profile.display_stale : 'Immediate';
 
             for (const cot of this.cots.values()) {
+                const render = cot.as_rendered();
+
                 if (this.hidden.has(String(cot.id))) {
                     diff.remove.push(String(cot.id))
                 } else if (
@@ -144,24 +146,24 @@ export const useCOTStore = defineStore('cots', {
                         if (!['Point', 'Polygon', 'LineString'].includes(cot.geometry.type)) continue;
 
                         diff.update.push({
-                            id: String(cot.id),
-                            addOrUpdateProperties: Object.keys(cot.properties).map((key) => {
-                                return { key, value: cot.properties ? cot.properties[key] : '' }
+                            id: String(render.id),
+                            addOrUpdateProperties: Object.keys(render.properties).map((key) => {
+                                return { key, value: render.properties ? render.properties[key] : '' }
                             }),
-                            newGeometry: cot.geometry
+                            newGeometry: render.geometry
                         })
                     } else if (!now.isBefore(moment(cot.properties.stale)) && (cot.properties['icon-opacity'] !== 0.5 || cot.properties['marker-opacity'] !== 127)) {
-                        cot.properties['icon-opacity'] = 0.5;
-                        cot.properties['marker-opacity'] = 0.5;
+                        render.properties['icon-opacity'] = 0.5;
+                        render.properties['marker-opacity'] = 0.5;
 
-                        if (!['Point', 'Polygon', 'LineString'].includes(cot.geometry.type)) continue;
+                        if (!['Point', 'Polygon', 'LineString'].includes(render.geometry.type)) continue;
 
                         diff.update.push({
-                            id: String(cot.id),
-                            addOrUpdateProperties: Object.keys(cot.properties).map((key) => {
-                                return { key, value: cot.properties ? cot.properties[key] : '' }
+                            id: String(render.id),
+                            addOrUpdateProperties: Object.keys(render.properties).map((key) => {
+                                return { key, value: cot.properties ? render.properties[key] : '' }
                             }),
-                            newGeometry: cot.geometry
+                            newGeometry: render.geometry
                         })
                     }
                 }
@@ -364,10 +366,6 @@ export const useCOTStore = defineStore('cots', {
          * Add a CoT GeoJSON to the store and modify props to meet MapLibre style requirements
          */
         add: async function(feat: Feature, mission_guid?: string) {
-            if (!feat.id && !feat.properties.id) {
-                feat.id = self.crypto.randomUUID();
-            }
-
             feat = COT.style(feat);
 
             const cot = new COT(feat);
