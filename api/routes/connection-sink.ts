@@ -107,6 +107,7 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.Optional(Default.NameField),
             type: Type.Optional(Type.String()),
             logging: Type.Optional(Type.Boolean()),
+            enabled: Type.Optional(Type.Boolean()),
         }),
         res: ConnectionSinkResponse
     }, async (req, res) => {
