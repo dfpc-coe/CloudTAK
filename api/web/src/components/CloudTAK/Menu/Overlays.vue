@@ -146,6 +146,10 @@
                                 v-if='overlay.type === "geojson" && overlay.id === -1'
                                 :element='overlay'
                             />
+                            <TreeMission
+                                v-if='overlay.mode === "mission"'
+                                :overlay='overlay'
+                            />
                             <TreeVector
                                 v-if='overlay.type === "vector"'
                                 :overlay='overlay'
@@ -167,6 +171,7 @@ import {
 } from '@tak-ps/vue-tabler';
 import TreeCots from './Overlays/TreeCots.vue';
 import TreeVector from './Overlays/TreeVector.vue';
+import TreeMission from './Overlays/TreeMission.vue';
 import {
     IconGripVertical,
     IconChevronRight,
@@ -267,6 +272,7 @@ export default {
         MenuTemplate,
         TreeCots,
         TreeVector,
+        TreeMission,
         TablerRange,
         TablerLoading,
         TablerDelete,
