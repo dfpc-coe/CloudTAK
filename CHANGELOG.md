@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v2.97.0 - 2024-08-09
+
+- :rocket: `UI` Show COT Type as a human readable value
+- :rocket: `UI` Show X button instead of back on menus that will close to the map
+
 ### v2.96.0 - 2024-08-09
 
 - :rocket: `UI` Add a Mission Tree to Overlay panel
