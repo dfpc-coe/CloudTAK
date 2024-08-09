@@ -5,7 +5,6 @@
 import { defineStore } from 'pinia'
 import pointOnFeature from '@turf/point-on-feature';
 import { std, stdurl } from '../std.ts';
-import moment from 'moment';
 import type { Feature } from '../types.ts';
 import { useCOTStore } from './cots.ts';
 import { useProfileStore } from './profile.ts';
