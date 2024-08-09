@@ -32,6 +32,7 @@
                     <div class='ms-3'>
                         <Feature
                             v-for='cot of markerFeatures(marker)'
+                            :mission='overlay.mode_id'
                             :key='cot.id'
                             :feature='cot'
                         />

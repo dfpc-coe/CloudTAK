@@ -67,6 +67,9 @@ export default {
             type: Object,
             required: true
         },
+        mission: {
+            type: String,
+        },
         hover: {
             type: Boolean,
             default: true
@@ -78,7 +81,13 @@ export default {
     },
     computed: {
         isZoomable: function() {
-            return cotStore.cots.has(this.feature.id);
+            if (this.mission) {
+                const cots = cotStore.subscriptions.get(this.mission)
+                if (!cots) return false;
+                return cots.has(this.feature.id);
+            } else {
+                return cotStore.cots.has(this.feature.id);
+            }
         },
     },
     methods: {
@@ -88,9 +97,18 @@ export default {
         flyTo: function() {
             if (!this.isZoomable) return;
 
+            let center;
+            if (this.mission) {
+                const cots = cotStore.subscriptions.get(this.mission)
+                if (!cots) return false;
+                center = cots.get(this.feature.id).properties.center;
+            } else {
+                center = cotStore.cots.get(this.feature.id).properties.center;
+            }
+
             const flyTo = {
                 speed: Infinity,
-                center: cotStore.cots.get(this.feature.id).properties.center,
+                center,
                 zoom: 16
             };
 
