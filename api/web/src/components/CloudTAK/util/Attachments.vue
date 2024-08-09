@@ -132,6 +132,8 @@ export default {
             this.loading = true;
             if (this.attachments.length) {
                 await this.fetchMetadata();
+            } else {
+                this.files = [];
             }
 
             this.loading = false;
