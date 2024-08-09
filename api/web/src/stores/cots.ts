@@ -3,7 +3,6 @@
 */
 
 import COT from './cots/cot.ts'
-import moment from 'moment';
 import { defineStore } from 'pinia'
 import type { GeoJSONSourceDiff } from 'maplibre-gl';
 import { std, stdurl } from '../std.ts';
@@ -97,7 +96,7 @@ export const useCOTStore = defineStore('cots', {
          * Load Latest CoTs from Mission Sync
          */
         loadMission: async function(guid: string): Promise<FeatureCollection> {
-            const fc = await std(`/api/marti/missions/${encodeURIComponent(guid)}/cot`);
+            const fc = await std('/api/marti/missions/' + encodeURIComponent(guid) + '/cot');
             for (const feat of fc.features) this.add(feat, guid);
 
             let sub = this.subscriptions.get(guid)
@@ -113,7 +112,7 @@ export const useCOTStore = defineStore('cots', {
          * Generate a GeoJSONDiff on existing COT Features
          */
         diff: function(): GeoJSONSourceDiff {
-            const now = moment();
+            const now = +new Date();
             const diff: GeoJSONSourceDiff = {};
             diff.add = [];
             diff.remove = [];
@@ -123,23 +122,24 @@ export const useCOTStore = defineStore('cots', {
 
             for (const cot of this.cots.values()) {
                 const render = cot.as_rendered();
+                const stale = new Date(cot.properties.stale).getTime();
 
                 if (this.hidden.has(String(cot.id))) {
+                    // TODO check if hidden already
                     diff.remove.push(String(cot.id))
                 } else if (
-                    display_stale === 'Immediate'
+                    !['Never'].includes(display_stale)
                     && !cot.properties.archived
-                    && now.isAfter(cot.properties.stale)
-                ) {
-                    diff.remove.push(String(cot.id));
-                } else if (
-                    !['Never', 'Immediate'].includes(display_stale)
-                    && !cot.properties.archived
-                    && !now.isBefore(moment(cot.properties.stale).add(...display_stale.split(' ')))
+                    && (
+                        display_stale === 'Immediate'       && now > stale
+                        || display_stale === '10 Minutes'   && now > stale + 600000
+                        || display_stale === '30 Minutes'   && now > stale + 600000 * 3
+                        || display_stale === '1 Hour'       && now > stale + 600000 * 6
+                    )
                 ) {
                     diff.remove.push(String(cot.id))
                 } else if (!cot.properties.archived) {
-                    if (now.isBefore(moment(cot.properties.stale)) && (cot.properties['icon-opacity'] !== 1 || cot.properties['marker-opacity'] !== 1)) {
+                    if (now < stale && (cot.properties['icon-opacity'] !== 1 || cot.properties['marker-opacity'] !== 1)) {
                         cot.properties['icon-opacity'] = 1;
                         cot.properties['marker-opacity'] = 1;
 
@@ -152,7 +152,7 @@ export const useCOTStore = defineStore('cots', {
                             }),
                             newGeometry: render.geometry
                         })
-                    } else if (!now.isBefore(moment(cot.properties.stale)) && (cot.properties['icon-opacity'] !== 0.5 || cot.properties['marker-opacity'] !== 127)) {
+                    } else if (now > stale && (cot.properties['icon-opacity'] !== 0.5 || cot.properties['marker-opacity'] !== 127)) {
                         render.properties['icon-opacity'] = 0.5;
                         render.properties['marker-opacity'] = 0.5;
 
