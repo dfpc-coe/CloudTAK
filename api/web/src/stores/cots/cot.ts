@@ -1,7 +1,6 @@
 import { Type } from '@sinclair/typebox';
 import { useMapStore } from '../map.ts';
 import pointOnFeature from '@turf/point-on-feature';
-import moment from 'moment';
 import type { Static } from '@sinclair/typebox';
 import type { Feature } from './../../types.ts'
 import type {
@@ -98,7 +97,11 @@ export default class COT implements Feature {
 
         if (!feat.properties.time) feat.properties.time = new Date().toISOString();
         if (!feat.properties.start) feat.properties.start = new Date().toISOString();
-        if (!feat.properties.stale) feat.properties.stale = moment().add(10, 'minutes').toISOString();
+        if (!feat.properties.stale) {
+            const currentTime = new Date();
+            currentTime.setMinutes(currentTime.getMinutes() + 10);
+            feat.properties.stale = currentTime.toISOString();
+        }
 
         if (!feat.properties.remarks) {
             feat.properties.remarks = 'None';
