@@ -1,5 +1,5 @@
 <template>
-    <div class='page page-center'>
+    <div class='page page-center' style='overflow: auto;'>
         <div class='container container-normal py-4'>
             <div class='row align-items-center g-4'>
                 <div class='col-lg'>
