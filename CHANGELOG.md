@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.95.0 - 2024-08-08
+
+- :bug: `UI` Significant perf improvement in rendering large number of features by dropping moment in favour of native dates
+
 ### v2.94.0 - 2024-08-08
 
 - :bug: `UI` Route `feat` vs `cot` messages property from Multiple Select Comp.
