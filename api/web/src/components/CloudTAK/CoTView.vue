@@ -51,7 +51,7 @@
                         <div>
                             <span
                                 class='subheader'
-                                v-text='feat.properties.type'
+                                v-text='type ? type.full : feat.properties.type'
                             />
                             <span
                                 class='subheader ms-auto'
@@ -314,6 +314,7 @@ import {
     IconBattery3,
     IconBattery4
 } from '@tabler/icons-vue';
+import { std } from '/src/std.ts';
 import { useCOTStore } from '/src/stores/cots.ts';
 const cotStore = useCOTStore();
 import { useProfileStore } from '/src/stores/profile.ts';
@@ -325,6 +326,7 @@ export default {
 
         return {
             feat,
+            type: null,
             mode: 'default',
             icon: null
         }
@@ -338,7 +340,13 @@ export default {
             deep: true,
             handler: async function() {
                 await this.updateStyle();
+                await this.fetchType();
             }
+        }
+    },
+    mounted: async function() {
+        if (this.feat) {
+            await this.fetchType();
         }
     },
     unmounted: async function() {
@@ -364,6 +372,9 @@ export default {
         }
     },
     methods: {
+        fetchType: async function() {
+            this.type = await std(`/api/type/cot/${this.feat.properties.type}`)
+        },
         addAttachment: function(hash) {
             if (!this.feat.properties.attachments) {
                 this.feat.properties.attachments = [];
