@@ -97,23 +97,36 @@ export default {
         flyTo: function() {
             if (!this.isZoomable) return;
 
-            let center;
+            let cot;
             if (this.mission) {
                 const cots = cotStore.subscriptions.get(this.mission)
                 if (!cots) return false;
-                center = cots.get(this.feature.id).properties.center;
+                cot = cots.get(this.feature.id);
             } else {
-                center = cotStore.cots.get(this.feature.id).properties.center;
+                cot = cotStore.cots.get(this.feature.id);
             }
 
-            const flyTo = {
-                speed: Infinity,
-                center,
-                zoom: 16
-            };
+            if (cot.geometry.type === "Point") {
+                const flyTo = {
+                    speed: Infinity,
+                    center: cot.properties.center,
+                    zoom: 14
+                };
 
-            if (mapStore.map.getZoom() < 3) flyTo.zoom = 4;
-            mapStore.map.flyTo(flyTo)
+                if (mapStore.map.getZoom() < 3) flyTo.zoom = 4;
+                mapStore.map.flyTo(flyTo)
+            } else {
+                mapStore.map.fitBounds(cot.bounds(), {
+                    maxZoom: 14,
+                    padding: {
+                        top: 20,
+                        bottom: 20,
+                        left: 20,
+                        right: 20
+                    },
+                    speed: Infinity,
+                })
+            }
         },
     }
 }
