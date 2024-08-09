@@ -349,9 +349,6 @@ export default {
             await this.fetchType();
         }
     },
-    unmounted: async function() {
-        if (this.feat) await cotStore.add(this.feat);
-    },
     computed: {
         ...mapState(useProfileStore, ['profile']),
         isUserDrawn: function() {
@@ -403,10 +400,27 @@ export default {
             this.$router.push('/');
         },
         zoomTo: function() {
-            mapStore.map.flyTo({
-                center: this.center,
-                zoom: 14
-            })
+            if (this.feat.geometry.type === "Point") {
+                const flyTo = {
+                    speed: Infinity,
+                    center: this.feat.properties.center,
+                    zoom: 14
+                };
+
+                if (mapStore.map.getZoom() < 3) flyTo.zoom = 4;
+                mapStore.map.flyTo(flyTo)
+            } else {
+                mapStore.map.fitBounds(this.feat.bounds(), {
+                    maxZoom: 14,
+                    padding: {
+                        top: 20,
+                        bottom: 20,
+                        left: 20,
+                        right: 20
+                    },
+                    speed: Infinity,
+                })
+            }
         }
     },
     components: {
