@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.95.1 - 2024-08-08
+
+- :rocket: `UI` Get rid of `moment` entirely
+
 ### v2.95.0 - 2024-08-08
 
 - :bug: `UI` Significant perf improvement in rendering large number of features by dropping moment in favour of native dates
