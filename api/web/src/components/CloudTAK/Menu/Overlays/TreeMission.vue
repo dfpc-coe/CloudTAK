@@ -32,8 +32,8 @@
                     <div class='ms-3'>
                         <Feature
                             v-for='cot of markerFeatures(marker)'
-                            :mission='overlay.mode_id'
                             :key='cot.id'
+                            :mission='overlay.mode_id'
                             :feature='cot'
                         />
                     </div>
@@ -45,13 +45,10 @@
 
 <script>
 import {
-    TablerDelete,
     TablerLoading,
 } from '@tak-ps/vue-tabler';
 import Feature from '../../util/Feature.vue';
-import { std, stdurl } from  '/src/std.ts'
 import {
-    IconMapPin,
     IconChevronRight,
     IconChevronDown,
     IconFolder,
@@ -64,8 +61,6 @@ export default {
     components: {
         Feature,
         TablerLoading,
-        TablerDelete,
-        IconMapPin,
         IconChevronRight,
         IconChevronDown,
         IconFolder,
