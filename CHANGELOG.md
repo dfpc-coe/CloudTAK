@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.96.0 - 2024-08-09
+
+- :rocket: `UI` Add a Mission Tree to Overlay panel
+
 ### v2.95.1 - 2024-08-08
 
 - :rocket: `UI` Get rid of `moment` entirely
