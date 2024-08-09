@@ -8,8 +8,15 @@
             }'
         >
             <div class='modal-header px-0 mx-2'>
+                <IconCircleX
+                    v-if='backType === "close"'
+                    :size='32'
+                    :stroke='1'
+                    class='cursor-pointer'
+                    @click='$router.push("/")'
+                />
                 <IconCircleArrowLeft
-                    v-if='back'
+                    v-if='backType === "back"'
                     :size='32'
                     :stroke='1'
                     class='cursor-pointer'
@@ -47,6 +54,7 @@
 
 <script>
 import {
+    IconCircleX,
     IconCircleArrowLeft,
 } from '@tabler/icons-vue'
 import {
@@ -59,6 +67,7 @@ export default {
     components: {
         TablerNone,
         TablerLoading,
+        IconCircleX,
         IconCircleArrowLeft,
     },
     props: {
@@ -81,6 +90,20 @@ export default {
         none: {
             type: Boolean,
             default: false,
+        }
+    },
+    computed: {
+        backType: function() {
+            if (!this.back) return "none";
+
+            if (
+                !this.$router.options.history.state.back
+                || this.$router.options.history.state.back === '/'
+            ) {
+                return 'close'
+            } else {
+                return 'back'
+            }
         }
     }
 }
