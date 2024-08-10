@@ -97,7 +97,7 @@ export const DetachContentsInput = Type.Object({
     uid: Type.Optional(Type.String())
 });
 
-export const ChangesInput = Type.Object({
+export const MissionChangesInput = Type.Object({
     secago: Type.Optional(Type.Integer()),
     start: Type.Optional(Type.String()),
     end: Type.Optional(Type.String()),
@@ -125,7 +125,7 @@ export const SubscribeInput = Type.Object({
     end: Type.Optional(Type.String())
 })
 
-export const DeleteInput = Type.Object({
+export const MissionDeleteInput = Type.Object({
     creatorUid: Type.Optional(Type.String()),
     deepDelete: Type.Optional(Type.Boolean())
 })
@@ -145,13 +145,13 @@ export const SetRoleInput = Type.Object({
     role: MissionRole
 });
 
-export const ListInput = Type.Object({
+export const MissionListInput = Type.Object({
     passwordProtected: Type.Optional(Type.Boolean()),
     defaultRole: Type.Optional(Type.Boolean()),
     tool: Type.Optional(Type.String())
 });
 
-export const CreateInput = Type.Object({
+export const MissionCreateInput = Type.Object({
     group: Type.Optional(Type.Union([Type.Array(Type.String()), Type.String()])),
     creatorUid: Type.String(),
     description: Type.Optional(Type.String({ default: '' })),
@@ -206,7 +206,7 @@ export default class {
      */
     async changes(
         name: string,
-        query: Static<typeof ChangesInput>,
+        query: Static<typeof MissionChangesInput>,
         opts?: Static<typeof MissionOptions>
     ): Promise<TAKList<Static<typeof MissionChange>>> {
         if (this.#isGUID(name)) name = (await this.getGuid(name, {})).name;
@@ -594,7 +594,7 @@ export default class {
      */
     async create(
         name: string,
-        query: Static<typeof CreateInput>
+        query: Static<typeof MissionCreateInput>
     ): Promise<Static<typeof Mission>> {
         const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}`, this.api.url);
 
@@ -617,7 +617,7 @@ export default class {
      */
     async delete(
         name: string,
-        query: Static<typeof DeleteInput>,
+        query: Static<typeof MissionDeleteInput>,
         opts?: Static<typeof MissionOptions>
     ) {
         const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}`, this.api.url);
