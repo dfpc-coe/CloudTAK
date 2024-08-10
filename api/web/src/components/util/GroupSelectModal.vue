@@ -17,7 +17,7 @@
 
         <GroupSelect
             :modelValue='modelValue'
-            @update:modelValue='$emit("update:modelValue")'
+            @update:modelValue='$emit("update:modelValue", $event)'
             :disabled='disabled'
             :button='button'
             :connection='connection'
