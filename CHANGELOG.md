@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.98.0 - 2024-08-09
+
+- :rocket: `UI` Use fitBounds where appropriate
+
 ### v2.97.0 - 2024-08-09
 
 - :rocket: `UI` Show COT Type as a human readable value
