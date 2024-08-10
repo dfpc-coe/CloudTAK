@@ -40,13 +40,26 @@
 
         <div
             v-else
-            class='rows'
+            class='rows px-2'
         >
             <div
                 v-for='log in mission.logs'
                 :key='log.id'
                 class='col-12'
             >
+                <div class='col-12 position-relative'>
+                    <IconTrash
+                        v-if='role.permissions.includes("MISSION_WRITE")'
+                        :size='32'
+                        :stroke='1'
+                        class='position-absolute cursor-pointer end-0 mx-2 my-2'
+                        @click='deleteLog(log)'
+                    />
+                    <pre
+                        v-text='log.content || "None"'
+                        class='rounded mb-1'
+                    />
+                </div>
                 <div class='d-flex'>
                     <label
                         class='subheader'
@@ -56,16 +69,6 @@
                         class='subheader ms-auto'
                         v-text='log.created'
                     />
-                </div>
-                <div class='col-12 position-relative'>
-                    <IconTrash
-                        v-if='role.permissions.includes("MISSION_WRITE")'
-                        :size='32'
-                        :stroke='1'
-                        class='position-absolute cursor-pointer end-0 mx-2 my-2'
-                        @click='deleteLog(log)'
-                    />
-                    <pre v-text='log.content || "None"' />
                 </div>
             </div>
         </div>
