@@ -12,7 +12,7 @@ export default defineConfig((configEnv) => ({
                 name: 'CloudTAK',
                 short_name: 'CloudTAK',
                 description: 'Cloud powered in-browser TAK Client',
-                theme_color: '#ffffff',
+                theme_color: '#000000',
                 icons
             },
             devOptions: {
