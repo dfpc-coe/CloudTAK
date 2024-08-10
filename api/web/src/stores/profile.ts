@@ -1,3 +1,4 @@
+import type { Feature } from 'geojson';
 import { defineStore } from 'pinia'
 import { std, stdurl } from '../std.ts';
 import type { Profile, Profile_Update } from '../types.ts';
@@ -45,7 +46,7 @@ export const useProfileStore = defineStore('profile', {
                 body
             })
         },
-        CoT: function() {
+        CoT: function(feat: Feature) {
             if (!this.profile) throw new Error('Profile must be loaded before CoT is called');
 
             return {
@@ -73,7 +74,7 @@ export const useProfileStore = defineStore('profile', {
                         version: '1.0.0'
                     }
                 },
-                geometry: this.profile.tak_loc
+                geometry: feat ? feat.geometry : this.profile.tak_loc
             }
         },
     }

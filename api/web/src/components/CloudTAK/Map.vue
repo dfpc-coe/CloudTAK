@@ -143,7 +143,7 @@
                     :size='40'
                     :stroke='1'
                     class='cursor-pointer hover-button'
-                    @click='getLocation'
+                    @click='getLocation(true)'
                 />
                 <IconLockAccess
                     v-else-if='!radial.cot'
@@ -671,12 +671,14 @@ export default {
             feat: null,         // Show the Feat Viewer sidebar
             locked: [],         // Lock the map view to a given CoT - The last element is the currently locked value
                                 //   this is an array so that things like the radial menu can temporarily lock state but remember the previous lock value when they are closed
+            live_loc: false,
             upload: {
                 shown: false,
                 dragging: false
             },
-            timer: null,        // Interval for pushing GeoJSON Map Updates (CoT)
-            timerSelf: null,    // Interval for pushing your location to the server
+            timer: null,            // Interval for pushing GeoJSON Map Updates (CoT)
+            timerSelf: null,        // Interval for pushing your location to the server
+            timerSelfUpdate: null,  // Interval for updating actual GPS location
             loading: {
                 // Any Loading related states
                 main: true
@@ -687,6 +689,7 @@ export default {
     beforeUnmount: function() {
         if (this.timer) window.clearInterval(this.timer);
         if (this.timerSelf) window.clearInterval(this.timerSelf);
+        if (this.timerSelfUpdate) window.clearInterval(this.timerSelfUpdate);
         if (connectionStore.ws) connectionStore.ws.close();
 
         if (mapStore.map) {
@@ -719,11 +722,19 @@ export default {
             mapStore.radial.cot = null;
         },
         toLocation: function() {
-            if (!profileStore.profile.tak_loc) throw new Error('No Location Set');
-            mapStore.map.flyTo({
-                center: profileStore.profile.tak_loc.coordinates,
-                zoom: 14
-            });
+            if (this.live_loc) {
+                mapStore.map.flyTo({
+                    center: this.live_loc.geometry.coordinates,
+                    zoom: 14
+                });
+            } else if (!profileStore.profile.tak_loc) {
+                throw new Error('No Location Set');
+            } else {
+                mapStore.map.flyTo({
+                    center: profileStore.profile.tak_loc.coordinates,
+                    zoom: 14
+                });
+            }
         },
         setLocation: function() {
             this.mode = 'SetLocation';
@@ -732,7 +743,10 @@ export default {
                 mapStore.map.getCanvas().style.cursor = ''
                 this.mode = 'Default';
                 await profileStore.update({
-                    tak_loc: { type: 'Point', coordinates: [e.lngLat.lng, e.lngLat.lat] }
+                    tak_loc: {
+                        type: 'Point',
+                        coordinates: [e.lngLat.lng, e.lngLat.lat]
+                    }
                 })
                 this.setYou();
             });
@@ -777,20 +791,40 @@ export default {
         getZoom: function() {
             return mapStore.map.getZoom();
         },
-        getLocation: function() {
-            if (!("geolocation" in navigator)) throw new Error('GeoLocation is not available in this browser');
+        getLocation: function(flyTo = false) {
+            if (flyTo && !("geolocation" in navigator)) {
+                throw new Error('GeoLocation is not available in this browser');
+            } else if (!("geolocation" in navigator)) {
+                return;
+            }
 
             navigator.geolocation.getCurrentPosition(
                 (position) => {
-                    mapStore.map.flyTo({
-                        center: [position.coords.longitude, position.coords.latitude],
-                        zoom: 14
-                    });
-                },
-                (err) => {
+                    if (flyTo) {
+                        mapStore.map.flyTo({
+                            center: [position.coords.longitude, position.coords.latitude],
+                            zoom: 14
+                        });
+                    } else {
+                        this.live_loc = {
+                            type: 'Feature',
+                            properties: {
+                                accuracy: position.coords.accuracy
+                            },
+                            geometry: {
+                                type: 'Point',
+                                coordinates: [
+                                    position.coords.longitude,
+                                    position.coords.latitude
+                                ],
+                            }
+                        }
+
+                        this.setYou(this.live_loc);
+                    }
+                }, (err) => {
                     console.error(err);
-                },
-                {
+                },{
                     maximumAge: 300000,
                     enableHighAccuracy: true
                 }
@@ -885,16 +919,26 @@ export default {
                 console.error(err);
             }
         },
-        setYou: function() {
-            if (profileStore.profile.tak_loc) {
+        setYou: function(feat) {
+            if (!feat && profileStore.profile.tak_loc) {
                 connectionStore.sendCOT(profileStore.CoT());
+
                 mapStore.map.getSource('0').setData({
                     type: 'FeatureCollection',
                     features: [{
                         type: 'Feature',
-                        properties: {},
+                        properties: {
+                            accuracy: 10
+                        },
                         geometry: profileStore.profile.tak_loc
                     }]
+                });
+            } else if (feat) {
+                connectionStore.sendCOT(profileStore.CoT(feat));
+
+                mapStore.map.getSource('0').setData({
+                    type: 'FeatureCollection',
+                    features: [feat]
                 });
             }
         },
@@ -969,10 +1013,16 @@ export default {
                 });
 
                 this.timerSelf = window.setInterval(() => {
-                    if (profileStore.profile.tak_loc) {
+                    if (this.live_loc) {
+                        connectionStore.sendCOT(profileStore.CoT(this.live_loc))
+                    } else if (profileStore.profile.tak_loc) {
                         connectionStore.sendCOT(profileStore.CoT());
                     }
                 }, 2000);
+
+                this.timerSelfUpdate = window.setInterval(() => {
+                    this.getLocation(false);
+                }, 5000);
 
                 this.timer = window.setInterval(async () => {
                     if (!mapStore.map) return;
