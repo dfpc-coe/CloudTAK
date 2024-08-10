@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.99.0 - 2024-08-10
+
+- :rocket: `UI` PWA now supports live location while on the move
+
 ### v2.98.0 - 2024-08-09
 
 - :rocket: `UI` Use fitBounds where appropriate
