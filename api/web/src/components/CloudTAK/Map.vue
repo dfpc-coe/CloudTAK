@@ -780,12 +780,21 @@ export default {
         getLocation: function() {
             if (!("geolocation" in navigator)) throw new Error('GeoLocation is not available in this browser');
 
-            navigator.geolocation.getCurrentPosition((position) => {
-                mapStore.map.flyTo({
-                    center: [position.coords.longitude, position.coords.latitude],
-                    zoom: 14
-                });
-            });
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    mapStore.map.flyTo({
+                        center: [position.coords.longitude, position.coords.latitude],
+                        zoom: 14
+                    });
+                },
+                (err) => {
+                    console.error(err);
+                },
+                {
+                    maximumAge: 300000,
+                    enableHighAccuracy: true
+                }
+            );
         },
         startDraw: function(type) {
             mapStore.draw.start();
