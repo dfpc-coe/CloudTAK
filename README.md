@@ -75,6 +75,19 @@ npm install
 npx deploy create etl-tasks
 ```
 
+### S3 Bucket Contents
+
+An S3 bucket will be created as part of the CloudFormatiom stack that contains geospatial assets
+related to user files, missions, CoTs, etc. The following table is an overview of the prefixes
+in the bucket and their purpose
+
+| Prefix | Description |
+| ------ | ----------- |
+| `attachment/{sha256}/{file.ext}`  | |
+| `data/{data sync id}/{file.ext}`  | |
+| `import/{UUID}/{file.ext}`        | |
+| `profile/{email}/{file.ext}`      | |
+
 ### ETL Deployment
 
 From the root directory, install the deploy dependencies
