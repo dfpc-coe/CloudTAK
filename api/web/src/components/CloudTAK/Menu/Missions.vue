@@ -105,7 +105,6 @@
         />
         <MissionCreate
             @mission='$router.push(`/menu/missions/${$event.guid}`)'
-            @chat='$emit("chat", $event)'
             @close='create = false'
         />
     </TablerModal>

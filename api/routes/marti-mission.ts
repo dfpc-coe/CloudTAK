@@ -4,7 +4,14 @@ import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import { GenericMartiResponse } from '../lib/types.js';
-import { MissionRole, Mission, ChangesInput, ListInput, DeleteInput } from '../lib/api/mission.js';
+import {
+    MissionRole,
+    Mission,
+    MissionChangesInput,
+    MissionListInput,
+    MissionDeleteInput,
+    MissionCreateInput
+} from '../lib/api/mission.js';
 import TAKAPI, {
     APIAuthCertificate,
 } from '../lib/tak-api.js';
@@ -79,7 +86,7 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.String(),
         }),
         description: 'Helper API to get mission changes',
-        query: ChangesInput,
+        query: MissionChangesInput,
         res: GenericMartiResponse
     }, async (req, res) => {
         try {
@@ -106,7 +113,7 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.String(),
         }),
         description: 'Helper API to delete a single mission',
-        query: DeleteInput,
+        query: MissionDeleteInput,
         res: GenericMartiResponse
     }, async (req, res) => {
         try {
@@ -132,23 +139,7 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.String(),
         }),
         description: 'Helper API to create a mission',
-        query: Type.Object({
-            creatorUid: Type.Optional(Type.String()),
-            group: Type.Optional(Type.String()),
-            description: Type.Optional(Type.String()),
-            chatRoom: Type.Optional(Type.String()),
-            baseLayer: Type.Optional(Type.String()),
-            bbox: Type.Optional(Type.String()),
-            boundingPolygon: Type.Optional(Type.String()),
-            path: Type.Optional(Type.String()),
-            classification: Type.Optional(Type.String()),
-            tool: Type.Optional(Type.String()),
-            password: Type.Optional(Type.String()),
-            defaultRole: Type.Optional(Type.String()),
-            expiration: Type.Optional(Type.Integer()),
-            inviteOnly: Type.Optional(Type.Boolean()),
-            allowDupe: Type.Optional(Type.Boolean()),
-        }),
+        body: Type.Omit(MissionCreateInput, ['creatorUid', 'ownerRole']),
         res: Mission
     }, async (req, res) => {
         try {
@@ -157,10 +148,7 @@ export default async function router(schema: Schema, config: Config) {
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
             const mission = await api.Mission.create(req.params.name, {
-                ...req.query,
-                group: req.query.group ? req.query.group.split(',') : req.query.group,
-                // @ts-expect-error Handle string or string[]
-                bbox: req.query.bbox ? req.query.bbox.split(',') : req.query.bbox,
+                ...req.body,
                 creatorUid: user.email
             });
 
@@ -174,7 +162,7 @@ export default async function router(schema: Schema, config: Config) {
         name: 'List Missions',
         group: 'MartiMissions',
         description: 'Helper API to list missions',
-        query: ListInput,
+        query: MissionListInput,
         res: GenericMartiResponse
     }, async (req, res) => {
         try {

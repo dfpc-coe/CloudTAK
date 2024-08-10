@@ -133,7 +133,6 @@
         <GroupSelect
             v-if='modal.groups'
             v-model='mission.groups'
-            :connection='connection'
             @close='modal.groups = false'
         />
     </div>
@@ -172,11 +171,6 @@ export default {
         IconLock,
         IconLockOpen
     },
-    props: {
-        connection: {
-            type: Number
-        }
-    },
     data: function() {
         return {
             err: null,
@@ -205,17 +199,20 @@ export default {
 
                 const url = stdurl(`/api/marti/missions/${this.mission.name}`);
 
-                if (this.mission.role === 'Subscriber') url.searchParams.append('defaultRole', 'MISSION_SUBSCRIBER');
-                if (this.mission.role === 'Read-Only') url.searchParams.append('defaultRole', 'MISSION_READONLY_SUBSCRIBER');
-                if (this.mission.role === 'Owner') url.searchParams.append('defaultRole', 'MISSION_OWNER');
+                const body = {
+                    group: this.mission.groups,
+                    description: this.mission.description || ''
+                };
 
-                url.searchParams.append('group', this.mission.groups.join(','));
-                url.searchParams.append('description', this.mission.description);
-                if (this.mission.passwordProtected) url.searchParams.append('password', this.mission.password);
-                if (this.connection) url.searchParams.append('connection', this.connection);
+                if (this.mission.role === 'Subscriber') body.defaultRole = 'MISSION_SUBSCRIBER';
+                if (this.mission.role === 'Read-Only') body.defaultRole = 'MISSION_READONLY_SUBSCRIBER';
+                if (this.mission.role === 'Owner') body.defaultRole = 'MISSION_OWNER';
+
+                if (this.mission.passwordProtected) body.password = this.mission.password;
 
                 const res = await std(url, {
                     method: 'POST',
+                    body
                 });
 
                 this.$emit('mission', res);

@@ -100,7 +100,7 @@ export default {
     computed: {
         filtered: function() {
             return Object.keys(this.groups).filter((g) => {
-                return g.includes(this.filter);
+                return g.toLowerCase().includes(this.filter.toLowerCase());
             });
         }
     },
