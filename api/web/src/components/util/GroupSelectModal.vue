@@ -1,5 +1,7 @@
 <template>
-    <TablerModal>
+    <TablerModal
+        style='height: 80vh;'
+    >
         <button
             type='button'
             class='btn-close'
@@ -12,46 +14,14 @@
                 Channel Selection
             </div>
         </div>
-        <div class='modal-body row'>
-            <TablerLoading
-                v-if='loading.groups'
-                desc='Loading Channels'
-            />
-            <template v-else>
-                <div
-                    v-for='group in groups'
-                    :key='group.name'
-                    class='col-12 cursor-pointer'
-                    @click='updateGroup(group)'
-                >
-                    <IconCircleFilled
-                        v-if='selected.has(group.name)'
-                        :size='32'
-                        :stroke='1'
-                        class='cursor-pointer'
-                    />
-                    <IconCircle
-                        v-else
-                        :size='32'
-                        :stroke='1'
-                        class='cursor-pointer'
-                    />
-                    <span
-                        class='mx-2'
-                        v-text='group.name'
-                    />
-                </div>
-                <div class='col-12 mt-3'>
-                    <button
-                        :disabled='disabled'
-                        class='cursor-pointer btn w-100'
-                        @click='$emit("close")'
-                    >
-                        Done
-                    </button>
-                </div>
-            </template>
-        </div>
+
+        <GroupSelect
+            :modelValue='modelValue'
+            @update:modelValue='$emit("update:modelValue")'
+            :disabled='disabled'
+            :button='button'
+            :connection='connection'
+        />
     </TablerModal>
 </template>
 
@@ -59,20 +29,14 @@
 import { std, stdurl } from '/src/std.ts';
 import {
     TablerModal,
-    TablerLoading
 } from '@tak-ps/vue-tabler';
-import {
-    IconCircle,
-    IconCircleFilled
-} from '@tabler/icons-vue';
+import GroupSelect from './GroupSelect.vue';
 
 export default {
     name: 'GroupSelectModal',
     components: {
-        IconCircle,
-        IconCircleFilled,
+        GroupSelect,
         TablerModal,
-        TablerLoading
     },
     props: {
         disabled: {

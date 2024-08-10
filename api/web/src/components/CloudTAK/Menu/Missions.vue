@@ -43,7 +43,7 @@
             />
             <template v-else>
                 <div
-                    v-for='(mission, mission_it) in filteredList'
+                    v-for='(mission, mission_it) in filteredListSubscribed.concat(filteredListRemainder) '
                     :key='mission_it'
                     class='cursor-pointer col-12 py-2 hover-dark'
                     @click='$router.push(`/menu/missions/${mission.guid}`)'
@@ -175,6 +175,16 @@ export default {
             return this.list.data.filter((mission) => {
                 return mission.name.toLowerCase()
                     .includes(this.paging.filter.toLowerCase());
+            })
+        },
+        filteredListRemainder: function() {
+            return this.filteredList.filter((mission) => {
+                return !this.subscribed.has(mission.guid)
+            })
+        },
+        filteredListSubscribed: function() {
+            return this.filteredList.filter((mission) => {
+                return this.subscribed.has(mission.guid)
             })
         }
     },
