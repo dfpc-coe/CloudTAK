@@ -13,7 +13,7 @@
         <template #default>
             <div
                 v-if='!loading'
-                class='col-12 px-2 pb-2'
+                class='col-12 px-2 py-2'
             >
                 <TablerInput
                     v-model='paging.filter'
