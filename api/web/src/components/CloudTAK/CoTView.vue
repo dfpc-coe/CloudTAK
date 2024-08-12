@@ -282,7 +282,12 @@
             </div>
         </template>
         <template v-else-if='mode === "raw"'>
-            <pre v-text='feat' />
+            <div
+                style='height: calc(100vh - 160px)'
+                class='overflow-auto'
+            >
+                <pre v-text='feat'/>
+            </div>
         </template>
     </template>
 </template>
