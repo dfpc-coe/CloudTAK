@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+- :rocket: Padding above filter boxes in menu
+- :bug: Fix scrolling in CoTView raw mode
+- :rocket: Fix margins/padding in Mission Sync logs
+- :rocket: **Breaking** Create Mission Syncs with POST request, simplifying the internal code
+- :rocket: Use unified GroupSelect, adding search/filtering
+- :rocket: Show subscribed missions at top of Missions Menu
+
 ### v2.99.0 - 2024-08-10
 
 - :rocket: `UI` PWA now supports live location while on the move
