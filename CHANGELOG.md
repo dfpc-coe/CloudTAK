@@ -12,10 +12,12 @@
 
 ### Pending Release
 
+### v3.0.0 - 2024-08-12
+
+- :rocket: **Breaking** Create Mission Syncs with POST request, simplifying the internal code
 - :rocket: Padding above filter boxes in menu
 - :bug: Fix scrolling in CoTView raw mode
 - :rocket: Fix margins/padding in Mission Sync logs
-- :rocket: **Breaking** Create Mission Syncs with POST request, simplifying the internal code
 - :rocket: Use unified GroupSelect, adding search/filtering
 - :rocket: Show subscribed missions at top of Missions Menu
 
