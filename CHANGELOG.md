@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v3.1.0 - 2024-08-12
+
+- :tada: Use CoT submission for DataSync delete
+
 ### v3.0.1 - 2024-08-12
 
 - :bug: For an unknown reason CloudFormation needs the list permission now, reasonable but not sure what changed
