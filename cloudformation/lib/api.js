@@ -286,8 +286,9 @@ export default {
                                 'logs:CreateLogGroup',
                                 'logs:DeleteLogGroup',
                                 'logs:PutRetentionPolicy',
-                                'logs:describe*',
-                                'logs:get*'
+                                'logs:List*',
+                                'logs:Describe*',
+                                'logs:Get*'
                             ],
                             Resource: [
                                 cf.join(['arn:', cf.partition, ':logs:', cf.region, ':', cf.accountId, ':log-group:/aws/lambda/', cf.stackName, '-layer-*'])
