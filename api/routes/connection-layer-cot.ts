@@ -1,14 +1,13 @@
 import { Static, Type } from '@sinclair/typebox'
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
-import { CoT } from '@tak-ps/node-tak';
 import { Item as QueueItem } from '../lib/queue.js'
 import Cacher from '../lib/cacher.js';
 import Auth, { AuthResourceAccess } from '../lib/auth.js';
 import Style from '../lib/style.js';
 import DDBQueue from '../lib/queue.js';
 import Config from '../lib/config.js';
-import { Feature } from '@tak-ps/node-cot';
+import CoT, { Feature, ForceDelete } from '@tak-ps/node-cot';
 import { StandardResponse } from '../lib/types.js';
 import TAKAPI, { APIAuthCertificate, } from '../lib/tak-api.js';
 
@@ -91,11 +90,9 @@ export default async function router(schema: Schema, config: Config) {
 
                     for (const feat of features.values()) {
                         if (!inputFeats.has(String(feat.id))) {
-                            await api.Mission.detachContents(
-                                data.name,
-                                { uid: String(feat.id) },
-                                { token: data.mission_token }
-                            );
+                            const cot = new ForceDelete(String(feat.id));
+                            cot.addDest({ mission: data.name, path: `layer-${layer.id}`, after: '' });
+                            cots.push(cot);
                         }
                     }
 

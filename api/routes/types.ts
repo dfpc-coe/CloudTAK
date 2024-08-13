@@ -27,7 +27,7 @@ export default async function router(schema: Schema, config: Config) {
             if (!info) {
                 return res.json({
                     cot: req.params.type,
-                    fill: req.params.type,
+                    full: req.params.type,
                     desc: 'Unknown CoT Type'
                 })
             } else {
