@@ -16,7 +16,7 @@
         "@tabler/icons-vue": "^3.0.0",
         "@turf/bbox": "^7.1.0",
         "@turf/envelope": "^7.1.0",
-        "@turf/point-on-feature": "7.0.0",
+        "@turf/point-on-feature": "^7.0.0",
         "apexcharts": "^3.41.0",
         "core-js": "^3.6.4",
         "cronstrue": "^2.19.0",
