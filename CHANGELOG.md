@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v3.0.1 - 2024-08-12
+
+- :bug: For an unknown reason CloudFormation needs the list permission now, reasonable but not sure what changed
+
 ### v3.0.0 - 2024-08-12
 
 - :rocket: **Breaking** Create Mission Syncs with POST request, simplifying the internal code
