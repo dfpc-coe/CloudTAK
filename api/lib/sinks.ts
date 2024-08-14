@@ -56,7 +56,7 @@ export default class Sinks extends Map<string, typeof SinkInterface> {
 
                             return {
                                 Id: (Math.random() + 1).toString(36).substring(7),
-                                MessageGroupId: String(conn.id),
+                                MessageGroupId: `${String(conn.id)}-${feat.id}`,
                                 MessageBody: JSON.stringify({
                                     id: sink.id,
                                     type: sink.type,
