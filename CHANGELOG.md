@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v3.3.0 - 2024-08-12
+
+- :arrow_up: node-tak & node-cot to latest versions
+- :bug: `UI` Fix date bug in asset list
+
 ### v3.2.0 - 2024-08-12
 
 - :rocket: Increase FiFo Sink Throughput
