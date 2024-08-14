@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v3.2.0 - 2024-08-12
+
+- :rocket: Increase FiFo Sink Throughput
+
 ### v3.1.0 - 2024-08-12
 
 - :tada: Use CoT submission for DataSync delete
