@@ -4,6 +4,7 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import { OverlayResponse } from '../lib/types.js'
+import { Overlay } from '../lib/schema.js';
 import { sql } from 'drizzle-orm';
 import * as Default from '../lib/limits.js';
 
@@ -16,7 +17,8 @@ export default async function router(schema: Schema, config: Config) {
             limit: Default.Limit,
             page: Default.Page,
             order: Default.Order,
-            filter: Default.Filter
+            filter: Default.Filter,
+            sort: Type.Optional(Type.String({default: 'name', enum: Object.keys(Overlay)})),
         }),
         res: Type.Object({
             total: Type.Integer(),

@@ -326,6 +326,10 @@ const router = new VueRouter.createRouter({
                 name: 'admin-video',
                 component: () => import('./components/Admin/AdminVideo.vue')
             },{
+                path: 'overlay',
+                name: 'admin-overlays',
+                component: () => import('./components/Admin/AdminOverlays.vue')
+            },{
                 path: 'data',
                 name: 'admin-data',
                 component: () => import('./components/Admin/AdminDatas.vue')

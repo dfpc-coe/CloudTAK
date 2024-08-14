@@ -49,17 +49,7 @@
                             @click='stdclick($router, $event, `/connection/${layer.connection}/layer/${layer.id}`)'
                         >
                             <template v-for='h in header'>
-                                <template v-if='h.display && h.name === "name"'>
-                                    <td>
-                                        <div class='d-flex align-items-center'>
-                                            <Status :layer='layer' /><span
-                                                class='mx-2'
-                                                v-text='layer[h.name]'
-                                            />
-                                        </div>
-                                    </td>
-                                </template>
-                                <template v-else-if='h.display'>
+                                <template v-if='h.display'>
                                     <td>
                                         <span v-text='layer[h.name]' />
                                     </td>
@@ -100,7 +90,6 @@ import {
 export default {
     name: 'OverlayAdmin',
     components: {
-        Status,
         TablerNone,
         TablerInput,
         TablerLoading,
