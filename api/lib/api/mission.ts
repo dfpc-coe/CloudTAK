@@ -264,6 +264,7 @@ export default class {
                 method: 'GET',
                 headers: this.#headers(opts)
             });
+        }
     }
 
     /**
@@ -575,6 +576,7 @@ export default class {
                 method: 'DELETE',
                 headers: this.#headers(opts),
             });
+        }
     }
 
     /**
