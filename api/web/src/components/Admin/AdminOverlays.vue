@@ -6,6 +6,13 @@
             </h1>
 
             <div class='ms-auto btn-list'>
+                <IconPlus
+                    v-tooltip='"Create Overlay"'
+                    :size='32'
+                    :stroke='1'
+                    class='cursor-pointer'
+                    @click='$router.push("/admin/overlay/new")'
+                />
                 <IconRefresh
                     v-tooltip='"Refresh"'
                     :size='32'
@@ -83,6 +90,7 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
+    IconPlus,
     IconRefresh,
     IconCloudUpload,
 } from '@tabler/icons-vue'
@@ -93,6 +101,7 @@ export default {
         TablerNone,
         TablerInput,
         TablerLoading,
+        IconPlus,
         IconRefresh,
         IconCloudUpload,
         TableHeader,

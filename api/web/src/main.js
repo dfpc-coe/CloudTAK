@@ -330,6 +330,10 @@ const router = new VueRouter.createRouter({
                 name: 'admin-overlays',
                 component: () => import('./components/Admin/AdminOverlays.vue')
             },{
+                path: 'overlay/:overlay',
+                name: 'admin-overlays-edit',
+                component: () => import('./components/Admin/AdminOverlaysEdit.vue')
+            },{
                 path: 'data',
                 name: 'admin-data',
                 component: () => import('./components/Admin/AdminDatas.vue')
