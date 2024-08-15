@@ -43,4 +43,30 @@ export default async function router(schema: Schema, config: Config) {
             return Err.respond(err, res);
         }
     });
+
+    await schema.post('/overlay', {
+        name: 'Create Overlays',
+        group: 'Overlays',
+        description: 'Create a new Server Overlay',
+        body: Type.Object({
+            name: Type.String(),
+            type: Type.String(),
+            styles: Type.Object({}),
+            url: Type.String()
+        }),
+        res: OverlayResponse
+
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req, {
+                admin: true
+            });
+
+            const overlays = await config.models.Overlay.generate(req.body)
+
+            return res.json(overlays)
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
 }
