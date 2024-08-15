@@ -1,5 +1,13 @@
 <template>
     <TablerLoading v-if='loading' />
+    <template v-else-if='markers().length === 0'>
+        <div class='ms-3'>
+            <div class='d-flex align-items-center px-3 py-2 me-2 hover-button'>
+                <IconInfoCircle size='20' :stroke='1' class='me-1'/>
+                No Markers
+            </div>
+        </div>
+    </template>
     <template v-else>
         <div
             v-for='marker in markers()'
@@ -51,6 +59,7 @@ import Feature from '../../util/Feature.vue';
 import {
     IconChevronRight,
     IconChevronDown,
+    IconInfoCircle,
     IconFolder,
 } from '@tabler/icons-vue';
 import { useCOTStore } from '/src/stores/cots.ts';
@@ -61,6 +70,7 @@ export default {
     components: {
         Feature,
         TablerLoading,
+        IconInfoCircle,
         IconChevronRight,
         IconChevronDown,
         IconFolder,
