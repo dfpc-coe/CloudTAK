@@ -65,8 +65,37 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
+    await schema.patch('/overlay/:overlay', {
+        name: 'Update Overlay',
+        group: 'Overlays',
+        description: 'Create a new Server Overlay',
+        params: Type.Object({
+            overlay: Type.String()
+        }),
+        body: Type.Object({
+            name: Type.Optional(Type.String()),
+            type: Type.Optional(Type.String()),
+            styles: Type.Optional(Type.Object({})),
+            url: Type.Optional(Type.String())
+        }),
+        res: OverlayResponse
+
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req, {
+                admin: true
+            });
+
+            const overlay = await config.models.Overlay.commit(req.params.overlay, req.body)
+
+            return res.json(overlay)
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
     await schema.post('/overlay', {
-        name: 'Create Overlays',
+        name: 'Create Overlay',
         group: 'Overlays',
         description: 'Create a new Server Overlay',
         body: Type.Object({
@@ -83,9 +112,9 @@ export default async function router(schema: Schema, config: Config) {
                 admin: true
             });
 
-            const overlays = await config.models.Overlay.generate(req.body)
+            const overlay = await config.models.Overlay.generate(req.body)
 
-            return res.json(overlays)
+            return res.json(overlay)
         } catch (err) {
             return Err.respond(err, res);
         }
