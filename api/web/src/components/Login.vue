@@ -38,15 +38,17 @@
                                         />
                                     </div>
                                     <div class='mb-2'>
-                                        <label class='form-label'>
-                                            Password
-                                            <span class='form-label-description'>
+                                        <div class='d-flex'>
+                                            <label class='form-label mb-0'>
+                                                Password
+                                            </label>
+                                            <span class='ms-auto'>
                                                 <a
                                                     class='cursor-pointer'
                                                     @click='external("https://cotak.gov/forgot-password")'
                                                 >Forgot Password</a>
                                             </span>
-                                        </label>
+                                        </div>
                                         <TablerInput
                                             v-model='password'
                                             icon='lock'
