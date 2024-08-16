@@ -6,6 +6,7 @@
             </h1>
         </div>
         <div style='min-height: 20vh; margin-bottom: 61px' class='px-2'>
+            <TablerLoading v-if='loading'/>
             <div class='row'>
                 <div class='col-12'>
                     <TablerInput
