@@ -663,7 +663,7 @@ export default class {
         const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}`, this.api.url);
 
         if (this.#isGUID(name)) {
-            const url = new URL(`/Marti/api/missions/guid/${encodeURIComponent(guid)}`, this.api.url);
+            const url = new URL(`/Marti/api/missions/guid/${encodeURIComponent(name)}`, this.api.url);
 
             for (const q in query) url.searchParams.append(q, String(query[q]));
             const missions: TAKList<Static <typeof Mission>> = await this.api.fetch(url, {
@@ -671,7 +671,7 @@ export default class {
                 headers: this.#headers(opts),
             });
 
-            if (!missions.data.length) throw new Err(404, null, `No Mission for GUID: ${guid}`);
+            if (!missions.data.length) throw new Err(404, null, `No Mission for GUID: ${name}`);
             return missions.data[0];
         } else {
             for (const q in query) url.searchParams.append(q, String(query[q]));
