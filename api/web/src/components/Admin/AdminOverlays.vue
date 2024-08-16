@@ -92,7 +92,6 @@ import {
 import {
     IconPlus,
     IconRefresh,
-    IconCloudUpload,
 } from '@tabler/icons-vue'
 
 export default {
@@ -103,7 +102,6 @@ export default {
         TablerLoading,
         IconPlus,
         IconRefresh,
-        IconCloudUpload,
         TableHeader,
         TableFooter,
     },
