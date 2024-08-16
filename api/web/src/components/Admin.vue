@@ -73,6 +73,17 @@
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
+                                                    "active": $route.name.includes("admin-overlays"),
+                                                    "cursor-pointer": !$route.name.includes("admin-overlays")
+                                                }'
+                                                @click='$router.push(`/admin/overlay`)'
+                                            ><IconBoxMultiple
+                                                :size='32'
+                                                :stroke='1'
+                                            /><span class='mx-3'>Global Overlays</span></span>
+                                            <span
+                                                class='list-group-item list-group-item-action d-flex align-items-center'
+                                                :class='{
                                                     "active": $route.name === "admin-task",
                                                     "cursor-pointer": $route.name !== "admin-task"
                                                 }'
@@ -196,6 +207,7 @@ import {
     IconDatabaseExport,
     IconBrandDocker,
     IconBuildingBroadcastTower,
+    IconBoxMultiple,
 } from '@tabler/icons-vue'
 import { mapState } from 'pinia'
 const profileStore = useProfileStore();
@@ -210,6 +222,7 @@ export default {
     },
     components: {
         TablerAlert,
+        IconBoxMultiple,
         IconSettings,
         IconTemplate,
         IconVideo,
