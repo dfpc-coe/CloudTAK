@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v3.4.0 - 2024-08-12
+
+- :bug: `UI` Fix bug in ArcGIS UI When portal wasn't set
+- :rocket: Switch to direct GUID calls when possible in Mission.js API
+- :tada: Add editing support for Server Overlays
+
 ### v3.3.0 - 2024-08-12
 
 - :arrow_up: node-tak & node-cot to latest versions
