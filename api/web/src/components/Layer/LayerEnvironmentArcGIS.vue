@@ -260,7 +260,7 @@ export default {
         console.error(JSON.stringify(this.modelValue))
         if (!this.modelValue.ARCGIS_PORTAL && !this.modelValue.ARCGIS_USERNAME) {
             type = 'server';
-        } else if (this.modelValue.ARCGIS_PORTAL.includes('arcgis.com') && this.modelValue.ARCGIS_USERNAME) {
+        } else if (this.modelValue.ARCGIS_PORTAL && this.modelValue.ARCGIS_PORTAL.includes('arcgis.com') && this.modelValue.ARCGIS_USERNAME) {
             type = 'agol';
         } else if (this.modelValue.ARCGIS_PORTAL && this.modelValue.ARCGIS_USERNAME) {
             type = 'portal';
