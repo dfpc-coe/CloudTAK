@@ -61,7 +61,7 @@
         </div>
         <div class='card-footer'>
             <button
-                :disabled='loading.gen'
+                :disabled='loading.gen || !selected.length'
                 class='cursor-pointer btn btn-primary w-100'
                 @click='generate'
             >
