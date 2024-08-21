@@ -949,6 +949,11 @@
         "query": false,
         "res": true
     },
+    "GET /video/service": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /video/server": {
         "body": false,
         "query": false,
