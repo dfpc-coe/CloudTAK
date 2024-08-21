@@ -22,8 +22,8 @@
                 :key='lease.id'
                 class='col-12 py-2 px-3 d-flex align-items-center hover-dark'
             >
-                <div class='row g-0'>
-                    <div class='col-12 d-flex align-items-center my-0 py-0'>
+                <div class='row g-0 w-100'>
+                    <div class='d-flex align-items-center w-100'>
                         <IconVideo
                             :size='32'
                             :stroke='1'
@@ -32,6 +32,13 @@
                             class='mx-2'
                             v-text='lease.name'
                         />
+
+                        <div class='ms-auto'>
+                            <TablerDelete
+                                displaytype='icon'
+                                @delete='deleteLease(lease)'
+                            />
+                        </div>
                     </div>
                     <div class='col-12 my-0 py-0'>
                         <span
@@ -86,6 +93,7 @@ import { std } from '/src/std.ts';
 import { useCOTStore } from '/src/stores/cots.ts';
 import {
     TablerNone,
+    TablerDelete,
 } from '@tak-ps/vue-tabler';
 import {
     IconPlus,
@@ -103,7 +111,8 @@ export default {
         IconRefresh,
         MenuTemplate,
         VideoLeaseModal,
-        TablerNone
+        TablerNone,
+        TablerDelete,
     },
     data: function() {
         return {
@@ -129,6 +138,14 @@ export default {
             this.loading = true;
             this.leases = await std('/api/video/lease')
             this.loading = false;
+        },
+        deleteLease: async function(lease) {
+            this.loading = true;
+            await std(`/api/video/lease/${lease.id}`, {
+                method: 'DELETE'
+            });
+
+            await this.fetchLeases();
         }
     }
 }
