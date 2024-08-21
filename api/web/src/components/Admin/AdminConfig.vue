@@ -33,12 +33,28 @@
                     />
                 </div>
 
-                <div class='col-lg-12 py-2'>
+                <div class='col-lg-12 py-2 row'>
                     <TablerInput
                         v-model='config["media::url"]'
                         :disabled='!edit'
                         label='Hosted Media Service URL'
                     />
+
+                    <div class='col-lg-6'>
+                        <TablerInput
+                            v-model='config["media::username"]'
+                            :disabled='!edit'
+                            label='Hosted Media Service Username'
+                        />
+                    </div>
+
+                    <div class='col-lg-6'>
+                        <TablerInput
+                            v-model='config["media::password"]'
+                            :disabled='!edit'
+                            label='Hosted Media Service Password'
+                        />
+                    </div>
                 </div>
 
                 <div
@@ -93,7 +109,9 @@ export default {
                 'agol::enabled': false,
                 'agol::token': '',
 
-                'media::url': ''
+                'media::url': '',
+                'media::username': '',
+                'media::password': ''
             }
         }
     },
