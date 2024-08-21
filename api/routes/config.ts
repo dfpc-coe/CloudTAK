@@ -40,7 +40,9 @@ export default async function router(schema: Schema, config: Config) {
             'agol::enabled': Type.Optional(Type.Boolean()),
             'agol::token': Type.Optional(Type.String()),
 
-            'media::url': Type.Optional(Type.String())
+            'media::url': Type.Optional(Type.String()),
+            'media::username': Type.Optional(Type.String()),
+            'media::password': Type.Optional(Type.String())
         }),
         res: Type.Any()
     }, async (req, res) => {

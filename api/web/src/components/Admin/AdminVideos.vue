@@ -23,6 +23,7 @@
                 label='Video ECS Service'
                 :create='false'
             />
+            <VideoConfig v-else :service='service'/>
         </div>
         <div class='card-header'>
             <h1 class='card-title'>
@@ -105,6 +106,7 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import Status from '../util/Status.vue';
+import VideoConfig from './VideoConfig.vue';
 import {
     TablerNone,
     TablerLoading
@@ -117,6 +119,7 @@ import {
 export default {
     name: 'VideoAdmin',
     components: {
+        VideoConfig,
         TablerNone,
         Status,
         IconRefresh,

@@ -48,8 +48,15 @@ export default class VideoServiceControl {
 
     async configuration(): Promise<Static<typeof Configuration>> {
         let video;
+
+        const headers = new Headers();
+
         try {
             video = await this.config.models.Setting.from('media::url');
+            const user = await this.config.models.Setting.from('media::username');
+            const pass = await this.config.models.Setting.from('media::password');
+
+            headers.append('Authorization', `Basic ${Buffer.from(user.value + ':' + pass.value).toString('base64')}`);
         } catch (err) {
             if (err.message.includes('Not Found')) {
                 return {
@@ -62,9 +69,6 @@ export default class VideoServiceControl {
 
         const url = new URL('/v3/config/global/get', video.value);
         url.port = '9997';
-
-        const headers = new Headers();
-        headers.append('Authorization', `Basic ${Buffer.from('management' + ':' + 'testingPassword').toString('base64')}`);
 
         const res = await fetch(url, { headers })
         const body = await res.typed(VideoConfig);
