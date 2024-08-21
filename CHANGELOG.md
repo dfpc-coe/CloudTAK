@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v3.5.0 - 2024-08-21
+
+- :bug: `API` Roll back to detachContents call for MissionSync until TAK Server supports this in 5.3
+
 ### v3.4.0 - 2024-08-12
 
 - :bug: `UI` Fix bug in ArcGIS UI When portal wasn't set
