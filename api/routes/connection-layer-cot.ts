@@ -7,7 +7,7 @@ import Auth, { AuthResourceAccess } from '../lib/auth.js';
 import Style from '../lib/style.js';
 import DDBQueue from '../lib/queue.js';
 import Config from '../lib/config.js';
-import CoT, { Feature, ForceDelete } from '@tak-ps/node-cot';
+import CoT, { Feature } from '@tak-ps/node-cot';
 import { StandardResponse } from '../lib/types.js';
 import TAKAPI, { APIAuthCertificate, } from '../lib/tak-api.js';
 
@@ -90,9 +90,16 @@ export default async function router(schema: Schema, config: Config) {
 
                     for (const feat of features.values()) {
                         if (!inputFeats.has(String(feat.id))) {
-                            const cot = new ForceDelete(String(feat.id));
-                            cot.addDest({ mission: data.name, path: `layer-${layer.id}`, after: '' });
-                            cots.push(cot);
+                            /** TODO Add in 5.3 once MissionAPI supports t-x-d-d
+                             *  const cot = new ForceDelete(String(feat.id));
+                             *  cot.addDest({ mission: data.name, path: `layer-${layer.id}`, after: '' });
+                             *  cots.push(cot);
+                             */
+                            await api.Mission.detachContents(
+                                data.name,
+                                { uid: String(feat.id) },
+                                { token: data.mission_token }
+                            );
                         }
                     }
 
