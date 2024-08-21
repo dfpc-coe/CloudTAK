@@ -1,8 +1,22 @@
 <template>
-    <div>
+    <TablerLoading v-if='loading.main'/>
+    <div v-else>
         <div class='card-header'>
             <h1 class='card-title'>
-                Video Servers
+                Video Service
+            </h1>
+        </div>
+        <div>
+            <TablerLoading v-if='loading.service' />
+            <TablerNone
+                v-else-if='!service.configured'
+                label='Video ECS Service'
+                :create='false'
+            />
+        </div>
+        <div class='card-header'>
+            <h1 class='card-title'>
+                Individual Video Servers
             </h1>
 
             <div class='ms-auto btn-list'>
@@ -25,7 +39,7 @@
             </div>
         </div>
         <div>
-            <TablerLoading v-if='loading' />
+            <TablerLoading v-if='loading.tasks' />
             <TablerNone
                 v-else-if='!list.items.length'
                 label='Video Servers'
@@ -102,8 +116,15 @@ export default {
     data: function() {
         return {
             err: false,
-            loading: true,
+            loading: {
+                main: true,
+                service: true,
+                tasks: true
+            },
             header: [],
+            service: {
+                configured: false
+            },
             list: {
                 total: 0,
                 versions: [],
@@ -112,23 +133,34 @@ export default {
         }
     },
     mounted: async function() {
-        await this.fetchList();
+        this.loading.main = true;
+        await Promise.all([
+            this.fetchList(),
+            this.fetchService()
+        ])
+        this.loading.main = false;
     },
     methods: {
+        fetchService: async function() {
+            this.loading.service = true;
+            const url = stdurl('/api/video/service');
+            this.service = await std(url);
+            this.loading.service = false;
+        },
         fetchList: async function() {
-            this.loading = true;
+            this.loading.tasks = true;
             const url = stdurl('/api/video/server');
             this.list = await std(url);
-            this.loading = false;
+            this.loading.tasks = false;
         },
         createServer: async function() {
-            this.loading = true;
+            this.loading.main = true;
             const url = stdurl('/api/video/server');
             const server = await std(url, {
                 method: 'POST',
                 body: {}
             });
-            
+
             this.$router.push(`/admin/video/${server.id}`);
         }
     }

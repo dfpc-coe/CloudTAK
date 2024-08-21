@@ -10,6 +10,27 @@ import { StandardResponse, VideoResponse } from '../lib/types.js';
 export default async function router(schema: Schema, config: Config) {
     const video = new ECSVideo(config);
 
+    await schema.get('/video/service', {
+        name: 'Video Service',
+        group: 'VideoService',
+        description: 'Get Video Service Configuration',
+        res: Type.Object({
+            configured: Type.Boolean(),
+            config: Type.Object({})
+        })
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req, { admin: true });
+
+            return res.json({
+                configured: false,
+                config: {}
+            });
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
     await schema.get('/video/server', {
         name: 'List Video Servers',
         group: 'Video',
