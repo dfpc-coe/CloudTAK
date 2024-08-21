@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v3.6.0 - 2024-08-21
+
+- :rocket: `API/UI` Enforce at least 1 channel on Machine User creation
+
 ### v3.5.0 - 2024-08-21
 
 - :bug: `API` Roll back to detachContents call for MissionSync until TAK Server supports this in 5.3
