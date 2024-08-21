@@ -147,6 +147,8 @@ export default {
             const url = stdurl('/api/user');
             url.searchParams.append('filter', this.paging.filter);
             url.searchParams.append('limit', this.paging.limit);
+            url.searchParams.append('sort', this.paging.sort);
+            url.searchParams.append('order', this.paging.order);
             url.searchParams.append('page', this.paging.page);
             this.list = await std(url);
             this.loading = false;
