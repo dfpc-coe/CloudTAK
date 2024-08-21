@@ -284,7 +284,7 @@ const router = new VueRouter.createRouter({
                 path: '',
                 name: 'profile-default',
                 redirect: () => {
-                    return { name: 'profile-files' };
+                    return { name: 'profile-videos' };
                 }
             },{
                 path: 'jobs',

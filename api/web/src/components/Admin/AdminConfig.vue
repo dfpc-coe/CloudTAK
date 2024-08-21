@@ -33,6 +33,14 @@
                     />
                 </div>
 
+                <div class='col-lg-12 py-2'>
+                    <TablerInput
+                        v-model='config["media::url"]'
+                        :disabled='!edit'
+                        label='Hosted Media Service URL'
+                    />
+                </div>
+
                 <div
                     v-if='edit'
                     class='col-lg-12 d-flex py-2'
@@ -83,7 +91,9 @@ export default {
             loading: true,
             config: {
                 'agol::enabled': false,
-                'agol::token': ''
+                'agol::token': '',
+
+                'media::url': ''
             }
         }
     },
