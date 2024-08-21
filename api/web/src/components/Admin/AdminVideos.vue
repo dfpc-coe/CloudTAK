@@ -5,6 +5,16 @@
             <h1 class='card-title'>
                 Video Service
             </h1>
+
+            <div class='ms-auto btn-list'>
+                <IconRefresh
+                    v-tooltip='"Refresh"'
+                    :size='32'
+                    :stroke='1'
+                    class='cursor-pointer'
+                    @click='fetchService'
+                />
+            </div>
         </div>
         <div>
             <TablerLoading v-if='loading.service' />

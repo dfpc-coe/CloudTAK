@@ -38,7 +38,9 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Update Config Key/Values',
         body: Type.Object({
             'agol::enabled': Type.Optional(Type.Boolean()),
-            'agol::token': Type.Optional(Type.String())
+            'agol::token': Type.Optional(Type.String()),
+
+            'media::url': Type.Optional(Type.String())
         }),
         res: Type.Any()
     }, async (req, res) => {
