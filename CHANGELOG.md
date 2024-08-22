@@ -12,6 +12,14 @@
 
 ### Pending Release
 
+### v3.7.0 - 2024-08-22
+
+- :rocket: Expose Video Service Config Options
+- :rocket: Move Video Lease UI to CloudTAK Menu
+- :rocket: Allow deleting Video Lease
+- :rocket: Add Video Service Management UI Section in Admin Dashboard
+- :rocket: Add Authentication to Video Server
+
 ### v3.6.0 - 2024-08-21
 
 - :rocket: `API/UI` Enforce at least 1 channel on Machine User creation
