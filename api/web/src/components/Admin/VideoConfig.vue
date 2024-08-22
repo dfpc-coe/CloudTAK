@@ -1,15 +1,57 @@
 <template>
     <div class='col-12 px-2 py-2 row g-2'>
         <TablerToggle
-            v-model='service.config.api'
+            v-model='config.api'
             :disabled='disabled'
             label='MediaMTX API Enabled'
         />
 
         <TablerToggle
-            v-model='service.config.metrics'
+            v-model='config.metrics'
             :disabled='disabled'
             label='MediaMTX Metrics Enabled'
+        />
+
+        <TablerToggle
+            v-model='config.pprof'
+            :disabled='disabled'
+            label='Performance Metrics Enabled'
+        />
+
+        <TablerToggle
+            v-model='config.playback'
+            :disabled='disabled'
+            label='Playback API Enabled'
+        />
+
+        <TablerToggle
+            v-model='config.rtsp'
+            :disabled='disabled'
+            label='RTSP Endpoint Enabled'
+        />
+
+        <TablerToggle
+            v-model='config.rtmp'
+            :disabled='disabled'
+            label='RTMP Endpoint Enabled'
+        />
+
+        <TablerToggle
+            v-model='config.hls'
+            :disabled='disabled'
+            label='HLS Endpoint Enabled'
+        />
+
+        <TablerToggle
+            v-model='config.webrtc'
+            :disabled='disabled'
+            label='WebRTC Endpoint Enabled'
+        />
+
+        <TablerToggle
+            v-model='config.srt'
+            :disabled='disabled'
+            label='SRT Endpoint Enabled'
         />
 
 
