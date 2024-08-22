@@ -3,9 +3,16 @@
         <label class='subheader mx-2'>Speed</label>
         <div class='mx-2'>
             <div
-                class='bg-gray-500 rounded-top py-2 px-2'
-                v-text='inMode'
-            />
+                class='bg-gray-500 rounded-top py-2 px-2 position-relative'
+            >
+                <span v-text='inMode'/>
+                <CopyButton
+                    :text='inMode'
+                    class='position-absolute'
+                    :size='24'
+                    style='right: 8px'
+                />
+            </div>
             <span
                 v-tooltip='"Meters Per Second"'
                 class='my-1 px-2'
@@ -38,6 +45,8 @@
 </template>
 
 <script>
+import CopyButton from './CopyButton.vue';
+
 export default {
     name: 'COTSpeed',
     props: {
@@ -54,6 +63,9 @@ export default {
         return {
             mode: this.unit,
         }
+    },
+    components: {
+        CopyButton
     },
     computed: {
         inMode: function() {

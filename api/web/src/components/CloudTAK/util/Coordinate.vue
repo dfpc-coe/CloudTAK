@@ -4,9 +4,17 @@
         <div class='mx-2'>
             <div
                 v-if='!edit'
-                class='bg-gray-500 rounded-top py-2 px-2'
-                v-text='inMode'
-            />
+                class='bg-gray-500 rounded-top py-2 px-2 position-relative'
+            >
+                <span v-text='inMode'/>
+                <CopyButton
+                    :text='inMode'
+                    class='position-absolute'
+                    :size='24'
+                    style='right: 8px'
+                />
+
+            </div>
             <template v-else>
                 <TablerInput
                     v-model='coordinateEntry'
@@ -61,11 +69,13 @@
 import {
     TablerInput
 } from '@tak-ps/vue-tabler';
+import CopyButton from './CopyButton.vue';
 
 export default {
     name: 'COTCoordinate',
     components: {
-        TablerInput
+        TablerInput,
+        CopyButton
     },
     props: {
         edit: {
