@@ -36,10 +36,25 @@
                                 class='datagrid-title'
                                 v-text='ele'
                             />
-                            <div
-                                class='datagrid-content'
-                                v-text='user[ele]'
-                            />
+
+                            <template v-if='ele === "tak_loc"'>
+                                <div
+                                    class='datagrid-content'
+                                    v-text='user.tak_loc ? user.tak_loc.coordinates.join(",") : "Unset"'
+                                />
+                            </template>
+                            <template v-else-if='ele === "agency_admin"'>
+                                <div
+                                    class='datagrid-content'
+                                    v-text='user.agency_admin.length ? user.agency_admin : "None"'
+                                />
+                            </template>
+                            <template v-else>
+                                <div
+                                    class='datagrid-content'
+                                    v-text='user[ele]'
+                                />
+                            </template>
                         </div>
                     </template>
                 </div>

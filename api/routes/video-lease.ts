@@ -8,18 +8,21 @@ import { sql } from 'drizzle-orm';
 import { Token } from '../lib/schema.js';
 import { randomUUID } from 'node:crypto';
 import { StandardResponse, VideoLeaseResponse } from '../lib/types.js';
+import ECSVideoControl from '../lib/control/video-service.js';
 import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: Config) {
+    const videoControl = new ECSVideoControl(config);
+
     await schema.get('/video/lease', {
         name: 'List Leases',
         group: 'VideoLease',
-        description: 'List all vide',
+        description: 'List all video leases',
         query: Type.Object({
             limit: Default.Limit,
             page: Default.Page,
             order: Default.Order,
-            sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(Token) })),
+            sort: Type.Optional(Type.String({ default: 'created', enum: Object.keys(Token) })),
             filter: Default.Filter
         }),
         res: Type.Object({
@@ -64,7 +67,7 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'Only Administrators can request a lease > 16 hours')
             }
 
-            const lease = await config.models.VideoLease.generate({
+            const lease = await videoControl.generate({
                 name: req.body.name,
                 expiration: moment().add(req.body.duration, 'seconds').toISOString(),
                 path: randomUUID(),
@@ -90,12 +93,15 @@ export default async function router(schema: Schema, config: Config) {
             const user = await Auth.as_user(config, req);
 
             if (user.access === AuthUserAccess.ADMIN) {
-                await config.models.VideoLease.delete(req.params.lease);
+                await videoControl.delete(req.params.lease);
             } else {
-                await config.models.VideoLease.delete(sql`
-                    username = ${user.email}
-                    AND id = ${req.params.lease}
-                `);
+                const lease = await config.models.VideoLease.from(req.params.lease);
+
+                if (lease.username === user.email) {
+                    await videoControl.delete(req.params.lease);
+                } else {
+                    throw new Err(400, null, 'You can only delete a least you created');
+                }
             }
 
             return res.json({
