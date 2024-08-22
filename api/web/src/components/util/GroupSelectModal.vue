@@ -16,11 +16,11 @@
         </div>
 
         <GroupSelect
-            :modelValue='modelValue'
-            @update:modelValue='$emit("update:modelValue", $event)'
+            :model-value='modelValue'
             :disabled='disabled'
             :button='button'
             :connection='connection'
+            @update:model-value='$emit("update:modelValue", $event)'
         />
     </TablerModal>
 </template>

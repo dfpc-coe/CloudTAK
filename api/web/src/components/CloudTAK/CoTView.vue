@@ -286,7 +286,7 @@
                 style='height: calc(100vh - 160px)'
                 class='overflow-auto'
             >
-                <pre v-text='feat'/>
+                <pre v-text='feat' />
             </div>
         </template>
     </template>

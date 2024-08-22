@@ -3,7 +3,11 @@
     <template v-else-if='markers().length === 0'>
         <div class='ms-3'>
             <div class='d-flex align-items-center px-3 py-2 me-2 hover-button'>
-                <IconInfoCircle size='20' :stroke='1' class='me-1'/>
+                <IconInfoCircle
+                    size='20'
+                    :stroke='1'
+                    class='me-1'
+                />
                 No Markers
             </div>
         </div>
