@@ -1,5 +1,5 @@
 <template>
-    <TablerLoading v-if='loading.main'/>
+    <TablerLoading v-if='loading.main' />
     <div v-else>
         <div class='card-header'>
             <h1 class='card-title'>
@@ -23,7 +23,10 @@
                 label='Video ECS Service'
                 :create='false'
             />
-            <VideoConfig v-else :service='service'/>
+            <VideoConfig
+                v-else
+                :service='service'
+            />
         </div>
         <div class='card-header'>
             <h1 class='card-title'>

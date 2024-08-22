@@ -1,5 +1,8 @@
 <template>
-    <MenuTemplate name='Videos' :loading='loading'>
+    <MenuTemplate
+        name='Videos'
+        :loading='loading'
+    >
         <template #buttons>
             <IconPlus
                 v-tooltip='"Get Lease"'
@@ -83,7 +86,6 @@
         @close='lease = false'
         @refresh='fetchLeases'
     />
-
 </template>
 
 <script>

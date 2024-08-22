@@ -5,39 +5,47 @@
                 Edit Overlay
             </h1>
         </div>
-        <div style='min-height: 20vh; margin-bottom: 61px' class='px-2'>
-            <TablerLoading v-if='loading'/>
+        <div
+            style='min-height: 20vh; margin-bottom: 61px'
+            class='px-2'
+        >
+            <TablerLoading v-if='loading' />
             <div class='row'>
                 <div class='col-12'>
                     <TablerInput
-                        label='Name'
                         v-model='overlay.name'
+                        label='Name'
                     />
                 </div>
                 <div class='col-12'>
                     <TablerInput
-                        label='Data URL'
                         v-model='overlay.url'
+                        label='Data URL'
                     />
                 </div>
                 <div class='col-12'>
                     <TablerEnum
+                        v-model='overlay.type'
                         label='Type'
                         :options='["vector", "raster"]'
-                        v-model='overlay.type'
                     />
                 </div>
                 <div class='col-12'>
                     <TablerInput
+                        v-model='overlay.styles'
                         label='GL Style'
                         placeholder='GL JS Style JSON'
                         :rows='6'
-                        v-model='overlay.styles'
                     />
                 </div>
                 <div class='col-12 d-flex py-2'>
                     <div class='ms-auto'>
-                        <button @click='saveOverlay' class='btn btn-primary'>Submit</button>
+                        <button
+                            class='btn btn-primary'
+                            @click='saveOverlay'
+                        >
+                            Submit
+                        </button>
                     </div>
                 </div>
             </div>

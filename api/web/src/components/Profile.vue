@@ -57,14 +57,12 @@ import {
     TablerBreadCrumb
 } from '@tak-ps/vue-tabler';
 import {
-    IconVideo,
     IconTransform,
 } from '@tabler/icons-vue';
 
 export default {
     name: 'UserProfile',
     components: {
-        IconVideo,
         PageFooter,
         IconTransform,
         TablerBreadCrumb
