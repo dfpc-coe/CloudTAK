@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v3.8.0 - 2024-08-22
+
+- :rocket: `API` Add MediaMTX Path Creation
+- :rocket: `API` Add MediaMTX Path Deletion
+- :Rocket: `API` Wire up delete/create from Video Lease API via VideoControl
+
 ### v3.7.0 - 2024-08-22
 
 - :rocket: Expose Video Service Config Options
