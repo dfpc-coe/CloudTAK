@@ -93,12 +93,15 @@ export default async function router(schema: Schema, config: Config) {
             const user = await Auth.as_user(config, req);
 
             if (user.access === AuthUserAccess.ADMIN) {
-                await config.models.VideoLease.delete(req.params.lease);
+                await videoControl.delete(req.params.lease);
             } else {
-                await config.models.VideoLease.delete(sql`
-                    username = ${user.email}
-                    AND id = ${req.params.lease}
-                `);
+                const lease = await config.models.VideoLease.from(req.params.lease);
+
+                if (lease.username === user.email) {
+                    await videoControl.delete(req.params.lease);
+                } else {
+                    throw new Err(400, null, 'You can only delete a least you created');
+                }
             }
 
             return res.json({
