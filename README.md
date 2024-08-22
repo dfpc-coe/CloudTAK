@@ -83,10 +83,10 @@ in the bucket and their purpose
 
 | Prefix | Description |
 | ------ | ----------- |
-| `attachment/{sha256}/{file.ext}`  | |
-| `data/{data sync id}/{file.ext}`  | |
-| `import/{UUID}/{file.ext}`        | |
-| `profile/{email}/{file.ext}`      | |
+| `attachment/{sha256}/{file.ext}`  | CoT Attachments by Data Package reported SHA |
+| `data/{data sync id}/{file.ext}`  | CloudTAK managed Data Sync file contents |
+| `import/{UUID}/{file.ext}`        | User Imports |
+| `profile/{email}/{file.ext}`      | User Files |
 
 ### ETL Deployment
 
