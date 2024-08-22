@@ -158,4 +158,26 @@ export default class VideoServiceControl {
 
         return lease;
     }
+
+    async delete(leaseid: string): Promise<void> {
+        const video = await this.settings();
+
+        if (!video.configured) throw new Err(400, null, 'Media Integration is not configured');
+
+        const headers = this.headers(video.username, video.password);
+
+        const lease = await this.config.models.VideoLease.from(leaseid);
+
+        await this.config.models.VideoLease.delete(leaseid);
+
+        const url = new URL(`/v3/config/paths/delete/${lease.path}`, video.url);
+        url.port = '9997';
+
+        await fetch(url, {
+            method: 'DELETE',
+            headers,
+        })
+
+        return;
+    }
 }
