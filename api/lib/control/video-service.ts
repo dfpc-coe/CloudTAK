@@ -1,6 +1,7 @@
 import Err from '@openaddresses/batch-error';
 import Config from '../config.js';
 import { Type, Static } from '@sinclair/typebox';
+import { VideoLeaseResponse } from '../types.js';
 import fetch from '../fetch.js';
 
 export const VideoConfig = Type.Object({
@@ -18,12 +19,15 @@ export const VideoConfig = Type.Object({
 export const PathConfig = Type.Object({
     name: Type.String(),
     confName: Type.String(),
-    source: Type.Object({
-        id: Type.String(),
-        type: Type.String(),
-    }),
+    source: Type.Union([
+        Type.Object({
+            id: Type.String(),
+            type: Type.String(),
+        }),
+        Type.Null()
+    ]),
     ready: Type.Boolean(),
-    readyTime: Type.String(),
+    readyTime: Type.Union([Type.String(), Type.Null()]),
     tracks: Type.Array(Type.String()),
     bytesReceived: Type.Integer(),
     bytesSent: Type.Integer(),
@@ -53,17 +57,18 @@ export default class VideoServiceControl {
         this.config = config;
     }
 
-    async configuration(): Promise<Static<typeof Configuration>> {
-        let video;
-
-        const headers = new Headers();
+    async settings(): Promise<{
+        configured: boolean;
+        url?: string;
+        username?: string;
+        password?: string;
+    }> {
+        let video, user, pass;
 
         try {
             video = await this.config.models.Setting.from('media::url');
-            const user = await this.config.models.Setting.from('media::username');
-            const pass = await this.config.models.Setting.from('media::password');
-
-            headers.append('Authorization', `Basic ${Buffer.from(user.value + ':' + pass.value).toString('base64')}`);
+            user = await this.config.models.Setting.from('media::username');
+            pass = await this.config.models.Setting.from('media::password');
         } catch (err) {
             if (err.message.includes('Not Found')) {
                 return {
@@ -74,23 +79,105 @@ export default class VideoServiceControl {
             }
         }
 
-        const url = new URL('/v3/config/global/get', video.value);
-        url.port = '9997';
-
-        const res = await fetch(url, { headers })
-        const body = await res.typed(VideoConfig);
-
-        const urlPaths = new URL('/v3/paths/list', video.value);
-        urlPaths.port = '9997';
-
-        const resPaths = await fetch(urlPaths, { headers })
-        const paths = await resPaths.typed(PathsConfig);
-
         return {
             configured: true,
             url: video.value,
+            username: user.value,
+            password: pass.value,
+        }
+    }
+
+    headers(username: string, password: string): Headers {
+        const headers = new Headers();
+        headers.append('Authorization', `Basic ${Buffer.from(username + ':' + password).toString('base64')}`);
+        return headers;
+    }
+
+    async configuration(): Promise<Static<typeof Configuration>> {
+        const video = await this.settings();
+        const headers = this.headers(video.username, video.password);
+
+        if (!video.configured) return video;
+
+        const url = new URL('/v3/config/global/get', video.url);
+        url.port = '9997';
+
+        const res = await fetch(url, { headers })
+        if (!res.ok) throw new Err(500, null, await res.text())
+        const body = await res.typed(VideoConfig);
+
+        const urlPaths = new URL('/v3/paths/list', video.url);
+        urlPaths.port = '9997';
+
+        const resPaths = await fetch(urlPaths, { headers })
+        if (!resPaths.ok) throw new Err(500, null, await resPaths.text())
+
+        const paths = await resPaths.typed(PathsConfig);
+
+        return {
+            configured: video.configured,
+            url: video.url,
             config: body,
             paths: paths.items,
         };
+    }
+
+    async generate(opts: {
+        name: string;
+        expiration: string;
+        path: string;
+        username: string;
+    }): Promise<Static<typeof VideoLeaseResponse>> {
+        const video = await this.settings();
+
+        if (!video.configured) throw new Err(400, null, 'Media Integration is not configured');
+
+        const headers = this.headers(video.username, video.password);
+
+        const lease = await this.config.models.VideoLease.generate({
+            name: opts.name,
+            expiration: opts.expiration,
+            path: opts.path,
+            username: opts.username
+        });
+
+        const url = new URL(`/v3/config/paths/add/${lease.path}`, video.url);
+        url.port = '9997';
+
+        headers.append('Content-Type', 'application/json');
+
+        const res = await fetch(url, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+                name: opts.path
+            }),
+        })
+
+        if (!res.ok) throw new Err(500, null, await res.text())
+
+        return lease;
+    }
+
+    async delete(leaseid: string): Promise<void> {
+        const video = await this.settings();
+
+        if (!video.configured) throw new Err(400, null, 'Media Integration is not configured');
+
+        const headers = this.headers(video.username, video.password);
+
+        const lease = await this.config.models.VideoLease.from(leaseid);
+
+        await this.config.models.VideoLease.delete(leaseid);
+
+        const url = new URL(`/v3/config/paths/delete/${lease.path}`, video.url);
+        url.port = '9997';
+
+        await fetch(url, {
+            method: 'DELETE',
+            headers,
+        })
+
+        return;
     }
 }
