@@ -3,9 +3,16 @@
         <label class='subheader mx-2'>Elevation</label>
         <div class='mx-2'>
             <div
-                class='bg-gray-500 rounded-top py-2 px-2'
-                v-text='inMode'
-            />
+                class='bg-gray-500 rounded-top py-2 px-2 position-relative'
+            >
+                <span v-text='inMode'/>
+                <CopyButton
+                    :text='inMode'
+                    class='position-absolute'
+                    :size='24'
+                    style='right: 8px'
+                />
+            </div>
             <span
                 v-tooltip='"Feet"'
                 class='my-1 px-2'
@@ -29,6 +36,8 @@
 </template>
 
 <script>
+import CopyButton from './CopyButton.vue';
+
 export default {
     name: 'COTElevation',
     props: {
@@ -40,6 +49,9 @@ export default {
             type: String,
             default: 'feet'
         }
+    },
+    components: {
+        CopyButton
     },
     data: function() {
         return {
