@@ -25,7 +25,7 @@
                 <div v-else />
 
                 <div
-                    class='modal-title'
+                    class='modal-title d-flex mx-auto'
                     v-text='name'
                 />
                 <div class='btn-list'>

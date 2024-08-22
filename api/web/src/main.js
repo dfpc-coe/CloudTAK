@@ -284,7 +284,7 @@ const router = new VueRouter.createRouter({
                 path: '',
                 name: 'profile-default',
                 redirect: () => {
-                    return { name: 'profile-files' };
+                    return { name: 'profile-jobs' };
                 }
             },{
                 path: 'jobs',
@@ -294,10 +294,6 @@ const router = new VueRouter.createRouter({
                 path: 'job/:jobid',
                 name: 'profile-job',
                 component: () => import('./components/Profile/ProfileJob.vue')
-            },{
-                path: 'videos',
-                name: 'profile-videos',
-                component: () => import('./components/Profile/ProfileVideos.vue')
             }]
         },
 
