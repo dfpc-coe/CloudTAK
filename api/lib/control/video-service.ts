@@ -5,7 +5,14 @@ import fetch from '../fetch.js';
 
 export const VideoConfig = Type.Object({
     api: Type.Boolean(),
-    metrics: Type.Boolean()
+    metrics: Type.Boolean(),
+    pprof: Type.Boolean(),
+    playback: Type.Boolean(),
+    rtsp: Type.Boolean(),
+    rtmp: Type.Boolean(),
+    hls: Type.Boolean(),
+    webrtc: Type.Boolean(),
+    srt: Type.Boolean()
 })
 
 export const PathConfig = Type.Object({
