@@ -146,7 +146,7 @@
                                             ><IconVideo 
                                                 :size='32'
                                                 :stroke='1'
-                                            /><span class='mx-3'>Video Servers</span></span>
+                                            /><span class='mx-3'>Video Services</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{

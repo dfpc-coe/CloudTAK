@@ -30,7 +30,7 @@ export default class ECSVideo {
                 const req: ListTaskDefinitionsCommandInput = {
                     status: 'ACTIVE',
                     sort: 'DESC',
-                    familyPrefix: `coe-media-${this.config.StackName.replace(/^coe-etl-/, '')}`
+                    familyPrefix: `coe-media-${this.config.StackName.replace(/^coe-etl-/, '')}-task`
                 };
 
                 if (res && res.nextToken) req.nextToken = res.nextToken;
@@ -102,7 +102,7 @@ export default class ECSVideo {
             do {
                 const req: ListTasksCommandInput = {
                     cluster: `coe-ecs-${this.config.StackName.replace(/^coe-etl-/, '')}`,
-                    family: `coe-media-${this.config.StackName.replace(/^coe-etl-/, '')}`
+                    family: `coe-media-${this.config.StackName.replace(/^coe-etl-/, '')}-task`
                 };
 
                 if (res && res.nextToken) req.nextToken = res.nextToken;
@@ -150,7 +150,7 @@ export default class ECSVideo {
                     },
                 },
                 propagateTags: 'TASK_DEFINITION',
-                taskDefinition: `coe-media-${this.config.StackName.replace(/^coe-etl-/, '')}`,
+                taskDefinition: `coe-media-${this.config.StackName.replace(/^coe-etl-/, '')}-task`,
             }));
 
             return res.tasks[0];

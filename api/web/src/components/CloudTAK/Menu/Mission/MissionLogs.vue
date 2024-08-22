@@ -56,8 +56,8 @@
                         @click='deleteLog(log)'
                     />
                     <pre
-                        v-text='log.content || "None"'
                         class='rounded mb-1'
+                        v-text='log.content || "None"'
                     />
                 </div>
                 <div class='d-flex'>

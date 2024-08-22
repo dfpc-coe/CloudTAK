@@ -5,10 +5,29 @@ import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import EC2 from '../lib/aws/ec2.js';
 import ECSVideo from '../lib/aws/ecs-video.js';
+import ECSVideoControl, { Configuration } from '../lib/control/video-service.js';
 import { StandardResponse, VideoResponse } from '../lib/types.js';
 
 export default async function router(schema: Schema, config: Config) {
     const video = new ECSVideo(config);
+    const videoControl = new ECSVideoControl(config);
+
+    await schema.get('/video/service', {
+        name: 'Video Service',
+        group: 'VideoService',
+        description: 'Get Video Service Configuration',
+        res: Configuration
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req, { admin: true });
+
+            const configuration = await videoControl.configuration();
+
+            return res.json(configuration);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
 
     await schema.get('/video/server', {
         name: 'List Video Servers',
