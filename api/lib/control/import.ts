@@ -58,10 +58,10 @@ export default class ImportControl {
     async batch(username: string, id: string): Promise<Static<typeof ImportResponse>> {
         let imp = await this.config.models.Import.from(id);
 
-        await Batch.submitImport(this.config, username, id, imp.name);
+        const batch = await Batch.submitImport(this.config, username, id, imp.name);
 
         imp = await this.config.models.Import.commit(id, {
-            batch: true,
+            batch: batch.jobId,
             updated: sql`Now()`
         });
 
