@@ -1,5 +1,4 @@
 import Config from '../config.js';
-import path from 'node:path';
 import S3 from '../aws/s3.js'
 import { Static } from '@sinclair/typebox';
 import Batch from '../aws/batch.js';
