@@ -14,6 +14,8 @@
                 >
             </div>
             <TablerLoading desc='Loading Map State' />
+
+            <TablerProgress :progress='0.4'/>
         </div>
     </TablerModal>
 </template>
@@ -21,6 +23,7 @@
 <script>
 import {
     TablerModal,
+    TablerProgress,
     TablerLoading
 } from '@tak-ps/vue-tabler'
 
@@ -28,7 +31,8 @@ export default {
     name: 'CloudTAKLoading',
     components: {
         TablerModal,
-        TablerLoading
+        TablerLoading,
+        TablerProgress
     }
 }
 </script>
