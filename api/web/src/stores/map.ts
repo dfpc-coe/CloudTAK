@@ -315,7 +315,7 @@ export const useMapStore = defineStore('cloudtak', {
                         // The Mission Sync is either:
                         // - Deleted
                         // - Part of a channel that is no longer active
-                        overlay._error = err;
+                        overlay._error = err instanceof Error ? err : new Error(String(err));
                     }
                 }
             }

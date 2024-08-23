@@ -15,7 +15,7 @@
             </div>
             <TablerLoading desc='Loading Map State' />
 
-            <TablerProgress :progress='0.4'/>
+            <TablerProgress :progress='0.4' />
         </div>
     </TablerModal>
 </template>
