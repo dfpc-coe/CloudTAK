@@ -1,8 +1,11 @@
 import Config from '../config.js';
+import path from 'node:path';
 import S3 from '../aws/s3.js'
 import { Static } from '@sinclair/typebox';
+import Batch from '../aws/batch.js';
 import type { ImportResponse } from '../types.js';
 import crypto from 'node:crypto';
+import { sql } from 'drizzle-orm';
 import TAKAPI, {
     APIAuthCertificate,
 } from '../tak-api.js';
@@ -49,6 +52,19 @@ export default class ImportControl {
                 status: 'Pending'
             });
         }
+
+        return imp;
+    }
+
+    async batch(id: string): Promise<Static<typeof ImportResponse>> {
+        let imp = await this.config.models.Import.from(id);
+
+        const batch = await Batch.submitImport(this.config, id, `${id}${path.parse(imp.name).ext}`);
+
+        imp = await this.config.models.Import.commit(id, {
+            batch: true,
+            updated: sql`Now()`
+        });
 
         return imp;
     }

@@ -19,22 +19,20 @@ export interface BatchJob {
  * @class
  */
 export default class Batch {
-    static async submitUser(config: Config, email: string, asset: string, task: object = {}): Promise<AWSBatch.SubmitJobCommandOutput> {
+    static async submitImport(config: Config, id: string, asset: string, task: object = {}): Promise<AWSBatch.SubmitJobCommandOutput> {
         const batch = new AWSBatch.BatchClient({ region: process.env.AWS_DEFAULT_REGION });
 
-        const jobName = `profile-${email.replace('@', '_at_').replace(/[^a-zA-Z0-9]/g, '_')}-${asset.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 50)}`;
-
         const batchres = await batch.send(new AWSBatch.SubmitJobCommand({
-            jobName,
+            jobName: `import-${id}`,
             jobQueue: `${config.StackName}-queue`,
             jobDefinition: `${config.StackName}-data-job`,
             containerOverrides: {
                 environment: [
                     { name: 'ETL_API',      value:  config.API_URL },
                     { name: 'ETL_BUCKET',   value:  config.Bucket },
-                    { name: 'ETL_TOKEN',    value: jwt.sign({ access: 'profile', profle: email }, config.SigningSecret) },
-                    { name: 'ETL_TYPE',     value: 'profile' },
-                    { name: 'ETL_ID',       value: email },
+                    { name: 'ETL_TOKEN',    value: `etl.${jwt.sign({ access: 'import', id: id, internal: true }, config.SigningSecret)}` },
+                    { name: 'ETL_TYPE',     value: 'import' },
+                    { name: 'ETL_ID',       value: id },
                     { name: 'ETL_TASK',     value: JSON.stringify({ asset: asset, config: task }) },
                 ]
             }
