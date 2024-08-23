@@ -379,6 +379,13 @@
       "when": 1722453060606,
       "tag": "0053_dapper_skullbuster",
       "breakpoints": true
+    },
+    {
+      "idx": 54,
+      "version": "7",
+      "when": 1724434170575,
+      "tag": "0054_giant_maggott",
+      "breakpoints": true
     }
   ]
 }
