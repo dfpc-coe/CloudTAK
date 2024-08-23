@@ -311,7 +311,9 @@ export default async function router(schema: Schema, config: Config) {
         res: ImportResponse
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req);
+            await Auth.is_auth(config, req, {
+                resources: [{ access: AuthResourceAccess.IMPORT, id: req.params.import }]
+            });
 
             const imported = await config.models.Import.from(req.params.import);
 
