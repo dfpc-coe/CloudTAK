@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v3.9.1 - 2024-08-23
+
+- :bug: `API` Fix login bug on invalid token
+
 ### v3.9.0 - 2024-08-23
 
 - :rocket: `UI` Add Copy functionality to CoTView
