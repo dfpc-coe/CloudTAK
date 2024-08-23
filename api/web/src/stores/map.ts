@@ -300,26 +300,6 @@ export const useMapStore = defineStore('cloudtak', {
                 ));
             }
 
-            // Data Syncs are specially loaded as they are dynamic
-            for (const overlay of this.overlays) {
-                if (overlay.mode === 'mission' && overlay.mode_id) {
-                    const cotStore = useCOTStore();
-                    const source = map.getSource(String(overlay.id));
-                    if (!source) continue;
-
-                    try {
-                        // @ts-expect-error Source.setData is not defined
-                        source.setData(await cotStore.loadMission(overlay.mode_id));
-                    } catch (err) {
-                        // TODO: Handle this gracefully
-                        // The Mission Sync is either:
-                        // - Deleted
-                        // - Part of a channel that is no longer active
-                        overlay._error = err instanceof Error ? err : new Error(String(err));
-                    }
-                }
-            }
-
             this.overlays.push(Overlay.internal(map, {
                 id: -1,
                 name: 'CoT Icons',
@@ -341,6 +321,26 @@ export const useMapStore = defineStore('cloudtak', {
                     },
                 }]
             }));
+
+            // Data Syncs are specially loaded as they are dynamic
+            for (const overlay of this.overlays) {
+                if (overlay.mode === 'mission' && overlay.mode_id) {
+                    const cotStore = useCOTStore();
+                    const source = map.getSource(String(overlay.id));
+                    if (!source) continue;
+
+                    try {
+                        // @ts-expect-error Source.setData is not defined
+                        source.setData(await cotStore.loadMission(overlay.mode_id));
+                    } catch (err) {
+                        // TODO: Handle this gracefully
+                        // The Mission Sync is either:
+                        // - Deleted
+                        // - Part of a channel that is no longer active
+                        overlay._error = err instanceof Error ? err : new Error(String(err));
+                    }
+                }
+            }
         },
         /**
          * Determine if the feature is from the CoT store or a clicked VT feature
