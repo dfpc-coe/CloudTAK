@@ -345,7 +345,7 @@ export default async function router(schema: Schema, config: Config) {
                 return res.json({ logs: [] })
             }
 
-            const job = await Batch.job(config, `import-${imported.id}`);
+            const job = await Batch.job(config, imported.batch);
 
             if (job.logstream) {
                 const logs = await Logs.list(job.logstream);
