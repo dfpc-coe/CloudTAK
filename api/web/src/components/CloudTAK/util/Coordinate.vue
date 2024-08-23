@@ -6,14 +6,13 @@
                 v-if='!edit'
                 class='bg-gray-500 rounded-top py-2 px-2 position-relative'
             >
-                <span v-text='inMode'/>
+                <span v-text='inMode' />
                 <CopyButton
                     :text='inMode'
                     class='position-absolute'
                     :size='24'
                     style='right: 8px'
                 />
-
             </div>
             <template v-else>
                 <TablerInput
