@@ -155,7 +155,7 @@ async function submitBatch(event: Event, imported: Import) {
         Key: `profile/${imported.username}/${imported.name}`
     }))
 
-    await API.createTransform(event, imported);
+    await API.createBatch(event, imported);
 }
 
 async function processIndex(event: Event, xmlstr: string, zip?: StreamZipAsync) {

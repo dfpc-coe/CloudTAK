@@ -56,10 +56,10 @@ export default class ImportControl {
         return imp;
     }
 
-    async batch(id: string): Promise<Static<typeof ImportResponse>> {
+    async batch(username: string, id: string): Promise<Static<typeof ImportResponse>> {
         let imp = await this.config.models.Import.from(id);
 
-        await Batch.submitImport(this.config, id, `${id}${path.parse(imp.name).ext}`);
+        await Batch.submitImport(this.config, username, id, imp.name);
 
         imp = await this.config.models.Import.commit(id, {
             batch: true,
