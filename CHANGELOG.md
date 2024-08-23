@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v3.9.0 - 2024-08-23
+
+- :rocket: `UI` Add Copy functionality to CoTView
+
 ### v3.8.0 - 2024-08-22
 
 - :rocket: `API` Add MediaMTX Path Creation
