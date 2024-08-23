@@ -98,7 +98,9 @@ export const LayerAlertResponse = createSelectSchema(schemas.LayerAlert, {
     layer: Type.Integer(),
 });
 
-export const ImportResponse = createSelectSchema(schemas.Import, {});
+export const ImportResponse = createSelectSchema(schemas.Import, {
+    batch: Type.Boolean(),
+});
 
 export const TaskResponse = createSelectSchema(schemas.Task, {
     id: Type.Integer(),
