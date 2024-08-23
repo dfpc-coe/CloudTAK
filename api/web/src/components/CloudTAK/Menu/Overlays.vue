@@ -47,7 +47,15 @@
                                     :stroke='1'
                                 />
 
-                                <template v-if='overlay.id !== 0'>
+                                <template v-if='!overlay.healthy()'>
+                                    <IconAlertTriangle
+                                        v-if='!isDraggable && !opened.includes(overlay.id)'
+                                        v-tooltip='overlay._error.message'
+                                        :size='20'
+                                        :stroke='1'
+                                    />
+                                </template>
+                                <template v-else-if='overlay.id !== 0'>
                                     <IconChevronRight
                                         v-if='!isDraggable && !opened.includes(overlay.id)'
                                         :size='20'
@@ -176,6 +184,7 @@ import TreeVector from './Overlays/TreeVector.vue';
 import TreeMission from './Overlays/TreeMission.vue';
 import {
     IconGripVertical,
+    IconAlertTriangle,
     IconChevronRight,
     IconChevronDown,
     IconMaximize,
@@ -279,6 +288,7 @@ export default {
         TablerLoading,
         TablerDelete,
         IconGripVertical,
+        IconAlertTriangle,
         IconChevronRight,
         IconChevronDown,
         IconMaximize,

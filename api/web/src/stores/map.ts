@@ -304,11 +304,19 @@ export const useMapStore = defineStore('cloudtak', {
             for (const overlay of this.overlays) {
                 if (overlay.mode === 'mission' && overlay.mode_id) {
                     const cotStore = useCOTStore();
-
                     const source = map.getSource(String(overlay.id));
                     if (!source) continue;
-                    // @ts-expect-error Source.setData is not defined
-                    source.setData(await cotStore.loadMission(overlay.mode_id));
+
+                    try {
+                        // @ts-expect-error Source.setData is not defined
+                        source.setData(await cotStore.loadMission(overlay.mode_id));
+                    } catch (err) {
+                        // TODO: Handle this gracefully
+                        // The Mission Sync is either:
+                        // - Deleted
+                        // - Part of a channel that is no longer active
+                        overlay._error = err;
+                    }
                 }
             }
 

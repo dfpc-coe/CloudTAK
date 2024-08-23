@@ -19,6 +19,8 @@ export default class Overlay {
     _layers: Array<LayerSpecification>;
     _clickable: Array<{ id: string; type: string }>;
 
+    _error?: Error;
+
     id: number;
     name: string;
     username?: string;
@@ -114,6 +116,10 @@ export default class Overlay {
         this.token = overlay.token;
 
         this.init(opts);
+    }
+
+    healthy(): boolean {
+        return !this._error;
     }
 
     init(opts: {
