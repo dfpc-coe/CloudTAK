@@ -317,6 +317,8 @@ export default async function router(schema: Schema, config: Config) {
 
             const imported = await config.models.Import.from(req.params.import);
 
+            await importControl.batch(imported.username, imported.id);
+
             return res.json(imported)
         } catch (err) {
             return Err.respond(err, res);
