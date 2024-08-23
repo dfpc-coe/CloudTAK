@@ -55,6 +55,9 @@
                         v-if='imported.status === "Empty"'
                         :create='false'
                     />
+                    <template v-else-if='batch.logs.length'>
+                        <pre>TEST</pre>
+                    </template>
                     <TablerLoading
                         v-else-if='loading.run'
                         desc='Running Import'
@@ -131,6 +134,9 @@ export default {
                 run: true
             },
             interval: false,
+            batch: {
+                logs: []
+            },
             imported: {
                 id: ''
             }
@@ -144,7 +150,9 @@ export default {
         }, 1000);
     },
     unmounted: function() {
-        if (this.interval) clearInterval(this.interval);
+        if (this.interval) {
+            clearInterval(this.interval);
+        }
     },
     methods: {
         timeDiff(update) {
@@ -176,6 +184,11 @@ export default {
                 if (this.imported.status === 'Fail' || this.imported.status === 'Success') {
                     if (this.interval) clearInterval(this.interval);
                     this.loading.run = false;
+                }
+
+                if (this.imported.batch) {
+                    const urlBatch = stdurl(`/api/import/${this.$route.params.import}/batch`);
+                    this.batch = await std(urlBatch);
                 }
             } catch (err) {
                 this.err = err;
