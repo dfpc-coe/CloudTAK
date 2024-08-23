@@ -222,8 +222,8 @@ export default class API {
         return json as any;
     }
 
-    static async createTransform(event: Event, imported: Import): Promise<Import> {
-        const res = await fetch(new URL(`/api/profile/asset/${imported.name}`, process.env.TAK_ETL_API), {
+    static async createBatch(event: Event, imported: Import): Promise<Import> {
+        const res = await fetch(new URL(`/api/import/${imported.id}/batch`, process.env.TAK_ETL_API), {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${event.UserToken}`
