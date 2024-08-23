@@ -276,27 +276,6 @@ const router = new VueRouter.createRouter({
 
         { path: '/connection/:connectionid/edit', name: 'connection-edit', component: () => import('./components/ConnectionEdit.vue') },
 
-        {
-            path: '/profile',
-            name: 'profile',
-            component: () => import('./components/Profile.vue'),
-            children: [{
-                path: '',
-                name: 'profile-default',
-                redirect: () => {
-                    return { name: 'profile-jobs' };
-                }
-            },{
-                path: 'jobs',
-                name: 'profile-jobs',
-                component: () => import('./components/Profile/ProfileJobs.vue')
-            },{
-                path: 'job/:jobid',
-                name: 'profile-job',
-                component: () => import('./components/Profile/ProfileJob.vue')
-            }]
-        },
-
         { path: '/login', name: 'login', component: () => import('./components/Login.vue') },
 
         {

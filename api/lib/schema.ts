@@ -96,6 +96,7 @@ export const Import = pgTable('imports', {
     name: text('name').notNull(),
     status: text('status').notNull().default('Pending'),
     error: text('error'),
+    batch: text('batch'),
     result: json('result').notNull().default({}),
     username: text('username').notNull().references(() => Profile.username),
     mode: text('mode').notNull().default('Unknown'),
