@@ -105,54 +105,83 @@
 
         <div
             v-if='mode === "default"'
-            class='col-12 overflow-auto'
+            class='overflow-auto'
             style='height: calc(100vh - 160px)'
         >
-            <Coordinate
-                v-model='center'
-                class='py-2'
-            />
+            <div class='row g-0'>
+                <div
+                    class='pt-2'
+                    :class='{
+                        "col-md-8": center.length > 2,
+                        "col-12": center.length <= 2,
+                    }'
+                >
+                    <Coordinate
+                        v-model='center'
+                    />
+                </div>
+                <div
+                    v-if='center.length > 2'
+                    class='col-md-4 pt-2'
+                >
+                    <Elevation
+                        :unit='profile.display_elevation'
+                        :elevation='feat.properties.center[2]'
+                    />
+                </div>
 
-            <Elevation
-                v-if='center.length > 2'
-                :unit='profile.display_elevation'
-                :elevation='feat.properties.center[2]'
-                class='py-2'
-            />
+                <div
+                    v-if='!isNaN(feat.properties.speed)'
+                    class='pt-2'
+                    :class='{
+                        "col-md-6": feat.properties.course,
+                        "col-12": !feat.properties.course,
+                    }'
+                >
+                    <Speed
+                        :unit='profile.display_speed'
+                        :speed='feat.properties.speed'
+                        class='py-2'
+                    />
+                </div>
 
-            <Speed
-                v-if='!isNaN(feat.properties.speed)'
-                :unit='profile.display_speed'
-                :speed='feat.properties.speed'
-                class='py-2'
-            />
+                <div
+                    class='pt-2'
+                    :class='{
+                        "col-md-6": feat.properties.speed,
+                        "col-12": !feat.properties.speed,
+                    }'
+                >
+                    <div
+                        v-if='!isNaN(feat.properties.course)'
+                        class='col-12 py-2'
+                    >
+                        <label class='subheader mx-2'>Course</label>
+                        <div
+                            class='bg-gray-500 rounded mx-2 py-2 px-2'
+                            v-text='feat.properties.course'
+                        />
+                    </div>
+                </div>
+
+                <div
+                    v-if='feat.properties.contact && feat.properties.contact.phone'
+                    class='col-12 px-2 pb-2'
+                >
+                    <label class='subheader'>Phone</label>
+                    <div
+                        class='bg-gray-500 rounded mx-2 px-2 py-2'
+                        v-text='phone(feat.properties.contact.phone)'
+                    />
+                </div>
+            </div>
 
             <Attachments
+                v-if='!feat.properties.contact'
                 :attachments='feat.properties.attachments || []'
                 class='py-2'
                 @attachment='addAttachment($event)'
             />
-
-            <div
-                v-if='feat.properties.contact && feat.properties.contact.phone'
-                class='col-12 px-2 pb-2'
-            >
-                <label class='subheader'>Phone</label>
-                <div
-                    class='bg-gray-500 rounded mx-2 px-2 py-2'
-                    v-text='phone(feat.properties.contact.phone)'
-                />
-            </div>
-            <div
-                v-if='!isNaN(feat.properties.course)'
-                class='col-12 py-2'
-            >
-                <label class='subheader mx-2'>Course</label>
-                <div
-                    class='bg-gray-500 rounded mx-2 py-2 px-2'
-                    v-text='feat.properties.course'
-                />
-            </div>
 
             <div class='col-12 py-2'>
                 <label class='subheader mx-2'>Remarks</label>
@@ -362,7 +391,11 @@ export default {
         },
         center: function() {
             if (!this.feat) return [0,0];
-            return this.feat.properties.center;
+
+            return [
+                Math.round(this.feat.properties.center[0] * 1000000) / 1000000,
+                Math.round(this.feat.properties.center[1] * 1000000) / 1000000,
+            ]
         },
         remarks: function() {
             if (!this.feat) return '';
