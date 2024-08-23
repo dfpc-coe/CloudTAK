@@ -75,13 +75,13 @@ export default async function router(schema: Schema, config: Config) {
             access: Type.Enum(AuthUserAccess)
         })
     }, async (req, res) => {
-        const user = await Auth.as_user(config, req);
-
-        const profile = await config.models.Profile.from(user.email);
-
-        await provider.valid(profile);
-
         try {
+            const user = await Auth.as_user(config, req);
+
+            const profile = await config.models.Profile.from(user.email);
+
+            await provider.valid(profile);
+
             return res.json({
                 email: user.email,
                 access: user.access
