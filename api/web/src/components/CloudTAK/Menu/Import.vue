@@ -55,13 +55,16 @@
                         v-if='imported.status === "Empty"'
                         :create='false'
                     />
-                    <template v-else-if='batch.logs.length'>
-                        <pre>TEST</pre>
+                    <template v-else-if='loading.run'>
+                        <TablerLoading
+                            v-if='loading.run'
+                            desc='Running Import'
+                        />
+                        <template v-if='batch.logs.length'>
+                            <label for='logs' class='subheader'>Import Logs</label>
+                            <pre id='logs' v-text='batch.logs.map((log) => { return log.message }).join("\n")'></pre>
+                        </template>
                     </template>
-                    <TablerLoading
-                        v-else-if='loading.run'
-                        desc='Running Import'
-                    />
                     <template v-else-if='imported.status === "Fail"'>
                         <div class='datagrid-item'>
                             <div class='datagrid-title'>
