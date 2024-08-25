@@ -150,7 +150,7 @@ export default {
 
         this.interval = setInterval(() => {
             this.fetch()
-        }, 1000);
+        }, 2000);
     },
     unmounted: function() {
         if (this.interval) {
