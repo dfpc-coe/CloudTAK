@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v3.10.0 - 2024-08-25
+
+- :tada: `API/UI` Fully merge file imports into CloudTAK UI
+- :rocket: `UI` Fully remove Profile section of UI
+
 ### v3.9.1 - 2024-08-23
 
 - :bug: `API` Fix login bug on invalid token
