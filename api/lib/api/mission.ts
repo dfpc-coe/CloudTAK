@@ -238,8 +238,6 @@ export default class {
             feats.push((new CoT({ event })).to_geojson());
         }
 
-        console.error(feats);
-
         return feats;
     }
 
