@@ -1,5 +1,5 @@
 <template>
-    <TablerModal>
+    <TablerModal :size='lease.id ? "xl" : undefined'>
         <div class='modal-status bg-yellow' />
         <button
             type='button'
@@ -14,15 +14,23 @@
             />
 
             <div class='ms-auto btn-list'>
+                <IconRefresh
+                    v-if='editLease.id'
+                    :size='32'
+                    :stroke='1'
+                    class='cursor-pointer'
+                    @click='fetchLease'
+                />
                 <TablerDelete
                     v-if='editLease.id'
                     displaytype='icon'
-                    @delete='deleteToken'
+                    @delete='deleteLease'
                 />
             </div>
         </div>
 
-        <div class='modal-body row'>
+        <TablerLoading v-if='loading'/>
+        <div v-else class='modal-body row'>
             <div
                 class='col-12'
             >
@@ -70,15 +78,22 @@
                         v-model='editLease.stream_pass'
                         label='Stream Password'
                     />
-
                 </div>
+
+                <template v-if='Object.keys(protocols).length'>
+                    <div class='subheader'>Video Streaming Protocols</div>
+                    <div v-for='protocol in protocols'>
+                        <div v-text='protocol.name'/>
+                        <pre v-text='protocol.url'></pre>
+                    </div>
+                </template>
             </div>
         </div>
         <div class='modal-footer'>
             <button
                 v-if='!code'
                 class='btn btn-primary'
-                @click='saveToken'
+                @click='saveLease'
             >
                 Save
             </button>
@@ -96,10 +111,12 @@
 <script>
 import { std } from '/src/std.ts';
 import {
+    IconRefresh,
     IconSquareChevronRight,
     IconChevronDown,
 } from '@tabler/icons-vue';
 import {
+    TablerLoading,
     TablerModal,
     TablerInput,
     TablerEnum,
@@ -109,12 +126,14 @@ import {
 export default {
     name: 'VideoLeaseModal',
     components: {
+        IconRefresh,
         IconSquareChevronRight,
         IconChevronDown,
         TablerModal,
         TablerEnum,
         TablerInput,
-        TablerDelete
+        TablerDelete,
+        TablerLoading,
     },
     props: {
         lease: {
@@ -127,32 +146,46 @@ export default {
         'refresh'
     ],
     data: function() {
-        const base = {
-            advanced: false
-        }
-
-        if (this.lease.id) {
-            base.editLease = JSON.parse(JSON.stringify(this.lease))
-        } else {
-            base.editLease = {
+        return {
+            loading: true,
+            advanced: false,
+            protocols: {},
+            editLease: {
                 name: '',
                 duration: '16 Hours',
                 stream_user: '',
                 stream_pass: ''
-            };
+            }
+        }
+    },
+    mounted: async function() {
+        if (this.lease.id) {
+            await this.fetchLease();
         }
 
-        return base;
+        this.loading = false
     },
     methods: {
-        deleteToken: async function() {
+        fetchLease: async function() {
+            this.loading = true;
+
+            const { lease, protocols } = await std(`/api/video/lease/${this.lease.id}`, {
+                method: 'GET',
+            });
+
+            this.editLease = lease;
+            this.protocols = protocols;
+
+            this.loading = false;
+        },
+        deleteLease: async function() {
             await std(`/api/video/lease/${this.lease.id}`, {
                 method: 'DELETE',
             });
 
             this.$emit('refresh');
         },
-        saveToken: async function() {
+        saveLease: async function() {
             if (this.lease.id) {
                 await std(`/api/video/lease/${this.lease.id}`, {
                     method: 'PATCH',

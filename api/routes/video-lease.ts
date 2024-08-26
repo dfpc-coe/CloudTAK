@@ -50,6 +50,74 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
+    await schema.get('/video/lease/:lease', {
+        name: 'Get Lease',
+        group: 'VideoLease',
+        description: 'Get a single Video Lease',
+        params: Type.Object({
+            lease: Type.String()
+        }),
+        res: Type.Object({
+            lease: VideoLeaseResponse,
+            protocols: Type.Object({
+                rtmp: Type.Optional(Type.Object({
+                    name: Type.String(),
+                    url: Type.String()
+                })),
+                rtsp: Type.Optional(Type.Object({
+                    name: Type.String(),
+                    url: Type.String()
+                }))
+            })
+        })
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            const lease = await config.models.VideoLease.from(req.params.lease);
+
+            const c = await videoControl.configuration();
+            if (!c.configured) return res.json({ lease });
+
+            const protocols: {
+                rtsp?: { name: string; url: string }
+                rtmp?: { name: string; url: string }
+            } = {};
+
+            console.error(c);
+            if (c.config.rtsp) {
+                // Format: rtsp://localhost:8554/mystream
+                const url = new URL(`/${lease.path}`, c.url.replace(/^http(s)?:/, 'rtsp:'))
+                url.port = c.config.rtspAddress.replace(':', '');
+
+                protocols.rtsp = {
+                    name: 'Real-Time Streaming Protocol (RTSP)',
+                    url: String(url)
+                }
+            }
+
+            if (c.config.rtmp) {
+
+            }
+
+            if (c.config.hls) {
+
+            }
+
+            if (c.config.webrtc) {
+
+            }
+
+            if (c.config.srt) {
+
+            }
+
+            return res.json({ lease, protocols });
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
     await schema.post('/video/lease', {
         name: 'Create Lease',
         group: 'VideoLease',
@@ -102,7 +170,7 @@ export default async function router(schema: Schema, config: Config) {
             if (user.access === AuthUserAccess.ADMIN) {
                 lease = await config.models.VideoLease.commit(req.params.lease, req.body);
             } else {
-                const lease = await config.models.VideoLease.from(req.params.lease);
+                lease = await config.models.VideoLease.from(req.params.lease);
 
                 if (lease.username === user.email) {
                     lease = await config.models.VideoLease.commit(req.params.lease, req.body);
