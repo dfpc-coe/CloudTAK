@@ -4,7 +4,7 @@
     >
         <span v-text='text' />
         <CopyButton
-            :text='inMode'
+            :text='text'
             class='position-absolute'
             :size='24'
             style='right: 8px'
