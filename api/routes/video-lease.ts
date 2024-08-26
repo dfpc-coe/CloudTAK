@@ -56,7 +56,10 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Create a new video Lease',
         body: Type.Object({
             name: Type.String(),
-            duration: Type.Integer()
+            duration: Type.Integer(),
+            path: Type.Optional(Type.String()),
+            stream_user: Type.Optional(Type.String()),
+            stream_pass: Type.Optional(Type.String())
         }),
         res: VideoLeaseResponse,
     }, async (req, res) => {
@@ -70,7 +73,7 @@ export default async function router(schema: Schema, config: Config) {
             const lease = await videoControl.generate({
                 name: req.body.name,
                 expiration: moment().add(req.body.duration, 'seconds').toISOString(),
-                path: randomUUID(),
+                path: req.body.path || randomUUID(),
                 username: user.email
             })
 
