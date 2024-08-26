@@ -59,16 +59,6 @@
                             >
                                 <div
                                     class='d-flex dropdown-item cursor-pointer hover-dark'
-                                    @click='$router.push("/profile")'
-                                >
-                                    <IconUser
-                                        :size='32'
-                                        :stroke='1'
-                                    />
-                                    <span class='mx-2'>Profile</span>
-                                </div>
-                                <div
-                                    class='d-flex dropdown-item cursor-pointer hover-dark'
                                     @click='$router.push("/connection")'
                                 >
                                     <IconNetwork

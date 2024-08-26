@@ -19,6 +19,9 @@ export default class Overlay {
     _layers: Array<LayerSpecification>;
     _clickable: Array<{ id: string; type: string }>;
 
+    _error?: Error;
+    _loaded: boolean;
+
     id: number;
     name: string;
     username?: string;
@@ -97,6 +100,7 @@ export default class Overlay {
         this._internal = opts.internal || false;
         this._layers = [];
         this._clickable = [];
+        this._loaded = false;
 
         this.id = overlay.id;
         this.name = overlay.name;
@@ -114,6 +118,10 @@ export default class Overlay {
         this.token = overlay.token;
 
         this.init(opts);
+    }
+
+    healthy(): boolean {
+        return !this._error;
     }
 
     init(opts: {
@@ -214,6 +222,7 @@ export default class Overlay {
         }
 
         this._clickable = opts.clickable;
+        this._loaded = true;
     }
 
     remove() {

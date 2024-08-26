@@ -46,6 +46,11 @@ export default async function(md: Event) {
             });
 
             console.error(JSON.stringify(res));
+
+            await API.updateImport(md, {
+                status: 'Success',
+                result
+            });
         } else if (imported.mode === 'Package') {
             const pkg = await DataPackage.parse(md.Local);
 
@@ -83,6 +88,11 @@ export default async function(md: Event) {
                     }
                 });
             }
+
+            await API.updateImport(md, {
+                status: 'Success',
+                result
+            });
         } else if (imported.mode === 'Unknown') {
             if (md.Ext === '.zip') {
                 const zip = new StreamZip.async({
@@ -105,20 +115,25 @@ export default async function(md: Event) {
                     for (const index of indexes) {
                         await processIndex(md, String(await zip.entryData(index)), zip);
                     }
+
+                    await API.updateImport(md, {
+                        status: 'Success',
+                        result
+                    });
                 } else {
                     await submitBatch(md, imported)
                 }
             } else if (md.Ext === '.xml') {
                 await processIndex(md, String(await fsp.readFile(md.Local)));
+
+                await API.updateImport(md, {
+                    status: 'Success',
+                    result
+                });
             } else {
                 await submitBatch(md, imported)
             }
         }
-
-        await API.updateImport(md, {
-            status: 'Success',
-            result
-        });
     } catch (err) {
         console.error(err);
 
@@ -140,7 +155,7 @@ async function submitBatch(event: Event, imported: Import) {
         Key: `profile/${imported.username}/${imported.name}`
     }))
 
-    await API.createTransform(event, imported);
+    await API.createBatch(event, imported);
 }
 
 async function processIndex(event: Event, xmlstr: string, zip?: StreamZipAsync) {

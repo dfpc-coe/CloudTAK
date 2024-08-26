@@ -13,15 +13,15 @@ export type LogGroupOutput = {
  */
 export default class LogGroup {
     static async list(stream: string): Promise<LogGroupOutput> {
-        const cwl = new CloudWatchLogs.CloudWatchLogsClient({ region: process.env.AWS_DEFAULT_REGION });
-
-        const logs = await cwl.send(new CloudWatchLogs.GetLogEventsCommand({
-            logStreamName: stream,
-            logGroupName: `/aws/batch/job`,
-            startFromHead: true,
-        }))
-
         try {
+            const cwl = new CloudWatchLogs.CloudWatchLogsClient({ region: process.env.AWS_DEFAULT_REGION });
+
+            const logs = await cwl.send(new CloudWatchLogs.GetLogEventsCommand({
+                logStreamName: stream,
+                logGroupName: `/aws/batch/job`,
+                startFromHead: true,
+            }))
+
             return {
                 logs: (logs.events || []).map((log) => {
                     return {
@@ -31,7 +31,7 @@ export default class LogGroup {
                 })
             }
         } catch (err) {
-            if (String(err).startsWith('ResourceNotFoundException')) {
+            if (String(err).includes('ResourceNotFoundException')) {
                 return { logs: [] }
             } else {
                 throw new Error(err instanceof Error ? err.message : String(err));

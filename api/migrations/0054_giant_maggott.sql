@@ -1,0 +1,1 @@
+ALTER TABLE "imports" ADD COLUMN "batch" boolean DEFAULT false NOT NULL;

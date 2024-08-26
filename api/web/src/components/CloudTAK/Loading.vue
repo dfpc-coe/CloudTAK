@@ -28,7 +28,7 @@ export default {
     name: 'CloudTAKLoading',
     components: {
         TablerModal,
-        TablerLoading
-    }
+        TablerLoading,
+    },
 }
 </script>

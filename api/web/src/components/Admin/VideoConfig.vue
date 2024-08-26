@@ -65,7 +65,10 @@
             label='Server Paths'
         />
         <template v-else>
-            <div v-for='path in service.paths' class='hover-light px-2 py-2'>
+            <div
+                v-for='path in service.paths'
+                class='hover-light px-2 py-2'
+            >
                 <span v-text='path.name' />
             </div>
         </template>
