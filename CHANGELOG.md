@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v3.11.2 - 2024-08-26
+
+- :rocket: `API` Migrate remaining endpoints where possible to allow GUID lookup for missions
+
 ### v3.11.1 - 2024-08-26
 
 - :bug: `API` Mission#latestFeats API would return empty array if only a single Feature were in a MissionSync
