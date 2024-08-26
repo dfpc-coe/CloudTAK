@@ -21,9 +21,10 @@
         </template>
         <template #default>
             <div
-                v-for='lease in leases.items'
-                :key='lease.id'
-                class='col-12 py-2 px-3 d-flex align-items-center hover-dark'
+                v-for='l in leases.items'
+                :key='l.id'
+                @click='lease = l'
+                class='col-12 py-2 px-3 d-flex align-items-center hover-dark cursor-pointer'
             >
                 <div class='row g-0 w-100'>
                     <div class='d-flex align-items-center w-100'>
@@ -33,13 +34,13 @@
                         />
                         <span
                             class='mx-2'
-                            v-text='lease.name'
+                            v-text='l.name'
                         />
 
                         <div class='ms-auto'>
                             <TablerDelete
                                 displaytype='icon'
-                                @delete='deleteLease(lease)'
+                                @delete='deleteLease(l)'
                             />
                         </div>
                     </div>
@@ -47,7 +48,7 @@
                         <span
                             style='margin-left: 42px;'
                             class='subheader'
-                            v-text='lease.expiration'
+                            v-text='l.expiration'
                         />
                     </div>
                 </div>

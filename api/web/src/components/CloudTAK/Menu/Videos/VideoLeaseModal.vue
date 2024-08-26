@@ -32,10 +32,46 @@
                 />
 
                 <TablerEnum
+                    v-if='!lease.id'
                     v-model='editLease.duration'
                     :options='["16 Hours", "12 Hours", "6 Hours", "1 Hour"]'
                     label='Lease Duration'
                 />
+
+                <label
+                    class='subheader mt-3 cursor-pointer'
+                    @click='advanced = !advanced'
+                >
+                    <IconSquareChevronRight
+                        v-if='!advanced'
+                        :size='32'
+                        :stroke='1'
+                    />
+                    <IconChevronDown
+                        v-else
+                        :size='32'
+                        :stroke='1'
+                    />
+                    Advanced Options
+                </label>
+
+                <div
+                    v-if='advanced'
+                    class='col-12'
+                >
+                    <TablerInput
+                        :disabled='editLease.id'
+                        v-model='editLease.stream_user'
+                        label='Stream Username'
+                    />
+
+                    <TablerInput
+                        :disabled='editLease.id'
+                        v-model='editLease.stream_pass'
+                        label='Stream Password'
+                    />
+
+                </div>
             </div>
         </div>
         <div class='modal-footer'>
@@ -60,6 +96,10 @@
 <script>
 import { std } from '/src/std.ts';
 import {
+    IconSquareChevronRight,
+    IconChevronDown,
+} from '@tabler/icons-vue';
+import {
     TablerModal,
     TablerInput,
     TablerEnum,
@@ -69,6 +109,8 @@ import {
 export default {
     name: 'VideoLeaseModal',
     components: {
+        IconSquareChevronRight,
+        IconChevronDown,
         TablerModal,
         TablerEnum,
         TablerInput,
@@ -85,21 +127,22 @@ export default {
         'refresh'
     ],
     data: function() {
-        if (this.lease.id) {
-            return {
-                code: false,
-                editLease: JSON.parse(JSON.stringify(this.lease))
-            }
-        } else {
-            return {
-                code: false,
-                editLease: {
-                    name: '',
-                    duration: '16 Hours'
-                }
-            }
-
+        const base = {
+            advanced: false
         }
+
+        if (this.lease.id) {
+            base.editLease = JSON.parse(JSON.stringify(this.lease))
+        } else {
+            base.editLease = {
+                name: '',
+                duration: '16 Hours',
+                stream_user: '',
+                stream_pass: ''
+            };
+        }
+
+        return base;
     },
     methods: {
         deleteToken: async function() {
