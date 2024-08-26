@@ -28,8 +28,6 @@ export default class Batch {
             jobDefinition: `${config.StackName}-data-job`,
             containerOverrides: {
                 environment: [
-                    { name: 'ETL_API',      value: config.API_URL },
-                    { name: 'ETL_BUCKET',   value: config.Bucket },
                     { name: 'ETL_TOKEN',    value: `etl.${jwt.sign({ access: 'import', id: id, internal: true }, config.SigningSecret)}` },
                     { name: 'ETL_TYPE',     value: 'profile' },
                     { name: 'ETL_ID',       value: email },

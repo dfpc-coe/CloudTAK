@@ -40,10 +40,10 @@ try {
 export default class Task {
     constructor() {
         this.etl = {
-            api: process.env.ETL_API || '',
+            api: process.env.TAK_ETL_API || '',
+            bucket: process.env.TAK_ETL_BUCKET || '',
             id: process.env.ETL_ID || '',
             type: process.env.ETL_TYPE || '',
-            bucket: process.env.ETL_BUCKET || '',
             token: process.env.ETL_TOKEN || '',
             task: process.env.ETL_TASK || '{}'
         };
