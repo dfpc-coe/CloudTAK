@@ -31,7 +31,7 @@ export default class LogGroup {
                 })
             }
         } catch (err) {
-            if (String(err).startsWith('ResourceNotFoundException')) {
+            if (String(err).includes('ResourceNotFoundException')) {
                 return { logs: [] }
             } else {
                 throw new Error(err instanceof Error ? err.message : String(err));
