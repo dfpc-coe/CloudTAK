@@ -67,6 +67,18 @@ export default async function router(schema: Schema, config: Config) {
                 rtsp: Type.Optional(Type.Object({
                     name: Type.String(),
                     url: Type.String()
+                })),
+                webrtc: Type.Optional(Type.Object({
+                    name: Type.String(),
+                    url: Type.String()
+                })),
+                hls: Type.Optional(Type.Object({
+                    name: Type.String(),
+                    url: Type.String()
+                })),
+                srt: Type.Optional(Type.Object({
+                    name: Type.String(),
+                    url: Type.String()
                 }))
             })
         })
@@ -84,7 +96,6 @@ export default async function router(schema: Schema, config: Config) {
                 rtmp?: { name: string; url: string }
             } = {};
 
-            console.error(c);
             if (c.config.rtsp) {
                 // Format: rtsp://localhost:8554/mystream
                 const url = new URL(`/${lease.path}`, c.url.replace(/^http(s)?:/, 'rtsp:'))
@@ -97,19 +108,52 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             if (c.config.rtmp) {
+                // Format: rtmp://localhost/mystream
+                const url = new URL(`/${lease.path}`, c.url.replace(/^http(s)?:/, 'rtmp:'))
+                url.port = '';
 
+                if (lease.stream_user) url.searchParams.append('user', lease.stream_user);
+                if (lease.stream_pass) url.searchParams.append('pass', lease.stream_pass);
+
+                protocols.rtmp = {
+                    name: 'Real-Time Messaging Protocol (RTMP)',
+                    url: String(url)
+                }
             }
 
             if (c.config.hls) {
+                // Format: http://localhost:8888/mystream
+                const url = new URL(`/${lease.path}`, c.url);
+                url.port = c.config.hlsAddress.replace(':', '');
 
+                protocols.hls = {
+                    name: 'HTTP Live Streaming (HLS)',
+                    url: String(url)
+                }
             }
 
             if (c.config.webrtc) {
+                // Format: http://localhost:8889/mystream
+                const url = new URL(`/${lease.path}`, c.url);
+                url.port = c.config.webrtcAddress.replace(':', '');
 
+                protocols.webrtc = {
+                    name: 'Web Real-Time Communication (WebRTC)',
+                    url: String(url)
+                }
             }
 
             if (c.config.srt) {
+                // Format: srt://localhost:8890?streamid=read:mystream
+                const url = new URL(c.url.replace(/^http(s)?:/, 'srt:'))
+                url.port = c.config.srtAddress.replace(':', '');
 
+                url.searchParams.append('streamId', `read:${lease.path}`)
+
+                protocols.srt = {
+                    name: 'Secure Reliable Transport (SRT)',
+                    url: String(url)
+                }
             }
 
             return res.json({ lease, protocols });
