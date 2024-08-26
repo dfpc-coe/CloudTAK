@@ -146,22 +146,17 @@
                 </div>
 
                 <div
+                    v-if='!isNaN(feat.properties.speed)'
                     class='pt-2'
                     :class='{
                         "col-md-6": feat.properties.speed,
                         "col-12": !feat.properties.speed,
                     }'
                 >
-                    <div
-                        v-if='!isNaN(feat.properties.course)'
-                        class='col-12 py-2'
-                    >
-                        <label class='subheader mx-2'>Course</label>
-                        <div
-                            class='bg-gray-500 rounded mx-2 py-2 px-2'
-                            v-text='feat.properties.course'
-                        />
-                    </div>
+                    <Course
+                        :course='feat.properties.course'
+                        class='py-2'
+                    />
                 </div>
 
                 <div
@@ -334,6 +329,7 @@ import {
 import Share from './util/Share.vue';
 import CoTStyle from './util/CoTStyle.vue';
 import Coordinate from './util/Coordinate.vue';
+import Course from './util/Course.vue';
 import Speed from './util/Speed.vue';
 import Elevation from './util/Elevation.vue';
 import Attachments from './util/Attachments.vue';
@@ -470,6 +466,7 @@ export default {
         Elevation,
         Attachments,
         Speed,
+        Course,
         Share,
         Coordinate,
         TablerNone,
