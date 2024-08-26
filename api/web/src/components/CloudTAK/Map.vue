@@ -99,87 +99,94 @@
             <div
                 v-if='mode === "Default"'
                 class='position-absolute top-0 beginning-0 text-white py-2 px-2'
-                style='
-                    z-index: 1;
-                    width: 60px;
-                    background-color: rgba(0, 0, 0, 0.5);
-                    border-radius: 0px 0px 6px 0px;
-                '
             >
-                <IconSearch
-                    v-tooltip='"Search"'
-                    tabindex='0'
-                    title='Search Button'
-                    :size='40'
-                    :stroke='1'
-                    class='cursor-pointer hover-button mb-3'
-                    @click='search.shown = !search.shown'
-                />
-
                 <div
-                    style='margin-bottom: 10px;'
-                    class='cursor-pointer hover-button'
-                    @click='setBearing(0)'
+                    style='
+                        z-index: 1;
+                        width: 50px;
+                        background-color: rgba(0, 0, 0, 0.5);
+                        border-radius: 6px 6px 6px 6px;
+                    '
                 >
-                    <IconCircleArrowUp
-                        v-tooltip='"Snap to North"'
-                        :alt='`Map Rotated to ${humanBearing}`'
-                        :transform='`rotate(${360 - bearing})`'
+                    <IconSearch
+                        v-tooltip='"Search"'
+                        tabindex='0'
+                        title='Search Button'
                         :size='40'
                         :stroke='1'
+                        style='margin: 5px 5px 5px 5px;'
+                        class='cursor-pointer hover-button'
+                        @click='search.shown = !search.shown'
                     />
+
                     <div
-                        v-if='bearing !== 0'
-                        class='text-center'
-                        v-text='humanBearing'
+                        style='margin: 5px 5px 5px 5px;'
+                        class='cursor-pointer hover-button'
+                        @click='setBearing(0)'
+                    >
+                        <IconCircleArrowUp
+                            v-tooltip='"Snap to North"'
+                            :alt='`Map Rotated to ${humanBearing}`'
+                            :transform='`rotate(${360 - bearing})`'
+                            :size='40'
+                            :stroke='1'
+                        />
+                        <div
+                            v-if='bearing !== 0'
+                            class='text-center'
+                            v-text='humanBearing'
+                        />
+                    </div>
+                    <IconFocus2
+                        v-if='!radial.cot && !locked.length'
+                        v-tooltip='"Get Location"'
+                        role='button'
+                        tabindex='0'
+                        title='Get Your Location button'
+                        :size='40'
+                        :stroke='1'
+                        class='cursor-pointer hover-button'
+                        style='margin: 5px 5px 5px 5px;'
+                        @click='getLocation(true)'
                     />
-                </div>
-                <IconFocus2
-                    v-if='!radial.cot && !locked.length'
-                    v-tooltip='"Get Location"'
-                    role='button'
-                    tabindex='0'
-                    title='Get Your Location button'
-                    :size='40'
-                    :stroke='1'
-                    class='cursor-pointer hover-button'
-                    @click='getLocation(true)'
-                />
-                <IconLockAccess
-                    v-else-if='!radial.cot'
-                    role='button'
-                    tabindex='0'
-                    title='Map is locked to marker'
-                    :size='40'
-                    :stroke='1'
-                    class='cursor-pointer hover-button'
-                    @click='locked.splice(0, locked.length)'
-                />
+                    <IconLockAccess
+                        v-else-if='!radial.cot'
+                        role='button'
+                        tabindex='0'
+                        title='Map is locked to marker'
+                        :size='40'
+                        :stroke='1'
+                        class='cursor-pointer hover-button'
+                        style='margin: 5px 5px 5px 5px;'
+                        @click='locked.splice(0, locked.length)'
+                    />
 
-                <div
-                    v-if='!mobileDetected'
-                    class='mt-3'
-                >
-                    <IconPlus
-                        v-tooltip='"Zoom In"'
-                        role='button'
-                        tabindex='0'
-                        title='Zoom In Button'
-                        :size='40'
-                        :stroke='1'
-                        class='cursor-pointer hover-button'
-                        @click='setZoom(getZoom() + 1);'
-                    />
-                    <IconMinus
-                        v-tooltip='"Zoom Out"'
-                        role='button'
-                        tabindex='0'
-                        title='Zoom Out Button'
-                        :size='40'
-                        :stroke='1'
-                        class='cursor-pointer hover-button'
-                        @click='setZoom(getZoom() - 1);'
-                    />
+                    <div
+                        v-if='!mobileDetected'
+                    >
+                        <IconPlus
+                            v-tooltip='"Zoom In"'
+                            role='button'
+                            tabindex='0'
+                            title='Zoom In Button'
+                            :size='40'
+                            :stroke='1'
+                            class='cursor-pointer hover-button'
+                            style='margin: 5px 5px 5px 5px;'
+                            @click='setZoom(getZoom() + 1);'
+                        />
+                        <IconMinus
+                            v-tooltip='"Zoom Out"'
+                            role='button'
+                            tabindex='0'
+                            title='Zoom Out Button'
+                            :size='40'
+                            :stroke='1'
+                            class='cursor-pointer hover-button'
+                            style='margin: 5px 5px 5px 5px;'
+                            @click='setZoom(getZoom() - 1);'
+                        />
+                    </div>
                 </div>
             </div>
 
@@ -336,7 +343,7 @@
                     width: 120px;
                     right: 60px;
                     background-color: rgba(0, 0, 0, 0.5);
-                    border-radius: 0px 0px 0px 6px;
+                    border-radius: 0px 0px 6px 6px;
                 '
             >
                 <TablerDropdown>
