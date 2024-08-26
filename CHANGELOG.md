@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v3.11.1 - 2024-08-26
+
+- :bug: `API` Mission#latestFeats API would return empty array if only a single Feature were in a MissionSync
+
 ### v3.11.0 - 2024-08-26
 
 - :tada: `UI/API` Add ability to view stream locations in Lease Panel
