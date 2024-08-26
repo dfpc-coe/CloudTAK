@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v3.12.0 - 2024-08-26
+
+- :rocket: `UI` Use CoTView for Mission API COTs
+- :bug: `API` Fix bug in MissionLayer GUID lookup
+
 ### v3.11.2 - 2024-08-26
 
 - :rocket: `API` Migrate remaining endpoints where possible to allow GUID lookup for missions
