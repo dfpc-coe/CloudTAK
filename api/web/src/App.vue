@@ -202,11 +202,15 @@ export default {
         },
         refreshLogin: async function() {
             this.loading = true;
-            await this.getLogin();
-            await this.getServer();
 
-            const profileStore = useProfileStore();
-            await profileStore.load();
+            const success = await this.getLogin();
+
+            if (success) {
+                await this.getServer()
+
+                const profileStore = useProfileStore();
+                await profileStore.load();
+            }
 
             this.loading = false;
         },
@@ -216,12 +220,15 @@ export default {
             } catch (err) {
                 this.user = null;
                 delete localStorage.token;
+                
                 if (this.$route.name !== 'login') {
                     this.routeLogin();
                 }
+
+                return false;
             }
 
-            await this.getServer()
+            return true;
         },
         getServer: async function() {
             this.server = await std('/api/server');
