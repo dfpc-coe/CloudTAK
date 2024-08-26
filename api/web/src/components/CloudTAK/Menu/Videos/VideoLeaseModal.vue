@@ -81,10 +81,10 @@
                 </div>
 
                 <template v-if='Object.keys(protocols).length'>
-                    <div class='subheader'>Video Streaming Protocols</div>
-                    <div v-for='protocol in protocols'>
+                    <div class='subheader pt-4'>Video Streaming Protocols</div>
+                    <div v-for='protocol in protocols' class='pt-2'>
                         <div v-text='protocol.name'/>
-                        <pre v-text='protocol.url'></pre>
+                        <CopyField :text='protocol.url'/>
                     </div>
                 </template>
             </div>
@@ -110,6 +110,7 @@
 
 <script>
 import { std } from '/src/std.ts';
+import CopyField from '../../util/CopyField.vue';
 import {
     IconRefresh,
     IconSquareChevronRight,
@@ -126,6 +127,7 @@ import {
 export default {
     name: 'VideoLeaseModal',
     components: {
+        CopyField,
         IconRefresh,
         IconSquareChevronRight,
         IconChevronDown,
