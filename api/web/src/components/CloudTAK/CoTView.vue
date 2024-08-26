@@ -109,6 +109,13 @@
             style='height: calc(100vh - 160px)'
         >
             <div class='row g-0'>
+                <div class='col-12'>
+                    <div class='d-flex align-items-center py-2 px-2 my-2 mx-2 rounded bg-gray-500'>
+                        <IconAmbulance :size='32' :stroke='1'/>
+                        <span class='mx-2'>This Feature is part of a Data Sync</span>
+                    </div>
+                </div>
+
                 <div
                     class='pt-2'
                     :class='{
@@ -336,6 +343,7 @@ import Attachments from './util/Attachments.vue';
 import phone from 'phone';
 import {
     IconX,
+    IconAmbulance,
     IconShare2,
     IconZoomPan,
     IconCode,
@@ -352,19 +360,26 @@ import { useProfileStore } from '/src/stores/profile.ts';
 export default {
     name: 'CloudTAKCoTView',
     data: function() {
-        const feat = cotStore.get(this.$route.params.uid)
-
-        return {
-            feat,
+        const base = {
+            feat: null,
+            mission: false,
             type: null,
             mode: 'default',
             icon: null
         }
+
+        const { feat, mission } = this.findCOT();
+
+        if (feat) base.feat = feat;
+        if (mission) base.mission = mission;
+
+        return base;
     },
     watch: {
         '$route.params.uid': function() {
-            const feat = cotStore.get(this.$route.params.uid)
+            const { feat, mission } = this.findCOT();
             this.feat = feat;
+            this.mission = mission;
         },
         feat: {
             deep: true,
@@ -403,6 +418,29 @@ export default {
         }
     },
     methods: {
+        findCOT: function() {
+            const base = {
+                mission: null,
+                feat: null
+            }
+
+            base.feat = cotStore.get(this.$route.params.uid)
+
+            if (!base.feat) {
+                for (const sub of cotStore.subscriptions.keys()) {
+                    const store = cotStore.subscriptions.get(sub);
+                    if (!store) continue;
+
+                    base.feat = store.get(this.$route.params.uid);
+                    if (base.feat) {
+                        base.mission = sub;
+                        break;
+                    }
+                }
+            }
+
+            return base;
+        },
         fetchType: async function() {
             this.type = await std(`/api/type/cot/${this.feat.properties.type}`)
         },
@@ -473,6 +511,7 @@ export default {
         TablerInput,
         TablerMarkdown,
         TablerDelete,
+        IconAmbulance,
         IconBattery1,
         IconBattery2,
         IconBattery3,
