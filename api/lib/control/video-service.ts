@@ -6,14 +6,34 @@ import fetch from '../fetch.js';
 
 export const VideoConfig = Type.Object({
     api: Type.Boolean(),
+    apiAddress: Type.String(),
+
     metrics: Type.Boolean(),
+    metricsAddress: Type.String(),
+
     pprof: Type.Boolean(),
+    pprofAddress: Type.String(),
+
     playback: Type.Boolean(),
+    playbackAddress: Type.String(),
+
     rtsp: Type.Boolean(),
+    rtspAddress: Type.String(),
+    rtspsAddress: Type.String(),
+    rtspAuthMethods: Type.Array(Type.String()),
+
     rtmp: Type.Boolean(),
+    rtmpAddress: Type.String(),
+    rtmpsAddress: Type.String(),
+
     hls: Type.Boolean(),
+    hlsAddress: Type.String(),
+
     webrtc: Type.Boolean(),
-    srt: Type.Boolean()
+    webrtcAddress: Type.String(),
+
+    srt: Type.Boolean(),
+    srtAddress: Type.String(),
 })
 
 export const PathConfig = Type.Object({
