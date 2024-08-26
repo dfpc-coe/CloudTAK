@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v3.10.1 - 2024-08-26
+
+- :bug: `UI` Fix thrown error on expired/invalid token when already at the login page
+
 ### v3.10.0 - 2024-08-25
 
 - :tada: `API/UI` Fully merge file imports into CloudTAK UI
