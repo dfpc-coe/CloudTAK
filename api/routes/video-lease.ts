@@ -1,4 +1,4 @@
-import { Type } from '@sinclair/typebox'
+import { Static, Type } from '@sinclair/typebox'
 import moment from 'moment';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
@@ -10,6 +10,30 @@ import { randomUUID } from 'node:crypto';
 import { StandardResponse, VideoLeaseResponse } from '../lib/types.js';
 import ECSVideoControl from '../lib/control/video-service.js';
 import * as Default from '../lib/limits.js';
+
+
+export const Protocols = Type.Object({
+    rtmp: Type.Optional(Type.Object({
+        name: Type.String(),
+        url: Type.String()
+    })),
+    rtsp: Type.Optional(Type.Object({
+        name: Type.String(),
+        url: Type.String()
+    })),
+    webrtc: Type.Optional(Type.Object({
+        name: Type.String(),
+        url: Type.String()
+    })),
+    hls: Type.Optional(Type.Object({
+        name: Type.String(),
+        url: Type.String()
+    })),
+    srt: Type.Optional(Type.Object({
+        name: Type.String(),
+        url: Type.String()
+    }))
+})
 
 export default async function router(schema: Schema, config: Config) {
     const videoControl = new ECSVideoControl(config);
@@ -59,42 +83,26 @@ export default async function router(schema: Schema, config: Config) {
         }),
         res: Type.Object({
             lease: VideoLeaseResponse,
-            protocols: Type.Object({
-                rtmp: Type.Optional(Type.Object({
-                    name: Type.String(),
-                    url: Type.String()
-                })),
-                rtsp: Type.Optional(Type.Object({
-                    name: Type.String(),
-                    url: Type.String()
-                })),
-                webrtc: Type.Optional(Type.Object({
-                    name: Type.String(),
-                    url: Type.String()
-                })),
-                hls: Type.Optional(Type.Object({
-                    name: Type.String(),
-                    url: Type.String()
-                })),
-                srt: Type.Optional(Type.Object({
-                    name: Type.String(),
-                    url: Type.String()
-                }))
-            })
+            protocols: Protocols
         })
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
 
-            const lease = await config.models.VideoLease.from(req.params.lease);
+            let lease;
+            if (user.access === AuthUserAccess.ADMIN) {
+                lease = await config.models.VideoLease.from(req.params.lease);
+            } else {
+                lease = await config.models.VideoLease.from(req.params.lease);
 
+                if (lease.username !== user.email) {
+                    throw new Err(400, null, 'You can only delete a lease you created');
+                }
+            }
+
+            const protocols: Static<typeof Protocols> = {};
             const c = await videoControl.configuration();
-            if (!c.configured) return res.json({ lease });
-
-            const protocols: {
-                rtsp?: { name: string; url: string }
-                rtmp?: { name: string; url: string }
-            } = {};
+            if (!c.configured) return res.json({ lease, protocols });
 
             if (c.config.rtsp) {
                 // Format: rtsp://localhost:8554/mystream
@@ -219,7 +227,7 @@ export default async function router(schema: Schema, config: Config) {
                 if (lease.username === user.email) {
                     lease = await config.models.VideoLease.commit(req.params.lease, req.body);
                 } else {
-                    throw new Err(400, null, 'You can only delete a least you created');
+                    throw new Err(400, null, 'You can only delete a lease you created');
                 }
             }
 
@@ -249,7 +257,7 @@ export default async function router(schema: Schema, config: Config) {
                 if (lease.username === user.email) {
                     await videoControl.delete(req.params.lease);
                 } else {
-                    throw new Err(400, null, 'You can only delete a least you created');
+                    throw new Err(400, null, 'You can only delete a lease you created');
                 }
             }
 

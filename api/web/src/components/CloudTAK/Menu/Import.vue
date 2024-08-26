@@ -61,8 +61,14 @@
                             desc='Running Import'
                         />
                         <template v-if='batch.logs.length'>
-                            <label for='logs' class='subheader'>Import Logs</label>
-                            <pre id='logs' v-text='batch.logs.map((log) => { return log.message }).join("\n")'></pre>
+                            <label
+                                for='logs'
+                                class='subheader'
+                            >Import Logs</label>
+                            <pre
+                                id='logs'
+                                v-text='batch.logs.map((log) => { return log.message }).join("\n")'
+                            />
                         </template>
                     </template>
                     <template v-else-if='imported.status === "Fail"'>

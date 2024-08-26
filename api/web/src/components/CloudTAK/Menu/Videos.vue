@@ -23,8 +23,8 @@
             <div
                 v-for='l in leases.items'
                 :key='l.id'
-                @click='lease = l'
                 class='col-12 py-2 px-3 d-flex align-items-center hover-dark cursor-pointer'
+                @click='lease = l'
             >
                 <div class='row g-0 w-100'>
                     <div class='d-flex align-items-center w-100'>

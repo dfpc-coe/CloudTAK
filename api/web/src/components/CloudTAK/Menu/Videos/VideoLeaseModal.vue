@@ -29,8 +29,11 @@
             </div>
         </div>
 
-        <TablerLoading v-if='loading'/>
-        <div v-else class='modal-body row'>
+        <TablerLoading v-if='loading' />
+        <div
+            v-else
+            class='modal-body row'
+        >
             <div
                 class='col-12'
             >
@@ -68,23 +71,28 @@
                     class='col-12'
                 >
                     <TablerInput
-                        :disabled='editLease.id'
                         v-model='editLease.stream_user'
+                        :disabled='editLease.id'
                         label='Stream Username'
                     />
 
                     <TablerInput
-                        :disabled='editLease.id'
                         v-model='editLease.stream_pass'
+                        :disabled='editLease.id'
                         label='Stream Password'
                     />
                 </div>
 
                 <template v-if='Object.keys(protocols).length'>
-                    <div class='subheader pt-4'>Video Streaming Protocols</div>
-                    <div v-for='protocol in protocols' class='pt-2'>
-                        <div v-text='protocol.name'/>
-                        <CopyField :text='protocol.url'/>
+                    <div class='subheader pt-4'>
+                        Video Streaming Protocols
+                    </div>
+                    <div
+                        v-for='protocol in protocols'
+                        class='pt-2'
+                    >
+                        <div v-text='protocol.name' />
+                        <CopyField :text='protocol.url' />
                     </div>
                 </template>
             </div>
