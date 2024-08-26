@@ -83,6 +83,40 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
+    await schema.patch('/video/lease/:lease', {
+        name: 'Update Lease',
+        group: 'VideoLease',
+        description: 'Update a video Lease',
+        params: Type.Object({
+            lease: Type.String()
+        }),
+        body: Type.Object({
+            name: Type.Optional(Type.String()),
+        }),
+        res: VideoLeaseResponse,
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            let lease;
+            if (user.access === AuthUserAccess.ADMIN) {
+                lease = await config.models.VideoLease.commit(req.params.lease, req.body);
+            } else {
+                const lease = await config.models.VideoLease.from(req.params.lease);
+
+                if (lease.username === user.email) {
+                    lease = await config.models.VideoLease.commit(req.params.lease, req.body);
+                } else {
+                    throw new Err(400, null, 'You can only delete a least you created');
+                }
+            }
+
+            return res.json(lease);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
     await schema.delete('/video/lease/:lease', {
         name: 'Delete Lease',
         group: 'VideoLease',

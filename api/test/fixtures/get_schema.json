@@ -939,6 +939,11 @@
         "query": false,
         "res": true
     },
+    "PATCH /video/lease/:lease": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
     "DELETE /video/lease/:lease": {
         "body": false,
         "query": false,
