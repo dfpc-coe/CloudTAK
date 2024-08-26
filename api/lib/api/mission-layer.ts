@@ -117,9 +117,11 @@ export default class {
             return u.data
         }));
 
-        return feats.filter((f) => {
+        const filtered = feats.filter((f) => {
             return layerUids.has(f.id)
         });
+
+        return filtered;
     }
 
     async get(
