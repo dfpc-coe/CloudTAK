@@ -1,5 +1,5 @@
 <template>
-    <TablerModal>
+    <TablerModal :size='lease.id ? "xl" : undefined'>
         <div class='modal-status bg-yellow' />
         <button
             type='button'
@@ -14,15 +14,26 @@
             />
 
             <div class='ms-auto btn-list'>
+                <IconRefresh
+                    v-if='editLease.id'
+                    :size='32'
+                    :stroke='1'
+                    class='cursor-pointer'
+                    @click='fetchLease'
+                />
                 <TablerDelete
                     v-if='editLease.id'
                     displaytype='icon'
-                    @delete='deleteToken'
+                    @delete='deleteLease'
                 />
             </div>
         </div>
 
-        <div class='modal-body row'>
+        <TablerLoading v-if='loading' />
+        <div
+            v-else
+            class='modal-body row'
+        >
             <div
                 class='col-12'
             >
@@ -32,17 +43,65 @@
                 />
 
                 <TablerEnum
+                    v-if='!lease.id'
                     v-model='editLease.duration'
                     :options='["16 Hours", "12 Hours", "6 Hours", "1 Hour"]'
                     label='Lease Duration'
                 />
+
+                <label
+                    class='subheader mt-3 cursor-pointer'
+                    @click='advanced = !advanced'
+                >
+                    <IconSquareChevronRight
+                        v-if='!advanced'
+                        :size='32'
+                        :stroke='1'
+                    />
+                    <IconChevronDown
+                        v-else
+                        :size='32'
+                        :stroke='1'
+                    />
+                    Advanced Options
+                </label>
+
+                <div
+                    v-if='advanced'
+                    class='col-12'
+                >
+                    <TablerInput
+                        v-model='editLease.stream_user'
+                        :disabled='editLease.id'
+                        label='Stream Username'
+                    />
+
+                    <TablerInput
+                        v-model='editLease.stream_pass'
+                        :disabled='editLease.id'
+                        label='Stream Password'
+                    />
+                </div>
+
+                <template v-if='Object.keys(protocols).length'>
+                    <div class='subheader pt-4'>
+                        Video Streaming Protocols
+                    </div>
+                    <div
+                        v-for='protocol in protocols'
+                        class='pt-2'
+                    >
+                        <div v-text='protocol.name' />
+                        <CopyField :text='protocol.url' />
+                    </div>
+                </template>
             </div>
         </div>
         <div class='modal-footer'>
             <button
                 v-if='!code'
                 class='btn btn-primary'
-                @click='saveToken'
+                @click='saveLease'
             >
                 Save
             </button>
@@ -59,7 +118,14 @@
 
 <script>
 import { std } from '/src/std.ts';
+import CopyField from '../../util/CopyField.vue';
 import {
+    IconRefresh,
+    IconSquareChevronRight,
+    IconChevronDown,
+} from '@tabler/icons-vue';
+import {
+    TablerLoading,
     TablerModal,
     TablerInput,
     TablerEnum,
@@ -69,10 +135,15 @@ import {
 export default {
     name: 'VideoLeaseModal',
     components: {
+        CopyField,
+        IconRefresh,
+        IconSquareChevronRight,
+        IconChevronDown,
         TablerModal,
         TablerEnum,
         TablerInput,
-        TablerDelete
+        TablerDelete,
+        TablerLoading,
     },
     props: {
         lease: {
@@ -85,31 +156,46 @@ export default {
         'refresh'
     ],
     data: function() {
-        if (this.lease.id) {
-            return {
-                code: false,
-                editLease: JSON.parse(JSON.stringify(this.lease))
+        return {
+            loading: true,
+            advanced: false,
+            protocols: {},
+            editLease: {
+                name: '',
+                duration: '16 Hours',
+                stream_user: '',
+                stream_pass: ''
             }
-        } else {
-            return {
-                code: false,
-                editLease: {
-                    name: '',
-                    duration: '16 Hours'
-                }
-            }
-
         }
     },
+    mounted: async function() {
+        if (this.lease.id) {
+            await this.fetchLease();
+        }
+
+        this.loading = false
+    },
     methods: {
-        deleteToken: async function() {
+        fetchLease: async function() {
+            this.loading = true;
+
+            const { lease, protocols } = await std(`/api/video/lease/${this.lease.id}`, {
+                method: 'GET',
+            });
+
+            this.editLease = lease;
+            this.protocols = protocols;
+
+            this.loading = false;
+        },
+        deleteLease: async function() {
             await std(`/api/video/lease/${this.lease.id}`, {
                 method: 'DELETE',
             });
 
             this.$emit('refresh');
         },
-        saveToken: async function() {
+        saveLease: async function() {
             if (this.lease.id) {
                 await std(`/api/video/lease/${this.lease.id}`, {
                     method: 'PATCH',
