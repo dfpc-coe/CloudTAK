@@ -2,7 +2,7 @@ import { fetch } from 'undici';
 
 export default class API {
     static async updateImport(importid, token, body) {
-        const res = await fetch(new URL(`/api/import/${importid}`, process.env.TAK_ETL_API), {
+        const res = await fetch(new URL(`/api/import/${importid}`, process.env.ETL_API), {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
