@@ -2,18 +2,11 @@
     <div class='col-12'>
         <label class='subheader mx-2'>Coordinates</label>
         <div class='mx-2'>
-            <div
+            <CopyField
                 v-if='!edit'
-                class='bg-gray-500 rounded-top py-2 px-2 position-relative'
-            >
-                <span v-text='inMode' />
-                <CopyButton
-                    :text='inMode'
-                    class='position-absolute'
-                    :size='24'
-                    style='right: 8px'
-                />
-            </div>
+                :text='inMode'
+                :size='24'
+            />
             <template v-else>
                 <TablerInput
                     v-model='coordinateEntry'
@@ -68,13 +61,13 @@
 import {
     TablerInput
 } from '@tak-ps/vue-tabler';
-import CopyButton from './CopyButton.vue';
+import CopyField from './CopyField.vue';
 
 export default {
     name: 'COTCoordinate',
     components: {
         TablerInput,
-        CopyButton
+        CopyField,
     },
     props: {
         edit: {
