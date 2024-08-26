@@ -837,7 +837,7 @@ export default {
         },
         handleRadial: async function(event) {
             if (event === 'cot:view') {
-                this.$router.push(`/cot/${this.radial.cot.id}`);
+                this.$router.push(`/cot/${this.radial.cot.properties.id}`);
                 this.closeRadial()
             } else if (event === 'cot:delete') {
                 const cot = mapStore.radial.cot;

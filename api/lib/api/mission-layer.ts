@@ -1,7 +1,8 @@
 import TAKAPI from '../tak-api.js';
 import { TAKList } from './types.js';
 import { Type, Static } from '@sinclair/typebox';
-import type { GUIDMatch, MissionOptions } from './mission.js';
+import type { MissionOptions } from './mission.js';
+import { GUIDMatch } from './mission.js';
 import Err from '@openaddresses/batch-error';
 import type { Feature } from '@tak-ps/node-cot';
 
