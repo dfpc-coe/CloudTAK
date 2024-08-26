@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v3.11.0 - 2024-08-26
+
+- :tada: `UI/API` Add ability to view stream locations in Lease Panel
+
 ### v3.10.1 - 2024-08-26
 
 - :bug: `UI` Fix thrown error on expired/invalid token when already at the login page
