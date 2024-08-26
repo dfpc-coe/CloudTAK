@@ -23,11 +23,9 @@ import {
 
 export default {
     name: 'CopyButton',
-    data: function() {
-        return {
-            copied: false,
-            timeout: false,
-        }
+    components: {
+        IconCopy,
+        IconCopyCheck
     },
     props: {
         text: {
@@ -43,14 +41,16 @@ export default {
             default: 1
         }
     },
+    data: function() {
+        return {
+            copied: false,
+            timeout: false,
+        }
+    },
     unmounted: function() {
         if (this.timeout) {
             clearTimeout(this.timeout);
         }
-    },
-    components: {
-        IconCopy,
-        IconCopyCheck
     },
     methods: {
         copy: async function() {

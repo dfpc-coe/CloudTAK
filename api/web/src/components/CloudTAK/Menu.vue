@@ -402,9 +402,7 @@
                 >
                     <div
                         style='width: calc(100% - 40px)'
-                        class='py-2 d-flex align-items-center hover-dark cursor-pointer'
-                        role='button'
-                        @click='$router.push("/profile")'
+                        class='py-2 d-flex align-items-center'
                     >
                         <div class='d-flex align-items-center'>
                             <IconUser

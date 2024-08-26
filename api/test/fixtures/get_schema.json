@@ -434,6 +434,16 @@
         "query": true,
         "res": true
     },
+    "POST /import/:import/batch": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /import/:import/batch": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /iconset": {
         "body": false,
         "query": true,
@@ -780,21 +790,6 @@
         "res": true
     },
     "GET /profile/feature/:id": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /profile/job": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /profile/job/:jobid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /profile/job/:jobid/logs": {
         "body": false,
         "query": false,
         "res": true

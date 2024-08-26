@@ -5,13 +5,14 @@ import { Upload } from '@aws-sdk/lib-storage';
 import Tippecanoe from './lib/tippecanoe.js';
 import jwt from 'jsonwebtoken';
 import path from 'node:path';
+import API from './lib/api.js';
 import os from 'node:os';
 import cp from 'node:child_process';
 
 // Formats
 import KML from './lib/kml.js';
 import Translate from './lib/translate.js';
-import GeoJSON from './lib/geojson.js'
+import GeoJSON from './lib/geojson.js';
 
 const FORMATS = [KML, Translate, GeoJSON];
 const formats = new Map();
@@ -33,16 +34,16 @@ try {
     Object.assign(process.env, JSON.parse(fs.readFileSync(dotfile)));
     console.log('ok - .env file loaded');
 } catch (err) {
-    console.log('ok - no .env file loaded');
+    console.log(`ok - no .env file loaded: ${err}`);
 }
 
 export default class Task {
     constructor() {
         this.etl = {
-            api: process.env.ETL_API || '',
+            api: process.env.TAK_ETL_URL || '',
+            bucket: process.env.TAK_ETL_BUCKET || '',
             id: process.env.ETL_ID || '',
             type: process.env.ETL_TYPE || '',
-            bucket: process.env.ETL_BUCKET || '',
             token: process.env.ETL_TOKEN || '',
             task: process.env.ETL_TASK || '{}'
         };
@@ -140,12 +141,39 @@ export default class Task {
                     Body: fs.createReadStream(path.resolve(os.tmpdir(), path.parse(this.etl.task.asset).name + '.pmtiles'))
                 }
             });
+
             await pmuploader.done();
+        }
+    }
+
+    async reporter(err) {
+        if (err) console.error(err);
+
+        if (this.etl.task.import) {
+            if (err) {
+                console.error('Import Detected - reporting failure');
+
+                await API.updateImport(this.etl.task.import, this.etl.token, {
+                    status: 'Fail',
+                    error: err.message
+                });
+            } else {
+                await API.updateImport(this.etl.task.import, this.etl.token, {
+                    status: 'Success',
+                    result: {}
+                });
+            }
         }
     }
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
     const task = new Task();
-    task.control();
+
+    try {
+        await task.control();
+        await task.reporter();
+    } catch (err) {
+        await task.reporter(err instanceof Error ? err : new Error(String(err)));
+    }
 }

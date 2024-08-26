@@ -1,16 +1,18 @@
 import ImportControl, { ImportModeEnum } from '../lib/control/import.js';
+import Batch from '../lib/aws/batch.js';
+import Logs from '../lib/aws/batch-logs.js';
 import { Type } from '@sinclair/typebox'
-import Schema from '@openaddresses/batch-schema';
 import path from 'node:path';
+import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
+import { Param } from '@openaddresses/batch-generic';
 import busboy from 'busboy';
 import Config from '../lib/config.js';
 import S3 from '../lib/aws/s3.js'
 import crypto from 'node:crypto';
-import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
 import Auth, { AuthResourceAccess, AuthUser } from '../lib/auth.js';
-import { ImportResponse, StandardResponse } from '../lib/types.js';
+import { ImportResponse, StandardResponse, JobLogResponse } from '../lib/types.js';
 import { Import } from '../lib/schema.js';
 import * as Default from '../lib/limits.js';
 
@@ -294,6 +296,63 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             return res.json(list);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.post('/import/:import/batch', {
+        name: 'Batch Import',
+        group: 'Import',
+        description: 'Attach a Batch Job to an instance',
+        params: Type.Object({
+            import: Type.String()
+        }),
+        res: ImportResponse
+    }, async (req, res) => {
+        try {
+            await Auth.is_auth(config, req, {
+                resources: [{ access: AuthResourceAccess.IMPORT, id: req.params.import }]
+            });
+
+            const imported = await config.models.Import.from(req.params.import);
+
+            await importControl.batch(imported.username, imported.id);
+
+            return res.json(imported)
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/import/:import/batch', {
+        name: 'Get Batch',
+        group: 'Import',
+        description: 'List Import Batch Job Logs',
+        params: Type.Object({
+            import: Type.String(),
+        }),
+        res: Type.Object({
+            logs: Type.Array(JobLogResponse)
+        })
+    }, async (req, res) => {
+        try {
+            await Auth.is_auth(config, req);
+
+            const imported = await config.models.Import.from(req.params.import);
+
+            if (!imported.batch) {
+                return res.json({ logs: [] })
+            }
+
+            const job = await Batch.job(config, imported.batch);
+
+            if (job.logstream) {
+                const logs = await Logs.list(job.logstream);
+                return res.json(logs)
+            } else {
+                return res.json({ logs: [] })
+            }
         } catch (err) {
             return Err.respond(err, res);
         }

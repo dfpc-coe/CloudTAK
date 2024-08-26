@@ -55,10 +55,16 @@
                         v-if='imported.status === "Empty"'
                         :create='false'
                     />
-                    <TablerLoading
-                        v-else-if='loading.run'
-                        desc='Running Import'
-                    />
+                    <template v-else-if='loading.run'>
+                        <TablerLoading
+                            v-if='loading.run'
+                            desc='Running Import'
+                        />
+                        <template v-if='batch.logs.length'>
+                            <label for='logs' class='subheader'>Import Logs</label>
+                            <pre id='logs' v-text='batch.logs.map((log) => { return log.message }).join("\n")'></pre>
+                        </template>
+                    </template>
                     <template v-else-if='imported.status === "Fail"'>
                         <div class='datagrid-item'>
                             <div class='datagrid-title'>
@@ -131,6 +137,9 @@ export default {
                 run: true
             },
             interval: false,
+            batch: {
+                logs: []
+            },
             imported: {
                 id: ''
             }
@@ -141,10 +150,12 @@ export default {
 
         this.interval = setInterval(() => {
             this.fetch()
-        }, 1000);
+        }, 2000);
     },
     unmounted: function() {
-        if (this.interval) clearInterval(this.interval);
+        if (this.interval) {
+            clearInterval(this.interval);
+        }
     },
     methods: {
         timeDiff(update) {
@@ -176,6 +187,11 @@ export default {
                 if (this.imported.status === 'Fail' || this.imported.status === 'Success') {
                     if (this.interval) clearInterval(this.interval);
                     this.loading.run = false;
+                }
+
+                if (this.imported.batch) {
+                    const urlBatch = stdurl(`/api/import/${this.$route.params.import}/batch`);
+                    this.batch = await std(urlBatch);
                 }
             } catch (err) {
                 this.err = err;

@@ -5,7 +5,7 @@
             <div
                 class='bg-gray-500 rounded-top py-2 px-2 position-relative'
             >
-                <span v-text='inMode'/>
+                <span v-text='inMode' />
                 <CopyButton
                     :text='inMode'
                     class='position-absolute'
@@ -40,6 +40,9 @@ import CopyButton from './CopyButton.vue';
 
 export default {
     name: 'COTElevation',
+    components: {
+        CopyButton
+    },
     props: {
         elevation: {
             type: Number,
@@ -49,9 +52,6 @@ export default {
             type: String,
             default: 'feet'
         }
-    },
-    components: {
-        CopyButton
     },
     data: function() {
         return {
