@@ -160,7 +160,7 @@ export default class Task {
             } else {
                 await API.updateImport(this.etl.task.import, this.etl.token, {
                     status: 'Success',
-                    error: err.message
+                    result: {}
                 });
             }
         }
