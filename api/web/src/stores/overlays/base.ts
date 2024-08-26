@@ -185,7 +185,11 @@ export default class Overlay {
 
             if (opts.clickable === undefined)  {
                 opts.clickable = opts.layers.map((l) => {
-                    return { id: l.id, type: this.id === -1 ? 'cot' : 'feat' };
+                    if (this.mode === 'mission') {
+                        return { id: l.id, type: 'cot' };
+                    } else {
+                        return { id: l.id, type: this.id === -1 ? 'cot' : 'feat' };
+                    }
                 });
             }
         } else if (!opts.layers) {
