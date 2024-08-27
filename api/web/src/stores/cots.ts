@@ -6,7 +6,7 @@ import COT from './cots/cot.ts'
 import { defineStore } from 'pinia'
 import type { GeoJSONSourceDiff } from 'maplibre-gl';
 import { std, stdurl } from '../std.ts';
-import type { Feature } from '../types.ts';
+import type { Feature, Mission } from '../types.ts';
 import type { FeatureCollection } from 'geojson';
 import { useProfileStore } from './profile.ts';
 const profileStore = useProfileStore();
@@ -25,7 +25,11 @@ export const useCOTStore = defineStore('cots', {
         // COTs are submitted to pending and picked up by the partial update code every .5s
         pending: Map<string, COT>;
         pendingDelete: Set<string>;
-        subscriptions: Map<string, Map<string, COT>>;
+
+        subscriptions: Map<string, {
+            meta: Mission;
+            cots: Map<string, COT>;
+        }>;
         subscriptionPending: Map<string, string>;
     } => {
         return {
@@ -72,7 +76,7 @@ export const useCOTStore = defineStore('cots', {
                             continue;
                         }
 
-                        sub.delete(change.contentUid);
+                        sub.cots.delete(change.contentUid);
                         updateGuid = task.properties.mission.guid;
                     }
                 }
@@ -101,11 +105,15 @@ export const useCOTStore = defineStore('cots', {
 
             let sub = this.subscriptions.get(guid)
             if (!sub) {
-                sub = new Map();
+                sub = {
+                    meta: await std('/api/marti/missions/' + encodeURIComponent(guid)),
+                    cots: new Map()
+                };
+
                 this.subscriptions.set(guid, sub)
             }
 
-            return this.collection(sub)
+            return this.collection(sub.cots)
         },
 
         /**
@@ -373,21 +381,22 @@ export const useCOTStore = defineStore('cots', {
             mission_guid = mission_guid || this.subscriptionPending.get(feat.id);
 
             if (mission_guid)  {
-                let cots = this.subscriptions.get(mission_guid);
-                if (!cots) {
-                    cots = new Map();
-                    this.subscriptions.set(mission_guid, cots);
+                let sub = this.subscriptions.get(mission_guid);
+                if (!sub) {
+                    await this.loadMission(mission_guid)
+                    sub = this.subscriptions.get(mission_guid);
+                    if (!sub) throw new Error('Could not add COT to Mission');
                 }
 
                 const cot = new COT(feat);
-                cots.set(String(cot.id), cot);
+                sub.cots.set(String(cot.id), cot);
 
                 const mapStore = useMapStore();
                 mapStore.updateMissionData(mission_guid);
             } else {
                 let is_mission_cot = false;
                 for (const [key, value] of this.subscriptions) {
-                    const mission_cot = value.get(feat.id);
+                    const mission_cot = value.cots.get(feat.id);
                     if (mission_cot) {
                         mission_cot.update(feat);
                         is_mission_cot = true;

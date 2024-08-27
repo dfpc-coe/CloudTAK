@@ -129,7 +129,7 @@ export const useMapStore = defineStore('cloudtak', {
             const sub = cotStore.subscriptions.get(guid);
             if (!sub) throw new Error('Attempting to update mission which is not subscribed to');
 
-            const fc = cotStore.collection(sub);
+            const fc = cotStore.collection(sub.cots);
 
             // @ts-expect-error Source.setData is not defined
             oStore.setData(fc);
