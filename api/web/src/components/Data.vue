@@ -239,6 +239,7 @@ export default {
             try {
                 return JSON.parse(this.data.mission_error)
             } catch (err) {
+                console.error(err)
                 return {
                     code: 'Unknown',
                     status: 'Unknown',

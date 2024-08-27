@@ -5,7 +5,11 @@ export function stdurl(url: string | URL): URL {
     try {
         url = new URL(url);
     } catch (err) {
-        url = new URL(url, window.location.origin);
+        if (err instanceof TypeError) {
+            url = new URL(url, window.location.origin);
+        } else {
+            throw err;
+        }
     }
 
     // Allow serving through Vue for hotloading
@@ -25,10 +29,10 @@ export async function std(
     opts: {
         download?: boolean | string;
         headers?: Record<string, string>;
-        body?: any;
+        body?: unknown;
         method?: string;
     } = {}
-): Promise<any> {
+): Promise<unknown> {
     url = stdurl(url)
     if (!opts) opts = {};
 
@@ -50,7 +54,7 @@ export async function std(
         try {
             bdy = await res.json();
         } catch (err) {
-            throw new Error(`Status Code: ${res.status}`);
+            throw new Error(`Status Code: ${res.status}: ${err.message}`);
         }
 
         const errbody = bdy as APIError;

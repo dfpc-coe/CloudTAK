@@ -1,8 +1,6 @@
 import { bbox } from '@turf/bbox'
-import { Type } from '@sinclair/typebox';
 import { useMapStore } from '../map.ts';
 import pointOnFeature from '@turf/point-on-feature';
-import type { Static } from '@sinclair/typebox';
 import type { Feature } from './../../types.ts'
 import type {
     BBox as GeoJSONBBox,

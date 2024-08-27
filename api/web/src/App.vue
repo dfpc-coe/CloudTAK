@@ -118,6 +118,7 @@
 
 <script lang='ts'>
 import { defineComponent } from 'vue'
+import type { Login, Server } from './types.ts';
 import '@tabler/core/dist/js/tabler.min.js';
 import '@tabler/core/dist/css/tabler.min.css';
 import LoginModal from './components/util/LoginModal.vue'
@@ -151,11 +152,9 @@ export default defineComponent({
         loading: boolean;
         login: boolean;
         mounted: boolean;
-        user: null | object;
+        user: null | Login;
         err: null | Error
-        server: null | {
-            status: string;
-        }
+        server: null | Server
     }{
         return {
             loading: true,
@@ -232,7 +231,7 @@ export default defineComponent({
         },
         getLogin: async function() {
             try {
-                this.user = await std('/api/login');
+                this.user = await std('/api/login') as Login;
             } catch (err) {
                 console.error(err);
                 this.user = null;
@@ -248,7 +247,7 @@ export default defineComponent({
             return true;
         },
         getServer: async function() {
-            this.server = await std('/api/server');
+            this.server = await std('/api/server') as Server;
 
             if (!this.server || this.server.status === 'unconfigured') {
                 this.$router.push("/admin");
