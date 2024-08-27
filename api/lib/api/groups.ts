@@ -32,7 +32,7 @@ export default class {
         });
     }
 
-    async update(body: Group[], query: {
+    async update(body: Static<typeof Group>[], query: {
         clientUid?: string;
 
         [key: string]: unknown;

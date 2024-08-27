@@ -192,7 +192,11 @@ export default async function router(schema: Schema, config: Config) {
 
             return res.json(overlay);
         } catch (err) {
-            return Err.respond(err, res);
+            if (String(err).includes('duplicate key value violates unique constraint')) {
+                return Err.respond(new Err(400, err, 'Overlay appears to exist - cannot add duplicate'), res)
+            } else {
+                return Err.respond(err, res);
+            }
         }
     });
 
