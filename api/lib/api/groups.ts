@@ -1,15 +1,16 @@
+import { Static, Type } from '@sinclair/typebox';
 import TAKAPI from '../tak-api.js';
 import { TAKList } from './types.js';
 
-export type Group = {
-    name: string;
-    direction: string;
-    created: string;
-    type: string;
-    bitpos: number;
-    active: boolean;
-    description: string;
-}
+export const Group = Type.Object({
+    name: Type.String(),
+    direction: Type.String(),
+    created: Type.String(),
+    type: Type.String(),
+    bitpos: Type.Number(),
+    active: Type.Boolean(),
+    description: Type.Optional(Type.String())
+})
 
 
 export default class {
@@ -23,7 +24,7 @@ export default class {
         useCache?: string;
 
         [key: string]: unknown;
-    }): Promise<TAKList<Group>> {
+    }): Promise<TAKList<Static<typeof Group>>> {
         const url = new URL(`/Marti/api/groups/all`, this.api.url);
         for (const q in query) url.searchParams.append(q, String(query[q]));
         return await this.api.fetch(url, {
