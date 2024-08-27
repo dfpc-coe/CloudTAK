@@ -54,7 +54,7 @@ export async function std(
         try {
             bdy = await res.json();
         } catch (err) {
-            throw new Error(`Status Code: ${res.status}: ${err.message}`);
+            throw new Error(`Status Code: ${res.status}: ${err instanceof Error ? err.message : String(err)}`);
         }
 
         const errbody = bdy as APIError;

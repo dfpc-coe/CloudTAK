@@ -86,7 +86,7 @@ export const useConnectionStore = defineStore('connection', {
                 }
             });
         },
-        sendCOT: function(data: any, type = 'cot') {
+        sendCOT: function(data: object, type = 'cot') {
             if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
             this.ws.send(JSON.stringify({ type, data }));
         },
