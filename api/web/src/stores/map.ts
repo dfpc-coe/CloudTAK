@@ -13,18 +13,12 @@ import { std, stdurl } from '../std.js';
 import * as pmtiles from 'pmtiles';
 import mapgl from 'maplibre-gl'
 import * as terraDraw from 'terra-draw';
-import pointOnFeature from '@turf/point-on-feature';
-import type { Basemap, ProfileOverlay } from '../types.ts';
-import type { FeatureCollection, Feature } from 'geojson';
+import type { ProfileOverlay, Basemap, APIList } from '../types.ts';
+import type { Feature } from 'geojson';
 import type {
     LngLat,
     Point,
     MapMouseEvent,
-    LayerSpecification,
-    CircleLayerSpecification,
-    SymbolLayerSpecification,
-    LineLayerSpecification,
-    FillLayerSpecification,
     MapGeoJSONFeature
 } from 'maplibre-gl';
 import { useCOTStore } from './cots.js'
@@ -129,7 +123,7 @@ export const useMapStore = defineStore('cloudtak', {
             const sub = cotStore.subscriptions.get(guid);
             if (!sub) throw new Error('Attempting to update mission which is not subscribed to');
 
-            const fc = cotStore.collection(sub);
+            const fc = cotStore.collection(sub.cots);
 
             // @ts-expect-error Source.setData is not defined
             oStore.setData(fc);
@@ -267,9 +261,9 @@ export const useMapStore = defineStore('cloudtak', {
             const url = stdurl('/api/profile/overlay');
             url.searchParams.append('sort', 'pos');
             url.searchParams.append('order', 'asc');
-            const items = (await std(url)).items;
+            const items = ((await std(url)) as APIList<ProfileOverlay>).items;
 
-            const hasBasemap = items.some((o: Overlay) => {
+            const hasBasemap = items.some((o: ProfileOverlay) => {
                 return o.mode === 'basemap'
             });
 
@@ -277,7 +271,7 @@ export const useMapStore = defineStore('cloudtak', {
             if (!hasBasemap) {
                 const burl = stdurl('/api/basemap');
                 burl.searchParams.append('type', 'raster');
-                const basemaps = await std(burl);
+                const basemaps = await std(burl) as APIList<Basemap>;
 
                 if (basemaps.items.length > 0) {
                     const basemap = await Overlay.create(map, {
@@ -286,7 +280,7 @@ export const useMapStore = defineStore('cloudtak', {
                         type: 'raster',
                         url: `/api/basemap/${basemaps.items[0].id}/tiles`,
                         mode: 'basemap',
-                        mode_id: basemaps.items[0].id
+                        mode_id: String(basemaps.items[0].id)
                     });
 
                     this.overlays.push(basemap);

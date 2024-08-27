@@ -6,7 +6,7 @@ import COT from './cots/cot.ts'
 import { defineStore } from 'pinia'
 import type { GeoJSONSourceDiff } from 'maplibre-gl';
 import { std, stdurl } from '../std.ts';
-import type { Feature } from '../types.ts';
+import type { Feature, Mission, APIList } from '../types.ts';
 import type { FeatureCollection } from 'geojson';
 import { useProfileStore } from './profile.ts';
 const profileStore = useProfileStore();
@@ -25,7 +25,11 @@ export const useCOTStore = defineStore('cots', {
         // COTs are submitted to pending and picked up by the partial update code every .5s
         pending: Map<string, COT>;
         pendingDelete: Set<string>;
-        subscriptions: Map<string, Map<string, COT>>;
+
+        subscriptions: Map<string, {
+            meta: Mission;
+            cots: Map<string, COT>;
+        }>;
         subscriptionPending: Map<string, string>;
     } => {
         return {
@@ -72,7 +76,7 @@ export const useCOTStore = defineStore('cots', {
                             continue;
                         }
 
-                        sub.delete(change.contentUid);
+                        sub.cots.delete(change.contentUid);
                         updateGuid = task.properties.mission.guid;
                     }
                 }
@@ -88,7 +92,7 @@ export const useCOTStore = defineStore('cots', {
          * Load Archived CoTs
          */
         loadArchive: async function(): Promise<void> {
-            const archive = await std('/api/profile/feature');
+            const archive = await std('/api/profile/feature') as APIList<Feature>;
             for (const a of archive.items) this.add(a);
         },
 
@@ -96,16 +100,21 @@ export const useCOTStore = defineStore('cots', {
          * Load Latest CoTs from Mission Sync
          */
         loadMission: async function(guid: string): Promise<FeatureCollection> {
-            const fc = await std('/api/marti/missions/' + encodeURIComponent(guid) + '/cot');
-            for (const feat of fc.features) this.add(feat, guid);
+            const fc = await std('/api/marti/missions/' + encodeURIComponent(guid) + '/cot') as FeatureCollection;
+            for (const feat of fc.features) this.add(feat as Feature, guid);
 
             let sub = this.subscriptions.get(guid)
+
             if (!sub) {
-                sub = new Map();
+                sub = {
+                    meta: await std('/api/marti/missions/' + encodeURIComponent(guid)) as Mission,
+                    cots: new Map()
+                };
+
                 this.subscriptions.set(guid, sub)
             }
 
-            return this.collection(sub)
+            return this.collection(sub.cots)
         },
 
         /**
@@ -203,7 +212,7 @@ export const useCOTStore = defineStore('cots', {
             if (!store) store = this.cots;
 
             const paths = new Set();
-            for (const [key, value] of store) {
+            for (const value of store.values()) {
                 if (value.path) paths.add(value.path);
             }
 
@@ -219,7 +228,7 @@ export const useCOTStore = defineStore('cots', {
             if (!store) store = this.cots;
 
             const markers: Set<string> = new Set();
-            for (const [key, value] of store) {
+            for (const value of store.values()) {
                 if (value.properties.group) continue;
                 if (value.properties.archived) continue;
                 markers.add(value.properties.type);
@@ -231,7 +240,7 @@ export const useCOTStore = defineStore('cots', {
         markerFeatures(store: Map<string, COT>, marker: string): Array<COT> {
             const feats: Set<COT> = new Set();
 
-            for (const [key, value] of store) {
+            for (const value of store.values()) {
                 if (value.properties.group) continue;
                 if (value.properties.archived) continue;
 
@@ -246,7 +255,7 @@ export const useCOTStore = defineStore('cots', {
         pathFeatures(store: Map<string, COT>, path: string): Array<COT> {
             const feats: Set<COT> = new Set();
 
-            for (const [key, value] of store) {
+            for (const value of store.values()) {
                 if (value.path === path) {
                     feats.add(value);
                 }
@@ -259,7 +268,7 @@ export const useCOTStore = defineStore('cots', {
             if (!store) store = this.cots;
 
             const groups: Set<string> = new Set();
-            for (const [key, value] of store) {
+            for (const value of store.values()) {
                 if (value.properties.group) groups.add(value.properties.group.name);
             }
 
@@ -270,7 +279,7 @@ export const useCOTStore = defineStore('cots', {
             if (!store) store = this.cots;
 
             const contacts: Set<COT> = new Set();
-            for (const [key, value] of store) {
+            for (const value of store.values()) {
                 if (value.properties.group) contacts.add(value);
             }
 
@@ -373,21 +382,22 @@ export const useCOTStore = defineStore('cots', {
             mission_guid = mission_guid || this.subscriptionPending.get(feat.id);
 
             if (mission_guid)  {
-                let cots = this.subscriptions.get(mission_guid);
-                if (!cots) {
-                    cots = new Map();
-                    this.subscriptions.set(mission_guid, cots);
+                let sub = this.subscriptions.get(mission_guid);
+                if (!sub) {
+                    await this.loadMission(mission_guid)
+                    sub = this.subscriptions.get(mission_guid);
+                    if (!sub) throw new Error('Could not add COT to Mission');
                 }
 
                 const cot = new COT(feat);
-                cots.set(String(cot.id), cot);
+                sub.cots.set(String(cot.id), cot);
 
                 const mapStore = useMapStore();
                 mapStore.updateMissionData(mission_guid);
             } else {
                 let is_mission_cot = false;
-                for (const [key, value] of this.subscriptions) {
-                    const mission_cot = value.get(feat.id);
+                for (const value of this.subscriptions.values()) {
+                    const mission_cot = value.cots.get(feat.id);
                     if (mission_cot) {
                         mission_cot.update(feat);
                         is_mission_cot = true;
