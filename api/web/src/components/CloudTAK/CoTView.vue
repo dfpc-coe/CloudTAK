@@ -434,7 +434,7 @@ export default {
 
             if (!base.feat) {
                 for (const sub of cotStore.subscriptions.keys()) {
-                    const store = cotStore.subscriptions.get(sub);
+                    const store = cotStore.subscriptions.cots.get(sub);
                     if (!store) continue;
 
                     base.feat = store.get(this.$route.params.uid);

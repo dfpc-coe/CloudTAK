@@ -34,7 +34,7 @@ export default class Overlay {
     mode: string;
     mode_id: string | null;
     url?: string;
-    styles: any;
+    styles: object;
     token: string | null;
 
     static async create(
@@ -46,7 +46,7 @@ export default class Overlay {
             before?: string;
         } = {}
     ): Promise<Overlay> {
-        const ov = await std('/api/profile/overlay', { method: 'POST', body });
+        const ov = await std('/api/profile/overlay', { method: 'POST', body }) as ProfileOverlay;
         return new Overlay(map, ov, opts);
     }
 
@@ -114,7 +114,7 @@ export default class Overlay {
         this.mode = overlay.mode;
         this.mode_id = overlay.mode_id;
         this.url = overlay.url;
-        this.styles = overlay.styles;
+        this.styles = overlay.styles as object;
         this.token = overlay.token;
 
         this.init(opts);

@@ -325,7 +325,7 @@ export const ProfileOverlay = pgTable('profile_overlays', {
     updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     pos: integer('pos').notNull().default(5),
     type: text('type').notNull().default('vector'),
-    opacity: numeric('opacity').notNull().default('1'),
+    opacity: numeric('opacity').notNull().default(1),
     visible: boolean('visible').notNull().default(true),
     token: text('token'),
     styles: json('styles'),

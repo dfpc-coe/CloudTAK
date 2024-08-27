@@ -101,12 +101,13 @@ export const useCOTStore = defineStore('cots', {
          */
         loadMission: async function(guid: string): Promise<FeatureCollection> {
             const fc = await std('/api/marti/missions/' + encodeURIComponent(guid) + '/cot') as FeatureCollection;
-            for (const feat of fc.features) this.add(feat, guid);
+            for (const feat of fc.features) this.add(feat as Feature, guid);
 
             let sub = this.subscriptions.get(guid)
+
             if (!sub) {
                 sub = {
-                    meta: await std('/api/marti/missions/' + encodeURIComponent(guid)),
+                    meta: await std('/api/marti/missions/' + encodeURIComponent(guid)) as Mission,
                     cots: new Map()
                 };
 

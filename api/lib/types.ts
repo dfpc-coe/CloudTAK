@@ -89,6 +89,7 @@ export const ProfileFeature = Type.Composite([ Feature.Feature, Type.Object({
 export const ProfileOverlayResponse = createSelectSchema(schemas.ProfileOverlay, {
     id: Type.Integer(),
     pos: Type.Integer(),
+    opacity: Type.Number(),
     visible: Type.Boolean(),
 });
 

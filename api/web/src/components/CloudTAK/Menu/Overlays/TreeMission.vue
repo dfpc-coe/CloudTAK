@@ -104,13 +104,13 @@ export default {
     methods: {
         markerFeatures: function(marker) {
             return cotStore.markerFeatures(
-                cotStore.subscriptions.get(this.overlay.mode_id),
+                cotStore.subscriptions.get(this.overlay.mode_id).cots,
                 marker
             );
         },
         markers: function() {
             const markers = cotStore.markers(
-                cotStore.subscriptions.get(this.overlay.mode_id)
+                cotStore.subscriptions.get(this.overlay.mode_id).cots
             );
 
             for (const marker of markers) {
