@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v3.13.0 - 2024-08-27
+
+- :rocket: `UI` Store Mission Metadata for actively subscribed missions
+- :tada: `UI` Create first Vue/Typescript file in the frontend
+
 ### v3.12.0 - 2024-08-26
 
 - :rocket: `UI` Use CoTView for Mission API COTs
