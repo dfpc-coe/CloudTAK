@@ -36,8 +36,8 @@
                             rel='noreferrer'
                         >
                             <IconCode
-                                :size='32'
-                                :stroke='1'
+                                size='32'
+                                stroke='1'
                             />Docs
                         </a>
                         <div class='dropdown'>
@@ -49,8 +49,8 @@
                                 class='btn btn-dark'
                             >
                                 <IconUser
-                                    :size='32'
-                                    :stroke='1'
+                                    size='32'
+                                    stroke='1'
                                 />
                             </div>
                             <ul
@@ -62,8 +62,8 @@
                                     @click='$router.push("/connection")'
                                 >
                                     <IconNetwork
-                                        :size='32'
-                                        :stroke='1'
+                                        size='32'
+                                        stroke='1'
                                     />
                                     <span class='mx-2'>Connections</span>
                                 </div>
@@ -72,8 +72,8 @@
                                     @click='$router.push("/admin")'
                                 >
                                     <IconSettings
-                                        :size='32'
-                                        :stroke='1'
+                                        size='32'
+                                        stroke='1'
                                     />
                                     <span class='mx-2'>Server</span>
                                     <span class='ms-auto badge border border-red bg-red text-white'>Admin</span>
@@ -83,8 +83,8 @@
                                     @click='logout'
                                 >
                                     <IconLogout
-                                        :size='32'
-                                        :stroke='1'
+                                        size='32'
+                                        stroke='1'
                                     />
                                     <span class='mx-2'>Logout</span>
                                 </div>
@@ -110,13 +110,14 @@
         />
         <LoginModal
             v-if='login'
-            @close='login = null'
-            @login='login=null'
+            @close='login = false'
+            @login='login= false'
         />
     </div>
 </template>
 
-<script>
+<script lang='ts'>
+import { defineComponent } from 'vue'
 import '@tabler/core/dist/js/tabler.min.js';
 import '@tabler/core/dist/css/tabler.min.css';
 import LoginModal from './components/util/LoginModal.vue'
@@ -128,13 +129,13 @@ import {
     IconSettings,
 } from '@tabler/icons-vue';
 import Loading from './components/Loading.vue';
-import { useProfileStore } from '/src/stores/profile.ts';
+import { useProfileStore } from './stores/profile.ts';
 import {
     TablerError
 } from '@tak-ps/vue-tabler';
-import { std, stdurl } from '/src/std.ts';
+import { std, stdurl } from './std.ts';
 
-export default {
+export default defineComponent({
     name: 'TakPSETL',
     components: {
         LoginModal,
@@ -146,7 +147,16 @@ export default {
         TablerError,
         Loading,
     },
-    data: function() {
+    data: function(): {
+        loading: boolean;
+        login: boolean;
+        mounted: boolean;
+        user: null | object;
+        err: null | Error
+        server: null | {
+            status: string;
+        }
+    }{
         return {
             loading: true,
             login: false,
@@ -164,18 +174,24 @@ export default {
             if (!this.$route || !this.$route.name) {
                 return false;
             } else {
-                return (!this.$route.name.startsWith("home") && !["login"].includes(this.$route.name))
+                return (!String(this.$route.name).startsWith("home") && !["login"].includes(String(this.$route.name)))
             }
         }
     },
     errorCaptured: function(err) {
-        if (err.message === '401') {
+        if (!(err instanceof Error)) {
+            err = new Error(String(err));
+        }
+
+        const e = err as Error;
+
+        if (e.message === '401') {
             // Popup Modal if reauthenticating vs initial login
             this.login = true;
-        } else if (String(err) === 'Error: Authentication Required') {
+        } else if (String(e) === 'Error: Authentication Required') {
             this.routeLogin();
         } else {
-            this.err = err;
+            this.err = e;
         }
     },
     mounted: async function() {
@@ -220,7 +236,7 @@ export default {
             } catch (err) {
                 this.user = null;
                 delete localStorage.token;
-                
+
                 if (this.$route.name !== 'login') {
                     this.routeLogin();
                 }
@@ -233,12 +249,12 @@ export default {
         getServer: async function() {
             this.server = await std('/api/server');
 
-            if (this.server.status === 'unconfigured') {
+            if (!this.server || this.server.status === 'unconfigured') {
                 this.$router.push("/admin");
             }
         }
     }
-}
+});
 </script>
 
 <style>
