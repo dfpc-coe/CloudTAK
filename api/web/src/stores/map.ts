@@ -261,7 +261,7 @@ export const useMapStore = defineStore('cloudtak', {
             const url = stdurl('/api/profile/overlay');
             url.searchParams.append('sort', 'pos');
             url.searchParams.append('order', 'asc');
-            const items = (await std(url)).items;
+            const items = ((await std(url)) as APIList<ProfileOverlay>).items;
 
             const hasBasemap = items.some((o: Overlay) => {
                 return o.mode === 'basemap'
@@ -280,7 +280,7 @@ export const useMapStore = defineStore('cloudtak', {
                         type: 'raster',
                         url: `/api/basemap/${basemaps.items[0].id}/tiles`,
                         mode: 'basemap',
-                        mode_id: basemaps.items[0].id
+                        mode_id: String(basemaps.items[0].id)
                     });
 
                     this.overlays.push(basemap);

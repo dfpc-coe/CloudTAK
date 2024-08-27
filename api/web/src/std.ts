@@ -47,7 +47,7 @@ export async function std(
         opts.headers['Authorization'] = 'Bearer ' + localStorage.token;
     }
 
-    const res = await fetch(url, opts);
+    const res = await fetch(url, opts as RequestInit);
 
     let bdy = {};
     if ((res.status < 200 || res.status >= 400) && ![401].includes(res.status)) {

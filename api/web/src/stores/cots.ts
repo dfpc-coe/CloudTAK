@@ -6,7 +6,7 @@ import COT from './cots/cot.ts'
 import { defineStore } from 'pinia'
 import type { GeoJSONSourceDiff } from 'maplibre-gl';
 import { std, stdurl } from '../std.ts';
-import type { Feature, Mission } from '../types.ts';
+import type { Feature, Mission, APIList } from '../types.ts';
 import type { FeatureCollection } from 'geojson';
 import { useProfileStore } from './profile.ts';
 const profileStore = useProfileStore();
@@ -92,7 +92,7 @@ export const useCOTStore = defineStore('cots', {
          * Load Archived CoTs
          */
         loadArchive: async function(): Promise<void> {
-            const archive = await std('/api/profile/feature');
+            const archive = await std('/api/profile/feature') as APIList<Feature>;
             for (const a of archive.items) this.add(a);
         },
 
