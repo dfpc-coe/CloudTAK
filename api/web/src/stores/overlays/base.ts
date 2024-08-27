@@ -147,7 +147,7 @@ export default class Overlay {
             });
         } else if (this.type === 'geojson') {
             if (!this._map.getSource(String(this.id))) {
-                let data: FeatureCollection = { type: 'FeatureCollection', features: [] };
+                const data: FeatureCollection = { type: 'FeatureCollection', features: [] };
 
                 this._map.addSource(String(this.id), {
                     type: 'geojson',

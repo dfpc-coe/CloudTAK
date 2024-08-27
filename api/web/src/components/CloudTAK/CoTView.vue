@@ -109,9 +109,15 @@
             style='height: calc(100vh - 160px)'
         >
             <div class='row g-0'>
-                <div v-if='mission' class='col-12'>
+                <div
+                    v-if='mission'
+                    class='col-12'
+                >
                     <div class='d-flex align-items-center py-2 px-2 my-2 mx-2 rounded bg-gray-500'>
-                        <IconAmbulance :size='32' :stroke='1'/>
+                        <IconAmbulance
+                            :size='32'
+                            :stroke='1'
+                        />
                         <span class='mx-2'>This Feature is part of a Data Sync</span>
                     </div>
                 </div>
