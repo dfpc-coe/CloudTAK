@@ -162,8 +162,8 @@
                     v-if='!isNaN(feat.properties.speed)'
                     class='pt-2'
                     :class='{
-                        "col-md-6": feat.properties.speed,
-                        "col-12": !feat.properties.speed,
+                        "col-md-6": feat.properties.course,
+                        "col-12": !feat.properties.course,
                     }'
                 >
                     <Course
@@ -434,10 +434,10 @@ export default {
 
             if (!base.feat) {
                 for (const sub of cotStore.subscriptions.keys()) {
-                    const store = cotStore.subscriptions.cots.get(sub);
+                    const store = cotStore.subscriptions.get(sub);
                     if (!store) continue;
 
-                    base.feat = store.get(this.$route.params.uid);
+                    base.feat = store.cots.get(this.$route.params.uid);
                     if (base.feat) {
                         base.mission = sub;
                         break;
