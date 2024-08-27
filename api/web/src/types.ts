@@ -10,7 +10,18 @@ export type APIError = {
     message: string;
 };
 
+export type APIList<T> = {
+    total: number;
+    items: Array<T>;
+}
+
+export type Group = paths["/marti/group"]["get"]["responses"]["200"]["content"]["application/json"]["data"][0]
+
 export type Mission = paths["/marti/missions/{:name}"]["get"]["responses"]["200"]["content"]["application/json"]
+
+export type Server = paths["/server"]["get"]["responses"]["200"]["content"]["application/json"]
+
+export type Login = paths["/login"]["get"]["responses"]["200"]["content"]["application/json"]
 
 export type Profile = paths["/profile"]["get"]["responses"]["200"]["content"]["application/json"]
 export type Profile_Update = paths["/profile"]["patch"]["requestBody"]["content"]["application/json"]

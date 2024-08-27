@@ -5,88 +5,82 @@ var MIN_SECTORS  = 3;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 export default function RadialMenu(params) {
-    var self = this;
+    this.parent  = params.parent  || [];
 
-    self.parent  = params.parent  || [];
+    this.size      = params.size    || DEFAULT_SIZE;
+    this.onClick   = params.onClick || null;
+    this.onClose   = params.onClose || null;
+    this.menuItems = params.menuItems ? params.menuItems : [{id: 'one', title: 'One'}, {id: 'two', title: 'Two'}];
 
-    self.size      = params.size    || DEFAULT_SIZE;
-    self.onClick   = params.onClick || null;
-    self.onClose   = params.onClose || null;
-    self.menuItems = params.menuItems ? params.menuItems : [{id: 'one', title: 'One'}, {id: 'two', title: 'Two'}];
+    this.radius      = 50;
+    this.innerRadius = this.radius * 0.4;
+    this.sectorSpace = this.radius * 0.06;
+    this.sectorCount = Math.max(this.menuItems.length, MIN_SECTORS);
+    this.closeOnClick = params.closeOnClick !== undefined ? !!params.closeOnClick : false;
 
-    self.radius      = 50;
-    self.innerRadius = self.radius * 0.4;
-    self.sectorSpace = self.radius * 0.06;
-    self.sectorCount = Math.max(self.menuItems.length, MIN_SECTORS);
-    self.closeOnClick = params.closeOnClick !== undefined ? !!params.closeOnClick : false;
+    this.scale       = 1;
+    this.holder      = null;
+    this.parentMenu  = [];
+    this.parentItems = [];
+    this.levelItems  = null;
 
-    self.scale       = 1;
-    self.holder      = null;
-    self.parentMenu  = [];
-    self.parentItems = [];
-    self.levelItems  = null;
+    this.createHolder();
+    this.addIconSymbols();
 
-    self.createHolder();
-    self.addIconSymbols();
+    this.currentMenu = null;
 
-    self.currentMenu = null;
-
-    self.onMouseWheelHandler = (event) => {
+    this.onMouseWheelHandler = (event) => {
         this.onMouseWheel(event);
     }
-    self.onKeyDownHandler = (event) => {
+    this.onKeyDownHandler = (event) => {
         this.onMouseWheel(event);
     }
 
-    document.addEventListener('wheel', self.onMouseWheelHandler);
-    document.addEventListener('keydown', self.onKeyDownHandler);
+    document.addEventListener('wheel', this.onMouseWheelHandler);
+    document.addEventListener('keydown', this.onKeyDownHandler);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 RadialMenu.prototype.open = function () {
-    var self = this;
-    if (!self.currentMenu) {
-        self.currentMenu = self.createMenu('menu inner', self.menuItems);
-        self.holder.appendChild(self.currentMenu);
+    if (!this.currentMenu) {
+        this.currentMenu = this.createMenu('menu inner', this.menuItems);
+        this.holder.appendChild(this.currentMenu);
 
         // wait DOM commands to apply and then set class to allow transition to take effect
-        RadialMenu.nextTick(function () {
-            self.currentMenu.setAttribute('class', 'menu');
+        RadialMenu.nextTick(() => {
+            this.currentMenu.setAttribute('class', 'menu');
         });
     }
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 RadialMenu.prototype.close = function () {
-    var self = this;
+    document.removeEventListener('wheel', this.onMouseWheelHandler);
+    document.removeEventListener('keydown', this.onKeyDownHandler);
 
-    document.removeEventListener('wheel', self.onMouseWheelHandler);
-    document.removeEventListener('keydown', self.onKeyDownHandler);
-
-    if (self.currentMenu) {
+    if (this.currentMenu) {
         var parentMenu;
         // eslint-disable-next-line no-cond-assign
-        while (parentMenu = self.parentMenu.pop()) {
+        while (parentMenu = this.parentMenu.pop()) {
             parentMenu.remove();
         }
-        self.parentItems = [];
+        this.parentItems = [];
 
-        RadialMenu.setClassAndWaitForTransition(self.currentMenu, 'menu inner').then(function () {
-            self.currentMenu.remove();
-            self.currentMenu = null;
+        RadialMenu.setClassAndWaitForTransition(this.currentMenu, 'menu inner').then(() => {
+            this.currentMenu.remove();
+            this.currentMenu = null;
         });
 
-        if (self.onClose) {
-            self.onClose();
+        if (this.onClose) {
+            this.onClose();
         }
     }
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 RadialMenu.prototype.getParentMenu = function () {
-    var self = this;
-    if (self.parentMenu.length > 0) {
-        return self.parentMenu[self.parentMenu.length - 1];
+    if (this.parentMenu.length > 0) {
+        return this.parentMenu[this.parentMenu.length - 1];
     } else {
         return null;
     }
@@ -94,56 +88,50 @@ RadialMenu.prototype.getParentMenu = function () {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 RadialMenu.prototype.createHolder = function () {
-    var self = this;
+    this.holder = document.createElement('div');
+    this.holder.className = 'menuHolder';
+    this.holder.style.width  = this.size + 'px';
+    this.holder.style.height = this.size + 'px';
 
-    self.holder = document.createElement('div');
-    self.holder.className = 'menuHolder';
-    self.holder.style.width  = self.size + 'px';
-    self.holder.style.height = self.size + 'px';
-
-    self.parent.appendChild(self.holder);
+    this.parent.appendChild(this.holder);
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 RadialMenu.prototype.showNestedMenu = function (item) {
-    var self = this;
-    self.parentMenu.push(self.currentMenu);
-    self.parentItems.push(self.levelItems);
-    self.currentMenu = self.createMenu('menu inner', item.items, true);
-    self.holder.appendChild(self.currentMenu);
+    this.parentMenu.push(this.currentMenu);
+    this.parentItems.push(this.levelItems);
+    this.currentMenu = this.createMenu('menu inner', item.items, true);
+    this.holder.appendChild(this.currentMenu);
 
     // wait DOM commands to apply and then set class to allow transition to take effect
-    RadialMenu.nextTick(function () {
-        self.getParentMenu().setAttribute('class', 'menu outer');
-        self.currentMenu.setAttribute('class', 'menu');
+    RadialMenu.nextTick(() => {
+        this.getParentMenu().setAttribute('class', 'menu outer');
+        this.currentMenu.setAttribute('class', 'menu');
     });
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 RadialMenu.prototype.returnToParentMenu = function () {
-    var self = this;
-    self.getParentMenu().setAttribute('class', 'menu');
-    RadialMenu.setClassAndWaitForTransition(self.currentMenu, 'menu inner').then(function () {
-        self.currentMenu.remove();
-        self.currentMenu = self.parentMenu.pop();
-        self.levelItems = self.parentItems.pop();
+    this.getParentMenu().setAttribute('class', 'menu');
+    RadialMenu.setClassAndWaitForTransition(this.currentMenu, 'menu inner').then(() => {
+        this.currentMenu.remove();
+        this.currentMenu = this.parentMenu.pop();
+        this.levelItems = this.parentItems.pop();
     });
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 RadialMenu.prototype.handleClick = function () {
-    var self = this;
-
-    var selectedIndex = self.getSelectedIndex();
+    var selectedIndex = this.getSelectedIndex();
     if (selectedIndex >= 0) {
-        var item = self.levelItems[selectedIndex];
+        var item = this.levelItems[selectedIndex];
         if (item.items) {
-            self.showNestedMenu(item);
+            this.showNestedMenu(item);
         } else {
-            if (self.onClick) {
-                self.onClick(item);
-                if (self.closeOnClick) {
-                    self.close(false);
+            if (this.onClick) {
+                this.onClick(item);
+                if (this.closeOnClick) {
+                    this.close(false);
                 }
             }
         }
@@ -152,19 +140,17 @@ RadialMenu.prototype.handleClick = function () {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 RadialMenu.prototype.handleCenterClick = function () {
-    var self = this;
-    if (self.parentItems.length > 0) {
-        self.returnToParentMenu();
+    if (this.parentItems.length > 0) {
+        this.returnToParentMenu();
     } else {
-        self.close();
+        this.close();
     }
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 RadialMenu.prototype.getIndexOffset = function () {
-    var self = this;
-    if (self.levelItems.length < self.sectorCount) {
-        switch (self.levelItems.length) {
+    if (this.levelItems.length < this.sectorCount) {
+        switch (this.levelItems.length) {
             case 1:
                 return -2;
             case 2:
@@ -182,60 +168,58 @@ RadialMenu.prototype.getIndexOffset = function () {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 RadialMenu.prototype.createMenu = function (classValue, levelItems) {
-    var self = this;
+    this.levelItems = levelItems;
 
-    self.levelItems = levelItems;
-
-    self.sectorCount = Math.max(self.levelItems.length, MIN_SECTORS);
-    self.scale       = self.calcScale();
+    this.sectorCount = Math.max(this.levelItems.length, MIN_SECTORS);
+    this.scale       = this.calcScale();
 
     var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('class', classValue);
     svg.setAttribute('viewBox', '-50 -50 100 100');
-    svg.setAttribute('width', self.size);
-    svg.setAttribute('height', self.size);
+    svg.setAttribute('width', this.size);
+    svg.setAttribute('height', this.size);
 
-    var angleStep   = 360 / self.sectorCount;
+    var angleStep   = 360 / this.sectorCount;
     var angleShift  = angleStep / 2 + 270;
 
-    var indexOffset = self.getIndexOffset();
+    var indexOffset = this.getIndexOffset();
 
-    for (var i = 0; i < self.sectorCount; ++i) {
+    for (var i = 0; i < this.sectorCount; ++i) {
         var startAngle = angleShift + angleStep * i;
         var endAngle   = angleShift + angleStep * (i + 1);
 
-        var itemIndex = RadialMenu.resolveLoopIndex(self.sectorCount - i + indexOffset, self.sectorCount);
+        var itemIndex = RadialMenu.resolveLoopIndex(this.sectorCount - i + indexOffset, this.sectorCount);
         var item;
-        if (itemIndex >= 0 && itemIndex < self.levelItems.length) {
-            item = self.levelItems[itemIndex];
+        if (itemIndex >= 0 && itemIndex < this.levelItems.length) {
+            item = this.levelItems[itemIndex];
         } else {
             item = null;
         }
 
-        self.appendSectorPath(startAngle, endAngle, svg, item, itemIndex);
+        this.appendSectorPath(startAngle, endAngle, svg, item, itemIndex);
     }
 
-    svg.addEventListener('mousedown', function (event) {
+    svg.addEventListener('mousedown', (event) => {
         var className = event.target.parentNode.getAttribute('class').split(' ')[0];
         switch (className) {
             case 'sector':
                 var index = parseInt(event.target.parentNode.getAttribute('data-index'));
                 if (!isNaN(index)) {
-                    self.setSelectedIndex(index);
+                    this.setSelectedIndex(index);
                 }
                 break;
             default:
         }
     });
 
-    svg.addEventListener('click', function (event) {
+    svg.addEventListener('click', () => {
         var className = event.target.parentNode.getAttribute('class').split(' ')[0];
         switch (className) {
             case 'sector':
-                self.handleClick();
+                this.handleClick();
                 break;
             case 'center':
-                self.handleCenterClick();
+                this.handleCenterClick();
                 break;
             default:
         }
@@ -245,43 +229,41 @@ RadialMenu.prototype.createMenu = function (classValue, levelItems) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 RadialMenu.prototype.selectDelta = function (indexDelta) {
-    var self = this;
-    var selectedIndex = self.getSelectedIndex();
+    var selectedIndex = this.getSelectedIndex();
     if (selectedIndex < 0) {
         selectedIndex = 0;
     }
     selectedIndex += indexDelta;
 
     if (selectedIndex < 0) {
-        selectedIndex = self.levelItems.length + selectedIndex;
-    } else if (selectedIndex >= self.levelItems.length) {
-        selectedIndex -= self.levelItems.length;
+        selectedIndex = this.levelItems.length + selectedIndex;
+    } else if (selectedIndex >= this.levelItems.length) {
+        selectedIndex -= this.levelItems.length;
     }
-    self.setSelectedIndex(selectedIndex);
+    this.setSelectedIndex(selectedIndex);
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 RadialMenu.prototype.onKeyDown = function (event) {
-    var self = this;
-    if (self.currentMenu) {
+    if (this.currentMenu) {
         switch (event.key) {
             case 'Escape':
             case 'Backspace':
-                self.handleCenterClick();
+                this.handleCenterClick();
                 event.preventDefault();
                 break;
             case 'Enter':
-                self.handleClick();
+                this.handleClick();
                 event.preventDefault();
                 break;
             case 'ArrowRight':
             case 'ArrowUp':
-                self.selectDelta(1);
+                this.selectDelta(1);
                 event.preventDefault();
                 break;
             case 'ArrowLeft':
             case 'ArrowDown':
-                self.selectDelta(-1);
+                this.selectDelta(-1);
                 event.preventDefault();
                 break;
         }
@@ -290,22 +272,20 @@ RadialMenu.prototype.onKeyDown = function (event) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 RadialMenu.prototype.onMouseWheel = function (event) {
-    var self = this;
-    if (self.currentMenu) {
+    if (this.currentMenu) {
         var delta = -event.deltaY;
 
         if (delta > 0) {
-            self.selectDelta(1)
+            this.selectDelta(1)
         } else {
-            self.selectDelta(-1)
+            this.selectDelta(-1)
         }
     }
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 RadialMenu.prototype.getSelectedNode = function () {
-    var self = this;
-    var items = self.currentMenu.getElementsByClassName('selected');
+    var items = this.currentMenu.getElementsByClassName('selected');
     if (items.length > 0) {
         return items[0];
     } else {
@@ -315,8 +295,7 @@ RadialMenu.prototype.getSelectedNode = function () {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 RadialMenu.prototype.getSelectedIndex = function () {
-    var self = this;
-    var selectedNode = self.getSelectedNode();
+    var selectedNode = this.getSelectedNode();
     if (selectedNode) {
         return parseInt(selectedNode.getAttribute('data-index'));
     } else {
@@ -326,12 +305,11 @@ RadialMenu.prototype.getSelectedIndex = function () {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 RadialMenu.prototype.setSelectedIndex = function (index) {
-    var self = this;
-    if (index >=0 && index < self.levelItems.length) {
-        var items = self.currentMenu.querySelectorAll('g[data-index="' + index + '"]');
+    if (index >=0 && index < this.levelItems.length) {
+        var items = this.currentMenu.querySelectorAll('g[data-index="' + index + '"]');
         if (items.length > 0) {
             var itemToSelect = items[0];
-            var selectedNode = self.getSelectedNode();
+            var selectedNode = this.getSelectedNode();
             if (selectedNode) {
                 selectedNode.setAttribute('class', 'sector');
             }
@@ -354,19 +332,17 @@ RadialMenu.prototype.createUseTag = function (x, y, link) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 RadialMenu.prototype.appendSectorPath = function (startAngleDeg, endAngleDeg, svg, item, index) {
-    var self = this;
-
-    var centerPoint = self.getSectorCenter(startAngleDeg, endAngleDeg);
+    var centerPoint = this.getSectorCenter(startAngleDeg, endAngleDeg);
     var translate = {
-        x: RadialMenu.numberToString((1 - self.scale) * centerPoint.x),
-        y: RadialMenu.numberToString((1 - self.scale) * centerPoint.y)
+        x: RadialMenu.numberToString((1 - this.scale) * centerPoint.x),
+        y: RadialMenu.numberToString((1 - this.scale) * centerPoint.y)
     };
 
     var g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    g.setAttribute('transform','translate(' +translate.x + ' ,' + translate.y + ') scale(' + self.scale + ')');
+    g.setAttribute('transform','translate(' +translate.x + ' ,' + translate.y + ') scale(' + this.scale + ')');
 
     var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', self.createSectorCmds(startAngleDeg, endAngleDeg));
+    path.setAttribute('d', this.createSectorCmds(startAngleDeg, endAngleDeg));
     g.appendChild(path);
 
     if (item) {
@@ -378,7 +354,7 @@ RadialMenu.prototype.appendSectorPath = function (startAngleDeg, endAngleDeg, sv
         g.setAttribute('data-index', index);
 
         if (item.title) {
-            var text = self.createText(centerPoint.x, centerPoint.y, item.title);
+            var text = this.createText(centerPoint.x, centerPoint.y, item.title);
             if (item.icon) {
                 text.setAttribute('transform', 'translate(0,8)');
             } else {
@@ -389,7 +365,7 @@ RadialMenu.prototype.appendSectorPath = function (startAngleDeg, endAngleDeg, sv
         }
 
         if (item.icon) {
-            var use = self.createUseTag(centerPoint.x, centerPoint.y, item.icon);
+            var use = this.createUseTag(centerPoint.x, centerPoint.y, item.icon);
             if (item.title) {
                 use.setAttribute('transform', 'translate(-5,-8)');
             } else {
@@ -408,19 +384,17 @@ RadialMenu.prototype.appendSectorPath = function (startAngleDeg, endAngleDeg, sv
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 RadialMenu.prototype.createSectorCmds = function (startAngleDeg, endAngleDeg) {
-    var self = this;
-
-    var initPoint = RadialMenu.getDegreePos(startAngleDeg, self.radius);
+    var initPoint = RadialMenu.getDegreePos(startAngleDeg, this.radius);
     var path = 'M' + RadialMenu.pointToString(initPoint);
 
-    var radiusAfterScale = self.radius * (1 / self.scale);
-    path += 'A' + radiusAfterScale + ' ' + radiusAfterScale + ' 0 0 0' + RadialMenu.pointToString(RadialMenu.getDegreePos(endAngleDeg, self.radius));
-    path += 'L' + RadialMenu.pointToString(RadialMenu.getDegreePos(endAngleDeg, self.innerRadius));
+    var radiusAfterScale = this.radius * (1 / this.scale);
+    path += 'A' + radiusAfterScale + ' ' + radiusAfterScale + ' 0 0 0' + RadialMenu.pointToString(RadialMenu.getDegreePos(endAngleDeg, this.radius));
+    path += 'L' + RadialMenu.pointToString(RadialMenu.getDegreePos(endAngleDeg, this.innerRadius));
 
-    var radiusDiff = self.radius - self.innerRadius;
-    var radiusDelta = (radiusDiff - (radiusDiff * self.scale)) / 2;
-    var innerRadius = (self.innerRadius + radiusDelta) * (1 / self.scale);
-    path += 'A' + innerRadius + ' ' + innerRadius + ' 0 0 1 ' + RadialMenu.pointToString(RadialMenu.getDegreePos(startAngleDeg, self.innerRadius));
+    var radiusDiff = this.radius - this.innerRadius;
+    var radiusDelta = (radiusDiff - (radiusDiff * this.scale)) / 2;
+    var innerRadius = (this.innerRadius + radiusDelta) * (1 / this.scale);
+    path += 'A' + innerRadius + ' ' + innerRadius + ' 0 0 1 ' + RadialMenu.pointToString(RadialMenu.getDegreePos(startAngleDeg, this.innerRadius));
     path += 'Z';
 
     return path;
@@ -448,22 +422,19 @@ RadialMenu.prototype.createCircle = function (x, y, r) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 RadialMenu.prototype.calcScale = function () {
-    var self = this;
-    var totalSpace = self.sectorSpace * self.sectorCount;
-    var circleLength = Math.PI * 2 * self.radius;
-    var radiusDelta = self.radius - (circleLength - totalSpace) / (Math.PI * 2);
-    return (self.radius - radiusDelta) / self.radius;
+    var totalSpace = this.sectorSpace * this.sectorCount;
+    var circleLength = Math.PI * 2 * this.radius;
+    var radiusDelta = this.radius - (circleLength - totalSpace) / (Math.PI * 2);
+    return (this.radius - radiusDelta) / this.radius;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 RadialMenu.prototype.getSectorCenter = function (startAngleDeg, endAngleDeg) {
-    var self = this;
-    return RadialMenu.getDegreePos((startAngleDeg + endAngleDeg) / 2, self.innerRadius + (self.radius - self.innerRadius) / 2);
+    return RadialMenu.getDegreePos((startAngleDeg + endAngleDeg) / 2, this.innerRadius + (this.radius - this.innerRadius) / 2);
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 RadialMenu.prototype.addIconSymbols = function () {
-    var self = this;
     var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('class', 'icons');
 
@@ -493,7 +464,7 @@ RadialMenu.prototype.addIconSymbols = function () {
     closeSymbol.appendChild(closePath);
     svg.appendChild(closeSymbol);
 
-    self.holder.appendChild(svg);
+    this.holder.appendChild(svg);
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

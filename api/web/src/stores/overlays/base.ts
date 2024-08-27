@@ -266,7 +266,7 @@ export default class Overlay {
         if (this._internal) return;
 
         if (this.id) {
-            const overlay = await std(`/api/profile/overlay?id=${this.id}`, {
+            await std(`/api/profile/overlay?id=${this.id}`, {
                 method: 'DELETE'
             });
         }
@@ -304,7 +304,7 @@ export default class Overlay {
         if (this._destroyed) throw new Error('Cannot save a destroyed layer');
         if (this._internal) return;
 
-        const overlay = await std(`/api/profile/overlay/${this.id}`, {
+        await std(`/api/profile/overlay/${this.id}`, {
             method: 'PATCH',
             body: {
                 pos: this.pos,
@@ -315,6 +315,6 @@ export default class Overlay {
                 visible: this.visible,
                 styles: this.styles
             }
-        }) as ProfileOverlay;
+        })
     }
 }

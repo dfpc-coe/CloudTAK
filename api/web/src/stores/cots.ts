@@ -100,7 +100,7 @@ export const useCOTStore = defineStore('cots', {
          * Load Latest CoTs from Mission Sync
          */
         loadMission: async function(guid: string): Promise<FeatureCollection> {
-            const fc = await std('/api/marti/missions/' + encodeURIComponent(guid) + '/cot');
+            const fc = await std('/api/marti/missions/' + encodeURIComponent(guid) + '/cot') as FeatureCollection;
             for (const feat of fc.features) this.add(feat, guid);
 
             let sub = this.subscriptions.get(guid)
@@ -211,7 +211,7 @@ export const useCOTStore = defineStore('cots', {
             if (!store) store = this.cots;
 
             const paths = new Set();
-            for (const [key, value] of store) {
+            for (const value of store.values()) {
                 if (value.path) paths.add(value.path);
             }
 
@@ -227,7 +227,7 @@ export const useCOTStore = defineStore('cots', {
             if (!store) store = this.cots;
 
             const markers: Set<string> = new Set();
-            for (const [key, value] of store) {
+            for (const value of store.values()) {
                 if (value.properties.group) continue;
                 if (value.properties.archived) continue;
                 markers.add(value.properties.type);
@@ -239,7 +239,7 @@ export const useCOTStore = defineStore('cots', {
         markerFeatures(store: Map<string, COT>, marker: string): Array<COT> {
             const feats: Set<COT> = new Set();
 
-            for (const [key, value] of store) {
+            for (const value of store.values()) {
                 if (value.properties.group) continue;
                 if (value.properties.archived) continue;
 
@@ -254,7 +254,7 @@ export const useCOTStore = defineStore('cots', {
         pathFeatures(store: Map<string, COT>, path: string): Array<COT> {
             const feats: Set<COT> = new Set();
 
-            for (const [key, value] of store) {
+            for (const value of store.values()) {
                 if (value.path === path) {
                     feats.add(value);
                 }
@@ -267,7 +267,7 @@ export const useCOTStore = defineStore('cots', {
             if (!store) store = this.cots;
 
             const groups: Set<string> = new Set();
-            for (const [key, value] of store) {
+            for (const value of store.values()) {
                 if (value.properties.group) groups.add(value.properties.group.name);
             }
 
@@ -278,7 +278,7 @@ export const useCOTStore = defineStore('cots', {
             if (!store) store = this.cots;
 
             const contacts: Set<COT> = new Set();
-            for (const [key, value] of store) {
+            for (const value of store.values()) {
                 if (value.properties.group) contacts.add(value);
             }
 
@@ -395,7 +395,7 @@ export const useCOTStore = defineStore('cots', {
                 mapStore.updateMissionData(mission_guid);
             } else {
                 let is_mission_cot = false;
-                for (const [key, value] of this.subscriptions) {
+                for (const value of this.subscriptions.values()) {
                     const mission_cot = value.cots.get(feat.id);
                     if (mission_cot) {
                         mission_cot.update(feat);

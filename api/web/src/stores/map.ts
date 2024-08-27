@@ -13,18 +13,12 @@ import { std, stdurl } from '../std.js';
 import * as pmtiles from 'pmtiles';
 import mapgl from 'maplibre-gl'
 import * as terraDraw from 'terra-draw';
-import pointOnFeature from '@turf/point-on-feature';
-import type { Basemap, ProfileOverlay } from '../types.ts';
-import type { FeatureCollection, Feature } from 'geojson';
+import type { ProfileOverlay, Basemap, APIList } from '../types.ts';
+import type { Feature } from 'geojson';
 import type {
     LngLat,
     Point,
     MapMouseEvent,
-    LayerSpecification,
-    CircleLayerSpecification,
-    SymbolLayerSpecification,
-    LineLayerSpecification,
-    FillLayerSpecification,
     MapGeoJSONFeature
 } from 'maplibre-gl';
 import { useCOTStore } from './cots.js'
@@ -277,7 +271,7 @@ export const useMapStore = defineStore('cloudtak', {
             if (!hasBasemap) {
                 const burl = stdurl('/api/basemap');
                 burl.searchParams.append('type', 'raster');
-                const basemaps = await std(burl);
+                const basemaps = await std(burl) as APIList<Basemap>;
 
                 if (basemaps.items.length > 0) {
                     const basemap = await Overlay.create(map, {

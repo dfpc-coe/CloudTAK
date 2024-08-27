@@ -1,7 +1,7 @@
 import type { Feature } from 'geojson';
 import { defineStore } from 'pinia'
 import { std, stdurl } from '../std.ts';
-import type { Profile, Profile_Update } from '../types.ts';
+import type { Group, Profile, Profile_Update } from '../types.ts';
 
 export const useProfileStore = defineStore('profile', {
     state: (): {
@@ -10,7 +10,7 @@ export const useProfileStore = defineStore('profile', {
             name: string;
             url: string;
         }>;
-        channels: Array<any>;
+        channels: Array<Group>;
         profile: Profile | null;
     } => {
         return {
@@ -33,18 +33,20 @@ export const useProfileStore = defineStore('profile', {
             this.notifications = [];
         },
         load: async function(): Promise<void> {
-            this.profile = await std('/api/profile');
+            this.profile = await std('/api/profile') as Profile;
         },
         loadChannels: async function(): Promise<void> {
             const url = stdurl('/api/marti/group');
             url.searchParams.append('useCache', 'true');
-            this.channels = (await std(url)).data;
+            this.channels = ((await std(url)) as {
+                data: Group[]
+            }).data
         },
         update: async function(body: Profile_Update): Promise<void> {
             this.profile = await std('/api/profile', {
                 method: 'PATCH',
                 body
-            })
+            }) as Profile
         },
         CoT: function(feat: Feature) {
             if (!this.profile) throw new Error('Profile must be loaded before CoT is called');
