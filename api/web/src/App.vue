@@ -167,8 +167,8 @@ export default defineComponent({
         }
     },
     computed: {
-        docsURL: function() {
-            return stdurl('/docs')
+        docsURL: function(): string {
+            return String(stdurl('/docs'))
         },
         navShown: function() {
             if (!this.$route || !this.$route.name) {
