@@ -39,7 +39,10 @@ export default class Cacher {
 
             return cached;
         } catch (err) {
-            console.error('Cache Miss', err);
+            if (!(err instanceof Error) && err.message !== 'Miss') {
+                console.error('Cache Error', err);
+            }
+
             const fresh = await miss();
 
             try {

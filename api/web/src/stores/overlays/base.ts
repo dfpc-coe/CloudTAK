@@ -34,7 +34,7 @@ export default class Overlay {
     mode: string;
     mode_id: string | null;
     url?: string;
-    styles: any;
+    styles: object;
     token: string | null;
 
     static async create(
@@ -46,7 +46,7 @@ export default class Overlay {
             before?: string;
         } = {}
     ): Promise<Overlay> {
-        const ov = await std('/api/profile/overlay', { method: 'POST', body });
+        const ov = await std('/api/profile/overlay', { method: 'POST', body }) as ProfileOverlay;
         return new Overlay(map, ov, opts);
     }
 
@@ -114,7 +114,7 @@ export default class Overlay {
         this.mode = overlay.mode;
         this.mode_id = overlay.mode_id;
         this.url = overlay.url;
-        this.styles = overlay.styles;
+        this.styles = overlay.styles as object;
         this.token = overlay.token;
 
         this.init(opts);
@@ -147,7 +147,7 @@ export default class Overlay {
             });
         } else if (this.type === 'geojson') {
             if (!this._map.getSource(String(this.id))) {
-                let data: FeatureCollection = { type: 'FeatureCollection', features: [] };
+                const data: FeatureCollection = { type: 'FeatureCollection', features: [] };
 
                 this._map.addSource(String(this.id), {
                     type: 'geojson',
@@ -266,7 +266,7 @@ export default class Overlay {
         if (this._internal) return;
 
         if (this.id) {
-            const overlay = await std(`/api/profile/overlay?id=${this.id}`, {
+            await std(`/api/profile/overlay?id=${this.id}`, {
                 method: 'DELETE'
             });
         }
@@ -304,7 +304,7 @@ export default class Overlay {
         if (this._destroyed) throw new Error('Cannot save a destroyed layer');
         if (this._internal) return;
 
-        const overlay = await std(`/api/profile/overlay/${this.id}`, {
+        await std(`/api/profile/overlay/${this.id}`, {
             method: 'PATCH',
             body: {
                 pos: this.pos,
@@ -315,6 +315,6 @@ export default class Overlay {
                 visible: this.visible,
                 styles: this.styles
             }
-        }) as ProfileOverlay;
+        })
     }
 }

@@ -82,9 +82,9 @@ export default {
     computed: {
         isZoomable: function() {
             if (this.mission) {
-                const cots = cotStore.subscriptions.get(this.mission)
-                if (!cots) return false;
-                return cots.has(this.feature.id);
+                const sub = cotStore.subscriptions.get(this.mission)
+                if (!sub) return false;
+                return sub.cots.has(this.feature.id);
             } else {
                 return cotStore.cots.has(this.feature.id);
             }
@@ -99,9 +99,9 @@ export default {
 
             let cot;
             if (this.mission) {
-                const cots = cotStore.subscriptions.get(this.mission)
-                if (!cots) return false;
-                cot = cots.get(this.feature.id);
+                const sub = cotStore.subscriptions.get(this.mission)
+                if (!sub) return false;
+                cot = sub.cots.get(this.feature.id);
             } else {
                 cot = cotStore.cots.get(this.feature.id);
             }

@@ -109,9 +109,15 @@
             style='height: calc(100vh - 160px)'
         >
             <div class='row g-0'>
-                <div v-if='mission' class='col-12'>
+                <div
+                    v-if='mission'
+                    class='col-12'
+                >
                     <div class='d-flex align-items-center py-2 px-2 my-2 mx-2 rounded bg-gray-500'>
-                        <IconAmbulance :size='32' :stroke='1'/>
+                        <IconAmbulance
+                            :size='32'
+                            :stroke='1'
+                        />
                         <span class='mx-2'>This Feature is part of a Data Sync</span>
                     </div>
                 </div>
@@ -156,8 +162,8 @@
                     v-if='!isNaN(feat.properties.speed)'
                     class='pt-2'
                     :class='{
-                        "col-md-6": feat.properties.speed,
-                        "col-12": !feat.properties.speed,
+                        "col-md-6": feat.properties.course,
+                        "col-12": !feat.properties.course,
                     }'
                 >
                     <Course
@@ -431,7 +437,7 @@ export default {
                     const store = cotStore.subscriptions.get(sub);
                     if (!store) continue;
 
-                    base.feat = store.get(this.$route.params.uid);
+                    base.feat = store.cots.get(this.$route.params.uid);
                     if (base.feat) {
                         base.mission = sub;
                         break;

@@ -3,8 +3,7 @@
 */
 
 import { defineStore } from 'pinia'
-import pointOnFeature from '@turf/point-on-feature';
-import { std, stdurl } from '../std.ts';
+import { stdurl } from '../std.ts';
 import type { Feature } from '../types.ts';
 import { useCOTStore } from './cots.ts';
 import { useProfileStore } from './profile.ts';
@@ -35,7 +34,7 @@ export const useConnectionStore = defineStore('connection', {
             }
 
             this.ws = new WebSocket(url);
-            this.ws.addEventListener('open', (err) => {
+            this.ws.addEventListener('open', () => {
                 this.open = true;
             });
             this.ws.addEventListener('error', (err) => {
@@ -87,7 +86,7 @@ export const useConnectionStore = defineStore('connection', {
                 }
             });
         },
-        sendCOT: function(data: any, type = 'cot') {
+        sendCOT: function(data: object, type = 'cot') {
             if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
             this.ws.send(JSON.stringify({ type, data }));
         },

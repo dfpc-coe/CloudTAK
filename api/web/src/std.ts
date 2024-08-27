@@ -5,7 +5,11 @@ export function stdurl(url: string | URL): URL {
     try {
         url = new URL(url);
     } catch (err) {
-        url = new URL(url, window.location.origin);
+        if (err instanceof TypeError) {
+            url = new URL(url, window.location.origin);
+        } else {
+            throw err;
+        }
     }
 
     // Allow serving through Vue for hotloading
@@ -25,10 +29,10 @@ export async function std(
     opts: {
         download?: boolean | string;
         headers?: Record<string, string>;
-        body?: any;
+        body?: unknown;
         method?: string;
     } = {}
-): Promise<any> {
+): Promise<unknown> {
     url = stdurl(url)
     if (!opts) opts = {};
 
@@ -43,14 +47,14 @@ export async function std(
         opts.headers['Authorization'] = 'Bearer ' + localStorage.token;
     }
 
-    const res = await fetch(url, opts);
+    const res = await fetch(url, opts as RequestInit);
 
     let bdy = {};
     if ((res.status < 200 || res.status >= 400) && ![401].includes(res.status)) {
         try {
             bdy = await res.json();
         } catch (err) {
-            throw new Error(`Status Code: ${res.status}`);
+            throw new Error(`Status Code: ${res.status}: ${err instanceof Error ? err.message : String(err)}`);
         }
 
         const errbody = bdy as APIError;
@@ -79,9 +83,9 @@ export async function std(
 
 export function stdclick($router: Router, event: KeyboardEvent, path: string) {
     if (event.ctrlKey === true) {
-        let routeData = $router.resolve(path);
+        const routeData = $router.resolve(path);
         window.open(routeData.href, '_blank');
     } else {
         $router.push(path);
-    };
+    }
 }
