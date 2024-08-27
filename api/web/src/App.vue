@@ -234,6 +234,7 @@ export default defineComponent({
             try {
                 this.user = await std('/api/login');
             } catch (err) {
+                console.error(err);
                 this.user = null;
                 delete localStorage.token;
 

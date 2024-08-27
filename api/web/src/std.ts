@@ -79,9 +79,9 @@ export async function std(
 
 export function stdclick($router: Router, event: KeyboardEvent, path: string) {
     if (event.ctrlKey === true) {
-        let routeData = $router.resolve(path);
+        const routeData = $router.resolve(path);
         window.open(routeData.href, '_blank');
     } else {
         $router.push(path);
-    };
+    }
 }
