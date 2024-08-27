@@ -10,6 +10,8 @@ export type APIError = {
     message: string;
 };
 
+export type Mission = paths["/marti/missions/{:name}"]["get"]["responses"]["200"]["content"]["application/json"]
+
 export type Profile = paths["/profile"]["get"]["responses"]["200"]["content"]["application/json"]
 export type Profile_Update = paths["/profile"]["patch"]["requestBody"]["content"]["application/json"]
 
