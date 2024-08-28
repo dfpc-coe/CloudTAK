@@ -5,10 +5,15 @@
             type='button'
             class='btn-close'
             aria-label='Close'
-            @click='$emit("close")'
+            @click='$emit("refresh")'
         />
         <div class='modal-header'>
             <div
+                v-if='wizard > 0'
+                v-text='`Configuration Wizard Step #${wizard}`'
+            />
+            <div
+                v-else
                 class='modal-title'
                 v-text='editLease.id ? "Edit Lease" : "New Lease"'
             />
@@ -30,81 +35,126 @@
         </div>
 
         <TablerLoading v-if='loading' />
-        <div
-            v-else
-            class='modal-body row'
-        >
+        <template v-else-if='wizard > 0'>
+            <div class='d-flex align-items-center w-100 justify-content-center'>
+                <div class='py-2'>
+                    <img height='600px' width='600px' alt='UAS Tool Wizard Image' :src='`/wizard/Step${wizard}.png`' class='rounded'>
+
+                    <div v-if='wizard === 8'>
+                        <div class='subheader pt-4'>RTSP Path</div>
+                        <CopyField :text='protocols.rtsp.url.replace(/.*\//, "")'/>
+                    </div>
+                </div>
+            </div>
+
+            <div class='modal-footer'>
+                <div class='d-flex align-items-center w-100'>
+                    <button
+                        class='btn btn-secondary'
+                        @click='wizard = wizard -= 1'
+                    >
+                        <IconChevronLeft :size='20' :stroke='1'/>
+                        <span v-if='wizard === 1' class='mx-2'>Close</span>
+                        <span v-else class='mx-2'>Back</span>
+                    </button>
+
+                    <div class='ms-auto'>
+                        <button
+                            class='btn btn-primary'
+                            @click='wizard = wizard > 10 ? 0 : wizard + 1'
+                        >
+                            <span v-if='wizard < 10' class='mx-2'>Next</span>
+                            <span v-else class='mx-2'>Done</span>
+                            <IconChevronRight :size='20' :stroke='1'/>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+        <template v-else>
             <div
-                class='col-12'
+                class='modal-body row'
             >
-                <TablerInput
-                    v-model='editLease.name'
-                    label='Lease Name'
-                />
-
-                <TablerEnum
-                    v-if='!editLease.id'
-                    v-model='editLease.duration'
-                    :options='["16 Hours", "12 Hours", "6 Hours", "1 Hour"]'
-                    label='Lease Duration'
-                />
-
-                <label
-                    class='subheader mt-3 cursor-pointer'
-                    @click='advanced = !advanced'
-                >
-                    <IconSquareChevronRight
-                        v-if='!advanced'
-                        :size='32'
-                        :stroke='1'
-                    />
-                    <IconChevronDown
-                        v-else
-                        :size='32'
-                        :stroke='1'
-                    />
-                    Advanced Options
-                </label>
-
                 <div
-                    v-if='advanced'
                     class='col-12'
                 >
                     <TablerInput
-                        v-model='editLease.stream_user'
-                        :disabled='editLease.id'
-                        label='Stream Username'
+                        v-model='editLease.name'
+                        label='Lease Name'
                     />
 
-                    <TablerInput
-                        v-model='editLease.stream_pass'
-                        :disabled='editLease.id'
-                        label='Stream Password'
+                    <TablerEnum
+                        v-if='!editLease.id'
+                        v-model='editLease.duration'
+                        :options='["16 Hours", "12 Hours", "6 Hours", "1 Hour"]'
+                        label='Lease Duration'
                     />
-                </div>
 
-                <template v-if='Object.keys(protocols).length'>
-                    <div class='subheader pt-4'>
-                        Video Streaming Protocols
-                    </div>
-                    <div
-                        v-for='protocol in protocols'
-                        class='pt-2'
+                    <label
+                        class='subheader mt-3 cursor-pointer'
+                        @click='advanced = !advanced'
                     >
-                        <div v-text='protocol.name' />
-                        <CopyField :text='protocol.url' />
+                        <IconSquareChevronRight
+                            v-if='!advanced'
+                            :size='32'
+                            :stroke='1'
+                        />
+                        <IconChevronDown
+                            v-else
+                            :size='32'
+                            :stroke='1'
+                        />
+                        Advanced Options
+                    </label>
+
+                    <div
+                        v-if='advanced'
+                        class='col-12'
+                    >
+                        <TablerInput
+                            v-model='editLease.stream_user'
+                            :disabled='editLease.id'
+                            label='Stream Username'
+                        />
+
+                        <TablerInput
+                            v-model='editLease.stream_pass'
+                            :disabled='editLease.id'
+                            label='Stream Password'
+                        />
                     </div>
-                </template>
+
+                    <template v-if='Object.keys(protocols).length'>
+                        <div class='subheader pt-4'>
+                            Video Streaming Protocols
+                        </div>
+                        <div
+                            v-for='protocol in protocols'
+                            class='pt-2'
+                        >
+                            <div v-text='protocol.name' />
+                            <CopyField :text='protocol.url' />
+                        </div>
+                    </template>
+                </div>
             </div>
-        </div>
-        <div class='modal-footer'>
-            <button
-                class='btn btn-primary'
-                @click='saveLease'
-            >
-                Save
-            </button>
-        </div>
+            <div class='modal-footer'>
+                <button
+                    v-if='protocols.rtsp'
+                    class='btn btn-secondary'
+                    @click='wizard = 1'
+                >
+                    <IconWand :size='20' :stroke='1'/>
+                    <span class='mx-2'>UAS Tool Wizard</span>
+                </button>
+                <button
+                    class='btn btn-primary'
+                    @click='saveLease'
+                >
+                    Save
+                </button>
+            </div>
+        </template>
     </TablerModal>
 </template>
 
@@ -113,7 +163,10 @@ import { std } from '/src/std.ts';
 import CopyField from '../../util/CopyField.vue';
 import {
     IconRefresh,
+    IconWand,
     IconSquareChevronRight,
+    IconChevronRight,
+    IconChevronLeft,
     IconChevronDown,
 } from '@tabler/icons-vue';
 import {
@@ -128,8 +181,11 @@ export default {
     name: 'VideoLeaseModal',
     components: {
         CopyField,
+        IconWand,
         IconRefresh,
         IconSquareChevronRight,
+        IconChevronRight,
+        IconChevronLeft,
         IconChevronDown,
         TablerModal,
         TablerEnum,
@@ -150,6 +206,7 @@ export default {
     data: function() {
         return {
             loading: true,
+            wizard: 0,
             advanced: false,
             protocols: {},
             editLease: {
@@ -189,7 +246,7 @@ export default {
             this.$emit('refresh');
         },
         saveLease: async function() {
-            this.loading = true; 
+            this.loading = true;
 
             if (this.editLease.id) {
                 await std(`/api/video/lease/${this.editLease.id}`, {
