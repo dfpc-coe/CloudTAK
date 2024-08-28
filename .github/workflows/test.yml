@@ -12,19 +12,32 @@ on:
       - ready_for_review
 
 jobs:
+  data:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{github.event.pull_request.head.sha || github.sha}}
+
+      - name: Docker Data Task Build
+        run: docker compose build task
+
+      - name: Docker Data Task Lint
+        run: docker run cloudtak-task:latest npm run lint
+
+      - name: Docker Data Task Test
+        run: docker run cloudtak-task:latest npm test
+
   test:
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{github.event.pull_request.head.sha || github.sha}}
-
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 18
-          registry-url: https://registry.npmjs.org/
 
       - name: Docker Compose Build
         run: docker compose up --build -d postgis
