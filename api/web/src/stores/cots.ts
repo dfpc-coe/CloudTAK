@@ -384,9 +384,8 @@ export const useCOTStore = defineStore('cots', {
             if (mission_guid)  {
                 let sub = this.subscriptions.get(mission_guid);
                 if (!sub) {
-                    await this.loadMission(mission_guid)
-                    sub = this.subscriptions.get(mission_guid);
-                    if (!sub) throw new Error('Could not add COT to Mission');
+                    console.error(`Cannot add ${feat.id} to mission ${mission_guid} as it is not loaded`)
+                    return;
                 }
 
                 const cot = new COT(feat);

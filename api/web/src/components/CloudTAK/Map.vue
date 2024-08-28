@@ -949,92 +949,96 @@ export default {
                 });
             }
         },
-        mountMap: async function() {
-            mapStore.init(this.$refs.map);
+        mountMap: function() {
+            return new Promise((resolve) => {
+                mapStore.init(this.$refs.map);
 
-            mapStore.map.once('idle', async () => {
-                // Eventually make a sprite URL part of the overlay so KMLs can load a sprite package
-                const iconsets = await std('/api/iconset');
-                for (const iconset of iconsets.items) {
-                    mapStore.map.addSprite(iconset.uid, String(stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=${iconset.uid}`)))
-                }
-
-                await mapStore.initOverlays();
-                mapStore.initDraw();
-
-                this.setYou();
-
-                mapStore.draw.on('deselect', async () => {
-                    if (!mapStore.edit) return;
-
-                    const feat = mapStore.draw._store.store[mapStore.edit.id];
-                    delete feat.properties.center;
-
-                    cotStore.hidden.delete(mapStore.edit.id);
-
-                    mapStore.edit = null
-
-                    mapStore.draw.setMode('static');
-                    this.drawMode = 'static';
-                    mapStore.draw.stop();
-
-                    cotStore.cots.delete(feat.id);
-                    cotStore.add(feat);
-                    await this.updateCOT();
-                })
-
-                mapStore.draw.on('finish', async (id) => {
-                    if (mapStore.draw.getMode() === 'select' || mapStore.edit) {
-                        return;
+                mapStore.map.once('idle', async () => {
+                    // Eventually make a sprite URL part of the overlay so KMLs can load a sprite package
+                    const iconsets = await std('/api/iconset');
+                    for (const iconset of iconsets.items) {
+                        mapStore.map.addSprite(iconset.uid, String(stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=${iconset.uid}`)))
                     }
 
-                    const geometry = mapStore.draw._store.store[id].geometry;
+                    await mapStore.initOverlays();
+                    mapStore.initDraw();
 
-                    const feat = {
-                        id: id,
-                        type: 'Feature',
-                        how: 'h-g-i-g-o',
-                        properties: {
-                            archived: true,
-                            callsign: 'New Feature'
-                        },
-                        geometry
-                    };
+                    this.setYou();
 
-                    if (mapStore.draw.getMode() === 'polygon' || mapStore.draw.getMode() === 'rectangle') {
-                        feat.properties.type = 'u-d-f';
-                    } else if (mapStore.draw.getMode() === 'linestring') {
-                        feat.properties.type = 'u-d-f';
-                    } else if (mapStore.draw.getMode() === 'point') {
-                        feat.properties.type = this.drawModePoint || 'u-d-p';
-                        feat.properties["marker-opacity"] = 1;
-                        feat.properties["marker-color"] = '#00FF00';
-                    }
+                    mapStore.draw.on('deselect', async () => {
+                        if (!mapStore.edit) return;
 
-                    mapStore.draw._store.delete([id]);
-                    mapStore.draw.setMode('static');
-                    this.drawMode = 'static';
-                    mapStore.draw.stop();
-                    await cotStore.add(feat);
-                    await this.updateCOT();
+                        const feat = mapStore.draw._store.store[mapStore.edit.id];
+                        delete feat.properties.center;
+
+                        cotStore.hidden.delete(mapStore.edit.id);
+
+                        mapStore.edit = null
+
+                        mapStore.draw.setMode('static');
+                        this.drawMode = 'static';
+                        mapStore.draw.stop();
+
+                        cotStore.cots.delete(feat.id);
+                        cotStore.add(feat);
+                        await this.updateCOT();
+                    })
+
+                    mapStore.draw.on('finish', async (id) => {
+                        if (mapStore.draw.getMode() === 'select' || mapStore.edit) {
+                            return;
+                        }
+
+                        const geometry = mapStore.draw._store.store[id].geometry;
+
+                        const feat = {
+                            id: id,
+                            type: 'Feature',
+                            how: 'h-g-i-g-o',
+                            properties: {
+                                archived: true,
+                                callsign: 'New Feature'
+                            },
+                            geometry
+                        };
+
+                        if (mapStore.draw.getMode() === 'polygon' || mapStore.draw.getMode() === 'rectangle') {
+                            feat.properties.type = 'u-d-f';
+                        } else if (mapStore.draw.getMode() === 'linestring') {
+                            feat.properties.type = 'u-d-f';
+                        } else if (mapStore.draw.getMode() === 'point') {
+                            feat.properties.type = this.drawModePoint || 'u-d-p';
+                            feat.properties["marker-opacity"] = 1;
+                            feat.properties["marker-color"] = '#00FF00';
+                        }
+
+                        mapStore.draw._store.delete([id]);
+                        mapStore.draw.setMode('static');
+                        this.drawMode = 'static';
+                        mapStore.draw.stop();
+                        await cotStore.add(feat);
+                        await this.updateCOT();
+                    });
+
+                    this.timerSelf = window.setInterval(() => {
+                        if (this.live_loc) {
+                            connectionStore.sendCOT(profileStore.CoT(this.live_loc))
+                        } else if (profileStore.profile.tak_loc) {
+                            connectionStore.sendCOT(profileStore.CoT());
+                        }
+                    }, 2000);
+
+                    this.timerSelfUpdate = window.setInterval(() => {
+                        this.getLocation(false);
+                    }, 5000);
+
+                    this.timer = window.setInterval(async () => {
+                        if (!mapStore.map) return;
+                        await this.updateCOT();
+                    }, 500);
+
+                    return resolve();
                 });
-
-                this.timerSelf = window.setInterval(() => {
-                    if (this.live_loc) {
-                        connectionStore.sendCOT(profileStore.CoT(this.live_loc))
-                    } else if (profileStore.profile.tak_loc) {
-                        connectionStore.sendCOT(profileStore.CoT());
-                    }
-                }, 2000);
-
-                this.timerSelfUpdate = window.setInterval(() => {
-                    this.getLocation(false);
-                }, 5000);
-
-                this.timer = window.setInterval(async () => {
-                    if (!mapStore.map) return;
-                    await this.updateCOT();
-                }, 500);
             });
         }
     },
