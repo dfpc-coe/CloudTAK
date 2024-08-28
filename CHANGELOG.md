@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v3.14.1 - 2024-08-28
+
+- :bug: `UI` Fix trim call on non-existant callsign field
+
 ### v3.14.0 - 2024-08-28
 
 - :tada: `API` Add preliminary support for importing KMLs
