@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v3.14.0 - 2024-08-28
+
+- :tada: `API` Add preliminary support for importing KMLs
+
 ### v3.13.1 - 2024-08-28
 
 - :bug: `UI` Map Load as manual promise to avoid unstyled icons/mission updates
