@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v3.13.1 - 2024-08-28
+
+- :bug: `UI` Map Load as manual promise to avoid unstyled icons/mission updates
+
 ### v3.13.0 - 2024-08-27
 
 - :rocket: `UI` Store Mission Metadata for actively subscribed missions
