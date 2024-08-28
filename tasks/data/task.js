@@ -39,6 +39,8 @@ try {
 
 export default class Task {
     constructor() {
+        if (!process.env.AWS_REGION) process.env.AWS_REGION = 'us-east-1';
+
         this.etl = {
             api: process.env.TAK_ETL_URL || '',
             bucket: process.env.TAK_ETL_BUCKET || '',
@@ -62,8 +64,9 @@ export default class Task {
             this.etl.token = jwt.sign({ access: this.etl.type }, 'coe-wildland-fire');
         }
 
-
         this.etl.task = JSON.parse(this.etl.task);
+
+        if (!this.etl.task.asset) throw new Error('.task.asset Not Provided');
     }
 
     async control() {

@@ -12,6 +12,32 @@ on:
       - ready_for_review
 
 jobs:
+  data:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{github.event.pull_request.head.sha || github.sha}}
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org/
+
+      - name: NPM Install
+        working-directory: ./tasks/data
+        run: npm install
+
+      - name: NPM Run Lint
+        working-directory: ./tasks/data
+        run: npm run lint
+
+      - name: NPM Test
+        working-directory: ./tasks/data
+        run: npm test
+
   test:
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
@@ -23,7 +49,7 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 22
           registry-url: https://registry.npmjs.org/
 
       - name: Docker Compose Build
