@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import StreamZip from 'node-stream-zip'
+import StreamZip from 'node-stream-zip';
 import { kml } from '@tmcw/togeojson';
 import { DOMParser } from '@xmldom/xmldom';
 
@@ -29,13 +29,13 @@ export default class KML {
 
             const preentries = await zip.entries();
 
-            if (!preentries['doc.kml']) throw new Err(400, null, 'No doc.kml found in KMZ');
+            if (!preentries['doc.kml']) throw new Error('No doc.kml found in KMZ');
 
             await zip.extract(null, os.tmpdir());
 
-            asset = path.resolve(os.tmpdir(), 'doc.kml')
+            asset = path.resolve(os.tmpdir(), 'doc.kml');
         } else {
-            asset = path.resolve(os.tmpdir(), this.etl.task.asset)
+            asset = path.resolve(os.tmpdir(), this.etl.task.asset);
         }
 
         const dom = new DOMParser().parseFromString(String(await fs.readFile(asset)), 'text/xml');
