@@ -17,14 +17,9 @@ jobs:
     if: github.event.pull_request.draft == false
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{github.event.pull_request.head.sha || github.sha}}
-
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 22
-          registry-url: https://registry.npmjs.org/
 
       - name: Docker Data Task Build
         run: docker compose build task
@@ -40,14 +35,9 @@ jobs:
     if: github.event.pull_request.draft == false
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{github.event.pull_request.head.sha || github.sha}}
-
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 22
-          registry-url: https://registry.npmjs.org/
 
       - name: Docker Compose Build
         run: docker compose up --build -d postgis
