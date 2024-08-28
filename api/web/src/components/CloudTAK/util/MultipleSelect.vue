@@ -36,7 +36,7 @@
             </span>
             <span
                 class='subheader me-2'
-                v-text='feat.properties.callsign.trim() || "Unnamed Feature"'
+                v-text='feat.properties.callsign ? feat.properties.callsign.trim() || "Unnamed Feature"'
             />
         </div>
     </div>
