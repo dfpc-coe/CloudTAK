@@ -1,5 +1,5 @@
 <template>
-    <TablerModal :size='lease.id ? "xl" : undefined'>
+    <TablerModal :size='editLease.id ? "xl" : undefined'>
         <div class='modal-status bg-yellow' />
         <button
             type='button'
@@ -10,7 +10,7 @@
         <div class='modal-header'>
             <div
                 class='modal-title'
-                v-text='lease.id ? "Edit Lease" : "New Lease"'
+                v-text='editLease.id ? "Edit Lease" : "New Lease"'
             />
 
             <div class='ms-auto btn-list'>
@@ -43,7 +43,7 @@
                 />
 
                 <TablerEnum
-                    v-if='!lease.id'
+                    v-if='!editLease.id'
                     v-model='editLease.duration'
                     :options='["16 Hours", "12 Hours", "6 Hours", "1 Hour"]'
                     label='Lease Duration'
@@ -99,18 +99,10 @@
         </div>
         <div class='modal-footer'>
             <button
-                v-if='!code'
                 class='btn btn-primary'
                 @click='saveLease'
             >
                 Save
-            </button>
-            <button
-                v-else
-                class='btn btn-primary'
-                @click='$emit("refresh")'
-            >
-                Close
             </button>
         </div>
     </TablerModal>
@@ -170,6 +162,7 @@ export default {
     },
     mounted: async function() {
         if (this.lease.id) {
+            this.editLease = this.lease;
             await this.fetchLease();
         }
 
@@ -179,7 +172,7 @@ export default {
         fetchLease: async function() {
             this.loading = true;
 
-            const { lease, protocols } = await std(`/api/video/lease/${this.lease.id}`, {
+            const { lease, protocols } = await std(`/api/video/lease/${this.editLease.id}`, {
                 method: 'GET',
             });
 
@@ -196,14 +189,16 @@ export default {
             this.$emit('refresh');
         },
         saveLease: async function() {
-            if (this.lease.id) {
-                await std(`/api/video/lease/${this.lease.id}`, {
+            this.loading = true; 
+
+            if (this.editLease.id) {
+                await std(`/api/video/lease/${this.editLease.id}`, {
                     method: 'PATCH',
                     body: this.editLease
                 });
                 this.$emit('refresh');
             } else {
-                await std('/api/video/lease', {
+                const lease = await std('/api/video/lease', {
                     method: 'POST',
                     body: {
                         name: this.editLease.name,
@@ -211,7 +206,14 @@ export default {
                     }
                 });
 
-                this.$emit('refresh')
+                if (this.editLease.id) {
+                    this.$emit('refresh')
+                } else {
+                    this.editLease = lease;
+                    await this.fetchLease();
+                }
+
+                this.loading = false;
             }
         },
     }
