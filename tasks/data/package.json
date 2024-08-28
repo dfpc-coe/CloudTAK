@@ -6,7 +6,7 @@
     "description": "",
     "main": "task.js",
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
+        "test": "tape test/*.test.js",
         "lint": "eslint task.js lib/*.js",
         "start": "node task.js"
     },
@@ -19,10 +19,13 @@
         "@xmldom/xmldom": "^0.8.6",
         "geojson-precision": "^1.0.0",
         "jsonwebtoken": "^9.0.0",
+        "node-stream-zip": "^1.15.0",
         "undici": "^6.19.8"
     },
     "devDependencies": {
         "eslint": "^9.0.0",
-        "eslint-plugin-n": "^17.10.2"
+        "eslint-plugin-n": "^17.10.2",
+        "sinon": "^18.0.0",
+        "tape": "^5.8.1"
     }
 }
