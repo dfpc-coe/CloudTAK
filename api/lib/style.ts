@@ -237,7 +237,7 @@ export default class Style {
     /**
      * Compile and run a template or use a cached template for performance
      */
-    compile(template, props) {
+    compile(template: string, props: { [x: string]: unknown; }) {
         let t = this.templates.get(template);
 
         if (!t) {
@@ -310,6 +310,7 @@ export default class Style {
 
     #links(links: Array<Static<typeof StyleLink>>, feature: Static<typeof Feature.InputFeature>) {
         if (!feature.properties) feature.properties = {};
+        if (!feature.properties.metadata) feature.properties.metadata = {};
         if (!feature.properties.links) feature.properties.links = [];
         for (const link of links) {
             feature.properties.links.push({
@@ -324,6 +325,7 @@ export default class Style {
 
     #by_geom(style: Static<typeof StyleSingle>, feature: Static<typeof Feature.InputFeature>) {
         if (!feature.properties) feature.properties = {};
+        if (!feature.properties.metadata) feature.properties.metadata = {};
 
         if (feature.geometry.type === 'Point' && style.point) {
             if (style.point.id) feature.id = this.compile(style.point.id, feature.properties.metadata);
@@ -332,27 +334,32 @@ export default class Style {
             if (style.point.callsign) feature.properties.callsign = this.compile(style.point.callsign, feature.properties.metadata);
             if (style.point.links) this.#links(style.point.links, feature);
 
-            Object.keys(style.point)
-                .filter((k) => { return !['links', 'remarks', 'callsign'].includes(k) })
-                .forEach((k) => { feature.properties[k] = style.point[k] });
+            if (style.point['marker-color']) feature.properties['marker-color'] = style.point['marker-color'];
+            if (style.point['marker-opacity']) feature.properties['marker-opacity'] = Number(style.point['marker-opacity']);
+            if (style.point.icon) feature.properties.icon = style.point.icon;
         } else if (feature.geometry.type === 'LineString' && style.line) {
             if (style.line.id) feature.id = this.compile(style.line.id, feature.properties.metadata);
             if (style.line.remarks) feature.properties.remarks = this.compile(style.line.remarks, feature.properties.metadata);
             if (style.line.callsign) feature.properties.callsign = this.compile(style.line.callsign, feature.properties.metadata);
             if (style.line.links) this.#links(style.line.links, feature);
 
-            Object.keys(style.line)
-                .filter((k) => { return !['links', 'remarks', 'callsign'].includes(k) })
-                .forEach((k) => { feature.properties[k] = style.line[k] });
+            if (style.line.stroke) feature.properties.stroke = style.line.stroke;
+            if (style.line['stroke-style']) feature.properties['stroke-style'] = style.line['stroke-style'];
+            if (style.line['stroke-opacity']) feature.properties['stroke-opacity'] = Number(style.line['stroke-opacity']);
+            if (style.line['stroke-width']) feature.properties['stroke-width'] = Number(style.line['stroke-width']);
         } else if (feature.geometry.type === 'Polygon' && style.polygon) {
             if (style.polygon.id) feature.id = this.compile(style.polygon.id, feature.properties.metadata);
             if (style.polygon.remarks) feature.properties.remarks = this.compile(style.polygon.remarks, feature.properties.metadata);
             if (style.polygon.callsign) feature.properties.callsign = this.compile(style.polygon.callsign, feature.properties.metadata);
             if (style.polygon.links) this.#links(style.polygon.links, feature);
 
-            Object.keys(style.polygon)
-                .filter((k) => { return !['links', 'remarks', 'callsign'].includes(k) })
-                .forEach((k) => { feature.properties[k] = style.polygon[k] });
+            if (style.polygon.stroke) feature.properties.stroke = style.polygon.stroke;
+            if (style.polygon['stroke-style']) feature.properties['stroke-style'] = style.polygon['stroke-style'];
+            if (style.polygon['stroke-opacity']) feature.properties['stroke-opacity'] = Number(style.polygon['stroke-opacity']);
+            if (style.polygon['stroke-width']) feature.properties['stroke-width'] = Number(style.polygon['stroke-width']);
+
+            if (style.polygon.fill) feature.properties.fill = style.polygon.fill;
+            if (style.polygon['fill-opacity']) feature.properties['fill-opacity'] = Number(style.polygon['fill-opacity']);
         }
     }
 }
