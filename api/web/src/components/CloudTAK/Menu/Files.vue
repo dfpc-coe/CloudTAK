@@ -24,11 +24,13 @@
                 >
                     <div class='col-12 py-2 px-3 d-flex align-items-center hover-dark'>
                         <div class='col-auto'>
-                            <IconMap
+                            <IconMapPlus
                                 v-if='asset.visualized'
-                                v-tooltip='"Visualizable"'
+                                v-tooltip='"Add to Map"'
+                                class='cursor-pointer'
                                 :size='32'
                                 :stroke='1'
+                                @click='createOverlay(asset)'
                             />
                             <IconMapOff
                                 v-else
@@ -38,12 +40,11 @@
                             />
                         </div>
                         <div class='col-auto'>
-                            <div class='col-12'>
-                                <span
-                                    class='mx-2'
-                                    v-text='asset.name'
-                                />
-                            </div>
+                            <div
+                                class='col-12 text-truncate px-2'
+                                style='max-width: 250px;'
+                                v-text='asset.name'
+                            />
                             <div class='col-12 subheader'>
                                 <span class='mx-2'>
                                     <TablerBytes :bytes='asset.size' /> - <TablerEpoch :date='asset.updated' />
@@ -104,12 +105,16 @@ import {
 import {
     IconMap,
     IconMapOff,
+    IconMapPlus,
     IconTransform,
     IconDownload,
     IconRefresh,
 } from '@tabler/icons-vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import timeDiff from '../../../timediff.js';
+import { useMapStore } from '/src/stores/map.ts';
+import Overlay from '/src/stores/overlays/base.ts';
+const mapStore = useMapStore();
 
 export default {
     name: 'CloudTAKImports',
@@ -121,6 +126,7 @@ export default {
         TablerEpoch,
         TablerDelete,
         IconMap,
+        IconMapPlus,
         IconMapOff,
         IconTransform,
         IconDownload,
@@ -154,6 +160,35 @@ export default {
     methods: {
         timeDiff(update) {
             return timeDiff(update)
+        },
+        createOverlay: async function(asset) {
+            const url = stdurl(`/api/profile/asset/${encodeURIComponent(asset.visualized)}/tile`);
+
+            this.loading = true;
+            const res = await std(url);
+
+            if (new URL(res.tiles[0]).pathname.endsWith('.mvt')) {
+                await mapStore.overlays.push(await Overlay.create(mapStore.map, {
+                    url,
+                    name: asset.name,
+                    mode: 'profile',
+                    mode_id: asset.name,
+                    type: 'vector',
+                }));
+            } else {
+                await mapStore.overlays.push(await Overlay.create(mapStore.map, {
+                    url: url,
+                    name: asset.name,
+                    mode: 'profile',
+                    mode_id: asset.name,
+                    type: 'raster',
+                }));
+            }
+
+            this.loading = false;
+            this.$emit('mode', 'overlays');
+
+            this.$router.push('/menu/overlays');
         },
         downloadAsset: async function(asset) {
             const url = stdurl(`/api/profile/asset/${asset.name}`);
