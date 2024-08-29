@@ -35,14 +35,14 @@ export default class DataMission {
 
         try {
             mission = await api.Mission.get(data.name, {}, {
-                token: data.mission_token
+                token: data.mission_token || undefined
             });
 
             //TODO Update Groups: Not supported by TAK Server at this time
 
             if (!data.mission_sync) {
                 await api.Mission.delete(data.name, {}, {
-                    token: data.mission_token
+                    token: data.mission_token || undefined
                 });
                 return;
             }
@@ -62,13 +62,13 @@ export default class DataMission {
             });
 
             await config.models.Data.commit(data.id, {
-                mission_token: mission.token
+                mission_token: mission.token || undefined
             });
 
             // The groups property isn't returned by Create
             // Make this second call to get the groups - TODO Talk to Josh
             mission = await api.Mission.get(data.name, {}, {
-                token: data.mission_token
+                token: data.mission_token || undefined
             });
         }
 
@@ -80,7 +80,7 @@ export default class DataMission {
         const existMap: Map<string, Static<typeof MissionLayer>> = new Map();
         for (const l of (await api.MissionLayer.list(
             data.name,
-            { token: data.mission_token }
+            { token: data.mission_token || undefined }
         )).data) existMap.set(l.uid, l);
 
         for (const l of layers.items) {
@@ -95,7 +95,7 @@ export default class DataMission {
                         type: MissionLayerType.UID,
                         creatorUid: `connection-${data.connection}-data-${data.id}`
                     },
-                    { token: data.mission_token }
+                    { token: data.mission_token || undefined }
                 );
             } else {
                 if (exists.type !== MissionLayerType.UID) {
@@ -105,7 +105,7 @@ export default class DataMission {
                             uid: [`layer-${l.id}`],
                             creatorUid: `connection-${data.connection}-data-${data.id}`
                         },
-                        { token: data.mission_token }
+                        { token: data.mission_token || undefined }
                     );
 
                     await api.MissionLayer.create(
@@ -116,7 +116,7 @@ export default class DataMission {
                             type: MissionLayerType.UID,
                             creatorUid: `connection-${data.connection}-data-${data.id}`
                         },
-                        { token: data.mission_token }
+                        { token: data.mission_token || undefined }
                     );
                 }
 

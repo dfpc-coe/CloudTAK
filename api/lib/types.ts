@@ -102,7 +102,8 @@ export const LayerAlertResponse = createSelectSchema(schemas.LayerAlert, {
 });
 
 export const ImportResponse = createSelectSchema(schemas.Import, {
-    config: Type.Unknown()
+    config: Type.Unknown(),
+    result: Type.Unknown()
 });
 
 export const TaskResponse = createSelectSchema(schemas.Task, {
