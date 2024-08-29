@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v3.15.0 - 2024-08-28
+
+- :tada: `UI` Use new TerraDraw Angled Rectangle Mode thanks to @JamesLMilner
+
 ### v3.14.1 - 2024-08-28
 
 - :bug: `UI` Fix trim call on non-existant callsign field
