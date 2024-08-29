@@ -242,12 +242,11 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req);
 
+            const auth = config.serverCert();
+
             const api = await TAKAPI.init(
                 new URL(String(config.server.api)),
-                new APIAuthCertificate(
-                    config.server.auth.cert,
-                    config.server.auth.key
-                )
+                new APIAuthCertificate(auth.cert, auth.key)
             );
 
             const pkgs = await api.Package.list({

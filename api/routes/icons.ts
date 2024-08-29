@@ -498,7 +498,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Icons',
         description: 'Get Spriteset JSON for CoT types',
         query: Type.Object({
-            iconset: Type.Optional(Type.String()),
+            iconset: Type.String(),
             scope: Type.Optional(Type.Enum(ResourceCreationScope)),
             token: Type.Optional(Type.String()),
         })
@@ -545,7 +545,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Icons',
         description: 'Return a sprite sheet for CoT Types',
         query: Type.Object({
-            iconset: Type.Optional(Type.String()),
+            iconset: Type.String(),
             scope: Type.Optional(Type.Enum(ResourceCreationScope)),
             token: Type.Optional(Type.String()),
         })

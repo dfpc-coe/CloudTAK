@@ -26,7 +26,7 @@ export const Profile = pgTable('profile', {
     auth: json('auth').$type<ConnectionAuth>().notNull(),
     created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    phone: text('phone').default(''),
+    phone: text('phone').notNull().default(''),
     tak_callsign: text('tak_callsign').notNull().default('CloudTAK User'),
     tak_group: text('tak_group').$type<TAKGroup>().notNull().default(TAKGroup.ORANGE),
     tak_role: text('tak_role').$type<TAKRole>().notNull().default(TAKRole.TEAM_MEMBER),
@@ -36,7 +36,7 @@ export const Profile = pgTable('profile', {
     display_elevation: text('display_elevation').$type<Profile_Elevation>().notNull().default(Profile_Elevation.FEET),
     display_speed: text('display_speed').$type<Profile_Speed>().notNull().default(Profile_Speed.MPH),
     system_admin: boolean('system_admin').notNull().default(false),
-    agency_admin: json('agency_admin').$type<Array<number>>().default([])
+    agency_admin: json('agency_admin').notNull().$type<Array<number>>().default([])
 });
 
 export const ProfileChat = pgTable('profile_chats', {

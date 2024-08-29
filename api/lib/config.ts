@@ -103,6 +103,16 @@ export default class Config {
         this.external = new External(this)
     }
 
+    serverCert(): {
+        cert: string;
+        key: string;
+    } {
+        if (!this.server.auth.cert) throw new Err(500, null, 'Server auth.cert not set');
+        if (!this.server.auth.key) throw new Err(500, null, 'Server auth.key not set');
+
+        return this.server.auth
+    }
+
     static async env(args: ConfigArgs): Promise<Config> {
         if (!process.env.AWS_DEFAULT_REGION) {
             process.env.AWS_DEFAULT_REGION = 'us-east-1';

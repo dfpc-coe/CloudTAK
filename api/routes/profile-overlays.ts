@@ -1,4 +1,5 @@
 import { Type } from '@sinclair/typebox'
+import type { Static } from '@sinclair/typebox'
 import { validate } from '@maplibre/maplibre-gl-style-spec';
 import path from 'node:path';
 import Config from '../lib/config.js';
@@ -73,7 +74,7 @@ export default async function router(schema: Schema, config: Config) {
                         removed.push(...overlays.items.splice(i, 1));
                         overlays.total--;
                     }
-                } else if (item.mode === 'mission' && !(await api.Mission.access(
+                } else if (item.mode === 'mission' && item.mode_id && !(await api.Mission.access(
                         item.mode_id,
                         await config.conns.subscription(user.email, item.name)
                     ))
@@ -148,7 +149,7 @@ export default async function router(schema: Schema, config: Config) {
             if (overlay.username !== user.email) throw new Err(401, null, 'Cannot edit another\'s overlay');
 
             if (req.body.styles) {
-                const errors = validate(req.body.styles)
+                const errors = validate(req.body.styles as any)
                 if (errors.length) throw new Err(400, null, JSON.stringify(errors));
             }
 
