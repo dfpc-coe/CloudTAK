@@ -145,17 +145,19 @@ export default async function router(schema: Schema, config: Config) {
             config.conns.cots(pooledClient.config, cots);
 
             // TODO Only GeoJSON Features go to Dynamo, this should also store CoT XML
-            if (layer.logging && req.query.logging !== false) ddb.queue(req.body.features.map((feat: Static<typeof Feature.Feature>) => {
-                const item: QueueItem = {
-                    id: String(feat.id),
-                    layer: layer.id,
-                    type: feat.type,
-                    properties: feat.properties,
-                    geometry: feat.geometry
-                }
+            if (layer.logging && req.query.logging !== false) {
+                ddb.queue(req.body.features.map((feat) => {
+                    const item: QueueItem = {
+                        id: String(feat.id),
+                        layer: layer.id,
+                        type: feat.type,
+                        properties: feat.properties,
+                        geometry: feat.geometry
+                    }
 
-                return item;
-            }));
+                    return item;
+                }));
+            }
 
             res.json({
                 status: 200,

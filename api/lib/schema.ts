@@ -4,7 +4,7 @@ import type { StyleContainer } from './style.js';
 import { geometry, GeometryType } from '@openaddresses/batch-generic';
 import { ConnectionAuth } from './connection-config.js';
 import { TAKGroup, TAKRole } from  './api/types.js';
-import { Layer_Config } from './lib/models/layer.js';
+import { Layer_Config } from './models/layer.js';
 import { Layer_Priority, Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance } from  './enums.js';
 import { json, boolean, numeric, integer, timestamp, pgTable, serial, varchar, text, unique, index } from 'drizzle-orm/pg-core';
 

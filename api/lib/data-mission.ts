@@ -23,7 +23,7 @@ export default class DataMission {
         const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(connection.auth.cert, connection.auth.key));
 
         // All groups should be active for data-sync api to work properly
-        const groups = await api.Group.list({ useCache: 'true' });
+        const groups = await api.Group.list({ useCache: true });
         if (groups.data.some((g) => { return !g.active })) {
             await api.Group.update(groups.data.map((group) => {
                 group.active = true;

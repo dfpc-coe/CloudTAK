@@ -255,8 +255,8 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req);
 
-            let bounds: Geometry;
-            let center: Geometry;
+            let bounds: Geometry | undefined = undefined;
+            let center: Geometry | undefined = undefined;
             if (req.body.bounds) bounds = bboxPolygon(req.body.bounds as BBox).geometry;
             if (req.body.center) center = { type: 'Point', coordinates: req.body.center };
 
