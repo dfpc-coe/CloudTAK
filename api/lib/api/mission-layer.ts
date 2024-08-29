@@ -163,7 +163,8 @@ export default class {
         if (this.#isGUID(name)) {
             const url = new URL(`/Marti/api/missions/guid/${this.#encodeName(name)}/layers`, this.api.url);
 
-            for (const q in query) url.searchParams.append(q, String(query[q]));
+            let q: keyof Static<typeof CreateInput>;
+            for (q in query) url.searchParams.append(q, String(query[q]));
             return await this.api.fetch(url, {
                 method: 'PUT',
                 headers: this.#headers(opts),
@@ -171,7 +172,8 @@ export default class {
         } else {
             const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/layers`, this.api.url);
 
-            for (const q in query) url.searchParams.append(q, String(query[q]));
+            let q: keyof Static<typeof CreateInput>;
+            for (q in query) url.searchParams.append(q, String(query[q]));
             return await this.api.fetch(url, {
                 method: 'PUT',
                 headers: this.#headers(opts),
@@ -188,7 +190,8 @@ export default class {
         if (this.#isGUID(name)) {
             const url = new URL(`/Marti/api/missions/guid/${this.#encodeName(name)}/layers/${layer}/name`, this.api.url);
 
-            for (const q in query) url.searchParams.append(q, String(query[q]));
+            let q: keyof Static<typeof RenameInput>;
+            for (q in query) url.searchParams.append(q, String(query[q]));
             return await this.api.fetch(url, {
                 method: 'PUT',
                 headers: this.#headers(opts),
@@ -196,7 +199,8 @@ export default class {
         } else {
             const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/layers/${layer}/name`, this.api.url);
 
-            for (const q in query) url.searchParams.append(q, String(query[q]));
+            let q: keyof Static<typeof RenameInput>;
+            for (q in query) url.searchParams.append(q, String(query[q]));
             return await this.api.fetch(url, {
                 method: 'PUT',
                 headers: this.#headers(opts),
@@ -212,7 +216,8 @@ export default class {
         if (this.#isGUID(name)) {
             const url = new URL(`/Marti/api/missions/guid/${this.#encodeName(name)}/layers`, this.api.url);
 
-            for (const q in query) url.searchParams.append(q, String(query[q]));
+            let q: keyof Static<typeof DeleteInput>;
+            for (q in query) url.searchParams.append(q, String(query[q]));
             return await this.api.fetch(url, {
                 method: 'DELETE',
                 headers: this.#headers(opts),
@@ -220,7 +225,8 @@ export default class {
         } else {
             const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/layers`, this.api.url);
 
-            for (const q in query) url.searchParams.append(q, String(query[q]));
+            let q: keyof Static<typeof DeleteInput>;
+            for (q in query) url.searchParams.append(q, String(query[q]));
             return await this.api.fetch(url, {
                 method: 'DELETE',
                 headers: this.#headers(opts),

@@ -1,3 +1,4 @@
+import Err from '@openaddresses/batch-error';
 import STS from '@aws-sdk/client-sts';
 import External from './external.js';
 import SecretsManager from '@aws-sdk/client-secrets-manager';

@@ -58,7 +58,7 @@ export default class ECSVideo {
                 tasks: [task]
             }));
 
-            if (!descs.tasks.length) throw new Err(404, null, 'Could not find task with that ID');
+            if (!descs.tasks || !descs.tasks.length) throw new Err(404, null, 'Could not find task with that ID');
             if (!descs.tasks[0].taskDefinitionArn.includes(`:task-definition/coe-media-${this.config.StackName.replace(/^coe-etl-/, '')}`)) throw new Err(404, null, 'Could not find task with that ID');
 
             return descs.tasks[0];
