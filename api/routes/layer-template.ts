@@ -137,8 +137,6 @@ export default async function router(schema: Schema, config: Config) {
                 ...layer,
                 username: user.email,
                 ...req.body,
-                created: sql`Now()`,
-                updated: sql`Now()`,
             });
 
             return res.json(template)

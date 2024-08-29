@@ -66,7 +66,10 @@ export default async function router(schema: Schema, config: Config) {
                 status,
                 total: list.total,
                 items: list.items.map((layer) => {
-                    return { status: alarms.get(layer.id) || 'unknown', ...layer }
+                    return {
+                        status: alarms.get(layer.id) || 'unknown',
+                        ...layer,
+                    }
                 })
             });
         } catch (err) {

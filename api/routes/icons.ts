@@ -199,7 +199,7 @@ export default async function router(schema: Schema, config: Config) {
 
                 archive.pipe(res);
 
-                const xmljson = {
+                const xmljson: any = {
                     iconset: {
                         $: {
                             version: 1,
@@ -227,7 +227,10 @@ export default async function router(schema: Schema, config: Config) {
                     }
 
                     archive.append(Buffer.from(icon.data, 'base64'), { name: icon.name });
-                    xmljson.iconset.icon.push({ $: { name: path.parse(icon.name).base, type2525b: icon.type2525b } })
+                    xmljson.iconset.icon.push({ $: {
+                        name: path.parse(icon.name).base,
+                        type2525b: icon.type2525b
+                    } })
                 }
 
                 res.setHeader('Content-Type', 'text/xml');

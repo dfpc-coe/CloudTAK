@@ -114,7 +114,7 @@ export default class TAKAPI {
                 return await res.text();
             }
         } catch (err) {
-            if (err.name === 'PublicError') throw err;
+            if (err instanceof Error && err.name === 'PublicError') throw err;
             throw new Err(400, null, err instanceof Error ? err.message : String(err));
         }
     }

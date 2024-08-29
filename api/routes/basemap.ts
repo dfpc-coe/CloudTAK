@@ -192,20 +192,21 @@ export default async function router(schema: Schema, config: Config) {
             format: Type.Optional(Type.String()),
             style: Type.Optional(Type.String()),
             type: Type.Optional(Type.String()),
-            bounds: Type.Array(Type.Number({minItems: 4, maxItems: 4})),
-            center: Type.Array(Type.Number())
+            bounds: Type.Optional(Type.Array(Type.Number({minItems: 4, maxItems: 4}))),
+            center: Type.Optional(Type.Array(Type.Number()))
         }),
         res: BasemapResponse
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
 
-            let bounds: Geometry;
+            let bounds: Geometry | undefined = undefined;
             if (req.body.bounds) {
                 bounds = bboxPolygon(req.body.bounds as BBox).geometry;
                 delete req.body.bounds;
             }
-            let center: Geometry;
+
+            let center: Geometry | undefined = undefined;
             if (req.body.center) {
                 center = { type: 'Point', coordinates: req.body.center };
                 delete req.body.center;

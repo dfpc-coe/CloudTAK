@@ -57,7 +57,7 @@ export default class AuthProvider {
         try {
             profile = await this.config.models.Profile.from(username);
         } catch (err) {
-            if (err.name === 'PublicError' && err.status === 404) {
+            if (err instanceof Error && err.name === 'PublicError' && err.status === 404) {
                 const api = await TAKAPI.init(new URL(this.config.MartiAPI), new APIAuthPassword(username, password));
 
                 profile = await this.config.models.Profile.generate({
@@ -65,7 +65,7 @@ export default class AuthProvider {
                     auth: await api.Credentials.generate()
                 });
             } else {
-                throw new Err(400, null, err)
+                throw new Err(400, err, err instanceof Error ? err.message : String(err))
             }
         }
 
