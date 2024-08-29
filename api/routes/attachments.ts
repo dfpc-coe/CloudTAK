@@ -35,7 +35,7 @@ export default async function router(schema: Schema, config: Config) {
             const items = [];
             for (const hash of Array.isArray(req.query.hash) ? req.query.hash : [req.query.hash]) {
                 const attachment = await S3.list(`attachment/${hash}/`);
-                if (attachment.length < 1) continue;
+                if (attachment.length < 1 || !attachment[0].Key) continue;
 
                 const parsed = path.parse(attachment[0].Key);
                 items.push({
@@ -120,6 +120,7 @@ export default async function router(schema: Schema, config: Config) {
             const attachment = await S3.list(`attachment/${req.params.hash}/`);
             if (attachment.length < 1) throw new Err(404, null, 'Attachment not found');
 
+            if (!attachment[0].Key) throw new Err(400, null, 'Count not find attachment');
             const stream = await S3.get(attachment[0].Key);
 
             stream.pipe(res);

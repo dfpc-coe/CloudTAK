@@ -102,9 +102,9 @@ export default async function router(schema: Schema, config: Config) {
 
             const protocols: Static<typeof Protocols> = {};
             const c = await videoControl.configuration();
-            if (!c.configured) return res.json({ lease, protocols });
+            if (!c.configured || !c.url) return res.json({ lease, protocols });
 
-            if (c.config.rtsp) {
+            if (c.config && c.config.rtsp) {
                 // Format: rtsp://localhost:8554/mystream
                 const url = new URL(`/${lease.path}`, c.url.replace(/^http(s)?:/, 'rtsp:'))
                 url.port = c.config.rtspAddress.replace(':', '');
@@ -115,7 +115,7 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
-            if (c.config.rtmp) {
+            if (c.config && c.config.rtmp) {
                 // Format: rtmp://localhost/mystream
                 const url = new URL(`/${lease.path}`, c.url.replace(/^http(s)?:/, 'rtmp:'))
                 url.port = '';
@@ -129,7 +129,7 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
-            if (c.config.hls) {
+            if (c.config && c.config.hls) {
                 // Format: http://localhost:8888/mystream
                 const url = new URL(`/${lease.path}`, c.url);
                 url.port = c.config.hlsAddress.replace(':', '');
@@ -140,7 +140,7 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
-            if (c.config.webrtc) {
+            if (c.config && c.config.webrtc) {
                 // Format: http://localhost:8889/mystream
                 const url = new URL(`/${lease.path}`, c.url);
                 url.port = c.config.webrtcAddress.replace(':', '');
@@ -151,7 +151,7 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
-            if (c.config.srt) {
+            if (c.config && c.config.srt) {
                 // Format: srt://localhost:8890?streamid=read:mystream
                 const url = new URL(c.url.replace(/^http(s)?:/, 'srt:'))
                 url.port = c.config.srtAddress.replace(':', '');

@@ -135,7 +135,7 @@ export default class Style {
             try {
                 handlebars.compile(style.id)({});
             } catch (err) {
-                throw new Err(400, err, `Invalid ID Template: ${style.id}`)
+                throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid ID Template: ${style.id}`)
             }
         }
 
@@ -143,7 +143,7 @@ export default class Style {
             try {
                 handlebars.compile(style.callsign)({});
             } catch (err) {
-                throw new Err(400, err, `Invalid Callsign Template: ${style.callsign}`)
+                throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid Callsign Template: ${style.callsign}`)
             }
         }
 
@@ -152,7 +152,7 @@ export default class Style {
             try {
                 handlebars.compile(style.remarks)({});
             } catch (err) {
-                throw new Err(400, err, `Invalid Remarks Template: ${style.remarks}`)
+                throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid Remarks Template: ${style.remarks}`)
             }
         }
 
@@ -168,7 +168,7 @@ export default class Style {
                     try {
                         handlebars.compile(style[type].id)({});
                     } catch (err) {
-                        throw new Err(400, err, `Invalid (${type}) ID Template: ${style[type].id}`)
+                        throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid (${type}) ID Template: ${style[type].id}`)
                     }
                 }
 
@@ -176,7 +176,7 @@ export default class Style {
                     try {
                         handlebars.compile(style[type].type)({});
                     } catch (err) {
-                        throw new Err(400, err, `Invalid (${type}) Type Template: ${style[type].type}`)
+                        throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid (${type}) Type Template: ${style[type].type}`)
                     }
                 }
 
@@ -184,7 +184,7 @@ export default class Style {
                     try {
                         handlebars.compile(style[type].callsign)({});
                     } catch (err) {
-                        throw new Err(400, err, `Invalid (${type}) Callsign Template: ${style[type].callsign}`)
+                        throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid (${type}) Callsign Template: ${style[type].callsign}`)
                     }
                 }
 
@@ -192,7 +192,7 @@ export default class Style {
                     try {
                         handlebars.compile(style[type].remarks)({});
                     } catch (err) {
-                        throw new Err(400, err, `Invalid (${type}) Remarks Template: ${style[type].remarks}`)
+                        throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid (${type}) Remarks Template: ${style[type].remarks}`)
                     }
                 }
             }
@@ -204,13 +204,13 @@ export default class Style {
             try {
                 handlebars.compile(link.url)({});
             } catch (err) {
-                throw new Err(400, err, `Invalid Link URL: ${link.url}`)
+                throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid Link URL: ${link.url}`)
             }
 
             try {
                 handlebars.compile(link.remarks)({});
             } catch (err) {
-                throw new Err(400, err, `Invalid Link Remarks: ${link.remarks}`)
+                throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid Link Remarks: ${link.remarks}`)
             }
         }
     }

@@ -188,6 +188,9 @@ export default class Config {
         const sts = new STS.STSClient({ region: process.env.AWS_DEFAULT_REGION });
         const account = await sts.send(new STS.GetCallerIdentityCommand({}));
         const res = [];
+
+        if (!account.Arn) throw new Error('ARN Could not be determined');
+
         res.push(...account.Arn.split(':').splice(0, 2));
         res.push(service);
         res.push(process.env.AWS_DEFAULT_REGION);

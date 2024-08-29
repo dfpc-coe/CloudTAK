@@ -85,7 +85,7 @@ export default async function router(schema: Schema, config: Config) {
                     const features = await api.MissionLayer.latestFeats(
                         data.name,
                         `layer-${layer.id}`,
-                        { token: data.mission_token }
+                        { token: data.mission_token || undefined }
                     );
 
                     for (const feat of features.values()) {
@@ -98,7 +98,7 @@ export default async function router(schema: Schema, config: Config) {
                             await api.Mission.detachContents(
                                 data.name,
                                 { uid: String(feat.id) },
-                                { token: data.mission_token }
+                                { token: data.mission_token || undefined }
                             );
                         }
                     }

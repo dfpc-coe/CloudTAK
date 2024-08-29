@@ -66,7 +66,7 @@ export default async function router(schema: Schema, config: Config) {
 
             return res.json({
                 type: base.type,
-                base: base.base,
+                base: String(base.base),
                 auth: base.token
             });
         } catch (err) {

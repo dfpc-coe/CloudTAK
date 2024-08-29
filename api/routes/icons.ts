@@ -517,7 +517,7 @@ export default async function router(schema: Schema, config: Config) {
             if (req.query.scope === ResourceCreationScope.SERVER) scope = sql`username IS NULL`;
             else if (req.query.scope === ResourceCreationScope.USER) scope = sql`username IS NOT NULL`;
 
-            if (SpriteMap[req.query.iconset]) {
+            if (req.query.iconset && SpriteMap[req.query.iconset]) {
                 return res.json(SpriteMap[req.query.iconset].json);
             } else {
                 const icons = await config.models.Icon.list({

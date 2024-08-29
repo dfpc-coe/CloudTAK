@@ -26,8 +26,9 @@ async function listTasks(): Promise<{
 
     for (const image of images) {
         const match = String(image.imageTag).match(/^(.*)-v([0-9]+\.[0-9]+\.[0-9]+)$/);
-        if (!match) continue;
+        if (!match || !match[1]) continue;
         total++;
+
         if (!tasks.has(match[1])) tasks.set(match[1], []);
         tasks.get(match[1]).push(match[2]);
     }
