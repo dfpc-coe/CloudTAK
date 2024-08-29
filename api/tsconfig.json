@@ -3,7 +3,8 @@
         "esm": true
     },
     "compilerOptions": {
-        "strict": false,
+        "strict": true,
+        "strictNullChecks": true,
         "esModuleInterop": true,
         "skipLibCheck": true,
         "module": "es2022",
