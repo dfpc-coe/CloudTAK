@@ -452,7 +452,7 @@
                         </div>
                         <div
                             class='col-12 py-1 px-2 hover-button cursor-pointer'
-                            @click='startDraw("rectangle")'
+                            @click='startDraw("angled-rectangle")'
                         >
                             <IconVector
                                 :size='25'
@@ -1002,7 +1002,7 @@ export default {
                             geometry
                         };
 
-                        if (mapStore.draw.getMode() === 'polygon' || mapStore.draw.getMode() === 'rectangle') {
+                        if (mapStore.draw.getMode() === 'polygon' || mapStore.draw.getMode() === 'angled-rectangle') {
                             feat.properties.type = 'u-d-f';
                         } else if (mapStore.draw.getMode() === 'linestring') {
                             feat.properties.type = 'u-d-f';

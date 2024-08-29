@@ -402,7 +402,7 @@ export const useMapStore = defineStore('cloudtak', {
                     new terraDraw.TerraDrawPointMode(),
                     new terraDraw.TerraDrawLineStringMode(),
                     new terraDraw.TerraDrawPolygonMode(),
-                    new terraDraw.TerraDrawRectangleMode(),
+                    new terraDraw.TerraDrawAngledRectangleMode(),
                     new terraDraw.TerraDrawSelectMode({
                         flags: {
                             polygon: {
