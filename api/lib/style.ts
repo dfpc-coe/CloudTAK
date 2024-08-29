@@ -14,6 +14,23 @@ interface ValidateStyle {
     polygon?:   { callsign?: string; id?: string; remarks?: string; links?: Array<Static<typeof StyleLink>> };
 }
 
+interface validateStyleGeometry {
+    'marker-color'?: string;
+    'marker-opacity'?: string;
+    id?: string;
+    type?: string;
+    remarks?: string;
+    callsign?: string;
+    links?: Static<typeof StyleLink>[],
+    icon?: string;
+    stroke?: string;
+    'stroke-style'?: string;
+    'stroke-opacity'?: string;
+    'stroke-width'?: string;
+    fill?: string;
+    'fill-opacity'?: string;
+};
+
 export const StyleLink = Type.Object({
     remarks: Type.String(),
     url: Type.String()
@@ -160,41 +177,43 @@ export default class Style {
             this.#validateLinks(style.links);
         }
 
-        for (const type of ['point', 'polygon', 'line']) {
-            if (type in style) {
-                if (style[type].links) this.#validateLinks(style[type].links);
+        if (style.point) this.#validateTemplateGeometry(style.point, 'point');
+        if (style.polygon) this.#validateTemplateGeometry(style.polygon, 'polygon');
+        if (style.line) this.#validateTemplateGeometry(style.line, 'line');
+    }
 
-                if (style[type].id) {
-                    try {
-                        handlebars.compile(style[type].id)({});
-                    } catch (err) {
-                        throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid (${type}) ID Template: ${style[type].id}`)
-                    }
-                }
+    static #validateTemplateGeometry(style: validateStyleGeometry, type: string) {
+        if (style.links) this.#validateLinks(style.links);
 
-                if (style[type].type) {
-                    try {
-                        handlebars.compile(style[type].type)({});
-                    } catch (err) {
-                        throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid (${type}) Type Template: ${style[type].type}`)
-                    }
-                }
+        if (style.id) {
+            try {
+                handlebars.compile(style.id)({});
+            } catch (err) {
+                throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid (${type}) ID Template: ${style.id}`)
+            }
+        }
 
-                if (style[type].callsign) {
-                    try {
-                        handlebars.compile(style[type].callsign)({});
-                    } catch (err) {
-                        throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid (${type}) Callsign Template: ${style[type].callsign}`)
-                    }
-                }
+        if (style.type) {
+            try {
+                handlebars.compile(style.type)({});
+            } catch (err) {
+                throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid (${type}) Type Template: ${style.type}`)
+            }
+        }
 
-                if (style[type].remarks) {
-                    try {
-                        handlebars.compile(style[type].remarks)({});
-                    } catch (err) {
-                        throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid (${type}) Remarks Template: ${style[type].remarks}`)
-                    }
-                }
+        if (style.callsign) {
+            try {
+                handlebars.compile(style.callsign)({});
+            } catch (err) {
+                throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid (${type}) Callsign Template: ${style.callsign}`)
+            }
+        }
+
+        if (style.remarks) {
+            try {
+                handlebars.compile(style.remarks)({});
+            } catch (err) {
+                throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid (${type}) Remarks Template: ${style.remarks}`)
             }
         }
     }
@@ -272,7 +291,7 @@ export default class Style {
 
                         this.#by_geom(q.styles, feature);
                     }
-    
+
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 } catch (err) {
                     // Ignore queries that result in invalid output - this is explicitly allowed
