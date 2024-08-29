@@ -43,6 +43,8 @@ export default class ImportControl {
             const profile = await this.config.models.Profile.from(body.username);
             const api = await TAKAPI.init(new URL(String(this.config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
+
+            if (!body.mode_id) throw new Error('ModeID Must be set for Package Type');
             const file = await api.Files.download(body.mode_id);
 
             await S3.put(`import/${imp.id}.zip`, file)

@@ -32,7 +32,10 @@ export default class ExternalProvider {
         this.config = config;
     }
 
-    async auth(): Promise<void> {
+    async auth(): Promise<{
+        expires: Date;
+        token: string;
+    }> {
         if (!this.cache || this.cache.expires < new Date()) {
             const expires = new Date();
             const authres = await fetch(new URL(`/oauth/token`, this.config.server.provider_url), {
@@ -59,13 +62,18 @@ export default class ExternalProvider {
             const token = cache.access_token;
             expires.setSeconds(expires.getSeconds() + cache.expires_in - 120);
 
-            this.cache = { token, expires };
+            const res = { token, expires };
+            this.cache = res;
+
+            return res;
+        } else {
+            return this.cache;
         }
     }
 
     async createMachineUser(uid: number, body: {
         name: string;
-        agency_id: number;
+        agency_id?: number;
         password: string;
         integration: {
             name: string;
@@ -73,7 +81,7 @@ export default class ExternalProvider {
             management_url: string;
         }
     }): Promise<Static<typeof MachineUser>> {
-        await this.auth();
+        const creds = await this.auth();
 
         const url = new URL(`api/v1/proxy/machine-users`, this.config.server.provider_url);
         url.searchParams.append('proxy_user_id', String(uid));
@@ -98,7 +106,7 @@ export default class ExternalProvider {
             headers: {
                 Accept: 'application/json',
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${this.cache.token}`
+                "Authorization": `Bearer ${creds.token}`
             },
             body: JSON.stringify(req)
         });
@@ -116,7 +124,7 @@ export default class ExternalProvider {
         machine_id: number;
         channel_id: number;
     }): Promise<void> {
-        await this.auth();
+        const creds = await this.auth();
 
         const url = new URL(`api/v1/proxy/channels/${body.channel_id}/machine-users/attach/${body.machine_id}`, this.config.server.provider_url);
         url.searchParams.append('proxy_user_id', String(uid));
@@ -127,7 +135,7 @@ export default class ExternalProvider {
             headers: {
                 Accept: 'application/json',
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${this.cache.token}`
+                "Authorization": `Bearer ${creds.token}`
             }
         });
 
@@ -137,14 +145,14 @@ export default class ExternalProvider {
     }
 
     async agency(uid: number, agency_id: number): Promise<Static<typeof Agency>> {
-        await this.auth();
+        const creds = await this.auth();
 
         const url = new URL(`/api/v1/proxy/agencies/${agency_id}`, this.config.server.provider_url);
         url.searchParams.append('proxy_user_id', String(uid));
         const agencyres = await fetch(url, {
             headers: {
                 Accept: 'application/json',
-                "Authorization": `Bearer ${this.cache.token}`
+                "Authorization": `Bearer ${creds.token}`
             },
         });
 
@@ -163,7 +171,7 @@ export default class ExternalProvider {
         total: number;
         items: Array<Static<typeof Channel>>
     }> {
-        await this.auth();
+        const creds = await this.auth();
 
         let url: URL;
         if (query.agency) {
@@ -179,7 +187,7 @@ export default class ExternalProvider {
         const channelres = await fetch(url, {
             headers: {
                 Accept: 'application/json',
-                "Authorization": `Bearer ${this.cache.token}`
+                "Authorization": `Bearer ${creds.token}`
             },
         });
 
@@ -205,7 +213,7 @@ export default class ExternalProvider {
         total: number;
         items: Array<Static<typeof Agency>>
     }> {
-        await this.auth();
+        const creds = await this.auth();
 
         const url = new URL(`/api/v1/proxy/agencies`, this.config.server.provider_url);
         url.searchParams.append('proxy_user_id', String(uid));
@@ -214,7 +222,7 @@ export default class ExternalProvider {
         const agencyres = await fetch(url, {
             headers: {
                 Accept: 'application/json',
-                "Authorization": `Bearer ${this.cache.token}`
+                "Authorization": `Bearer ${creds.token}`
             },
         });
 
@@ -242,13 +250,13 @@ export default class ExternalProvider {
         system_admin: boolean;
         agency_admin: Array<number>;
     }> {
-        await this.auth();
+        const creds = await this.auth();
 
         const userres = await fetch(new URL(`/api/v1/server/users/email/${encodeURIComponent(username)}`, this.config.server.provider_url), {
             method: 'GET',
             headers: {
                 "Accept": "application/json",
-                "Authorization": `Bearer ${this.cache.token}`
+                "Authorization": `Bearer ${creds.token}`
             },
         });
 

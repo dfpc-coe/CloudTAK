@@ -125,6 +125,7 @@ export default async function router(schema: Schema, config: Config) {
             if (req.query.broadcast) {
                 const sockets = config.wsClients.get(user.email) || []
                 for (const socket of sockets) {
+                    if (!socket.client) continue;
                     config.conns.cots(socket.client.config, [CoT.from_geojson(feat)])
                 }
             }

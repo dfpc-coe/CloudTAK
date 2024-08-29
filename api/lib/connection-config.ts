@@ -10,7 +10,7 @@ export type ConnectionAuth = {
 
 export type MissionSub = {
     name: string;
-    token?: string;
+    token: string | null;
 }
 
 export default interface ConnectionConfig {

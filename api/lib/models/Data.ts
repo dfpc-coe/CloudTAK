@@ -62,8 +62,10 @@ export default class DataModel extends Modeler<typeof Data> {
             return {
                 total: parseInt(pgres[0].count),
                 items: pgres.map((t) => {
-                    delete t.count;
-                    return t as Static<typeof AugmentedData>
+                    return {
+                        ...t,
+                        count: undefined
+                    } as Static<typeof AugmentedData>
                 })
             };
         }

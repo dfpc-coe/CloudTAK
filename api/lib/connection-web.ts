@@ -1,4 +1,5 @@
 import { Static } from '@sinclair/typebox'
+import { randomUUID } from 'node:crypto';
 import CoT, { DirectChat }  from '@tak-ps/node-cot';
 import type { Feature }  from '@tak-ps/node-cot';
 import { WebSocket } from 'ws';
@@ -29,7 +30,7 @@ export class ConnectionWebSocket {
                             chatroom: msg.data.chatroom,
                             sender_callsign: msg.data.from.callsign,
                             sender_uid: msg.data.from.uid,
-                            message_id: feat.properties.chat.messageId,
+                            message_id: feat.properties.chat ? (feat.properties.chat.messageId || randomUUID()) : randomUUID(),
                             message: msg.data.message
                         })
                     } else {
