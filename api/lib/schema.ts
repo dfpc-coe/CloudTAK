@@ -4,6 +4,7 @@ import type { StyleContainer } from './style.js';
 import { geometry, GeometryType } from '@openaddresses/batch-generic';
 import { ConnectionAuth } from './connection-config.js';
 import { TAKGroup, TAKRole } from  './api/types.js';
+import { Layer_Config } from './lib/models/layer.js';
 import { Layer_Priority, Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance } from  './enums.js';
 import { json, boolean, numeric, integer, timestamp, pgTable, serial, varchar, text, unique, index } from 'drizzle-orm/pg-core';
 
@@ -208,7 +209,7 @@ export const Layer = pgTable('layers', {
     connection: integer('connection').notNull().references(() => Connection.id),
     cron: text('cron').notNull(),
     environment: json('environment').notNull().default({}),
-    config: json('config').notNull().default({}),
+    config: json('config').$type<Static<typeof Layer_Config>>().notNull().default({}),
     memory: integer('memory').notNull().default(128),
     timeout: integer('timeout').notNull().default(128),
     data: integer('data').references(() => Data.id),
@@ -237,7 +238,7 @@ export const LayerTemplate = pgTable('layers_template', {
     stale: integer('stale').notNull().default(20),
     task: text('task').notNull(),
     cron: text('cron').notNull(),
-    config: json('config').notNull().default({}),
+    config: json('config').$type<Static<typeof Layer_Config>>().notNull().default({}),
     memory: integer('memory').notNull().default(128),
     timeout: integer('timeout').notNull().default(128),
     alarm_period: integer('alarm_period').notNull().default(30),

@@ -42,10 +42,9 @@ export default async function router(schema: Schema, config: Config) {
                 api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
             }
 
-            const query: Record<string, string> = {};
-            for (const q in req.query) query[q] = String(req.query[q]);
-
-            const groups = await api.Group.list(query);
+            const groups = await api.Group.list({
+                useCache: req.query.useCache
+            });
 
             return res.json(groups);
         } catch (err) {
@@ -86,12 +85,9 @@ export default async function router(schema: Schema, config: Config) {
                 api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
             }
 
-            const query: Record<string, string> = {};
-            for (const q in req.query) query[q] = String(req.query[q]);
-
             await api.Group.update(req.body, {});
 
-            const groups = await api.Group.list(query);
+            const groups = await api.Group.list({});
 
             return res.json(groups);
         } catch (err) {

@@ -81,6 +81,7 @@ export const LayerTemplateResponse = createSelectSchema(schemas.LayerTemplate, {
     alarm_evals: Type.Integer(),
     alarm_points: Type.Integer(),
     alarm_threshold: Type.Integer(),
+    config: Type.Unknown(),
 });
 
 export const ProfileFeature = Type.Composite([ Feature.Feature, Type.Object({

@@ -63,7 +63,9 @@ export default async function router(schema: Schema, config: Config) {
                     || (item.mode === 'data' && !(await S3.exists(`data/${item.mode_id}/${path.parse(item.url.replace(/\/tile$/, '')).name}.pmtiles`)))
                 ) {
                     await config.models.ProfileOverlay.delete(item.id);
-                    removed.push(...overlays.items.splice(i, 1));
+                    removed.push(...overlays.items.splice(i, 1).map((o) => {
+                        return { ...o, opacity: Number(o.opacity) }
+                    }));
                     overlays.total--;
                 } else if (item.mode === 'basemap') {
                     try {
@@ -71,7 +73,9 @@ export default async function router(schema: Schema, config: Config) {
                     } catch (err) {
                         console.error('Could not find basemap', err);
                         await config.models.ProfileOverlay.delete(item.id);
-                        removed.push(...overlays.items.splice(i, 1));
+                        removed.push(...overlays.items.splice(i, 1).map((o) => {
+                            return { ...o, opacity: Number(o.opacity) }
+                        }));
                         overlays.total--;
                     }
                 } else if (item.mode === 'mission' && item.mode_id && !(await api.Mission.access(
@@ -80,7 +84,9 @@ export default async function router(schema: Schema, config: Config) {
                     ))
                 ) {
                     await config.models.ProfileOverlay.delete(item.id);
-                    removed.push(...overlays.items.splice(i, 1));
+                    removed.push(...overlays.items.splice(i, 1).map((o) => {
+                        return { ...o, opacity: Number(o.opacity) }
+                    }));
                     overlays.total--;
                 }
             }

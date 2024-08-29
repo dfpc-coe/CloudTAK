@@ -39,7 +39,7 @@ async function listTasks(): Promise<{
     }
 
     for (const key of tasks.keys()) {
-        tasks.set(key, semver.desc(tasks.get(key)));
+        tasks.set(key, semver.desc(tasks.get(key) || []));
     }
 
     return { total, tasks }

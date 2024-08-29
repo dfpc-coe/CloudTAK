@@ -69,6 +69,7 @@ export default async function router(schema: Schema, config: Config) {
             const password = randomUUID();
             const user = await config.external.createMachineUser(profile.id, {
                 ...req.body,
+                agency_id: req.body.agency_id || undefined,
                 password,
                 integration: {
                     name: req.body.name,
