@@ -1,6 +1,6 @@
 <template>
     <div
-        class='bg-gray-500 rounded-top py-2 px-2 position-relative'
+        class='bg-gray-500 rounded-top py-2 px-2 position-relative text-truncate'
     >
         <span v-text='text' />
         <CopyButton
