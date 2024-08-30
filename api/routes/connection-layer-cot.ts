@@ -46,12 +46,15 @@ export default async function router(schema: Schema, config: Config) {
             const style = new Style(layer);
 
             for (let i = 0; i < req.body.features.length; i++) {
+                if (req.body.features[i].properties) req.body.features[i].properties = {};
+
                 req.body.features[i] = await style.feat(req.body.features[i])
 
-                if (!req.body.features[i].properties.flow) {
+                if (req.body.features[i].properties.flow === undefined) {
                     req.body.features[i].properties.flow = {};
                 }
 
+                // @ts-expect-error TS claims this could be undefined
                 req.body.features[i].properties.flow[`CloudTAK-Layer-${req.params.layerid}`] = new Date().toISOString();
             }
 
@@ -73,6 +76,8 @@ export default async function router(schema: Schema, config: Config) {
 
                 pooledClient = await config.conns.get(data.connection);
 
+                if (!pooledClient) throw new Err(500, null, `Pooled Client for ${data.connection} not found in config`);
+
                 if (data.mission_diff) {
                     if (!Array.isArray(req.body.uids)) {
                         throw new Err(400, null, 'uids Array must be present when submitting to DataSync with MissionDiff');
@@ -85,7 +90,7 @@ export default async function router(schema: Schema, config: Config) {
                     const features = await api.MissionLayer.latestFeats(
                         data.name,
                         `layer-${layer.id}`,
-                        { token: data.mission_token }
+                        { token: data.mission_token || undefined }
                     );
 
                     for (const feat of features.values()) {
@@ -98,7 +103,7 @@ export default async function router(schema: Schema, config: Config) {
                             await api.Mission.detachContents(
                                 data.name,
                                 { uid: String(feat.id) },
-                                { token: data.mission_token }
+                                { token: data.mission_token || undefined }
                             );
                         }
                     }
@@ -140,17 +145,19 @@ export default async function router(schema: Schema, config: Config) {
             config.conns.cots(pooledClient.config, cots);
 
             // TODO Only GeoJSON Features go to Dynamo, this should also store CoT XML
-            if (layer.logging && req.query.logging !== false) ddb.queue(req.body.features.map((feat: Static<typeof Feature.Feature>) => {
-                const item: QueueItem = {
-                    id: String(feat.id),
-                    layer: layer.id,
-                    type: feat.type,
-                    properties: feat.properties,
-                    geometry: feat.geometry
-                }
+            if (layer.logging && req.query.logging !== false) {
+                ddb.queue(req.body.features.map((feat) => {
+                    const item: QueueItem = {
+                        id: String(feat.id),
+                        layer: layer.id,
+                        type: feat.type,
+                        properties: feat.properties,
+                        geometry: feat.geometry
+                    }
 
-                return item;
-            }));
+                    return item;
+                }));
+            }
 
             res.json({
                 status: 200,

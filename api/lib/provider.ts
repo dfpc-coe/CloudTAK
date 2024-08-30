@@ -57,7 +57,7 @@ export default class AuthProvider {
         try {
             profile = await this.config.models.Profile.from(username);
         } catch (err) {
-            if (err.name === 'PublicError' && err.status === 404) {
+            if (err instanceof Err && err.name === 'PublicError' && err.status === 404) {
                 const api = await TAKAPI.init(new URL(this.config.MartiAPI), new APIAuthPassword(username, password));
 
                 profile = await this.config.models.Profile.generate({
@@ -65,7 +65,7 @@ export default class AuthProvider {
                     auth: await api.Credentials.generate()
                 });
             } else {
-                throw new Err(400, null, err)
+                throw new Err(400, err instanceof Error ? err : new Error(String(err)), err instanceof Error ? err.message : String(err))
             }
         }
 
@@ -109,14 +109,14 @@ export default class AuthProvider {
             // pushes a fix to throw a 401 instead of a 500 on bad certs
             await cert_api.Contacts.list();
         } catch (err) {
-            if (err.message.includes('org.springframework.security.authentication.BadCredentialsException')) {
+            if (err instanceof Error && err.message.includes('org.springframework.security.authentication.BadCredentialsException')) {
                 if (password) {
                     const api = await TAKAPI.init(new URL(this.config.MartiAPI), new APIAuthPassword(profile.username, password));
                     profile = await this.config.models.Profile.commit(profile.username, {
                         auth: await api.Credentials.generate()
                     });
                 } else {
-                    throw new Err(401, null, 'Certificate is Revoked');
+                    throw new Err(401, err instanceof Error ? err : new Error(String(err)), 'Certificate is Revoked');
                 }
             } else {
                 throw err;

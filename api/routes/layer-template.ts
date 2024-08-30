@@ -84,7 +84,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const template = await config.models.LayerTemplate.commit(req.params.templateid, {
                 ...req.body,
-                updated: sql`Now()`,
+                updated: sql<string>`Now()`,
             });
 
             return res.json(template)
@@ -133,13 +133,10 @@ export default async function router(schema: Schema, config: Config) {
 
             const layer = await config.models.Layer.from(req.body.layer);
 
-           delete layer.created;
-           delete layer.updated;
-
             const template = await config.models.LayerTemplate.generate({
                 ...layer,
                 username: user.email,
-                ...req.body
+                ...req.body,
             });
 
             return res.json(template)

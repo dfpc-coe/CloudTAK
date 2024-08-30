@@ -58,7 +58,10 @@ export default async function router(schema: Schema, config: Config) {
 
             const user = await config.models.Profile.from(req.params.email);
 
-            return res.json(user);
+            return res.json({
+                ...user,
+                agency_admin: user.agency_admin || []
+            });
         } catch (err) {
             return Err.respond(err, res);
         }

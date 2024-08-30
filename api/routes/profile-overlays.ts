@@ -62,7 +62,9 @@ export default async function router(schema: Schema, config: Config) {
                     || (item.mode === 'data' && !(await S3.exists(`data/${item.mode_id}/${path.parse(item.url.replace(/\/tile$/, '')).name}.pmtiles`)))
                 ) {
                     await config.models.ProfileOverlay.delete(item.id);
-                    removed.push(...overlays.items.splice(i, 1));
+                    removed.push(...overlays.items.splice(i, 1).map((o) => {
+                        return { ...o, opacity: Number(o.opacity) }
+                    }));
                     overlays.total--;
                 } else if (item.mode === 'basemap') {
                     try {
@@ -70,16 +72,20 @@ export default async function router(schema: Schema, config: Config) {
                     } catch (err) {
                         console.error('Could not find basemap', err);
                         await config.models.ProfileOverlay.delete(item.id);
-                        removed.push(...overlays.items.splice(i, 1));
+                        removed.push(...overlays.items.splice(i, 1).map((o) => {
+                            return { ...o, opacity: Number(o.opacity) }
+                        }));
                         overlays.total--;
                     }
-                } else if (item.mode === 'mission' && !(await api.Mission.access(
+                } else if (item.mode === 'mission' && item.mode_id && !(await api.Mission.access(
                         item.mode_id,
                         await config.conns.subscription(user.email, item.name)
                     ))
                 ) {
                     await config.models.ProfileOverlay.delete(item.id);
-                    removed.push(...overlays.items.splice(i, 1));
+                    removed.push(...overlays.items.splice(i, 1).map((o) => {
+                        return { ...o, opacity: Number(o.opacity) }
+                    }));
                     overlays.total--;
                 }
             }
@@ -137,7 +143,7 @@ export default async function router(schema: Schema, config: Config) {
             visible: Type.Optional(Type.Boolean()),
             url: Type.Optional(Type.String()),
             mode_id: Type.Optional(Type.String()),
-            styles: Type.Optional(Type.Any())
+            styles: Type.Optional(Type.Unknown())
         }),
         res: ProfileOverlayResponse
     }, async (req, res) => {
@@ -148,7 +154,7 @@ export default async function router(schema: Schema, config: Config) {
             if (overlay.username !== user.email) throw new Err(401, null, 'Cannot edit another\'s overlay');
 
             if (req.body.styles) {
-                const errors = validate(req.body.styles)
+                const errors = validate(req.body.styles as any)
                 if (errors.length) throw new Err(400, null, JSON.stringify(errors));
             }
 
@@ -182,17 +188,20 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req);
 
-            const overlay = await config.models.ProfileOverlay.generate({
-                ...req.body,
-                opacity: String(req.body.opacity || 1),
-                username: user.email
-            });
-
+            let overlay;
             if (req.body.mode === 'mission') {
+                if (!req.body.mode_id) throw new Err(400, null, 'Mode: Mission must have mode_id set');
+
+                overlay = await config.models.ProfileOverlay.generate({
+                    ...req.body,
+                    opacity: String(req.body.opacity || 1),
+                    username: user.email
+                });
+
                 const profile = await config.models.Profile.from(user.email);
                 const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
-                const mission = await api.Mission.getGuid(overlay.mode_id, {});
+                const mission = await api.Mission.getGuid(req.body.mode_id, {});
                 const sub = await api.Mission.subscribe(mission.name, {
                     uid: `ANDROID-CloudTAK-${user.email}`
                 });
@@ -200,6 +209,12 @@ export default async function router(schema: Schema, config: Config) {
                 await config.models.ProfileOverlay.commit(overlay.id, {
                     token: sub.data.token
                 })
+            } else {
+                overlay = await config.models.ProfileOverlay.generate({
+                    ...req.body,
+                    opacity: String(req.body.opacity || 1),
+                    username: user.email
+                });
             }
 
             return res.json({
@@ -208,7 +223,7 @@ export default async function router(schema: Schema, config: Config) {
             });
         } catch (err) {
             if (String(err).includes('duplicate key value violates unique constraint')) {
-                return Err.respond(new Err(400, err, 'Overlay appears to exist - cannot add duplicate'), res)
+                return Err.respond(new Err(400, err instanceof Error ? err : new Error(String(err)), 'Overlay appears to exist - cannot add duplicate'), res)
             } else {
                 return Err.respond(err, res);
             }
@@ -235,14 +250,14 @@ export default async function router(schema: Schema, config: Config) {
 
             await config.models.ProfileOverlay.delete(overlay.id);
 
-            if (overlay.mode === 'mission') {
+            if (overlay.mode === 'mission' && overlay.mode_id) {
                 const profile = await config.models.Profile.from(user.email);
                 const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
                 const mission = await api.Mission.getGuid(overlay.mode_id, {});
                 await api.Mission.unsubscribe(mission.name, {
                     uid: `ANDROID-CloudTAK-${user.email}`
                 },{
-                    token: overlay.token
+                    token: overlay.token || undefined
                 });
             }
 

@@ -17,7 +17,7 @@ export default class ECR {
                 const req: ListImagesCommandInput = { repositoryName: 'coe-ecr-etl-tasks' };
                 if (res && res.nextToken) req.nextToken = res.nextToken;
                 res = await ecr.send(new AWSECR.ListImagesCommand(req));
-                imageIds.push(...res.imageIds);
+                imageIds.push(...(res.imageIds || []));
             } while (res.nextToken)
 
             return imageIds;

@@ -199,7 +199,7 @@ export default async function router(schema: Schema, config: Config) {
 
                 archive.pipe(res);
 
-                const xmljson = {
+                const xmljson: any = {
                     iconset: {
                         $: {
                             version: 1,
@@ -227,7 +227,10 @@ export default async function router(schema: Schema, config: Config) {
                     }
 
                     archive.append(Buffer.from(icon.data, 'base64'), { name: icon.name });
-                    xmljson.iconset.icon.push({ $: { name: path.parse(icon.name).base, type2525b: icon.type2525b } })
+                    xmljson.iconset.icon.push({ $: {
+                        name: path.parse(icon.name).base,
+                        type2525b: icon.type2525b
+                    } })
                 }
 
                 res.setHeader('Content-Type', 'text/xml');
@@ -498,7 +501,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Icons',
         description: 'Get Spriteset JSON for CoT types',
         query: Type.Object({
-            iconset: Type.Optional(Type.String()),
+            iconset: Type.String(),
             scope: Type.Optional(Type.Enum(ResourceCreationScope)),
             token: Type.Optional(Type.String()),
         })
@@ -517,7 +520,7 @@ export default async function router(schema: Schema, config: Config) {
             if (req.query.scope === ResourceCreationScope.SERVER) scope = sql`username IS NULL`;
             else if (req.query.scope === ResourceCreationScope.USER) scope = sql`username IS NOT NULL`;
 
-            if (SpriteMap[req.query.iconset]) {
+            if (req.query.iconset && SpriteMap[req.query.iconset]) {
                 return res.json(SpriteMap[req.query.iconset].json);
             } else {
                 const icons = await config.models.Icon.list({
@@ -545,7 +548,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Icons',
         description: 'Return a sprite sheet for CoT Types',
         query: Type.Object({
-            iconset: Type.Optional(Type.String()),
+            iconset: Type.String(),
             scope: Type.Optional(Type.Enum(ResourceCreationScope)),
             token: Type.Optional(Type.String()),
         })

@@ -1,3 +1,4 @@
+import Err from '@openaddresses/batch-error';
 import STS from '@aws-sdk/client-sts';
 import External from './external.js';
 import SecretsManager from '@aws-sdk/client-secrets-manager';
@@ -103,6 +104,19 @@ export default class Config {
         this.external = new External(this)
     }
 
+    serverCert(): {
+        cert: string;
+        key: string;
+    } {
+        if (!this.server.auth.cert) throw new Err(500, null, 'Server auth.cert not set');
+        if (!this.server.auth.key) throw new Err(500, null, 'Server auth.key not set');
+
+        return {
+            cert: this.server.auth.cert,
+            key: this.server.auth.key
+        }
+    }
+
     static async env(args: ConfigArgs): Promise<Config> {
         if (!process.env.AWS_DEFAULT_REGION) {
             process.env.AWS_DEFAULT_REGION = 'us-east-1';
@@ -188,6 +202,9 @@ export default class Config {
         const sts = new STS.STSClient({ region: process.env.AWS_DEFAULT_REGION });
         const account = await sts.send(new STS.GetCallerIdentityCommand({}));
         const res = [];
+
+        if (!account.Arn) throw new Error('ARN Could not be determined');
+
         res.push(...account.Arn.split(':').splice(0, 2));
         res.push(service);
         res.push(process.env.AWS_DEFAULT_REGION);

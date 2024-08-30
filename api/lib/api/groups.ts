@@ -21,7 +21,7 @@ export default class {
     }
 
     async list(query: {
-        useCache?: string;
+        useCache?: boolean;
 
         [key: string]: unknown;
     }): Promise<TAKList<Static<typeof Group>>> {

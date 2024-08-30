@@ -90,12 +90,12 @@ export default class VideoServiceControl {
             user = await this.config.models.Setting.from('media::username');
             pass = await this.config.models.Setting.from('media::password');
         } catch (err) {
-            if (err.message.includes('Not Found')) {
+            if (err instanceof Error && err.message.includes('Not Found')) {
                 return {
                     configured: false
                 }
             } else {
-                throw new Err(500, err, 'Media Service Configuration Error');
+                throw new Err(500, err instanceof Error ? err : new Error(String(err)), 'Media Service Configuration Error');
             }
         }
 
@@ -107,17 +107,20 @@ export default class VideoServiceControl {
         }
     }
 
-    headers(username: string, password: string): Headers {
+    headers(username?: string, password?: string): Headers {
         const headers = new Headers();
-        headers.append('Authorization', `Basic ${Buffer.from(username + ':' + password).toString('base64')}`);
+        if (username && password) {
+            headers.append('Authorization', `Basic ${Buffer.from(username + ':' + password).toString('base64')}`);
+        }
         return headers;
     }
 
     async configuration(): Promise<Static<typeof Configuration>> {
         const video = await this.settings();
-        const headers = this.headers(video.username, video.password);
 
         if (!video.configured) return video;
+
+        const headers = this.headers(video.username, video.password);
 
         const url = new URL('/v3/config/global/get', video.url);
         url.port = '9997';

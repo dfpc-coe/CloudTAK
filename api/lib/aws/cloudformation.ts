@@ -18,7 +18,7 @@ export default class CloudFormation {
             StackName: config.StackName
         }));
 
-        if (!res.Stacks.length) throw new Error(`Stack with id ${config.StackName} does not exist`);
+        if (!res.Stacks || !res.Stacks.length) throw new Error(`Stack with id ${config.StackName} does not exist`);
 
         return res.Stacks[0];
     }

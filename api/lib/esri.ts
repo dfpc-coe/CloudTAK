@@ -110,7 +110,7 @@ export class EsriBase {
 
             return this.token;
         } catch (err) {
-            if (err.name === 'PublicError') throw err;
+            if (err instanceof Error && err.name === 'PublicError') throw err;
             throw new Err(400, err instanceof Error ? err : new Error(String(err)), err instanceof Error ? err.message : String(err));
         }
     }
@@ -159,7 +159,7 @@ export class EsriBase {
 
             return json.currentVersion;
         } catch (err) {
-            if (err.name === 'PublicError') throw err;
+            if (err instanceof Error && err.name === 'PublicError') throw err;
             if (err instanceof Error) {
                 if (err.cause) err.message = `${err.message}: ${err.cause}`;
                 throw new Err(400, err, String(err));
@@ -173,7 +173,7 @@ export class EsriBase {
         try {
             base = new URL(base);
         } catch (err) {
-            if (err.name === 'PublicError') throw err;
+            if (err instanceof Error && err.name === 'PublicError') throw err;
             throw new Err(400, err instanceof Error ? err : new Error(String(err)), err instanceof Error ? err.message : String(err));
         }
 
@@ -252,7 +252,7 @@ class EsriProxyPortal {
 
             return json;
         } catch (err) {
-            if (err.name === 'PublicError') throw err;
+            if (err instanceof Error && err.name === 'PublicError') throw err;
             throw new Err(400, err instanceof Error ? err : new Error(String(err)), err instanceof Error ? err.message : String(err));
         }
     }

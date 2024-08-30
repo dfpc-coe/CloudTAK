@@ -14,6 +14,7 @@ export default async function(icons: Array<InferSelectModel<typeof Icon>>, confi
     const doc = await SpriteSmith({
         src: icons.map((icon) => {
             return new Vinyl({
+                // @ts-expect-error Deal with indexing issue on icon
                 path: config.name ? icon[config.name] + '.png' : icon.path.replace(/.*?\//, ''),
                 contents: Buffer.from(icon.data, 'base64'),
             })

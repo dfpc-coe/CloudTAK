@@ -26,14 +26,20 @@ async function listTasks(): Promise<{
 
     for (const image of images) {
         const match = String(image.imageTag).match(/^(.*)-v([0-9]+\.[0-9]+\.[0-9]+)$/);
-        if (!match) continue;
+        if (!match || !match[1] || !match[2]) continue;
         total++;
-        if (!tasks.has(match[1])) tasks.set(match[1], []);
-        tasks.get(match[1]).push(match[2]);
+
+        let task = tasks.get(match[1])
+        if (!task) {
+            task = [];
+            tasks.set(match[1], task);
+        }
+
+        task.push(match[2]);
     }
 
     for (const key of tasks.keys()) {
-        tasks.set(key, semver.desc(tasks.get(key)));
+        tasks.set(key, semver.desc(tasks.get(key) || []));
     }
 
     return { total, tasks }

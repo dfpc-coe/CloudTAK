@@ -129,7 +129,8 @@ export default async function router(schema: Schema, config: Config) {
                 if (!uid) continue;
 
                 const attachment = await S3.list(`attachment/${hash}/`);
-                if (attachment.length < 1) continue;
+
+                if (attachment.length < 1 || !attachment[0].Key) continue;
                 await pkg.addFile(await S3.get(attachment[0].Key), {
                     name: path.parse(attachment[0].Key).base,
                     attachment: uid
@@ -166,9 +167,9 @@ export default async function router(schema: Schema, config: Config) {
                         return { _attributes: { uid: uid } };
                     })
                 }
-            }
 
-            client.tak.write([cot]);
+                client.tak.write([cot]);
+            }
 
             return res.json(content)
         } catch (err) {
@@ -241,12 +242,11 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req);
 
+            const auth = config.serverCert();
+
             const api = await TAKAPI.init(
                 new URL(String(config.server.api)),
-                new APIAuthCertificate(
-                    config.server.auth.cert,
-                    config.server.auth.key
-                )
+                new APIAuthCertificate(auth.cert, auth.key)
             );
 
             const pkgs = await api.Package.list({

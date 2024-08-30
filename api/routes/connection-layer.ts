@@ -296,6 +296,7 @@ export default async function router(schema: Schema, config: Config) {
                 'cron', 'task', 'memory', 'timeout', 'enabled', 'priority',
                 'alarm_period', 'alarm_evals', 'alarm_points', 'alarm_threshold'
             ]) {
+                // @ts-expect-error Doesn't like indexed values
                 if (req.body[prop] !== undefined && req.body[prop] !== layer[prop]) changed = true;
             }
 

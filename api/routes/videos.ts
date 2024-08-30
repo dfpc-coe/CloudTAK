@@ -50,19 +50,26 @@ export default async function router(schema: Schema, config: Config) {
 
             const items = await video.tasks();
 
-            const list = {
+            const list: {
+                total: number;
+                versions: number[]
+                items: Array<Static<typeof VideoResponse>>
+            } = {
                 total: items.length,
                 versions,
                 items: []
             };
 
             for (const item of items) {
+                if (!item.taskArn) throw new Err(500, null, 'Video TaskARN is not defined');
+                if (!item.taskDefinitionArn) throw new Err(500, null, 'Video TaskDefinitionARN is not defined');
+
                 const i: Static<typeof VideoResponse> = {
                     id: item.taskArn.replace(/.*\//, ''),
                     version: Number(item.taskDefinitionArn.replace(/.*:/, '')),
                     created: (item.startedAt ?? new Date()).toISOString(),
-                    status: item.lastStatus,
-                    statusDesired: item.desiredStatus,
+                    status: item.lastStatus || '',
+                    statusDesired: item.desiredStatus || 'UNKNOWN',
                     memory: Number(item.memory),
                     cpu: Number(item.cpu)
                 }
@@ -88,12 +95,15 @@ export default async function router(schema: Schema, config: Config) {
 
             const item = await video.run();
 
+            if (!item.taskArn) throw new Err(500, null, 'Video TaskARN is not defined');
+            if (!item.taskDefinitionArn) throw new Err(500, null, 'Video TaskDefinitionARN is not defined');
+
             const i: Static<typeof VideoResponse> = {
                 id: item.taskArn.replace(/.*\//, ''),
                 version: Number(item.taskDefinitionArn.replace(/.*:/, '')),
                 created: (item.startedAt ?? new Date()).toISOString(),
-                status: item.lastStatus,
-                statusDesired: item.desiredStatus,
+                status: item.lastStatus || '',
+                statusDesired: item.desiredStatus || 'UNKNOWN',
                 memory: Number(item.memory),
                 cpu: Number(item.cpu)
             }
@@ -118,21 +128,24 @@ export default async function router(schema: Schema, config: Config) {
 
             const item = await video.task(req.params.serverid);
 
+            if (!item.taskArn) throw new Err(500, null, 'Video TaskARN is not defined');
+            if (!item.taskDefinitionArn) throw new Err(500, null, 'Video TaskDefinitionARN is not defined');
+
             const i: Static<typeof VideoResponse> = {
                 id: item.taskArn.replace(/.*\//, ''),
                 version: Number(item.taskDefinitionArn.replace(/.*:/, '')),
                 created: (item.startedAt ?? new Date()).toISOString(),
-                status: item.lastStatus,
-                statusDesired: item.desiredStatus,
+                status: item.lastStatus || '',
+                statusDesired: item.desiredStatus || 'UNKNOWN',
                 memory: Number(item.memory),
                 cpu: Number(item.cpu)
             }
 
             if (i.status === "RUNNING" && i.statusDesired === "RUNNING") {
-                for (const att of item.attachments) {
-                    for (const det of att.details) {
-                        if (det.name === 'networkInterfaceId') {
-                            i.ipPublic = await EC2.eni(det.value);
+                for (const att of item.attachments || []) {
+                    for (const det of (att.details) || []) {
+                        if (det.name === 'networkInterfaceId' && det.value) {
+                            i.ipPublic = (await EC2.eni(det.value)) || undefined;
                         } else if (det.name === 'privateIPv4Address') {
                             i.ipPrivate = det.value;
                         }

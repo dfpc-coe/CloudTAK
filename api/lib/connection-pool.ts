@@ -3,6 +3,7 @@ import ImportControl, { ImportModeEnum }  from './control/import.js';
 import Sinks from './sinks.js';
 import Config from './config.js';
 import Metrics from './aws/metric.js';
+import { randomUUID } from 'node:crypto';
 import TAK, { CoT } from '@tak-ps/node-tak';
 import Modeler from '@openaddresses/batch-generic';
 import { Connection } from './schema.js';
@@ -61,7 +62,10 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         if (!conn) return { name: name };
         const sub = await conn.config.subscription(name);
         if (!sub) return { name: name };
-        return sub;
+        return {
+            name: sub.name,
+            token: sub.token || undefined
+        };
     }
 
     async refresh() {
@@ -129,8 +133,8 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                                 chatroom: feat.properties.chat.senderCallsign,
                                 sender_callsign: feat.properties.chat.senderCallsign,
                                 sender_uid: feat.properties.chat.chatgrp._attributes.uid0,
-                                message_id: feat.properties.chat.messageId,
-                                message: feat.properties.remarks
+                                message_id: feat.properties.chat.messageId || randomUUID(),
+                                message: feat.properties.remarks || ''
                             });
                         } else if (ephemeral && feat.properties.fileshare) {
                             const file = new URL(feat.properties.fileshare.senderUrl);
@@ -139,7 +143,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                                 username: String(conn.id),
                                 name: feat.properties.fileshare.name,
                                 mode: ImportModeEnum.PACKAGE,
-                                mode_id: file.searchParams.get('hash')
+                                mode_id: file.searchParams.get('hash') || undefined
                             })
                         }
                     } catch (err) {
@@ -193,15 +197,15 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                         await api.Mission.subscribe(sub.name, {
                             uid: connConfig.uid()
                         },{
-                            token: sub.token
+                            token: sub.token || undefined
                         });
 
                         console.log(`Connection: ${connConfig.id} - Sync: ${sub.name}: Subscribed!`);
                         retry = false;
                     } catch (err) {
-                        console.warn(`Connection: ${connConfig.id} (${connConfig.uid()}) - Sync: ${sub.name}: ${err.message}`);
+                        console.warn(`Connection: ${connConfig.id} (${connConfig.uid()}) - Sync: ${sub.name}: ${err instanceof Error ? err.message : String(err)}`);
 
-                        if (err.message.includes('ECONNREFUSED')) {
+                        if (err instanceof Error && err.message.includes('ECONNREFUSED')) {
                             await sleep(1000);
                         } else {
                             // We don't retry for unknown issues as it could be the Sync has been remotely deleted and will

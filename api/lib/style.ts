@@ -14,6 +14,23 @@ interface ValidateStyle {
     polygon?:   { callsign?: string; id?: string; remarks?: string; links?: Array<Static<typeof StyleLink>> };
 }
 
+interface validateStyleGeometry {
+    'marker-color'?: string;
+    'marker-opacity'?: string;
+    id?: string;
+    type?: string;
+    remarks?: string;
+    callsign?: string;
+    links?: Static<typeof StyleLink>[],
+    icon?: string;
+    stroke?: string;
+    'stroke-style'?: string;
+    'stroke-opacity'?: string;
+    'stroke-width'?: string;
+    fill?: string;
+    'fill-opacity'?: string;
+};
+
 export const StyleLink = Type.Object({
     remarks: Type.String(),
     url: Type.String()
@@ -135,7 +152,7 @@ export default class Style {
             try {
                 handlebars.compile(style.id)({});
             } catch (err) {
-                throw new Err(400, err, `Invalid ID Template: ${style.id}`)
+                throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid ID Template: ${style.id}`)
             }
         }
 
@@ -143,7 +160,7 @@ export default class Style {
             try {
                 handlebars.compile(style.callsign)({});
             } catch (err) {
-                throw new Err(400, err, `Invalid Callsign Template: ${style.callsign}`)
+                throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid Callsign Template: ${style.callsign}`)
             }
         }
 
@@ -152,7 +169,7 @@ export default class Style {
             try {
                 handlebars.compile(style.remarks)({});
             } catch (err) {
-                throw new Err(400, err, `Invalid Remarks Template: ${style.remarks}`)
+                throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid Remarks Template: ${style.remarks}`)
             }
         }
 
@@ -160,41 +177,43 @@ export default class Style {
             this.#validateLinks(style.links);
         }
 
-        for (const type of ['point', 'polygon', 'line']) {
-            if (type in style) {
-                if (style[type].links) this.#validateLinks(style[type].links);
+        if (style.point) this.#validateTemplateGeometry(style.point, 'point');
+        if (style.polygon) this.#validateTemplateGeometry(style.polygon, 'polygon');
+        if (style.line) this.#validateTemplateGeometry(style.line, 'line');
+    }
 
-                if (style[type].id) {
-                    try {
-                        handlebars.compile(style[type].id)({});
-                    } catch (err) {
-                        throw new Err(400, err, `Invalid (${type}) ID Template: ${style[type].id}`)
-                    }
-                }
+    static #validateTemplateGeometry(style: validateStyleGeometry, type: string) {
+        if (style.links) this.#validateLinks(style.links);
 
-                if (style[type].type) {
-                    try {
-                        handlebars.compile(style[type].type)({});
-                    } catch (err) {
-                        throw new Err(400, err, `Invalid (${type}) Type Template: ${style[type].type}`)
-                    }
-                }
+        if (style.id) {
+            try {
+                handlebars.compile(style.id)({});
+            } catch (err) {
+                throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid (${type}) ID Template: ${style.id}`)
+            }
+        }
 
-                if (style[type].callsign) {
-                    try {
-                        handlebars.compile(style[type].callsign)({});
-                    } catch (err) {
-                        throw new Err(400, err, `Invalid (${type}) Callsign Template: ${style[type].callsign}`)
-                    }
-                }
+        if (style.type) {
+            try {
+                handlebars.compile(style.type)({});
+            } catch (err) {
+                throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid (${type}) Type Template: ${style.type}`)
+            }
+        }
 
-                if (style[type].remarks) {
-                    try {
-                        handlebars.compile(style[type].remarks)({});
-                    } catch (err) {
-                        throw new Err(400, err, `Invalid (${type}) Remarks Template: ${style[type].remarks}`)
-                    }
-                }
+        if (style.callsign) {
+            try {
+                handlebars.compile(style.callsign)({});
+            } catch (err) {
+                throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid (${type}) Callsign Template: ${style.callsign}`)
+            }
+        }
+
+        if (style.remarks) {
+            try {
+                handlebars.compile(style.remarks)({});
+            } catch (err) {
+                throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid (${type}) Remarks Template: ${style.remarks}`)
             }
         }
     }
@@ -204,13 +223,13 @@ export default class Style {
             try {
                 handlebars.compile(link.url)({});
             } catch (err) {
-                throw new Err(400, err, `Invalid Link URL: ${link.url}`)
+                throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid Link URL: ${link.url}`)
             }
 
             try {
                 handlebars.compile(link.remarks)({});
             } catch (err) {
-                throw new Err(400, err, `Invalid Link Remarks: ${link.remarks}`)
+                throw new Err(400, err instanceof Error ? err : new Error(String(err)), `Invalid Link Remarks: ${link.remarks}`)
             }
         }
     }
@@ -218,7 +237,7 @@ export default class Style {
     /**
      * Compile and run a template or use a cached template for performance
      */
-    compile(template, props) {
+    compile(template: string, props: { [x: string]: unknown; }) {
         let t = this.templates.get(template);
 
         if (!t) {
@@ -272,7 +291,7 @@ export default class Style {
 
                         this.#by_geom(q.styles, feature);
                     }
-    
+
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 } catch (err) {
                     // Ignore queries that result in invalid output - this is explicitly allowed
@@ -291,6 +310,7 @@ export default class Style {
 
     #links(links: Array<Static<typeof StyleLink>>, feature: Static<typeof Feature.InputFeature>) {
         if (!feature.properties) feature.properties = {};
+        if (!feature.properties.metadata) feature.properties.metadata = {};
         if (!feature.properties.links) feature.properties.links = [];
         for (const link of links) {
             feature.properties.links.push({
@@ -305,6 +325,7 @@ export default class Style {
 
     #by_geom(style: Static<typeof StyleSingle>, feature: Static<typeof Feature.InputFeature>) {
         if (!feature.properties) feature.properties = {};
+        if (!feature.properties.metadata) feature.properties.metadata = {};
 
         if (feature.geometry.type === 'Point' && style.point) {
             if (style.point.id) feature.id = this.compile(style.point.id, feature.properties.metadata);
@@ -313,27 +334,32 @@ export default class Style {
             if (style.point.callsign) feature.properties.callsign = this.compile(style.point.callsign, feature.properties.metadata);
             if (style.point.links) this.#links(style.point.links, feature);
 
-            Object.keys(style.point)
-                .filter((k) => { return !['links', 'remarks', 'callsign'].includes(k) })
-                .forEach((k) => { feature.properties[k] = style.point[k] });
+            if (style.point['marker-color']) feature.properties['marker-color'] = style.point['marker-color'];
+            if (style.point['marker-opacity']) feature.properties['marker-opacity'] = Number(style.point['marker-opacity']);
+            if (style.point.icon) feature.properties.icon = style.point.icon;
         } else if (feature.geometry.type === 'LineString' && style.line) {
             if (style.line.id) feature.id = this.compile(style.line.id, feature.properties.metadata);
             if (style.line.remarks) feature.properties.remarks = this.compile(style.line.remarks, feature.properties.metadata);
             if (style.line.callsign) feature.properties.callsign = this.compile(style.line.callsign, feature.properties.metadata);
             if (style.line.links) this.#links(style.line.links, feature);
 
-            Object.keys(style.line)
-                .filter((k) => { return !['links', 'remarks', 'callsign'].includes(k) })
-                .forEach((k) => { feature.properties[k] = style.line[k] });
+            if (style.line.stroke) feature.properties.stroke = style.line.stroke;
+            if (style.line['stroke-style']) feature.properties['stroke-style'] = style.line['stroke-style'];
+            if (style.line['stroke-opacity']) feature.properties['stroke-opacity'] = Number(style.line['stroke-opacity']);
+            if (style.line['stroke-width']) feature.properties['stroke-width'] = Number(style.line['stroke-width']);
         } else if (feature.geometry.type === 'Polygon' && style.polygon) {
             if (style.polygon.id) feature.id = this.compile(style.polygon.id, feature.properties.metadata);
             if (style.polygon.remarks) feature.properties.remarks = this.compile(style.polygon.remarks, feature.properties.metadata);
             if (style.polygon.callsign) feature.properties.callsign = this.compile(style.polygon.callsign, feature.properties.metadata);
             if (style.polygon.links) this.#links(style.polygon.links, feature);
 
-            Object.keys(style.polygon)
-                .filter((k) => { return !['links', 'remarks', 'callsign'].includes(k) })
-                .forEach((k) => { feature.properties[k] = style.polygon[k] });
+            if (style.polygon.stroke) feature.properties.stroke = style.polygon.stroke;
+            if (style.polygon['stroke-style']) feature.properties['stroke-style'] = style.polygon['stroke-style'];
+            if (style.polygon['stroke-opacity']) feature.properties['stroke-opacity'] = Number(style.polygon['stroke-opacity']);
+            if (style.polygon['stroke-width']) feature.properties['stroke-width'] = Number(style.polygon['stroke-width']);
+
+            if (style.polygon.fill) feature.properties.fill = style.polygon.fill;
+            if (style.polygon['fill-opacity']) feature.properties['fill-opacity'] = Number(style.polygon['fill-opacity']);
         }
     }
 }
