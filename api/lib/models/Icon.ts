@@ -55,7 +55,6 @@ export default class IconModel extends Modeler<typeof pgschema.Icon> {
             return {
                 total: parseInt(pgres[0].count),
                 items: pgres.map((t) => {
-                    delete t.count;
                     return t as Icon;
                 })
             };

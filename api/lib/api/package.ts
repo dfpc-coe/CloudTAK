@@ -36,8 +36,9 @@ export default class {
         results: Array<Static<typeof Package>>
     }> {
         const url = new URL(`/Marti/sync/search`, this.api.url);
-        for (const q in query) url.searchParams.append(q, String(query[q]));
 
+        let q: keyof Static<typeof ListInput>;
+        for (q in query) url.searchParams.append(q, String(query[q]));
         const res = await this.api.fetch(url, {
             method: 'GET'
         });

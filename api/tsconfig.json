@@ -21,7 +21,7 @@
     },
     "exclude": [],
     "include": [
-        "index.ts",
+        "*.ts",
         "routes/**/*",
         "test/**/*",
         "lib/**/*"
