@@ -3,7 +3,6 @@ import jwt from 'jsonwebtoken';
 import S3 from "@aws-sdk/client-s3";
 import * as pmtiles from 'pmtiles';
 import zlib from "zlib";
-// @ts-ignore
 import vtquery from '@mapbox/vtquery';
 import TB from '@mapbox/tilebelt';
 import { NodeHttpHandler } from "@aws-sdk/node-http-handler";
@@ -31,7 +30,9 @@ async function nativeDecompress(
 
 // Lambda needs to run with 512MB, empty function takes about 70
 const CACHE = new pmtiles.ResolvedValueCache(undefined, undefined, nativeDecompress);
+// eslint-disable-next-line no-useless-escape
 const TILE = /^\/(?<NAME>[0-9a-zA-Z\/!\-@_\.\*\'\(\)]+)\/(?<Z>\d+)\/(?<X>\d+)\/(?<Y>\d+).(?<EXT>[a-z]+)$/;
+// eslint-disable-next-line no-useless-escape
 const META = /^\/(?<NAME>[0-9a-zA-Z\/!\-@_\.\*\'\(\)]+)$/;
 
 export const tile_path = (
@@ -139,7 +140,8 @@ export const handlerRaw = async (
     } catch (err) {
         return apiResp(401, JSON.stringify({
             status: 401,
-            message: 'Invalid token'
+            message: 'Invalid Token',
+            advanced: err instanceof Error ? err.message : String(err)
         }));
     }
 

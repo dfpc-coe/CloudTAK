@@ -67,6 +67,43 @@ test('Style: Basic Point: Disabled', async () => {
     });
 });
 
+test('Style: Basic Callsign', async () => {
+    const style = new Style({
+        stale: 123,
+        enabled_styles: true,
+        styles: {
+            point: {
+                'marker-color': '#ffffff',
+                remarks: 'Test Remarks'
+            }
+        }
+    });
+
+    assert.deepEqual(await style.feat({
+        type: 'Feature',
+        properties: {
+            callsign: 'CallSign Test'
+        },
+        geometry: {
+            type: 'Point',
+            coordinates: [0, 0]
+        }
+    }), {
+        type: 'Feature',
+        properties: {
+            callsign: 'CallSign Test',
+            'marker-color': '#ffffff',
+            remarks: 'Test Remarks',
+            metadata: {},
+            stale: 123000
+        },
+        geometry: {
+            type: 'Point',
+            coordinates: [0, 0]
+        }
+    });
+});
+
 test('Style: Basic Point: Stale only applied if stale is undefined on root feature', async () => {
     const style = new Style({
         stale: 123,
