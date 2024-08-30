@@ -201,9 +201,14 @@ export default async function server(config: Config) {
 
                 const connClient = new ConnectionWebSocket(ws, parsedParams.format, client);
 
+                let webClients = config.wsClients.get(parsedParams.connection)
+                if (!webClients) webClients = [];
+                webClients.push(connClient);
+                config.wsClients.set(parsedParams.connection, webClients);
+
                 ws.on('close', () => {
                     const conns = config.wsClients.get(parsedParams.connection);
-                    if (!conns.length) return;
+                    if (!conns || !conns.length) return;
 
                     const i = webClients.indexOf(connClient);
                     if (!i) return;
@@ -216,11 +221,6 @@ export default async function server(config: Config) {
 
                     config.conns.delete(parsedParams.connection);
                 })
-
-                let webClients = config.wsClients.get(parsedParams.connection)
-                if (!webClients) webClients = [];
-                webClients.push(connClient);
-                config.wsClients.set(parsedParams.connection, webClients);
             } else {
                 throw new Error('Unauthorized');
             }

@@ -39,7 +39,7 @@ export default class Cacher {
 
             return cached;
         } catch (err) {
-            if (!(err instanceof Error) && err.message !== 'Miss') {
+            if (!(err instanceof Error) || (err instanceof Error &&  err.message !== 'Miss')) {
                 console.error('Cache Error', err);
             }
 
@@ -91,7 +91,7 @@ export default class Cacher {
         try {
             await this.cache.flush();
         } catch (err) {
-            throw new Error('Failed to flush cache', err);
+            throw new Error(`Failed to flush cache: ${err}`);
         }
     }
 

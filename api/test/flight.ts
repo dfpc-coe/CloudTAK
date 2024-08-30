@@ -80,7 +80,7 @@ export default class Flight {
 
             this.schema = JSON.parse(String(fs.readFileSync(new URL('./fixtures/get_schema.json', import.meta.url))));
 
-            for (const route of Object.keys(this.schema)) {
+            for (const route of Object.keys(this.schema || {})) {
                 this.routes[route] = new RegExp(pathToRegexp(route.split(' ').join(' /api')));
             }
 
@@ -253,6 +253,8 @@ export default class Flight {
      */
     user() {
         test('Create User: admin', async (t) => {
+            if (!this.config) throw new Error('TakeOff not completed');
+
             this.config.models.Profile.generate({
                 username: 'test@example.com',
                 system_admin: true,
@@ -269,10 +271,13 @@ export default class Flight {
     landing() {
         test('test server landing - api', (t) => {
             this.srv.close(async () => {
-                // @ts-expect-error not present in type def
-                this.config.pg.session.client.end();
-                this.config.cacher.end();
-                delete this.config;
+                if (this.config) {
+                    // @ts-expect-error not present in type def
+                    this.config.pg.session.client.end();
+                    this.config.cacher.end();
+                    delete this.config;
+                }
+
                 delete this.srv;
                 t.end();
             });

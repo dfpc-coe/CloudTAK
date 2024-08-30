@@ -110,7 +110,7 @@ export default async function router(schema: Schema, config: Config) {
             const missionContent = await api.Mission.attachContents(data.name, {
                 hashes: [content.Hash]
             }, {
-                token: data.mission_token
+                token: data.mission_token || undefined
             });
 
             return res.json(missionContent);
@@ -246,7 +246,7 @@ export default async function router(schema: Schema, config: Config) {
             try {
                 if (data.mission_sync) {
                     const mission = await api.Mission.get(data.name, {}, {
-                        token: data.mission_token
+                        token: data.mission_token || undefined
                     });
 
                     for (const content of mission.contents) {
@@ -254,7 +254,7 @@ export default async function router(schema: Schema, config: Config) {
                             await api.Mission.detachContents(data.name, {
                                 hash: content.data.hash
                             }, {
-                                token: data.mission_token
+                                token: data.mission_token || undefined
                             });
                         }
                     }

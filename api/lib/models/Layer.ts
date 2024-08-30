@@ -31,7 +31,7 @@ export const AugmentedLayer = Type.Object({
     config: Layer_Config,
     memory: Type.Integer(),
     timeout: Type.Integer(),
-    data: Type.Optional(Type.Integer()),
+    data: Type.Union([Type.Integer(), Type.Null()]),
     schema: Type.Any(),
     priority: Type.Enum(Layer_Priority),
     alarm_period: Type.Integer(),
@@ -92,7 +92,6 @@ export default class LayerModel extends Modeler<typeof Layer> {
             return {
                 total: parseInt(pgres[0].count),
                 items: pgres.map((t) => {
-                    delete t.count;
                     return t as Static<typeof AugmentedLayer>
                 })
             };

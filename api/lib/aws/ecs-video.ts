@@ -35,7 +35,7 @@ export default class ECSVideo {
 
                 if (res && res.nextToken) req.nextToken = res.nextToken;
                 res = await ecs.send(new AWSECS.ListTaskDefinitionsCommand(req));
-                taskDefinitionArns.push(...res.taskDefinitionArns);
+                taskDefinitionArns.push(...(res.taskDefinitionArns || []));
             } while (res.nextToken)
 
             return taskDefinitionArns.map((def) => {
@@ -58,8 +58,8 @@ export default class ECSVideo {
                 tasks: [task]
             }));
 
-            if (!descs.tasks.length) throw new Err(404, null, 'Could not find task with that ID');
-            if (!descs.tasks[0].taskDefinitionArn.includes(`:task-definition/coe-media-${this.config.StackName.replace(/^coe-etl-/, '')}`)) throw new Err(404, null, 'Could not find task with that ID');
+            if (!descs.tasks || !descs.tasks.length) throw new Err(404, null, 'Could not find task with that ID');
+            if (!descs.tasks[0].taskDefinitionArn || !descs.tasks[0].taskDefinitionArn.includes(`:task-definition/coe-media-${this.config.StackName.replace(/^coe-etl-/, '')}`)) throw new Err(404, null, 'Could not find task with that ID');
 
             return descs.tasks[0];
         } catch (err) {
@@ -107,7 +107,7 @@ export default class ECSVideo {
 
                 if (res && res.nextToken) req.nextToken = res.nextToken;
                 res = await ecs.send(new AWSECS.ListTasksCommand(req));
-                taskArns.push(...res.taskArns);
+                taskArns.push(...(res.taskArns || []));
             } while (res.nextToken)
 
             if (!taskArns.length) return [];
@@ -117,7 +117,7 @@ export default class ECSVideo {
                 tasks: taskArns
             }));
 
-            return descs.tasks;
+            return descs.tasks || [];
         } catch (err) {
             throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to list Media Servers');
         }
@@ -152,6 +152,8 @@ export default class ECSVideo {
                 propagateTags: 'TASK_DEFINITION',
                 taskDefinition: `coe-media-${this.config.StackName.replace(/^coe-etl-/, '')}-task`,
             }));
+
+            if (!res.tasks || !res.tasks.length) throw new Error('No Task reported');
 
             return res.tasks[0];
         } catch (err) {

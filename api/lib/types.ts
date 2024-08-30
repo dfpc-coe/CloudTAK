@@ -64,6 +64,7 @@ export const VideoLeaseResponse = createSelectSchema(schemas.VideoLease, {
 
 export const OverlayResponse = createSelectSchema(schemas.Overlay, {
     id: Type.Integer(),
+    styles: Type.Unknown(),
 });
 
 export const LayerTemplateResponse = createSelectSchema(schemas.LayerTemplate, {
@@ -80,6 +81,7 @@ export const LayerTemplateResponse = createSelectSchema(schemas.LayerTemplate, {
     alarm_evals: Type.Integer(),
     alarm_points: Type.Integer(),
     alarm_threshold: Type.Integer(),
+    config: Type.Unknown(),
 });
 
 export const ProfileFeature = Type.Composite([ Feature.Feature, Type.Object({
@@ -91,6 +93,7 @@ export const ProfileOverlayResponse = createSelectSchema(schemas.ProfileOverlay,
     pos: Type.Integer(),
     opacity: Type.Number(),
     visible: Type.Boolean(),
+    styles: Type.Unknown()
 });
 
 export const LayerAlertResponse = createSelectSchema(schemas.LayerAlert, {
@@ -99,7 +102,10 @@ export const LayerAlertResponse = createSelectSchema(schemas.LayerAlert, {
     layer: Type.Integer(),
 });
 
-export const ImportResponse = createSelectSchema(schemas.Import, {});
+export const ImportResponse = createSelectSchema(schemas.Import, {
+    config: Type.Unknown(),
+    result: Type.Unknown()
+});
 
 export const TaskResponse = createSelectSchema(schemas.Task, {
     id: Type.Integer(),

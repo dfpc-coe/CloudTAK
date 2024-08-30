@@ -213,7 +213,8 @@ export default class {
 
         const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/changes`, this.api.url);
 
-        for (const q in query) url.searchParams.append(q, String(query[q]));
+        let q: keyof Static<typeof MissionChangesInput>;
+        for (q in query) url.searchParams.append(q, String(query[q]));
         return await this.api.fetch(url, {
             method: 'GET',
             headers: this.#headers(opts),
@@ -437,7 +438,8 @@ export default class {
         if (this.#isGUID(name)) {
             const url = new URL(`/Marti/api/missions/guid/${this.#encodeName(name)}/role`, this.api.url);
 
-            for (const q in query) url.searchParams.append(q, String(query[q]));
+            let q: keyof Static<typeof SetRoleInput>;
+            for (q in query) url.searchParams.append(q, String(query[q]));
             const res = await this.api.fetch(url, {
                 method: 'PUT',
                 headers: this.#headers(opts),
@@ -447,7 +449,8 @@ export default class {
         } else {
             const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/role`, this.api.url);
 
-            for (const q in query) url.searchParams.append(q, String(query[q]));
+            let q: keyof Static<typeof SetRoleInput>;
+            for (q in query) url.searchParams.append(q, String(query[q]));
             const res = await this.api.fetch(url, {
                 method: 'PUT',
                 headers: this.#headers(opts),
@@ -500,7 +503,8 @@ export default class {
         if (this.#isGUID(name)) {
             const url = new URL(`/Marti/api/missions/guid/${this.#encodeName(name)}/subscription`, this.api.url);
 
-            for (const q in query) url.searchParams.append(q, String(query[q]));
+            let q: keyof Static<typeof SubscriptionInput>;
+            for (q in query) url.searchParams.append(q, String(query[q]));
             const res = await this.api.fetch(url, {
                 method: 'GET',
                 headers: this.#headers(opts),
@@ -510,7 +514,8 @@ export default class {
         } else {
             const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/subscription`, this.api.url);
 
-            for (const q in query) url.searchParams.append(q, String(query[q]));
+            let q: keyof Static<typeof SubscriptionInput>;
+            for (q in query) url.searchParams.append(q, String(query[q]));
             const res = await this.api.fetch(url, {
                 method: 'GET',
                 headers: this.#headers(opts),
@@ -533,7 +538,8 @@ export default class {
         if (this.#isGUID(name)) {
             const url = new URL(`/Marti/api/missions/guid/${this.#encodeName(name)}/subscription`, this.api.url);
 
-            for (const q in query) url.searchParams.append(q, String(query[q]));
+            let q: keyof Static<typeof SubscribeInput>;
+            for (q in query) url.searchParams.append(q, String(query[q]));
             return await this.api.fetch(url, {
                 method: 'PUT',
                 headers: this.#headers(opts),
@@ -541,7 +547,8 @@ export default class {
         } else {
             const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/subscription`, this.api.url);
 
-            for (const q in query) url.searchParams.append(q, String(query[q]));
+            let q: keyof Static<typeof SubscribeInput>;
+            for (q in query) url.searchParams.append(q, String(query[q]));
             return await this.api.fetch(url, {
                 method: 'PUT',
                 headers: this.#headers(opts),
@@ -563,7 +570,8 @@ export default class {
         if (this.#isGUID(name)) {
             const url = new URL(`/Marti/api/missions/guid/${this.#encodeName(name)}/subscription`, this.api.url);
 
-            for (const q in query) url.searchParams.append(q, String(query[q]));
+            let q: keyof Static<typeof UnsubscribeInput>;
+            for (q in query) url.searchParams.append(q, String(query[q]));
             return await this.api.fetch(url, {
                 method: 'DELETE',
                 headers: this.#headers(opts),
@@ -571,7 +579,8 @@ export default class {
         } else {
             const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/subscription`, this.api.url);
 
-            for (const q in query) url.searchParams.append(q, String(query[q]));
+            let q: keyof Static<typeof UnsubscribeInput>;
+            for (q in query) url.searchParams.append(q, String(query[q]));
             return await this.api.fetch(url, {
                 method: 'DELETE',
                 headers: this.#headers(opts),
@@ -587,7 +596,8 @@ export default class {
     async list(query: Static<typeof MissionListInput>) {
         const url = new URL('/Marti/api/missions', this.api.url);
 
-        for (const q in query) url.searchParams.append(q, String(query[q]));
+        let q: keyof Static<typeof MissionListInput>;
+        for (q in query) url.searchParams.append(q, String(query[q]));
         return await this.api.fetch(url, {
             method: 'GET'
         });
@@ -605,7 +615,8 @@ export default class {
     ): Promise<Static<typeof Mission>> {
         const url = new URL(`/Marti/api/missions/guid/${encodeURIComponent(guid)}`, this.api.url);
 
-        for (const q in query) url.searchParams.append(q, String(query[q]));
+        let q: keyof Static<typeof GetInput>;
+        for (q in query) url.searchParams.append(q, String(query[q]));
         const missions: TAKList<Static <typeof Mission>> = await this.api.fetch(url, {
             method: 'GET',
             headers: this.#headers(opts),
@@ -665,7 +676,8 @@ export default class {
         if (this.#isGUID(name)) {
             const url = new URL(`/Marti/api/missions/guid/${encodeURIComponent(name)}`, this.api.url);
 
-            for (const q in query) url.searchParams.append(q, String(query[q]));
+            let q: keyof Static<typeof GetInput>;
+            for (q in query) url.searchParams.append(q, String(query[q]));
             const missions: TAKList<Static <typeof Mission>> = await this.api.fetch(url, {
                 method: 'GET',
                 headers: this.#headers(opts),
@@ -674,7 +686,8 @@ export default class {
             if (!missions.data.length) throw new Err(404, null, `No Mission for GUID: ${name}`);
             return missions.data[0];
         } else {
-            for (const q in query) url.searchParams.append(q, String(query[q]));
+            let q: keyof Static<typeof GetInput>;
+            for (q in query) url.searchParams.append(q, String(query[q]));
             const missions: TAKList<Static<typeof Mission>> = await this.api.fetch(url, {
                 method: 'GET',
                 headers: this.#headers(opts),
@@ -698,7 +711,9 @@ export default class {
         const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}`, this.api.url);
 
         if (query.group && Array.isArray(query.group)) query.group = query.group.join(',');
-        for (const q in query) url.searchParams.append(q, String(query[q]));
+
+        let q: keyof Static<typeof MissionCreateInput>;
+        for (q in query) url.searchParams.append(q, String(query[q]));
         const missions = await this.api.fetch(url, {
             method: 'POST'
         });
@@ -723,7 +738,9 @@ export default class {
             const url = new URL('/Marti/api/missions', this.api.url);
 
             url.searchParams.append('guid', name);
-            for (const q in query) url.searchParams.append(q, String(query[q]));
+
+            let q: keyof Static<typeof MissionDeleteInput>;
+            for (q in query) url.searchParams.append(q, String(query[q]));
             return await this.api.fetch(url, {
                 method: 'DELETE',
                 headers: this.#headers(opts),
@@ -731,7 +748,8 @@ export default class {
         } else {
             const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}`, this.api.url);
 
-            for (const q in query) url.searchParams.append(q, String(query[q]));
+            let q: keyof Static<typeof MissionDeleteInput>;
+            for (q in query) url.searchParams.append(q, String(query[q]));
             return await this.api.fetch(url, {
                 method: 'DELETE',
                 headers: this.#headers(opts),

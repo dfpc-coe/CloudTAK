@@ -74,7 +74,7 @@ export default class Geocode {
         const url = new URL(this.forwardApi)
         url.searchParams.append('magicKey', magicKey);
         url.searchParams.append('singleLine', query);
-        url.searchParams.append('token', this.token);
+        if (this.token) url.searchParams.append('token', this.token);
         url.searchParams.append('f', 'json');
 
         const res = await fetch(url);

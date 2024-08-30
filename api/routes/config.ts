@@ -53,6 +53,7 @@ export default async function router(schema: Schema, config: Config) {
             (await Promise.allSettled(Object.keys(req.body).map((key) => {
                 return config.models.Setting.generate({
                     key: key,
+                    // @ts-expect-error Index issue - look into this later
                     value: req.body[key]
                 },{
                     upsert: GenerateUpsert.UPDATE

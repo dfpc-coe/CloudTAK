@@ -4,6 +4,7 @@ import type { StyleContainer } from './style.js';
 import { geometry, GeometryType } from '@openaddresses/batch-generic';
 import { ConnectionAuth } from './connection-config.js';
 import { TAKGroup, TAKRole } from  './api/types.js';
+import { Layer_Config } from './models/Layer.js';
 import { Layer_Priority, Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance } from  './enums.js';
 import { json, boolean, numeric, integer, timestamp, pgTable, serial, varchar, text, unique, index } from 'drizzle-orm/pg-core';
 
@@ -26,7 +27,7 @@ export const Profile = pgTable('profile', {
     auth: json('auth').$type<ConnectionAuth>().notNull(),
     created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    phone: text('phone').default(''),
+    phone: text('phone').notNull().default(''),
     tak_callsign: text('tak_callsign').notNull().default('CloudTAK User'),
     tak_group: text('tak_group').$type<TAKGroup>().notNull().default(TAKGroup.ORANGE),
     tak_role: text('tak_role').$type<TAKRole>().notNull().default(TAKRole.TEAM_MEMBER),
@@ -36,7 +37,7 @@ export const Profile = pgTable('profile', {
     display_elevation: text('display_elevation').$type<Profile_Elevation>().notNull().default(Profile_Elevation.FEET),
     display_speed: text('display_speed').$type<Profile_Speed>().notNull().default(Profile_Speed.MPH),
     system_admin: boolean('system_admin').notNull().default(false),
-    agency_admin: json('agency_admin').$type<Array<number>>().default([])
+    agency_admin: json('agency_admin').notNull().$type<Array<number>>().default([])
 });
 
 export const ProfileChat = pgTable('profile_chats', {
@@ -208,7 +209,7 @@ export const Layer = pgTable('layers', {
     connection: integer('connection').notNull().references(() => Connection.id),
     cron: text('cron').notNull(),
     environment: json('environment').notNull().default({}),
-    config: json('config').notNull().default({}),
+    config: json('config').$type<Static<typeof Layer_Config>>().notNull().default({}),
     memory: integer('memory').notNull().default(128),
     timeout: integer('timeout').notNull().default(128),
     data: integer('data').references(() => Data.id),
@@ -237,7 +238,7 @@ export const LayerTemplate = pgTable('layers_template', {
     stale: integer('stale').notNull().default(20),
     task: text('task').notNull(),
     cron: text('cron').notNull(),
-    config: json('config').notNull().default({}),
+    config: json('config').$type<Static<typeof Layer_Config>>().notNull().default({}),
     memory: integer('memory').notNull().default(128),
     timeout: integer('timeout').notNull().default(128),
     alarm_period: integer('alarm_period').notNull().default(30),

@@ -4,12 +4,12 @@
             <div class='col-12 px-2'>
                 <button
                     class='btn btn-primary w-100'
-                    @click='$router.push("/menu/datas/user")'
+                    @click='$router.push("/menu/files")'
                 >
                     <IconUser
                         :size='32'
                         :stroke='1'
-                    />User Overlays
+                    />Your Files
                 </button>
             </div>
         </div>

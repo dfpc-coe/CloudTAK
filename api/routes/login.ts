@@ -53,7 +53,7 @@ export default async function router(schema: Schema, config: Config) {
             let access = AuthUserAccess.USER
             if (profile.system_admin) {
                 access = AuthUserAccess.ADMIN
-            } else if (profile.agency_admin.length) {
+            } else if (profile.agency_admin && profile.agency_admin.length) {
                 access = AuthUserAccess.AGENCY
             }
 
