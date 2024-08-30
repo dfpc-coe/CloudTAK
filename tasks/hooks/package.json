@@ -20,14 +20,14 @@
     },
     "devDependencies": {
         "@types/aws-lambda": "^8.10.108",
-        "@types/node": "^20.0.0",
+        "@types/node": "^22.0.0",
         "@types/proj4": "^2.5.2",
         "@types/sinon": "^17.0.0",
         "@types/terraformer__arcgis": "^2.0.2",
-        "eslint": "^8.37.0",
+        "eslint": "^9.0.0",
         "sinon": "^18.0.0",
         "tsup": "^8.0.0",
         "typescript": "^5.0.0",
-        "typescript-eslint": "^7.7.0"
+        "typescript-eslint": "^8.0.0"
     }
 }
