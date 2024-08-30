@@ -46,7 +46,7 @@ export default async function router(schema: Schema, config: Config) {
             const style = new Style(layer);
 
             for (let i = 0; i < req.body.features.length; i++) {
-                if (req.body.features[i].properties) req.body.features[i].properties = {};
+                if (!req.body.features[i].properties) req.body.features[i].properties = {};
 
                 req.body.features[i] = await style.feat(req.body.features[i])
 
