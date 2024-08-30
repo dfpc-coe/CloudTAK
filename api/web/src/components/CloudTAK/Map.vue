@@ -55,7 +55,15 @@
                 '
             >
                 <div class='d-flex align-items-center h-100'>
+                    <Status
+                        v-if='live_loc'
+                        v-tooltip='"Using Live Location"'
+                        class='mx-2 my-2'
+                        status='success'
+                        :dark='true'
+                    />
                     <div
+                        v-else
                         v-tooltip='"Set Location"'
                         class='hover-button h-100 px-2 d-flex align-items-center cursor-pointer'
                         style='width: 40px;'
@@ -518,6 +526,7 @@
 
 <script>
 import WarnChannels from './util/WarnChannels.vue';
+import Status from '../util/Status.vue';
 import CoordInput from './CoordInput.vue';
 import { std, stdurl } from '/src/std.ts';
 import CloudTAKFeatView from './FeatView.vue';
@@ -1048,6 +1057,7 @@ export default {
         }
     },
     components: {
+        Status,
         CoordInput,
         WarnChannels,
         SideMenu,
