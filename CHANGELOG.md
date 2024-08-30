@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v3.16.1 - 2024-08-30
+
+- :arrow_up: Update task/hook dependencies
+
 ### v3.16.0 - 2024-08-30
 
 - :rocket: `UI` Remove DataUser menu in favour of unified Files Menu
