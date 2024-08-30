@@ -850,6 +850,7 @@ export default {
                 }
             },{
                 maximumAge: 0,
+                timeout: 1500,
                 enableHighAccuracy: true
             });
         },
