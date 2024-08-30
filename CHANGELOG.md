@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v3.17.0 - 2024-08-30
+
+- :tada: Enable live location updates for mobile users
+
 ### v3.16.2 - 2024-08-30
 
 - :arrow_up: Update task/pmtiles dependencies
