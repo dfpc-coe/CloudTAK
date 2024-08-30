@@ -678,6 +678,7 @@ export default {
             feat: null,         // Show the Feat Viewer sidebar
             locked: [],         // Lock the map view to a given CoT - The last element is the currently locked value
                                 //   this is an array so that things like the radial menu can temporarily lock state but remember the previous lock value when they are closed
+            live_loc_denied: false,   // User denied live location services
             live_loc: false,
             upload: {
                 shown: false,
@@ -685,7 +686,6 @@ export default {
             },
             timer: null,            // Interval for pushing GeoJSON Map Updates (CoT)
             timerSelf: null,        // Interval for pushing your location to the server
-            timerSelfUpdate: null,  // Interval for updating actual GPS location
             loading: {
                 // Any Loading related states
                 main: true
@@ -696,7 +696,6 @@ export default {
     beforeUnmount: function() {
         if (this.timer) window.clearInterval(this.timer);
         if (this.timerSelf) window.clearInterval(this.timerSelf);
-        if (this.timerSelfUpdate) window.clearInterval(this.timerSelfUpdate);
         if (connectionStore.ws) connectionStore.ws.close();
 
         if (mapStore.map) {
@@ -799,43 +798,51 @@ export default {
             return mapStore.map.getZoom();
         },
         getLocation: function(flyTo = false) {
+            if (this.live_loc_denied && flyTo) throw new Error('Cannot navigate to your position as you denied location services');
+            else if (this.live_loc_denied) return;
+
             if (flyTo && !("geolocation" in navigator)) {
                 throw new Error('GeoLocation is not available in this browser');
             } else if (!("geolocation" in navigator)) {
+                console.error('geolocation object not found on navigator');
                 return;
             }
 
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    if (flyTo) {
-                        mapStore.map.flyTo({
-                            center: [position.coords.longitude, position.coords.latitude],
-                            zoom: 14
-                        });
-                    } else if (position.coords.accuracy <= 500) {
-                        this.live_loc = {
-                            type: 'Feature',
-                            properties: {
-                                accuracy: position.coords.accuracy
-                            },
-                            geometry: {
-                                type: 'Point',
-                                coordinates: [
-                                    position.coords.longitude,
-                                    position.coords.latitude
-                                ],
-                            }
+            navigator.geolocation.getCurrentPosition((position) => {
+                if (flyTo) {
+                    mapStore.map.flyTo({
+                        center: [position.coords.longitude, position.coords.latitude],
+                        zoom: 14
+                    });
+                } else if (position.coords.accuracy <= 500) {
+                    this.live_loc = {
+                        type: 'Feature',
+                        properties: {
+                            accuracy: position.coords.accuracy
+                        },
+                        geometry: {
+                            type: 'Point',
+                            coordinates: [
+                                position.coords.longitude,
+                                position.coords.latitude
+                            ],
                         }
-
-                        this.setYou(this.live_loc);
                     }
-                }, (err) => {
-                    console.error(err);
-                },{
-                    maximumAge: 300000,
-                    enableHighAccuracy: true
+
+                    this.setYou(this.live_loc);
                 }
-            );
+            }, (err) => {
+                if (err.message === 'User denied geolocation prompt') {
+                    this.live_loc_denied = true;
+                } else if (
+                    err.message !== 'Position unavailable'
+                ) {
+                    this.$emit('err', err);
+                }
+            },{
+                maximumAge: 300000,
+                enableHighAccuracy: true
+            });
         },
         startDraw: function(type) {
             mapStore.draw.start();
@@ -1021,16 +1028,14 @@ export default {
                     });
 
                     this.timerSelf = window.setInterval(() => {
+                        this.getLocation(false);
+
                         if (this.live_loc) {
                             connectionStore.sendCOT(profileStore.CoT(this.live_loc))
                         } else if (profileStore.profile.tak_loc) {
                             connectionStore.sendCOT(profileStore.CoT());
                         }
                     }, 2000);
-
-                    this.timerSelfUpdate = window.setInterval(() => {
-                        this.getLocation(false);
-                    }, 5000);
 
                     this.timer = window.setInterval(async () => {
                         if (!mapStore.map) return;
