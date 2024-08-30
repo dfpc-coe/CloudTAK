@@ -103,7 +103,6 @@ import {
     TablerEpoch
 } from '@tak-ps/vue-tabler';
 import {
-    IconMap,
     IconMapOff,
     IconMapPlus,
     IconTransform,
@@ -125,7 +124,6 @@ export default {
         TablerBytes,
         TablerEpoch,
         TablerDelete,
-        IconMap,
         IconMapPlus,
         IconMapOff,
         IconTransform,
