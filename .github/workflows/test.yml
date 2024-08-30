@@ -39,11 +39,18 @@ jobs:
         with:
           ref: ${{github.event.pull_request.head.sha || github.sha}}
 
-      - name: Docker PMTiles Build
-        run: docker compose build pmtiles
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org/
 
-      - name: Docker PMTiles Task Lint
-        run: docker run cloudtak-pmtiles:latest npm run lint
+      - name: Install
+        working-directory: ./tasks/pmtiles/
+        run: npm install
+
+      - name: Lint
+        working-directory: ./tasks/pmtiles/
+        run: npm run lint
 
   test:
     runs-on: ubuntu-latest
