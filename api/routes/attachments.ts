@@ -42,8 +42,8 @@ export default async function router(schema: Schema, config: Config) {
                     hash: hash,
                     ext: parsed.ext,
                     name: parsed.base,
-                    size: attachment[0].Size,
-                    created: attachment[0].LastModified
+                    size: attachment[0].Size || 0,
+                    created: (attachment[0].LastModified || new Date()).toISOString()
                 });
             }
 

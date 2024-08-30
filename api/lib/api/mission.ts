@@ -104,11 +104,6 @@ export const MissionChangesInput = Type.Object({
     squashed: Type.Optional(Type.Boolean())
 })
 
-export const MissionChangesInput = Type.Index(
-    MissionChangesInputBase,
-    Type.KeyOf(MissionChangesInputBase)
-)
-
 export const SubscribedInput = Type.Object({
     uid: Type.String(),
 })
@@ -753,7 +748,7 @@ export default class {
         } else {
             const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}`, this.api.url);
 
-            let q: keyof SetRoleInput;
+            let q: keyof Static<typeof MissionDeleteInput>;
             for (q in query) url.searchParams.append(q, String(query[q]));
             return await this.api.fetch(url, {
                 method: 'DELETE',

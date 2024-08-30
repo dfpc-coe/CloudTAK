@@ -111,7 +111,10 @@ export default class Config {
         if (!this.server.auth.cert) throw new Err(500, null, 'Server auth.cert not set');
         if (!this.server.auth.key) throw new Err(500, null, 'Server auth.key not set');
 
-        return this.server.auth
+        return {
+            cert: this.server.auth.cert,
+            key: this.server.auth.key
+        }
     }
 
     static async env(args: ConfigArgs): Promise<Config> {

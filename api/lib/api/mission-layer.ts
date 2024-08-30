@@ -92,21 +92,21 @@ export default class {
         let res;
         if (this.#isGUID(name)) {
             const url = new URL(`/Marti/api/missions/guid/${this.#encodeName(name)}/layers`, this.api.url);
-        
+
             res = await this.api.fetch(url, {
                 method: 'GET',
                 headers: this.#headers(opts),
             });
         } else {
             const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/layers`, this.api.url);
-        
+
             res = await this.api.fetch(url, {
                 method: 'GET',
                 headers: this.#headers(opts),
             });
         }
 
-        res.data.map((l) => {
+        res.data.map((l: Static<typeof MissionLayer>) => {
             if (l.type === MissionLayerType.UID && !l.uids) {
                 l.uids = [];
             }

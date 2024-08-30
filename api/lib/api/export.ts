@@ -27,8 +27,8 @@ export default class {
         const url = new URL(`/Marti/ExportMissionKML`, this.api.url);
 
         const params = new URLSearchParams();
-        for (const q in query) {
-            if (Array.isArray(query[q])) query[q] = query[q].join(',');
+        let q: keyof Static<typeof ExportInput>;
+        for (q in query) {
             params.append(q, String(query[q]));
         }
 
