@@ -856,7 +856,8 @@ export default {
                     this.live_loc_denied = true;
                 } else if (
                     err.message !== 'Position unavailable'
-                    || err.message !== 'Position acquisition timed out'
+                    && err.message !== 'Position acquisition timed out'
+                    && err.message !== 'Timeout expired'
                 ) {
                     this.$emit('err', err);
                 }
