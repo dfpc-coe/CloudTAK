@@ -1,5 +1,4 @@
 import { Type } from '@sinclair/typebox'
-import type { Static } from '@sinclair/typebox'
 import { validate } from '@maplibre/maplibre-gl-style-spec';
 import path from 'node:path';
 import Config from '../lib/config.js';
