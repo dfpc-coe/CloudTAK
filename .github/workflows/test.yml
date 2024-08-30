@@ -27,6 +27,9 @@ jobs:
       - name: Docker Data Task Lint
         run: docker run cloudtak-task:latest npm run lint
 
+      - name: Docker Data Task Test
+        run: docker run cloudtak-task:latest npm test
+
   pmtiles:
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
@@ -36,14 +39,11 @@ jobs:
         with:
           ref: ${{github.event.pull_request.head.sha || github.sha}}
 
-      - name: Docker Data Task Build
+      - name: Docker PMTiles Build
         run: docker compose build pmtiles
 
-      - name: Docker Data Task Lint
+      - name: Docker PMTiles Task Lint
         run: docker run cloudtak-pmtiles:latest npm run lint
-
-      - name: Docker Data Task Test
-        run: docker run cloudtak-pmtiles:latest npm test
 
   test:
     runs-on: ubuntu-latest
