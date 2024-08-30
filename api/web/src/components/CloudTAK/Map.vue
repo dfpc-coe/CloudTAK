@@ -849,7 +849,7 @@ export default {
                     this.$emit('err', err);
                 }
             },{
-                maximumAge: 300000,
+                maximumAge: 0,
                 enableHighAccuracy: true
             });
         },
