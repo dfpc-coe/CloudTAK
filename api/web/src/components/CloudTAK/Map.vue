@@ -48,13 +48,15 @@
                 class='position-absolute bottom-0 begin-0 text-white'
                 style='
                     z-index: 1;
-                    width: 200px;
-                    height: 40px;
+                    width: 250px;
                     border-radius: 0px 6px 0px 0px;
                     background-color: rgba(0, 0, 0, 0.5);
                 '
+                :style='{
+                    height: live_loc ? "120px" : "40px"
+                }'
             >
-                <div class='d-flex align-items-center h-100'>
+                <div class='d-flex align-items-center' style='height: 40px'>
                     <Status
                         v-if='live_loc'
                         v-tooltip='"Using Live Location"'
@@ -91,6 +93,14 @@
                         v-text='profile.tak_callsign'
                     />
                 </div>
+                <Coordinates
+                    v-if='live_loc'
+                    style='height: 80px;'
+                    :edit='false'
+                    :modes='[]'
+                    :truncate='5'
+                    v-model='live_loc.geometry.coordinates'
+                />
             </div>
             <div
                 v-if='selected.size'
@@ -528,6 +538,7 @@
 import WarnChannels from './util/WarnChannels.vue';
 import Status from '../util/Status.vue';
 import CoordInput from './CoordInput.vue';
+import Coordinates from './util/Coordinate.vue';
 import { std, stdurl } from '/src/std.ts';
 import CloudTAKFeatView from './FeatView.vue';
 import {
@@ -845,6 +856,7 @@ export default {
                     this.live_loc_denied = true;
                 } else if (
                     err.message !== 'Position unavailable'
+                    || err.message !== 'Position acquisition timed out'
                 ) {
                     this.$emit('err', err);
                 }
@@ -1059,6 +1071,7 @@ export default {
     },
     components: {
         Status,
+        Coordinates,
         CoordInput,
         WarnChannels,
         SideMenu,
