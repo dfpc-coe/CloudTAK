@@ -1,6 +1,6 @@
 <template>
     <div class='col-12'>
-        <label class='subheader mx-2'>Coordinates</label>
+        <label class='subheader mx-2' v-text='label'></label>
         <div class='mx-2'>
             <CopyField
                 v-if='!edit'
@@ -13,46 +13,48 @@
                     @submit='$emit("submit")'
                 />
             </template>
-            <span
-                v-if='modes.includes("dd")'
-                v-tooltip='"Decimal Degrees"'
-                class='my-1 px-2'
-                :class='{
-                    "bg-gray-500 rounded-bottom": mode === "dd",
-                    "cursor-pointer": mode !== "dd",
-                }'
-                @click='mode = "dd"'
-            >DD</span>
-            <span
-                v-if='modes.includes("dms")'
-                v-tooltip='"Decimal Minutes Seconds"'
-                class='my-1 px-2'
-                :class='{
-                    "bg-gray-500 rounded-bottom": mode === "dms",
-                    "cursor-pointer": mode !== "dms",
-                }'
-                @click='mode = "dms"'
-            >DMS</span>
-            <span
-                v-if='modes.includes("mgrs")'
-                v-tooltip='"Military Grid Reference System"'
-                class='my-1 px-2'
-                :class='{
-                    "bg-gray-500 rounded-bottom": mode === "mgrs",
-                    "cursor-pointer": mode !== "mgrs",
-                }'
-                @click='mode = "mgrs"'
-            >MGRS</span>
-            <span
-                v-if='modes.includes("utm")'
-                v-tooltip='"Universal Transverse Mercator"'
-                class='my-1 px-2'
-                :class='{
-                    "bg-gray-500 rounded-bottom": mode === "utm",
-                    "cursor-pointer": mode !== "utm",
-                }'
-                @click='mode = "utm"'
-            >UTM</span>
+            <template v-if='modes.length'>
+                <span
+                    v-if='modes.includes("dd")'
+                    v-tooltip='"Decimal Degrees"'
+                    class='my-1 px-2'
+                    :class='{
+                        "bg-gray-500 rounded-bottom": mode === "dd",
+                        "cursor-pointer": mode !== "dd",
+                    }'
+                    @click='mode = "dd"'
+                >DD</span>
+                <span
+                    v-if='modes.includes("dms")'
+                    v-tooltip='"Decimal Minutes Seconds"'
+                    class='my-1 px-2'
+                    :class='{
+                        "bg-gray-500 rounded-bottom": mode === "dms",
+                        "cursor-pointer": mode !== "dms",
+                    }'
+                    @click='mode = "dms"'
+                >DMS</span>
+                <span
+                    v-if='modes.includes("mgrs")'
+                    v-tooltip='"Military Grid Reference System"'
+                    class='my-1 px-2'
+                    :class='{
+                        "bg-gray-500 rounded-bottom": mode === "mgrs",
+                        "cursor-pointer": mode !== "mgrs",
+                    }'
+                    @click='mode = "mgrs"'
+                >MGRS</span>
+                <span
+                    v-if='modes.includes("utm")'
+                    v-tooltip='"Universal Transverse Mercator"'
+                    class='my-1 px-2'
+                    :class='{
+                        "bg-gray-500 rounded-bottom": mode === "utm",
+                        "cursor-pointer": mode !== "utm",
+                    }'
+                    @click='mode = "utm"'
+                >UTM</span>
+            </template>
         </div>
     </div>
 </template>
@@ -70,9 +72,17 @@ export default {
         CopyField,
     },
     props: {
+        label: {
+            type: String,
+            default: 'Coordinates'
+        },
         edit: {
             type: Boolean,
             default: false
+        },
+        truncate: {
+            type: Number,
+            description: 'Truncate DD coordinates to a given precision'
         },
         modes: {
             type: Array,
@@ -98,7 +108,16 @@ export default {
     },
     computed: {
         inMode: function() {
-            if (this.mode === 'dd') return `${this.modelValue[1]}, ${this.modelValue[0]}`;
+            if (this.mode === 'dd') {
+                if (this.truncate) {
+                    return [
+                        Math.trunc(this.modelValue[1] * Math.pow(10, this.truncate)) / Math.pow(10, this.truncate),
+                        Math.trunc(this.modelValue[0] * Math.pow(10, this.truncate)) / Math.pow(10, this.truncate)
+                    ].join(', ');
+                } else {
+                    return `${this.modelValue[1]}, ${this.modelValue[0]}`;
+                }
+            }
             else if (this.mode === 'dms') return `${this.asDMS(this.modelValue[1])}, ${this.asDMS(this.modelValue[0])}`;
             else if (this.mode === 'mgrs') return this.asMGRS();
             else if (this.mode === 'utm') return this.asUTM(this.modelValue[1], this.modelValue[0]);
