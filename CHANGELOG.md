@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v3.16.2 - 2024-08-30
+
+- :arrow_up: Update task/pmtiles dependencies
+- :bug: `API` Fix bug in CoT submission
+
 ### v3.16.1 - 2024-08-30
 
 - :arrow_up: Update task/hook dependencies
