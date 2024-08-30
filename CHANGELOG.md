@@ -12,6 +12,14 @@
 
 ### Pending Release
 
+### v3.16.0 - 2024-08-30
+
+- :rocket: `UI` Remove DataUser menu in favour of unified Files Menu
+- :rocket: `UI` Truncate File Name in File Menu - Closes #302
+- :rocket: `UI` Add a file to overlay from File Menu - Closes: #291
+- :arrow_up: Update to latest drizzle versions
+- :tada: Enable TS `strict: true` mode
+
 ### v3.15.0 - 2024-08-28
 
 - :tada: `UI` Use new TerraDraw Angled Rectangle Mode thanks to @JamesLMilner
