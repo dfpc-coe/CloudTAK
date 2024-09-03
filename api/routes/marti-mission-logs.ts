@@ -1,7 +1,8 @@
-import { Type } from '@sinclair/typebox'
+import { Static, Type } from '@sinclair/typebox'
 import { StandardResponse, GenericMartiResponse } from '../lib/types.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
+import { MissionOptions } from '../lib/api/mission.js';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import TAKAPI, {
@@ -28,8 +29,8 @@ export default async function router(schema: Schema, config: Config) {
             const creatorUid = user.email;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
-            const opts = req.headers['missionauthorization']
-                ? { token: req.headers['missionauthorization'] }
+            const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
+                ? { token: String(req.headers['missionauthorization']) }
                 : await config.conns.subscription(user.email, req.params.name)
 
             const mission = await api.MissionLog.create(
@@ -63,8 +64,8 @@ export default async function router(schema: Schema, config: Config) {
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
-            const opts = req.headers['missionauthorization']
-                ? { token: req.headers['missionauthorization'] }
+            const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
+                ? { token: String(req.headers['missionauthorization']) }
                 : await config.conns.subscription(user.email, req.params.name)
 
             await api.MissionLog.delete(

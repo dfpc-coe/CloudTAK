@@ -131,7 +131,7 @@ export const MissionDeleteInput = Type.Object({
 })
 
 export const GetInput = Type.Object({
-    password: Type.Optional(Type.Boolean()),
+    password: Type.Optional(Type.String()),
     changes: Type.Optional(Type.Boolean()),
     logs: Type.Optional(Type.Boolean()),
     secago: Type.Optional(Type.Integer()),
