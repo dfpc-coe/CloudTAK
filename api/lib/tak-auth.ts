@@ -49,6 +49,9 @@ export class APIAuthPassword extends APIAuth {
             opts.dispatcher = agent;
         }
 
+        // Special case WebTAK Style password calls
+        url.port = '';
+
         return await fetch(url, opts);
     }
 }
