@@ -197,7 +197,7 @@ export default {
             if (mission.passwordProtected && usePassword) {
                 const getMission = await this.fetchMission(mission, mission.password);
 
-                console.error(getMission);
+                this.$router.push(`/menu/missions/${mission.guid}?token=${encodeURIComponent(getMission.token)}`);
             } else if (mission.passwordProtected && mission.password === undefined) {
                 mission.password = '';
             } else if (!mission.passwordProtected) {

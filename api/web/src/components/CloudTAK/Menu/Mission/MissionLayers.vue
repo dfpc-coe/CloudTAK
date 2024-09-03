@@ -209,6 +209,7 @@ export default {
     },
     props: {
         mission: Object,
+        token: String,
         role: Object,
     },
     data: function() {
@@ -237,13 +238,22 @@ export default {
             this.loading.layers = true;
             const url = stdurl(`/api/marti/missions/${this.mission.name}/layer/${layer.uid}`);
 
-            await std(url, { method: 'DELETE' })
+            await std(url, {
+                method: 'DELETE',
+                headers: {
+                    MissionAuthorization: this.token
+                },
+            })
 
             await this.refresh();
         },
         fetchFeats: async function() {
             const url = stdurl(`/api/marti/missions/${this.mission.name}/cot`);
-            const fc = await std(url);
+            const fc = await std(url, {
+                headers: {
+                    MissionAuthorization: this.token
+                },
+            });
 
             for (const feat of fc.features) {
                 this.feats.set(feat.id, feat);
@@ -251,7 +261,11 @@ export default {
         },
         fetchLayers: async function() {
             const url = stdurl(`/api/marti/missions/${this.mission.name}/layer`);
-            this.layers = (await std(url)).data.map((l) => {
+            this.layers = (await std(url, {
+                headers: {
+                    MissionAuthorization: this.token
+                },
+            })).data.map((l) => {
                 l._edit = false;
                 l._open = false;
                 return l;

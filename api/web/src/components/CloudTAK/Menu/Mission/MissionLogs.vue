@@ -96,6 +96,7 @@ export default {
     },
     props: {
         mission: Object,
+        token: String,
         role: Object
     },
     emits: ['refresh'],
@@ -112,6 +113,9 @@ export default {
             this.loading.logs = true;
             await std(`/api/marti/missions/${this.mission.name}/log/${log.id}`, {
                 method: 'DELETE',
+                headers: {
+                    MissionAuthorization: this.token
+                },
             });
             this.loading.logs = false;
             this.$emit('refresh');
@@ -120,6 +124,9 @@ export default {
             this.loading.logs = true;
             await std(`/api/marti/missions/${this.mission.name}/log`, {
                 method: 'POST',
+                headers: {
+                    MissionAuthorization: this.token
+                },
                 body: {
                     content: this.createLog
                 }

@@ -81,6 +81,7 @@ export default async function server(config: Config) {
         allowedHeaders: [
             'Content-Type',
             'Authorization',
+            'MissionAuthorization',
             'Content-Length',
             'x-requested-with'
         ],
