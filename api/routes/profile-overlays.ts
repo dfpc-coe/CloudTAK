@@ -193,26 +193,19 @@ export default async function router(schema: Schema, config: Config) {
             if (req.body.mode === 'mission') {
                 if (!req.body.mode_id) throw new Err(400, null, 'Mode: Mission must have mode_id set');
 
-                overlay = await config.models.ProfileOverlay.generate({
-                    ...req.body,
-                    opacity: String(req.body.opacity || 1),
-                    username: user.email
-                });
-
                 const profile = await config.models.Profile.from(user.email);
                 const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
-                const mission = await api.Mission.getGuid(req.body.mode_id, {}, {
-                    token: req.body.token
-                });
-
-                const sub = await api.Mission.subscribe(mission.guid, {
+                const sub = await api.Mission.subscribe(req.body.mode_id, {
                     uid: `ANDROID-CloudTAK-${user.email}`
                 }, {
                     token: req.body.token
                 });
 
-                await config.models.ProfileOverlay.commit(overlay.id, {
+                overlay = await config.models.ProfileOverlay.generate({
+                    ...req.body,
+                    opacity: String(req.body.opacity || 1),
+                    username: user.email,
                     token: sub.data.token
                 })
             } else {
@@ -259,8 +252,8 @@ export default async function router(schema: Schema, config: Config) {
             if (overlay.mode === 'mission' && overlay.mode_id) {
                 const profile = await config.models.Profile.from(user.email);
                 const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
-                const mission = await api.Mission.getGuid(overlay.mode_id, {});
-                await api.Mission.unsubscribe(mission.name, {
+
+                await api.Mission.unsubscribe(overlay.mode_id, {
                     uid: `ANDROID-CloudTAK-${user.email}`
                 },{
                     token: overlay.token || undefined
