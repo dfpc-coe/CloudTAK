@@ -100,10 +100,11 @@ export const useCOTStore = defineStore('cots', {
          * Load Latest CoTs from Mission Sync
          */
         loadMission: async function(guid: string, token?: string): Promise<FeatureCollection> {
+            const headers: Record<string, string> = {};
+            if (token) headers.MissionAuthorization = token;
+
             const fc = await std('/api/marti/missions/' + encodeURIComponent(guid) + '/cot', {
-                headers: {
-                    MissionAuthorization: token
-                }
+                headers
             }) as FeatureCollection;
 
             for (const feat of fc.features) this.add(feat as Feature, guid);
@@ -113,9 +114,7 @@ export const useCOTStore = defineStore('cots', {
             if (!sub) {
                 sub = {
                     meta: await std('/api/marti/missions/' + encodeURIComponent(guid), {
-                        headers: {
-                            MissionAuthorization: token
-                        }
+                        headers
                     }) as Mission,
                     cots: new Map()
                 };
