@@ -7,7 +7,7 @@ import TAKAPI from './tak-api.js';
 import stream2buffer  from './stream.js';
 
 export class APIAuth {
-    async init(base: URL) { // eslint-disable-line @typescript-eslint/no-unused-vars
+    async init(api: TAKAPI) { // eslint-disable-line @typescript-eslint/no-unused-vars
 
     }
 
@@ -27,8 +27,8 @@ export class APIAuthPassword extends APIAuth {
         this.password = password;
     }
 
-    async init(base: URL) {
-        const url = new URL('/oauth/token', base);
+    async init(api: TAKAPI) {
+        const url = new URL('/oauth/token', api.url);
         url.searchParams.append('grant_type', 'password');
         url.searchParams.append('username', this.username);
         url.searchParams.append('password', this.password);
