@@ -12,6 +12,14 @@
 
 ### Pending Release
 
+### v3.18.0 - 2024-09-03
+
+- Remove use of `MartiAPI` env var in favour of database value
+- Move login call to TAK API wrapper
+- Add `minio` Docker package for alternate S3 API
+- Remove `--local` option
+- Allow accessing Password Protected Missions - Closes: https://github.com/dfpc-coe/CloudTAK/issues/289
+
 ### v3.17.0 - 2024-08-30
 
 - :tada: Enable live location updates for mobile users
