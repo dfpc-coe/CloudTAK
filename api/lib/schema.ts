@@ -209,6 +209,7 @@ export const Layer = pgTable('layers', {
     connection: integer('connection').notNull().references(() => Connection.id),
     cron: text('cron').notNull(),
     environment: json('environment').notNull().default({}),
+    ephemeral: json('ephemeral').$type<Record<string, string>>().notNull().default({}),
     config: json('config').$type<Static<typeof Layer_Config>>().notNull().default({}),
     memory: integer('memory').notNull().default(128),
     timeout: integer('timeout').notNull().default(128),
