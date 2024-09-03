@@ -180,6 +180,7 @@ export default async function router(schema: Schema, config: Config) {
             visible: Type.Optional(Type.Boolean()),
             mode: Type.String(),
             mode_id: Type.Optional(Type.String()),
+            token: Type.Optional(Type.String()),
             url: Type.String(),
             name: Type.String()
         }),
@@ -201,9 +202,14 @@ export default async function router(schema: Schema, config: Config) {
                 const profile = await config.models.Profile.from(user.email);
                 const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
-                const mission = await api.Mission.getGuid(req.body.mode_id, {});
-                const sub = await api.Mission.subscribe(mission.name, {
+                const mission = await api.Mission.getGuid(req.body.mode_id, {}, {
+                    token: req.body.token
+                });
+
+                const sub = await api.Mission.subscribe(mission.guid, {
                     uid: `ANDROID-CloudTAK-${user.email}`
+                }, {
+                    token: req.body.token
                 });
 
                 await config.models.ProfileOverlay.commit(overlay.id, {
