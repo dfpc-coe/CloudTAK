@@ -4,15 +4,23 @@ services:
     api:
         platform: linux/amd64
         build: ./api/
-        restart: always
+        restart: 'always'
         links:
             - postgis
+            - store
         ports:
             - "5000:5000"
         environment:
             - POSTGRES=postgres://docker:docker@postgis:5432/gis
             - TAK_USERNAME
             - TAK_PASSWORD
+    store:
+        platform: linux/amd64
+        image: minio/minio:RELEASE.2024-08-17T01-24-54Z
+        restart: 'always'
+        ports:
+            - 9000:9000
+
     events:
         platform: linux/amd64
         build: ./tasks/events/
