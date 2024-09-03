@@ -226,7 +226,6 @@ export default class Flight {
                 nosinks: true,
                 nocache: true,
                 nometrics: true,
-                local: true
             });
 
             Object.assign(this.config, custom);

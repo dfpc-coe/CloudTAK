@@ -25,8 +25,6 @@ const args = minimist(process.argv, {
         'noevents', // Disable Initialization of Second Level Events
         'nometrics', // Disable Sending AWS CloudWatch Metrics about each conn
         'nosinks',  // Disable Push to Sinks
-        'local'     // (experimental) Disable external calls on startup (for developing in low connectivity)
-                    // Note this is the min for serving requests - it doesn't make it particularly functional
     ],
     string: [
         'postgres', // Postgres Connection String
@@ -55,7 +53,6 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         nometrics: args.nometrics || false,
         nosinks: args.nosinks || false,
         nocache: args.nocache || false,
-        local: args.local || false,
     });
     await server(config);
 }
