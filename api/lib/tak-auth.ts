@@ -19,34 +19,22 @@ export class APIAuth {
 export class APIAuthPassword extends APIAuth {
     username: string;
     password: string;
-    jwt?: string;
+    jwt: string;
 
     constructor(username: string, password: string) {
         super();
         this.username = username;
         this.password = password;
+        this.jwt = '';
     }
 
     async init(api: TAKAPI) {
-        const url = new URL('/oauth/token', api.url);
-        url.searchParams.append('grant_type', 'password');
-        url.searchParams.append('username', this.username);
-        url.searchParams.append('password', this.password);
+        const { token } = await api.OAuth.login({
+            username: this.username,
+            password: this.password
+        })
 
-        const authres = await fetch(url, {
-            method: 'POST'
-        });
-
-        const text = await authres.text();
-
-        if (authres.status === 401) {
-            throw new Err(400, new Error(text), 'TAK Server reports incorrect Username or Password');
-        } else if (!authres.ok) {
-            throw new Err(400, new Error(text), 'Non-200 Response from Auth Server - Token');
-        }
-
-        const body: any = JSON.parse(text);
-        this.jwt = body.access_token
+        this.jwt = token;
     }
 
     async fetch(api: TAKAPI, url: URL, opts: any): Promise<any> {

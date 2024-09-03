@@ -23,12 +23,10 @@ export default class AuthProvider {
     }
 
     async login(username: string, password: string): Promise<string> {
-        const api = await TAKAPI.init(
-            new URL(this.config.server.api),
-            new APIAuthPassword(username, password)
-        );
+        const auth = new APIAuthPassword(username, password)
+        const api = await TAKAPI.init(new URL(this.config.server.api), auth);
 
-        const contents = await api.OAuth.login({ username, password });
+        const contents = await api.OAuth.parse(auth.jwt)
 
         let profile;
         try {
