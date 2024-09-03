@@ -102,7 +102,7 @@ export const useCOTStore = defineStore('cots', {
         loadMission: async function(guid: string, token?: string): Promise<FeatureCollection> {
             const fc = await std('/api/marti/missions/' + encodeURIComponent(guid) + '/cot', {
                 headers: {
-                    MissionAuthorization: this.token
+                    MissionAuthorization: token
                 }
             }) as FeatureCollection;
 
@@ -114,7 +114,7 @@ export const useCOTStore = defineStore('cots', {
                 sub = {
                     meta: await std('/api/marti/missions/' + encodeURIComponent(guid), {
                         headers: {
-                            MissionAuthorization: this.token
+                            MissionAuthorization: token
                         }
                     }) as Mission,
                     cots: new Map()
