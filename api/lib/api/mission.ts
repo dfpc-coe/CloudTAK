@@ -490,8 +490,6 @@ export default class {
             }
         }
 
-        console.error(opts);
-
         return await this.api.fetch(url, {
             method: 'PUT',
             headers: this.#headers(opts),
