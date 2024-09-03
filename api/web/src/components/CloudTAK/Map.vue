@@ -470,6 +470,15 @@
                                 :stroke='1'
                             /> Draw Rectangle
                         </div>
+                        <div
+                            class='col-12 py-1 px-2 hover-button cursor-pointer'
+                            @click='startDraw("linestring")'
+                        >
+                            <IconRuler
+                                :size='25'
+                                :stroke='1'
+                            /> Measure Range
+                        </div>
                     </template>
                 </TablerDropdown>
             </div>
@@ -534,6 +543,7 @@ import CoordInput from './CoordInput.vue';
 import { std, stdurl } from '/src/std.ts';
 import CloudTAKFeatView from './FeatView.vue';
 import {
+    IconRuler,
     IconSearch,
     IconMessage,
     IconLocationOff,
@@ -1076,6 +1086,7 @@ export default {
         TablerInput,
         TablerModal,
         TablerDropdown,
+        IconRuler,
         IconSearch,
         IconMessage,
         IconLocationOff,
