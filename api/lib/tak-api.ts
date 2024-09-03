@@ -1,4 +1,5 @@
 import FormData from 'form-data';
+import OAuth from './api/oauth.js';
 import Package from './api/package.js';
 import Mission from './api/mission.js';
 import MissionLog from './api/mission-log.js';
@@ -20,6 +21,7 @@ export default class TAKAPI {
     auth: auth.APIAuth;
     url: URL;
     Package: Package;
+    OAuth: OAuth;
     Mission: Mission;
     MissionLog: MissionLog;
     MissionLayer: MissionLayer;

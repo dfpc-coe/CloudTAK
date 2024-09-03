@@ -21,11 +21,9 @@ interface ConfigArgs {
     nosinks: boolean,
     nocache: boolean,
     nometrics: boolean,
-    local: boolean
 }
 
 export default class Config {
-    local: boolean;
     silent: boolean;
     unsafe: boolean;
     noevents: boolean;
@@ -55,7 +53,6 @@ export default class Config {
     MediaSecurityGroup?: string;
 
     constructor(init: {
-        local: boolean;
         silent: boolean;
         unsafe: boolean;
         noevents: boolean;
@@ -75,7 +72,6 @@ export default class Config {
         Bucket?: string;
         HookURL?: string;
     }) {
-        this.local = init.local;
         this.silent = init.silent;
         this.unsafe = init.unsafe;
         this.noevents = init.noevents;
@@ -127,7 +123,6 @@ export default class Config {
             API_URL = 'http://localhost:5001';
             Bucket = process.env.ASSET_BUCKET;
         } else {
-            if (args.local) throw new Error('local option cannot be used in production mode - Set StackName=test');
             if (!process.env.StackName) throw new Error('StackName env must be set');
             if (!process.env.API_URL) throw new Error('API_URL env must be set');
             if (!process.env.PMTILES_URL) throw new Error('PMTILES_URL env must be set');
@@ -163,7 +158,6 @@ export default class Config {
         const config = new Config({
             unsafe: (args.unsafe || false),
             silent: (args.silent || false),
-            local: (args.local || false),
             noevents: (args.noevents || false),
             nometrics: (args.nometrics || false),
             nosinks: (args.nosinks || false),
