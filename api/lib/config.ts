@@ -38,7 +38,6 @@ export default class Config {
     SigningSecret: string;
     external: External;
     UnsafeSigningSecret: string;
-    MartiAPI: string;
     API_URL: string;
     PMTILES_URL: string;
     TileBaseURL: URL;
@@ -72,7 +71,6 @@ export default class Config {
         wsClients: Map<string, ConnectionWebSocket[]>;
         pg: Pool<typeof pgtypes>;
         server: InferSelectModel<typeof Server>;
-        MartiAPI: string;
         DynamoDB?: string;
         Bucket?: string;
         HookURL?: string;
@@ -93,7 +91,6 @@ export default class Config {
         this.TileBaseURL = init.TileBaseURL;
         this.wsClients = init.wsClients;
         this.pg = init.pg;
-        this.MartiAPI = init.MartiAPI;
         this.DynamoDB = init.DynamoDB;
         this.Bucket = init.Bucket;
         this.server = init.server;
@@ -121,8 +118,6 @@ export default class Config {
         if (!process.env.AWS_DEFAULT_REGION) {
             process.env.AWS_DEFAULT_REGION = 'us-east-1';
         }
-
-        if (!process.env.MartiAPI) throw new Error('MartiAPI env must be set');
 
         let SigningSecret, API_URL, DynamoDB, Bucket, HookURL;
         if (!process.env.StackName || process.env.StackName === 'test') {
@@ -175,7 +170,6 @@ export default class Config {
             nocache: (args.nocache || false),
             TileBaseURL: process.env.TileBaseURL ? new URL(process.env.TileBaseURL) : new URL('./data-dev/zipcodes.tilebase', import.meta.url),
             PMTILES_URL: process.env.PMTILES_URL || 'http://localhost:5001',
-            MartiAPI: process.env.MartiAPI,
             StackName: process.env.StackName,
             wsClients: new Map(),
             server, SigningSecret, API_URL, DynamoDB, Bucket, pg, models, HookURL

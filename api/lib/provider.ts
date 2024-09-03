@@ -23,7 +23,7 @@ export default class AuthProvider {
     }
 
     async login(username: string, password: string): Promise<string> {
-        const url = new URL('/oauth/token', this.config.local ? 'http://localhost:5001' : this.config.MartiAPI);
+        const url = new URL('/oauth/token', this.config.local ? 'http://localhost:5001' : this.config.server.api);
         url.searchParams.append('grant_type', 'password');
         url.searchParams.append('username', username);
         url.searchParams.append('password', password);
@@ -58,7 +58,7 @@ export default class AuthProvider {
             profile = await this.config.models.Profile.from(username);
         } catch (err) {
             if (err instanceof Err && err.name === 'PublicError' && err.status === 404) {
-                const api = await TAKAPI.init(new URL(this.config.MartiAPI), new APIAuthPassword(username, password));
+                const api = await TAKAPI.init(new URL(this.config.server.api), new APIAuthPassword(username, password));
 
                 profile = await this.config.models.Profile.generate({
                     username: username,
@@ -92,7 +92,7 @@ export default class AuthProvider {
             console.error(`Error: CertificateExpiration: ${validTo}: ${err}`);
 
             if (password) {
-                const api = await TAKAPI.init(new URL(this.config.MartiAPI), new APIAuthPassword(profile.username, password));
+                const api = await TAKAPI.init(new URL(this.config.server.api), new APIAuthPassword(profile.username, password));
                 profile = await this.config.models.Profile.commit(profile.username, {
                     auth: await api.Credentials.generate()
                 });
@@ -111,7 +111,7 @@ export default class AuthProvider {
         } catch (err) {
             if (err instanceof Error && err.message.includes('org.springframework.security.authentication.BadCredentialsException')) {
                 if (password) {
-                    const api = await TAKAPI.init(new URL(this.config.MartiAPI), new APIAuthPassword(profile.username, password));
+                    const api = await TAKAPI.init(new URL(this.config.server.api), new APIAuthPassword(profile.username, password));
                     profile = await this.config.models.Profile.commit(profile.username, {
                         auth: await api.Credentials.generate()
                     });
