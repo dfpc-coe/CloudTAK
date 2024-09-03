@@ -38,11 +38,19 @@
         <template v-else-if='wizard > 0'>
             <div class='d-flex align-items-center w-100 justify-content-center'>
                 <div class='py-2'>
-                    <img height='600px' width='600px' alt='UAS Tool Wizard Image' :src='`/wizard/Step${wizard}.png`' class='rounded'>
+                    <img
+                        height='600px'
+                        width='600px'
+                        alt='UAS Tool Wizard Image'
+                        :src='`/wizard/Step${wizard}.png`'
+                        class='rounded'
+                    >
 
                     <div v-if='wizard === 8'>
-                        <div class='subheader pt-4'>RTSP Path</div>
-                        <CopyField :text='protocols.rtsp.url.replace(/.*\//, "")'/>
+                        <div class='subheader pt-4'>
+                            RTSP Path
+                        </div>
+                        <CopyField :text='protocols.rtsp.url.replace(/.*\//, "")' />
                     </div>
                 </div>
             </div>
@@ -53,9 +61,18 @@
                         class='btn btn-secondary'
                         @click='wizard = wizard -= 1'
                     >
-                        <IconChevronLeft :size='20' :stroke='1'/>
-                        <span v-if='wizard === 1' class='mx-2'>Close</span>
-                        <span v-else class='mx-2'>Back</span>
+                        <IconChevronLeft
+                            :size='20'
+                            :stroke='1'
+                        />
+                        <span
+                            v-if='wizard === 1'
+                            class='mx-2'
+                        >Close</span>
+                        <span
+                            v-else
+                            class='mx-2'
+                        >Back</span>
                     </button>
 
                     <div class='ms-auto'>
@@ -63,9 +80,18 @@
                             class='btn btn-primary'
                             @click='wizard = wizard > 10 ? 0 : wizard + 1'
                         >
-                            <span v-if='wizard < 10' class='mx-2'>Next</span>
-                            <span v-else class='mx-2'>Done</span>
-                            <IconChevronRight :size='20' :stroke='1'/>
+                            <span
+                                v-if='wizard < 10'
+                                class='mx-2'
+                            >Next</span>
+                            <span
+                                v-else
+                                class='mx-2'
+                            >Done</span>
+                            <IconChevronRight
+                                :size='20'
+                                :stroke='1'
+                            />
                         </button>
                     </div>
                 </div>
@@ -144,7 +170,10 @@
                     class='btn btn-secondary'
                     @click='wizard = 1'
                 >
-                    <IconWand :size='20' :stroke='1'/>
+                    <IconWand
+                        :size='20'
+                        :stroke='1'
+                    />
                     <span class='mx-2'>UAS Tool Wizard</span>
                 </button>
                 <button

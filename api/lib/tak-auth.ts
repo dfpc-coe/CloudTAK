@@ -1,7 +1,6 @@
 import fetch from './fetch.js';
 import { CookieJar, Cookie } from 'tough-cookie';
 import { CookieAgent } from 'http-cookie-agent/undici';
-import Err from '@openaddresses/batch-error';
 import { Client } from 'undici';
 import TAKAPI from './tak-api.js';
 import stream2buffer  from './stream.js';
