@@ -2,10 +2,7 @@ import Config from './config.js';
 import { InferSelectModel } from 'drizzle-orm';
 import Err from '@openaddresses/batch-error';
 import moment from 'moment';
-import fetch from './fetch.js';
-import { CookieJar } from 'tough-cookie';
 import type { Profile } from './schema.js';
-import { CookieAgent } from 'http-cookie-agent/undici';
 import { X509Certificate } from 'crypto';
 import TAKAPI, { APIAuthPassword, APIAuthCertificate } from '../lib/tak-api.js';
 
@@ -23,43 +20,16 @@ export default class AuthProvider {
     }
 
     async login(username: string, password: string): Promise<string> {
-        const url = new URL('/oauth/token', this.config.local ? 'http://localhost:5001' : this.config.MartiAPI);
-        url.searchParams.append('grant_type', 'password');
-        url.searchParams.append('username', username);
-        url.searchParams.append('password', password);
+        const auth = new APIAuthPassword(username, password)
+        const api = await TAKAPI.init(new URL(this.config.server.api), auth);
 
-        const jar = new CookieJar();
-        const agent = new CookieAgent({ cookies: { jar } });
-
-        const authres = await fetch(url, {
-            method: 'POST',
-            credentials: 'include',
-            dispatcher: agent
-        });
-
-        if (!authres.ok) {
-            throw new Err(500, new Error(`Status: ${authres.status}: ${await authres.text()}`), 'Non-200 Response from Auth Server - Token');
-        }
-
-        const body: any = await authres.json();
-
-        if (body.error === 'invalid_grant' && body.error_description.startsWith('Bad credentials')) {
-            throw new Err(400, null, 'Invalid Username or Password');
-        } else if (body.error || !body.access_token) {
-            throw new Err(500, new Error(body.error_description), 'Unknown Login Error');
-        }
-
-        const split = Buffer.from(body.access_token, 'base64').toString().split('}').map((ext) => { return ext + '}'});
-        if (split.length < 2) throw new Err(500, null, 'Unexpected TAK JWT Format');
-        const contents: { sub: string; aud: string; nbf: number; exp: number; iat: number; } = JSON.parse(split[1]);
+        const contents = await api.OAuth.parse(auth.jwt)
 
         let profile;
         try {
             profile = await this.config.models.Profile.from(username);
         } catch (err) {
             if (err instanceof Err && err.name === 'PublicError' && err.status === 404) {
-                const api = await TAKAPI.init(new URL(this.config.MartiAPI), new APIAuthPassword(username, password));
-
                 profile = await this.config.models.Profile.generate({
                     username: username,
                     auth: await api.Credentials.generate()
@@ -92,7 +62,7 @@ export default class AuthProvider {
             console.error(`Error: CertificateExpiration: ${validTo}: ${err}`);
 
             if (password) {
-                const api = await TAKAPI.init(new URL(this.config.MartiAPI), new APIAuthPassword(profile.username, password));
+                const api = await TAKAPI.init(new URL(this.config.server.api), new APIAuthPassword(profile.username, password));
                 profile = await this.config.models.Profile.commit(profile.username, {
                     auth: await api.Credentials.generate()
                 });
@@ -111,7 +81,7 @@ export default class AuthProvider {
         } catch (err) {
             if (err instanceof Error && err.message.includes('org.springframework.security.authentication.BadCredentialsException')) {
                 if (password) {
-                    const api = await TAKAPI.init(new URL(this.config.MartiAPI), new APIAuthPassword(profile.username, password));
+                    const api = await TAKAPI.init(new URL(this.config.server.api), new APIAuthPassword(profile.username, password));
                     profile = await this.config.models.Profile.commit(profile.username, {
                         auth: await api.Credentials.generate()
                     });

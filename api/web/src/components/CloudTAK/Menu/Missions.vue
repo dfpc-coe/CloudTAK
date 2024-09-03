@@ -1,11 +1,11 @@
 <template>
     <MenuTemplate
-        name='Missions'
+        name='Data Syncs'
         :loading='loading'
     >
         <template #buttons>
             <IconPlus
-                v-tooltip='"Create Mission"'
+                v-tooltip='"Create Sync"'
                 :size='32'
                 :stroke='1'
                 class='cursor-pointer'
@@ -35,7 +35,7 @@
             <TablerNone
                 v-if='!list.data.length'
                 :create='false'
-                label='Mission'
+                label='Data Sync'
             />
             <TablerAlert
                 v-else-if='err'
@@ -46,7 +46,7 @@
                     v-for='(mission, mission_it) in filteredListSubscribed.concat(filteredListRemainder) '
                     :key='mission_it'
                     class='cursor-pointer col-12 py-2 hover-dark'
-                    @click='$router.push(`/menu/missions/${mission.guid}`)'
+                    @click='openMission(mission)'
                 >
                     <div class='px-3 d-flex'>
                         <div class='d-flex justify-content-center align-items-center'>
@@ -65,7 +65,16 @@
                             <div class='col-12'>
                                 <span v-text='mission.name' />
                             </div>
-                            <div class='col-12'>
+                            <div v-if='mission.password !== undefined' class='d-flex'>
+                                <TablerInput
+                                    v-model='mission.password'
+                                    @keyup.enter='openMission(mission, true)'
+                                    placeholder='Password'
+                                />
+
+                                <button @click='openMission(mission, true)' class='btn btn-primary ms-2'>Unlock</button>
+                            </div>
+                            <div v-else class='col-12'>
                                 <span
                                     class='text-secondary'
                                     v-text='mission.createTime.replace(/T.*/, "")'
@@ -188,6 +197,26 @@ export default {
         }
     },
     methods: {
+        openMission: async function(mission, usePassword) {
+            if (mission.passwordProtected && this.subscribed.has(mission.guid)) {
+                const o = mapStore.getOverlayByMode('mission', mission.guid);
+                this.$router.push(`/menu/missions/${mission.guid}?token=${encodeURIComponent(o.token)}`);
+            } else if (mission.passwordProtected && usePassword) {
+                const getMission = await this.fetchMission(mission, mission.password);
+                this.$router.push(`/menu/missions/${mission.guid}?token=${encodeURIComponent(getMission.token)}`);
+            } else if (mission.passwordProtected && mission.password === undefined) {
+                mission.password = '';
+            } else if (!mission.passwordProtected) {
+                this.$router.push(`/menu/missions/${mission.guid}?password=${encodeURIComponent(mission.password)}`);
+            }
+        },
+        fetchMission: async function(mission, password) {
+            const url = stdurl(`/api/marti/missions/${mission.guid}`);
+            if (password) url.searchParams.append('password', password);
+
+            const m = await std(url);
+            return m;
+        },
         fetchMissions: async function() {
             this.err = false;
 

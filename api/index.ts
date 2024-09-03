@@ -1,8 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import cors from 'cors';
-import jwt from 'jsonwebtoken';
-import express, { Request, Response } from 'express';
+import express from 'express';
 import SwaggerUI from 'swagger-ui-express';
 import history, {Context} from 'connect-history-api-fallback';
 import Schema from '@openaddresses/batch-schema';
@@ -25,8 +24,6 @@ const args = minimist(process.argv, {
         'noevents', // Disable Initialization of Second Level Events
         'nometrics', // Disable Sending AWS CloudWatch Metrics about each conn
         'nosinks',  // Disable Push to Sinks
-        'local'     // (experimental) Disable external calls on startup (for developing in low connectivity)
-                    // Note this is the min for serving requests - it doesn't make it particularly functional
     ],
     string: [
         'postgres', // Postgres Connection String
@@ -55,7 +52,6 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         nometrics: args.nometrics || false,
         nosinks: args.nosinks || false,
         nocache: args.nocache || false,
-        local: args.local || false,
     });
     await server(config);
 }
@@ -85,6 +81,7 @@ export default async function server(config: Config) {
         allowedHeaders: [
             'Content-Type',
             'Authorization',
+            'MissionAuthorization',
             'Content-Length',
             'x-requested-with'
         ],
@@ -112,17 +109,6 @@ export default async function server(config: Config) {
     app.use('/api', schema.router);
 
     await schema.api();
-
-    if (config.local) {
-        // Mock WebTAK API to allow any username & Password
-        app.get('/oauth/token', (req: Request, res: Response) => {
-            return res.json({
-                access_token: jwt.sign({
-                    user_name: req.params.username
-                }, config.SigningSecret)
-            });
-        });
-    }
 
     await schema.load(
         new URL('./routes/', import.meta.url),

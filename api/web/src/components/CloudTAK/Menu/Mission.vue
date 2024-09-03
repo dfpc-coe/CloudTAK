@@ -141,40 +141,12 @@
 
             <router-view
                 :mission='mission'
+                :token='token'
                 :role='role'
                 @refresh='refresh'
             />
         </template>
     </MenuTemplate>
-
-    <template v-if='mission.passwordProtected && !password'>
-        <div class='modal-body'>
-            <div class='d-flex justify-content-center py-3'>
-                <IconLock
-                    :size='32'
-                    :stroke='1'
-                />
-            </div>
-            <h3 class='text-center'>
-                Mission Locked
-            </h3>
-            <div class='col-12 d-flex pt-2'>
-                <TablerInput
-                    v-model='password'
-                    label='Mission Password'
-                    class='w-100'
-                />
-                <div
-                    class='ms-auto'
-                    style='padding-top: 28px; padding-left: 10px;'
-                >
-                    <button class='btn btn-primary'>
-                        Unlock Mission
-                    </button>
-                </div>
-            </div>
-        </div>
-    </template>
 </template>
 
 <script>
@@ -184,7 +156,6 @@ import {
     IconArticle,
     IconTimeline,
     IconFiles,
-    IconLock,
     IconInfoSquare,
     IconUsers,
     IconRefresh,
@@ -192,7 +163,6 @@ import {
 import {
     TablerAlert,
     TablerDelete,
-    TablerInput,
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
 
@@ -202,14 +172,12 @@ export default {
         MenuTemplate,
         TablerAlert,
         TablerDelete,
-        TablerInput,
         IconBoxMultiple,
         IconArticle,
         IconFiles,
         IconInfoSquare,
         IconUsers,
         IconRefresh,
-        IconLock,
         IconTimeline
     },
     emits: [
@@ -217,11 +185,12 @@ export default {
         'select'
     ],
     data: function() {
+        const token = this.$route.query.token;
+
         return {
             err: null,
             subscribed: undefined,
-            mode: 'info',
-            password: '',
+            token,
             upload: false,
             createLog: false,
             loading: {
@@ -247,9 +216,7 @@ export default {
         }
     },
     mounted: async function() {
-        if (!this.mission.passwordProtected) {
-            await this.refresh();
-        }
+        await this.refresh();
     },
     methods: {
         refresh: async function() {
@@ -262,8 +229,11 @@ export default {
             return url;
         },
         deleteFile: async function(file) {
-            await std(`/api/marti/missions/${this.mission.name}/upload/${file.hash}`, {
-                method: 'DELETE'
+            await std(`/api/marti/missions/${this.mission.guid}/upload/${file.hash}`, {
+                method: 'DELETE',
+                headers: {
+                    MissionAuthorization: this.token
+                }
             });
 
             this.fetchMission();
@@ -274,9 +244,12 @@ export default {
         deleteMission: async function() {
             try {
                 this.loading.delete = true;
-                const url = stdurl(`/api/marti/missions/${this.mission.name}`);
+                const url = stdurl(`/api/marti/missions/${this.mission.guid}`);
                 const list = await std(url, {
-                    method: 'DELETE'
+                    method: 'DELETE',
+                    headers: {
+                        MissionAuthorization: this.token
+                    }
                 });
                 if (list.data.length !== 1) throw new Error('Mission Error');
 
@@ -292,15 +265,23 @@ export default {
                 const url = stdurl(`/api/marti/missions/${this.$route.params.mission}`);
                 url.searchParams.append('changes', 'false');
                 url.searchParams.append('logs', 'true');
-                this.mission = await std(url);
+                this.mission = await std(url, {
+                    headers: {
+                        MissionAuthorization: this.token
+                    }
+                });
 
             } catch (err) {
                 this.err = err;
             }
 
             try {
-                const suburl = stdurl(`/api/marti/missions/${this.mission.name}/role`);
-                this.role = await std(suburl);
+                const suburl = stdurl(`/api/marti/missions/${this.mission.guid}/role`);
+                this.role = await std(suburl, {
+                    headers: {
+                        MissionAuthorization: this.token
+                    }
+                });
             } catch (err) {
                 if (!err.message.includes('NOT_FOUND')) {
                     throw err;

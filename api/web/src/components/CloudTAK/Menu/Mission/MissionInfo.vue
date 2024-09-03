@@ -125,6 +125,7 @@ export default {
     },
     props: {
         mission: Object,
+        token: String,
         role: Object,
     },
     data: function() {
@@ -151,7 +152,11 @@ export default {
     methods: {
         fetchSubscriptions: async function() {
             const url = stdurl(`/api/marti/missions/${this.mission.name}/subscriptions/roles`);
-            this.subscriptions = (await std(url)).data;
+            this.subscriptions = (await std(url, {
+                headers: {
+                    MissionAuthorization: this.token
+                }
+            })).data;
             this.loading.users = false;
         },
         subscribe: async function(subscribed) {
@@ -164,13 +169,14 @@ export default {
                     url: `/mission/${encodeURIComponent(this.mission.name)}`,
                     type: 'geojson',
                     mode: 'mission',
+                    token: this.token,
                     mode_id: this.mission.guid,
                 })
 
                 mapStore.overlays.push(missionOverlay);
 
                 mapStore.map.getSource(String(missionOverlay.id))
-                    .setData(await cotStore.loadMission(this.mission.guid));
+                    .setData(await cotStore.loadMission(this.mission.guid, missionOverlay.token));
             } else if (subscribed === false && overlay) {
                 await mapStore.removeOverlay(overlay);
             }

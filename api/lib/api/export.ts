@@ -29,7 +29,9 @@ export default class {
         const params = new URLSearchParams();
         let q: keyof Static<typeof ExportInput>;
         for (q in query) {
-            params.append(q, String(query[q]));
+            if (query[q] !== undefined ) {
+                params.append(q, String(query[q]));
+            }
         }
 
         const res = await this.api.fetch(url, {

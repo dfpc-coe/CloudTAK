@@ -1,13 +1,12 @@
 import fetch from './fetch.js';
 import { CookieJar, Cookie } from 'tough-cookie';
 import { CookieAgent } from 'http-cookie-agent/undici';
-import Err from '@openaddresses/batch-error';
 import { Client } from 'undici';
 import TAKAPI from './tak-api.js';
 import stream2buffer  from './stream.js';
 
 export class APIAuth {
-    async init(base: URL) { // eslint-disable-line @typescript-eslint/no-unused-vars
+    async init(api: TAKAPI) { // eslint-disable-line @typescript-eslint/no-unused-vars
 
     }
 
@@ -19,34 +18,22 @@ export class APIAuth {
 export class APIAuthPassword extends APIAuth {
     username: string;
     password: string;
-    jwt?: string;
+    jwt: string;
 
     constructor(username: string, password: string) {
         super();
         this.username = username;
         this.password = password;
+        this.jwt = '';
     }
 
-    async init(base: URL) {
-        const url = new URL('/oauth/token', base);
-        url.searchParams.append('grant_type', 'password');
-        url.searchParams.append('username', this.username);
-        url.searchParams.append('password', this.password);
+    async init(api: TAKAPI) {
+        const { token } = await api.OAuth.login({
+            username: this.username,
+            password: this.password
+        })
 
-        const authres = await fetch(url, {
-            method: 'POST'
-        });
-
-        const text = await authres.text();
-
-        if (authres.status === 401) {
-            throw new Err(400, new Error(text), 'TAK Server reports incorrect Username or Password');
-        } else if (!authres.ok) {
-            throw new Err(400, new Error(text), 'Non-200 Response from Auth Server - Token');
-        }
-
-        const body: any = JSON.parse(text);
-        this.jwt = body.access_token
+        this.jwt = token;
     }
 
     async fetch(api: TAKAPI, url: URL, opts: any): Promise<any> {
@@ -60,6 +47,9 @@ export class APIAuthPassword extends APIAuth {
             const agent = new CookieAgent({ cookies: { jar } });
             opts.dispatcher = agent;
         }
+
+        // Special case WebTAK Style password calls
+        url.port = '';
 
         return await fetch(url, opts);
     }
