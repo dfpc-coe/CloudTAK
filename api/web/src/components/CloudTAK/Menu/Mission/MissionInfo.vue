@@ -169,6 +169,7 @@ export default {
                     url: `/mission/${encodeURIComponent(this.mission.name)}`,
                     type: 'geojson',
                     mode: 'mission',
+                    token: this.token,
                     mode_id: this.mission.guid,
                 })
 
