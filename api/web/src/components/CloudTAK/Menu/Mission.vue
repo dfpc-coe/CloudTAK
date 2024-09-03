@@ -156,7 +156,6 @@ import {
     IconArticle,
     IconTimeline,
     IconFiles,
-    IconLock,
     IconInfoSquare,
     IconUsers,
     IconRefresh,
@@ -164,7 +163,6 @@ import {
 import {
     TablerAlert,
     TablerDelete,
-    TablerInput,
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
 
@@ -174,14 +172,12 @@ export default {
         MenuTemplate,
         TablerAlert,
         TablerDelete,
-        TablerInput,
         IconBoxMultiple,
         IconArticle,
         IconFiles,
         IconInfoSquare,
         IconUsers,
         IconRefresh,
-        IconLock,
         IconTimeline
     },
     emits: [
