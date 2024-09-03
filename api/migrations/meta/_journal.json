@@ -407,6 +407,13 @@
       "when": 1725402051432,
       "tag": "0057_stale_rogue",
       "breakpoints": true
+    },
+    {
+      "idx": 58,
+      "version": "7",
+      "when": 1725402441849,
+      "tag": "0058_left_secret_warriors",
+      "breakpoints": true
     }
   ]
 }
