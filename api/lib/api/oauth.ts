@@ -7,6 +7,14 @@ export const LoginInput = Type.Object({
     password: Type.String()
 })
 
+export const TokenContents = Type.Object({
+    sub: Type.String(),
+    aud: Type.String(),
+    nbf: Type.Number(),
+    exp: Type.Number(),
+    iat: Type.Number()
+})
+
 export default class {
     api: TAKAPI;
 
@@ -14,10 +22,19 @@ export default class {
         this.api = api;
     }
 
-    async login(query: Static<typeof LoginInput>): Promise<{ sub: string; aud: string; nbf: number; exp: number; iat: number; }> {
-        console.error('LOGIN');
+    parse(jwt: string): Static<typeof TokenContents>{
+        const split = Buffer.from(jwt, 'base64').toString().split('}').map((ext) => { return ext + '}'});
+        if (split.length < 2) throw new Err(500, null, 'Unexpected TAK JWT Format');
+        const contents: { sub: string; aud: string; nbf: number; exp: number; iat: number; } = JSON.parse(split[1]);
+
+        return contents;
+    }
+
+    async login(query: Static<typeof LoginInput>): Promise<{
+        token: string;
+        contents: Static<typeof TokenContents>
+    }> {
         const url = new URL(`/oauth/token`, this.api.url);
-        console.error('HERE', url);
 
         url.searchParams.append('grant_type', 'password');
         url.searchParams.append('username', query.username);
@@ -27,11 +44,15 @@ export default class {
             method: 'GET'
         }, true);
 
-        if (!authres.ok) {
-            throw new Err(500, new Error(`Status: ${authres.status}: ${await authres.text()}`), 'Non-200 Response from Auth Server - Token');
+        const text = await authres.text();
+
+        if (authres.status === 401) {
+            throw new Err(400, new Error(text), 'TAK Server reports incorrect Username or Password');
+        } else if (!authres.ok) {
+            throw new Err(400, new Error(`Status: ${authres.status}: ${await authres.text()}`), 'Non-200 Response from Auth Server - Token');
         }
 
-        const body: any = await authres.json();
+        const body: any = JSON.parse(text);
 
         if (body.error === 'invalid_grant' && body.error_description.startsWith('Bad credentials')) {
             throw new Err(400, null, 'Invalid Username or Password');
@@ -39,10 +60,9 @@ export default class {
             throw new Err(500, new Error(body.error_description), 'Unknown Login Error');
         }
 
-        const split = Buffer.from(body.access_token, 'base64').toString().split('}').map((ext) => { return ext + '}'});
-        if (split.length < 2) throw new Err(500, null, 'Unexpected TAK JWT Format');
-        const contents: { sub: string; aud: string; nbf: number; exp: number; iat: number; } = JSON.parse(split[1]);
-
-        return contents;
+        return {
+            token: body.access_token,
+            contents: this.parse(body.access_token)
+        };
     }
 }
