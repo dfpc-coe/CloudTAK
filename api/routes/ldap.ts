@@ -86,7 +86,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             const api = await TAKAPI.init(
-                new URL(config.MartiAPI),
+                new URL(config.server.api),
                 new APIAuthPassword(user.email, password)
             );
 

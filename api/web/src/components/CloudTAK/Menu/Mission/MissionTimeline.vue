@@ -125,7 +125,8 @@ export default {
         IconFileX,
     },
     props: {
-        mission: Object
+        mission: Object,
+        token: String
     },
     emits: [
         'close',
@@ -147,7 +148,11 @@ export default {
         fetchChanges: async function() {
             this.loading = true;
             const url = await stdurl(`/api/marti/missions/${this.mission.name}/changes`);
-            this.changes = (await std(url)).data;
+            this.changes = (await std(url, {
+                headers: {
+                    MissionAuthorization: this.token
+                },
+            })).data;
             this.loading = false;
         },
     }

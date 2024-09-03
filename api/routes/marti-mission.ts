@@ -1,10 +1,11 @@
-import { Type } from '@sinclair/typebox'
+import { Static, Type } from '@sinclair/typebox'
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import { GenericMartiResponse } from '../lib/types.js';
 import {
+    MissionOptions,
     MissionRole,
     Mission,
     MissionChangesInput,
@@ -25,7 +26,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         description: 'Helper API to get a single mission',
         query: Type.Object({
-            password: Type.Optional(Type.Boolean()),
+            password: Type.Optional(Type.String()),
             changes: Type.Optional(Type.Boolean()),
             logs: Type.Optional(Type.Boolean()),
             secago: Type.Optional(Type.Integer()),
@@ -39,10 +40,14 @@ export default async function router(schema: Schema, config: Config) {
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
+            const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
+                ? { token: String(req.headers['missionauthorization']) }
+                : await config.conns.subscription(user.email, req.params.name)
+
             const mission = await api.Mission.get(
                 req.params.name,
                 req.query,
-                await config.conns.subscription(user.email, req.params.name)
+                opts
             );
 
             return res.json(mission);
@@ -68,10 +73,11 @@ export default async function router(schema: Schema, config: Config) {
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
-            const features = await api.Mission.latestFeats(
-                req.params.name,
-                await config.conns.subscription(user.email, req.params.name)
-            );
+            const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
+                ? { token: String(req.headers['missionauthorization']) }
+                : await config.conns.subscription(user.email, req.params.name)
+
+            const features = await api.Mission.latestFeats(req.params.name, opts);
 
             return res.json({ type: 'FeatureCollection', features });
         } catch (err) {
@@ -94,10 +100,14 @@ export default async function router(schema: Schema, config: Config) {
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
+            const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
+                ? { token: String(req.headers['missionauthorization']) }
+                : await config.conns.subscription(user.email, req.params.name)
+
             const changes = await api.Mission.changes(
                 req.params.name,
                 req.query,
-                await config.conns.subscription(user.email, req.params.name)
+                opts
             );
 
             return res.json(changes);
@@ -121,10 +131,14 @@ export default async function router(schema: Schema, config: Config) {
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
+            const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
+                ? { token: String(req.headers['missionauthorization']) }
+                : await config.conns.subscription(user.email, req.params.name)
+
             const mission = await api.Mission.delete(
                 req.params.name,
                 req.query,
-                await config.conns.subscription(user.email, req.params.name)
+                opts
             );
             return res.json(mission);
         } catch (err) {
@@ -192,9 +206,13 @@ export default async function router(schema: Schema, config: Config) {
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
+            const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
+                ? { token: String(req.headers['missionauthorization']) }
+                : await config.conns.subscription(user.email, req.params.name)
+
             const role = await api.Mission.role(
                 req.params.name,
-                await config.conns.subscription(user.email, req.params.name)
+                opts
             );
 
             return res.json(role);
@@ -217,9 +235,13 @@ export default async function router(schema: Schema, config: Config) {
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
+            const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
+                ? { token: String(req.headers['missionauthorization']) }
+                : await config.conns.subscription(user.email, req.params.name)
+
             const subs = await api.Mission.subscriptions(
                 req.params.name,
-                await config.conns.subscription(user.email, req.params.name)
+                opts
             );
 
             return res.json(subs);
@@ -242,9 +264,13 @@ export default async function router(schema: Schema, config: Config) {
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
+            const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
+                ? { token: String(req.headers['missionauthorization']) }
+                : await config.conns.subscription(user.email, req.params.name)
+
             const roles = await api.Mission.subscriptionRoles(
                 req.params.name,
-                await config.conns.subscription(user.email, req.params.name)
+                opts
             );
 
             return res.json(roles);
@@ -275,9 +301,13 @@ export default async function router(schema: Schema, config: Config) {
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
+            const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
+                ? { token: String(req.headers['missionauthorization']) }
+                : await config.conns.subscription(user.email, req.params.name)
+
             const missions = await api.Mission.contacts(
                 req.params.name,
-                await config.conns.subscription(user.email, req.params.name)
+                opts
             );
 
             return res.json(missions);
@@ -321,12 +351,16 @@ export default async function router(schema: Schema, config: Config) {
                 remoteAddress: req._remoteAddress
             }
 
+            const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
+                ? { token: String(req.headers['missionauthorization']) }
+                : await config.conns.subscription(user.email, req.params.name)
+
             const missionContent = await api.Mission.attachContents(
                 req.params.name,
                 {
                     hashes: [content.Hash]
                 },
-                await config.conns.subscription(user.email, req.params.name)
+                opts
             );
 
             return res.json(missionContent);
@@ -352,12 +386,16 @@ export default async function router(schema: Schema, config: Config) {
 
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
+            const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
+                ? { token: String(req.headers['missionauthorization']) }
+                : await config.conns.subscription(user.email, req.params.name)
+
             const missionContent = await api.Mission.detachContents(
                 req.params.name,
                 {
                     hash: req.params.hash
                 },
-                await config.conns.subscription(user.email, req.params.name)
+                opts
             );
 
             return res.json(missionContent);

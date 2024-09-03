@@ -1,9 +1,10 @@
-import { Type } from '@sinclair/typebox'
+import { Static, Type } from '@sinclair/typebox'
 import { StandardResponse, GenericMartiResponse } from '../lib/types.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
+import { MissionOptions } from '../lib/api/mission.js';
 import { MissionLayerType } from '../lib/api/mission-layer.js';
 import TAKAPI, {
     APIAuthCertificate,
@@ -25,9 +26,13 @@ export default async function router(schema: Schema, config: Config) {
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
+            const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
+                ? { token: String(req.headers['missionauthorization']) }
+                : await config.conns.subscription(user.email, req.params.name)
+
             const list = await api.MissionLayer.list(
                 req.params.name,
-                await config.conns.subscription(user.email, req.params.name)
+                opts
             );
 
             return res.json(list);
@@ -58,13 +63,17 @@ export default async function router(schema: Schema, config: Config) {
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
+            const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
+                ? { token: String(req.headers['missionauthorization']) }
+                : await config.conns.subscription(user.email, req.params.name)
+
             const create = await api.MissionLayer.create(
                 req.params.name,
                 {
                     ...req.body,
                     creatorUid: user.email
                 },
-                await config.conns.subscription(user.email, req.params.name)
+                opts
             );
 
             return res.json(create);
@@ -93,6 +102,10 @@ export default async function router(schema: Schema, config: Config) {
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
             if (req.body.name) {
+                const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
+                    ? { token: String(req.headers['missionauthorization']) }
+                    : await config.conns.subscription(user.email, req.params.name)
+
                 await api.MissionLayer.rename(
                     req.params.name,
                     req.params.uid,
@@ -100,7 +113,7 @@ export default async function router(schema: Schema, config: Config) {
                         name: req.body.name,
                         creatorUid: user.email
                     },
-                    await config.conns.subscription(user.email, req.params.name)
+                    opts
                 );
             }
 
@@ -129,13 +142,17 @@ export default async function router(schema: Schema, config: Config) {
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
+            const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
+                ? { token: String(req.headers['missionauthorization']) }
+                : await config.conns.subscription(user.email, req.params.name)
+
             await api.MissionLayer.delete(
                 req.params.name,
                 {
                     uid: [ req.params.uid ],
                     creatorUid: user.email
                 },
-                await config.conns.subscription(user.email, req.params.name)
+                opts
             );
 
             return res.json({

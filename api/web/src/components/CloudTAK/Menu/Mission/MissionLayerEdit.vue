@@ -53,6 +53,9 @@ export default {
         mission: {
             type: Object
         },
+        token: {
+            type: String
+        },
         layer: {
             type: Object
         }
@@ -75,6 +78,9 @@ export default {
                 const url = stdurl(`/api/marti/missions/${this.mission.name}/layer/${this.layer.uid}`);
 
                 await std(url, {
+                    headers: {
+                        MissionAuthorization: this.token
+                    },
                     method: 'PATCH',
                     body: {
                         name: this.editing.name

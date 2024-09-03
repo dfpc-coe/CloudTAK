@@ -135,6 +135,7 @@ export default {
     },
     props: {
         mission: Object,
+        token: String,
         role: Object
     },
     emits: [
@@ -211,7 +212,11 @@ export default {
             const url = await stdurl(`/api/import`);
             url.searchParams.append('mode', 'Mission');
             url.searchParams.append('mode_id', this.mission.guid);
-            this.imports = (await std(url)).items.filter((i) => {
+            this.imports = (await std(url, {
+                headers: {
+                    MissionAuthorization: this.token
+                }
+            })).items.filter((i) => {
                 return !['Success'].includes(i.status);
             });
             this.loading.users = false;
@@ -219,7 +224,11 @@ export default {
         fetchChanges: async function() {
             this.loading.changes = true;
             const url = await stdurl(`/api/marti/missions/${this.mission.name}/changes`);
-            this.changes = (await std(url)).data;
+            this.changes = (await std(url, {
+                headers: {
+                    MissionAuthorization: this.token
+                }
+            })).data;
             this.loading.changes = false;
         }
     }

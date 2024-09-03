@@ -131,7 +131,7 @@ export const MissionDeleteInput = Type.Object({
 })
 
 export const GetInput = Type.Object({
-    password: Type.Optional(Type.Boolean()),
+    password: Type.Optional(Type.String()),
     changes: Type.Optional(Type.Boolean()),
     logs: Type.Optional(Type.Boolean()),
     secago: Type.Optional(Type.Integer()),
@@ -214,7 +214,12 @@ export default class {
         const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/changes`, this.api.url);
 
         let q: keyof Static<typeof MissionChangesInput>;
-        for (q in query) url.searchParams.append(q, String(query[q]));
+        for (q in query) {
+            if (query[q] !== undefined) {
+                url.searchParams.append(q, String(query[q]));
+            }
+        }
+
         return await this.api.fetch(url, {
             method: 'GET',
             headers: this.#headers(opts),
@@ -251,21 +256,14 @@ export default class {
         name: string,
         opts?: Static<typeof MissionOptions>
     ): Promise<string> {
-        if (this.#isGUID(name)) {
-            const url = new URL(`/Marti/api/missions/guid/${this.#encodeName(name)}/cot`, this.api.url);
+        const url = this.#isGUID(name)
+            ? new URL(`/Marti/api/missions/guid/${encodeURIComponent(name)}/cot`, this.api.url)
+            : new URL(`/Marti/api/missions/${this.#encodeName(name)}/cot`, this.api.url);
 
-            return await this.api.fetch(url, {
-                method: 'GET',
-                headers: this.#headers(opts)
-            });
-        } else {
-            const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/cot`, this.api.url);
-
-            return await this.api.fetch(url, {
-                method: 'GET',
-                headers: this.#headers(opts)
-            });
-        }
+        return await this.api.fetch(url, {
+            method: 'GET',
+            headers: this.#headers(opts)
+        });
     }
 
     /**
@@ -277,21 +275,14 @@ export default class {
         name: string,
         opts?: Static<typeof MissionOptions>
     ) {
-        if (this.#isGUID(name)) {
-            const url = new URL(`/Marti/api/missions/guid/${this.#encodeName(name)}/contacts`, this.api.url);
+        const url = this.#isGUID(name)
+            ? new URL(`/Marti/api/missions/guid/${encodeURIComponent(name)}/contacts`, this.api.url)
+            : new URL(`/Marti/api/missions/${this.#encodeName(name)}/contacts`, this.api.url);
 
-            return await this.api.fetch(url, {
-                method: 'GET',
-                headers: this.#headers(opts)
-            });
-        } else {
-            const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/contacts`, this.api.url);
-
-            return await this.api.fetch(url, {
-                method: 'GET',
-                headers: this.#headers(opts)
-            });
-        }
+        return await this.api.fetch(url, {
+            method: 'GET',
+            headers: this.#headers(opts)
+        });
     }
 
     /**
@@ -304,25 +295,17 @@ export default class {
         body: Static<typeof DetachContentsInput>,
         opts?: Static<typeof MissionOptions>
     ) {
-        if (this.#isGUID(name)) {
-            const url = new URL(`/Marti/api/missions/guid/${this.#encodeName(name)}/contents`, this.api.url);
-            if (body.hash) url.searchParams.append('hash', body.hash);
-            if (body.uid) url.searchParams.append('uid', body.uid);
+        const url = this.#isGUID(name)
+            ? new URL(`/Marti/api/missions/guid/${encodeURIComponent(name)}/contents`, this.api.url)
+            : new URL(`/Marti/api/missions/${this.#encodeName(name)}/contents`, this.api.url);
 
-            return await this.api.fetch(url, {
-                method: 'DELETE',
-                headers: this.#headers(opts),
-            });
-        } else {
-            const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/contents`, this.api.url);
-            if (body.hash) url.searchParams.append('hash', body.hash);
-            if (body.uid) url.searchParams.append('uid', body.uid);
+        if (body.hash) url.searchParams.append('hash', body.hash);
+        if (body.uid) url.searchParams.append('uid', body.uid);
 
-            return await this.api.fetch(url, {
-                method: 'DELETE',
-                headers: this.#headers(opts),
-            });
-        }
+        return await this.api.fetch(url, {
+            method: 'DELETE',
+            headers: this.#headers(opts),
+        });
     }
 
     /**
@@ -335,23 +318,15 @@ export default class {
         body: Static<typeof AttachContentsInput>,
         opts?: Static<typeof MissionOptions>
     ) {
-        if (this.#isGUID(name)) {
-            const url = new URL(`/Marti/api/missions/guid/${this.#encodeName(name)}/contents`, this.api.url);
+        const url = this.#isGUID(name)
+            ? new URL(`/Marti/api/missions/guid/${encodeURIComponent(name)}/contents`, this.api.url)
+            : new URL(`/Marti/api/missions/${this.#encodeName(name)}/contents`, this.api.url);
 
-            return await this.api.fetch(url, {
-                method: 'PUT',
-                headers: this.#headers(opts),
-                body
-            });
-        } else {
-            const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/contents`, this.api.url);
-
-            return await this.api.fetch(url, {
-                method: 'PUT',
-                headers: this.#headers(opts),
-                body
-            });
-        }
+        return await this.api.fetch(url, {
+            method: 'PUT',
+            headers: this.#headers(opts),
+            body
+        });
     }
 
     /**
@@ -386,19 +361,14 @@ export default class {
         name: string,
         opts?: Static<typeof MissionOptions>
     ): Promise<TAKItem<Static<typeof MissionSubscriber>>> {
-        if (this.#isGUID(name)) {
-            const url = new URL(`/Marti/api/missions/guid/${this.#encodeName(name)}/subscriptions`, this.api.url);
-            return await this.api.fetch(url, {
-                method: 'GET',
-                headers: this.#headers(opts),
-            });
-        } else {
-            const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/subscriptions`, this.api.url);
-            return await this.api.fetch(url, {
-                method: 'GET',
-                headers: this.#headers(opts),
-            });
-        }
+        const url = this.#isGUID(name)
+            ? new URL(`/Marti/api/missions/guid/${encodeURIComponent(name)}/subscriptions`, this.api.url)
+            : new URL(`/Marti/api/missions/${this.#encodeName(name)}/subscriptions`, this.api.url);
+
+        return await this.api.fetch(url, {
+            method: 'GET',
+            headers: this.#headers(opts),
+        });
     }
 
     /**
@@ -410,19 +380,14 @@ export default class {
         name: string,
         opts?: Static<typeof MissionOptions>
     ): Promise<TAKList<any>> {
-        if (this.#isGUID(name)) {
-            const url = new URL(`/Marti/api/missions/guid/${this.#encodeName(name)}/subscriptions/roles`, this.api.url);
-            return await this.api.fetch(url, {
-                method: 'GET',
-                headers: this.#headers(opts),
-            });
-        } else {
-            const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/subscriptions/roles`, this.api.url);
-            return await this.api.fetch(url, {
-                method: 'GET',
-                headers: this.#headers(opts),
-            });
-        }
+        const url = this.#isGUID(name)
+            ? new URL(`/Marti/api/missions/guid/${encodeURIComponent(name)}/subscriptions/roles`, this.api.url)
+            : new URL(`/Marti/api/missions/${this.#encodeName(name)}/subscriptions/roles`, this.api.url);
+
+        return await this.api.fetch(url, {
+            method: 'GET',
+            headers: this.#headers(opts),
+        });
     }
 
     /**
@@ -435,29 +400,23 @@ export default class {
         query: Static<typeof SetRoleInput>,
         opts?: Static<typeof MissionOptions>
     ): Promise<Static<typeof MissionRole>> {
-        if (this.#isGUID(name)) {
-            const url = new URL(`/Marti/api/missions/guid/${this.#encodeName(name)}/role`, this.api.url);
+        const url = this.#isGUID(name)
+            ? new URL(`/Marti/api/missions/guid/${encodeURIComponent(name)}/role`, this.api.url)
+            : new URL(`/Marti/api/missions/${this.#encodeName(name)}/role`, this.api.url);
 
-            let q: keyof Static<typeof SetRoleInput>;
-            for (q in query) url.searchParams.append(q, String(query[q]));
-            const res = await this.api.fetch(url, {
-                method: 'PUT',
-                headers: this.#headers(opts),
-            });
-
-            return res.data;
-        } else {
-            const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/role`, this.api.url);
-
-            let q: keyof Static<typeof SetRoleInput>;
-            for (q in query) url.searchParams.append(q, String(query[q]));
-            const res = await this.api.fetch(url, {
-                method: 'PUT',
-                headers: this.#headers(opts),
-            });
-
-            return res.data;
+        let q: keyof Static<typeof SetRoleInput>;
+        for (q in query) {
+            if (query[q] !== undefined) {
+                url.searchParams.append(q, String(query[q]));
+            }
         }
+
+        const res = await this.api.fetch(url, {
+            method: 'PUT',
+            headers: this.#headers(opts),
+        });
+
+        return res.data;
     }
 
     /**
@@ -469,25 +428,16 @@ export default class {
         name: string,
         opts?: Static<typeof MissionOptions>
     ): Promise<Static<typeof MissionRole>> {
-        if (this.#isGUID(name)) {
-            const url = new URL(`/Marti/api/missions/guid/${this.#encodeName(name)}/role`, this.api.url);
+        const url = this.#isGUID(name)
+            ? new URL(`/Marti/api/missions/guid/${encodeURIComponent(name)}/role`, this.api.url)
+            : new URL(`/Marti/api/missions/${this.#encodeName(name)}/role`, this.api.url);
 
-            const res = await this.api.fetch(url, {
-                method: 'GET',
-                headers: this.#headers(opts),
-            });
+        const res = await this.api.fetch(url, {
+            method: 'GET',
+            headers: this.#headers(opts),
+        });
 
-            return res.data;
-        } else {
-            const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/role`, this.api.url);
-
-            const res = await this.api.fetch(url, {
-                method: 'GET',
-                headers: this.#headers(opts),
-            });
-
-            return res.data;
-        }
+        return res.data;
     }
 
     /**
@@ -500,29 +450,23 @@ export default class {
         query: Static<typeof SubscriptionInput>,
         opts?: Static<typeof MissionOptions>
     ): Promise<Static<typeof MissionSubscriber>> {
-        if (this.#isGUID(name)) {
-            const url = new URL(`/Marti/api/missions/guid/${this.#encodeName(name)}/subscription`, this.api.url);
+        const url = this.#isGUID(name)
+            ? new URL(`/Marti/api/missions/guid/${encodeURIComponent(name)}/subscription`, this.api.url)
+            : new URL(`/Marti/api/missions/${this.#encodeName(name)}/subscription`, this.api.url);
 
-            let q: keyof Static<typeof SubscriptionInput>;
-            for (q in query) url.searchParams.append(q, String(query[q]));
-            const res = await this.api.fetch(url, {
-                method: 'GET',
-                headers: this.#headers(opts),
-            });
-
-            return res.data;
-        } else {
-            const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/subscription`, this.api.url);
-
-            let q: keyof Static<typeof SubscriptionInput>;
-            for (q in query) url.searchParams.append(q, String(query[q]));
-            const res = await this.api.fetch(url, {
-                method: 'GET',
-                headers: this.#headers(opts),
-            });
-
-            return res.data;
+        let q: keyof Static<typeof SubscriptionInput>;
+        for (q in query) {
+            if (query[q] !== undefined) {
+                url.searchParams.append(q, String(query[q]));
+            }
         }
+
+        const res = await this.api.fetch(url, {
+            method: 'GET',
+            headers: this.#headers(opts),
+        });
+
+        return res.data;
     }
 
     /**
@@ -535,25 +479,21 @@ export default class {
         query: Static<typeof SubscribeInput>,
         opts?: Static<typeof MissionOptions>
     ): Promise<TAKItem<Static<typeof MissionSubscriber>>> {
-        if (this.#isGUID(name)) {
-            const url = new URL(`/Marti/api/missions/guid/${this.#encodeName(name)}/subscription`, this.api.url);
+        const url = this.#isGUID(name)
+            ? new URL(`/Marti/api/missions/guid/${encodeURIComponent(name)}/subscription`, this.api.url)
+            : new URL(`/Marti/api/missions/${this.#encodeName(name)}/subscription`, this.api.url);
 
-            let q: keyof Static<typeof SubscribeInput>;
-            for (q in query) url.searchParams.append(q, String(query[q]));
-            return await this.api.fetch(url, {
-                method: 'PUT',
-                headers: this.#headers(opts),
-            });
-        } else {
-            const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/subscription`, this.api.url);
-
-            let q: keyof Static<typeof SubscribeInput>;
-            for (q in query) url.searchParams.append(q, String(query[q]));
-            return await this.api.fetch(url, {
-                method: 'PUT',
-                headers: this.#headers(opts),
-            });
+        let q: keyof Static<typeof SubscribeInput>;
+        for (q in query) {
+            if (query[q] !== undefined) {
+                url.searchParams.append(q, String(query[q]));
+            }
         }
+
+        return await this.api.fetch(url, {
+            method: 'PUT',
+            headers: this.#headers(opts),
+        });
     }
 
     /**
@@ -566,26 +506,21 @@ export default class {
         query: Static<typeof UnsubscribeInput>,
         opts?: Static<typeof MissionOptions>
     ) {
+        const url = this.#isGUID(name)
+            ? new URL(`/Marti/api/missions/guid/${encodeURIComponent(name)}/subscription`, this.api.url)
+            : new URL(`/Marti/api/missions/${this.#encodeName(name)}/subscription`, this.api.url);
 
-        if (this.#isGUID(name)) {
-            const url = new URL(`/Marti/api/missions/guid/${this.#encodeName(name)}/subscription`, this.api.url);
-
-            let q: keyof Static<typeof UnsubscribeInput>;
-            for (q in query) url.searchParams.append(q, String(query[q]));
-            return await this.api.fetch(url, {
-                method: 'DELETE',
-                headers: this.#headers(opts),
-            });
-        } else {
-            const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/subscription`, this.api.url);
-
-            let q: keyof Static<typeof UnsubscribeInput>;
-            for (q in query) url.searchParams.append(q, String(query[q]));
-            return await this.api.fetch(url, {
-                method: 'DELETE',
-                headers: this.#headers(opts),
-            });
+        let q: keyof Static<typeof UnsubscribeInput>;
+        for (q in query) {
+            if (query[q] !== undefined) {
+                url.searchParams.append(q, String(query[q]));
+            }
         }
+
+        return await this.api.fetch(url, {
+            method: 'DELETE',
+            headers: this.#headers(opts),
+        });
     }
 
     /**
@@ -597,7 +532,12 @@ export default class {
         const url = new URL('/Marti/api/missions', this.api.url);
 
         let q: keyof Static<typeof MissionListInput>;
-        for (q in query) url.searchParams.append(q, String(query[q]));
+        for (q in query) {
+            if (query[q] !== undefined) {
+                url.searchParams.append(q, String(query[q]));
+            }
+        }
+
         return await this.api.fetch(url, {
             method: 'GET'
         });
@@ -616,7 +556,12 @@ export default class {
         const url = new URL(`/Marti/api/missions/guid/${encodeURIComponent(guid)}`, this.api.url);
 
         let q: keyof Static<typeof GetInput>;
-        for (q in query) url.searchParams.append(q, String(query[q]));
+        for (q in query) {
+            if (query[q] !== undefined) {
+                url.searchParams.append(q, String(query[q]));
+            }
+        }
+
         const missions: TAKList<Static <typeof Mission>> = await this.api.fetch(url, {
             method: 'GET',
             headers: this.#headers(opts),
@@ -634,27 +579,17 @@ export default class {
         opts?: Static<typeof MissionOptions>
     ): Promise<boolean> {
         try {
-            if (this.#isGUID(name)) {
-                const url = new URL(`/Marti/api/missions/guid/${encodeURIComponent(name)}`, this.api.url);
+            const url = this.#isGUID(name)
+                ? new URL(`/Marti/api/missions/guid/${encodeURIComponent(name)}`, this.api.url)
+                : new URL(`/Marti/api/missions/${this.#encodeName(name)}`, this.api.url);
 
-                const missions: TAKList<Static<typeof Mission>> = await this.api.fetch(url, {
-                    method: 'GET',
-                    headers: this.#headers(opts),
-                });
+            const missions: TAKList<Static<typeof Mission>> = await this.api.fetch(url, {
+                method: 'GET',
+                headers: this.#headers(opts),
+            });
 
-                if (!missions.data.length) return false;
-                return true;
-            } else {
-                const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}`, this.api.url);
-
-                const missions: TAKList<Static<typeof Mission>> = await this.api.fetch(url, {
-                    method: 'GET',
-                    headers: this.#headers(opts),
-                });
-
-                if (!missions.data.length) return false;
-                return true;
-            }
+            if (!missions.data.length) return false;
+            return true;
         } catch (err) {
             console.error(err);
             return false;
@@ -671,32 +606,25 @@ export default class {
         query: Static<typeof GetInput>,
         opts?: Static<typeof MissionOptions>
     ): Promise<Static<typeof Mission>> {
-        const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}`, this.api.url);
+        const url = this.#isGUID(name)
+            ? new URL(`/Marti/api/missions/guid/${encodeURIComponent(name)}`, this.api.url)
+            : new URL(`/Marti/api/missions/${this.#encodeName(name)}`, this.api.url);
 
-        if (this.#isGUID(name)) {
-            const url = new URL(`/Marti/api/missions/guid/${encodeURIComponent(name)}`, this.api.url);
-
-            let q: keyof Static<typeof GetInput>;
-            for (q in query) url.searchParams.append(q, String(query[q]));
-            const missions: TAKList<Static <typeof Mission>> = await this.api.fetch(url, {
-                method: 'GET',
-                headers: this.#headers(opts),
-            });
-
-            if (!missions.data.length) throw new Err(404, null, `No Mission for GUID: ${name}`);
-            return missions.data[0];
-        } else {
-            let q: keyof Static<typeof GetInput>;
-            for (q in query) url.searchParams.append(q, String(query[q]));
-            const missions: TAKList<Static<typeof Mission>> = await this.api.fetch(url, {
-                method: 'GET',
-                headers: this.#headers(opts),
-            });
-
-            if (!missions.data.length) throw new Err(404, null, `No Mission for Name: ${name}`);
-
-            return missions.data[0];
+        let q: keyof Static<typeof GetInput>;
+        for (q in query) {
+            if (query[q] !== undefined) {
+                url.searchParams.append(q, String(query[q]));
+            }
         }
+
+        const missions: TAKList<Static<typeof Mission>> = await this.api.fetch(url, {
+            method: 'GET',
+            headers: this.#headers(opts),
+        });
+
+        if (!missions.data.length) throw new Err(404, null, `No Mission for Name: ${name}`);
+
+        return missions.data[0];
     }
 
     /**
@@ -713,7 +641,12 @@ export default class {
         if (query.group && Array.isArray(query.group)) query.group = query.group.join(',');
 
         let q: keyof Static<typeof MissionCreateInput>;
-        for (q in query) url.searchParams.append(q, String(query[q]));
+        for (q in query) {
+            if (query[q] !== undefined) {
+                url.searchParams.append(q, String(query[q]));
+            }
+        }
+
         const missions = await this.api.fetch(url, {
             method: 'POST'
         });
@@ -740,7 +673,12 @@ export default class {
             url.searchParams.append('guid', name);
 
             let q: keyof Static<typeof MissionDeleteInput>;
-            for (q in query) url.searchParams.append(q, String(query[q]));
+            for (q in query) {
+                if (query[q] !== undefined) {
+                    url.searchParams.append(q, String(query[q]));
+                }
+            }
+
             return await this.api.fetch(url, {
                 method: 'DELETE',
                 headers: this.#headers(opts),
@@ -749,7 +687,12 @@ export default class {
             const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}`, this.api.url);
 
             let q: keyof Static<typeof MissionDeleteInput>;
-            for (q in query) url.searchParams.append(q, String(query[q]));
+            for (q in query) {
+                if (query[q] !== undefined) {
+                    url.searchParams.append(q, String(query[q]));
+                }
+            }
+
             return await this.api.fetch(url, {
                 method: 'DELETE',
                 headers: this.#headers(opts),

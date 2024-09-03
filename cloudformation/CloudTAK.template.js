@@ -31,10 +31,6 @@ export default cf.merge(
                 Type: 'String',
                 Default: 'prod'
             },
-            MartiAPI: {
-                Type: 'String',
-                Description: 'Base URL of Marti API'
-            },
             HostedURL: {
                 Description: 'URL of domain/subdomain at which the API is hosted',
                 Type: 'String'

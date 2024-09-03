@@ -1,5 +1,4 @@
 process.env.StackName = 'test';
-process.env.MartiAPI = 'https://example.com';
 
 import assert from 'assert';
 import jwt from 'jsonwebtoken';
@@ -227,7 +226,6 @@ export default class Flight {
                 nosinks: true,
                 nocache: true,
                 nometrics: true,
-                local: true
             });
 
             Object.assign(this.config, custom);

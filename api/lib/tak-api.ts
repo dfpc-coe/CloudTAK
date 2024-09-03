@@ -1,4 +1,5 @@
 import FormData from 'form-data';
+import OAuth from './api/oauth.js';
 import Package from './api/package.js';
 import Mission from './api/mission.js';
 import MissionLog from './api/mission-log.js';
@@ -20,6 +21,7 @@ export default class TAKAPI {
     auth: auth.APIAuth;
     url: URL;
     Package: Package;
+    OAuth: OAuth;
     Mission: Mission;
     MissionLog: MissionLog;
     MissionLayer: MissionLayer;
@@ -34,6 +36,7 @@ export default class TAKAPI {
         this.auth = auth;
 
         this.Package = new Package(this);
+        this.OAuth = new OAuth(this);
         this.Export = new Export(this);
         this.Mission = new Mission(this);
         this.MissionLog = new MissionLog(this);
@@ -47,7 +50,7 @@ export default class TAKAPI {
     static async init(url: URL, auth: auth.APIAuth): Promise<TAKAPI> {
         const api = new TAKAPI(url, auth);
 
-        await api.auth.init(api.url);
+        await api.auth.init(api);
 
         return api;
     }

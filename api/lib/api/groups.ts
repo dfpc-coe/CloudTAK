@@ -12,6 +12,9 @@ export const Group = Type.Object({
     description: Type.Optional(Type.String())
 })
 
+export const GroupListInput = Type.Object({
+    useCache: Type.Optional(Type.Boolean())
+})
 
 export default class {
     api: TAKAPI;
@@ -20,25 +23,35 @@ export default class {
         this.api = api;
     }
 
-    async list(query: {
-        useCache?: boolean;
-
-        [key: string]: unknown;
-    }): Promise<TAKList<Static<typeof Group>>> {
+    async list(
+        query: Static<typeof GroupListInput> = {}
+    ): Promise<TAKList<Static<typeof Group>>> {
         const url = new URL(`/Marti/api/groups/all`, this.api.url);
-        for (const q in query) url.searchParams.append(q, String(query[q]));
+
+        let q: keyof Static<typeof GroupListInput>;
+        for (q in query) {
+            if (query[q] !== undefined) {
+                url.searchParams.append(q, String(query[q]));
+            }
+        }
+
         return await this.api.fetch(url, {
             method: 'GET'
         });
     }
 
-    async update(body: Static<typeof Group>[], query: {
-        clientUid?: string;
-
-        [key: string]: unknown;
-    }): Promise<void> {
+    async update(
+        body: Static<typeof Group>[],
+        query: Static<typeof GroupListInput> = {}
+    ): Promise<void> {
         const url = new URL(`/Marti/api/groups/active`, this.api.url);
-        for (const q in query) url.searchParams.append(q, String(query[q]));
+
+        let q: keyof Static<typeof GroupListInput>;
+        for (q in query) {
+            if (query[q] !== undefined) {
+                url.searchParams.append(q, String(query[q]));
+            }
+        }
 
         await this.api.fetch(url, {
             method: 'PUT',
