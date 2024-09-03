@@ -64,6 +64,7 @@ export default {
     },
     props: {
         mission: Object,
+        token: String,
         role: Object
     },
     data: function() {
@@ -80,7 +81,11 @@ export default {
             this.loading = true;
 
             const url = await stdurl(`/api/marti/missions/${this.mission.name}/subscriptions/roles`);
-            this.subscriptions = (await std(url)).data;
+            this.subscriptions = (await std(url, {
+                headers: {
+                    MissionAuthorization: this.token
+                },
+            })).data;
 
             this.loading = false;
         },

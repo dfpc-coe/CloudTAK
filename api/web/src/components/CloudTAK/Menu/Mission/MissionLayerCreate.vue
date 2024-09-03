@@ -90,9 +90,8 @@ export default {
         TablerEnum,
     },
     props: {
-        mission: {
-            type: Object
-        }
+        mission: Object,
+        token: String
     },
     emits: ['layer', 'cancel'],
     data: function() {
@@ -117,7 +116,10 @@ export default {
 
                 const res = await std(url, {
                     method: 'POST',
-                    body: this.layer
+                    body: this.layer,
+                    headers: {
+                        MissionAuthorization: this.token
+                    }
                 });
 
                 this.$emit('layer', res.data[0]);
