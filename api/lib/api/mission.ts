@@ -490,6 +490,8 @@ export default class {
             }
         }
 
+        console.error(opts);
+
         return await this.api.fetch(url, {
             method: 'PUT',
             headers: this.#headers(opts),
@@ -621,8 +623,6 @@ export default class {
             method: 'GET',
             headers: this.#headers(opts),
         });
-
-        console.error(missions);
 
         if (!missions.data.length) throw new Err(404, null, `No Mission for Name: ${name}`);
 
