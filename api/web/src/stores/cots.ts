@@ -99,15 +99,24 @@ export const useCOTStore = defineStore('cots', {
         /**
          * Load Latest CoTs from Mission Sync
          */
-        loadMission: async function(guid: string): Promise<FeatureCollection> {
-            const fc = await std('/api/marti/missions/' + encodeURIComponent(guid) + '/cot') as FeatureCollection;
+        loadMission: async function(guid: string, token?: string): Promise<FeatureCollection> {
+            const fc = await std('/api/marti/missions/' + encodeURIComponent(guid) + '/cot', {
+                headers: {
+                    MissionAuthorization: this.token
+                }
+            }) as FeatureCollection;
+
             for (const feat of fc.features) this.add(feat as Feature, guid);
 
             let sub = this.subscriptions.get(guid)
 
             if (!sub) {
                 sub = {
-                    meta: await std('/api/marti/missions/' + encodeURIComponent(guid)) as Mission,
+                    meta: await std('/api/marti/missions/' + encodeURIComponent(guid), {
+                        headers: {
+                            MissionAuthorization: this.token
+                        }
+                    }) as Mission,
                     cots: new Map()
                 };
 
