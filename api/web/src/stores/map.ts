@@ -325,7 +325,7 @@ export const useMapStore = defineStore('cloudtak', {
 
                     try {
                         // @ts-expect-error Source.setData is not defined
-                        source.setData(await cotStore.loadMission(overlay.mode_id));
+                        source.setData(await cotStore.loadMission(overlay.mode_id, overlay.token));
                     } catch (err) {
                         // TODO: Handle this gracefully
                         // The Mission Sync is either:

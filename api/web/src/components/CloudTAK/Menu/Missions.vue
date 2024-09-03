@@ -198,9 +198,11 @@ export default {
     },
     methods: {
         openMission: async function(mission, usePassword) {
-            if (mission.passwordProtected && usePassword) {
+            if (mission.passwordProtected && this.subscribed.has(mission.guid)) {
+                const o = mapStore.getOverlayByMode('mission', mission.guid);
+                this.$router.push(`/menu/missions/${mission.guid}?token=${encodeURIComponent(o.token)}`);
+            } else if (mission.passwordProtected && usePassword) {
                 const getMission = await this.fetchMission(mission, mission.password);
-
                 this.$router.push(`/menu/missions/${mission.guid}?token=${encodeURIComponent(getMission.token)}`);
             } else if (mission.passwordProtected && mission.password === undefined) {
                 mission.password = '';

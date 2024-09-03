@@ -176,7 +176,7 @@ export default {
                 mapStore.overlays.push(missionOverlay);
 
                 mapStore.map.getSource(String(missionOverlay.id))
-                    .setData(await cotStore.loadMission(this.mission.guid));
+                    .setData(await cotStore.loadMission(this.mission.guid, missionOverlay.token));
             } else if (subscribed === false && overlay) {
                 await mapStore.removeOverlay(overlay);
             }
