@@ -36,6 +36,7 @@ export default class TAKAPI {
         this.auth = auth;
 
         this.Package = new Package(this);
+        this.OAuth = new OAuth(this);
         this.Export = new Export(this);
         this.Mission = new Mission(this);
         this.MissionLog = new MissionLog(this);

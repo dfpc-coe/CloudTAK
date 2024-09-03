@@ -23,7 +23,10 @@ export default class AuthProvider {
     }
 
     async login(username: string, password: string): Promise<string> {
-        const api = await TAKAPI.init(new URL(this.config.server.api), new APIAuthPassword(username, password));
+        const api = await TAKAPI.init(
+            new URL(this.config.server.api),
+            new APIAuthPassword(username, password)
+        );
 
         const contents = await api.OAuth.login({ username, password });
 
@@ -32,8 +35,6 @@ export default class AuthProvider {
             profile = await this.config.models.Profile.from(username);
         } catch (err) {
             if (err instanceof Err && err.name === 'PublicError' && err.status === 404) {
-                const api = await TAKAPI.init(new URL(this.config.server.api), new APIAuthPassword(username, password));
-
                 profile = await this.config.models.Profile.generate({
                     username: username,
                     auth: await api.Credentials.generate()
