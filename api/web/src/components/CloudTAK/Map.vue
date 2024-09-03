@@ -54,7 +54,10 @@
                     background-color: rgba(0, 0, 0, 0.5);
                 '
             >
-                <div class='d-flex align-items-center' style='height: 40px'>
+                <div
+                    class='d-flex align-items-center'
+                    style='height: 40px'
+                >
                     <Status
                         v-if='live_loc'
                         v-tooltip='"Using Live Location"'

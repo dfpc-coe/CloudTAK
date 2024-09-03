@@ -2,10 +2,7 @@ import Config from './config.js';
 import { InferSelectModel } from 'drizzle-orm';
 import Err from '@openaddresses/batch-error';
 import moment from 'moment';
-import fetch from './fetch.js';
-import { CookieJar } from 'tough-cookie';
 import type { Profile } from './schema.js';
-import { CookieAgent } from 'http-cookie-agent/undici';
 import { X509Certificate } from 'crypto';
 import TAKAPI, { APIAuthPassword, APIAuthCertificate } from '../lib/tak-api.js';
 
