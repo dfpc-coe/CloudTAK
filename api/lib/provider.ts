@@ -23,35 +23,9 @@ export default class AuthProvider {
     }
 
     async login(username: string, password: string): Promise<string> {
-        const url = new URL('/oauth/token', this.config.local ? 'http://localhost:5001' : this.config.server.api);
-        url.searchParams.append('grant_type', 'password');
-        url.searchParams.append('username', username);
-        url.searchParams.append('password', password);
+        const api = await TAKAPI.init(new URL(this.config.server.api), new APIAuthPassword(username, password));
 
-        const jar = new CookieJar();
-        const agent = new CookieAgent({ cookies: { jar } });
-
-        const authres = await fetch(url, {
-            method: 'POST',
-            credentials: 'include',
-            dispatcher: agent
-        });
-
-        if (!authres.ok) {
-            throw new Err(500, new Error(`Status: ${authres.status}: ${await authres.text()}`), 'Non-200 Response from Auth Server - Token');
-        }
-
-        const body: any = await authres.json();
-
-        if (body.error === 'invalid_grant' && body.error_description.startsWith('Bad credentials')) {
-            throw new Err(400, null, 'Invalid Username or Password');
-        } else if (body.error || !body.access_token) {
-            throw new Err(500, new Error(body.error_description), 'Unknown Login Error');
-        }
-
-        const split = Buffer.from(body.access_token, 'base64').toString().split('}').map((ext) => { return ext + '}'});
-        if (split.length < 2) throw new Err(500, null, 'Unexpected TAK JWT Format');
-        const contents: { sub: string; aud: string; nbf: number; exp: number; iat: number; } = JSON.parse(split[1]);
+        const contents = await api.OAuth.login({ username, password });
 
         let profile;
         try {

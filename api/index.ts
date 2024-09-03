@@ -113,17 +113,6 @@ export default async function server(config: Config) {
 
     await schema.api();
 
-    if (config.local) {
-        // Mock WebTAK API to allow any username & Password
-        app.get('/oauth/token', (req: Request, res: Response) => {
-            return res.json({
-                access_token: jwt.sign({
-                    user_name: req.params.username
-                }, config.SigningSecret)
-            });
-        });
-    }
-
     await schema.load(
         new URL('./routes/', import.meta.url),
         config,
