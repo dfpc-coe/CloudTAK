@@ -41,7 +41,7 @@ export default class {
         url.searchParams.append('password', query.password);
 
         const authres = await this.api.fetch(url, {
-            method: 'GET'
+            method: 'POST'
         }, true);
 
         const text = await authres.text();
@@ -49,7 +49,7 @@ export default class {
         if (authres.status === 401) {
             throw new Err(400, new Error(text), 'TAK Server reports incorrect Username or Password');
         } else if (!authres.ok) {
-            throw new Err(400, new Error(`Status: ${authres.status}: ${await authres.text()}`), 'Non-200 Response from Auth Server - Token');
+            throw new Err(400, new Error(`Status: ${authres.status}: ${text}`), 'Non-200 Response from Auth Server - Token');
         }
 
         const body: any = JSON.parse(text);
