@@ -66,7 +66,11 @@
                                 <span v-text='mission.name' />
                             </div>
                             <div v-if='mission.password !== undefined' class='d-flex'>
-                                <TablerInput v-model='mission.password' placeholder='Password'/>
+                                <TablerInput
+                                    v-model='mission.password'
+                                    @keyup.enter='openMission(mission, true)'
+                                    placeholder='Password'
+                                />
 
                                 <button @click='openMission(mission, true)' class='btn btn-primary ms-2'>Unlock</button>
                             </div>
