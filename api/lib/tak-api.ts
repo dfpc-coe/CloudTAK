@@ -50,7 +50,7 @@ export default class TAKAPI {
     static async init(url: URL, auth: auth.APIAuth): Promise<TAKAPI> {
         const api = new TAKAPI(url, auth);
 
-        await api.auth.init(api.url);
+        await api.auth.init(api);
 
         return api;
     }
