@@ -1,7 +1,12 @@
 declare module '@openaddresses/cloudfriend' {
-    const partition: string;
-    const accountId: string;
-    const region: string;
+    const accountId: object;
+    const notificationArns: object;
+    const noValue: object;
+    const region: object;
+    const stackId: object;
+    const stackName: object;
+    const partition: object;
+    const urlSuffix: object;
 
     function ref(ref: string): object
     function getAtt(obj: string, att: string): object
