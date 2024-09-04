@@ -24,11 +24,21 @@
             </div>
         </div>
         <div style='min-height: 20vh; margin-bottom: 61px'>
-            <TablerInput
-                v-model='paging.filter'
-                placeholder='Filter...'
-                class='mx-1 my-2'
-            />
+            <div class='row g-0 py-2'>
+                <div class='col-md-8 px-2'>
+                    <TablerInput
+                        v-model='paging.filter'
+                        placeholder='Filter...'
+                    />
+                </div>
+                <div class='col-md-4 px-2'>
+                    <TablerEnum
+                        default='All Types'
+                        :options='["All Types"].concat(list.tasks)'
+                        v-model='paging.task'
+                    />
+                </div>
+            </div>
 
             <TablerLoading
                 v-if='loading'
@@ -99,6 +109,7 @@ import Status from '../Layer/utils/Status.vue';
 import {
     TablerNone,
     TablerInput,
+    TablerEnum,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
@@ -111,6 +122,7 @@ export default {
     components: {
         Status,
         TablerNone,
+        TablerEnum,
         TablerInput,
         TablerLoading,
         IconRefresh,
@@ -125,6 +137,7 @@ export default {
             header: [],
             paging: {
                 filter: '',
+                task: 'All Types',
                 sort: 'name',
                 order: 'asc',
                 limit: 100,
@@ -132,6 +145,7 @@ export default {
             },
             list: {
                 total: 0,
+                tasks: [],
                 items: []
             }
         }
@@ -180,7 +194,14 @@ export default {
             const url = stdurl('/api/layer');
             url.searchParams.append('filter', this.paging.filter);
             url.searchParams.append('limit', this.paging.limit);
+            url.searchParams.append('sort', this.paging.sort);
+            url.searchParams.append('order', this.paging.order);
             url.searchParams.append('page', this.paging.page);
+
+            if (this.paging.task !== 'All Types') {
+                url.searchParams.append('task', this.paging.task);
+            }
+
             this.list = await std(url);
             this.loading = false;
         }

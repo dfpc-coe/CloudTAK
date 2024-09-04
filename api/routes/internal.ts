@@ -25,11 +25,13 @@ export default async function router(schema: Schema, config: Config) {
             order: Default.Order,
             sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(Layer)})),
             filter: Default.Filter,
+            task: Type.Optional(Type.String()),
             data: Type.Optional(Type.Integer({ minimum: 1 })),
             connection: Type.Optional(Type.Integer({ minimum: 1 })),
         }),
         res: Type.Object({
             total: Type.Integer(),
+            tasks: Type.Array(Type.String()),
             status: Type.Object({
                 healthy: Type.Integer(),
                 alarm: Type.Integer(),
@@ -50,6 +52,7 @@ export default async function router(schema: Schema, config: Config) {
                     name ~* ${req.query.filter}
                     AND (${Param(req.query.connection)}::BIGINT IS NULL OR ${Param(req.query.connection)}::BIGINT = layers.connection)
                     AND (${Param(req.query.data)}::BIGINT IS NULL OR ${Param(req.query.data)}::BIGINT = layers.data)
+                    AND (${Param(req.query.task)}::TEXT IS NULL OR Starts_With(layers.task, ${Param(req.query.task)}::TEXT))
                 `
             });
 
@@ -65,6 +68,7 @@ export default async function router(schema: Schema, config: Config) {
             res.json({
                 status,
                 total: list.total,
+                tasks: await config.models.Layer.tasks(),
                 items: list.items.map((layer) => {
                     return {
                         status: alarms.get(layer.id) || 'unknown',
