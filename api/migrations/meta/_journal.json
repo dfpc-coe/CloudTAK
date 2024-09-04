@@ -400,6 +400,20 @@
       "when": 1724682408553,
       "tag": "0056_round_galactus",
       "breakpoints": true
+    },
+    {
+      "idx": 57,
+      "version": "7",
+      "when": 1725402051432,
+      "tag": "0057_stale_rogue",
+      "breakpoints": true
+    },
+    {
+      "idx": 58,
+      "version": "7",
+      "when": 1725402441849,
+      "tag": "0058_left_secret_warriors",
+      "breakpoints": true
     }
   ]
 }

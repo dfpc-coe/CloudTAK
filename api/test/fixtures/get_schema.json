@@ -194,6 +194,11 @@
         "query": true,
         "res": true
     },
+    "PUT /connection/:connectionid/layer/:layerid/ephemeral": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
     "GET /connection/:connectionid/layer/:layerid/query": {
         "body": false,
         "query": true,
