@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v3.19.0 - 2024-09-04
+
+- :tada: Add ephemeral column to Layer table
+
 ### v3.18.0 - 2024-09-03
 
 - Remove use of `MartiAPI` env var in favour of database value
