@@ -52,8 +52,10 @@
                     <div class='table-responsive rounded mx-2 py-2 px-2'>
                         <table class='table card-table table-hover table-vcenter datatable'>
                             <thead>
-                                <th>Key</th>
-                                <th>Value</th>
+                                <tr>
+                                    <th>Key</th>
+                                    <th>Value</th>
+                                </tr>
                             </thead>
                             <tbody class='bg-gray-500'>
                                 <tr
