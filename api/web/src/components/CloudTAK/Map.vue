@@ -281,7 +281,7 @@
                     ><img
                         width='40'
                         height='40'
-                        src='/icons/a-u-G.png'
+                        src='/pngs/a-u-G.png'
                     ></label>
 
                     <input
@@ -301,7 +301,7 @@
                     ><img
                         width='40'
                         height='40'
-                        src='/icons/a-f-G.png'
+                        src='/pngs/a-f-G.png'
                     ></label>
 
                     <input
@@ -321,7 +321,7 @@
                     ><img
                         width='40'
                         height='40'
-                        src='/icons/a-h-G.png'
+                        src='/pngs/a-h-G.png'
                     ></label>
 
                     <input
@@ -341,7 +341,7 @@
                     ><img
                         width='40'
                         height='40'
-                        src='/icons/a-n-G.png'
+                        src='/pngs/a-n-G.png'
                     ></label>
                 </div>
             </div>
