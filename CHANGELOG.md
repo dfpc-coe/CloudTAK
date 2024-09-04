@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v3.20.0 - 2024-09-04
+
+- :tada: `UI` Add the ability to filter by Layer Task type in Admin UI
+
 ### v3.19.0 - 2024-09-04
 
 - :tada: Add ephemeral column to Layer table
