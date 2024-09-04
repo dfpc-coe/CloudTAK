@@ -34,7 +34,7 @@
                 <div class='col-md-4 px-2'>
                     <TablerEnum
                         default='All Types'
-                        :options='["All Types"].concat(list.tasks)'
+                        :options='taskTypes'
                         v-model='paging.task'
                     />
                 </div>
@@ -148,6 +148,11 @@ export default {
                 tasks: [],
                 items: []
             }
+        }
+    },
+    computed: {
+        taskTypes: function() {
+            return ["All Types"].concat(this.list.tasks)
         }
     },
     watch: {

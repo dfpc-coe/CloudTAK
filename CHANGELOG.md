@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v3.20.1 - 2024-09-04
+
+- :bug: `UI` Use computed property on Task List
+
 ### v3.20.0 - 2024-09-04
 
 - :tada: `UI` Add the ability to filter by Layer Task type in Admin UI
