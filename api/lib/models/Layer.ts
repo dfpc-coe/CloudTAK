@@ -48,6 +48,25 @@ export default class LayerModel extends Modeler<typeof Layer> {
         super(pool, Layer);
     }
 
+    async tasks(): Promise<string[]> {
+        const pgres = await this.pool
+            .select({
+                task: Layer.task
+            })
+            .from(Layer)
+
+        if (pgres.length === 0) {
+            return []
+        } else {
+            const taskSet: Set<string> = new Set();
+            for (const t of pgres) {
+                taskSet.add(t.task.replace(/-v\d+\.\d+\.\d+/, ''))
+            }
+
+            return Array.from(taskSet);
+        }
+    }
+
     async augmented_list(query: GenericListInput = {}): Promise<GenericList<Static<typeof AugmentedLayer>>> {
         const order = query.order && query.order === 'desc' ? desc : asc;
         const orderBy = order(query.sort ? this.key(query.sort) : this.requiredPrimaryKey());
