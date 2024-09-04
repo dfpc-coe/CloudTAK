@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v3.20.2 - 2024-09-04
+
+- :bug: `UI` Fix warning about use of THead
+
 ### v3.20.1 - 2024-09-04
 
 - :bug: `UI` Use computed property on Task List
