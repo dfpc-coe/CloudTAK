@@ -200,7 +200,7 @@ export default class COT implements Feature {
             if (!feat.properties['stroke-style']) feat.properties['stroke-style'] = 'solid';
             if (!feat.properties['stroke-width']) feat.properties['stroke-width'] = 3;
 
-            if (!feat.properties['stroke-opacity'] === undefined) {
+            if (feat.properties['stroke-opacity'] === undefined) {
                 feat.properties['stroke-opacity'] = 1;
             }
 

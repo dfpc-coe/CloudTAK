@@ -53,6 +53,7 @@ export const ProfileResponse = Type.Object({
     tak_role: Type.Enum(TAKRole),
     tak_loc: Type.Any(),
     display_stale: Type.String(),
+    display_text: Type.String(),
     display_distance: Type.String(),
     display_elevation: Type.String(),
     display_speed: Type.String()

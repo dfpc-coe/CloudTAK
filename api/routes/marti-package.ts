@@ -162,6 +162,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             if (client && req.body.uids) {
+                if (!cot.raw.event.detail) cot.raw.event.detail = {};
                 cot.raw.event.detail.marti = {
                     dest: req.body.uids.map((uid) => {
                         return { _attributes: { uid: uid } };

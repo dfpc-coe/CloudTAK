@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v3.22.0 - 2024-09-05
+
+- :arrow_up: Update to node-cot@12 to fix type coercion - https://github.com/dfpc-coe/node-CoT/issues/36
+- :rocket: Tighten up accuracy requirements for live location updates
+
 ### v3.21.1 - 2024-09-05
 
 - :bug: `UI` More lenient permission check for location denied

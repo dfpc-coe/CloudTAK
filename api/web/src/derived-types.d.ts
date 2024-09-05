@@ -395,8 +395,8 @@ export interface paths {
                         format?: string;
                         style?: string;
                         type?: string;
-                        bounds: number[];
-                        center: number[];
+                        bounds?: number[];
+                        center?: number[];
                     };
                 };
             };
@@ -1709,6 +1709,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/connection/{:connectionid}/layer/{:layerid}/ephemeral": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Store ephemeral values */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": Record<string, never>;
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/connection/{:connectionid}/layer/{:layerid}/query": {
         parameters: {
             query?: never;
@@ -1849,7 +1889,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort?: "id" | "created" | "updated" | "name" | "priority" | "alarm_period" | "alarm_evals" | "alarm_points" | "alarm_threshold" | "description" | "enabled" | "enabled_styles" | "styles" | "logging" | "stale" | "task" | "connection" | "cron" | "environment" | "config" | "memory" | "timeout" | "data" | "schema";
+                    sort?: "id" | "created" | "updated" | "name" | "priority" | "alarm_period" | "alarm_evals" | "alarm_points" | "alarm_threshold" | "description" | "enabled" | "enabled_styles" | "styles" | "logging" | "stale" | "task" | "connection" | "cron" | "environment" | "ephemeral" | "config" | "memory" | "timeout" | "data" | "schema";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description No Description */
@@ -1999,6 +2039,7 @@ export interface paths {
                                 connection?: number;
                                 cron: string;
                                 environment: unknown;
+                                ephemeral: Record<string, never>;
                                 config: {
                                     timezone?: {
                                         timezone: string;
@@ -2006,7 +2047,7 @@ export interface paths {
                                 };
                                 memory: number;
                                 timeout: number;
-                                data?: number;
+                                data: number | null;
                                 schema: unknown;
                                 priority: "high" | "low" | "off";
                                 alarm_period: number;
@@ -2300,6 +2341,7 @@ export interface paths {
                             connection?: number;
                             cron: string;
                             environment: unknown;
+                            ephemeral: Record<string, never>;
                             config: {
                                 timezone?: {
                                     timezone: string;
@@ -2307,7 +2349,7 @@ export interface paths {
                             };
                             memory: number;
                             timeout: number;
-                            data?: number;
+                            data: number | null;
                             schema: unknown;
                             priority: "high" | "low" | "off";
                             alarm_period: number;
@@ -2473,6 +2515,7 @@ export interface paths {
                             connection?: number;
                             cron: string;
                             environment: unknown;
+                            ephemeral: Record<string, never>;
                             config: {
                                 timezone?: {
                                     timezone: string;
@@ -2480,7 +2523,7 @@ export interface paths {
                             };
                             memory: number;
                             timeout: number;
-                            data?: number;
+                            data: number | null;
                             schema: unknown;
                             priority: "high" | "low" | "off";
                             alarm_period: number;
@@ -2801,6 +2844,7 @@ export interface paths {
                             connection?: number;
                             cron: string;
                             environment: unknown;
+                            ephemeral: Record<string, never>;
                             config: {
                                 timezone?: {
                                     timezone: string;
@@ -2808,7 +2852,7 @@ export interface paths {
                             };
                             memory: number;
                             timeout: number;
-                            data?: number;
+                            data: number | null;
                             schema: unknown;
                             priority: "high" | "low" | "off";
                             alarm_period: number;
@@ -4259,11 +4303,11 @@ export interface paths {
                                 status: string;
                                 error: string | null;
                                 batch: string | null;
-                                result: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                                result: unknown;
                                 username: string;
                                 mode: string;
                                 mode_id: string | null;
-                                config: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                                config: unknown;
                             }[];
                         };
                     };
@@ -4331,11 +4375,11 @@ export interface paths {
                             status: string;
                             error: string | null;
                             batch: string | null;
-                            result: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                            result: unknown;
                             username: string;
                             mode: string;
                             mode_id: string | null;
-                            config: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                            config: unknown;
                         };
                     };
                 };
@@ -4378,11 +4422,11 @@ export interface paths {
                             status: string;
                             error: string | null;
                             batch: string | null;
-                            result: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                            result: unknown;
                             username: string;
                             mode: string;
                             mode_id: string | null;
-                            config: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                            config: unknown;
                         };
                     };
                 };
@@ -4412,11 +4456,11 @@ export interface paths {
                             status: string;
                             error: string | null;
                             batch: string | null;
-                            result: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                            result: unknown;
                             username: string;
                             mode: string;
                             mode_id: string | null;
-                            config: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                            config: unknown;
                         };
                     };
                 };
@@ -4481,11 +4525,11 @@ export interface paths {
                             status: string;
                             error: string | null;
                             batch: string | null;
-                            result: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                            result: unknown;
                             username: string;
                             mode: string;
                             mode_id: string | null;
-                            config: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                            config: unknown;
                         };
                     };
                 };
@@ -4551,11 +4595,11 @@ export interface paths {
                             status: string;
                             error: string | null;
                             batch: string | null;
-                            result: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                            result: unknown;
                             username: string;
                             mode: string;
                             mode_id: string | null;
-                            config: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                            config: unknown;
                         };
                     };
                 };
@@ -5076,9 +5120,9 @@ export interface paths {
         /** Get Spriteset JSON for CoT types */
         get: {
             parameters: {
-                query?: {
+                query: {
                     /** @description No Description */
-                    iconset?: string;
+                    iconset: string;
                     /** @description No Description */
                     scope?: "server" | "user";
                     /** @description No Description */
@@ -5117,9 +5161,9 @@ export interface paths {
         /** Return a sprite sheet for CoT Types */
         get: {
             parameters: {
-                query?: {
+                query: {
                     /** @description No Description */
-                    iconset?: string;
+                    iconset: string;
                     /** @description No Description */
                     scope?: "server" | "user";
                     /** @description No Description */
@@ -5166,9 +5210,11 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort?: "id" | "created" | "updated" | "name" | "priority" | "alarm_period" | "alarm_evals" | "alarm_points" | "alarm_threshold" | "description" | "enabled" | "enabled_styles" | "styles" | "logging" | "stale" | "task" | "connection" | "cron" | "environment" | "config" | "memory" | "timeout" | "data" | "schema";
+                    sort?: "id" | "created" | "updated" | "name" | "priority" | "alarm_period" | "alarm_evals" | "alarm_points" | "alarm_threshold" | "description" | "enabled" | "enabled_styles" | "styles" | "logging" | "stale" | "task" | "connection" | "cron" | "environment" | "ephemeral" | "config" | "memory" | "timeout" | "data" | "schema";
                     /** @description Filter results by a human readable name field */
                     filter: string;
+                    /** @description No Description */
+                    task?: string;
                     /** @description No Description */
                     data?: number;
                     /** @description No Description */
@@ -5188,6 +5234,7 @@ export interface paths {
                     content: {
                         "application/json": {
                             total: number;
+                            tasks: string[];
                             status: {
                                 healthy: number;
                                 alarm: number;
@@ -5318,6 +5365,7 @@ export interface paths {
                                 connection?: number;
                                 cron: string;
                                 environment: unknown;
+                                ephemeral: Record<string, never>;
                                 config: {
                                     timezone?: {
                                         timezone: string;
@@ -5325,7 +5373,7 @@ export interface paths {
                                 };
                                 memory: number;
                                 timeout: number;
-                                data?: number;
+                                data: number | null;
                                 schema: unknown;
                                 priority: "high" | "low" | "off";
                                 alarm_period: number;
@@ -5498,6 +5546,7 @@ export interface paths {
                             connection?: number;
                             cron: string;
                             environment: unknown;
+                            ephemeral: Record<string, never>;
                             config: {
                                 timezone?: {
                                     timezone: string;
@@ -5505,7 +5554,7 @@ export interface paths {
                             };
                             memory: number;
                             timeout: number;
-                            data?: number;
+                            data: number | null;
                             schema: unknown;
                             priority: "high" | "low" | "off";
                             alarm_period: number;
@@ -5578,7 +5627,7 @@ export interface paths {
                                 stale: number;
                                 task: string;
                                 cron: string;
-                                config: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                                config: unknown;
                                 memory: number;
                                 timeout: number;
                                 alarm_period: number;
@@ -5635,7 +5684,7 @@ export interface paths {
                             stale: number;
                             task: string;
                             cron: string;
-                            config: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                            config: unknown;
                             memory: number;
                             timeout: number;
                             alarm_period: number;
@@ -5691,7 +5740,7 @@ export interface paths {
                             stale: number;
                             task: string;
                             cron: string;
-                            config: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                            config: unknown;
                             memory: number;
                             timeout: number;
                             alarm_period: number;
@@ -5773,7 +5822,7 @@ export interface paths {
                             stale: number;
                             task: string;
                             cron: string;
-                            config: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                            config: unknown;
                             memory: number;
                             timeout: number;
                             alarm_period: number;
@@ -6315,7 +6364,7 @@ export interface paths {
             parameters: {
                 query?: {
                     /** @description No Description */
-                    password?: boolean;
+                    password?: string;
                     /** @description No Description */
                     changes?: boolean;
                     /** @description No Description */
@@ -7354,7 +7403,7 @@ export interface paths {
                                 created: string;
                                 updated: string;
                                 type: string;
-                                styles: ((string | number | boolean | null) | unknown[] | Record<string, never>) | null;
+                                styles: unknown | null;
                                 url: string;
                             }[];
                         };
@@ -7394,7 +7443,7 @@ export interface paths {
                             created: string;
                             updated: string;
                             type: string;
-                            styles: ((string | number | boolean | null) | unknown[] | Record<string, never>) | null;
+                            styles: unknown | null;
                             url: string;
                         };
                     };
@@ -7436,7 +7485,7 @@ export interface paths {
                             created: string;
                             updated: string;
                             type: string;
-                            styles: ((string | number | boolean | null) | unknown[] | Record<string, never>) | null;
+                            styles: unknown | null;
                             url: string;
                         };
                     };
@@ -7479,7 +7528,7 @@ export interface paths {
                             created: string;
                             updated: string;
                             type: string;
-                            styles: ((string | number | boolean | null) | unknown[] | Record<string, never>) | null;
+                            styles: unknown | null;
                             url: string;
                         };
                     };
@@ -8689,7 +8738,7 @@ export interface paths {
                                 opacity: number;
                                 visible: boolean;
                                 token: string | null;
-                                styles: ((string | number | boolean | null) | unknown[] | Record<string, never>) | null;
+                                styles: unknown | null;
                                 mode: string;
                                 mode_id: string | null;
                                 url: string;
@@ -8705,7 +8754,7 @@ export interface paths {
                                 opacity: number;
                                 visible: boolean;
                                 token: string | null;
-                                styles: ((string | number | boolean | null) | unknown[] | Record<string, never>) | null;
+                                styles: unknown | null;
                                 mode: string;
                                 mode_id: string | null;
                                 url: string;
@@ -8733,6 +8782,7 @@ export interface paths {
                         visible?: boolean;
                         mode: string;
                         mode_id?: string;
+                        token?: string;
                         url: string;
                         name: string;
                     };
@@ -8756,7 +8806,7 @@ export interface paths {
                             opacity: number;
                             visible: boolean;
                             token: string | null;
-                            styles: ((string | number | boolean | null) | unknown[] | Record<string, never>) | null;
+                            styles: unknown | null;
                             mode: string;
                             mode_id: string | null;
                             url: string;
@@ -8831,7 +8881,7 @@ export interface paths {
                             opacity: number;
                             visible: boolean;
                             token: string | null;
-                            styles: ((string | number | boolean | null) | unknown[] | Record<string, never>) | null;
+                            styles: unknown | null;
                             mode: string;
                             mode_id: string | null;
                             url: string;
@@ -8884,7 +8934,7 @@ export interface paths {
                             opacity: number;
                             visible: boolean;
                             token: string | null;
-                            styles: ((string | number | boolean | null) | unknown[] | Record<string, never>) | null;
+                            styles: unknown | null;
                             mode: string;
                             mode_id: string | null;
                             url: string;
@@ -8931,6 +8981,7 @@ export interface paths {
                             tak_role: "Team Member" | "Team Lead" | "HQ" | "Sniper" | "Medic" | "Forward Observer" | "RTO" | "K9";
                             tak_loc: unknown;
                             display_stale: string;
+                            display_text: string;
                             display_distance: string;
                             display_elevation: string;
                             display_speed: string;
@@ -8959,6 +9010,7 @@ export interface paths {
                         display_distance?: "meter" | "kilometer" | "mile";
                         display_elevation?: "meter" | "feet";
                         display_speed?: "m/s" | "km/h" | "mi/h";
+                        display_text?: "Small" | "Medium" | "Large";
                         tak_callsign?: string;
                         tak_group?: "White" | "Yellow" | "Orange" | "Magenta" | "Red" | "Maroon" | "Purple" | "Dark Blue" | "Blue" | "Cyan" | "Teal" | "Green" | "Dark Green" | "Brown";
                         tak_role?: "Team Member" | "Team Lead" | "HQ" | "Sniper" | "Medic" | "Forward Observer" | "RTO" | "K9";
@@ -8989,6 +9041,7 @@ export interface paths {
                             tak_role: "Team Member" | "Team Lead" | "HQ" | "Sniper" | "Medic" | "Forward Observer" | "RTO" | "K9";
                             tak_loc: unknown;
                             display_stale: string;
+                            display_text: string;
                             display_distance: string;
                             display_elevation: string;
                             display_speed: string;
@@ -9840,7 +9893,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort?: "id" | "name" | "username" | "last_login" | "auth" | "created" | "updated" | "phone" | "tak_callsign" | "tak_group" | "tak_role" | "tak_loc" | "display_stale" | "display_distance" | "display_elevation" | "display_speed" | "system_admin" | "agency_admin";
+                    sort?: "id" | "name" | "username" | "last_login" | "auth" | "created" | "updated" | "phone" | "tak_callsign" | "tak_group" | "tak_role" | "tak_loc" | "display_stale" | "display_distance" | "display_elevation" | "display_speed" | "display_text" | "system_admin" | "agency_admin";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                 };
@@ -9871,6 +9924,7 @@ export interface paths {
                                 tak_role: "Team Member" | "Team Lead" | "HQ" | "Sniper" | "Medic" | "Forward Observer" | "RTO" | "K9";
                                 tak_loc: unknown;
                                 display_stale: string;
+                                display_text: string;
                                 display_distance: string;
                                 display_elevation: string;
                                 display_speed: string;
@@ -9924,6 +9978,7 @@ export interface paths {
                             tak_role: "Team Member" | "Team Lead" | "HQ" | "Sniper" | "Medic" | "Forward Observer" | "RTO" | "K9";
                             tak_loc: unknown;
                             display_stale: string;
+                            display_text: string;
                             display_distance: string;
                             display_elevation: string;
                             display_speed: string;

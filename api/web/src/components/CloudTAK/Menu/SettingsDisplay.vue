@@ -20,6 +20,17 @@
             </div>
             <div class='col-12'>
                 <TablerEnum
+                    v-model='profile.display_text'
+                    label='Text Size'
+                    :options='[
+                        "Small",
+                        "Medium",
+                        "Large"
+                    ]'
+                />
+            </div>
+            <div class='col-12'>
+                <TablerEnum
                     v-model='profile.display_distance'
                     label='Distance Unit'
                     :options='[
