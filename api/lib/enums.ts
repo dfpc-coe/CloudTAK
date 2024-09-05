@@ -4,6 +4,12 @@ export enum Layer_Priority {
     OFF = 'off'
 }
 
+export enum Profile_Text {
+    Small = 'Small',
+    Medium = 'Medium',
+    Large = 'Large'
+}
+
 export enum Profile_Stale {
     Immediate = 'Immediate',
     TenMinutes = '10 Minutes',
