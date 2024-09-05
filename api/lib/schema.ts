@@ -5,7 +5,7 @@ import { geometry, GeometryType } from '@openaddresses/batch-generic';
 import { ConnectionAuth } from './connection-config.js';
 import { TAKGroup, TAKRole } from  './api/types.js';
 import { Layer_Config } from './models/Layer.js';
-import { Layer_Priority, Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance } from  './enums.js';
+import { Layer_Priority, Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Text } from  './enums.js';
 import { json, boolean, numeric, integer, timestamp, pgTable, serial, varchar, text, unique, index } from 'drizzle-orm/pg-core';
 
 /** Internal Tables for Postgis for use with drizzle-kit push:pg */
@@ -36,6 +36,7 @@ export const Profile = pgTable('profile', {
     display_distance: text('display_distance').$type<Profile_Distance>().notNull().default(Profile_Distance.MILE),
     display_elevation: text('display_elevation').$type<Profile_Elevation>().notNull().default(Profile_Elevation.FEET),
     display_speed: text('display_speed').$type<Profile_Speed>().notNull().default(Profile_Speed.MPH),
+    display_text: text('display_text').$type<Profile_Text>().notNull().default(Profile_Text.Medium),
     system_admin: boolean('system_admin').notNull().default(false),
     agency_admin: json('agency_admin').notNull().$type<Array<number>>().default([])
 });
