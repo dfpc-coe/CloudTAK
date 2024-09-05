@@ -33,9 +33,9 @@
                 </div>
                 <div class='col-md-4 px-2'>
                     <TablerEnum
+                        v-model='paging.task'
                         default='All Types'
                         :options='taskTypes'
-                        v-model='paging.task'
                     />
                 </div>
             </div>
