@@ -65,16 +65,27 @@
                             <div class='col-12'>
                                 <span v-text='mission.name' />
                             </div>
-                            <div v-if='mission.password !== undefined' class='d-flex'>
+                            <div
+                                v-if='mission.password !== undefined'
+                                class='d-flex'
+                            >
                                 <TablerInput
                                     v-model='mission.password'
-                                    @keyup.enter='openMission(mission, true)'
                                     placeholder='Password'
+                                    @keyup.enter='openMission(mission, true)'
                                 />
 
-                                <button @click='openMission(mission, true)' class='btn btn-primary ms-2'>Unlock</button>
+                                <button
+                                    class='btn btn-primary ms-2'
+                                    @click='openMission(mission, true)'
+                                >
+                                    Unlock
+                                </button>
                             </div>
-                            <div v-else class='col-12'>
+                            <div
+                                v-else
+                                class='col-12'
+                            >
                                 <span
                                     class='text-secondary'
                                     v-text='mission.createTime.replace(/T.*/, "")'
