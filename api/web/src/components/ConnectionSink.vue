@@ -107,7 +107,7 @@
 <script>
 import { std } from '/src/std.ts';
 import PageFooter from './PageFooter.vue';
-import timeDiff from '../timediff.js';
+import timeDiff from '../timediff.ts';
 import {
     IconRefresh,
     IconSettings

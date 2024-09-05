@@ -181,7 +181,7 @@ import {
     IconLock,
     IconSettings
 } from '@tabler/icons-vue';
-import timeDiff from '../../timediff.js';
+import timeDiff from '../../timediff.ts';
 
 export default {
     name: 'AdminServer',

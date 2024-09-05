@@ -99,7 +99,7 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import Share from '../util/Share.vue';
-import timeDiff from '../../../timediff.js';
+import timeDiff from '../../../timediff.ts';
 import {
     TablerAlert,
     TablerDelete,
