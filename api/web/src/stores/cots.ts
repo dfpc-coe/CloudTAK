@@ -419,12 +419,11 @@ export const useCOTStore = defineStore('cots', {
 
                     // TODO condition update depending on diff results
                     this.pending.set(String(feat.id), exists);
+                    await exists.save();
                 } else {
-                    this.pending.set(String(feat.id), new COT(feat));
-                }
-
-                if (feat.properties && feat.properties.archived) {
-                    await std('/api/profile/feature', { method: 'PUT', body: feat })
+                    const cot = new COT(feat);
+                    this.pending.set(String(feat.id), cot);
+                    await cot.save();
                 }
             }
         }

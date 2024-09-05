@@ -120,10 +120,14 @@ export default {
                 } else {
                     return `${this.modelValue[1]}, ${this.modelValue[0]}`;
                 }
+            } else if (this.mode === 'dms') {
+                return `${this.asDMS(this.modelValue[1])}, ${this.asDMS(this.modelValue[0])}`;
+            } else if (this.mode === 'mgrs') {
+                return this.asMGRS();
+            } else if (this.mode === 'utm') {
+                return this.asUTM(this.modelValue[1], this.modelValue[0]);
             }
-            else if (this.mode === 'dms') return `${this.asDMS(this.modelValue[1])}, ${this.asDMS(this.modelValue[0])}`;
-            else if (this.mode === 'mgrs') return this.asMGRS();
-            else if (this.mode === 'utm') return this.asUTM(this.modelValue[1], this.modelValue[0]);
+
             return 'UNKNOWN'
         }
     },
