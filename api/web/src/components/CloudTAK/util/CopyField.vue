@@ -2,6 +2,7 @@
     <div
         class='bg-gray-500 rounded-top py-2 px-2 position-relative text-truncate'
     >
+        <slot/>
         <span v-text='text' />
         <CopyButton
             :text='text'
