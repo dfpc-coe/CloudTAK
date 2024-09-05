@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v3.23.0 - 2024-09-05
+
+- :rocket: Automatically add archived tag to ProfileFeature objects as it is implied when they are saved
+- :tada: Add relative time to CoT View panel and basic switcher from relative <=> absolute
+- :rocket: Convert timediff to TS and add support for future relativity, doesn't that sound fancier than it is.
+
 ### v3.22.0 - 2024-09-05
 
 - :arrow_up: Update to node-cot@12 to fix type coercion - https://github.com/dfpc-coe/node-CoT/issues/36
