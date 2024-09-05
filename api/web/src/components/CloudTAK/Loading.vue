@@ -18,7 +18,7 @@
     </TablerModal>
 </template>
 
-<script>
+<script lang='ts'>
 import {
     TablerModal,
     TablerLoading

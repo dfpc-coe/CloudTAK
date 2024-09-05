@@ -8,8 +8,8 @@
             class='col-12 d-flex py-2 px-2'
         >
             <IconMapPin
-                :size='40'
-                :stroke='1'
+                size='40'
+                stroke='1'
             />
 
             <div class='mx-2'>
@@ -37,7 +37,7 @@
     </div>
 </template>
 
-<script>
+<script lang='ts'>
 import {
     IconMapPin,
 } from '@tabler/icons-vue';

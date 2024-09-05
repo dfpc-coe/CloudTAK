@@ -74,7 +74,7 @@ export default class COT implements Feature {
         }
     }
 
-    as_feature(): GeoJSONFeature<GeoJSONGeometry, Record<string, unknown>> {
+    as_feature(): Feature {
         return {
             id: this.id,
             type: this.type,
