@@ -240,110 +240,9 @@
                     width: 380px;
                 '
             >
-                <div
-                    class='btn-group'
-                    role='group'
-                >
-                    <input
-                        id='point-default'
-                        type='radio'
-                        class='btn-check'
-                        name='point-type'
-                        autocomplete='off'
-                        :checked='drawModePoint === "u-d-p"'
-                        @click='drawModePoint = "u-d-p"'
-                    >
-                    <label
-                        v-tooltip='"Custom Point"'
-                        for='point-default'
-                        type='button'
-                        class='btn'
-                    ><IconPoint
-                        title='Point Icon'
-                        :size='40'
-                        :stroke='1'
-                    /></label>
-
-                    <input
-                        id='point-unknown'
-                        type='radio'
-                        class='btn-check'
-                        name='point-type'
-                        autocomplete='off'
-                        :checked='drawModePoint === "a-u-G"'
-                        @click='drawModePoint = "a-u-G"'
-                    >
-                    <label
-                        v-tooltip='"Unknown Point"'
-                        for='point-unknown'
-                        type='button'
-                        class='btn'
-                    ><img
-                        width='40'
-                        height='40'
-                        src='/pngs/a-u-G.png'
-                    ></label>
-
-                    <input
-                        id='point-friendly'
-                        type='radio'
-                        class='btn-check'
-                        name='point-type'
-                        autocomplete='off'
-                        :checked='drawModePoint === "a-f-G"'
-                        @click='drawModePoint = "a-f-G"'
-                    >
-                    <label
-                        v-tooltip='"Friendly Point"'
-                        for='point-friendly'
-                        type='button'
-                        class='btn'
-                    ><img
-                        width='40'
-                        height='40'
-                        src='/pngs/a-f-G.png'
-                    ></label>
-
-                    <input
-                        id='point-hostile'
-                        type='radio'
-                        class='btn-check'
-                        name='point-type'
-                        autocomplete='off'
-                        :checked='drawModePoint === "a-h-G"'
-                        @click='drawModePoint = "a-h-G"'
-                    >
-                    <label
-                        v-tooltip='"Hostile Point"'
-                        for='point-hostile'
-                        type='button'
-                        class='btn'
-                    ><img
-                        width='40'
-                        height='40'
-                        src='/pngs/a-h-G.png'
-                    ></label>
-
-                    <input
-                        id='point-neutral'
-                        type='radio'
-                        class='btn-check'
-                        name='point-type'
-                        autocomplete='off'
-                        :checked='drawModePoint === "a-n-G"'
-                        @click='drawModePoint = "a-n-G"'
-                    >
-                    <label
-                        v-tooltip='"Neutral Point"'
-                        for='point-neutral'
-                        type='button'
-                        class='btn'
-                    ><img
-                        width='40'
-                        height='40'
-                        src='/pngs/a-n-G.png'
-                    ></label>
-                </div>
+                <CoordinateType
+                    v-model='drawModePoint'
+                />
             </div>
 
             <div
@@ -531,6 +430,7 @@
 import WarnChannels from './util/WarnChannels.vue';
 import Status from '../util/Status.vue';
 import CoordInput from './CoordInput.vue';
+import CoordinateType from './util/CoordinateType.vue';
 import { std, stdurl } from '/src/std.ts';
 import CloudTAKFeatView from './FeatView.vue';
 import {
@@ -1066,6 +966,7 @@ export default {
         Status,
         CoordInput,
         WarnChannels,
+        CoordinateType,
         SideMenu,
         Loading,
         SelectFeats,

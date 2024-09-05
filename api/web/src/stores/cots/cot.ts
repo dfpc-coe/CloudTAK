@@ -1,3 +1,4 @@
+import { std } from '../../std.ts';
 import { bbox } from '@turf/bbox'
 import { useMapStore } from '../map.ts';
 import pointOnFeature from '@turf/point-on-feature';
@@ -34,10 +35,10 @@ export default class COT implements Feature {
     geometry: Feature["geometry"];
 
     constructor(feat: Feature) {
-        this.id = feat.id;
-        this.type = feat.type;
-        this.path = feat.path;
-        this.properties = feat["properties"];
+        this.id = feat.id || crypto.randomUUID();
+        this.type = feat.type || 'Feature';
+        this.path = feat.path || '/';
+        this.properties = feat["properties"] || {};
         this.geometry = feat["geometry"];
     }
 
@@ -59,6 +60,28 @@ export default class COT implements Feature {
         this.geometry = feat["geometry"];
 
         return changed;
+    }
+
+    /**
+     * Attempt to save the CoT to the database if necessary
+     */
+    async save(): Promise<void> {
+        if (this.properties.archived) {
+            await std('/api/profile/feature', {
+                method: 'PUT',
+                body: this.as_feature()
+            })
+        }
+    }
+
+    as_feature(): GeoJSONFeature<GeoJSONGeometry, Record<string, unknown>> {
+        return {
+            id: this.id,
+            type: this.type,
+            path: this.path,
+            properties: this.properties,
+            geometry: this.geometry
+        }
     }
 
     /**
@@ -88,7 +111,7 @@ export default class COT implements Feature {
     }
 
     bounds(): GeoJSONBBox {
-        return bbox(this.geometry)    
+        return bbox(this.geometry)
     }
 
     /**
