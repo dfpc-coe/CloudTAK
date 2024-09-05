@@ -1,6 +1,7 @@
 <template>
     <div
         class='position-absolute end-0 bottom-0 text-white'
+        role='menubar'
         :class='{
             "bg-dark": !compact
         }'
@@ -36,8 +37,8 @@
                     style='height: calc(100% - 106px)'
                 >
                     <div
-                        role='button'
-                        class='cursor-pointer col-12 d-flex align-items-center'
+                        role='menuitem'
+                        class='cursor-pointer col-12 d-flex align-items-center justify-content-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
                             "py-1 px-2 hover-button": compact
@@ -49,9 +50,9 @@
                                 content: "Display Settings",
                                 placement: "left",
                             }'
+                            :tabindex='compact ? 0 : undefined'
                             title='Open Settings Panel'
-                            :class='{ "mx-2": compact }'
-                            :size='compact ? 40 : 32'
+                            :size='32'
                             :stroke='1'
                         />
                         <span
@@ -61,6 +62,7 @@
                         >Settings</span>
                     </div>
                     <div
+                        role='menuitem'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
@@ -73,6 +75,7 @@
                                 content: "Overlays",
                                 placement: "left",
                             }'
+                            :tabindex='compact ? 0 : undefined'
                             title='Open Overlays Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
@@ -85,6 +88,7 @@
                         >Overlays</span>
                     </div>
                     <div
+                        role='menuitem'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
@@ -97,6 +101,7 @@
                                 content: "Contacts",
                                 placement: "left",
                             }'
+                            :tabindex='compact ? 0 : undefined'
                             title='Open Contacts Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
@@ -109,6 +114,7 @@
                         >Contacts</span>
                     </div>
                     <div
+                        role='menuitem'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
@@ -121,6 +127,7 @@
                                 content: "Basemaps",
                                 placement: "left",
                             }'
+                            :tabindex='compact ? 0 : undefined'
                             title='Open Basemaps Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
@@ -133,6 +140,7 @@
                         >BaseMaps</span>
                     </div>
                     <div
+                        role='menuitem'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
@@ -145,6 +153,7 @@
                                 content: "Data Sync",
                                 placement: "left",
                             }'
+                            :tabindex='compact ? 0 : undefined'
                             title='Open Data Syncs Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
@@ -157,6 +166,7 @@
                         >Data Sync</span>
                     </div>
                     <div
+                        role='menuitem'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
@@ -169,6 +179,7 @@
                                 content: "Data Packages",
                                 placement: "left",
                             }'
+                            :tabindex='compact ? 0 : undefined'
                             title='Open Data Packages Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
@@ -181,6 +192,7 @@
                         >Data Package</span>
                     </div>
                     <div
+                        role='menuitem'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
@@ -193,6 +205,7 @@
                                 content: "Channels",
                                 placement: "left",
                             }'
+                            :tabindex='compact ? 0 : undefined'
                             title='Open Channels Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
@@ -205,6 +218,7 @@
                         >Channels</span>
                     </div>
                     <div
+                        role='menuitem'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
@@ -217,6 +231,7 @@
                                 content: "Videos",
                                 placement: "left",
                             }'
+                            :tabindex='compact ? 0 : undefined'
                             title='Open Videos Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
@@ -229,6 +244,7 @@
                         >Videos</span>
                     </div>
                     <div
+                        role='menuitem'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
@@ -241,6 +257,7 @@
                                 content: "Chats",
                                 placement: "left",
                             }'
+                            :tabindex='compact ? 0 : undefined'
                             title='Open Chats Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
@@ -253,6 +270,7 @@
                         >Chats</span>
                     </div>
                     <div
+                        role='menuitem'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
@@ -265,6 +283,7 @@
                                 content: "Your Files",
                                 placement: "left",
                             }'
+                            :tabindex='compact ? 0 : undefined'
                             title='Open Files Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
@@ -277,6 +296,7 @@
                         >Uploaded Files</span>
                     </div>
                     <div
+                        role='menuitem'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
@@ -289,6 +309,7 @@
                                 content: "Imports",
                                 placement: "left",
                             }'
+                            :tabindex='compact ? 0 : undefined'
                             title='Open Imports Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
@@ -301,6 +322,7 @@
                         >Imports</span>
                     </div>
                     <div
+                        role='menuitem'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
@@ -313,6 +335,7 @@
                                 content: "Iconsets",
                                 placement: "left",
                             }'
+                            :tabindex='compact ? 0 : undefined'
                             title='Open Iconsets Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
@@ -327,6 +350,7 @@
 
                     <div
                         v-if='profile.system_admin || profile.agency_admin.length'
+                        role='menuitem'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
@@ -339,6 +363,7 @@
                                 content: "Connections",
                                 placement: "left",
                             }'
+                            :tabindex='compact ? 0 : undefined'
                             title='Open Connections Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
@@ -358,6 +383,7 @@
                     </div>
                     <div
                         v-if='profile.system_admin'
+                        role='menuitem'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
@@ -370,6 +396,7 @@
                                 content: "Server Settings",
                                 placement: "left",
                             }'
+                            :tabindex='compact ? 0 : undefined'
                             title='Open Server Admin Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
@@ -426,6 +453,7 @@
                     >
                         <IconLogout
                             v-tooltip='"Logout"'
+                            tabindex='0'
                             title='Logout'
                             :size='32'
                             :stroke='1'

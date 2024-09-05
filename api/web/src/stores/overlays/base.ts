@@ -160,9 +160,10 @@ export default class Overlay {
         }
 
         const profileStore = useProfileStore();
+        const display_text = profileStore.profile ? profileStore.profile.display_text : 'Medium';
         let size = 8
-        if (profileStore.profile.display_text === 'Small') size = 4;
-        if (profileStore.profile.display_text === 'Large') size = 16;
+        if (display_text === 'Small') size = 4;
+        if (display_text === 'Large') size = 16;
 
         if (!opts.layers && this.type === 'raster') {
             opts.layers =  [{

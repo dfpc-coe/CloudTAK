@@ -12,32 +12,6 @@
         <Loading v-if='loading.main || !isLoaded' />
 
         <template v-if='isLoaded && !loading.main'>
-            <div
-                v-if='mode === "Default"'
-                class='position-absolute top-0 end-0 text-white py-2'
-                style='z-index: 1; width: 60px; background-color: rgba(0, 0, 0, 0.5);'
-            >
-                <IconMenu2
-                    v-if='noMenuShown'
-                    tabindex='0'
-                    role='button'
-                    title='Open Menu Button'
-                    :size='40'
-                    :stroke='1'
-                    class='mx-2 cursor-pointer hover-button'
-                    @click='$router.push("/menu")'
-                />
-                <IconX
-                    v-else
-                    tabindex='0'
-                    title='Close Menu Button'
-                    :size='40'
-                    :stroke='1'
-                    class='mx-2 cursor-pointer bg-dark'
-                    @click='closeAllMenu'
-                />
-            </div>
-
             <WarnChannels
                 v-if='warnChannels'
                 @close='warnChannels = false'
@@ -137,6 +111,7 @@
                     >
                         <IconCircleArrowUp
                             v-tooltip='"Snap to North"'
+                            tabindex='0'
                             :alt='`Map Rotated to ${humanBearing}`'
                             :transform='`rotate(${360 - bearing})`'
                             :size='40'
@@ -372,6 +347,33 @@
                     </template>
                 </TablerDropdown>
             </div>
+
+            <div
+                v-if='mode === "Default"'
+                class='position-absolute top-0 end-0 text-white py-2'
+                style='z-index: 1; width: 60px; background-color: rgba(0, 0, 0, 0.5);'
+            >
+                <IconMenu2
+                    v-if='noMenuShown'
+                    tabindex='0'
+                    role='button'
+                    title='Open Menu Button'
+                    :size='40'
+                    :stroke='1'
+                    class='mx-2 cursor-pointer hover-button'
+                    @click='$router.push("/menu")'
+                />
+                <IconX
+                    v-else
+                    tabindex='0'
+                    title='Close Menu Button'
+                    :size='40'
+                    :stroke='1'
+                    class='mx-2 cursor-pointer bg-dark'
+                    @click='closeAllMenu'
+                />
+            </div>
+
 
             <SideMenu
                 v-if='
