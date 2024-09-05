@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v3.21.1 - 2024-09-05
+
+- :bug: `UI` More lenient permission check for location denied
+
 ### v3.21.0 - 2024-09-04
 
 - :bug: `UI` Fix Coordinate Input error due to lack of ID generation
