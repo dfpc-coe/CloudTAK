@@ -728,7 +728,7 @@ export default {
                         center: [position.coords.longitude, position.coords.latitude],
                         zoom: 14
                     });
-                } else if (position.coords.accuracy <= 500) {
+                } else if (position.coords.accuracy <= 50) {
                     this.live_loc = {
                         type: 'Feature',
                         properties: {
