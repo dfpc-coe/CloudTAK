@@ -20,7 +20,7 @@
         ><IconPoint
             title='Point Icon'
             :size='size'
-            :stroke='1'
+            stroke='1'
         /></label>
 
         <input
@@ -105,7 +105,7 @@
     </div>
 </template>
 
-<script>
+<script lang='ts'>
 import {
     IconPoint
 } from '@tabler/icons-vue';
