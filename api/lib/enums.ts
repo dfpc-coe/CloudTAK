@@ -5,10 +5,9 @@ export enum Layer_Priority {
 }
 
 export enum Profile_Text {
-    Small = 's',
-    Medium = 'm',
-    Large = 'l',
-    ExtraLarge = 'xl',
+    Small = 'Small',
+    Medium = 'Medium',
+    Large = 'Large'
 }
 
 export enum Profile_Stale {
