@@ -414,6 +414,13 @@
       "when": 1725402441849,
       "tag": "0058_left_secret_warriors",
       "breakpoints": true
+    },
+    {
+      "idx": 59,
+      "version": "7",
+      "when": 1725562212544,
+      "tag": "0059_gorgeous_vector",
+      "breakpoints": true
     }
   ]
 }

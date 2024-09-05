@@ -7,6 +7,8 @@ import mapgl from 'maplibre-gl'
 import type { LayerSpecification } from 'maplibre-gl'
 import cotStyles from './styles.ts'
 import { std, stdurl } from '../../std.js';
+import { useProfileStore } from '../profile.js';
+
 
 /**
  * @class
@@ -157,6 +159,12 @@ export default class Overlay {
             }
         }
 
+        const profileStore = useProfileStore();
+        const display_text = profileStore.profile ? profileStore.profile.display_text : 'Medium';
+        let size = 8
+        if (display_text === 'Small') size = 4;
+        if (display_text === 'Large') size = 16;
+
         if (!opts.layers && this.type === 'raster') {
             opts.layers =  [{
                 'id': String(this.id),
@@ -168,7 +176,7 @@ export default class Overlay {
                 sourceLayer: 'out',
                 group: false,
                 icons: false,
-                labels: true
+                labels: { size }
             });
 
             if (opts.clickable === undefined)  {
@@ -180,7 +188,7 @@ export default class Overlay {
             opts.layers = cotStyles(String(this.id), {
                 group: this.mode !== "mission",
                 icons: true,
-                labels: true
+                labels: { size }
             });
 
             if (opts.clickable === undefined)  {

@@ -10,14 +10,11 @@ import type {
 export default function styles(id: string, opts: {
     sourceLayer?: string;
     group?: boolean;
-    labels?: boolean;
+    labels?: {
+        size: number
+    };
     icons?: boolean;
-} = {
-    sourceLayer: undefined,
-    group: false,
-    labels: false,
-    icons: false
-}): Array<LayerSpecification> {
+} = {}): Array<LayerSpecification> {
     const styles: Array<LayerSpecification> = [];
 
     const poly: FillLayerSpecification = {
@@ -202,8 +199,8 @@ export default function styles(id: string, opts: {
                     'interpolate',
                     ['linear'],
                     ['zoom'],
-                    8, 8,
-                    15, 15
+                    8, opts.labels.size,
+                    15, opts.labels.size + 7
                 ],
                 'text-offset': [0, 2],
                 'text-font': ['Open Sans Bold'],
