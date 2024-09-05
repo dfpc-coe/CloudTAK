@@ -174,12 +174,10 @@
 
                 <div
                     v-if='feat.properties.contact && feat.properties.contact.phone'
-                    class='col-12 px-2 pb-2'
+                    class='pt-2'
                 >
-                    <label class='subheader'>Phone</label>
-                    <div
-                        class='bg-gray-500 rounded mx-2 px-2 py-2'
-                        v-text='phone(feat.properties.contact.phone)'
+                    <Phone
+                        :phone='feat.properties.contact.phone'
                     />
                 </div>
             </div>
@@ -356,10 +354,10 @@ import Share from './util/Share.vue';
 import CoTStyle from './util/CoTStyle.vue';
 import Coordinate from './util/Coordinate.vue';
 import Course from './util/Course.vue';
+import Phone from './util/Phone.vue';
 import Speed from './util/Speed.vue';
 import Elevation from './util/Elevation.vue';
 import Attachments from './util/Attachments.vue';
-import phone from 'phone';
 import {
     IconX,
     IconAmbulance,
@@ -479,17 +477,6 @@ export default {
 
             this.feat.properties.attachments.push(hash)
         },
-        phone: function(number) {
-            const p = phone(number);
-
-            if (!p.isValid) return number;
-
-            if (p.countryCode === '+1') {
-                return `${p.phoneNumber.slice(0, 2)} (${p.phoneNumber.slice(2, 5)}) ${p.phoneNumber.slice(5, 8)}-${p.phoneNumber.slice(8, 12)}`;
-            } else {
-                return p;
-            }
-        },
         updateStyle: async function() {
             if (this.feat.properties.archived) {
                 await cotStore.add(this.feat);
@@ -532,6 +519,7 @@ export default {
         Elevation,
         Attachments,
         Speed,
+        Phone,
         Course,
         Share,
         Coordinate,
