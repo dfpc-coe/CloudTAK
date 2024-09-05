@@ -744,7 +744,7 @@ export default {
                     this.setYou(this.live_loc);
                 }
             }, (err) => {
-                if (err.message === 'User denied geolocation prompt') {
+                if (err.message.toLowerCase().includes('denied geolocation')) {
                     this.live_loc_denied = true;
                 } else if (
                     err.message !== 'Position unavailable'
