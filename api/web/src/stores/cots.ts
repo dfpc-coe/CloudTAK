@@ -385,8 +385,6 @@ export const useCOTStore = defineStore('cots', {
          * Add a CoT GeoJSON to the store and modify props to meet MapLibre style requirements
          */
         add: async function(feat: Feature, mission_guid?: string) {
-            feat = COT.style(feat);
-
             mission_guid = mission_guid || this.subscriptionPending.get(feat.id);
 
             if (mission_guid)  {
