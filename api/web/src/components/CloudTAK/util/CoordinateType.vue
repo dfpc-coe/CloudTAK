@@ -19,7 +19,7 @@
         class='btn'
     ><IconPoint
         title='Point Icon'
-        :size='40'
+        :size='size'
         :stroke='1'
     /></label>
 
@@ -38,8 +38,8 @@
         type='button'
         class='btn'
     ><img
-        width='40'
-        height='40'
+        :width='size'
+        :height='size'
         src='/pngs/a-u-G.png'
     ></label>
 
@@ -58,8 +58,8 @@
         type='button'
         class='btn'
     ><img
-        width='40'
-        height='40'
+        :width='size'
+        :height='size'
         src='/pngs/a-f-G.png'
     ></label>
 
@@ -78,8 +78,8 @@
         type='button'
         class='btn'
     ><img
-        width='40'
-        height='40'
+        :width='size'
+        :height='size'
         src='/pngs/a-h-G.png'
     ></label>
 
@@ -98,8 +98,8 @@
         type='button'
         class='btn'
     ><img
-        width='40'
-        height='40'
+        :width='size'
+        :height='size'
         src='/pngs/a-n-G.png'
     ></label>
 </div>
@@ -115,6 +115,10 @@ export default {
         modelValue: {
             type: String,
             required: true,
+        },
+        size: {
+            type: Number,
+            default: 40
         }
     },
     emits: [

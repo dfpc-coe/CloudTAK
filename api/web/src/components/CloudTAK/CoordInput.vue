@@ -20,6 +20,13 @@
                 :modes='["dd"]'
                 @submit='submitPoint'
             />
+            <Div class='d-flex justify-content-center'>
+                <CoordinateType
+                    class='pt-3'
+                    :size='24'
+                    v-model='type'
+                />
+            </div>
             <button
                 class='btn btn-primary w-100 mt-3'
                 @click='submitPoint'
@@ -32,6 +39,7 @@
 
 <script>
 import Coordinate from './util/Coordinate.vue';
+import CoordinateType from './util/CoordinateType.vue';
 import {
     TablerInput,
 } from '@tak-ps/vue-tabler';
@@ -44,6 +52,7 @@ export default {
     name: 'CoordInput',
     components: {
         TablerInput,
+        CoordinateType,
         Coordinate
     },
     emits: [
@@ -54,6 +63,7 @@ export default {
 
         return {
             name: '',
+            type: 'u-d-p',
             coordinates: [
                 Math.round(center.lng * 1000000) / 1000000,
                 Math.round(center.lat * 1000000) / 1000000,
@@ -65,7 +75,7 @@ export default {
             await cotStore.add({
                 type: 'Feature',
                 properties: {
-                    type: 'u-d-p',
+                    type: this.type,
                     how: 'h-g-i-g-o',
                     color: '#00FF00',
                     archived: true,
