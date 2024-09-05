@@ -413,7 +413,7 @@ export const useCOTStore = defineStore('cots', {
 
                 if (is_mission_cot) return;
 
-                let exists = this.cots.get(feat.id);
+                const exists = this.cots.get(feat.id);
                 if (exists) {
                     exists.update(feat)
 

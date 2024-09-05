@@ -22,9 +22,9 @@
             />
             <Div class='d-flex justify-content-center'>
                 <CoordinateType
+                    v-model='type'
                     class='pt-3'
                     :size='24'
-                    v-model='type'
                 />
             </div>
             <button
