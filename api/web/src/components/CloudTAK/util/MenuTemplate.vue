@@ -10,6 +10,8 @@
             <div class='modal-header px-0 mx-2'>
                 <IconCircleX
                     v-if='backType === "close"'
+                    role='button'
+                    tabindex='0'
                     :size='32'
                     :stroke='1'
                     class='cursor-pointer'
@@ -17,6 +19,8 @@
                 />
                 <IconCircleArrowLeft
                     v-if='backType === "back"'
+                    role='button'
+                    tabindex='0'
                     :size='32'
                     :stroke='1'
                     class='cursor-pointer'
