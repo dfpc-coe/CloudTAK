@@ -95,7 +95,7 @@ import {
     IconPlus,
     IconRefresh,
 } from '@tabler/icons-vue';
-import timeDiff from '../../../timediff.js';
+import timeDiff from '../../../timediff.ts';
 import ChannelInfo from '../util/ChannelInfo.vue';
 import NoChannelsInfo from '../util/NoChannelsInfo.vue';
 import Upload from '../../util/Upload.vue';

@@ -94,7 +94,7 @@ import {
 } from '@tabler/icons-vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import Status from '../../util/Status.vue';
-import timeDiff from '../../../timediff.js';
+import timeDiff from '../../../timediff.ts';
 import Upload from '../../util/Upload.vue';
 
 export default {

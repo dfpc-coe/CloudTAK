@@ -124,7 +124,7 @@ import {
 import MenuTemplate from '../util/MenuTemplate.vue';
 import ConnectionStatus from './../../Connection/Status.vue';
 import AgencyBadge from './../../Connection/AgencyBadge.vue';
-import timeDiff from '../../../timediff.js';
+import timeDiff from '../../../timediff.ts';
 
 export default {
     name: 'CloudTAKConnections',

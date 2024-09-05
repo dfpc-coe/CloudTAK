@@ -110,7 +110,7 @@ import {
     IconRefresh,
 } from '@tabler/icons-vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
-import timeDiff from '../../../timediff.js';
+import timeDiff from '../../../timediff.ts';
 import { useMapStore } from '/src/stores/map.ts';
 import Overlay from '/src/stores/overlays/base.ts';
 const mapStore = useMapStore();
