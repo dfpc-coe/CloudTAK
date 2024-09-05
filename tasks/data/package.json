@@ -16,7 +16,7 @@
         "@aws-sdk/client-s3": "^3.303.0",
         "@aws-sdk/lib-storage": "^3.456.0",
         "@tmcw/togeojson": "^5.5.0",
-        "@xmldom/xmldom": "^0.8.6",
+        "@xmldom/xmldom": "^0.9.2",
         "geojson-precision": "^1.0.0",
         "jsonwebtoken": "^9.0.0",
         "node-stream-zip": "^1.15.0",

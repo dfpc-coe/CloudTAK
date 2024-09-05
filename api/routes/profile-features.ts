@@ -43,6 +43,9 @@ export default async function router(schema: Schema, config: Config) {
             return res.json({
                 total: list.total,
                 items: list.items.map((feat) => {
+                    // Legacy features
+                    feat.properties.archived = true;
+
                     return {
                         id: feat.id,
                         path: feat.path,
@@ -109,6 +112,9 @@ export default async function router(schema: Schema, config: Config) {
                 if (coords.length === 2) coords.push(0);
                 return coords
             })
+
+            // Saving to database implies archived
+            req.body.properties.archived = true;
 
             const feat: Static<typeof ProfileFeature> = {
                 type: 'Feature',
@@ -180,6 +186,9 @@ export default async function router(schema: Schema, config: Config) {
             const feat = await config.models.ProfileFeature.from(sql`
                 id = ${req.params.id} AND username = ${user.email}
             `);
+
+            // Legacy features
+            feat.properties.archived = true;
 
             return res.json({
                 type: 'Feature',

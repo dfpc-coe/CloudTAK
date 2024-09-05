@@ -40,7 +40,7 @@
                     </span>
                     <div class='col-12'>
                         <TablerInput
-                            v-if='isUserDrawn'
+                            v-if='feat.properties.archived'
                             v-model='feat.properties.callsign'
                         />
                         <div
@@ -231,7 +231,13 @@
 
 
             <div class='col-12 pb-2'>
-                <label class='subheader mx-3'>Times</label>
+                <div class='d-flex mx-3'>
+                    <label class='subheader'>Times</label>
+                    <div class='ms-auto cursor-pointer text-blue subheader'>
+                        <span v-if='time === "relative"' @click='time = "absolute"'>Absolute</span>
+                        <span v-if='time === "absolute"' @click='time = "relative"'>Relative</span>
+                    </div>
+                </div>
                 <div class='table-responsive rounded mx-2 py-2 px-2'>
                     <table class='table card-table table-hover table-vcenter datatable'>
                         <thead>
@@ -240,17 +246,24 @@
                         </thead>
                         <tbody class='bg-gray-500'>
                             <tr>
-                                <td>Time</td><td v-text='feat.properties.time' />
+                                <td>Time</td><td v-text='timediff(feat.properties.time)' />
                             </tr>
                             <tr>
-                                <td>Start</td><td v-text='feat.properties.start' />
+                                <td>Start</td><td v-text='timediff(feat.properties.start)' />
                             </tr>
                             <tr>
-                                <td>Stale</td><td v-text='feat.properties.stale' />
+                                <td>Stale</td><td v-text='timediff(feat.properties.stale)' />
                             </tr>
                         </tbody>
                     </table>
                 </div>
+
+                <TablerToggle
+                    v-if='isArchivable'
+                    label='Archived'
+                    class='mx-2'
+                    v-model='feat.properties.archived'
+                />
             </div>
 
             <div
@@ -277,12 +290,11 @@
                 </div>
             </div>
 
-            <template v-if='isUserDrawn'>
-                <CoTStyle
-                    :key='feat.id'
-                    v-model='feat'
-                />
-            </template>
+            <CoTStyle
+                v-if='feat.properties.archived'
+                :key='feat.id'
+                v-model='feat'
+            />
 
             <div
                 v-if='feat.properties.takv && feat.properties.takv && Object.keys(feat.properties.takv).length'
@@ -336,6 +348,7 @@ const mapStore = useMapStore();
 import {
     TablerNone,
     TablerInput,
+    TablerToggle,
     TablerDelete,
     TablerMarkdown
 } from '@tak-ps/vue-tabler';
@@ -358,6 +371,7 @@ import {
     IconBattery3,
     IconBattery4
 } from '@tabler/icons-vue';
+import timediff from '/src/timediff.ts';
 import { std } from '/src/std.ts';
 import { useCOTStore } from '/src/stores/cots.ts';
 const cotStore = useCOTStore();
@@ -371,7 +385,9 @@ export default {
             mission: false,
             type: null,
             mode: 'default',
-            icon: null
+            icon: null,
+
+            time: 'relative',
         }
 
         const { feat, mission } = this.findCOT();
@@ -402,9 +418,8 @@ export default {
     },
     computed: {
         ...mapState(useProfileStore, ['profile']),
-        isUserDrawn: function() {
-            if (!this.feat) return false;
-            return this.feat.properties.type.toLowerCase().startsWith("u-d");
+        isArchivable: function() {
+            return !this.feat.properties.group;
         },
         center: function() {
             if (!this.feat) return [0,0];
@@ -424,6 +439,13 @@ export default {
         }
     },
     methods: {
+        timediff: function(date) {
+            if (this.time === 'relative') {
+                return timediff(date);
+            } else {
+                return date;
+            }
+        },
         findCOT: function() {
             const base = {
                 mission: null,
@@ -469,7 +491,7 @@ export default {
             }
         },
         updateStyle: async function() {
-            if (this.isUserDrawn) {
+            if (this.feat.properties.archived) {
                 await cotStore.add(this.feat);
             }
         },
@@ -516,6 +538,7 @@ export default {
         TablerNone,
         TablerInput,
         TablerMarkdown,
+        TablerToggle,
         TablerDelete,
         IconAmbulance,
         IconBattery1,

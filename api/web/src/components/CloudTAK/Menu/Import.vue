@@ -111,7 +111,7 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import Status from '../../util/Status.vue';
-import timeDiff from '../../../timediff.js';
+import timeDiff from '../../../timediff.ts';
 import {
     TablerNone,
     TablerAlert,
