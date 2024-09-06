@@ -49,3 +49,4 @@ RUN npm install
 #ENTRYPOINT ["/usr/local/bin/npx", "aws-lambda-ric"]
 #CMD ["app.handler"]
 
+CMD ["npm", "start"]

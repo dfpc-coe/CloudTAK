@@ -35,17 +35,25 @@ export default class COT implements Feature {
     geometry: Feature["geometry"];
 
     constructor(feat: Feature) {
+        feat = COT.style(feat);
+
         this.id = feat.id || crypto.randomUUID();
         this.type = feat.type || 'Feature';
         this.path = feat.path || '/';
         this.properties = feat["properties"] || {};
         this.geometry = feat["geometry"];
+
+        if (!this.properties.archived) {
+            this.properties.archived = false
+        }
     }
 
     /**
      * Update the COT and return a boolean as to whether the COT needs to be re-rendered
      */
     update(feat: Feature): boolean {
+        feat = COT.style(feat);
+
         let changed = false;
         for (const prop of RENDERED_PROPERTIES) {
             if (this.properties[prop] !== feat.properties[prop]) {
