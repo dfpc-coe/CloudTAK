@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v3.24.0 - 2024-09-06
+
+- :rocket: `UI` Add Phone Component
+
 ### v3.23.0 - 2024-09-05
 
 - :rocket: Automatically add archived tag to ProfileFeature objects as it is implied when they are saved
