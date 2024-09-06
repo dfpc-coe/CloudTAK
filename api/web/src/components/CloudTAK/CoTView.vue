@@ -232,8 +232,14 @@
                 <div class='d-flex mx-3'>
                     <label class='subheader'>Times</label>
                     <div class='ms-auto cursor-pointer text-blue subheader'>
-                        <span v-if='time === "relative"' @click='time = "absolute"'>Absolute</span>
-                        <span v-if='time === "absolute"' @click='time = "relative"'>Relative</span>
+                        <span
+                            v-if='time === "relative"'
+                            @click='time = "absolute"'
+                        >Absolute</span>
+                        <span
+                            v-if='time === "absolute"'
+                            @click='time = "relative"'
+                        >Relative</span>
                     </div>
                 </div>
                 <div class='table-responsive rounded mx-2 py-2 px-2'>
@@ -258,9 +264,9 @@
 
                 <TablerToggle
                     v-if='isArchivable'
+                    v-model='feat.properties.archived'
                     label='Archived'
                     class='mx-2'
-                    v-model='feat.properties.archived'
                 />
             </div>
 
