@@ -10,7 +10,7 @@
                 <img
                     src='/logo.png'
                     alt='Agency Logo'
-                    height='150'
+                    style='height: 150px;'
                 >
             </div>
             <TablerLoading desc='Loading Map State' />
