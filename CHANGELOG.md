@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v3.25.0 - 2024-09-06
+
+- :rocket: `API` Initial support for routes
+
 ### v3.24.0 - 2024-09-06
 
 - :rocket: `UI` Add Phone Component
