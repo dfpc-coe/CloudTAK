@@ -99,7 +99,7 @@ export default {
                 DomainName: cf.join(['tiles.', cf.ref('HostedURL')]),
                 RegionalCertificateArn: cf.join(['arn:', cf.partition, ':acm:', cf.region, ':', cf.accountId, ':certificate/', cf.ref('SSLCertificateIdentifier')]),
                 EndpointConfiguration: {
-                    Types: [ 'REGIONAL' ]
+                    Types: ['REGIONAL']
                 }
             }
         },
