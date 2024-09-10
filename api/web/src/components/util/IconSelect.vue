@@ -219,12 +219,16 @@ export default {
                 await this.Iconlists();
             },
         },
-        modelValue: function() {
-            if (this.modelValue) this.fetch();
+        modelValue: async function() {
+            if (this.modelValue && this.modelValue.includes(":")) {
+                await this.fetch();
+            }
         }
     },
     mounted: async function() {
-        if (this.modelValue) await this.fetch();
+        if (this.modelValue && this.modelValue.includes(":")) {
+            await this.fetch();
+        }
         await this.Iconlistsets();
         await this.Iconlists();
     },
