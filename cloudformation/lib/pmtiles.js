@@ -193,7 +193,7 @@ export default {
     Outputs: {
         PMTilesAPI: {
             Description: 'PMTiles API',
-            Value: cf.join(['https://tiles.', cf.ref('HostedURL')])
+            Value: cf.join(['https://tiles.', cf.ref('HostedURL')]),
             Export: {
                 Name: cf.join(['https://tiles.', cf.ref('HostedURL')])
             }
