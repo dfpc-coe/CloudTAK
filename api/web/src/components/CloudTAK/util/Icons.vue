@@ -151,7 +151,10 @@ export default {
         }
     },
     mounted: async function() {
-        await this.fetchList();
+        // If the icon has a `:` it is part of an iconset, otherwise it is derived from the type
+        if (this.iconset.includes(':')) {
+            await this.fetchList();
+        }
     },
     methods: {
         iconurl: function(icon) {
