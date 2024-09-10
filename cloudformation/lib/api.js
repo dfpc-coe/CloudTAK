@@ -415,6 +415,10 @@ export default {
                         { Name: 'SubnetPublicB', Value: cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-subnet-public-b'])) },
                         { Name: 'MediaSecurityGroup', Value: cf.ref('MediaSecurityGroup') }
                     ],
+                    RestartPolicy: {
+                        Enabled: true,
+                        RestartAttemptPeriod: 300
+                    },
                     LogConfiguration: {
                         LogDriver: 'awslogs',
                         Options: {
