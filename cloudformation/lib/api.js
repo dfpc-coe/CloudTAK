@@ -408,7 +408,6 @@ export default {
                         { Name: 'StackName', Value: cf.stackName },
                         { Name: 'ASSET_BUCKET', Value: cf.ref('AssetBucket') },
                         { Name: 'API_URL', Value: cf.join(['https://', cf.ref('HostedURL')]) },
-                        { Name: 'PMTILES_URL', Value: cf.join(['https://', cf.ref('PMTilesLambdaAPI'), '.execute-api.', cf.region, '.amazonaws.com']) },
                         { Name: 'AWS_DEFAULT_REGION', Value: cf.region },
                         { Name: 'VpcId', Value: cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-vpc'])) },
                         { Name: 'SubnetPublicA', Value: cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-subnet-public-a'])) },

@@ -125,7 +125,6 @@ export default class Config {
         } else {
             if (!process.env.StackName) throw new Error('StackName env must be set');
             if (!process.env.API_URL) throw new Error('API_URL env must be set');
-            if (!process.env.PMTILES_URL) throw new Error('PMTILES_URL env must be set');
             if (!process.env.ASSET_BUCKET) throw new Error('ASSET_BUCKET env must be set');
 
             HookURL = process.env.HookURL;
@@ -163,7 +162,7 @@ export default class Config {
             nosinks: (args.nosinks || false),
             nocache: (args.nocache || false),
             TileBaseURL: process.env.TileBaseURL ? new URL(process.env.TileBaseURL) : new URL('./data-dev/zipcodes.tilebase', import.meta.url),
-            PMTILES_URL: process.env.PMTILES_URL || 'http://localhost:5001',
+            PMTILES_URL: new URL(API_URL).host === 'localhost' ? 'http://localhost:5001' : `https://tiles.${new URL(API_URL).host}`,
             StackName: process.env.StackName,
             wsClients: new Map(),
             server, SigningSecret, API_URL, DynamoDB, Bucket, pg, models, HookURL
