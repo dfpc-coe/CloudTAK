@@ -407,7 +407,7 @@ export default {
                         { Name: 'SigningSecret', Value: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/secret:SecretString::AWSCURRENT}}') },
                         { Name: 'StackName', Value: cf.stackName },
                         { Name: 'ASSET_BUCKET', Value: cf.ref('AssetBucket') },
-                        { Name: 'API_URL', Value: cf.ref('HostedURL') },
+                        { Name: 'API_URL', Value: cf.join(['https://', cf.ref('HostedURL')]) },
                         { Name: 'PMTILES_URL', Value: cf.join(['https://', cf.ref('PMTilesLambdaAPI'), '.execute-api.', cf.region, '.amazonaws.com']) },
                         { Name: 'AWS_DEFAULT_REGION', Value: cf.region },
                         { Name: 'VpcId', Value: cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-vpc'])) },
@@ -492,7 +492,6 @@ export default {
                     }]
                 },
                 Path: '/',
-                Policies: [],
                 ManagedPolicyArns: [
                     cf.join(['arn:', cf.partition, ':iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'])
                 ]
@@ -509,7 +508,7 @@ export default {
             Export: {
                 Name: cf.join([cf.stackName, '-hosted'])
             },
-            Value: cf.ref('HostedURL')
+            Value: cf.join(['https://', cf.ref('HostedURL')])
         },
         ETLRole: {
             Description: 'ETL Lambda Role',

@@ -93,6 +93,23 @@ export default {
                 }]
             }
         },
+        PMTilesApiDomain: {
+            Type: 'AWS::ApiGateway::DomainName',
+            Properties: {
+                DomainName: cf.join(['tiles.', cf.ref('HostedURL')]),
+                RegionalCertificateArn: cf.join(['arn:', cf.partition, ':acm:', cf.region, ':', cf.accountId, ':certificate/', cf.ref('SSLCertificateIdentifier')]),
+                EndpointConfiguration: {
+                    Types: [ 'REGIONAL' ]
+                }
+            }
+        },
+        PMTilesApiMap: {
+            Type: 'AWS::ApiGateway::BasePathMapping',
+            Properties: {
+                DomainName: cf.ref('PMTilesApiDomain'),
+                RestApiId: cf.ref('PMTilesLambdaAPI')
+            }
+        },
         PMTilesLambdaAPI: {
             Type: 'AWS::ApiGateway::RestApi',
             Properties: {
@@ -114,6 +131,7 @@ export default {
             Type: 'AWS::ApiGateway::Deployment',
             DependsOn: ['PMTilesLambdaAPIResourceGET'],
             Properties: {
+                Description: cf.stackName,
                 RestApiId: cf.ref('PMTilesLambdaAPI')
             }
         },
