@@ -7,7 +7,7 @@
             >
                 <img
                     src='/logo.png'
-                    height='150'
+                    style='height: 150px;'
                 >
             </div>
             <h2 class='h2 text-center mb-2'>

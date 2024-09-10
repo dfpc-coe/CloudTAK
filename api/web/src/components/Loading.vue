@@ -13,7 +13,7 @@
                                     <img
                                         alt='Agency Logo'
                                         src='/logo.png'
-                                        height='150'
+                                        style='height: 150px;'
                                     >
                                 </div>
                                 <TablerLoading desc='Loading CloudTAK' />
