@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v3.25.1 - 2024-09-09
+
+- :bug: `UI` Fix logo size in login/loading
+- :rocket: `API` Add additional security headers
+
 ### v3.25.0 - 2024-09-06
 
 - :rocket: `API` Initial support for routes
