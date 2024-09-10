@@ -32,11 +32,11 @@ export default cf.merge(
                 Default: 'prod'
             },
             HostedURL: {
-                Description: 'URL of domain/subdomain at which the API is hosted',
+                Description: 'URL of domain/subdomain at which the API is hosted ie: "map.example.com"',
                 Type: 'String'
             },
             SSLCertificateIdentifier: {
-                Description: 'ACM SSL Certificate for HTTP Protocol',
+                Description: 'ACM SSL Certificate for top level wildcard: *.example.com and second level *.map.example.com',
                 Type: 'String'
             }
         }
