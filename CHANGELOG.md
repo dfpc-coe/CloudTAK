@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v3.27.0 - 2024-09-10
+
+- :rocket: `DevOps` Add additional security headers
+
 ### v3.26.1 - 2024-09-10
 
 - :rocket: `DevOps` Remove `forever` in favour of new ECS Restart Policy
