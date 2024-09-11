@@ -30,7 +30,7 @@
                 }'
             >
                 <div
-                    class='text-truncate'
+                    class='text-truncate user-select-none'
                     v-text='contact.callsign'
                 />
                 <div

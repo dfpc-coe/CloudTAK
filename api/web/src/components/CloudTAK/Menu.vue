@@ -29,7 +29,7 @@
                         <div class='modal-title'>
                             Sidebar
                         </div>
-                        <div/>
+                        <div />
                     </div>
                 </div>
                 <div
