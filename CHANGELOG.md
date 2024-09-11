@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v3.28.0 - 2024-09-11
+
+- :tada: `DevOps` CF Parameter `HostedURL` must omit protocol - ie: map.cotak.gov not https://map.cotak.gov
+- :tada: `DevOps` CF Parameter SSL Certificate must support two wildcards - ie `*.map.cotak.gov` and `*.cotak.gov` to ensure PMTiles Task traffic is over https
+- :rocket: `DevOps` Disable HTTP PMTiles API
+- :bug: `UI` Fix Settings Icon in Menu
+
 ### v3.27.0 - 2024-09-10
 
 - :rocket: `DevOps` Add additional security headers
