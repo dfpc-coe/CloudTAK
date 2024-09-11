@@ -12,6 +12,14 @@
 
 ### Pending Release
 
+### v3.29.0 - 2024-09-11
+
+- :bug: `UI` Fix search box offset - https://github.com/dfpc-coe/CloudTAK/issues/330
+- :rocket: `UI` Disabled Text Selection on Multiple Feature Component - https://github.com/dfpc-coe/CloudTAK/issues/331
+- :rocket: `UI` Multiple feature component now uses `Feature` component for rendering list
+- :rocket: `UI` Show icon for Import Type - https://github.com/dfpc-coe/CloudTAK/issues/329
+- :rocket: `UI` Show attachment images that are png or jpg inline - https://github.com/dfpc-coe/CloudTAK/issues/259
+
 ### v3.28.0 - 2024-09-11
 
 - :tada: `DevOps` CF Parameter `HostedURL` must omit protocol - ie: map.cotak.gov not https://map.cotak.gov
