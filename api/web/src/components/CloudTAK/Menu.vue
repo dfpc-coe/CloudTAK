@@ -29,7 +29,7 @@
                         <div class='modal-title'>
                             Sidebar
                         </div>
-                        <div />
+                        <div/>
                     </div>
                 </div>
                 <div
@@ -38,7 +38,7 @@
                 >
                     <div
                         role='menuitem'
-                        class='cursor-pointer col-12 d-flex align-items-center justify-content-center'
+                        class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
                             "py-1 px-2 hover-button": compact
@@ -52,6 +52,7 @@
                             }'
                             :tabindex='compact ? 0 : undefined'
                             title='Open Settings Panel'
+                            :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
                         />

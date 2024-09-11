@@ -48,6 +48,15 @@ The following are dependencies which need to be created:
 | `coe-ecr-etl-tasks`   | ECR Repository for storing Task Images - [repo](https://github.com/dfpc-coe/ecr)  |
 | `coe-elb-access`      | Centralized ELB Logs - [repo](https://github.com/dfpc-coe/elb-logs) |
 
+An AWS ACM certificate must also be generated that covers the subdomain that CloudTAK is deployed to as well
+as the second level wildcard. Where in the example below CloudTAK is deployed to ie: `map.example.com` The second
+level wildcard will be used for serving tiles, currently configured to be `tiles.map.example.com`
+
+IE:
+```
+*.example.com
+*.map.example.com
+```
 
 ### Optional Dependencies that can be deployed at any time
 

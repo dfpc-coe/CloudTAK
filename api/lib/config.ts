@@ -115,21 +115,30 @@ export default class Config {
             process.env.AWS_DEFAULT_REGION = 'us-east-1';
         }
 
-        let SigningSecret, API_URL, DynamoDB, Bucket, HookURL;
+        let SigningSecret, API_URL, PMTILES_URL, DynamoDB, Bucket, HookURL;
         if (!process.env.StackName || process.env.StackName === 'test') {
             process.env.StackName = 'test';
 
             SigningSecret = 'coe-wildland-fire';
             API_URL = 'http://localhost:5001';
             Bucket = process.env.ASSET_BUCKET;
+            PMTILES_URL = 'http://localhost:5001';
         } else {
             if (!process.env.StackName) throw new Error('StackName env must be set');
             if (!process.env.API_URL) throw new Error('API_URL env must be set');
-            if (!process.env.PMTILES_URL) throw new Error('PMTILES_URL env must be set');
             if (!process.env.ASSET_BUCKET) throw new Error('ASSET_BUCKET env must be set');
 
             HookURL = process.env.HookURL;
-            API_URL = process.env.API_URL;
+
+            const apiUrl = new URL(`http://${process.env.API_URL}`);
+            if (apiUrl.hostname === 'localhost') {
+                API_URL = `http://${process.env.API_URL}`;
+                PMTILES_URL = 'http://localhost:5001'
+            } else {
+                PMTILES_URL = `https://tiles.${process.env.API_URL}`;
+                API_URL = String(`https://${process.env.API_URL}`);
+            }
+
             Bucket = process.env.ASSET_BUCKET;
             DynamoDB = process.env.StackName;
             SigningSecret = await Config.fetchSigningSecret(process.env.StackName);
@@ -163,10 +172,9 @@ export default class Config {
             nosinks: (args.nosinks || false),
             nocache: (args.nocache || false),
             TileBaseURL: process.env.TileBaseURL ? new URL(process.env.TileBaseURL) : new URL('./data-dev/zipcodes.tilebase', import.meta.url),
-            PMTILES_URL: process.env.PMTILES_URL || 'http://localhost:5001',
             StackName: process.env.StackName,
             wsClients: new Map(),
-            server, SigningSecret, API_URL, DynamoDB, Bucket, pg, models, HookURL
+            server, SigningSecret, API_URL, DynamoDB, Bucket, pg, models, HookURL, PMTILES_URL
         });
 
         if (!config.silent) {

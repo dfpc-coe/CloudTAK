@@ -15,7 +15,7 @@ export default {
                     },
                     Environment: [
                         { Name: 'StackName', Value: cf.stackName },
-                        { Name: 'TAK_ETL_URL', Value: cf.ref('HostedURL') },
+                        { Name: 'TAK_ETL_URL', Value: cf.join(['https://', cf.ref('HostedURL')]) },
                         { Name: 'TAK_ETL_BUCKET', Value: cf.ref('AssetBucket') }
                     ],
                     JobRoleArn: cf.getAtt('BatchJobRole', 'Arn'),
