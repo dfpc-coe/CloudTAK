@@ -14,7 +14,7 @@ export default {
                 Environment: {
                     Variables: {
                         BUCKET: cf.join('-', [cf.stackName, cf.accountId, cf.region]),
-                        APIROOT: cf.join(['https://', cf.ref('PMTilesLambdaAPI'), '.execute-api.', cf.region, '.amazonaws.com']),
+                        APIROOT: cf.join(['https://tiles.', cf.ref('HostedURL')]),
                         SigningSecret: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/secret:SecretString::AWSCURRENT}}')
                     }
                 },
@@ -93,10 +93,28 @@ export default {
                 }]
             }
         },
+        PMTilesApiDomain: {
+            Type: 'AWS::ApiGateway::DomainName',
+            Properties: {
+                DomainName: cf.join(['tiles.', cf.ref('HostedURL')]),
+                RegionalCertificateArn: cf.join(['arn:', cf.partition, ':acm:', cf.region, ':', cf.accountId, ':certificate/', cf.ref('SSLCertificateIdentifier')]),
+                EndpointConfiguration: {
+                    Types: ['REGIONAL']
+                }
+            }
+        },
+        PMTilesApiMap: {
+            Type: 'AWS::ApiGateway::BasePathMapping',
+            Properties: {
+                DomainName: cf.ref('PMTilesApiDomain'),
+                RestApiId: cf.ref('PMTilesLambdaAPI')
+            }
+        },
         PMTilesLambdaAPI: {
             Type: 'AWS::ApiGateway::RestApi',
             Properties: {
                 Name: 'PMtiles Rest API',
+                DisableExecuteApiEndpoint: true,
                 EndpointConfiguration: {
                     Types: ['REGIONAL']
                 }
@@ -114,6 +132,7 @@ export default {
             Type: 'AWS::ApiGateway::Deployment',
             DependsOn: ['PMTilesLambdaAPIResourceGET'],
             Properties: {
+                Description: cf.stackName,
                 RestApiId: cf.ref('PMTilesLambdaAPI')
             }
         },
@@ -175,7 +194,7 @@ export default {
     Outputs: {
         PMTilesAPI: {
             Description: 'PMTiles API',
-            Value: cf.join(['https://', cf.ref('PMTilesLambdaAPI'), '.execute-api.', cf.region, '.amazonaws.com']),
+            Value: cf.join(['https://tiles.', cf.ref('HostedURL')]),
             Export: {
                 Name: cf.join([cf.stackName, '-pmtiles-api'])
             }
