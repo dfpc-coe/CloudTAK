@@ -29,5 +29,6 @@ RUN npm run lint \
 COPY ./nginx.conf /etc/nginx/nginx.conf
 
 CMD memcached -d -u root \
+    && sed -i "s/API_URL/${API_URL}/g" /etc/nginx/nginx.conf \
     && nginx \
     && npm run prod
