@@ -3,6 +3,7 @@ import S3 from '@aws-sdk/client-s3';
 import { pipeline } from 'node:stream/promises';
 import { Upload } from '@aws-sdk/lib-storage';
 import Tippecanoe from './lib/tippecanoe.js';
+import OGR from './lib/ogr.js';
 import jwt from 'jsonwebtoken';
 import path from 'node:path';
 import API from './lib/api.js';
@@ -14,7 +15,7 @@ import KML from './lib/kml.js';
 import Translate from './lib/translate.js';
 import GeoJSON from './lib/geojson.js';
 
-const FORMATS = [KML, Translate, GeoJSON];
+const FORMATS = [KML, Translate, GeoJSON, OGR];
 const formats = new Map();
 
 // TODO load all conversion files from a directory
