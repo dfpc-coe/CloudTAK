@@ -1,7 +1,9 @@
 <template>
     <Contact
         v-if='feature.properties.group'
+        class='px-2 py-2'
         :button-chat='false'
+        :compact='compact'
         :contact='{
             "uid": feature.id,
             "callsign": feature.properties.callsign,
@@ -11,7 +13,7 @@
     />
     <div
         v-else
-        class='d-flex align-items-center px-3 py-2 me-2'
+        class='d-flex align-items-center px-3 py-2'
         :class='{
             "cursor-pointer": isZoomable,
             "cursor-default": !isZoomable,
@@ -26,11 +28,12 @@
             class='me-2'
         />
         <div
-            class='text-truncate'
+            class='text-truncate user-select-none'
             v-text='feature.properties.callsign'
         />
 
         <div
+            v-if='deleteButton'
             class='ms-auto btn-list hover-button-hidden'
         >
             <TablerDelete
@@ -69,6 +72,10 @@ export default {
         },
         mission: {
             type: String,
+        },
+        deleteButton: {
+            type: Boolean,
+            default: true
         },
         hover: {
             type: Boolean,
