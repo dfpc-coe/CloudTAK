@@ -14,7 +14,7 @@ export default {
                 Environment: {
                     Variables: {
                         BUCKET: cf.join('-', [cf.stackName, cf.accountId, cf.region]),
-                        APIROOT: cf.join(['https://', cf.ref('PMTilesLambdaAPI'), '.execute-api.', cf.region, '.amazonaws.com']),
+                        APIROOT: cf.join(['https://tiles.', cf.ref('HostedURL')]),
                         SigningSecret: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/secret:SecretString::AWSCURRENT}}')
                     }
                 },
@@ -114,6 +114,7 @@ export default {
             Type: 'AWS::ApiGateway::RestApi',
             Properties: {
                 Name: 'PMtiles Rest API',
+                DisableExecuteApiEndpoint: true,
                 EndpointConfiguration: {
                     Types: ['REGIONAL']
                 }
