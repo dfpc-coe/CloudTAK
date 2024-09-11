@@ -51,9 +51,14 @@
                                 :status='imported.status'
                             />
                         </div>
+                        <div class='col-auto mx-2' v-tooltip='`${imported.mode} Import`'>
+                            <IconAmbulance v-if='imported.mode === "Mission"' :size='32' :stroke='0.5'/>
+                            <IconFile v-else-if='imported.mode === "Unknown"' :size='32' :stroke='0.5'/>
+                            <IconPackages v-else-if='imported.mode === "Package"' :size='32' :stroke='0.5'/>
+                        </div>
                         <div
                             class='mx-2 col-auto row'
-                            style='width: 300px;'
+                            style='width: 280px;'
                         >
                             <div
                                 class='text-truncate'
@@ -90,6 +95,9 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     IconPlus,
+    IconFile,
+    IconAmbulance,
+    IconPackages,
     IconRefresh,
 } from '@tabler/icons-vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
@@ -106,6 +114,9 @@ export default {
         TablerPager,
         TablerLoading,
         IconPlus,
+        IconFile,
+        IconAmbulance,
+        IconPackages,
         IconRefresh,
         MenuTemplate,
     },

@@ -39,36 +39,41 @@
                 :create='false'
             />
             <template v-else>
-                <template v-for='file of files'>
-                    <div class='col-12 hover-button px-2 py-2 d-flex align-items-center'>
-                        <IconPhoto
-                            v-if='[".png", ".jpg"].includes(file.ext)'
-                            :size='24'
-                            :stroke='1'
-                        />
-                        <IconFile
-                            v-else
-                            :size='24'
-                            :stroke='1'
-                        />
-
-                        <span
-                            class='mx-2 text-truncate'
-                            style='max-width: 300px;'
-                            v-text='file.name'
-                        />
-
-                        <div class='ms-auto'>
-                            <IconDownload
-                                v-tooltip='"Download Asset"'
+                <div class='row'>
+                    <template v-for='file of files'>
+                        <div class='col-4 px-2 py-2'>
+                            <img
+                                v-if='[".png", ".jpg"].includes(file.ext)'
+                                :src='downloadAssetUrl(file)'
                                 :size='24'
                                 :stroke='1'
-                                class='cursor-pointer'
-                                @click='downloadAsset(file)'
                             />
+                            <IconFile
+                                v-else
+                                :size='24'
+                                :stroke='1'
+                            />
+
+                            <div class='d-flex align-items-center mt-2'>
+                                <span
+                                    class='mx-2 text-truncate'
+                                    style='max-width: 300px;'
+                                    v-text='file.name'
+                                />
+
+                                <div class='ms-auto'>
+                                    <IconDownload
+                                        v-tooltip='"Download Asset"'
+                                        :size='24'
+                                        :stroke='1'
+                                        class='cursor-pointer'
+                                        @click='downloadAsset(file)'
+                                    />
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </template>
+                    </template>
+                </div>
             </template>
         </div>
     </div>
@@ -80,7 +85,6 @@ import Upload from '../../util/Upload.vue';
 import {
     IconFile,
     IconFileUpload,
-    IconPhoto,
     IconDownload
 } from '@tabler/icons-vue';
 
@@ -93,7 +97,6 @@ export default {
     name: 'COTAttachments',
     components: {
         Upload,
-        IconPhoto,
         IconFile,
         IconDownload,
         IconFileUpload,
@@ -151,10 +154,13 @@ export default {
         uploadURL: function() {
             return stdurl(`/api/attachment`);
         },
-        downloadAsset: async function(file) {
+        downloadAssetUrl: function(file) {
             const url = stdurl(`/api/attachment/${file.hash}`);
             url.searchParams.append('token', localStorage.token);
-            window.open(url, "_blank")
+            return url;
+        },
+        downloadAsset: async function(file) {
+            window.open(this.downloadAssetUrl(file), "_blank")
         },
         fetchMetadata: async function() {
             const url = stdurl(`/api/attachment`);

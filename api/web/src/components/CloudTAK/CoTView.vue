@@ -228,7 +228,7 @@
             </div>
 
 
-            <div class='col-12 pb-2'>
+            <div v-if='!feat.properties.archived' class='col-12 pb-2'>
                 <div class='d-flex mx-3'>
                     <label class='subheader'>Times</label>
                     <div class='ms-auto cursor-pointer text-blue subheader'>
@@ -261,14 +261,13 @@
                         </tbody>
                     </table>
                 </div>
-
-                <TablerToggle
-                    v-if='isArchivable'
-                    v-model='feat.properties.archived'
-                    label='Archived'
-                    class='mx-2'
-                />
             </div>
+            <TablerToggle
+                v-if='isArchivable'
+                v-model='feat.properties.archived'
+                label='Archived'
+                class='mx-2'
+            />
 
             <div
                 v-if='feat.properties.video'
