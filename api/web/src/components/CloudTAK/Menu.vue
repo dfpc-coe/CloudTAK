@@ -52,6 +52,7 @@
                             }'
                             :tabindex='compact ? 0 : undefined'
                             title='Open Settings Panel'
+                            :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
                         />
