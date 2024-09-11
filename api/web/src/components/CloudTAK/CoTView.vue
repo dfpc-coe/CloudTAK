@@ -206,8 +206,10 @@
                 <div class='table-responsive rounded mx-2 py-2 px-2'>
                     <table class='table card-table table-hover table-vcenter datatable'>
                         <thead>
-                            <th>Key</th>
-                            <th>Value</th>
+                            <tr>
+                                <th>Key</th>
+                                <th>Value</th>
+                            </tr>
                         </thead>
                         <tbody class='bg-gray-500'>
                             <tr
@@ -245,8 +247,10 @@
                 <div class='table-responsive rounded mx-2 py-2 px-2'>
                     <table class='table card-table table-hover table-vcenter datatable'>
                         <thead>
-                            <th>Key</th>
-                            <th>Value</th>
+                            <tr>
+                                <th>Key</th>
+                                <th>Value</th>
+                            </tr>
                         </thead>
                         <tbody class='bg-gray-500'>
                             <tr>
@@ -273,19 +277,42 @@
                 v-if='feat.properties.video'
                 class='col-12 px-1 pb-2'
             >
-                <label class='subheader px-2'>Video</label>
+                <div class='d-flex mx-3'>
+                    <label class='subheader'>Video</label>
+                </div>
+
+                <CoTVideo
+                    v-if='viewer'
+                    :video='feat.properties.video.url'
+                />
+
                 <div class='table-responsive rounded mx-2 py-2 px-2'>
                     <table class='table card-table table-hover table-vcenter datatable'>
                         <thead>
-                            <th>Key</th>
-                            <th>Value</th>
+                            <tr>
+                                <th>Key</th>
+                                <th>Value</th>
+                            </tr>
                         </thead>
                         <tbody class='bg-gray-500'>
                             <tr
                                 v-for='prop of Object.keys(feat.properties.video)'
                                 :key='prop'
                             >
-                                <td v-text='prop' />
+                                <td>
+                                    <IconPlayerPlay
+                                        v-if='prop === "url"'
+                                        v-tooltip='"View Video Stream"'
+                                        @click='viewer = true'
+                                        class='cursor-pointer'
+                                        size='32'
+                                        stroke='1'
+                                    />
+                                    <span
+                                        v-else
+                                        v-text='prop'
+                                    />
+                                </td>
                                 <td v-text='feat.properties.video[prop]' />
                             </tr>
                         </tbody>
@@ -307,8 +334,10 @@
                 <div class='table-responsive rounded mx-2 py-2 px-2'>
                     <table class='table card-table table-hover table-vcenter datatable'>
                         <thead>
-                            <th>Key</th>
-                            <th>Value</th>
+                            <tr>
+                                <th>Key</th>
+                                <th>Value</th>
+                            </tr>
                         </thead>
                         <tbody class='bg-gray-500'>
                             <tr
@@ -359,6 +388,7 @@ import Share from './util/Share.vue';
 import CoTStyle from './util/CoTStyle.vue';
 import Coordinate from './util/Coordinate.vue';
 import Course from './util/Course.vue';
+import CoTVideo from './util/Video.vue';
 import Phone from './util/Phone.vue';
 import Speed from './util/Speed.vue';
 import Elevation from './util/Elevation.vue';
@@ -366,6 +396,7 @@ import Attachments from './util/Attachments.vue';
 import {
     IconX,
     IconAmbulance,
+    IconPlayerPlay,
     IconShare2,
     IconZoomPan,
     IconCode,
@@ -388,7 +419,10 @@ export default {
             mission: false,
             type: null,
             mode: 'default',
+            viewer: false,
             icon: null,
+
+            interval: false,
 
             time: 'relative',
         }
@@ -417,6 +451,16 @@ export default {
     mounted: async function() {
         if (this.feat) {
             await this.fetchType();
+        } else {
+            this.interval = setInterval(() => {
+                const { feat, mission } = this.findCOT();
+
+                if (feat) {
+                    this.feat = feat;
+                    if (mission) this.mission = mission;
+                    clearInterval(this.interval);
+                }
+            }, 1000)
         }
     },
     computed: {
@@ -520,6 +564,7 @@ export default {
         IconCode,
         IconShare2,
         CoTStyle,
+        CoTVideo,
         IconZoomPan,
         Elevation,
         Attachments,
@@ -534,6 +579,7 @@ export default {
         TablerToggle,
         TablerDelete,
         IconAmbulance,
+        IconPlayerPlay,
         IconBattery1,
         IconBattery2,
         IconBattery3,
