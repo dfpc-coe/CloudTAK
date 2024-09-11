@@ -131,7 +131,7 @@ export default class Config {
             HookURL = process.env.HookURL;
 
             const apiUrl = new URL(`http://${process.env.API_URL}`);
-            if (apiUrl.origin === 'localhost') {
+            if (apiUrl.hostname === 'localhost') {
                 API_URL = `http://${process.env.API_URL}`;
                 PMTILES_URL = 'http://localhost:5001'
             } else {
