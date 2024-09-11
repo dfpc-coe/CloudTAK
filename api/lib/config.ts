@@ -132,11 +132,11 @@ export default class Config {
 
             const apiUrl = new URL(`http://${process.env.API_URL}`);
             if (apiUrl.origin === 'localhost') {
-                API_URL = String(apiUrl);
+                API_URL = `http://${process.env.API_URL}`;
                 PMTILES_URL = 'http://localhost:5001'
             } else {
                 PMTILES_URL = `https://tiles.${process.env.API_URL}`;
-                API_URL = String(new URL(`https://${process.env.API_URL}`));
+                API_URL = String(`https://${process.env.API_URL}`);
             }
 
             Bucket = process.env.ASSET_BUCKET;
