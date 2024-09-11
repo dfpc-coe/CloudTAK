@@ -407,7 +407,7 @@ export default {
                         { Name: 'SigningSecret', Value: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/secret:SecretString::AWSCURRENT}}') },
                         { Name: 'StackName', Value: cf.stackName },
                         { Name: 'ASSET_BUCKET', Value: cf.ref('AssetBucket') },
-                        { Name: 'API_URL', Value: cf.ref('HostedURL'),
+                        { Name: 'API_URL', Value: cf.ref('HostedURL') },
                         { Name: 'AWS_DEFAULT_REGION', Value: cf.region },
                         { Name: 'VpcId', Value: cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-vpc'])) },
                         { Name: 'SubnetPublicA', Value: cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-subnet-public-a'])) },
