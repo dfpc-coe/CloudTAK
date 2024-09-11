@@ -183,10 +183,11 @@
 
             <div
                 v-if='search.shown'
-                class='position-absolute top-0 text-white bg-dark'
+                class='position-absolute text-white bg-dark rounded'
                 style='
                     z-index: 1;
-                    left: 60px;
+                    top: 8px;
+                    left: 70px;
                     width: 200px;
                 '
             >
