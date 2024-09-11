@@ -29,7 +29,7 @@
         />
         <div
             class='text-truncate user-select-none'
-            v-text='feature.properties.callsign'
+            v-text='feature.properties.callsign || feature.properties.name || "Unnamed"'
         />
 
         <div
