@@ -4,6 +4,41 @@ import { Type, Static } from '@sinclair/typebox';
 import { VideoLeaseResponse } from '../types.js';
 import fetch from '../fetch.js';
 
+export const Protocols = Type.Object({
+    rtmp: Type.Optional(Type.Object({
+        name: Type.String(),
+        url: Type.String()
+    })),
+    rtsp: Type.Optional(Type.Object({
+        name: Type.String(),
+        url: Type.String()
+    })),
+    webrtc: Type.Optional(Type.Object({
+        name: Type.String(),
+        url: Type.String()
+    })),
+    hls: Type.Optional(Type.Object({
+        name: Type.String(),
+        url: Type.String()
+    })),
+    srt: Type.Optional(Type.Object({
+        name: Type.String(),
+        url: Type.String()
+    }))
+})
+
+export const VideoConfigUpdate = Type.Object({
+    api: Type.Optional(Type.Boolean()),
+    metrics: Type.Optional(Type.Boolean()),
+    pprof: Type.Optional(Type.Boolean()),
+    playback: Type.Optional(Type.Boolean()),
+    rtsp: Type.Optional(Type.Boolean()),
+    rtmp: Type.Optional(Type.Boolean()),
+    hls: Type.Optional(Type.Boolean()),
+    webrtc: Type.Optional(Type.Boolean()),
+    srt: Type.Optional(Type.Boolean()),
+})
+
 export const VideoConfig = Type.Object({
     api: Type.Boolean(),
     apiAddress: Type.String(),
@@ -124,7 +159,29 @@ export default class VideoServiceControl {
         if (username && password) {
             headers.append('Authorization', `Basic ${Buffer.from(username + ':' + password).toString('base64')}`);
         }
+
         return headers;
+    }
+
+    async configure(config: Static<typeof VideoConfigUpdate>): Promise<Static<typeof Configuration>> {
+        const video = await this.settings();
+        if (!video.configured) return video;
+
+        const headers = this.headers(video.username, video.password);
+        headers.append('Content-Type', 'application/json');
+
+        const url = new URL('/v3/config/global/patch', video.url);
+        url.port = '9997';
+
+        const res = await fetch(url, {
+            method: 'PATCH',
+            headers,
+            body: JSON.stringify(config)
+        });
+
+        if (!res.ok) throw new Err(500, null, await res.text())
+
+        return this.configuration();
     }
 
     async configuration(): Promise<Static<typeof Configuration>> {
@@ -155,6 +212,62 @@ export default class VideoServiceControl {
             config: body,
             paths: paths.items,
         };
+    }
+
+    async protocols(lease: Static<typeof VideoLeaseResponse>): Promise<Static<typeof Protocols>> {
+        const protocols: Static<typeof Protocols> = {};
+        const c = await this.configuration();
+
+        if (!c.configured || !c.url) return protocols;
+
+        if (c.config && c.config.rtsp) {
+            // Format: rtsp://localhost:8554/mystream
+            const url = new URL(`/${lease.path}`, c.url.replace(/^http(s)?:/, 'rtsp:'))
+            url.port = c.config.rtspAddress.replace(':', '');
+
+            protocols.rtsp = {
+                name: 'Real-Time Streaming Protocol (RTSP)',
+                url: String(url)
+            }
+        }
+
+        if (c.config && c.config.rtmp) {
+            // Format: rtmp://localhost/mystream
+            const url = new URL(`/${lease.path}`, c.url.replace(/^http(s)?:/, 'rtmp:'))
+            url.port = '';
+
+            if (lease.stream_user) url.searchParams.append('user', lease.stream_user);
+            if (lease.stream_pass) url.searchParams.append('pass', lease.stream_pass);
+
+            protocols.rtmp = {
+                name: 'Real-Time Messaging Protocol (RTMP)',
+                url: String(url)
+            }
+        }
+
+        if (c.config && c.config.hls) {
+            // Format: http://localhost:8888/mystream
+            const url = new URL(`/${lease.path}`, c.url);
+            url.port = c.config.hlsAddress.replace(':', '');
+
+            protocols.hls = {
+                name: 'HTTP Live Streaming (HLS)',
+                url: String(url)
+            }
+        }
+
+        if (c.config && c.config.webrtc) {
+            // Format: http://localhost:8889/mystream
+            const url = new URL(`/${lease.path}`, c.url);
+            url.port = c.config.webrtcAddress.replace(':', '');
+
+            protocols.webrtc = {
+                name: 'Web Real-Time Communication (WebRTC)',
+                url: String(url)
+            }
+        }
+
+        return protocols;
     }
 
     async generate(opts: {

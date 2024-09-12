@@ -7,10 +7,11 @@
                 class='video-js vjs-default-skin'
                 width='400'
                 height='300'
-                controls
+                controls='true'
+                autoplay='true'
             >
                 <source
-                    type='application/x-mpegURL'
+                    type=''
                     :src='video'
                 >
             </video>
@@ -42,7 +43,9 @@ export default {
         }
     },
     unmounted: function() {
-        this.player.dispose();
+        if (this.player) {
+            this.player.dispose();
+        }
     },
     mounted: async function() {
         await this.requestLease();
