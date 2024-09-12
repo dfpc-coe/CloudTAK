@@ -230,7 +230,10 @@
             </div>
 
 
-            <div v-if='!feat.properties.archived' class='col-12 pb-2'>
+            <div
+                v-if='!feat.properties.archived'
+                class='col-12 pb-2'
+            >
                 <div class='d-flex mx-3'>
                     <label class='subheader'>Times</label>
                     <div class='ms-auto cursor-pointer text-blue subheader'>
@@ -304,10 +307,10 @@
                                     <IconPlayerPlay
                                         v-if='prop === "url"'
                                         v-tooltip='"View Video Stream"'
-                                        @click='viewer = true'
                                         class='cursor-pointer'
                                         size='32'
                                         stroke='1'
+                                        @click='viewer = true'
                                     />
                                     <span
                                         v-else

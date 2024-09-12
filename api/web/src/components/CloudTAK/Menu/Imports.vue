@@ -51,10 +51,25 @@
                                 :status='imported.status'
                             />
                         </div>
-                        <div class='col-auto mx-2' v-tooltip='`${imported.mode} Import`'>
-                            <IconAmbulance v-if='imported.mode === "Mission"' :size='32' :stroke='0.5'/>
-                            <IconFile v-else-if='imported.mode === "Unknown"' :size='32' :stroke='0.5'/>
-                            <IconPackages v-else-if='imported.mode === "Package"' :size='32' :stroke='0.5'/>
+                        <div
+                            v-tooltip='`${imported.mode} Import`'
+                            class='col-auto mx-2'
+                        >
+                            <IconAmbulance
+                                v-if='imported.mode === "Mission"'
+                                :size='32'
+                                :stroke='0.5'
+                            />
+                            <IconFile
+                                v-else-if='imported.mode === "Unknown"'
+                                :size='32'
+                                :stroke='0.5'
+                            />
+                            <IconPackages
+                                v-else-if='imported.mode === "Package"'
+                                :size='32'
+                                :stroke='0.5'
+                            />
                         </div>
                         <div
                             class='mx-2 col-auto row'
