@@ -1,16 +1,16 @@
 <template>
     <div>
         <video
-            id="cot-player"
-            class="video-js vjs-default-skin"
-            width="400"
-            height="300"
+            id='cot-player'
+            class='video-js vjs-default-skin'
+            width='400'
+            height='300'
             controls
         >
             <source
-                type="application/x-mpegURL"
-                :src="video"
-            />
+                type='application/x-mpegURL'
+                :src='video'
+            >
         </video>
     </div>
 </template>
@@ -21,15 +21,15 @@ import 'video.js/dist/video-js.css';
 
 export default {
     name: 'CoTVideo',
-    data: function() {
-        return {
-            player: false
-        }
-    },
     props: {
         video: {
             type: String,
             required: true
+        }
+    },
+    data: function() {
+        return {
+            player: false
         }
     },
     unmounted: function() {
