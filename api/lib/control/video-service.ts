@@ -36,7 +36,19 @@ export const VideoConfig = Type.Object({
     srtAddress: Type.String(),
 })
 
-export const PathConfig = Type.Object({
+export const PathConig = Type.Object({
+    name: Type.String(),
+    source: Type.String(),
+    sourceFingerprint: Type.String(),
+    sourceOnDemand: Type.Boolean(),
+    sourceOnDemandStartTimeout: Type.String(),
+    sourceOnDemandCloseAfter: Type.String(),
+    maxReaders: Type.Integer(),
+
+    record: Type.Boolean(),
+});
+
+export const PathListConfig = Type.Object({
     name: Type.String(),
     confName: Type.String(),
     source: Type.Union([
@@ -57,17 +69,17 @@ export const PathConfig = Type.Object({
     }))
 })
 
-export const PathsConfig = Type.Object({
+export const PathsListConfig = Type.Object({
     pageCount: Type.Integer(),
     itemCount: Type.Integer(),
-    items: Type.Array(PathConfig)
+    items: Type.Array(PathListConfig)
 })
 
 export const Configuration = Type.Object({
     configured: Type.Boolean(),
     url: Type.Optional(Type.String()),
     config: Type.Optional(VideoConfig),
-    paths: Type.Optional(Type.Array(PathConfig))
+    paths: Type.Optional(Type.Array(PathListConfig))
 });
 
 export default class VideoServiceControl {
@@ -135,7 +147,7 @@ export default class VideoServiceControl {
         const resPaths = await fetch(urlPaths, { headers })
         if (!resPaths.ok) throw new Err(500, null, await resPaths.text())
 
-        const paths = await resPaths.typed(PathsConfig);
+        const paths = await resPaths.typed(PathsListConfig);
 
         return {
             configured: video.configured,
@@ -150,6 +162,7 @@ export default class VideoServiceControl {
         expiration: string;
         path: string;
         username: string;
+        proxy?: string;
     }): Promise<Static<typeof VideoLeaseResponse>> {
         const video = await this.settings();
 
@@ -161,7 +174,8 @@ export default class VideoServiceControl {
             name: opts.name,
             expiration: opts.expiration,
             path: opts.path,
-            username: opts.username
+            username: opts.username,
+            proxy: opts.proxy
         });
 
         const url = new URL(`/v3/config/paths/add/${lease.path}`, video.url);
@@ -169,15 +183,29 @@ export default class VideoServiceControl {
 
         headers.append('Content-Type', 'application/json');
 
-        const res = await fetch(url, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify({
-                name: opts.path
-            }),
-        })
+        if (lease.proxy) {
+            const res = await fetch(url, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({
+                    name: opts.path,
+                    source: opts.proxy,
+                    sourceOnDemand: true
+                }),
+            })
 
-        if (!res.ok) throw new Err(500, null, await res.text())
+            if (!res.ok) throw new Err(500, null, await res.text())
+        } else {
+            const res = await fetch(url, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({
+                    name: opts.path
+                }),
+            })
+
+            if (!res.ok) throw new Err(500, null, await res.text())
+        }
 
         return lease;
     }

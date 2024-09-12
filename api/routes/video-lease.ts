@@ -11,7 +11,6 @@ import { StandardResponse, VideoLeaseResponse } from '../lib/types.js';
 import ECSVideoControl from '../lib/control/video-service.js';
 import * as Default from '../lib/limits.js';
 
-
 export const Protocols = Type.Object({
     rtmp: Type.Optional(Type.Object({
         name: Type.String(),
@@ -179,7 +178,9 @@ export default async function router(schema: Schema, config: Config) {
             duration: Type.Integer(),
             path: Type.Optional(Type.String()),
             stream_user: Type.Optional(Type.String()),
-            stream_pass: Type.Optional(Type.String())
+            stream_pass: Type.Optional(Type.String()),
+
+            proxy: Type.Optional(Type.String())
         }),
         res: VideoLeaseResponse,
     }, async (req, res) => {
@@ -194,7 +195,8 @@ export default async function router(schema: Schema, config: Config) {
                 name: req.body.name,
                 expiration: moment().add(req.body.duration, 'seconds').toISOString(),
                 path: req.body.path || randomUUID(),
-                username: user.email
+                username: user.email,
+                proxy: req.body.proxy
             })
 
             return res.json(lease);
@@ -227,7 +229,7 @@ export default async function router(schema: Schema, config: Config) {
                 if (lease.username === user.email) {
                     lease = await config.models.VideoLease.commit(req.params.lease, req.body);
                 } else {
-                    throw new Err(400, null, 'You can only delete a lease you created');
+                    throw new Err(400, null, 'You can only update a lease you created');
                 }
             }
 
