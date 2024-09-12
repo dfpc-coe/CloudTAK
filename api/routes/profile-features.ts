@@ -43,7 +43,7 @@ export default async function router(schema: Schema, config: Config) {
             return res.json({
                 total: list.total,
                 items: list.items.map((feat) => {
-                    // Legacy features
+                    // @ts-expect-error Legacy features
                     feat.properties.archived = true;
 
                     return {
@@ -187,7 +187,7 @@ export default async function router(schema: Schema, config: Config) {
                 id = ${req.params.id} AND username = ${user.email}
             `);
 
-            // Legacy features
+            // @ts-expect-error Legacy features
             feat.properties.archived = true;
 
             return res.json({
