@@ -93,7 +93,11 @@ export const useCOTStore = defineStore('cots', {
          */
         loadArchive: async function(): Promise<void> {
             const archive = await std('/api/profile/feature') as APIList<Feature>;
-            for (const a of archive.items) this.add(a);
+            for (const a of archive.items) {
+                this.add(a, undefined, {
+                    skipSave: true
+                });
+            }
         },
 
         /**
@@ -384,7 +388,10 @@ export const useCOTStore = defineStore('cots', {
         /**
          * Add a CoT GeoJSON to the store and modify props to meet MapLibre style requirements
          */
-        add: async function(feat: Feature, mission_guid?: string) {
+        add: async function(feat: Feature, mission_guid?: string, opts?: {
+            skipSave: boolean;
+        }) {
+            opts = opts || {};
             mission_guid = mission_guid || this.subscriptionPending.get(feat.id);
 
             if (mission_guid)  {
@@ -421,7 +428,7 @@ export const useCOTStore = defineStore('cots', {
                 } else {
                     const cot = new COT(feat);
                     this.pending.set(String(feat.id), cot);
-                    await cot.save();
+                    if (opts.skipSave !== true) await cot.save();
                 }
             }
         }
