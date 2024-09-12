@@ -174,8 +174,13 @@ export default async function router(schema: Schema, config: Config) {
         group: 'VideoLease',
         description: 'Create a new video Lease',
         body: Type.Object({
-            name: Type.String(),
-            duration: Type.Integer(),
+            name: Type.String({
+                description: 'Human readable name'
+            }),
+            duration: Type.Integer({
+                minimum: 0,
+                description: 'Duration in Seconds'
+            }),
             path: Type.Optional(Type.String()),
             stream_user: Type.Optional(Type.String()),
             stream_pass: Type.Optional(Type.String()),
@@ -187,7 +192,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req);
 
-            if (user.access !== AuthUserAccess.ADMIN  &&req.body.duration > 60 * 60 * 16) {
+            if (user.access !== AuthUserAccess.ADMIN && req.body.duration > 60 * 60 * 16) {
                 throw new Err(400, null, 'Only Administrators can request a lease > 16 hours')
             }
 
