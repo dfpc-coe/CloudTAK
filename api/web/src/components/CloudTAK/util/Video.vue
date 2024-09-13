@@ -1,6 +1,9 @@
 <template>
     <div>
         <TablerLoading v-if='loading'/>
+        <template v-else-if='!protocols.hls'>
+            <TablerNone label='HLS Streaming Protocol'/>
+        </template>
         <template v-else>
             <video
                 id='cot-player'
@@ -11,8 +14,7 @@
                 autoplay='true'
             >
                 <source
-                    type=''
-                    :src='video'
+                    :src='protocols.hls.url'
                 >
             </video>
         </template>
@@ -24,6 +26,7 @@ import { std } from '/src/std.ts';
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 import {
+    TablerNone,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 
@@ -40,6 +43,7 @@ export default {
             loading: true,
             player: false,
             lease: false,
+            protocols: {}
         }
     },
     unmounted: function() {
@@ -58,7 +62,7 @@ export default {
     },
     methods: {
         requestLease: async function() {
-            this.lease = await std('/api/video/lease', {
+            const { lease, protocols } = await std('/api/video/lease', {
                 method: 'POST',
                 body:  {
                     name: 'Temporary Lease',
@@ -66,9 +70,13 @@ export default {
                     proxy: this.video
                 }
             })
+
+            this.lease = lease;
+            this.protocols = protocols;
         }
     },
     components: {
+        TablerNone,
         TablerLoading
     }
 }
