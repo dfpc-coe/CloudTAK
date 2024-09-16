@@ -12,6 +12,14 @@
 
 ### Pending Release
 
+### v3.30.0 - 2024-09-16
+
+- :rocket: Allow editing settings of Video Service from CloudTAK
+- :rocket: Allow setting up temporary leases from CloudTAK
+- :rocket: View information about a given path
+- :rocket: Show Ports associated with given Video Protocol
+- :rocket: Add built-in video player to CoT View
+
 ### v3.29.0 - 2024-09-11
 
 - :bug: `UI` Fix search box offset - https://github.com/dfpc-coe/CloudTAK/issues/330
