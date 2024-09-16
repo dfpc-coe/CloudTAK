@@ -1,3 +1,17 @@
+export enum Basemap_Format {
+    PNG = 'png',
+    MVT = 'mvt'
+}
+
+export enum Basemap_Style {
+    ZXY = 'zxy'
+}
+
+export enum Basemap_Type {
+    RASTER = 'raster',
+    VECTOR = 'vector',
+}
+
 export enum Layer_Priority {
     HIGH = 'high',
     LOW = 'low',
