@@ -33,9 +33,9 @@
             />
             <VideoConfig
                 v-else
-                @cancel='disabled = true'
                 :service='service'
                 :disabled='disabled'
+                @cancel='disabled = true'
             />
         </div>
 

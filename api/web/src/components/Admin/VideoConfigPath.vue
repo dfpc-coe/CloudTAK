@@ -14,9 +14,12 @@
             />
         </div>
 
-        <TablerLoading v-if='loading'/>
-        <div v-else class='modal-body row'>
-            <pre v-text='path'/>
+        <TablerLoading v-if='loading' />
+        <div
+            v-else
+            class='modal-body row'
+        >
+            <pre v-text='path' />
         </div>
     </TablerModal>
 </template>
@@ -26,8 +29,6 @@ import { std } from '/src/std.ts';
 import {
     TablerModal,
     TablerLoading,
-    TablerInput,
-    TablerDelete
 } from '@tak-ps/vue-tabler'
 
 export default {
@@ -42,16 +43,16 @@ export default {
             required: true
         }
     },
+    emits: [
+        'close',
+        'refresh'
+    ],
     data: function() {
         return {
             loading: true,
             path: false
         }
     },
-    emits: [
-        'close',
-        'refresh'
-    ],
     mounted: async function() {
         await this.fetchPath();
     },

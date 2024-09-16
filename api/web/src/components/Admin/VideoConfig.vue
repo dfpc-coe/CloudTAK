@@ -1,7 +1,10 @@
 <template>
     <div class='col-12 py-2 g-2'>
-        <TablerLoading v-if='loading'/>
-        <div v-else class='row g-0 px-2'>
+        <TablerLoading v-if='loading' />
+        <div
+            v-else
+            class='row g-0 px-2'
+        >
             <div class='col-12'>
                 <TablerToggle
                     v-model='config.api'
@@ -9,8 +12,16 @@
                     class='subheader'
                     label='Config API Enabled'
                 />
-                <div v-if='config.api' id='api-container' class='col-12 border rounded px-2 py-2'>
-                    <TablerInput label='Port' v-model='config.apiAddress' :disabled='true'/>
+                <div
+                    v-if='config.api'
+                    id='api-container'
+                    class='col-12 border rounded px-2 py-2'
+                >
+                    <TablerInput
+                        v-model='config.apiAddress'
+                        label='Port'
+                        :disabled='true'
+                    />
                 </div>
             </div>
 
@@ -21,8 +32,16 @@
                     class='subheader'
                     label='Metrics API Enabled'
                 />
-                <div v-if='config.metrics' id='metrics-container' class='col-12 border rounded px-2 py-2'>
-                    <TablerInput label='Port' v-model='config.metricsAddress' :disabled='true'/>
+                <div
+                    v-if='config.metrics'
+                    id='metrics-container'
+                    class='col-12 border rounded px-2 py-2'
+                >
+                    <TablerInput
+                        v-model='config.metricsAddress'
+                        label='Port'
+                        :disabled='true'
+                    />
                 </div>
             </div>
 
@@ -33,8 +52,16 @@
                     class='subheader'
                     label='Performance API Enabled'
                 />
-                <div v-if='config.pprof' id='pprof-container' class='col-12 border rounded px-2 py-2'>
-                    <TablerInput label='Port' v-model='config.pprofAddress' :disabled='true'/>
+                <div
+                    v-if='config.pprof'
+                    id='pprof-container'
+                    class='col-12 border rounded px-2 py-2'
+                >
+                    <TablerInput
+                        v-model='config.pprofAddress'
+                        label='Port'
+                        :disabled='true'
+                    />
                 </div>
             </div>
 
@@ -45,8 +72,16 @@
                     class='subheader'
                     label='Playback API Enabled'
                 />
-                <div v-if='config.playback' id='playback-container' class='col-12 border rounded px-2 py-2'>
-                    <TablerInput label='Port' v-model='config.playbackAddress' :disabled='true'/>
+                <div
+                    v-if='config.playback'
+                    id='playback-container'
+                    class='col-12 border rounded px-2 py-2'
+                >
+                    <TablerInput
+                        v-model='config.playbackAddress'
+                        label='Port'
+                        :disabled='true'
+                    />
                 </div>
             </div>
 
@@ -57,8 +92,16 @@
                     class='subheader'
                     label='RTSP API Enabled'
                 />
-                <div v-if='config.rtsp' id='rtsp-container' class='col-12 border rounded px-2 py-2'>
-                    <TablerInput label='Port' v-model='config.rtspAddress' :disabled='true'/>
+                <div
+                    v-if='config.rtsp'
+                    id='rtsp-container'
+                    class='col-12 border rounded px-2 py-2'
+                >
+                    <TablerInput
+                        v-model='config.rtspAddress'
+                        label='Port'
+                        :disabled='true'
+                    />
                 </div>
             </div>
 
@@ -69,8 +112,16 @@
                     class='subheader'
                     label='RTMP API Enabled'
                 />
-                <div v-if='config.rtmp' id='rtmp-container' class='col-12 border rounded px-2 py-2'>
-                    <TablerInput label='Port' v-model='config.rtmpAddress' :disabled='true'/>
+                <div
+                    v-if='config.rtmp'
+                    id='rtmp-container'
+                    class='col-12 border rounded px-2 py-2'
+                >
+                    <TablerInput
+                        v-model='config.rtmpAddress'
+                        label='Port'
+                        :disabled='true'
+                    />
                 </div>
             </div>
 
@@ -81,8 +132,16 @@
                     class='subheader'
                     label='HLS API Enabled'
                 />
-                <div v-if='config.hls' id='hls-container' class='col-12 border rounded px-2 py-2'>
-                    <TablerInput label='Port' v-model='config.hlsAddress' :disabled='true'/>
+                <div
+                    v-if='config.hls'
+                    id='hls-container'
+                    class='col-12 border rounded px-2 py-2'
+                >
+                    <TablerInput
+                        v-model='config.hlsAddress'
+                        label='Port'
+                        :disabled='true'
+                    />
                 </div>
             </div>
 
@@ -93,8 +152,16 @@
                     class='subheader'
                     label='WebRTC API Enabled'
                 />
-                <div v-if='config.webrtc' id='webrtc-container' class='col-12 border rounded px-2 py-2'>
-                    <TablerInput label='Port' v-model='config.webrtcAddress' :disabled='true'/>
+                <div
+                    v-if='config.webrtc'
+                    id='webrtc-container'
+                    class='col-12 border rounded px-2 py-2'
+                >
+                    <TablerInput
+                        v-model='config.webrtcAddress'
+                        label='Port'
+                        :disabled='true'
+                    />
                 </div>
             </div>
 
@@ -105,17 +172,38 @@
                     class='subheader'
                     label='SRT API Enabled'
                 />
-                <div v-if='config.srt' id='srt-container' class='col-12 border rounded px-2 py-2'>
-                    <TablerInput label='Port' v-model='config.srtAddress' :disabled='true'/>
+                <div
+                    v-if='config.srt'
+                    id='srt-container'
+                    class='col-12 border rounded px-2 py-2'
+                >
+                    <TablerInput
+                        v-model='config.srtAddress'
+                        label='Port'
+                        :disabled='true'
+                    />
                 </div>
             </div>
         </div>
 
-        <div v-if='!disabled' class='col-12 d-flex px-2 py-3'>
-            <button class='btn btn-secondary' @click='$emit("cancel")'>Cancel</button>
+        <div
+            v-if='!disabled'
+            class='col-12 d-flex px-2 py-3'
+        >
+            <button
+                class='btn btn-secondary'
+                @click='$emit("cancel")'
+            >
+                Cancel
+            </button>
 
             <div class='ms-auto'>
-                <button class='btn btn-primary' @click='saveConfig'>Submit</button>
+                <button
+                    class='btn btn-primary'
+                    @click='saveConfig'
+                >
+                    Submit
+                </button>
             </div>
         </div>
 
@@ -145,8 +233,8 @@
 
     <VideoConfigPath
         v-if='pathid'
-        @close='pathid = false'
         :pathid='pathid'
+        @close='pathid = false'
     />
 </template>
 
@@ -169,9 +257,6 @@ export default {
         TablerToggle,
         VideoConfigPath
     },
-    emits: [
-        'cancel'
-    ],
     props: {
         service: Object,
         disabled: {
@@ -179,6 +264,9 @@ export default {
             default: true
         }
     },
+    emits: [
+        'cancel'
+    ],
     data: function() {
         return {
             loading: false,
