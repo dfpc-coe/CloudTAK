@@ -132,7 +132,8 @@
                     <template v-else>
                         <div
                             v-for='path in service.paths'
-                            class='hover-light px-2 py-2'
+                            class='hover-light px-2 py-2 cursor-pointer'
+                            @click='pathid = path.name'
                         >
                             <span v-text='path.name' />
                         </div>
@@ -141,10 +142,17 @@
             </div>
         </template>
     </div>
+
+    <VideoConfigPath
+        v-if='pathid'
+        @close='pathid = false'
+        :pathid='pathid'
+    />
 </template>
 
 <script>
 import { std } from '/src/std.ts';
+import VideoConfigPath from './VideoConfigPath.vue';
 import {
     TablerNone,
     TablerInput,
@@ -158,7 +166,8 @@ export default {
         TablerNone,
         TablerInput,
         TablerLoading,
-        TablerToggle
+        TablerToggle,
+        VideoConfigPath
     },
     emits: [
         'cancel'
@@ -173,6 +182,7 @@ export default {
     data: function() {
         return {
             loading: false,
+            pathid: false,
             config: JSON.parse(JSON.stringify(this.service.config))
         }
     },

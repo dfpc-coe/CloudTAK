@@ -71,7 +71,7 @@ export const VideoConfig = Type.Object({
     srtAddress: Type.String(),
 })
 
-export const PathConig = Type.Object({
+export const PathConfig = Type.Object({
     name: Type.String(),
     source: Type.String(),
     sourceFingerprint: Type.String(),
@@ -321,6 +321,23 @@ export default class VideoServiceControl {
         }
 
         return lease;
+    }
+
+    async path(pathid: string): Promise<Static<typeof PathConfig>> {
+        const video = await this.settings();
+        if (!video.configured) throw new Err(400, null, 'Media Integration is not configured');
+
+        const headers = this.headers(video.username, video.password);
+
+        const url = new URL(`/v3/config/paths/get/${pathid}`, video.url);
+        url.port = '9997';
+
+        const res = await fetch(url, {
+            method: 'GET',
+            headers,
+        });
+
+        return await res.typed(PathConfig);
     }
 
     async delete(leaseid: string): Promise<void> {
