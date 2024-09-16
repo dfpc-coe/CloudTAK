@@ -443,6 +443,8 @@ export default {
             const { feat, mission } = this.findCOT();
             this.feat = feat;
             this.mission = mission;
+
+            this.viewer = false;
         },
         feat: {
             deep: true,
