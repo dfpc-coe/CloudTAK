@@ -45,7 +45,7 @@
                     class='subheader'
                     label='Playback API Enabled'
                 />
-                <div v-if='playback' id='playback-container' class='col-12 border rounded px-2 py-2'>
+                <div v-if='config.playback' id='playback-container' class='col-12 border rounded px-2 py-2'>
                     <TablerInput label='Port' v-model='config.playbackAddress' :disabled='true'/>
                 </div>
             </div>
