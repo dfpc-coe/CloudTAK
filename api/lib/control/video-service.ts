@@ -246,8 +246,8 @@ export default class VideoServiceControl {
         }
 
         if (c.config && c.config.hls) {
-            // Format: http://localhost:8888/mystream
-            const url = new URL(`/${lease.path}`, c.url);
+            // Format: http://localhost:8888/mystream/index.m3u8
+            const url = new URL(`/${lease.path}/index.m3u8`, c.url);
             url.port = c.config.hlsAddress.replace(':', '');
 
             protocols.hls = {

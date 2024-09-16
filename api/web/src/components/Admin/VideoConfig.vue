@@ -1,60 +1,114 @@
 <template>
     <div class='col-12 py-2 g-2'>
         <TablerLoading v-if='loading'/>
-        <div v-else class='row g-0'>
-            <TablerToggle
-                v-model='config.api'
-                :disabled='disabled'
-                label='Config API Enabled'
-            />
+        <div v-else class='row g-0 px-2'>
+            <div class='col-12'>
+                <TablerToggle
+                    v-model='config.api'
+                    :disabled='disabled'
+                    class='subheader'
+                    label='Config API Enabled'
+                />
+                <div v-if='config.api' id='api-container' class='col-12 border rounded px-2 py-2'>
+                    <TablerInput label='Port' v-model='config.apiAddress' :disabled='true'/>
+                </div>
+            </div>
 
-            <TablerToggle
-                v-model='config.metrics'
-                :disabled='disabled'
-                label='Metrics Enabled'
-            />
+            <div class='col-12 pt-2'>
+                <TablerToggle
+                    v-model='config.metrics'
+                    :disabled='disabled'
+                    class='subheader'
+                    label='Metrics API Enabled'
+                />
+                <div v-if='config.metrics' id='metrics-container' class='col-12 border rounded px-2 py-2'>
+                    <TablerInput label='Port' v-model='config.metricsAddress' :disabled='true'/>
+                </div>
+            </div>
 
-            <TablerToggle
-                v-model='config.pprof'
-                :disabled='disabled'
-                label='Performance Metrics Enabled'
-            />
+            <div class='col-12 pt-2'>
+                <TablerToggle
+                    v-model='config.pprof'
+                    :disabled='disabled'
+                    class='subheader'
+                    label='Performance API Enabled'
+                />
+                <div v-if='config.pprof' id='pprof-container' class='col-12 border rounded px-2 py-2'>
+                    <TablerInput label='Port' v-model='config.pprofAddress' :disabled='true'/>
+                </div>
+            </div>
 
-            <TablerToggle
-                v-model='config.playback'
-                :disabled='disabled'
-                label='Playback API Enabled'
-            />
+            <div class='col-12 pt-2'>
+                <TablerToggle
+                    v-model='config.playback'
+                    :disabled='disabled'
+                    class='subheader'
+                    label='Playback API Enabled'
+                />
+                <div v-if='playback' id='playback-container' class='col-12 border rounded px-2 py-2'>
+                    <TablerInput label='Port' v-model='config.playbackAddress' :disabled='true'/>
+                </div>
+            </div>
 
-            <TablerToggle
-                v-model='config.rtsp'
-                :disabled='disabled'
-                label='RTSP Endpoint Enabled'
-            />
+            <div class='col-12 pt-2'>
+                <TablerToggle
+                    v-model='config.rtsp'
+                    :disabled='disabled'
+                    class='subheader'
+                    label='RTSP API Enabled'
+                />
+                <div v-if='config.rtsp' id='rtsp-container' class='col-12 border rounded px-2 py-2'>
+                    <TablerInput label='Port' v-model='config.rtspAddress' :disabled='true'/>
+                </div>
+            </div>
 
-            <TablerToggle
-                v-model='config.rtmp'
-                :disabled='disabled'
-                label='RTMP Endpoint Enabled'
-            />
+            <div class='col-12 pt-2'>
+                <TablerToggle
+                    v-model='config.rtmp'
+                    :disabled='disabled'
+                    class='subheader'
+                    label='RTMP API Enabled'
+                />
+                <div v-if='config.rtmp' id='rtmp-container' class='col-12 border rounded px-2 py-2'>
+                    <TablerInput label='Port' v-model='config.rtmpAddress' :disabled='true'/>
+                </div>
+            </div>
 
-            <TablerToggle
-                v-model='config.hls'
-                :disabled='disabled'
-                label='HLS Endpoint Enabled'
-            />
+            <div class='col-12 pt-2'>
+                <TablerToggle
+                    v-model='config.hls'
+                    :disabled='disabled'
+                    class='subheader'
+                    label='HLS API Enabled'
+                />
+                <div v-if='config.hls' id='hls-container' class='col-12 border rounded px-2 py-2'>
+                    <TablerInput label='Port' v-model='config.hlsAddress' :disabled='true'/>
+                </div>
+            </div>
 
-            <TablerToggle
-                v-model='config.webrtc'
-                :disabled='disabled'
-                label='WebRTC Endpoint Enabled'
-            />
+            <div class='col-12 pt-2'>
+                <TablerToggle
+                    v-model='config.webrtc'
+                    :disabled='disabled'
+                    class='subheader'
+                    label='WebRTC API Enabled'
+                />
+                <div v-if='config.webrtc' id='webrtc-container' class='col-12 border rounded px-2 py-2'>
+                    <TablerInput label='Port' v-model='config.webrtcAddress' :disabled='true'/>
+                </div>
+            </div>
 
-            <TablerToggle
-                v-model='config.srt'
-                :disabled='disabled'
-                label='SRT Endpoint Enabled'
-            />
+            <div class='col-12 pt-2'>
+                <TablerToggle
+                    v-model='config.srt'
+                    :disabled='disabled'
+                    class='subheader'
+                    label='SRT API Enabled'
+                />
+                <div v-if='config.srt' id='srt-container' class='col-12 border rounded px-2 py-2'>
+                    <TablerInput label='Port' v-model='config.srtAddress' :disabled='true'/>
+                </div>
+            </div>
         </div>
 
         <div v-if='!disabled' class='col-12 d-flex px-2 py-3'>
@@ -89,6 +143,7 @@
 import { std } from '/src/std.ts';
 import {
     TablerNone,
+    TablerInput,
     TablerLoading,
     TablerToggle
 } from '@tak-ps/vue-tabler';
@@ -97,6 +152,7 @@ export default {
     name: 'VideoConfig',
     components: {
         TablerNone,
+        TablerInput,
         TablerLoading,
         TablerToggle
     },
