@@ -120,21 +120,25 @@
         </div>
 
         <template v-if='disabled'>
-            <label class='subheader mx-2'>Server Paths</label>
-            <TablerNone
-                v-if='service.paths.length === 0'
-                :create='false'
-                :compact='true'
-                label='Server Paths'
-            />
-            <template v-else>
-                <div
-                    v-for='path in service.paths'
-                    class='hover-light px-2 py-2'
-                >
-                    <span v-text='path.name' />
+            <div class='row g-0 px-2'>
+                <label class='subheader mx-2'>Server Paths</label>
+                <div class='col-12 border rounded px-2 py-2'>
+                    <TablerNone
+                        v-if='service.paths.length === 0'
+                        :create='false'
+                        :compact='true'
+                        label='Server Paths'
+                    />
+                    <template v-else>
+                        <div
+                            v-for='path in service.paths'
+                            class='hover-light px-2 py-2'
+                        >
+                            <span v-text='path.name' />
+                        </div>
+                    </template>
                 </div>
-            </template>
+            </div>
         </template>
     </div>
 </template>
