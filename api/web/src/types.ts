@@ -15,6 +15,8 @@ export type APIList<T> = {
     items: Array<T>;
 }
 
+export type VideoLease = paths["/video/lease/{:lease}"]["get"]["responses"]["200"]["content"]["application/json"];
+
 export type Group = paths["/marti/group"]["get"]["responses"]["200"]["content"]["application/json"]["data"][0]
 
 export type Mission = paths["/marti/missions/{:name}"]["get"]["responses"]["200"]["content"]["application/json"]

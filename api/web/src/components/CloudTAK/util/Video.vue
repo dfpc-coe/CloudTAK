@@ -1,7 +1,7 @@
 <template>
     <div>
         <TablerLoading v-if='loading' />
-        <template v-else-if='!protocols.hls'>
+        <template v-else-if='!protocols || !protocols.hls'>
             <TablerNone
                 label='HLS Streaming Protocol'
                 :create='false'
@@ -26,15 +26,18 @@
 </template>
 
 <script lang='ts'>
-import { std } from '/src/std.ts';
+import { defineComponent } from 'vue'
+import { std } from '../../../../src/std.ts';
+import type Player from 'video.js/dist/types/player.d.ts';
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
+import type { VideoLease } from '../../../types.ts';
 import {
     TablerNone,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 
-export default {
+export default defineComponent({
     name: 'CoTVideo',
     components: {
         TablerNone,
@@ -46,12 +49,14 @@ export default {
             required: true
         }
     },
-    data: function() {
+    data: function(): {
+        loading: boolean,
+        lease?: VideoLease["lease"],
+        player?: Player,
+        protocols?: VideoLease["protocols"]
+    } {
         return {
-            loading: true,
-            player: false,
-            lease: false,
-            protocols: {}
+            loading: true
         }
     },
     unmounted: function() {
@@ -77,11 +82,11 @@ export default {
                     duration: 1 * 60 * 60,
                     proxy: this.video
                 }
-            })
+            }) as VideoLease
 
             this.lease = lease;
             this.protocols = protocols;
         }
     }
-}
+})
 </script>
