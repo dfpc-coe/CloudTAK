@@ -1,8 +1,11 @@
 <template>
     <div>
-        <TablerLoading v-if='loading'/>
+        <TablerLoading v-if='loading' />
         <template v-else-if='!protocols.hls'>
-            <TablerNone label='HLS Streaming Protocol' :create='false'/>
+            <TablerNone
+                label='HLS Streaming Protocol'
+                :create='false'
+            />
         </template>
         <template v-else>
             <video
@@ -33,6 +36,10 @@ import {
 
 export default {
     name: 'CoTVideo',
+    components: {
+        TablerNone,
+        TablerLoading
+    },
     props: {
         video: {
             type: String,
@@ -75,10 +82,6 @@ export default {
             this.lease = lease;
             this.protocols = protocols;
         }
-    },
-    components: {
-        TablerNone,
-        TablerLoading
     }
 }
 </script>
