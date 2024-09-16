@@ -59,10 +59,14 @@ export const VideoLease = pgTable('video_lease', {
     created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     username: text('username').notNull().references(() => Profile.username),
+
     expiration: timestamp('expiration', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now() + INTERVAL 1 HOUR;`),
     path: text('path').notNull(),
     stream_user: text('stream_user'),
-    stream_pass: text('stream_pass')
+    stream_pass: text('stream_pass'),
+
+    // Optional Proxy Mode
+    proxy: text('proxy'),
 });
 
 export const ProfileFeature = pgTable('profile_features', {

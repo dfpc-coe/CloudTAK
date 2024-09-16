@@ -5,7 +5,7 @@ import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import EC2 from '../lib/aws/ec2.js';
 import ECSVideo from '../lib/aws/ecs-video.js';
-import ECSVideoControl, { Configuration } from '../lib/control/video-service.js';
+import ECSVideoControl, { Configuration, VideoConfigUpdate, PathConfig } from '../lib/control/video-service.js';
 import { StandardResponse, VideoResponse } from '../lib/types.js';
 
 export default async function router(schema: Schema, config: Config) {
@@ -22,6 +22,24 @@ export default async function router(schema: Schema, config: Config) {
             await Auth.as_user(config, req, { admin: true });
 
             const configuration = await videoControl.configuration();
+
+            return res.json(configuration);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.patch('/video/service', {
+        name: 'Update Service',
+        group: 'VideoService',
+        description: 'Get Video Service Configuration',
+        body: VideoConfigUpdate,
+        res: Configuration
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req, { admin: true });
+
+            const configuration = await videoControl.configure(req.body);
 
             return res.json(configuration);
         } catch (err) {
@@ -78,6 +96,24 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             return res.json(list);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/video/service/path/:path', {
+        name: 'Video Paths',
+        group: 'VideoService',
+        description: 'Get information about a given path',
+        params: Type.Object({
+            path: Type.String()
+        }),
+        res: PathConfig
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req, { admin: true });
+
+            return res.json(await videoControl.path(req.params.path));
         } catch (err) {
             return Err.respond(err, res);
         }

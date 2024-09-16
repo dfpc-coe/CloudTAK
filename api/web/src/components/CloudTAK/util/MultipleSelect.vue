@@ -20,7 +20,7 @@
             <Feature
                 :feature='feat'
                 :compact='true'
-                :deleteButton='false'
+                :delete-button='false'
             />
         </div>
     </div>

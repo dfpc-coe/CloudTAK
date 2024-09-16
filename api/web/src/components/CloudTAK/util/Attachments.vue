@@ -47,7 +47,7 @@
                                 :src='downloadAssetUrl(file)'
                                 :size='24'
                                 :stroke='1'
-                            />
+                            >
                             <IconFile
                                 v-else
                                 :size='24'
