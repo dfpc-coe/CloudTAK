@@ -5,7 +5,11 @@ import { geometry, GeometryType } from '@openaddresses/batch-generic';
 import { ConnectionAuth } from './connection-config.js';
 import { TAKGroup, TAKRole } from  './api/types.js';
 import { Layer_Config } from './models/Layer.js';
-import { Layer_Priority, Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Text } from  './enums.js';
+import {
+    Layer_Priority,
+    Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Text,
+    Basemap_Type, Basemap_Format, Basemap_Style,
+} from  './enums.js';
 import { json, boolean, numeric, integer, timestamp, pgTable, serial, varchar, text, unique, index } from 'drizzle-orm/pg-core';
 
 /** Internal Tables for Postgis for use with drizzle-kit push:pg */
@@ -88,9 +92,9 @@ export const Basemap = pgTable('basemaps', {
     center: geometry('center', { type: GeometryType.Point, srid: 4326 }),
     minzoom: integer('minzoom').notNull().default(0),
     maxzoom: integer('maxzoom').notNull().default(16),
-    format: text('format').notNull().default('png'),
-    style: text('style').notNull().default('zxy'),
-    type: text('type').notNull().default('raster')
+    format: text('format').$type<Basemap_Format>().notNull().default(Basemap_Format.PNG),
+    style: text('style').$type<Basemap_Style>().notNull().default(Basemap_Style.ZXY),
+    type: text('type').$type<Basemap_Type>().notNull().default(Basemap_Type.RASTER)
 }, (table) => {
     return {
         username_idx: index("basemaps_username_idx").on(table.username),
