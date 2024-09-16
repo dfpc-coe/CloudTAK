@@ -2,7 +2,7 @@
     <div>
         <TablerLoading v-if='loading'/>
         <template v-else-if='!protocols.hls'>
-            <TablerNone label='HLS Streaming Protocol'/>
+            <TablerNone label='HLS Streaming Protocol' :create='false'/>
         </template>
         <template v-else>
             <video
@@ -14,6 +14,7 @@
                 autoplay='true'
             >
                 <source
+                    type='application/x-mpegURL' 
                     :src='protocols.hls.url'
                 >
             </video>
