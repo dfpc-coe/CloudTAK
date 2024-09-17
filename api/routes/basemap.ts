@@ -15,6 +15,7 @@ import Schema from '@openaddresses/batch-schema';
 import { Geometry, BBox } from 'geojson';
 import { Type } from '@sinclair/typebox'
 import { StandardResponse, BasemapResponse } from '../lib/types.js';
+import { Basemap as BasemapParser } from '@tak-ps/node-cot';
 import { Basemap } from '../lib/schema.js';
 import { toEnum, Basemap_Format, Basemap_Style, Basemap_Type } from '../lib/enums.js';
 import * as Default from '../lib/limits.js';
@@ -74,24 +75,18 @@ export default async function router(schema: Schema, config: Config) {
                     }
                 }).on('finish', async () => {
                     try {
-                        const xml = await xml2js.parseStringPromise(String(buffer));
-                        if (!xml.customMapSource) return res.json(imported);
-                        const map = xml.customMapSource;
+                        const b = await BasemapParser.parse(String(buffer));
 
-                        if (map.name && map.name.length) {
-                            imported.name = xml.customMapSource.name[0];
-                        }
-                        if (map.minZoom && map.minZoom.length) {
-                            imported.minzoom = parseInt(xml.customMapSource.minZoom[0]);
-                        }
-                        if (map.maxZoom && map.maxZoom.length) {
-                            imported.maxzoom = parseInt(xml.customMapSource.maxZoom[0]);
-                        }
-                        if (map.tileType && map.tileType.length) {
-                            imported.format = toEnum.fromString(Type.Enum(Basemap_Format), xml.customMapSource.tileType[0]);
-                        }
-                        if (map.url && map.url.length) {
-                            imported.url = xml.customMapSource.url[0];
+                        if (!b.basemap.customMapSource) return res.json(imported);
+                        const map = b.basemap.customMapSource;
+
+                        imported.name = map.name._text;
+                        imported.minzoom = map.minZoom._text;
+                        imported.maxzoom = map.maxZoom._text;
+                        imported.url = map.url._text;
+
+                        if (map.tileType) {
+                            imported.format = toEnum.fromString(Type.Enum(Basemap_Format), map.tileType._text);
                         }
 
                         return res.json(imported);
