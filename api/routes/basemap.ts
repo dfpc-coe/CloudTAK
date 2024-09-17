@@ -31,14 +31,14 @@ export default async function router(schema: Schema, config: Config) {
         `,
         res: Type.Object({
             name: Type.Optional(Type.String()),
-            type: Type.Optional(Basemap_Type),
+            type: Type.Optional(Type.Enum(Basemap_Type)),
             url: Type.Optional(Type.String()),
             bounds: Type.Optional(Type.Any()),
             center: Type.Optional(Type.Any()),
             minzoom: Type.Optional(Type.Integer()),
             maxzoom: Type.Optional(Type.Integer()),
-            style: Type.Optional(Basemap_Style),
-            format: Type.Optional(Basemap_Format)
+            style: Type.Optional(Type.Enum(Basemap_Style)),
+            format: Type.Optional(Type.Enum(Basemap_Format))
         })
     }, async (req, res) => {
         try {
@@ -139,7 +139,7 @@ export default async function router(schema: Schema, config: Config) {
             limit: Default.Limit,
             page: Default.Page,
             order: Default.Order,
-            type: Type.Optional(Basemap_Type),
+            type: Type.Optional(Type.Enum(Basemap_Type)),
             sort: Type.String({ default: 'created', enum: Object.keys(Basemap) }),
             filter: Default.Filter
         }),
@@ -184,10 +184,10 @@ export default async function router(schema: Schema, config: Config) {
             url: Type.String(),
             minzoom: Type.Optional(Type.Integer()),
             maxzoom: Type.Optional(Type.Integer()),
-            format: Type.Optional(Basemap_Format),
-            style: Type.Optional(Basemap_Style),
-            type: Type.Optional(Basemap_Type),
-            bounds: Type.Optional(Type.Array(Type.Number({minItems: 4, maxItems: 4}))),
+            format: Type.Optional(Type.Enum(Basemap_Format)),
+            style: Type.Optional(Type.Enum(Basemap_Style)),
+            type: Type.Optional(Type.Enum(Basemap_Type)),
+            bounds: Type.Optional(Type.Array(Type.Number(), { minItems: 4, maxItems: 4 })),
             center: Type.Optional(Type.Array(Type.Number()))
         }),
         res: BasemapResponse
@@ -239,10 +239,10 @@ export default async function router(schema: Schema, config: Config) {
             url: Type.Optional(Type.String()),
             minzoom: Type.Optional(Type.Integer()),
             maxzoom: Type.Optional(Type.Integer()),
-            format: Type.Optional(Basemap_Format),
-            style: Type.Optional(Basemap_Style),
-            type: Type.Optional(Basemap_Type),
-            bounds: Type.Optional(Type.Array(Type.Number({minItems: 4, maxItems: 4}))),
+            format: Type.Optional(Type.Enum(Basemap_Format)),
+            style: Type.Optional(Type.Enum(Basemap_Style)),
+            type: Type.Optional(Type.Enum(Basemap_Type)),
+            bounds: Type.Optional(Type.Array(Type.Number(), { minItems: 4, maxItems: 4 })),
             center: Type.Optional(Type.Array(Type.Number()))
         }),
         res: BasemapResponse
@@ -288,7 +288,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         query: Type.Object({
             download: Type.Optional(Type.Boolean()),
-            format: Type.Optional(Basemap_Format),
+            format: Type.Optional(Type.String()),
             token: Type.Optional(Type.String()),
         }),
         res: Type.Union([BasemapResponse, Type.String()])
