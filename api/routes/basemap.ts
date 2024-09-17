@@ -16,7 +16,7 @@ import { Geometry, BBox } from 'geojson';
 import { Type } from '@sinclair/typebox'
 import { StandardResponse, BasemapResponse } from '../lib/types.js';
 import { Basemap } from '../lib/schema.js';
-import { Basemap_Format, Basemap_Style, Basemap_Type } from '../lib/schema.js';
+import { Basemap_Format, Basemap_Style, Basemap_Type } from '../lib/enums.js';
 import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: Config) {
