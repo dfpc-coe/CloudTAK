@@ -195,7 +195,7 @@ export default {
         fetchList: async function() {
             this.loading = true;
             const url = stdurl('/api/basemap');
-            if (this.query && this.paging.filter) url.searchParams.append('filter', this.paging.filter);
+            if (this.paging.filter) url.searchParams.append('filter', this.paging.filter);
             url.searchParams.append('limit', this.paging.limit);
             url.searchParams.append('page', this.paging.page);
             this.list = await std(url);
