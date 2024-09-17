@@ -16,7 +16,7 @@ import { Geometry, BBox } from 'geojson';
 import { Type } from '@sinclair/typebox'
 import { StandardResponse, BasemapResponse } from '../lib/types.js';
 import { Basemap } from '../lib/schema.js';
-import { Basemap_Format, Basemap_Style, Basemap_Type } from '../lib/enums.js';
+import { toEnum, Basemap_Format, Basemap_Style, Basemap_Type } from '../lib/enums.js';
 import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: Config) {
@@ -46,15 +46,15 @@ export default async function router(schema: Schema, config: Config) {
 
             const imported: {
                 name?: string;
-                type: string;
+                type: Basemap_Type;
                 url?: string;
                 bounds?: object;
                 center?: object;
                 minzoom?: number;
                 maxzoom?: number;
-                format?: string;
+                format?: Basemap_Format;
             } = {
-                type: 'raster'
+                type: Basemap_Type.RASTER
             };
 
             if (req.headers['content-type'] && req.headers['content-type'].startsWith('multipart/form-data')) {
@@ -88,7 +88,7 @@ export default async function router(schema: Schema, config: Config) {
                             imported.maxzoom = parseInt(xml.customMapSource.maxZoom[0]);
                         }
                         if (map.tileType && map.tileType.length) {
-                            imported.format = xml.customMapSource.tileType[0];
+                            imported.format = toEnum.fromString(Type.Enum(Basemap_Format), xml.customMapSource.tileType[0]);
                         }
                         if (map.url && map.url.length) {
                             imported.url = xml.customMapSource.url[0];
@@ -118,7 +118,7 @@ export default async function router(schema: Schema, config: Config) {
 
                 if (imported.url) {
                     const url = new URL(imported.url)
-                    imported.format = path.parse(url.pathname).ext.replace('.', '');
+                    imported.format = toEnum.fromString(Type.Enum(Basemap_Format), path.parse(url.pathname).ext.replace('.', ''));
                 }
 
                 return res.json(imported);
