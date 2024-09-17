@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v3.31.0 - 2024-09-17
+
+- :rocket: Basemap parsing and typing improvements
+
 ### v3.30.0 - 2024-09-16
 
 - :rocket: Allow editing settings of Video Service from CloudTAK
