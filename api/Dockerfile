@@ -29,4 +29,4 @@ RUN npm run lint \
 COPY ./nginx.conf /etc/nginx/nginx.conf
 COPY ./start $HOME/api
 
-CMD start
+CMD ./start
