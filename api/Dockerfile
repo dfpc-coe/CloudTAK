@@ -27,6 +27,6 @@ RUN npm run lint \
     && npm run build
 
 COPY ./nginx.conf /etc/nginx/nginx.conf
-COPY ./start
+COPY ./start $HOME/api
 
 CMD start
