@@ -1,3 +1,38 @@
+import Err from '@openaddresses/batch-error';
+import { Static, TSchema, TUnknown } from "@sinclair/typebox";
+import { TypeCompiler } from "@sinclair/typebox/compiler";
+
+export class toEnum {
+    static fromString<T extends TSchema>(type: T, str: string): Static<T>;
+
+    static fromString<T extends TSchema = TUnknown>(type: T, str: string): Static<T> {
+        const typeChecker = TypeCompiler.Compile(type)
+        const result = typeChecker.Check(str);
+
+        if (result) return str;
+
+        const errors = typeChecker.Errors(str);
+        const firstError = errors.First();
+
+        throw new Err(500, null, `Internal Validation Error: ${JSON.stringify(firstError)}`);
+    }
+}
+
+export enum Basemap_Format {
+    PNG = 'png',
+    MVT = 'mvt'
+}
+
+export enum Basemap_Style {
+    ZXY = 'zxy'
+}
+
+export enum Basemap_Type {
+    RASTER = 'raster',
+    TERRAIN = 'terrain',
+    VECTOR = 'vector',
+}
+
 export enum Layer_Priority {
     HIGH = 'high',
     LOW = 'low',
