@@ -12,6 +12,15 @@
 
 ### Pending Release
 
+### v3.32.0 - 2024-09-18
+
+- :bug: Fix CSP headers to allow Video Server access
+- :rocket: Add `ephemeral` flag to Video Lease for temporarily proxy leases
+- :rocket: Switch Basemap Format to dropdown element instead of free-text
+- :bug: Fix lease generation UI bug where an ID wasn't properly populated upon creation
+- :rocket: Update node-cot to support parsing CoTs with present (but empty) video tags
+- :rocket: Gracefully catch errors and display inline for Video Player
+
 ### v3.31.0 - 2024-09-17
 
 - :rocket: Basemap parsing and typing improvements
