@@ -83,7 +83,7 @@ export default async function router(schema: Schema, config: Config) {
                         imported.name = map.name._text;
                         imported.minzoom = map.minZoom._text;
                         imported.maxzoom = map.maxZoom._text;
-                        imported.url = map.url._text;
+                        if (map.url) imported.url = map.url._text;
 
                         if (map.tileType) {
                             imported.format = toEnum.fromString(Type.Enum(Basemap_Format), map.tileType._text);
