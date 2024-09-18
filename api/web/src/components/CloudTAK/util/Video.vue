@@ -79,6 +79,7 @@ export default defineComponent({
                 method: 'POST',
                 body:  {
                     name: 'Temporary Lease',
+                    ephemeral: true,
                     duration: 1 * 60 * 60,
                     proxy: this.video
                 }
