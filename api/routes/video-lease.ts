@@ -23,6 +23,7 @@ export default async function router(schema: Schema, config: Config) {
             page: Default.Page,
             order: Default.Order,
             sort: Type.Optional(Type.String({ default: 'created', enum: Object.keys(Token) })),
+            ephemeral: Type.Optional(Type.Boolean({ default: false })),
             filter: Default.Filter
         }),
         res: Type.Object({
@@ -41,6 +42,7 @@ export default async function router(schema: Schema, config: Config) {
                 where: sql`
                     name ~* ${req.query.filter}
                     AND username = ${user.email}
+                    AND ephemeral = ${req.query.ephemeral}
                 `
             });
 
@@ -92,6 +94,10 @@ export default async function router(schema: Schema, config: Config) {
         body: Type.Object({
             name: Type.String({
                 description: 'Human readable name'
+            }),
+            ephemeral: Type.String({
+                description: 'CloudTAK View lease - hidden in streaming list',
+                default: false
             }),
             duration: Type.Integer({
                 minimum: 0,
