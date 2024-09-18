@@ -135,10 +135,11 @@
                             label='Basemap MaxZoom'
                         />
                     </div>
-                    <div class='col-md-4'>
-                        <TablerInput
+                    <div class='col-12 col-md-4'>
+                        <TablerEnum
                             v-model='editing.format'
                             label='Basemap Format'
+                            :options='["png", "jpeg", "mvt"]'
                         />
                     </div>
                     <div class='col-md-12 mt-3'>

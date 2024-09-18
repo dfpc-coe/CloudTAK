@@ -284,7 +284,7 @@ export default {
                 });
                 this.$emit('refresh');
             } else {
-                const lease = await std('/api/video/lease', {
+                const { lease } = await std('/api/video/lease', {
                     method: 'POST',
                     body: {
                         name: this.editLease.name,
@@ -296,6 +296,7 @@ export default {
                     this.$emit('refresh')
                 } else {
                     this.editLease = lease;
+
                     await this.fetchLease();
                 }
 

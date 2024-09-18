@@ -1,0 +1,1 @@
+ALTER TABLE "video_lease" ADD COLUMN "ephemeral" boolean DEFAULT false NOT NULL;

@@ -23,6 +23,7 @@ export default async function router(schema: Schema, config: Config) {
             page: Default.Page,
             order: Default.Order,
             sort: Type.Optional(Type.String({ default: 'created', enum: Object.keys(Token) })),
+            ephemeral: Type.Optional(Type.Boolean({ default: false })),
             filter: Default.Filter
         }),
         res: Type.Object({
@@ -41,6 +42,7 @@ export default async function router(schema: Schema, config: Config) {
                 where: sql`
                     name ~* ${req.query.filter}
                     AND username = ${user.email}
+                    AND ephemeral = ${req.query.ephemeral}
                 `
             });
 
@@ -93,6 +95,10 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.String({
                 description: 'Human readable name'
             }),
+            ephemeral: Type.Boolean({
+                description: 'CloudTAK View lease - hidden in streaming list',
+                default: false
+            }),
             duration: Type.Integer({
                 minimum: 0,
                 description: 'Duration in Seconds'
@@ -117,6 +123,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const lease = await videoControl.generate({
                 name: req.body.name,
+                ephemeral: req.body.ephemeral,
                 expiration: moment().add(req.body.duration, 'seconds').toISOString(),
                 path: req.body.path || randomUUID(),
                 username: user.email,

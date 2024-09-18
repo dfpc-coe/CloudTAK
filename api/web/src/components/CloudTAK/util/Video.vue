@@ -1,6 +1,13 @@
 <template>
     <div>
         <TablerLoading v-if='loading' />
+        <template v-else-if='err'>
+            <TablerAlert title='Video Error' :err='err'/>
+
+            <div class='d-flex justify-content-center'>
+                <button @click='$emit("close")' class='btn'>Close Player</button>
+            </div>
+        </template>
         <template v-else-if='!protocols || !protocols.hls'>
             <TablerNone
                 label='HLS Streaming Protocol'
@@ -17,7 +24,7 @@
                 autoplay='true'
             >
                 <source
-                    type='application/x-mpegURL' 
+                    type='application/x-mpegURL'
                     :src='protocols.hls.url'
                 >
             </video>
@@ -34,13 +41,18 @@ import 'video.js/dist/video-js.css';
 import type { VideoLease } from '../../../types.ts';
 import {
     TablerNone,
+    TablerAlert,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 
 export default defineComponent({
     name: 'CoTVideo',
+    emits: [
+        'close'
+    ],
     components: {
         TablerNone,
+        TablerAlert,
         TablerLoading
     },
     props: {
@@ -51,6 +63,7 @@ export default defineComponent({
     },
     data: function(): {
         loading: boolean,
+        err?: Error,
         lease?: VideoLease["lease"],
         player?: Player,
         protocols?: VideoLease["protocols"]
@@ -67,25 +80,33 @@ export default defineComponent({
     mounted: async function() {
         await this.requestLease();
 
-
-        this.loading = false;
-        this.$nextTick(() => {
-            this.player = videojs('cot-player');
-        });
+        if (!this.err) {
+            this.$nextTick(() => {
+                this.player = videojs('cot-player');
+            });
+        }
     },
     methods: {
         requestLease: async function() {
-            const { lease, protocols } = await std('/api/video/lease', {
-                method: 'POST',
-                body:  {
-                    name: 'Temporary Lease',
-                    duration: 1 * 60 * 60,
-                    proxy: this.video
-                }
-            }) as VideoLease
+            try {
+                const { lease, protocols } = await std('/api/video/lease', {
+                    method: 'POST',
+                    body:  {
+                        name: 'Temporary Lease',
+                        ephemeral: true,
+                        duration: 1 * 60 * 60,
+                        proxy: this.video
+                    }
+                }) as VideoLease
 
-            this.lease = lease;
-            this.protocols = protocols;
+                this.lease = lease;
+                this.protocols = protocols;
+
+                this.loading = false;
+            } catch (err) {
+                this.loading = false;
+                this.err = err instanceof Error ? err : new Error(String(err));
+            }
         }
     }
 })
