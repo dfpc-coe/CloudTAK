@@ -3,7 +3,7 @@
 set -x
 set -euo pipefail
 
-export ROOT_URL=$(echo "${API_URL}" && grep -Po "[a-z]+\.[a-z]+$")
+export ROOT_URL=$(echo "${API_URL}" | grep -Po "[a-z]+\.[a-z]+$")
 
 memcached -d -u root
 sed -i "s/API_URL/${API_URL}/g" /etc/nginx/nginx.conf
