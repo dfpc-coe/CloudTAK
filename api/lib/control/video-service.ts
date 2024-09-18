@@ -234,7 +234,7 @@ export default class VideoServiceControl {
         if (c.config && c.config.rtmp) {
             // Format: rtmp://localhost/mystream
             const url = new URL(`/${lease.path}`, c.url.replace(/^http(s)?:/, 'rtmp:'))
-            url.port = '';
+            url.port = c.config.rtmpAddress.replace(':', '');
 
             if (lease.stream_user) url.searchParams.append('user', lease.stream_user);
             if (lease.stream_pass) url.searchParams.append('pass', lease.stream_pass);
@@ -272,6 +272,7 @@ export default class VideoServiceControl {
 
     async generate(opts: {
         name: string;
+        ephemeral: boolean;
         expiration: string;
         path: string;
         username: string;
@@ -286,6 +287,7 @@ export default class VideoServiceControl {
         const lease = await this.config.models.VideoLease.generate({
             name: opts.name,
             expiration: opts.expiration,
+            ephemeral: opts.ephemeral,
             path: opts.path,
             username: opts.username,
             proxy: opts.proxy
@@ -297,6 +299,29 @@ export default class VideoServiceControl {
         headers.append('Content-Type', 'application/json');
 
         if (lease.proxy) {
+            try {
+                const proxy = new URL(opts.proxy);
+
+                // Check for HLS Errors
+                if (['http:', 'https:'].includes(proxy.protocol)) {
+                    const res = await fetch(proxy);
+
+                    if (res.status === 404) {
+                        throw new Err(400, null, 'External Video Server reports Video Stream not found');
+                    } else if (!res.ok) {
+                        throw new Err(res.status, null, `External Video Server failed stream video - HTTP Error ${res.status}`);
+                    }
+                }
+            } catch (err) {
+                if (err instanceof Err) {
+                    throw err;
+                } else if (err instanceof TypeError && err.code === 'ERR_INVALID_URL') {
+                    throw new Err(400, null, 'Invalid Video Stream URL');
+                } else {
+                    throw new Err(500, err instanceof Error ? err : new Error(String(err)), 'Failed to generate proxy stream');
+                }
+            }
+
             const res = await fetch(url, {
                 method: 'POST',
                 headers,

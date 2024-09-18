@@ -20,6 +20,7 @@ export class toEnum {
 
 export enum Basemap_Format {
     PNG = 'png',
+    JPEG = 'jpeg',
     MVT = 'mvt'
 }
 

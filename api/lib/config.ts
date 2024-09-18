@@ -122,7 +122,7 @@ export default class Config {
             SigningSecret = 'coe-wildland-fire';
             API_URL = 'http://localhost:5001';
             Bucket = process.env.ASSET_BUCKET;
-            PMTILES_URL = 'http://localhost:5001';
+            PMTILES_URL = process.env.PMTILES_URL || 'http://localhost:5001';
         } else {
             if (!process.env.StackName) throw new Error('StackName env must be set');
             if (!process.env.API_URL) throw new Error('API_URL env must be set');
@@ -133,7 +133,7 @@ export default class Config {
             const apiUrl = new URL(`http://${process.env.API_URL}`);
             if (apiUrl.hostname === 'localhost') {
                 API_URL = `http://${process.env.API_URL}`;
-                PMTILES_URL = 'http://localhost:5001'
+                PMTILES_URL = process.env.PMTILES_URL || 'http://localhost:5001'
             } else {
                 PMTILES_URL = `https://tiles.${process.env.API_URL}`;
                 API_URL = String(`https://${process.env.API_URL}`);
