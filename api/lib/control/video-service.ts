@@ -272,6 +272,7 @@ export default class VideoServiceControl {
 
     async generate(opts: {
         name: string;
+        ephemeral: boolean;
         expiration: string;
         path: string;
         username: string;
@@ -286,6 +287,7 @@ export default class VideoServiceControl {
         const lease = await this.config.models.VideoLease.generate({
             name: opts.name,
             expiration: opts.expiration,
+            ephemeral: opts.ephemeral,
             path: opts.path,
             username: opts.username,
             proxy: opts.proxy
