@@ -287,6 +287,7 @@
                 <CoTVideo
                     v-if='viewer'
                     class='my-2 mx-2'
+                    @close='viewer = false'
                     :video='feat.properties.video.url'
                 />
 

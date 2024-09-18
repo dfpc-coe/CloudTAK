@@ -297,6 +297,29 @@ export default class VideoServiceControl {
         headers.append('Content-Type', 'application/json');
 
         if (lease.proxy) {
+            try {
+                const proxy = new URL(opts.proxy);
+
+                // Check for HLS Errors
+                if (['http:', 'https:'].includes(proxy.protocol)) {
+                    const res = await fetch(proxy);
+
+                    if (res.status === 404) {
+                        throw new Err(400, null, 'External Video Server reports Video Stream not found');
+                    } else if (!res.ok) {
+                        throw new Err(res.status, null, `External Video Server failed stream video - HTTP Error ${res.status}`);
+                    }
+                }
+            } catch (err) {
+                if (err instanceof Err) {
+                    throw err;
+                } else if (err instanceof TypeError && err.code === 'ERR_INVALID_URL') {
+                    throw new Err(400, null, 'Invalid Video Stream URL');
+                } else {
+                    throw new Err(500, err instanceof Error ? err : new Error(String(err)), 'Failed to generate proxy stream');
+                }
+            }
+
             const res = await fetch(url, {
                 method: 'POST',
                 headers,
