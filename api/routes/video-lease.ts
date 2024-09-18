@@ -95,7 +95,7 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.String({
                 description: 'Human readable name'
             }),
-            ephemeral: Type.String({
+            ephemeral: Type.Boolean({
                 description: 'CloudTAK View lease - hidden in streaming list',
                 default: false
             }),
@@ -123,6 +123,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const lease = await videoControl.generate({
                 name: req.body.name,
+                ephemeral: req.body.ephemeral,
                 expiration: moment().add(req.body.duration, 'seconds').toISOString(),
                 path: req.body.path || randomUUID(),
                 username: user.email,
