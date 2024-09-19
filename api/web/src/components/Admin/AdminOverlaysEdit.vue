@@ -110,11 +110,10 @@ export default {
         },
         fetchOverlay: async function() {
             this.loading = true;
-            const url = stdurl(`/api/overlay/${this.overlay.id}`);
+            const url = stdurl(`/api/overlay/${this.$route.params.overlay}`);
             const overlay = await std(url);
-            overlay.styles = JSON.parse(overlay.styles);
+            overlay.styles = JSON.stringify(overlay.styles, null, 4);
             this.overlay = overlay;
-
             this.loading = false;
         }
     }

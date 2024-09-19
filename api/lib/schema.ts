@@ -327,7 +327,9 @@ export const Overlay = pgTable('overlays', {
     type: text('type').notNull().default('vector'),
     styles: json('styles'),
     url: text('url').notNull()
-});
+}, (t) => ({
+    unq: unique().on(t.name)
+}));
 
 export const ProfileOverlay = pgTable('profile_overlays', {
     id: serial('id').primaryKey(),

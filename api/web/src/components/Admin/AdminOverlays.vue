@@ -50,15 +50,15 @@
                     />
                     <tbody>
                         <tr
-                            v-for='layer in list.items'
-                            :key='layer.id'
+                            v-for='ov in list.items'
+                            :key='ov.id'
                             class='cursor-pointer'
-                            @click='stdclick($router, $event, `/connection/${layer.connection}/layer/${layer.id}`)'
+                            @click='stdclick($router, $event, `/admin/overlay/${ov.id}`)'
                         >
                             <template v-for='h in header'>
                                 <template v-if='h.display'>
                                     <td>
-                                        <span v-text='layer[h.name]' />
+                                        <span v-text='ov[h.name]' />
                                     </td>
                                 </template>
                             </template>
@@ -137,13 +137,6 @@ export default {
     },
     methods: {
         stdclick,
-        redeploy: async function() {
-            this.loading = true;
-            this.stack = await std(`/api/layer/redeploy`, {
-                method: 'POST'
-            });
-            this.loading = false;
-        },
         listOverlaySchema: async function() {
             const schema = await std('/api/schema?method=GET&url=/overlay');
             this.header = ['id', 'name'].map((h) => {
