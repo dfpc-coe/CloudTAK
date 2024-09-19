@@ -46,7 +46,10 @@ export default class Overlay {
             before?: string;
         } = {}
     ): Promise<Overlay> {
-        const ov = await std('/api/profile/overlay', { method: 'POST', body }) as ProfileOverlay;
+        let ov = await std('/api/profile/overlay', {
+            method: 'POST',
+            body
+        }) as ProfileOverlay;
 
         if (ov.styles && ov.styles.length) {
             for (const layer of ov.styles) {
@@ -55,6 +58,11 @@ export default class Overlay {
                 l.source = String(ov.id);
             }
         }
+
+        ov = await std(`/api/profile/overlay/${ov.id}`, {
+            method: 'PATCH',
+            body: ov
+        }) as ProfileOverlay;
 
         return new Overlay(map, ov, opts);
     }
@@ -65,7 +73,7 @@ export default class Overlay {
             id: number;
             type: string;
             name: string;
-            layers?: Array<LayerSpecification>;
+            styles?: Array<LayerSpecification>;
             clickable?: Array<{ id: string; type: string }>;
         },
     ): Overlay {
@@ -80,7 +88,7 @@ export default class Overlay {
             token: null,
             mode: 'internal',
             mode_id: null,
-            styles: body.layers || [],
+            styles: body.styles || [],
             pos: 3,
         }, {
             clickable: body.clickable,
@@ -207,6 +215,7 @@ export default class Overlay {
         }
 
         for (const l of this.styles) {
+            console.error(this.name, l)
             if (opts.before) {
                 this._map.addLayer(l, opts.before);
             } else {
@@ -311,6 +320,10 @@ export default class Overlay {
         if (this._destroyed) throw new Error('Cannot save a destroyed layer');
         if (this._internal) return;
 
+        // We want to just use the default style every time for things like missions
+        // We only want to save the style on custom datasources
+        const dropStyles = ['mission', 'internal'].includes(this.mode);
+
         await std(`/api/profile/overlay/${this.id}`, {
             method: 'PATCH',
             body: {
@@ -320,7 +333,7 @@ export default class Overlay {
                 mode_id: this.mode_id,
                 url: this.url,
                 visible: this.visible,
-                styles: this.styles
+                styles: dropStyles ? [] : this.styles
             }
         })
     }

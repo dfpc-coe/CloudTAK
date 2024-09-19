@@ -167,7 +167,7 @@ export default {
                                 url: `/api/basemap/${basemap.id}/tiles`,
                                 mode_id: String(basemap.id)
                             }, {
-                                before: mapStore.overlays[i + 1]._layers[0].id
+                                before: mapStore.overlays[i + 1].styles[0].id
                             });
                         } else {
                             await overlay.replace({
@@ -180,7 +180,7 @@ export default {
                     }
                 }
             } else {
-                const before = String(mapStore.overlays[0]._layers[0].id);
+                const before = String(mapStore.overlays[0].styles[0].id);
 
                 mapStore.overlays.unshift(await Overlay.create(mapStore.map, {
                     name: basemap.name,

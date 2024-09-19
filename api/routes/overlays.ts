@@ -75,6 +75,9 @@ export default async function router(schema: Schema, config: Config) {
         }),
         body: Type.Object({
             name: Type.Optional(Type.String()),
+            format: Type.String(),
+            minzoom: Type.Integer(),
+            maxzoom: Type.Integer(),
             type: Type.Optional(Type.String()),
             styles: Type.Optional(Type.Array(Type.Unknown())),
             url: Type.Optional(Type.String())
@@ -87,11 +90,13 @@ export default async function router(schema: Schema, config: Config) {
                 admin: true
             });
 
+            let overlay = await config.models.Overlay.from(req.params.overlay)
+
             if (req.body.styles && req.body.styles.length) {
-                TileJSON.isValidStyle(req.body.styles);
+                TileJSON.isValidStyle(overlay.type, req.body.styles);
             }
 
-            const overlay = await config.models.Overlay.commit(req.params.overlay, req.body)
+            overlay = await config.models.Overlay.commit(req.params.overlay, req.body)
 
             return res.json(overlay)
         } catch (err) {
@@ -106,6 +111,9 @@ export default async function router(schema: Schema, config: Config) {
         body: Type.Object({
             name: Type.String(),
             type: Type.String(),
+            format: Type.String(),
+            minzoom: Type.Integer(),
+            maxzoom: Type.Integer(),
             styles: Type.Array(Type.Unknown()),
             url: Type.String()
         }),
@@ -138,10 +146,15 @@ export default async function router(schema: Schema, config: Config) {
         res: Type.Object({
             tilejson: Type.String(),
             name: Type.String(),
+            version: Type.String(),
+            scheme: Type.String(),
+            //type: Type.String(),
             minzoom: Type.Integer(),
             maxzoom: Type.Integer(),
-            format: Type.String(),
-            tiles: Type.Array(Type.String())
+            //format: Type.String(),
+            tiles: Type.Array(Type.String()),
+            bounds: Type.Array(Type.Integer()),
+            center: Type.Array(Type.Integer()),
         })
     }, async (req, res) => {
         try {
@@ -153,12 +166,17 @@ export default async function router(schema: Schema, config: Config) {
             if (req.query.token) url = url + `?token=${req.query.token}`;
 
             return res.json({
-                "tilejson":"2.0.0",
-                "name": overlay.name,
-                "minzoom": overlay.minzoom,
-                "maxzoom": overlay.maxzoom,
-                "format": overlay.format,
-                "tiles": [ String(url) ]
+                tilejson: "2.2.0",
+                version: '1.0.0',
+                scheme: "xyz",
+                name: overlay.name,
+                //type: overlay.type,
+                bounds: [-180, -90, 180, 90],
+                center: [0, 0],
+                minzoom: overlay.minzoom,
+                maxzoom: overlay.maxzoom,
+                //format: overlay.format === 'mvt' ? 'pdf' : overlay.format,
+                tiles: [ String(url) ]
             });
         } catch (err) {
             return Err.respond(err, res);

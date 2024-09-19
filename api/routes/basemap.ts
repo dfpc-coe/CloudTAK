@@ -355,12 +355,12 @@ export default async function router(schema: Schema, config: Config) {
             if (req.query.token) url = url + `?token=${req.query.token}`;
 
             return res.json({
-                "tilejson":"2.0.0",
-                "name": basemap.name,
-                "minzoom": basemap.minzoom,
-                "maxzoom": basemap.maxzoom,
-                "format": basemap.format,
-                "tiles": [ String(url) ]
+                tilejson: "2.2.0",
+                name: basemap.name,
+                minzoom: basemap.minzoom,
+                maxzoom: basemap.maxzoom,
+                format: basemap.format,
+                tiles: [ String(url) ]
             });
         } catch (err) {
             return Err.respond(err, res);

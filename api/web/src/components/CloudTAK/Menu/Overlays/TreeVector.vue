@@ -1,7 +1,7 @@
 <template>
     <div class='ms-3'>
         <div
-            v-for='l of overlay._layers'
+            v-for='l of overlay.styles'
             :key='l.id'
         >
             <template v-if='["fill", "line", "circle"].includes(l.type)'>
@@ -86,7 +86,7 @@ export default {
         }
     },
     mounted: function() {
-        for (const layer of this.overlay._layers) {
+        for (const layer of this.overlay.styles) {
             this.treeState[layer.id] = false;
         }
     }

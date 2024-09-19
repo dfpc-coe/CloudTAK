@@ -254,9 +254,9 @@ export default {
 
             const post = mapStore.getOverlayById(overlay_ids[sortableEv.newIndex + 1]);
 
-            for (const l of overlay._layers) {
+            for (const l of overlay.styles) {
                 if (post) {
-                    mapStore.map.moveLayer(l.id, post._layers[0].id)
+                    mapStore.map.moveLayer(l.id, post.styles[0].id)
                 } else {
                     mapStore.map.moveLayer(l.id)
                 }
