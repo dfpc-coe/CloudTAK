@@ -25,12 +25,12 @@
                 <div
                     v-for='ov in list.items'
                     :key='ov.id'
+                    @click='createOverlay(ov)'
                     class='cursor-pointer col-12 py-2 px-3 hover-dark'
                 >
                     <div class='col-12 py-2 px-2 d-flex align-items-center'>
                         <span
-                            class='mx-2 cursor-pointer'
-                            @click='createOverlay(ov)'
+                            class='mx-2'
                             v-text='ov.name'
                         />
                     </div>

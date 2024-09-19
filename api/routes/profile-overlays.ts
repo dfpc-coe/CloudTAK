@@ -143,7 +143,7 @@ export default async function router(schema: Schema, config: Config) {
             visible: Type.Optional(Type.Boolean()),
             url: Type.Optional(Type.String()),
             mode_id: Type.Optional(Type.String()),
-            styles: Type.Optional(Type.Unknown())
+            styles: Type.Optional(Type.Array(Type.Unknown())),
         }),
         res: ProfileOverlayResponse
     }, async (req, res) => {
@@ -180,6 +180,7 @@ export default async function router(schema: Schema, config: Config) {
             visible: Type.Optional(Type.Boolean()),
             mode: Type.String(),
             mode_id: Type.Optional(Type.String()),
+            styles: Type.Optional(Type.Array(Type.Unknown())),
             token: Type.Optional(Type.String()),
             url: Type.String(),
             name: Type.String()

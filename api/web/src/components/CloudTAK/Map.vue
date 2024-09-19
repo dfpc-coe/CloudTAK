@@ -229,7 +229,7 @@
                     width: 120px;
                     right: 60px;
                     background-color: rgba(0, 0, 0, 0.5);
-                    border-radius: 0px 0px 6px 6px;
+                    border-radius: 0px 0px 0px 6px;
                 '
             >
                 <TablerDropdown>
