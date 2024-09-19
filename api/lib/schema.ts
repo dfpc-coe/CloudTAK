@@ -324,6 +324,9 @@ export const Overlay = pgTable('overlays', {
     name: text('name').notNull(),
     created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    minzoom: integer('minzoom').notNull().default(0),
+    maxzoom: integer('maxzoom').notNull().default(16),
+    format: text('format').notNull().default('png'),
     type: text('type').notNull().default('vector'),
     styles: json('styles'),
     url: text('url').notNull()
