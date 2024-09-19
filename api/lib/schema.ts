@@ -345,7 +345,7 @@ export const ProfileOverlay = pgTable('profile_overlays', {
     opacity: numeric('opacity').notNull().default('1'),
     visible: boolean('visible').notNull().default(true),
     token: text('token'),
-    styles: json('styles'),
+    styles: json('styles').notNull().default([]),
     mode: text('mode').notNull(),
     mode_id: text('mode_id'), // Used for Data not for Profile
     url: text('url').notNull()
