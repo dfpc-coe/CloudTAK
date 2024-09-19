@@ -75,7 +75,7 @@ export default async function router(schema: Schema, config: Config) {
         body: Type.Object({
             name: Type.Optional(Type.String()),
             type: Type.Optional(Type.String()),
-            styles: Type.Optional(Type.Object({})),
+            styles: Type.Optional(Type.Array(Type.Unknown())),
             url: Type.Optional(Type.String())
         }),
         res: OverlayResponse
@@ -101,7 +101,7 @@ export default async function router(schema: Schema, config: Config) {
         body: Type.Object({
             name: Type.String(),
             type: Type.String(),
-            styles: Type.Object({}),
+            styles: Type.Array(Type.Unknown()),
             url: Type.String()
         }),
         res: OverlayResponse
