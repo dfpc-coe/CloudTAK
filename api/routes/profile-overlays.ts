@@ -154,7 +154,7 @@ export default async function router(schema: Schema, config: Config) {
             if (overlay.username !== user.email) throw new Err(401, null, 'Cannot edit another\'s overlay');
 
             if (req.body.styles && req.body.styles.length) {
-                TileJSON.isValidStyle(req.body.styles);
+                TileJSON.isValidStyle(overlay.type, req.body.styles);
             }
 
             overlay = await config.models.ProfileOverlay.commit(req.params.overlay, req.body)
@@ -190,7 +190,7 @@ export default async function router(schema: Schema, config: Config) {
             const user = await Auth.as_user(config, req);
 
             if (req.body.styles && req.body.styles.length) {
-                TileJSON.isValidStyle(req.body.styles);
+                TileJSON.isValidStyle(req.body.type, req.body.styles);
             }
 
             let overlay;

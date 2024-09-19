@@ -89,13 +89,10 @@ export default {
     },
     methods: {
         createOverlay: async function(overlay) {
-            const url = stdurl(`/api/overlay/${overlay.id}/tiles`);
-
             this.loading = true;
-            const res = await std(url);
 
             await mapStore.overlays.push(await Overlay.create(mapStore.map, {
-                url,
+                url: String(stdurl(`/api/overlay/${overlay.id}/tiles`)),
                 name: overlay.name,
                 mode: 'overlay',
                 mode_id: overlay.id,
