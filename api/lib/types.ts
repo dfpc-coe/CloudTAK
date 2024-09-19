@@ -95,7 +95,7 @@ export const ProfileOverlayResponse = createSelectSchema(schemas.ProfileOverlay,
     pos: Type.Integer(),
     opacity: Type.Number(),
     visible: Type.Boolean(),
-    styles: Type.Unknown()
+    styles: Type.Array(Type.Unknown())
 });
 
 export const LayerAlertResponse = createSelectSchema(schemas.LayerAlert, {

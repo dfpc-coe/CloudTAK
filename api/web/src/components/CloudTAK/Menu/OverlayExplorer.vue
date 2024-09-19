@@ -101,8 +101,6 @@ export default {
                 mode_id: overlay.id,
                 type: overlay.type,
                 styles: overlay.styles
-            }, {
-                layers: overlay.styles
             }));
 
             this.loading = false;
