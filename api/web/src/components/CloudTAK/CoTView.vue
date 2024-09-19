@@ -185,7 +185,6 @@
             <Attachments
                 v-if='!feat.properties.contact'
                 :attachments='feat.properties.attachments || []'
-                class='py-2'
                 @attachment='addAttachment($event)'
             />
 
