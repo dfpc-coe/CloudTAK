@@ -50,6 +50,9 @@ import {
 import {
     IconUser,
 } from '@tabler/icons-vue'
+import Overlay from '/src/stores/overlays/base.ts';
+import { useMapStore } from '/src/stores/map.ts';
+const mapStore = useMapStore();
 
 export default {
     name: 'OverlayExplorer',
@@ -86,7 +89,7 @@ export default {
     },
     methods: {
         createOverlay: async function(overlay) {
-            const url = stdurl(`/api/overlay/${overlay.id}/tile`);
+            const url = stdurl(`/api/overlay/${overlay.id}/tiles`);
 
             this.loading = true;
             const res = await std(url);
