@@ -435,6 +435,13 @@
       "when": 1726695886128,
       "tag": "0061_wide_bruce_banner",
       "breakpoints": true
+    },
+    {
+      "idx": 62,
+      "version": "7",
+      "when": 1726717373761,
+      "tag": "0062_serious_xavin",
+      "breakpoints": true
     }
   ]
 }
