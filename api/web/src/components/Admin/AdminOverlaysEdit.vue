@@ -10,7 +10,7 @@
             class='px-2'
         >
             <TablerLoading v-if='loading' />
-            <div class='row'>
+            <div v-else class='row'>
                 <div class='col-12'>
                     <TablerInput
                         v-model='overlay.name'
@@ -83,6 +83,8 @@ export default {
     mounted: async function() {
         if (this.$route.params.overlay !== 'new') {
             await this.fetchOverlay();
+        } else {
+            this.loading = false;
         }
     },
     methods: {

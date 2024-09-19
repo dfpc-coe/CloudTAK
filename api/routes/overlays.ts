@@ -34,7 +34,7 @@ export default async function router(schema: Schema, config: Config) {
                 page: req.query.page,
                 order: req.query.order,
                 where: sql`
-                    name = ${req.query.filter}
+                    name ~* ${req.query.filter}
                 `
             });
 
