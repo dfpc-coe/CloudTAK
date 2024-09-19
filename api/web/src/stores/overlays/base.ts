@@ -167,13 +167,13 @@ export default class Overlay {
         if (display_text === 'Small') size = 4;
         if (display_text === 'Large') size = 16;
 
-        if (!this.styles && this.type === 'raster') {
+        if (!this.styles.length && this.type === 'raster') {
             this.styles = [{
                 'id': String(this.id),
                 'type': 'raster',
                 'source': String(this.id)
             }]
-        } else if (!this.styles && this.type === 'vector') {
+        } else if (!this.styles.length && this.type === 'vector') {
             this.styles = cotStyles(String(this.id), {
                 sourceLayer: 'out',
                 group: false,
@@ -186,7 +186,7 @@ export default class Overlay {
                     return { id: l.id, type: 'feat' };
                 });
             }
-        } else if (!this.styles && this.type === 'geojson') {
+        } else if (!this.styles.length && this.type === 'geojson') {
             this.styles = cotStyles(String(this.id), {
                 group: this.mode !== "mission",
                 icons: true,
@@ -202,7 +202,7 @@ export default class Overlay {
                     }
                 });
             }
-        } else if (!this.styles) {
+        } else if (!this.styles.length) {
             this.styles = [];
         }
 
