@@ -140,7 +140,7 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req, { token: true });
+            await Auth.as_user(config, req, { token: true });
 
             const overlay = await config.models.Overlay.from(req.params.overlay);
 
