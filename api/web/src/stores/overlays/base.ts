@@ -18,7 +18,6 @@ export default class Overlay {
     _destroyed: boolean;
     _internal: boolean;
 
-    _layers: Array<LayerSpecification>;
     _clickable: Array<{ id: string; type: string }>;
 
     _error?: Error;
@@ -36,19 +35,27 @@ export default class Overlay {
     mode: string;
     mode_id: string | null;
     url?: string;
-    styles: object;
+    styles: Array<any>;
     token: string | null;
 
     static async create(
         map: mapgl.Map,
         body: ProfileOverlay_Create,
         opts: {
-            layers?: Array<LayerSpecification>;
             clickable?: Array<{ id: string; type: string }>;
             before?: string;
         } = {}
     ): Promise<Overlay> {
         const ov = await std('/api/profile/overlay', { method: 'POST', body }) as ProfileOverlay;
+
+        if (ov.styles && ov.styles.length) {
+            for (const layer of ov.styles) {
+                const l = layer as any;
+                l.id = `${ov.id}-${l.id}`;
+                l.source = String(ov.id);
+            }
+        }
+
         return new Overlay(map, ov, opts);
     }
 
@@ -58,11 +65,9 @@ export default class Overlay {
             id: number;
             type: string;
             name: string;
-        },
-        opts: {
             layers?: Array<LayerSpecification>;
             clickable?: Array<{ id: string; type: string }>;
-        } = {}
+        },
     ): Overlay {
         const overlay = new Overlay(map, {
             ...body,
@@ -75,10 +80,10 @@ export default class Overlay {
             token: null,
             mode: 'internal',
             mode_id: null,
-            styles: {},
+            styles: body.layers || [],
             pos: 3,
         }, {
-            ...opts,
+            clickable: body.clickable,
             internal: true
         });
 
@@ -91,7 +96,6 @@ export default class Overlay {
     }
 
     constructor(map: mapgl.Map, overlay: ProfileOverlay, opts: {
-        layers?: Array<LayerSpecification>;
         clickable?: Array<{ id: string; type: string }>;
         internal?: boolean;
         before?: string;
@@ -100,7 +104,6 @@ export default class Overlay {
 
         this._destroyed = false;
         this._internal = opts.internal || false;
-        this._layers = [];
         this._clickable = [];
         this._loaded = false;
 
@@ -116,7 +119,7 @@ export default class Overlay {
         this.mode = overlay.mode;
         this.mode_id = overlay.mode_id;
         this.url = overlay.url;
-        this.styles = overlay.styles as object;
+        this.styles = overlay.styles;
         this.token = overlay.token;
 
         this.init(opts);
@@ -127,7 +130,6 @@ export default class Overlay {
     }
 
     init(opts: {
-        layers?: Array<LayerSpecification>;
         clickable?: Array<{ id: string; type: string }>;
         before?: string;
     } = {}) {
@@ -165,14 +167,14 @@ export default class Overlay {
         if (display_text === 'Small') size = 4;
         if (display_text === 'Large') size = 16;
 
-        if (!opts.layers && this.type === 'raster') {
-            opts.layers =  [{
+        if (!this.styles && this.type === 'raster') {
+            this.styles = [{
                 'id': String(this.id),
                 'type': 'raster',
                 'source': String(this.id)
             }]
-        } else if (!opts.layers && this.type === 'vector') {
-            opts.layers = cotStyles(String(this.id), {
+        } else if (!this.styles && this.type === 'vector') {
+            this.styles = cotStyles(String(this.id), {
                 sourceLayer: 'out',
                 group: false,
                 icons: false,
@@ -180,19 +182,19 @@ export default class Overlay {
             });
 
             if (opts.clickable === undefined)  {
-                opts.clickable = opts.layers.map((l) => {
+                opts.clickable = this.styles.map((l) => {
                     return { id: l.id, type: 'feat' };
                 });
             }
-        } else if (!opts.layers && this.type === 'geojson') {
-            opts.layers = cotStyles(String(this.id), {
+        } else if (!this.styles && this.type === 'geojson') {
+            this.styles = cotStyles(String(this.id), {
                 group: this.mode !== "mission",
                 icons: true,
                 labels: { size }
             });
 
             if (opts.clickable === undefined)  {
-                opts.clickable = opts.layers.map((l) => {
+                opts.clickable = this.styles.map((l) => {
                     if (this.mode === 'mission') {
                         return { id: l.id, type: 'cot' };
                     } else {
@@ -200,19 +202,17 @@ export default class Overlay {
                     }
                 });
             }
-        } else if (!opts.layers) {
-            opts.layers = [];
+        } else if (!this.styles) {
+            this.styles = [];
         }
 
-        for (const l of opts.layers) {
+        for (const l of this.styles) {
             if (opts.before) {
                 this._map.addLayer(l, opts.before);
             } else {
                 this._map.addLayer(l)
             }
         }
-
-        this._layers = opts.layers;
 
         // The above doesn't set vis/opacity initially
         this.update({
@@ -238,7 +238,7 @@ export default class Overlay {
     }
 
     remove() {
-        for (const l of this._layers) {
+        for (const l of this.styles) {
             this._map.removeLayer(String(l.id));
         }
 
@@ -258,7 +258,6 @@ export default class Overlay {
 
         this.remove();
         this.init({
-            layers: this._layers,
             clickable: this._clickable,
             before: opts.before
         });
@@ -287,7 +286,7 @@ export default class Overlay {
     }): Promise<void> {
         if (body.opacity !== undefined) {
             this.opacity = body.opacity;
-            for (const l of this._layers) {
+            for (const l of this.styles) {
                 if (this.type === 'raster') {
                     this._map.setPaintProperty(l.id, 'raster-opacity', Number(this.opacity))
                 }
@@ -296,7 +295,7 @@ export default class Overlay {
 
         if (body.visible !== undefined) {
             this.visible = body.visible;
-            for (const l of this._layers) {
+            for (const l of this.styles) {
                 this._map.setLayoutProperty(l.id, 'visibility', this.visible ? 'visible' : 'none');
             }
         }
