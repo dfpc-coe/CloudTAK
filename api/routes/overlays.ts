@@ -1,4 +1,5 @@
 import { Type } from '@sinclair/typebox'
+import TileJSON from '../lib/control/tilejson.js';
 import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
@@ -85,6 +86,10 @@ export default async function router(schema: Schema, config: Config) {
             await Auth.as_user(config, req, {
                 admin: true
             });
+
+            if (req.body.styles && req.body.styles.length) {
+                TileJSON.isValidStyle(req.body.styles);
+            }
 
             const overlay = await config.models.Overlay.commit(req.params.overlay, req.body)
 
