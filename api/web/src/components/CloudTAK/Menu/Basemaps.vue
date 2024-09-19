@@ -31,7 +31,7 @@
             <TablerNone
                 v-else-if='!list.items.length'
                 label='Basemaps'
-                @create='$router.push("/basemap/new")'
+                @create='editModal = {}'
             />
             <template v-else>
                 <div
@@ -43,7 +43,7 @@
                     <div class='d-flex align-items-center my-2'>
                         <span
                             class='mx-2 text-truncate'
-                            style='font-size: 18px;'
+                            style='font-size: 18px; width: 240px;'
                             v-text='basemap.name'
                         />
 
