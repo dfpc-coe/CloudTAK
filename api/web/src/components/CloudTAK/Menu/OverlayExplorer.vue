@@ -23,14 +23,15 @@
             />
             <template v-else>
                 <div
-                    v-for='a in list.items'
-                    :key='a.id'
+                    v-for='ov in list.items'
+                    :key='ov.id'
                     class='cursor-pointer col-12 py-2 px-3 hover-dark'
                 >
                     <div class='col-12 py-2 px-2 d-flex align-items-center'>
                         <span
                             class='mx-2 cursor-pointer'
-                            v-text='a.name'
+                            @click='createOverlay(ov)'
+                            v-text='ov.name'
                         />
                     </div>
                 </div>
@@ -84,6 +85,28 @@ export default {
         }
     },
     methods: {
+        createOverlay: async function(overlay) {
+            const url = stdurl(`/api/overlay/${overlay.id}/tile`);
+
+            this.loading = true;
+            const res = await std(url);
+
+            await mapStore.overlays.push(await Overlay.create(mapStore.map, {
+                url,
+                name: overlay.name,
+                mode: 'overlay',
+                mode_id: overlay.id,
+                type: overlay.type,
+                styles: overlay.styles
+            }, {
+                layers: overlay.styles
+            }));
+
+            this.loading = false;
+            this.$emit('mode', 'overlays');
+
+            this.$router.push('/menu/overlays');
+        },
         fetchList: async function() {
             this.loading = true;
             const url = stdurl('/api/overlay');

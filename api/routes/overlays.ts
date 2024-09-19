@@ -119,4 +119,44 @@ export default async function router(schema: Schema, config: Config) {
             return Err.respond(err, res);
         }
     });
+
+    await schema.get('/overlay/:overlay/tiles', {
+        name: 'Overlay TileJSON',
+        group: 'Overlays',
+        description: 'Get an overlay tilejson',
+        params: Type.Object({
+            overlay: Type.String()
+        }),
+        query: Type.Object({
+            token: Type.Optional(Type.String()),
+        }),
+        res: Type.Object({
+            tilejson: Type.String(),
+            name: Type.String(),
+            minzoom: Type.Integer(),
+            maxzoom: Type.Integer(),
+            format: Type.String(),
+            tiles: Type.Array(Type.String())
+        })
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req, { token: true });
+
+            const overlay = await config.models.Overlay.from(req.params.overlay);
+
+            let url = config.API_URL + `/api/overlay/${overlay.id}/tiles/{z}/{x}/{y}`;
+            if (req.query.token) url = url + `?token=${req.query.token}`;
+
+            return res.json({
+                "tilejson":"2.0.0",
+                "name": overlay.name,
+                "minzoom": overlay.minzoom,
+                "maxzoom": overlay.maxzoom,
+                "format": overlay.format,
+                "tiles": [ String(url) ]
+            });
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
 }
