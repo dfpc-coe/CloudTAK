@@ -1,9 +1,12 @@
 import { Type } from '@sinclair/typebox'
+import { Readable } from 'node:stream';
+import Cacher from '../lib/cacher.js';
 import TileJSON from '../lib/control/tilejson.js';
 import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
+import zlib from 'zlib';
 import { OverlayResponse } from '../lib/types.js'
 import { Overlay } from '../lib/schema.js';
 import { sql } from 'drizzle-orm';
@@ -98,6 +101,8 @@ export default async function router(schema: Schema, config: Config) {
 
             overlay = await config.models.Overlay.commit(req.params.overlay, req.body)
 
+            await config.cacher.del(`overlay-${overlay.id}`);
+
             return res.json(overlay)
         } catch (err) {
             return Err.respond(err, res);
@@ -147,7 +152,7 @@ export default async function router(schema: Schema, config: Config) {
             tilejson: Type.String(),
             name: Type.String(),
             version: Type.String(),
-            scheme: Type.String(),
+            //scheme: Type.String(),
             //type: Type.String(),
             minzoom: Type.Integer(),
             maxzoom: Type.Integer(),
@@ -160,7 +165,9 @@ export default async function router(schema: Schema, config: Config) {
         try {
             await Auth.as_user(config, req, { token: true });
 
-            const overlay = await config.models.Overlay.from(req.params.overlay);
+            const overlay = await config.cacher.get(Cacher.Miss(req.query, `overlay-${req.params.overlay}`), async () => {
+                return await config.models.Overlay.from(req.params.overlay);
+            });
 
             let url = config.API_URL + `/api/overlay/${overlay.id}/tiles/{z}/{x}/{y}`;
             if (req.query.token) url = url + `?token=${req.query.token}`;
@@ -168,7 +175,6 @@ export default async function router(schema: Schema, config: Config) {
             return res.json({
                 tilejson: "2.2.0",
                 version: '1.0.0',
-                scheme: "xyz",
                 name: overlay.name,
                 //type: overlay.type,
                 bounds: [-180, -90, 180, 90],
@@ -178,6 +184,63 @@ export default async function router(schema: Schema, config: Config) {
                 //format: overlay.format === 'mvt' ? 'pdf' : overlay.format,
                 tiles: [ String(url) ]
             });
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/overlay/:overlay/tiles/:z/:x/:y', {
+        name: 'Get Overlay Tile',
+        group: 'Overlays',
+        description: 'Get an overlay tile',
+        params: Type.Object({
+        }),
+        params: Type.Object({
+            overlay: Type.String(),
+            z: Type.Integer({ minimum: 0 }),
+            x: Type.Integer({ minimum: 0 }),
+            y: Type.Integer({ minimum: 0 }),
+        }),
+        query: Type.Object({
+            token: Type.Optional(Type.String()),
+        })
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req, { token: true });
+
+            const overlay = await config.cacher.get(Cacher.Miss(req.query, `overlay-${req.params.overlay}`), async () => {
+                return await config.models.Overlay.from(req.params.overlay);
+            });
+
+            const url = new URL(overlay.url
+                .replace('{z}', req.params.z)
+                .replace('{x}', req.params.x)
+                .replace('{y}', req.params.y)
+            );
+
+            const proxy = await fetch(url)
+
+            res.status(proxy.status);
+            for (const h of [
+                'content-type',
+                'content-length',
+                'content-encoding'
+            ]) {
+                const ph = proxy.headers.get(h);
+                if (ph) res.append(h, ph);
+            }
+
+            if (proxy.headers.get('content-encoding') === 'gzip') {
+                const gz = zlib.createGzip();
+
+                // @ts-expect-error Doesnt meet TS def
+                return Readable.fromWeb(proxy.body)
+                    .pipe(gz)
+                    .pipe(res);
+            } else {
+                // @ts-expect-error Doesnt meet TS def
+                return Readable.fromWeb(proxy.body).pipe(res);
+            }
         } catch (err) {
             return Err.respond(err, res);
         }
