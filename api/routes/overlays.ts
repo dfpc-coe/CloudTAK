@@ -1,7 +1,7 @@
 import { Type } from '@sinclair/typebox'
 import { Readable } from 'node:stream';
 import Cacher from '../lib/cacher.js';
-import TileJSON from '../lib/control/tilejson.js';
+import TileJSON, { TileJSONType } from '../lib/control/tilejson.js';
 import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
@@ -148,19 +148,7 @@ export default async function router(schema: Schema, config: Config) {
         query: Type.Object({
             token: Type.Optional(Type.String()),
         }),
-        res: Type.Object({
-            tilejson: Type.String(),
-            name: Type.String(),
-            version: Type.String(),
-            //scheme: Type.String(),
-            //type: Type.String(),
-            minzoom: Type.Integer(),
-            maxzoom: Type.Integer(),
-            //format: Type.String(),
-            tiles: Type.Array(Type.String()),
-            bounds: Type.Array(Type.Integer()),
-            center: Type.Array(Type.Integer()),
-        })
+        res: TileJSONType
     }, async (req, res) => {
         try {
             await Auth.as_user(config, req, { token: true });
@@ -172,18 +160,7 @@ export default async function router(schema: Schema, config: Config) {
             let url = config.API_URL + `/api/overlay/${overlay.id}/tiles/{z}/{x}/{y}`;
             if (req.query.token) url = url + `?token=${req.query.token}`;
 
-            return res.json({
-                tilejson: "2.2.0",
-                version: '1.0.0',
-                name: overlay.name,
-                //type: overlay.type,
-                bounds: [-180, -90, 180, 90],
-                center: [0, 0],
-                minzoom: overlay.minzoom,
-                maxzoom: overlay.maxzoom,
-                //format: overlay.format === 'mvt' ? 'pdf' : overlay.format,
-                tiles: [ String(url) ]
-            });
+            return res.json(TileJSON.json(overlay));
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -193,8 +170,6 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Get Overlay Tile',
         group: 'Overlays',
         description: 'Get an overlay tile',
-        params: Type.Object({
-        }),
         params: Type.Object({
             overlay: Type.String(),
             z: Type.Integer({ minimum: 0 }),
