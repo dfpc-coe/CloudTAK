@@ -24,6 +24,18 @@
                     />
                 </div>
                 <div class='col-12 col-md-6'>
+                    <TablerInput
+                        v-model='overlay.minzoom'
+                        label='MinZoom'
+                    />
+                </div>
+                <div class='col-12 col-md-6'>
+                    <TablerInput
+                        v-model='overlay.maxzoom'
+                        label='MaxZoom'
+                    />
+                </div>
+                <div class='col-12 col-md-6'>
                     <TablerEnum
                         v-model='overlay.type'
                         label='Type'
@@ -83,7 +95,9 @@ export default {
                 name: '',
                 url: '',
                 type: 'vector',
-                styles: ''
+                styles: '',
+                minzoom: 0,
+                maxzoom: 16,
             }
         }
     },

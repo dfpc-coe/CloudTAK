@@ -1,12 +1,10 @@
 import { Type } from '@sinclair/typebox'
-import { Readable } from 'node:stream';
 import Cacher from '../lib/cacher.js';
 import TileJSON, { TileJSONType } from '../lib/control/tilejson.js';
 import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
-import zlib from 'zlib';
 import { OverlayResponse } from '../lib/types.js'
 import { Overlay } from '../lib/schema.js';
 import { sql } from 'drizzle-orm';
@@ -189,35 +187,13 @@ export default async function router(schema: Schema, config: Config) {
                 return await config.models.Overlay.from(req.params.overlay);
             });
 
-            const url = new URL(overlay.url
-                .replace('{z}', req.params.z)
-                .replace('{x}', req.params.x)
-                .replace('{y}', req.params.y)
+            return TileJSON.tile(
+                overlay,
+                req.params.z,
+                req.params.x,
+                req.params.y,
+                res
             );
-
-            const proxy = await fetch(url)
-
-            res.status(proxy.status);
-            for (const h of [
-                'content-type',
-                'content-length',
-                'content-encoding'
-            ]) {
-                const ph = proxy.headers.get(h);
-                if (ph) res.append(h, ph);
-            }
-
-            if (proxy.headers.get('content-encoding') === 'gzip') {
-                const gz = zlib.createGzip();
-
-                // @ts-expect-error Doesnt meet TS def
-                return Readable.fromWeb(proxy.body)
-                    .pipe(gz)
-                    .pipe(res);
-            } else {
-                // @ts-expect-error Doesnt meet TS def
-                return Readable.fromWeb(proxy.body).pipe(res);
-            }
         } catch (err) {
             return Err.respond(err, res);
         }
