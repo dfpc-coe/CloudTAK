@@ -160,7 +160,9 @@ export default async function router(schema: Schema, config: Config) {
             let url = config.API_URL + `/api/overlay/${overlay.id}/tiles/{z}/{x}/{y}`;
             if (req.query.token) url = url + `?token=${req.query.token}`;
 
-            return res.json(TileJSON.json(overlay));
+            return res.json(TileJSON.json({
+                ...overlay, url
+            }));
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -181,7 +183,7 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req, { token: true });
+            await Auth.as_user(config, req, { token: true });
 
             const overlay = await config.cacher.get(Cacher.Miss(req.query, `overlay-${req.params.overlay}`), async () => {
                 return await config.models.Overlay.from(req.params.overlay);
