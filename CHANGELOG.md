@@ -12,6 +12,19 @@
 
 ### Pending Release
 
+### v3.33.0 - 2024-09-20
+
+- :bug: `UI` Fix BaseMap Menu `Create` Button
+- :bug: `UI` Fix listing server overlays in CloudTAK Menu
+- :rocket: `API/UI` Add support for setting min/max zoom
+- :rocket:  `API` Migrate `styles` columns to Unknown array type
+- :bug: `API` Fix Maplibre GL Style Validation which to date hasn't been used
+- :rocket: Add Server Overlay `/tiles` and ZXY endpoints
+- :rocket: Save Styles to database for given layers
+- :rocket: `UI` Dynamically regenerate source and layer IDs from provided styles
+- :tada: Write TileJSON proxy which speeds up tile passthrough by roughly 8x
+
+
 ### v3.32.0 - 2024-09-18
 
 - :bug: Fix CSP headers to allow Video Server access
