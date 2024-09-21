@@ -53,11 +53,8 @@
                     />
                 </div>
                 <div class='col-12'>
-                    <TablerInput
+                    <StyleContainer
                         v-model='overlay.styles'
-                        label='GL Style'
-                        placeholder='GL JS Style JSON'
-                        :rows='6'
                     />
                 </div>
                 <div class='col-12 d-flex py-2'>
@@ -77,7 +74,7 @@
 
 <script>
 import { std, stdurl, stdclick } from '/src/std.ts';
-
+import StyleContainer from '../Styling/Style.vue';
 import {
     TablerEnum,
     TablerInput,
@@ -90,6 +87,7 @@ export default {
         TablerEnum,
         TablerInput,
         TablerLoading,
+        StyleContainer,
     },
     data: function() {
         return {
@@ -119,12 +117,12 @@ export default {
 
             this.loading = true;
             if (this.$route.params.overlay === 'new') {
-                await std(`/api/overlay`, {
+                this.overlay = await std(`/api/overlay`, {
                     method: 'POST',
                     body: overlay
                 });
             } else {
-                await std(`/api/overlay/${this.overlay.id}`, {
+                this.overlay = await std(`/api/overlay/${this.overlay.id}`, {
                     method: 'PATCH',
                     body: overlay
                 });
