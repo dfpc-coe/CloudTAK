@@ -215,7 +215,6 @@ export default class Overlay {
         }
 
         for (const l of this.styles) {
-            console.error(this.name, l)
             if (opts.before) {
                 this._map.addLayer(l, opts.before);
             } else {
