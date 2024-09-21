@@ -300,7 +300,7 @@ export default class VideoServiceControl {
 
         if (lease.proxy) {
             try {
-                const proxy = new URL(opts.proxy);
+                const proxy = new URL(lease.proxy);
 
                 // Check for HLS Errors
                 if (['http:', 'https:'].includes(proxy.protocol)) {
@@ -315,6 +315,7 @@ export default class VideoServiceControl {
             } catch (err) {
                 if (err instanceof Err) {
                     throw err;
+                // @ts-expect-error code is not defined in type
                 } else if (err instanceof TypeError && err.code === 'ERR_INVALID_URL') {
                     throw new Err(400, null, 'Invalid Video Stream URL');
                 } else {

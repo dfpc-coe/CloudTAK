@@ -1,5 +1,5 @@
 import { Type } from '@sinclair/typebox'
-import { validate } from '@maplibre/maplibre-gl-style-spec';
+import TileJSON from '../lib/control/tilejson.js';
 import path from 'node:path';
 import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
@@ -143,7 +143,7 @@ export default async function router(schema: Schema, config: Config) {
             visible: Type.Optional(Type.Boolean()),
             url: Type.Optional(Type.String()),
             mode_id: Type.Optional(Type.String()),
-            styles: Type.Optional(Type.Unknown())
+            styles: Type.Optional(Type.Array(Type.Unknown())),
         }),
         res: ProfileOverlayResponse
     }, async (req, res) => {
@@ -153,9 +153,8 @@ export default async function router(schema: Schema, config: Config) {
             let overlay = await config.models.ProfileOverlay.from(req.params.overlay)
             if (overlay.username !== user.email) throw new Err(401, null, 'Cannot edit another\'s overlay');
 
-            if (req.body.styles) {
-                const errors = validate(req.body.styles as any)
-                if (errors.length) throw new Err(400, null, JSON.stringify(errors));
+            if (req.body.styles && req.body.styles.length) {
+                TileJSON.isValidStyle(overlay.type, req.body.styles);
             }
 
             overlay = await config.models.ProfileOverlay.commit(req.params.overlay, req.body)
@@ -180,6 +179,7 @@ export default async function router(schema: Schema, config: Config) {
             visible: Type.Optional(Type.Boolean()),
             mode: Type.String(),
             mode_id: Type.Optional(Type.String()),
+            styles: Type.Optional(Type.Array(Type.Unknown())),
             token: Type.Optional(Type.String()),
             url: Type.String(),
             name: Type.String()
@@ -188,6 +188,10 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
+
+            if (req.body.styles && req.body.styles.length) {
+                TileJSON.isValidStyle(req.body.type || 'raster', req.body.styles);
+            }
 
             let overlay;
             if (req.body.mode === 'mission') {

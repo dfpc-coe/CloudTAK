@@ -10,7 +10,10 @@
             class='px-2'
         >
             <TablerLoading v-if='loading' />
-            <div class='row'>
+            <div
+                v-else
+                class='row'
+            >
                 <div class='col-12'>
                     <TablerInput
                         v-model='overlay.name'
@@ -23,11 +26,30 @@
                         label='Data URL'
                     />
                 </div>
-                <div class='col-12'>
+                <div class='col-12 col-md-6'>
+                    <TablerInput
+                        v-model='overlay.minzoom'
+                        label='MinZoom'
+                    />
+                </div>
+                <div class='col-12 col-md-6'>
+                    <TablerInput
+                        v-model='overlay.maxzoom'
+                        label='MaxZoom'
+                    />
+                </div>
+                <div class='col-12 col-md-6'>
                     <TablerEnum
                         v-model='overlay.type'
                         label='Type'
                         :options='["vector", "raster"]'
+                    />
+                </div>
+                <div class='col-12 col-md-6'>
+                    <TablerEnum
+                        v-model='overlay.format'
+                        label='Overlay Format'
+                        :options='["png", "jpeg", "mvt"]'
                     />
                 </div>
                 <div class='col-12'>
@@ -76,13 +98,17 @@ export default {
                 name: '',
                 url: '',
                 type: 'vector',
-                styles: ''
+                styles: '',
+                minzoom: 0,
+                maxzoom: 16,
             }
         }
     },
     mounted: async function() {
         if (this.$route.params.overlay !== 'new') {
             await this.fetchOverlay();
+        } else {
+            this.loading = false;
         }
     },
     methods: {
@@ -108,11 +134,10 @@ export default {
         },
         fetchOverlay: async function() {
             this.loading = true;
-            const url = stdurl(`/api/overlay/${this.overlay.id}`);
+            const url = stdurl(`/api/overlay/${this.$route.params.overlay}`);
             const overlay = await std(url);
-            overlay.styles = JSON.parse(overlay.styles);
+            overlay.styles = JSON.stringify(overlay.styles, null, 4);
             this.overlay = overlay;
-
             this.loading = false;
         }
     }

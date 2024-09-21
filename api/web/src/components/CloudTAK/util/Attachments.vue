@@ -1,5 +1,5 @@
 <template>
-    <div class='col-12 d-flex align-items-center'>
+    <div class='col-12 d-flex align-items-center py2'>
         <label class='subheader mx-2'>Attachments</label>
 
         <div class='ms-auto me-2'>
