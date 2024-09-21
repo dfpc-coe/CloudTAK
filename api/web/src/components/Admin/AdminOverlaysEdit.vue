@@ -10,7 +10,10 @@
             class='px-2'
         >
             <TablerLoading v-if='loading' />
-            <div v-else class='row'>
+            <div
+                v-else
+                class='row'
+            >
                 <div class='col-12'>
                     <TablerInput
                         v-model='overlay.name'
@@ -43,11 +46,11 @@
                     />
                 </div>
                 <div class='col-12 col-md-6'>
-                        <TablerEnum
-                            v-model='overlay.format'
-                            label='Overlay Format'
-                            :options='["png", "jpeg", "mvt"]'
-                        />
+                    <TablerEnum
+                        v-model='overlay.format'
+                        label='Overlay Format'
+                        :options='["png", "jpeg", "mvt"]'
+                    />
                 </div>
                 <div class='col-12'>
                     <TablerInput

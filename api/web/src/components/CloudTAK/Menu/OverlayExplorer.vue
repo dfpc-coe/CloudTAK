@@ -25,8 +25,8 @@
                 <div
                     v-for='ov in list.items'
                     :key='ov.id'
-                    @click='createOverlay(ov)'
                     class='cursor-pointer col-12 py-2 px-3 hover-dark'
+                    @click='createOverlay(ov)'
                 >
                     <div class='col-12 py-2 px-2 d-flex align-items-center'>
                         <span
@@ -62,17 +62,6 @@ export default {
         TablerLoading,
         MenuTemplate
     },
-    mounted: async function() {
-        await this.fetchList();
-    },
-    watch: {
-        paging: {
-            deep: true,
-            handler: async function() {
-                await this.fetchList();
-            },
-        }
-    },
     data: function() {
         return {
             loading: false,
@@ -86,6 +75,17 @@ export default {
                 items: []
             }
         }
+    },
+    watch: {
+        paging: {
+            deep: true,
+            handler: async function() {
+                await this.fetchList();
+            },
+        }
+    },
+    mounted: async function() {
+        await this.fetchList();
     },
     methods: {
         createOverlay: async function(overlay) {
