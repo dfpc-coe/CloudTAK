@@ -2,10 +2,18 @@
     <div>
         <TablerLoading v-if='loading' />
         <template v-else-if='err'>
-            <TablerAlert title='Video Error' :err='err'/>
+            <TablerAlert
+                title='Video Error'
+                :err='err'
+            />
 
             <div class='d-flex justify-content-center'>
-                <button @click='$emit("close")' class='btn'>Close Player</button>
+                <button
+                    class='btn'
+                    @click='$emit("close")'
+                >
+                    Close Player
+                </button>
             </div>
         </template>
         <template v-else-if='!protocols || !protocols.hls'>
@@ -47,9 +55,6 @@ import {
 
 export default defineComponent({
     name: 'CoTVideo',
-    emits: [
-        'close'
-    ],
     components: {
         TablerNone,
         TablerAlert,
@@ -61,6 +66,9 @@ export default defineComponent({
             required: true
         }
     },
+    emits: [
+        'close'
+    ],
     data: function(): {
         loading: boolean,
         err?: Error,

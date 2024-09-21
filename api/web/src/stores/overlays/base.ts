@@ -35,7 +35,7 @@ export default class Overlay {
     mode: string;
     mode_id: string | null;
     url?: string;
-    styles: Array<any>;
+    styles: Array<LayerSpecification>;
     token: string | null;
 
     static async create(
@@ -53,8 +53,9 @@ export default class Overlay {
 
         if (ov.styles && ov.styles.length) {
             for (const layer of ov.styles) {
-                const l = layer as any;
+                const l = layer as LayerSpecification;
                 l.id = `${ov.id}-${l.id}`;
+                // @ts-expect-error Special case Background Layer type
                 l.source = String(ov.id);
             }
         }
@@ -127,7 +128,7 @@ export default class Overlay {
         this.mode = overlay.mode;
         this.mode_id = overlay.mode_id;
         this.url = overlay.url;
-        this.styles = overlay.styles;
+        this.styles = overlay.styles as Array<LayerSpecification>;
         this.token = overlay.token;
 
         this.init(opts);

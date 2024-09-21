@@ -109,7 +109,7 @@
                                     <TablerDelete
                                         v-if='
                                             opened.includes(overlay.id)
-                                            && ["mission", "data", "profile", "overlay"].includes(overlay.mode)
+                                                && ["mission", "data", "profile", "overlay"].includes(overlay.mode)
                                         '
                                         :key='overlay.id'
                                         v-tooltip='"Delete Overlay"'
