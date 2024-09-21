@@ -1,7 +1,9 @@
-import zlib from 'zlib';
+import undici from 'undici';
 import { Readable } from 'node:stream';
 import type { BBox } from 'geojson';
 import type { Response } from 'express';
+import { pipeline, Writable, PassThrough } from 'node:stream';
+import { pipeline as promisePipeline } from 'node:stream/promises';
 import { pointOnFeature } from '@turf/point-on-feature';
 import { bboxPolygon } from '@turf/bbox-polygon';
 import { Static, Type } from '@sinclair/typebox'
@@ -81,28 +83,40 @@ export default class TileJSON {
             .replace(/\{\$?y\}/, String(y))
         );
 
-        const proxy = await fetch(url)
+        const stream = await undici.pipeline(url, {
+            method: 'GET',
+        }, ({ statusCode, headers, body }) => {
+            if (headers) {
+                for (const key in headers) {
+                    if (
+                        ![
+                            'content-type',
+                            'content-length',
+                            'content-encoding',
+                            'last-modified',
+                        ].includes(key)
+                    ) {
+                        delete headers[key];
+                    }
+                }
+            }
 
-        res.status(proxy.status);
-        for (const h of [
-            'content-type',
-            'content-length',
-            'content-encoding'
-        ]) {
-            const ph = proxy.headers.get(h);
-            if (ph) res.append(h, ph);
-        }
+            res.writeHead(statusCode, headers);
 
-        if (proxy.headers.get('content-encoding') === 'gzip') {
-            const gz = zlib.createGzip();
+            return body;
+        });
 
-            // @ts-expect-error Doesnt meet TS def
-            Readable.fromWeb(proxy.body)
-                .pipe(gz)
-                .pipe(res);
-        } else {
-            // @ts-expect-error Doesnt meet TS def
-            Readable.fromWeb(proxy.body).pipe(res);
-        }
+        stream
+            .on('data', (buf) => {
+                res.write(buf)
+            })
+            .on('end', () => {
+                res.end()
+            })
+            .on('close', () => {
+                res.end()
+            })
+            .end()
+
     }
 }
