@@ -324,10 +324,15 @@ export const Overlay = pgTable('overlays', {
     name: text('name').notNull(),
     created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    minzoom: integer('minzoom').notNull().default(0),
+    maxzoom: integer('maxzoom').notNull().default(16),
+    format: text('format').notNull().default('png'),
     type: text('type').notNull().default('vector'),
-    styles: json('styles'),
+    styles: json('styles').$type<Array<unknown>>().notNull().default([]),
     url: text('url').notNull()
-});
+}, (t) => ({
+    unq: unique().on(t.name)
+}));
 
 export const ProfileOverlay = pgTable('profile_overlays', {
     id: serial('id').primaryKey(),
@@ -340,7 +345,7 @@ export const ProfileOverlay = pgTable('profile_overlays', {
     opacity: numeric('opacity').notNull().default('1'),
     visible: boolean('visible').notNull().default(true),
     token: text('token'),
-    styles: json('styles'),
+    styles: json('styles').$type<Array<unknown>>().notNull().default([]),
     mode: text('mode').notNull(),
     mode_id: text('mode_id'), // Used for Data not for Profile
     url: text('url').notNull()

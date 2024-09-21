@@ -304,8 +304,7 @@ export const useMapStore = defineStore('cloudtak', {
                 id: 0,
                 name: 'Your Location',
                 type: 'vector',
-            },{
-                layers: [{
+                styles: [{
                     id: 'you',
                     type: 'circle',
                     source: '0',

@@ -92,7 +92,7 @@ const router = new VueRouter.createRouter({
                 },{
                     path: 'datas',
                     name: 'home-menu-datas',
-                    component: () => import('./components/CloudTAK/Menu/Datas.vue')
+                    component: () => import('./components/CloudTAK/Menu/OverlayExplorer.vue')
                 },{
                     path: 'contacts',
                     name: 'home-menu-contacts',

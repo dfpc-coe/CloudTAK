@@ -185,7 +185,6 @@
             <Attachments
                 v-if='!feat.properties.contact'
                 :attachments='feat.properties.attachments || []'
-                class='py-2'
                 @attachment='addAttachment($event)'
             />
 
@@ -287,8 +286,8 @@
                 <CoTVideo
                     v-if='viewer'
                     class='my-2 mx-2'
-                    @close='viewer = false'
                     :video='feat.properties.video.url'
+                    @close='viewer = false'
                 />
 
                 <div class='table-responsive rounded mx-2 py-2 px-2'>

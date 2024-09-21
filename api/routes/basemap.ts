@@ -1,12 +1,13 @@
 import path from 'node:path';
+import { bbox } from '@turf/bbox';
 import Err from '@openaddresses/batch-error';
+import TileJSON, { TileJSONType } from '../lib/control/tilejson.js';
 import Auth, { AuthUserAccess, ResourceCreationScope } from '../lib/auth.js';
 import Cacher from '../lib/cacher.js';
 import busboy from 'busboy';
 import Config from '../lib/config.js';
 import { Response } from 'express';
 import xml2js from 'xml2js';
-import { Readable } from 'node:stream';
 import stream2buffer from '../lib/stream.js';
 import bboxPolygon from '@turf/bbox-polygon';
 import { Param } from '@openaddresses/batch-generic'
@@ -338,7 +339,8 @@ export default async function router(schema: Schema, config: Config) {
         }),
         query: Type.Object({
             token: Type.Optional(Type.String()),
-        })
+        }),
+        res: TileJSONType
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req, { token: true });
@@ -354,14 +356,16 @@ export default async function router(schema: Schema, config: Config) {
             let url = config.API_URL + `/api/basemap/${basemap.id}/tiles/{z}/{x}/{y}`;
             if (req.query.token) url = url + `?token=${req.query.token}`;
 
-            return res.json({
-                "tilejson":"2.0.0",
-                "name": basemap.name,
-                "minzoom": basemap.minzoom,
-                "maxzoom": basemap.maxzoom,
-                "format": basemap.format,
-                "tiles": [ String(url) ]
+            const json = TileJSON.json({
+                ...basemap,
+                bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
+                center: basemap.center ? basemap.center.coordinates : undefined,
+                url
             });
+
+            console.error(json);
+
+            return res.json(json);
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -392,26 +396,13 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
             }
 
-            const url = new URL(basemap.url
-                .replace('{$z}', req.params.z)
-                .replace('{$x}', req.params.x)
-                .replace('{$y}', req.params.y)
+            return TileJSON.tile(
+                basemap,
+                req.params.z,
+                req.params.x,
+                req.params.y,
+                res
             );
-
-            const proxy = await fetch(url)
-
-            res.status(proxy.status);
-            for (const h of [
-                'content-type',
-                'content-length',
-                'content-encoding'
-            ]) {
-                const ph = proxy.headers.get(h);
-                if (ph) res.append(h, ph);
-            }
-
-            // @ts-expect-error Doesnt meet TS def
-            return Readable.fromWeb(proxy.body).pipe(res);
         } catch (err) {
             return Err.respond(err, res);
         }

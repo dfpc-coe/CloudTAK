@@ -1,4 +1,6 @@
 import { Type } from '@sinclair/typebox'
+import Cacher from '../lib/cacher.js';
+import TileJSON, { TileJSONType } from '../lib/control/tilejson.js';
 import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
@@ -34,7 +36,7 @@ export default async function router(schema: Schema, config: Config) {
                 page: req.query.page,
                 order: req.query.order,
                 where: sql`
-                    name = ${req.query.filter}
+                    name ~* ${req.query.filter}
                 `
             });
 
@@ -74,8 +76,11 @@ export default async function router(schema: Schema, config: Config) {
         }),
         body: Type.Object({
             name: Type.Optional(Type.String()),
+            format: Type.String(),
+            minzoom: Type.Integer(),
+            maxzoom: Type.Integer(),
             type: Type.Optional(Type.String()),
-            styles: Type.Optional(Type.Object({})),
+            styles: Type.Optional(Type.Array(Type.Unknown())),
             url: Type.Optional(Type.String())
         }),
         res: OverlayResponse
@@ -86,7 +91,15 @@ export default async function router(schema: Schema, config: Config) {
                 admin: true
             });
 
-            const overlay = await config.models.Overlay.commit(req.params.overlay, req.body)
+            let overlay = await config.models.Overlay.from(req.params.overlay)
+
+            if (req.body.styles && req.body.styles.length) {
+                TileJSON.isValidStyle(overlay.type, req.body.styles);
+            }
+
+            overlay = await config.models.Overlay.commit(req.params.overlay, req.body)
+
+            await config.cacher.del(`overlay-${overlay.id}`);
 
             return res.json(overlay)
         } catch (err) {
@@ -101,7 +114,10 @@ export default async function router(schema: Schema, config: Config) {
         body: Type.Object({
             name: Type.String(),
             type: Type.String(),
-            styles: Type.Object({}),
+            format: Type.String(),
+            minzoom: Type.Integer(),
+            maxzoom: Type.Integer(),
+            styles: Type.Array(Type.Unknown()),
             url: Type.String()
         }),
         res: OverlayResponse
@@ -115,6 +131,69 @@ export default async function router(schema: Schema, config: Config) {
             const overlay = await config.models.Overlay.generate(req.body)
 
             return res.json(overlay)
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/overlay/:overlay/tiles', {
+        name: 'Overlay TileJSON',
+        group: 'Overlays',
+        description: 'Get an overlay tilejson',
+        params: Type.Object({
+            overlay: Type.String()
+        }),
+        query: Type.Object({
+            token: Type.Optional(Type.String()),
+        }),
+        res: TileJSONType
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req, { token: true });
+
+            const overlay = await config.cacher.get(Cacher.Miss(req.query, `overlay-${req.params.overlay}`), async () => {
+                return await config.models.Overlay.from(req.params.overlay);
+            });
+
+            let url = config.API_URL + `/api/overlay/${overlay.id}/tiles/{z}/{x}/{y}`;
+            if (req.query.token) url = url + `?token=${req.query.token}`;
+
+            return res.json(TileJSON.json({
+                ...overlay, url
+            }));
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/overlay/:overlay/tiles/:z/:x/:y', {
+        name: 'Get Overlay Tile',
+        group: 'Overlays',
+        description: 'Get an overlay tile',
+        params: Type.Object({
+            overlay: Type.String(),
+            z: Type.Integer({ minimum: 0 }),
+            x: Type.Integer({ minimum: 0 }),
+            y: Type.Integer({ minimum: 0 }),
+        }),
+        query: Type.Object({
+            token: Type.Optional(Type.String()),
+        })
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req, { token: true });
+
+            const overlay = await config.cacher.get(Cacher.Miss(req.query, `overlay-${req.params.overlay}`), async () => {
+                return await config.models.Overlay.from(req.params.overlay);
+            });
+
+            return TileJSON.tile(
+                overlay,
+                req.params.z,
+                req.params.x,
+                req.params.y,
+                res
+            );
         } catch (err) {
             return Err.respond(err, res);
         }
