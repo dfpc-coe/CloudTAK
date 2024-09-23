@@ -54,7 +54,7 @@
 </template>
 
 <script>
-import StyleLayer from '../../Styling/Layer.vue';
+import StyleLayer from '../../../Styling/Layer.vue';
 import {
     IconChevronDown,
     IconChevronRight,

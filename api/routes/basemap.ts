@@ -363,8 +363,6 @@ export default async function router(schema: Schema, config: Config) {
                 url
             });
 
-            console.error(json);
-
             return res.json(json);
         } catch (err) {
             return Err.respond(err, res);
