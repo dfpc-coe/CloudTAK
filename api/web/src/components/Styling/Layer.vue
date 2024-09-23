@@ -25,28 +25,36 @@
             <div
                 v-for='p of Object.keys(l.layout)'
                 :key='p'
-                class='col-12 d-flex py-1'
+                class='col-12 py-1'
             >
-                <span v-text='p' />
+                <template v-if='p === "visibility"'>
+                    <TablerToggle
+                        :label='p'
+                        v-model='l.layout[p]'
+                    />
+                </template>
+                <template v-else>
+                    <span v-text='p' />
 
-                <span
-                    class='ms-auto'
-                    v-text='l.layout[p]'
-                />
+                    <span
+                        class='ms-auto'
+                        v-text='l.layout[p]'
+                    />
+                </template>
             </div>
         </div>
         <div class='col-lg'>
             <label class='subheader'>Paint</label>
             <div
                 v-if='Object.keys(l.paint).length === 0'
-                class='col-12 d-flex px-2 py-1'
+                class='col-12 px-2 py-1'
             >
                 None
             </div>
             <div
                 v-for='p of Object.keys(l.paint)'
                 :key='p'
-                class='col-12 d-flex'
+                class='col-12'
             >
                 <template v-if='["fill-opacity", "line-opacity", "marker-opacity"].includes(p)'>
                     <template v-if='Array.isArray(l.paint[p]) && l.paint[p][0] === "number"'>
@@ -167,6 +175,7 @@
 <script>
 import {
     TablerInput,
+    TablerToggle,
     TablerRange
 } from '@tak-ps/vue-tabler';
 import { useMapStore } from '/src/stores/map.ts';
@@ -205,6 +214,7 @@ export default {
     },
     components: {
         TablerRange,
+        TablerToggle,
         TablerInput,
     }
 }
