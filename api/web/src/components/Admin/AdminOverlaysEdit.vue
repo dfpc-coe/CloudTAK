@@ -133,9 +133,7 @@ export default {
         fetchOverlay: async function() {
             this.loading = true;
             const url = stdurl(`/api/overlay/${this.$route.params.overlay}`);
-            const overlay = await std(url);
-            overlay.styles = JSON.stringify(overlay.styles, null, 4);
-            this.overlay = overlay;
+            this.overlay = await std(url);
             this.loading = false;
         }
     }

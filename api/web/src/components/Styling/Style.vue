@@ -38,7 +38,7 @@
     </template>
     <template v-else>
         <div
-            v-for='l of layers'
+            v-for='l of styles'
             :key='l.id'
         >
             <template v-if='["fill", "line", "circle"].includes(l.type)'>
@@ -46,7 +46,7 @@
                     class='hover-light cursor-pointer'
                     @click='open.has(l.id) ? open.delete(l.id) : open.add(l.id)'
                 >
-                    <div class='px-3 py-2 align-items-center'>
+                    <div class='px-3 py-2 d-flex align-items-center'>
                         <IconPaint
                             v-if='l.type === "fill"'
                             :size='24'
@@ -67,11 +67,27 @@
                             class='user-select-none mx-2'
                             v-text='l.id || l.name'
                         />
+
+                        <div v-if='open.has(l.id)' class='ms-auto btn-list'>
+                            <IconCode
+                                v-tooltip='"Code View"'
+                                class='cursor-pointer'
+                                :size='32'
+                                stroke='1'
+                            />
+                            <TablerDelete
+                                v-tooltip='"Remove Layer"'
+                                displaytype='icon'
+                            />
+                        </div>
                     </div>
                 </div>
             </template>
             <div v-if='open.has(l.id)'>
-                <StyleLayer :layer='l' />
+                <template v-if='code.has(l.id)'>
+                    <pre v-text='l'/>
+                </template>
+                <StyleLayer v-else :layer='l' />
             </div>
         </div>
     </template>
@@ -80,6 +96,7 @@
 <script>
 import {
     TablerInput,
+    TablerDelete,
 } from '@tak-ps/vue-tabler';
 import {
     IconEye,
@@ -101,11 +118,12 @@ export default {
         IconLine,
         IconCircle,
         StyleLayer,
+        TablerDelete,
         TablerInput
     },
     props: {
         modelValue: {
-            type: String,
+            type: Object,
             required: true
         }
     },
@@ -114,21 +132,17 @@ export default {
     ],
     data: function() {
         return {
-            styles: this.modelValue,
+            styles: JSON.parse(JSON.stringify(this.modelValue)),
+            code: new Set(),
             open: new Set(),
             mode: 'visual'
         }
     },
-    computed: {
-        layers: function() {
-            return JSON.parse(this.styles);
-        }
-    },
     watch: {
         modelValue: function() {
-            this.styles = this.modelValue
+            this.styles = JSON.parse(JSON.stringify(this.modelValue))
         },
-        styles: function() {
+        tyles: function() {
             this.$emit('update:modelValue', this.styles);
         }
     },
