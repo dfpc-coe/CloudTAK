@@ -1,15 +1,23 @@
 <template>
     <div class='card-header px-1 pb-1 pt-2'>
         Style Editor
-        <div class='ms-auto'>
-            <IconCode
-                v-if='mode === "visual"'
-                v-tooltip='"Code View"'
-                class='cursor-pointer'
-                :size='32'
-                stroke='1'
-                @click='mode = "code"'
-            />
+        <div class='ms-auto btn-list'>
+            <template v-if='mode === "visual"'>
+                <IconPlus
+                    v-tooltip='"New Layer"'
+                    class='cursor-pointer'
+                    :size='32'
+                    stroke='1'
+                    @click='newLayer'
+                />
+                <IconCode
+                    v-tooltip='"Code View"'
+                    class='cursor-pointer'
+                    :size='32'
+                    stroke='1'
+                    @click='mode = "code"'
+                />
+            </template>
             <IconEye
                 v-if='mode === "code"'
                 v-tooltip='"Visual View"'
@@ -75,6 +83,7 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     IconEye,
+    IconPlus,
     IconCode,
     IconPaint,
     IconLine,
@@ -86,6 +95,7 @@ export default {
     name: 'StylingContainer',
     components: {
         IconEye,
+        IconPlus,
         IconCode,
         IconPaint,
         IconLine,
@@ -120,6 +130,12 @@ export default {
         },
         styles: function() {
             this.$emit('update:modelValue', this.styles);
+        }
+    },
+    methods: {
+        newLayer: function() {
+            this.layers.push({ id: "new-layer" });
+            this.open.add('new-layer');
         }
     }
 }
