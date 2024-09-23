@@ -80,40 +80,52 @@ export default class TileJSON {
             .replace(/\{\$?y\}/, String(y))
         );
 
-        const stream = await undici.pipeline(url, {
-            method: 'GET',
-        }, ({ statusCode, headers, body }) => {
-            if (headers) {
-                for (const key in headers) {
-                    if (
-                        ![
-                            'content-type',
-                            'content-length',
-                            'content-encoding',
-                            'last-modified',
-                        ].includes(key)
-                    ) {
-                        delete headers[key];
+        try {
+            const stream = await undici.pipeline(url, {
+                method: 'GET',
+            }, ({ statusCode, headers, body }) => {
+                if (headers) {
+                    for (const key in headers) {
+                        if (
+                            ![
+                                'content-type',
+                                'content-length',
+                                'content-encoding',
+                                'last-modified',
+                            ].includes(key)
+                        ) {
+                            delete headers[key];
+                        }
                     }
                 }
-            }
 
-            res.writeHead(statusCode, headers);
+                res.writeHead(statusCode, headers);
 
-            return body;
-        });
+                return body;
+            });
 
-        stream
-            .on('data', (buf) => {
-                res.write(buf)
-            })
-            .on('end', () => {
-                res.end()
-            })
-            .on('close', () => {
-                res.end()
-            })
-            .end()
-
+            await new Promise((resolve, reject) => {
+                stream
+                    .on('data', (buf) => {
+                        res.write(buf)
+                    })
+                    .on('error', (err) => {
+                        return reject(err);
+                    })
+                    .on('end', () => {
+                        res.end()
+                        // @ts-expect-error Type empty resolve
+                        return resolve();
+                    })
+                    .on('close', () => {
+                        res.end()
+                        // @ts-expect-error Type empty resolve
+                        return resolve();
+                    })
+                    .end()
+            });
+        } catch (err) {
+            throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Failed to fetch tile')
+        }
     }
 }
