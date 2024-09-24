@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v3.35.1 - 2024-09-24
+
+- :bug: Fix clickable layer regression now that layer styles are saved to the database
+
 ### v3.35.0 - 2024-09-24
 
 - :tada: Add a `{{fallback key1 key2 etc}}` helper for Handlebar templates
