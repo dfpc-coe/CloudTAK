@@ -111,7 +111,8 @@ export default function styles(id: string, opts: {
             filter: [
                 'all',
                 ['==', '$type', 'Point'],
-                ['has', 'course']
+                ['has', 'course'],
+                ['has', 'group']
             ],
             paint: {
                 'icon-opacity': 1,
@@ -124,8 +125,9 @@ export default function styles(id: string, opts: {
                     'interpolate',
                     ['linear'],
                     ['zoom'],
-                    4, ['literal', [0, -32]],
-                    8, ['literal', [0, -58]]
+                    8, ['literal', [0, -28]],
+                    12, ['literal', [0, -42]],
+                    16, ['literal', [0, -58]]
                 ],
                 'icon-rotate': ['get', 'course'],
                 'icon-allow-overlap': true,
