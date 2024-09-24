@@ -1,13 +1,13 @@
 <template>
     <div class='ps-3'>
-        <div class='col-lg'>
+        <div v-if='l.filter' class='col-lg'>
             <label class='subheader'>Filter</label>
             <pre
                 class='col-12 px-2 py-1'
                 v-text='JSON.stringify(l.filter)'
             />
         </div>
-        <div class='col-12'>
+        <div v-if='l["source-layer"]' class='col-12'>
             <label class='subheader'>Source Layer</label>
             <pre
                 class='col-12 py-1'
