@@ -192,7 +192,14 @@ export default async function router(schema: Schema, config: Config) {
                 req.params.z,
                 req.params.x,
                 req.params.y,
-                res
+                res,
+                {
+                    headers: {
+                        'user-agent': req.headers['user-agent'],
+                        'accept': req.headers['accept'],
+                        'accept-language': req.headers['accept-language'],
+                    }
+                }
             );
         } catch (err) {
             return Err.respond(err, res);
