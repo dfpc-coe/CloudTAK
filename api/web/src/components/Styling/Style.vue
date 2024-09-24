@@ -148,7 +148,11 @@ export default {
     },
     methods: {
         newLayer: function() {
-            this.layers.push({ id: "new-layer" });
+            this.styles.push({
+                id: "new-layer",
+                layout: {},
+                paint: {}
+            });
             this.open.add('new-layer');
         }
     }
