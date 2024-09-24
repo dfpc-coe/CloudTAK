@@ -41,60 +41,93 @@
             v-for='(l, l_it) of styles'
             :key='l.id'
         >
-            <template v-if='["fill", "line", "circle"].includes(l.type)'>
-                <div
-                    class='hover-light cursor-pointer'
-                    @click='open.has(l.id) ? open.delete(l.id) : open.add(l.id)'
-                >
-                    <div class='px-3 py-2 d-flex align-items-center'>
-                        <IconPaint
-                            v-if='l.type === "fill"'
-                            :size='24'
-                            :stroke='1'
+            <div
+                class='hover-light cursor-pointer'
+                @click='open.has(l.id) ? open.delete(l.id) : open.add(l.id)'
+            >
+                <div class='px-3 py-2 d-flex align-items-center'>
+                    <IconPaint
+                        v-if='l.type === "fill"'
+                        :size='24'
+                        :stroke='1'
+                    />
+                    <IconLine
+                        v-else-if='l.type === "line"'
+                        :size='24'
+                        :stroke='1'
+                    />
+                    <IconAbc
+                        v-else-if='l.type === "symbol"'
+                        :size='24'
+                        :stroke='1'
+                    />
+                    <IconCircle
+                        v-else-if='l.type === "circle"'
+                        :size='24'
+                        :stroke='1'
+                    />
+                    <IconFlame
+                        v-else-if='l.type === "heatmap"'
+                        :size='24'
+                        :stroke='1'
+                    />
+                    <IconCube
+                        v-else-if='l.type === "fill-extrusion"'
+                        :size='24'
+                        :stroke='1'
+                    />
+                    <IconPhoto
+                        v-else-if='l.type === "raster"'
+                        :size='24'
+                        :stroke='1'
+                    />
+                    <IconMountain
+                        v-else-if='l.type === "hillshade"'
+                        :size='24'
+                        :stroke='1'
+                    />
+                    <IconBackground
+                        v-else-if='l.type === "background"'
+                        :size='24'
+                        :stroke='1'
+                    />
+                    <IconQuestionMark
+                        v-else
+                        :size='24'
+                        :stroke='1'
+                    />
+
+                    <span
+                        class='user-select-none mx-2'
+                        v-text='l.id || l.name'
+                    />
+
+                    <div v-if='open.has(l.id)' @click.stop.prevent class='ms-auto btn-list'>
+                        <IconCode
+                            v-if='!code.has(l.id)'
+                            v-tooltip='"Code View"'
+                            class='cursor-pointer'
+                            @click='code.add(l.id)'
+                            :size='32'
+                            stroke='1'
                         />
-                        <IconLine
-                            v-else-if='l.type === "line"'
-                            :size='24'
-                            :stroke='1'
-                        />
-                        <IconCircle
-                            v-else-if='l.type === "circle"'
-                            :size='24'
-                            :stroke='1'
+                        <IconEye
+                            v-else
+                            v-tooltip='"Visual View"'
+                            class='cursor-pointer'
+                            :size='32'
+                            stroke='1'
+                            @click='code.delete(l.id)'
                         />
 
-                        <span
-                            class='user-select-none mx-2'
-                            v-text='l.id || l.name'
+                        <TablerDelete
+                            v-tooltip='"Remove Layer"'
+                            displaytype='icon'
+                            @delete='removeLayer(l, l_it)'
                         />
-
-                        <div v-if='open.has(l.id)' @click.stop.prevent class='ms-auto btn-list'>
-                            <IconCode
-                                v-if='!code.has(l.id)'
-                                v-tooltip='"Code View"'
-                                class='cursor-pointer'
-                                @click='code.add(l.id)'
-                                :size='32'
-                                stroke='1'
-                            />
-                            <IconEye
-                                v-else
-                                v-tooltip='"Visual View"'
-                                class='cursor-pointer'
-                                :size='32'
-                                stroke='1'
-                                @click='code.delete(l.id)'
-                            />
-
-                            <TablerDelete
-                                v-tooltip='"Remove Layer"'
-                                displaytype='icon'
-                                @delete='removeLayer(l, l_it)'
-                            />
-                        </div>
                     </div>
                 </div>
-            </template>
+            </div>
             <div v-if='open.has(l.id)'>
                 <template v-if='code.has(l.id)'>
                     <ObjectInput v-model='styles[l_it]'/>
@@ -117,10 +150,17 @@ import ObjectInput from './ObjectInput.vue';
 import {
     IconEye,
     IconPlus,
+    IconAbc,
+    IconCube,
     IconCode,
     IconPaint,
     IconLine,
+    IconFlame,
+    IconPhoto,
     IconCircle,
+    IconHillshade,
+    IconBackground,
+    IconQuestionMark
 } from '@tabler/icons-vue';
 import StyleLayer from './Layer.vue';
 
@@ -128,11 +168,18 @@ export default {
     name: 'StylingContainer',
     components: {
         IconEye,
+        IconAbc,
         IconPlus,
+        IconCube,
         IconCode,
         IconPaint,
         IconLine,
+        IconPhoto,
+        IconFlame,
         IconCircle,
+        IconHillshade,
+        IconBackground,
+        IconQuestionMark,
         StyleLayer,
         TablerDelete,
         ObjectInput,
@@ -171,6 +218,7 @@ export default {
         newLayer: function() {
             this.styles.push({
                 id: "new-layer",
+                type: 'circle',
                 layout: {},
                 paint: {}
             });
