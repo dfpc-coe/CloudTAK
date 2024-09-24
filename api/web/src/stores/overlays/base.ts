@@ -189,12 +189,6 @@ export default class Overlay {
                 icons: false,
                 labels: { size }
             });
-
-            if (opts.clickable === undefined)  {
-                opts.clickable = this.styles.map((l) => {
-                    return { id: l.id, type: 'feat' };
-                });
-            }
         } else if (!this.styles.length && this.type === 'geojson') {
             this.styles = cotStyles(String(this.id), {
                 group: this.mode !== "mission",
@@ -202,17 +196,22 @@ export default class Overlay {
                 labels: { size }
             });
 
-            if (opts.clickable === undefined)  {
-                opts.clickable = this.styles.map((l) => {
-                    if (this.mode === 'mission') {
-                        return { id: l.id, type: 'cot' };
-                    } else {
-                        return { id: l.id, type: this.id === -1 ? 'cot' : 'feat' };
-                    }
-                });
-            }
         } else if (!this.styles.length) {
             this.styles = [];
+        }
+
+        if (this.type === 'vector' && opts.clickable === undefined) {
+            opts.clickable = this.styles.map((l) => {
+                return { id: l.id, type: 'feat' };
+            });
+        } else if (this.type === 'geojson' && opts.clickable === undefined) {
+            opts.clickable = this.styles.map((l) => {
+                if (this.mode === 'mission') {
+                    return { id: l.id, type: 'cot' };
+                } else {
+                    return { id: l.id, type: this.id === -1 ? 'cot' : 'feat' };
+                }
+            });
         }
 
         for (const l of this.styles) {
