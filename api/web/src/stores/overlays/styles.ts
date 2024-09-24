@@ -103,6 +103,44 @@ export default function styles(id: string, opts: {
 
     styles.push(circle);
 
+    if (opts.course) {
+        const course: SymbolLayerSpecification = {
+            id: `${id}-course`,
+            type: 'symbol',
+            source: id,
+            filter: [
+                'all',
+                ['==', '$type', 'Point'],
+                ['has', 'course']
+            ],
+            paint: {
+                'icon-opacity': 1,
+                'icon-halo-color': '#ffffff',
+                'icon-halo-width': 4
+            },
+            layout: {
+                'icon-size': 0.3,
+                'icon-offset': [
+                    'interpolate',
+                    ['linear'],
+                    ['zoom'],
+                    4, ['literal', [0, -32]],
+                    8, ['literal', [0, -58]]
+                ],
+                'icon-rotate': ['get', 'course'],
+                'icon-allow-overlap': true,
+                'icon-image': 'course',
+                'icon-anchor': 'bottom',
+            }
+        }
+
+        if (opts.sourceLayer) {
+            course['source-layer'] = opts.sourceLayer;
+        }
+
+        styles.push(course);
+    }
+
     if (opts.icons) {
         const icon: SymbolLayerSpecification = {
             id: `${id}-icon`,
@@ -123,8 +161,8 @@ export default function styles(id: string, opts: {
                     'interpolate',
                     ['linear'],
                     ['zoom'],
-                    8, 0.8,
-                    15, 1
+                    4, 0.8,
+                    8, 1
                 ],
                 'icon-rotate': ['get', 'course'],
                 'icon-allow-overlap': true,
