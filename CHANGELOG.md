@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v3.34.0 - 2024-09-24
+
+- :rocket: Add cache of default Font Glyphs
+- :rocket: Add support for increased number of MapLibre layer types
+- :rocket: Add shared MapLibre Style Layers component
+- :rocket: Allow raw editing of MapLibre styles
+
 ### v3.33.0 - 2024-09-20
 
 - :bug: `UI` Fix BaseMap Menu `Create` Button
