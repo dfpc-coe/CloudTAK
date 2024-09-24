@@ -8,6 +8,7 @@ import Credentials from './api/credentials.js';
 import Contacts from './api/contacts.js';
 import Files from './api/files.js';
 import Group from './api/groups.js';
+import Video from './api/video.js';
 import Export from './api/export.js';
 import Err from '@openaddresses/batch-error';
 import * as auth from './tak-auth.js';
@@ -28,6 +29,7 @@ export default class TAKAPI {
     Credentials: Credentials;
     Contacts: Contacts;
     Group: Group;
+    Video: Video;
     Export: Export;
     Files: Files;
 
@@ -44,6 +46,7 @@ export default class TAKAPI {
         this.Credentials = new Credentials(this);
         this.Contacts = new Contacts(this);
         this.Group = new Group(this);
+        this.Video = new Video(this);
         this.Files = new Files(this);
     }
 
