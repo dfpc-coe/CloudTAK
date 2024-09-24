@@ -12,7 +12,7 @@
 
 ### Pending Release
 
-### v3.35.2 - 2024-09-24
+### v3.36.0 - 2024-09-24
 
 - :rocket: Mirror sent headers on Overlay and Basemap
 
