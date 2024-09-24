@@ -38,7 +38,7 @@
     </template>
     <template v-else>
         <div
-            v-for='l of styles'
+            v-for='(l, l_it) of styles'
             :key='l.id'
         >
             <template v-if='["fill", "line", "circle"].includes(l.type)'>
@@ -68,10 +68,11 @@
                             v-text='l.id || l.name'
                         />
 
-                        <div v-if='open.has(l.id)' class='ms-auto btn-list'>
+                        <div v-if='open.has(l.id)' @click.stop.prevent class='ms-auto btn-list'>
                             <IconCode
                                 v-tooltip='"Code View"'
                                 class='cursor-pointer'
+                                @click='code.add(l.id)'
                                 :size='32'
                                 stroke='1'
                             />
@@ -85,7 +86,7 @@
             </template>
             <div v-if='open.has(l.id)'>
                 <template v-if='code.has(l.id)'>
-                    <pre v-text='l'/>
+                    <TablerInput v-model='styles[l_it]'/>
                 </template>
                 <StyleLayer v-else :layer='l' />
             </div>
