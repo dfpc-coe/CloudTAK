@@ -7,6 +7,7 @@ import Err from '@openaddresses/batch-error';
 handlebars.registerHelper('fallback', (...params: Array<unknown>) => {
     params.pop(); // Contains Config stuff from handlebars
     const found = params.find(el => !!el)
+    return found;
 })
 
 interface ValidateStyle {
