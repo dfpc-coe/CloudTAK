@@ -152,9 +152,7 @@ export default {
     },
     mounted: async function() {
         // If the icon has a `:` it is part of an iconset, otherwise it is derived from the type
-        if (this.iconset.includes(':')) {
-            await this.fetchList();
-        }
+        await this.fetchList();
     },
     methods: {
         iconurl: function(icon) {
@@ -168,7 +166,7 @@ export default {
             url.searchParams.append('filter', this.paging.filter);
             url.searchParams.append('limit', this.paging.limit);
             url.searchParams.append('page', this.paging.page);
-            if (this.iconset) url.searchParams.append('iconset', this.iconset);
+            if (this.iconset && this.iconset.includes(':')) url.searchParams.append('iconset', this.iconset);
             this.list = await std(url);
             this.loading = false;
         }
