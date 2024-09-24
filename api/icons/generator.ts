@@ -41,7 +41,7 @@ for (const icon of xmljs.xml2js(String(await fs.readFile(new URL('../icons/icons
         file: path.parse(icon.filePath._text).base,
         parent: icon.parentID._text,
         data: img.toString('base64'),
-        children: (icon.childrenIDs && Array.isArray(icon.childrenIDs.id)) ? icon.childrenIDs.id.map((id) => {
+        children: (icon.childrenIDs && Array.isArray(icon.childrenIDs.id)) ? icon.childrenIDs.id.map((id: { _text: string }) => {
             return id._text;
         }) : []
     };
