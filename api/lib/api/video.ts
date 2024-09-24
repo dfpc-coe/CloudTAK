@@ -1,6 +1,5 @@
 import { Static, Type } from '@sinclair/typebox';
 import TAKAPI from '../tak-api.js';
-import { TAKList } from './types.js';
 
 export const Feed = Type.Object({
     uuid: Type.String(),
