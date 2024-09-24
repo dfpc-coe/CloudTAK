@@ -102,14 +102,18 @@
                         v-text='l.id || l.name'
                     />
 
-                    <div v-if='open.has(l.id)' @click.stop.prevent class='ms-auto btn-list'>
+                    <div
+                        v-if='open.has(l.id)'
+                        class='ms-auto btn-list'
+                        @click.stop.prevent
+                    >
                         <IconCode
                             v-if='!code.has(l.id)'
                             v-tooltip='"Code View"'
                             class='cursor-pointer'
-                            @click='code.add(l.id)'
                             :size='32'
                             stroke='1'
+                            @click='code.add(l.id)'
                         />
                         <IconEye
                             v-else
@@ -130,12 +134,12 @@
             </div>
             <div v-if='open.has(l.id)'>
                 <template v-if='code.has(l.id)'>
-                    <ObjectInput v-model='styles[l_it]'/>
+                    <ObjectInput v-model='styles[l_it]' />
                 </template>
                 <StyleLayer
                     v-else
                     :layer='l'
-                    :updateMap='false'
+                    :update-map='false'
                 />
             </div>
         </div>
@@ -158,7 +162,7 @@ import {
     IconFlame,
     IconPhoto,
     IconCircle,
-    IconHillshade,
+    IconMountain,
     IconBackground,
     IconQuestionMark
 } from '@tabler/icons-vue';
@@ -177,7 +181,7 @@ export default {
         IconPhoto,
         IconFlame,
         IconCircle,
-        IconHillshade,
+        IconMountain,
         IconBackground,
         IconQuestionMark,
         StyleLayer,

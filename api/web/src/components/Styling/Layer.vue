@@ -1,13 +1,19 @@
 <template>
     <div class='ps-3'>
-        <div v-if='l.filter' class='col-lg'>
+        <div
+            v-if='l.filter'
+            class='col-lg'
+        >
             <label class='subheader'>Filter</label>
             <pre
                 class='col-12 px-2 py-1'
                 v-text='JSON.stringify(l.filter)'
             />
         </div>
-        <div v-if='l["minzoom"] || l["maxzoom"]' class='col-12 row g-0'>
+        <div
+            v-if='l["minzoom"] || l["maxzoom"]'
+            class='col-12 row g-0'
+        >
             <label class='subheader'>Zoom Limits</label>
             
             <div class='col-12 col-md-6 pe-md-1'>
@@ -23,7 +29,10 @@
                 />
             </div>
         </div>
-        <div v-if='l["source-layer"]' class='col-12'>
+        <div
+            v-if='l["source-layer"]'
+            class='col-12'
+        >
             <label class='subheader'>Source Layer</label>
             <pre
                 class='col-12 py-1'
@@ -45,8 +54,8 @@
             >
                 <template v-if='p === "visibility"'>
                     <TablerToggle
-                        :label='p'
                         v-model='l.layout[p]'
+                        :label='p'
                     />
                 </template>
                 <template v-else>
@@ -195,11 +204,15 @@ import {
     TablerRange
 } from '@tak-ps/vue-tabler';
 import { useMapStore } from '/src/stores/map.ts';
-import { mapState } from 'pinia'
 const mapStore = useMapStore();
 
 export default {
     name: 'OverlayLayer',
+    components: {
+        TablerRange,
+        TablerToggle,
+        TablerInput,
+    },
     props: {
         layer: {
             type: Object,
@@ -230,11 +243,6 @@ export default {
                 }
             }
         }
-    },
-    components: {
-        TablerRange,
-        TablerToggle,
-        TablerInput,
     }
 }
 </script>
