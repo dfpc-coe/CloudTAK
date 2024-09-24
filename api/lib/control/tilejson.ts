@@ -72,7 +72,10 @@ export default class TileJSON {
     static async tile(
         config: TileJSONInterface,
         z: number, x: number, y: number,
-        res: Response
+        res: Response,
+        opts?: {
+            headers?: Record<string, string>
+        }
     ): Promise<void> {
         const url = new URL(config.url
             .replace(/\{\$?z\}/, String(z))
@@ -80,9 +83,13 @@ export default class TileJSON {
             .replace(/\{\$?y\}/, String(y))
         );
 
+        if (!opts) opts = {};
+        if (!opts.headers) opts.headers = {};
+
         try {
             const stream = await undici.pipeline(url, {
                 method: 'GET',
+                headers: opts.headers
             }, ({ statusCode, headers, body }) => {
                 if (headers) {
                     for (const key in headers) {
@@ -125,6 +132,7 @@ export default class TileJSON {
                     .end()
             });
         } catch (err) {
+            console.error(err);
             throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Failed to fetch tile')
         }
     }

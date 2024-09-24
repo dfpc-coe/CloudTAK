@@ -394,12 +394,20 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
             }
 
+            console.error(req.headers)
             return await TileJSON.tile(
                 basemap,
                 req.params.z,
                 req.params.x,
                 req.params.y,
-                res
+                res,
+                {
+                    headers: {
+                        'user-agent': req.headers['user-agent'],
+                        'accept': req.headers['accept'],
+                        'accept-language': req.headers['accept-language'],
+                    }
+                }
             );
         } catch (err) {
             return Err.respond(err, res);
