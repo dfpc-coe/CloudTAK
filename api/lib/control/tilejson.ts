@@ -72,7 +72,10 @@ export default class TileJSON {
     static async tile(
         config: TileJSONInterface,
         z: number, x: number, y: number,
-        res: Response
+        res: Response,
+        opts?: {
+            headers?: Record<string, string | undefined>
+        }
     ): Promise<void> {
         const url = new URL(config.url
             .replace(/\{\$?z\}/, String(z))
@@ -80,40 +83,58 @@ export default class TileJSON {
             .replace(/\{\$?y\}/, String(y))
         );
 
-        const stream = await undici.pipeline(url, {
-            method: 'GET',
-        }, ({ statusCode, headers, body }) => {
-            if (headers) {
-                for (const key in headers) {
-                    if (
-                        ![
-                            'content-type',
-                            'content-length',
-                            'content-encoding',
-                            'last-modified',
-                        ].includes(key)
-                    ) {
-                        delete headers[key];
+        if (!opts) opts = {};
+        if (!opts.headers) opts.headers = {};
+
+        try {
+            const stream = await undici.pipeline(url, {
+                method: 'GET',
+                maxRedirections: 3,
+                headers: opts.headers
+            }, ({ statusCode, headers, body }) => {
+                if (headers) {
+                    for (const key in headers) {
+                        if (
+                            ![
+                                'content-type',
+                                'content-length',
+                                'content-encoding',
+                                'last-modified',
+                            ].includes(key)
+                        ) {
+                            delete headers[key];
+                        }
                     }
                 }
-            }
 
-            res.writeHead(statusCode, headers);
+                res.writeHead(statusCode, headers);
 
-            return body;
-        });
+                return body;
+            });
 
-        stream
-            .on('data', (buf) => {
-                res.write(buf)
-            })
-            .on('end', () => {
-                res.end()
-            })
-            .on('close', () => {
-                res.end()
-            })
-            .end()
-
+            await new Promise((resolve, reject) => {
+                stream
+                    .on('data', (buf) => {
+                        res.write(buf)
+                    })
+                    .on('error', (err) => {
+                        return reject(err);
+                    })
+                    .on('end', () => {
+                        res.end()
+                        // @ts-expect-error Type empty resolve
+                        return resolve();
+                    })
+                    .on('close', () => {
+                        res.end()
+                        // @ts-expect-error Type empty resolve
+                        return resolve();
+                    })
+                    .end()
+            });
+        } catch (err) {
+            console.error(err);
+            throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Failed to fetch tile')
+        }
     }
 }
