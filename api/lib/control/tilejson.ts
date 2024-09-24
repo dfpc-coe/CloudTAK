@@ -74,7 +74,7 @@ export default class TileJSON {
         z: number, x: number, y: number,
         res: Response,
         opts?: {
-            headers?: Record<string, string>
+            headers?: Record<string, string | undefined>
         }
     ): Promise<void> {
         const url = new URL(config.url
@@ -89,6 +89,7 @@ export default class TileJSON {
         try {
             const stream = await undici.pipeline(url, {
                 method: 'GET',
+                maxRedirections: 3,
                 headers: opts.headers
             }, ({ statusCode, headers, body }) => {
                 if (headers) {
