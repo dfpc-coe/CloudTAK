@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v3.35.0 - 2024-09-24
+
+- :tada: Add a `{{fallback key1 key2 etc}}` helper for Handlebar templates
+
 ### v3.34.0 - 2024-09-24
 
 - :rocket: Add cache of default Font Glyphs
