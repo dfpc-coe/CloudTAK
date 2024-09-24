@@ -16,15 +16,18 @@ import deepEqual from 'deep-equal';
 
 export default {
     name: 'ObjectInput',
-    emits: [
-        'update:modelValue'
-    ],
+    components: {
+        TablerInput
+    },
     props: {
         modelValue: {
             type: Object,
             required: true
         }
     },
+    emits: [
+        'update:modelValue'
+    ],
     data: function() {
         return {
             error: '',
@@ -45,12 +48,9 @@ export default {
                 this.$emit('update:modelValue', JSON.parse(this.current));
                 this.error = '';
             } catch (err) {
-                this.error = 'Invalid JSON';
+                this.error = `Invalid JSON: ${err.message}`;
             }
         }
-    },
-    components: {
-        TablerInput
     }
 }
 </script>
