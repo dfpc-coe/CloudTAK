@@ -734,3 +734,45 @@ test('Style: Invalid Templates', async () => {
         })
     }, /Expecting/);
 });
+
+test('Style: {{fallback p1 p2 ...}}', async () => {
+    const style = new Style({
+        stale: 123,
+        enabled_styles: true,
+        styles: {
+            callsign: '{{fallback none1 none2 yes1 none3 yes2}}'
+        }
+    });
+
+    assert.deepEqual(await style.feat({
+        type: 'Feature',
+        properties: {
+            metadata: {
+                yes1: 'I exist',
+                yes2: 'I exist but shouldn\'t be picked'
+            }
+        },
+        geometry: {
+            type: 'Point',
+            coordinates: [0, 0]
+        }
+    }), {
+        type: 'Feature',
+        properties: {
+            callsign: 'I exist',
+            metadata: {                                                                                                                                                          
+                yes1: 'I exist',                                                             
+                yes2: "I exist but shouldn't be picked"                                    
+            },                   
+            stale: 123000       
+        },               
+        geometry: {
+            coordinates: [
+                0,
+                0          
+            ],
+            type: 'Point'
+        },                     
+    });
+});
+
