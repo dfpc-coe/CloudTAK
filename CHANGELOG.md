@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v3.35.2 - 2024-09-24
+
+- :rocket: Mirror sent headers on Overlay and Basemap
+
 ### v3.35.1 - 2024-09-24
 
 - :bug: Fix clickable layer regression now that layer styles are saved to the database
