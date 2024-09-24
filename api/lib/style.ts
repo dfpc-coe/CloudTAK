@@ -4,6 +4,10 @@ import type { Feature } from '@tak-ps/node-cot';
 import handlebars from 'handlebars';
 import Err from '@openaddresses/batch-error';
 
+handlebars.registerHelper('fallback', (...params: Array<unknown>) => {
+    return params.find(el => !!el)
+})
+
 interface ValidateStyle {
     id?: string;
     callsign?: string;
