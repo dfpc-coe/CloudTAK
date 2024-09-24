@@ -113,7 +113,6 @@ export default {
         stdclick,
         saveOverlay: async function() {
             const overlay = JSON.parse(JSON.stringify(this.overlay));
-            overlay.styles = JSON.parse(overlay.styles);
 
             this.loading = true;
             if (this.$route.params.overlay === 'new') {

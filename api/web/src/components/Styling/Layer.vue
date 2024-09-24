@@ -7,6 +7,22 @@
                 v-text='JSON.stringify(l.filter)'
             />
         </div>
+        <div v-if='l["minzoom"] || l["maxzoom"]' class='col-12 row g-0'>
+            <label class='subheader'>Zoom Limits</label>
+            
+            <div class='col-12 col-md-6 pe-md-1'>
+                <pre
+                    class='col-12 py-1'
+                    v-text='l.minzoom || "Not Set"'
+                />
+            </div>
+            <div class='col-12 col-md-6 ps-md-1'>
+                <pre
+                    class='col-12 py-1'
+                    v-text='l.maxzoom || "Not Set"'
+                />
+            </div>
+        </div>
         <div v-if='l["source-layer"]' class='col-12'>
             <label class='subheader'>Source Layer</label>
             <pre
@@ -188,6 +204,10 @@ export default {
         layer: {
             type: Object,
             required: true
+        },
+        updateMap: {
+            type: Boolean,
+            default: true
         }
     },
     data: function() {
@@ -197,13 +217,12 @@ export default {
             l: this.layer
         }
     },
-    computed: {
-        ...mapState(useMapStore, ['layers'])
-    },
     watch: {
         l: {
             deep: true,
             handler: function() {
+                if (!this.updateMap) return;
+
                 for (const paint of ['fill-opacity', 'fill-color', 'line-opacity', 'line-color', 'line-width']) {
                     if (this.l.paint[paint]) {
                         mapStore.map.setPaintProperty(String(this.l.id), paint, this.l.paint[paint]);
