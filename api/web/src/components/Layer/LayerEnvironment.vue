@@ -169,7 +169,6 @@ export default {
     },
     watch: {
         editing: function() {
-            console.error('HERE');
             if (this.editing) {
                 this.disabled = false;
             }

@@ -187,7 +187,7 @@ export default async function router(schema: Schema, config: Config) {
                 return await config.models.Overlay.from(req.params.overlay);
             });
 
-            return TileJSON.tile(
+            return await TileJSON.tile(
                 overlay,
                 req.params.z,
                 req.params.x,

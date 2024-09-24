@@ -10,7 +10,6 @@
 import { defineStore } from 'pinia'
 import Overlay from './overlays/base.ts';
 import { std, stdurl } from '../std.js';
-import * as pmtiles from 'pmtiles';
 import mapgl from 'maplibre-gl'
 import * as terraDraw from 'terra-draw';
 import type { ProfileOverlay, Basemap, APIList } from '../types.ts';
@@ -47,9 +46,6 @@ export const useMapStore = defineStore('cloudtak', {
         },
         overlays: Array<Overlay>
     } => {
-        const protocol = new pmtiles.Protocol();
-        mapgl.addProtocol('pmtiles', protocol.tile);
-
         return {
             isLoaded: false,
             bearing: 0,

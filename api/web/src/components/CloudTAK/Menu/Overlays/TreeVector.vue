@@ -43,7 +43,7 @@
                         />
                     </div>
 
-                    <OverlayLayer
+                    <StyleLayer
                         v-if='treeState[l.id]'
                         :layer='l'
                     />
@@ -54,7 +54,7 @@
 </template>
 
 <script>
-import OverlayLayer from './Layer.vue';
+import StyleLayer from '../../../Styling/Layer.vue';
 import {
     IconChevronDown,
     IconChevronRight,
@@ -66,7 +66,7 @@ import {
 export default {
     name: 'OverlayLayers',
     components: {
-        OverlayLayer,
+        StyleLayer,
         IconChevronDown,
         IconChevronRight,
         IconPaint,
