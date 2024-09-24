@@ -30,7 +30,7 @@
     </div>
 
     <template v-if='mode === "code"'>
-        <TablerInput
+        <ObjectInput
             v-model='styles'
             placeholder='GL JS Style JSON'
             :rows='30'
@@ -70,12 +70,22 @@
 
                         <div v-if='open.has(l.id)' @click.stop.prevent class='ms-auto btn-list'>
                             <IconCode
+                                v-if='!code.has(l.id)'
                                 v-tooltip='"Code View"'
                                 class='cursor-pointer'
                                 @click='code.add(l.id)'
                                 :size='32'
                                 stroke='1'
                             />
+                            <IconEye
+                                v-else
+                                v-tooltip='"Visual View"'
+                                class='cursor-pointer'
+                                :size='32'
+                                stroke='1'
+                                @click='code.delete(l.id)'
+                            />
+
                             <TablerDelete
                                 v-tooltip='"Remove Layer"'
                                 displaytype='icon'
@@ -87,9 +97,13 @@
             </template>
             <div v-if='open.has(l.id)'>
                 <template v-if='code.has(l.id)'>
-                    <TablerInput v-model='styles[l_it]'/>
+                    <ObjectInput v-model='styles[l_it]'/>
                 </template>
-                <StyleLayer v-else :layer='l' />
+                <StyleLayer
+                    v-else
+                    :layer='l'
+                    :updateMap='false'
+                />
             </div>
         </div>
     </template>
@@ -97,9 +111,9 @@
 
 <script>
 import {
-    TablerInput,
     TablerDelete,
 } from '@tak-ps/vue-tabler';
+import ObjectInput from './ObjectInput.vue';
 import {
     IconEye,
     IconPlus,
@@ -121,7 +135,7 @@ export default {
         IconCircle,
         StyleLayer,
         TablerDelete,
-        TablerInput
+        ObjectInput,
     },
     props: {
         modelValue: {
@@ -141,11 +155,11 @@ export default {
         }
     },
     watch: {
-        modelValue: function() {
-            this.styles = JSON.parse(JSON.stringify(this.modelValue))
-        },
-        tyles: function() {
-            this.$emit('update:modelValue', this.styles);
+        styles: {
+            deep: true,
+            handler: function() {
+                this.$emit('update:modelValue', this.styles);
+            }
         }
     },
     methods: {
