@@ -79,6 +79,7 @@
                             <TablerDelete
                                 v-tooltip='"Remove Layer"'
                                 displaytype='icon'
+                                @delete='removeLayer(l, l_it)'
                             />
                         </div>
                     </div>
@@ -148,6 +149,11 @@ export default {
         }
     },
     methods: {
+        removeLayer: function(l, i) {
+            this.styles.splice(i, 1);
+            this.open.delete(l.id)
+            this.code.delete(l.id)
+        },
         newLayer: function() {
             this.styles.push({
                 id: "new-layer",
