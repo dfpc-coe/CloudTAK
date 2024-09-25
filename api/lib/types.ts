@@ -64,11 +64,6 @@ export const VideoLeaseResponse = createSelectSchema(schemas.VideoLease, {
     ephemeral: Type.Boolean()
 });
 
-export const OverlayResponse = createSelectSchema(schemas.Overlay, {
-    id: Type.Integer(),
-    styles: Type.Array(Type.Unknown())
-});
-
 export const ProfileOverlayResponse = createSelectSchema(schemas.ProfileOverlay, {
     id: Type.Integer(),
     pos: Type.Integer(),
@@ -227,5 +222,6 @@ export const ConnectionResponse = Type.Object({
 export const BasemapResponse = createSelectSchema(schemas.Basemap, {
     id: Type.Integer(),
     minzoom: Type.Integer(),
-    maxzoom: Type.Integer()
+    maxzoom: Type.Integer(),
+    styles: Type.Array(Type.Unknown()),
 });

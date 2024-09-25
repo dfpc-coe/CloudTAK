@@ -19,8 +19,6 @@ export default class Models {
 
     Setting: Setting;
 
-    Overlay: Modeler<typeof pgtypes.Overlay>;
-
     Profile: Modeler<typeof pgtypes.Profile>;
     ProfileChat: ProfileChat;
     ProfileFeature: Modeler<typeof pgtypes.ProfileFeature>;
@@ -44,7 +42,6 @@ export default class Models {
 
         this.Token = new Modeler(pg, pgtypes.Token);
         this.Setting = new Setting(pg);
-        this.Overlay = new Modeler(pg, pgtypes.Overlay);
         this.Server = new Modeler(pg, pgtypes.Server);
         this.Profile = new Modeler(pg, pgtypes.Profile);
         this.ProfileFeature = new Modeler(pg, pgtypes.ProfileFeature);

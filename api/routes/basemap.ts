@@ -137,7 +137,8 @@ export default async function router(schema: Schema, config: Config) {
             order: Default.Order,
             type: Type.Optional(Type.Enum(Basemap_Type)),
             sort: Type.String({ default: 'created', enum: Object.keys(Basemap) }),
-            filter: Default.Filter
+            filter: Default.Filter,
+            overlay: Type.Boolean({ default: false })
         }),
         res: Type.Object({
             total: Type.Integer(),
@@ -158,8 +159,9 @@ export default async function router(schema: Schema, config: Config) {
                 sort: req.query.sort,
                 where: sql`
                     name ~* ${Param(req.query.filter)}
-                    AND (${Param(req.query.type)}::TEXT IS NULL or ${Param(req.query.type)}::TEXT = type)
+                    AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
                     AND (username IS NULL OR username = ${user.email})
+                    AND (${Param(req.query.type)}::TEXT IS NULL or ${Param(req.query.type)}::TEXT = type)
                     AND ${scope}
                 `
             });
@@ -178,6 +180,7 @@ export default async function router(schema: Schema, config: Config) {
             name: Default.NameField,
             scope: Type.Enum(ResourceCreationScope, { default: ResourceCreationScope.USER }),
             url: Type.String(),
+            overlay: Type.Boolean({ default: false }),
             minzoom: Type.Optional(Type.Integer()),
             maxzoom: Type.Optional(Type.Integer()),
             format: Type.Optional(Type.Enum(Basemap_Format)),
