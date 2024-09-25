@@ -21,6 +21,14 @@ import { Basemap } from '../lib/schema.js';
 import { toEnum, Basemap_Format, Basemap_Style, Basemap_Type } from '../lib/enums.js';
 import * as Default from '../lib/limits.js';
 
+const AugmentedBasemapResponse = Type.Composite([
+    Type.Omit(BasemapResponse, ['bounds', 'center']),
+    Type.Object({
+        bounds: Type.Optional(Type.Array(Type.Number(), { minItems: 4, maxItems: 4 })),
+        center: Type.Optional(Type.Array(Type.Number()))
+    })
+])
+
 export default async function router(schema: Schema, config: Config) {
     await schema.put('/basemap', {
         name: 'Import BaseMaps',
@@ -142,7 +150,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         res: Type.Object({
             total: Type.Integer(),
-            items: Type.Array(BasemapResponse)
+            items: Type.Array(AugmentedBasemapResponse)
         })
     }, async (req, res) => {
         try {
@@ -166,7 +174,16 @@ export default async function router(schema: Schema, config: Config) {
                 `
             });
 
-            return res.json(list);
+            return res.json({
+                total: list.total,
+                items: list.items.map((basemap) => {
+                    return {
+                        ...basemap,
+                        bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
+                        center: basemap.center ? basemap.center.coordinates : undefined,
+                    };
+                })
+            });
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -189,7 +206,7 @@ export default async function router(schema: Schema, config: Config) {
             bounds: Type.Optional(Type.Array(Type.Number(), { minItems: 4, maxItems: 4 })),
             center: Type.Optional(Type.Array(Type.Number()))
         }),
-        res: BasemapResponse
+        res: AugmentedBasemapResponse
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -220,7 +237,11 @@ export default async function router(schema: Schema, config: Config) {
                 username
             });
 
-            return res.json(basemap);
+            return res.json({
+                ...basemap,
+                bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
+                center: basemap.center ? basemap.center.coordinates : undefined,
+            });
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -244,7 +265,7 @@ export default async function router(schema: Schema, config: Config) {
             bounds: Type.Optional(Type.Array(Type.Number(), { minItems: 4, maxItems: 4 })),
             center: Type.Optional(Type.Array(Type.Number()))
         }),
-        res: BasemapResponse
+        res: AugmentedBasemapResponse
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -266,13 +287,17 @@ export default async function router(schema: Schema, config: Config) {
 
             const basemap = await config.models.Basemap.commit(Number(req.params.basemapid), {
                 updated: sql`Now()`,
+                ...req.body,
                 bounds, center,
-                ...req.body
             });
 
             await config.cacher.del(`basemap-${req.params.basemapid}`);
 
-            return res.json(basemap);
+            return res.json({
+                ...basemap,
+                bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
+                center: basemap.center ? basemap.center.coordinates : undefined,
+            });
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -290,7 +315,7 @@ export default async function router(schema: Schema, config: Config) {
             format: Type.Optional(Type.String()),
             token: Type.Optional(Type.String()),
         }),
-        res: Type.Union([BasemapResponse, Type.String()])
+        res: Type.Union([AugmentedBasemapResponse, Type.String()])
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req, { token: true });
@@ -326,7 +351,11 @@ export default async function router(schema: Schema, config: Config) {
 
                 return res.send(xml);
             } else {
-                return res.json(basemap);
+                return res.json({
+                    ...basemap,
+                    bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
+                    center: basemap.center ? basemap.center.coordinates : undefined,
+                });
             }
         } catch (err) {
             return Err.respond(err, res);

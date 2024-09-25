@@ -39,6 +39,18 @@
                     />
                 </div>
                 <div class='col-12 col-md-6'>
+                    <TablerInput
+                        v-model='overlay.bounds'
+                        label='Bounds'
+                    />
+                </div>
+                <div class='col-12 col-md-6'>
+                    <TablerInput
+                        v-model='overlay.center'
+                        label='Center'
+                    />
+                </div>
+                <div class='col-12 col-md-6'>
                     <TablerEnum
                         v-model='overlay.type'
                         label='Type'
@@ -100,6 +112,8 @@ export default {
                 styles: '',
                 minzoom: 0,
                 maxzoom: 16,
+                bounds: '-180, -90, 180, 90',
+                center: '0, 0',
             }
         }
     },
@@ -113,27 +127,52 @@ export default {
     methods: {
         stdclick,
         saveOverlay: async function() {
-            const overlay = JSON.parse(JSON.stringify(this.overlay));
+            let overlay = JSON.parse(JSON.stringify(this.overlay));
+
+            overlay.bounds = overlay.bounds.split(',').map((b) => {
+                return Number(b);
+            })
+
+            overlay.center = overlay.center.split(',').map((b) => {
+                return Number(b);
+            })
 
             this.loading = true;
             if (this.$route.params.overlay === 'new') {
-                this.overlay = await std(`/api/basemap`, {
+                overlay = await std(`/api/basemap`, {
                     method: 'POST',
                     body: overlay
                 });
             } else {
-                this.overlay = await std(`/api/basemap/${this.overlay.id}`, {
+                overlay = await std(`/api/basemap/${this.overlay.id}`, {
                     method: 'PATCH',
                     body: overlay
                 });
             }
+
+            overlay.bounds = overlay.bounds.join(',');
+            overlay.center = overlay.center.join(',');
 
             this.loading = false;
         },
         fetchOverlay: async function() {
             this.loading = true;
             const url = stdurl(`/api/basemap/${this.$route.params.overlay}`);
-            this.overlay = await std(url);
+            const overlay = await std(url);
+
+            if (!overlay.bounds) {
+                overlay.bounds = '-180, -90, 180, 90';
+            } else {
+                overlay.bounds = overlay.bounds.join(',');
+            }
+
+            if (!overlay.center) {
+                overlay.center = '0, 0';
+            } else {
+                overlay.center = overlay.center.join(',');
+            }
+
+            this.overlay = overlay
             this.loading = false;
         }
     }
