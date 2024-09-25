@@ -226,7 +226,12 @@ export const useMapStore = defineStore('cloudtak', {
                     }
 
                     this.select.e = e;
-                    this.select.feats = features;
+
+                    const dedupe: Map<string, Feature> = new Map();
+                    for (const feat of features) {
+                        dedupe.set(feat.id, feat);
+                    }
+                    this.select.feats = Array.from(dedupe.values());
                 }
             });
 
