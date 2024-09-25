@@ -10,6 +10,7 @@ import type {
 export default function styles(id: string, opts: {
     sourceLayer?: string;
     group?: boolean;
+    course?: boolean;
     labels?: {
         size: number
     };
