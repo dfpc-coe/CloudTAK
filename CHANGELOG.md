@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v3.38.0 - 2024-09-25
+
+- :rocket: `UI` Implement Lasso Select
+- :rocket: `UI` Fix duplicate MultipleFeats component entries
+- :bug: `API` Relax phone number requirements for System Admins
+
 ### v3.37.0 - 2024-09-25
 
 - :rocket: `UI` Add course indicator for Skittle dots
