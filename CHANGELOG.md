@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v3.38.2 - 2024-09-25
+
+- :rocket: `UI` Support dual icon formats in IconSelect component
+
 ### v3.38.1 - 2024-09-25
 
 - :rocket: `UI` Dedupe features at top of click event to avoid MultipleFeats opening with a single Feature
