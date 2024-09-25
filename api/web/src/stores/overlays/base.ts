@@ -193,6 +193,7 @@ export default class Overlay {
             this.styles = cotStyles(String(this.id), {
                 group: this.mode !== "mission",
                 icons: true,
+                course: true,
                 labels: { size }
             });
 
