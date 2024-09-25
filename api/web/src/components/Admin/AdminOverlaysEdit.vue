@@ -96,6 +96,7 @@ export default {
                 name: '',
                 url: '',
                 type: 'vector',
+                overlay: true,
                 styles: '',
                 minzoom: 0,
                 maxzoom: 16,
@@ -116,12 +117,12 @@ export default {
 
             this.loading = true;
             if (this.$route.params.overlay === 'new') {
-                this.overlay = await std(`/api/overlay`, {
+                this.overlay = await std(`/api/basemap`, {
                     method: 'POST',
                     body: overlay
                 });
             } else {
-                this.overlay = await std(`/api/overlay/${this.overlay.id}`, {
+                this.overlay = await std(`/api/basemap/${this.overlay.id}`, {
                     method: 'PATCH',
                     body: overlay
                 });
@@ -131,7 +132,7 @@ export default {
         },
         fetchOverlay: async function() {
             this.loading = true;
-            const url = stdurl(`/api/overlay/${this.$route.params.overlay}`);
+            const url = stdurl(`/api/basemap/${this.$route.params.overlay}`);
             this.overlay = await std(url);
             this.loading = false;
         }
