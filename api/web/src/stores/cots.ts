@@ -7,7 +7,8 @@ import { defineStore } from 'pinia'
 import type { GeoJSONSourceDiff } from 'maplibre-gl';
 import { std, stdurl } from '../std.ts';
 import type { Feature, Mission, APIList } from '../types.ts';
-import type { FeatureCollection } from 'geojson';
+import type { FeatureCollection, Polygon } from 'geojson';
+import { booleanWithin } from '@turf/boolean-within';
 import { useProfileStore } from './profile.ts';
 const profileStore = useProfileStore();
 import { useMapStore } from './map.ts';
@@ -86,6 +87,21 @@ export const useCOTStore = defineStore('cots', {
                     mapStore.updateMissionData(updateGuid);
                 }
             }
+        },
+
+        /**
+         * Return CoTs touching a given polygon
+         */
+        touching: function(poly: Polygon): Feature[] {
+            const within: Feature[] = [];
+
+            for (const feat of this.cots.values()) {
+                if (booleanWithin(feat.geometry, poly)) {
+                    within.push(feat)
+                }
+            }
+
+            return within;
         },
 
         /**
