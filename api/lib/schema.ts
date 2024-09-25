@@ -88,6 +88,7 @@ export const Basemap = pgTable('basemaps', {
     updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     name: text('name').notNull(),
     url: text('url').notNull(),
+    overlay: boolean('overlay').notNull().default(false),
     username: text('username').references(() => Profile.username),
     bounds: geometry('bounds', { type: GeometryType.Polygon, srid: 4326 }),
     center: geometry('center', { type: GeometryType.Point, srid: 4326 }),
@@ -95,6 +96,7 @@ export const Basemap = pgTable('basemaps', {
     maxzoom: integer('maxzoom').notNull().default(16),
     format: text('format').$type<Basemap_Format>().notNull().default(Basemap_Format.PNG),
     style: text('style').$type<Basemap_Style>().notNull().default(Basemap_Style.ZXY),
+    styles: json('styles').$type<Array<unknown>>().notNull().default([]),
     type: text('type').$type<Basemap_Type>().notNull().default(Basemap_Type.RASTER)
 }, (table) => {
     return {
@@ -318,21 +320,6 @@ export const ProfileMission = pgTable('profile_missions', {
     created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
 });
-
-export const Overlay = pgTable('overlays', {
-    id: serial('id').primaryKey(),
-    name: text('name').notNull(),
-    created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    minzoom: integer('minzoom').notNull().default(0),
-    maxzoom: integer('maxzoom').notNull().default(16),
-    format: text('format').notNull().default('png'),
-    type: text('type').notNull().default('vector'),
-    styles: json('styles').$type<Array<unknown>>().notNull().default([]),
-    url: text('url').notNull()
-}, (t) => ({
-    unq: unique().on(t.name)
-}));
 
 export const ProfileOverlay = pgTable('profile_overlays', {
     id: serial('id').primaryKey(),
