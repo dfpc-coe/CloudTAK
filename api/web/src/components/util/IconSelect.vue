@@ -220,15 +220,11 @@ export default {
             },
         },
         modelValue: async function() {
-            if (this.modelValue && this.modelValue.includes(":")) {
-                await this.fetch();
-            }
+            await this.fetch();
         }
     },
     mounted: async function() {
-        if (this.modelValue && this.modelValue.includes(":")) {
-            await this.fetch();
-        }
+        await this.fetch();
         await this.Iconlistsets();
         await this.Iconlists();
     },
@@ -244,14 +240,24 @@ export default {
             return String(url);
         },
         fetch: async function() {
-            let path = this.modelValue;
+            // This is unfortuantely but the CloudTAK Map uses the MapLibre Icon format
+            // While the backend uses the TAK Icon Format
+            if (
+                this.modelValue
+                && (
+                    this.modelValue.includes(":")
+                    || this.modelValue.split('/').length === 3
+                )
+            ) {
+                let path = this.modelValue;
 
-            // MapLibre needs the palette name seperated by a ":" isntead of a "/"
-            if (path.includes(':')) path = path.split(':').join('/') + '.png';
+                // MapLibre needs the palette name seperated by a ":" isntead of a "/"
+                if (path.includes(':')) path = path.split(':').join('/') + '.png';
 
-            const iconset = path.split('/')[0];
-            const icon = path.split('/').splice(1).join('/');
-            this.selected = await std(`/api/iconset/${iconset}/icon/${encodeURIComponent(icon)}`);
+                const iconset = path.split('/')[0];
+                const icon = path.split('/').splice(1).join('/');
+                this.selected = await std(`/api/iconset/${iconset}/icon/${encodeURIComponent(icon)}`);
+            }
         },
         Iconlistsets: async function() {
             this.loading.iconsets = true;
