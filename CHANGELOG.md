@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v3.38.1 - 2024-09-25
+
+- :rocket: `UI` Dedupe features at top of click event to avoid MultipleFeats opening with a single Feature
+
 ### v3.38.0 - 2024-09-25
 
 - :rocket: `UI` Implement Lasso Select

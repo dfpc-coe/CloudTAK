@@ -194,9 +194,16 @@ export const useMapStore = defineStore('cloudtak', {
                     }
                 }
 
-                const features = map.queryRenderedFeatures(e.point).filter((feat) => {
+                // Each Visual Layer will return a Feature for a click
+                // Since a single "feature" may exist in multiple layers (text, polygon, line) etc
+                // dedupe them based on the ID
+                const dedupe: Map<string, MapGeoJSONFeature> = new Map();
+                map.queryRenderedFeatures(e.point).filter((feat) => {
                     return clickMap.has(feat.layer.id);
-                });
+                }).forEach((feat) => {
+                    dedupe.set(String(feat.id), feat);
+                })
+                const features = Array.from(dedupe.values());
 
                 if (!features.length) return;
 
@@ -226,12 +233,7 @@ export const useMapStore = defineStore('cloudtak', {
                     }
 
                     this.select.e = e;
-
-                    const dedupe: Map<string, MapGeoJSONFeature> = new Map();
-                    for (const feat of features) {
-                        dedupe.set(String(feat.id), feat);
-                    }
-                    this.select.feats = Array.from(dedupe.values());
+                    this.select.feats = features;
                 }
             });
 
