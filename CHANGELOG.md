@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v3.37.0 - 2024-09-25
+
+- :rocket: `UI` Add course indicator for Skittle dots
+- :rocket: `API` Add Video API Support
+
 ### v3.36.0 - 2024-09-24
 
 - :rocket: Mirror sent headers on Overlay and Basemap
