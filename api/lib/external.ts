@@ -289,7 +289,7 @@ export default class ExternalProvider {
         return {
             id: user_body.data.id,
             name: user_body.data.name,
-            phone: user_body.data.phone,
+            phone: user_body.data.phone || '',
             system_admin: user_body.data.roles.some((role) => role.name === 'System Administrator'),
             agency_admin: user_body.data.adminAgencies.map((a) => a.id)
         };
