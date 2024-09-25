@@ -92,7 +92,7 @@ export default {
             this.loading = true;
 
             await mapStore.overlays.push(await Overlay.create(mapStore.map, {
-                url: String(stdurl(`/api/overlay/${overlay.id}/tiles`)),
+                url: String(stdurl(`/api/basemap/${overlay.id}/tiles`)),
                 name: overlay.name,
                 mode: 'overlay',
                 mode_id: overlay.id,
@@ -107,8 +107,9 @@ export default {
         },
         fetchList: async function() {
             this.loading = true;
-            const url = stdurl('/api/overlay');
+            const url = stdurl('/api/basemap');
             if (this.paging.filter) url.searchParams.append('filter', this.paging.filter);
+            url.searchParams.append('overlay', 'true');
             url.searchParams.append('limit', this.paging.limit);
             url.searchParams.append('page', this.paging.page);
             this.list = await std(url);
