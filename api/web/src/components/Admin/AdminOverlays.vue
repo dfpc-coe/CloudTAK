@@ -138,7 +138,7 @@ export default {
     methods: {
         stdclick,
         listOverlaySchema: async function() {
-            const schema = await std('/api/schema?method=GET&url=/overlay');
+            const schema = await std('/api/schema?method=GET&url=/basemap');
             this.header = ['id', 'name'].map((h) => {
                 return { name: h, display: true };
             });
@@ -157,7 +157,8 @@ export default {
         },
         fetchList: async function() {
             this.loading = true;
-            const url = stdurl('/api/overlay');
+            const url = stdurl('/api/basemap');
+            url.searchParams.append('overlay', 'true');
             url.searchParams.append('filter', this.paging.filter);
             url.searchParams.append('limit', this.paging.limit);
             url.searchParams.append('page', this.paging.page);

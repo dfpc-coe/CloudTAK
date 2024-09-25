@@ -456,6 +456,13 @@
       "when": 1726851219453,
       "tag": "0064_curved_hulk",
       "breakpoints": true
+    },
+    {
+      "idx": 65,
+      "version": "7",
+      "when": 1727294631631,
+      "tag": "0065_bumpy_magus",
+      "breakpoints": true
     }
   ]
 }
