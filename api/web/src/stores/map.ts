@@ -226,7 +226,12 @@ export const useMapStore = defineStore('cloudtak', {
                     }
 
                     this.select.e = e;
-                    this.select.feats = features;
+
+                    const dedupe: Map<string, MapGeoJSONFeature> = new Map();
+                    for (const feat of features) {
+                        dedupe.set(String(feat.id), feat);
+                    }
+                    this.select.feats = Array.from(dedupe.values());
                 }
             });
 
@@ -398,6 +403,7 @@ export const useMapStore = defineStore('cloudtak', {
                     new terraDraw.TerraDrawLineStringMode(),
                     new terraDraw.TerraDrawPolygonMode(),
                     new terraDraw.TerraDrawAngledRectangleMode(),
+                    new terraDraw.TerraDrawFreehandMode(),
                     new terraDraw.TerraDrawSelectMode({
                         flags: {
                             polygon: {

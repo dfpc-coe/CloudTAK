@@ -75,7 +75,7 @@
                 style='
                     z-index: 1;
                     bottom: 40px;
-                    width: 200px;
+                    width: 250px;
                 '
             >
                 <SelectFeats :selected='selected' />
@@ -345,6 +345,15 @@
                                 :stroke='1'
                             /> Draw Rectangle
                         </div>
+                        <div
+                            class='col-12 py-1 px-2 hover-button cursor-pointer'
+                            @click='startDraw("freehand")'
+                        >
+                            <IconLasso
+                                :size='25'
+                                :stroke='1'
+                            /> Lasso Select
+                        </div>
                     </template>
                 </TablerDropdown>
             </div>
@@ -447,6 +456,7 @@ import {
     IconFocus2,
     IconLockAccess,
     IconPencil,
+    IconLasso,
     IconX,
     IconPoint,
     IconLine,
@@ -912,6 +922,18 @@ export default {
                     mapStore.draw.on('finish', async (id) => {
                         if (mapStore.draw.getMode() === 'select' || mapStore.edit) {
                             return;
+                        } else if (mapStore.draw.getMode() === 'freehand') {
+                            const geometry = mapStore.draw._store.store[id].geometry;
+                            mapStore.draw._store.delete([id]);
+                            mapStore.draw.setMode('static');
+                            this.drawMode = 'static';
+                            mapStore.draw.stop();
+
+                            cotStore.touching(geometry).forEach((feat) => {
+                                mapStore.selected.set(feat.id, feat);
+                            })
+
+                            return;
                         }
 
                         const geometry = mapStore.draw._store.store[id].geometry;
@@ -980,6 +1002,7 @@ export default {
         TablerInput,
         TablerModal,
         TablerDropdown,
+        IconLasso,
         IconSearch,
         IconMessage,
         IconLocationOff,
@@ -995,10 +1018,10 @@ export default {
         IconVector,
         IconMenu2,
         IconPencil,
-        CloudTAKFeatView,
         IconCursorText,
         IconCircleArrowUp,
         IconX,
+        CloudTAKFeatView,
     }
 }
 </script>
