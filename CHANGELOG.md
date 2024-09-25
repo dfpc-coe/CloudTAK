@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v4.0.0 - 2024-09-25
+
+- :rocket: `UI/API` Consolidate Server Overlays & Basemaps into a single Table with an `overlay: true` differentiation
+
 ### v3.38.2 - 2024-09-25
 
 - :rocket: `UI` Support dual icon formats in IconSelect component
