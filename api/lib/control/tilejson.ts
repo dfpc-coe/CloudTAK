@@ -74,7 +74,7 @@ export default class TileJSON {
      */
     static quadkey(z: number, x: number, y: number): string {
         const quadKey = [];
-        for (const i = z; i > 0; i--) {
+        for (let i = z; i > 0; i--) {
             let digit = '0';
             const mask = 1 << (i - 1);
             if ((x & mask) != 0) {
