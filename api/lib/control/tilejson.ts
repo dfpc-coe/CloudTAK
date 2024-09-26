@@ -69,6 +69,26 @@ export default class TileJSON {
         }
     }
 
+    /**
+     * Generate a Bing Maps style quadkey from a zxy
+     */
+    static quadkey(z: number, x: number, y: number): string {
+        const quadKey = [];
+        for (const i = z; i > 0; i--) {
+            let digit = '0';
+            const mask = 1 << (i - 1);
+            if ((x & mask) != 0) {
+                digit++;
+            }
+            if ((y & mask) != 0) {
+                digit++;
+                digit++;
+            }
+            quadKey.push(digit);
+        }
+        return quadKey.join('');
+    }
+
     static async tile(
         config: TileJSONInterface,
         z: number, x: number, y: number,
@@ -81,6 +101,7 @@ export default class TileJSON {
             .replace(/\{\$?z\}/, String(z))
             .replace(/\{\$?x\}/, String(x))
             .replace(/\{\$?y\}/, String(y))
+            .replace(/\{\$?q\}/, String(this.quadkey(z, x, y)))
         );
 
         if (!opts) opts = {};
