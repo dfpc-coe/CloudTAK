@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v4.1.0 - 2024-09-26
+
+- :rocket: `API` Support `{$q}` variable for Basemaps (Quadkeys)
+
 ### v4.0.0 - 2024-09-25
 
 - :rocket: `UI/API` Consolidate Server Overlays & Basemaps into a single Table with an `overlay: true` differentiation
