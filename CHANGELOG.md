@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v4.1.1 - 2024-09-26
+
+- :bug: `API` Fix const assignment
+
 ### v4.1.0 - 2024-09-26
 
 - :rocket: `API` Support `{$q}` variable for Basemaps (Quadkeys)
