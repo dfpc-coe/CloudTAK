@@ -216,7 +216,7 @@ export default class COT implements Feature {
                 if (!feat.properties['fill']) feat.properties.fill = '#d63939';
 
                 if (feat.properties['fill-opacity'] === undefined) {
-                    feat.properties['fill-opacity'] = 1;
+                    feat.properties['fill-opacity'] = 0.5;
                 }
             }
         }
