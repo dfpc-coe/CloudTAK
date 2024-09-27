@@ -1,14 +1,6 @@
 <template>
     <MenuTemplate name='Channels'>
         <template #buttons>
-            <IconSearch
-                v-if='channels.length'
-                v-tooltip='"Search"'
-                :size='32'
-                :stroke='1'
-                class='cursor-pointer'
-                @click='search.shown = !search.shown'
-            />
             <IconRefresh
                 v-if='!loading'
                 v-tooltip='"Refresh"'
@@ -174,7 +166,7 @@ export default {
         ...mapActions(useProfileStore, ['loadChannels']),
         refresh: async function() {
             this.loading = true;
-            this.loadChannels()
+            await this.loadChannels()
             this.loading = false;
         },
         setStatus: async function(channel, active=false) {

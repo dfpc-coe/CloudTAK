@@ -180,6 +180,7 @@ export default async function router(schema: Schema, config: Config) {
                     return {
                         ...basemap,
                         bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
+                        // @ts-expect-error Need to type this to point
                         center: basemap.center ? basemap.center.coordinates : undefined,
                     };
                 })
@@ -240,6 +241,7 @@ export default async function router(schema: Schema, config: Config) {
             return res.json({
                 ...basemap,
                 bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
+                // @ts-expect-error Need to type this to point
                 center: basemap.center ? basemap.center.coordinates : undefined,
             });
         } catch (err) {
@@ -296,6 +298,7 @@ export default async function router(schema: Schema, config: Config) {
             return res.json({
                 ...basemap,
                 bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
+                // @ts-expect-error Need to type this to point
                 center: basemap.center ? basemap.center.coordinates : undefined,
             });
         } catch (err) {
