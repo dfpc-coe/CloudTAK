@@ -62,6 +62,7 @@ export default async function router(schema: Schema, config: Config) {
 
             for (const sub of subs.data) {
                 if (sub.clientUid === req.params.clientuid) {
+                    console.error(sub.groups);
                     return res.json(sub);
                 }
             }

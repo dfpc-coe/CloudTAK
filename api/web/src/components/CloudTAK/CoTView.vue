@@ -137,7 +137,7 @@
         <div
             v-if='mode === "default"'
             class='overflow-auto'
-            style='height: calc(100vh - 160px)'
+            style='height: calc(100vh - 225px)'
         >
             <div class='row g-0'>
                 <div
@@ -398,11 +398,16 @@
             </div>
         </template>
         <template v-else-if='mode === "channels"'>
-            <Subscriptions :uid='feat.id'/>
+            <div
+                style='height: calc(100vh - 225px)'
+                class='overflow-auto'
+            >
+                <Subscriptions :uid='feat.id'/>
+            </div>
         </template>
         <template v-else-if='mode === "raw"'>
             <div
-                style='height: calc(100vh - 160px)'
+                style='height: calc(100vh - 225px)'
                 class='overflow-auto'
             >
                 <pre v-text='feat' />
