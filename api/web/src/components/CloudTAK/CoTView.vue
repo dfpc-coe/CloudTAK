@@ -82,24 +82,55 @@
                             class='cursor-pointer'
                             @click='zoomTo'
                         />
-                        <IconCode
-                            v-if='mode === "default"'
-                            v-tooltip='"Raw View"'
-                            :size='32'
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class='col-12 px-2 py-2'>
+            <div class="btn-group w-100" role="group">
+                <input @click='mode = "default"' type="radio" class="btn-check" name="btn-mode" id="btn-mode-info" autocomplete="off" :checked="mode === 'default'">
+                <label
+                    for="btn-mode-info"
+                    type="button"
+                    class="btn"
+                >
+                    <IconInfoCircle
+                            :size='20'
                             :stroke='1'
                             class='cursor-pointer'
                             @click='mode = "raw"'
-                        />
-                        <IconX
-                            v-if='mode === "raw"'
-                            v-tooltip='"Default View"'
-                            :size='32'
+                            />
+                    <span class='mx-2'>Info</span>
+                </label>
+                <template v-if='feat.properties.group'>
+                    <input @click='mode = "channels"' type="radio" class="btn-check" name="btn-mode" id="btn-mode-channels" autocomplete="off" :checked='mode === "channels"'>
+                    <label
+                        for="btn-mode-channels"
+                        type="button"
+                        class="btn"
+                    >
+                        <IconAffiliate
+                            :size='20'
                             :stroke='1'
                             class='cursor-pointer'
-                            @click='mode = "default"'
                         />
-                    </div>
-                </div>
+                        <span class='mx-2'>Channels</span>
+                    </label>
+                </template>
+                <input @click='mode = "raw"' type="radio" class="btn-check" name="btn-mode" id="btn-mode-raw" autocomplete="off" :checked="mode === 'raw'">
+                <label
+                    for="btn-mode-raw"
+                    type="button"
+                    class="btn"
+                >
+                    <IconCode
+                        :size='20'
+                        :stroke='1'
+                        class='cursor-pointer'
+                    />
+                    <span class='mx-2'>Raw</span>
+                </label>
             </div>
         </div>
 
@@ -366,6 +397,9 @@
                 />
             </div>
         </template>
+        <template v-else-if='mode === "channels"'>
+            <Subscriptions :uid='feat.id'/>
+        </template>
         <template v-else-if='mode === "raw"'>
             <div
                 style='height: calc(100vh - 160px)'
@@ -404,11 +438,14 @@ import {
     IconShare2,
     IconZoomPan,
     IconCode,
+    IconAffiliate,
     IconBattery1,
     IconBattery2,
     IconBattery3,
-    IconBattery4
+    IconBattery4,
+    IconInfoCircle,
 } from '@tabler/icons-vue';
+import Subscriptions from './util/Subscriptions.vue';
 import timediff from '/src/timediff.ts';
 import { std } from '/src/std.ts';
 import { useCOTStore } from '/src/stores/cots.ts';
@@ -440,6 +477,7 @@ export default {
     },
     watch: {
         '$route.params.uid': function() {
+            this.mode = 'default'
             const { feat, mission } = this.findCOT();
             this.feat = feat;
             this.mission = mission;
@@ -568,10 +606,18 @@ export default {
     components: {
         IconX,
         IconCode,
+        IconAffiliate,
         IconShare2,
+        IconInfoCircle,
+        IconZoomPan,
+        IconAmbulance,
+        IconPlayerPlay,
+        IconBattery1,
+        IconBattery2,
+        IconBattery3,
+        IconBattery4,
         CoTStyle,
         CoTVideo,
-        IconZoomPan,
         Elevation,
         Attachments,
         Speed,
@@ -584,12 +630,7 @@ export default {
         TablerMarkdown,
         TablerToggle,
         TablerDelete,
-        IconAmbulance,
-        IconPlayerPlay,
-        IconBattery1,
-        IconBattery2,
-        IconBattery3,
-        IconBattery4
+        Subscriptions
     }
 }
 </script>
