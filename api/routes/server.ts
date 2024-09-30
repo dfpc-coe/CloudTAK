@@ -1,4 +1,4 @@
-import { Type } from '@sinclair/typebox'
+import { Static, Type } from '@sinclair/typebox'
 import { X509Certificate } from 'crypto';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
@@ -33,22 +33,18 @@ export default async function router(schema: Schema, config: Config) {
                 if (config.server.auth.cert && config.server.auth.key) auth = true;
 
                 if (user.access === AuthUserAccess.ADMIN) {
-                    if (auth) {
-                        const { validFrom, validTo, subject } = new X509Certificate(config.server.auth.cert);
+                    const response: Static<typeof ServerResponse> = {
+                            status: 'configured',
+                            ...config.server,
+                            auth
+                    };
 
-                        return res.json({
-                            status: 'configured',
-                            ...config.server,
-                            certificate: { validFrom, validTo, subject },
-                            auth
-                        });
-                    } else {
-                        return res.json({
-                            status: 'configured',
-                            ...config.server,
-                            auth
-                        });
+                    if (config.server.auth.cert && config.server.auth.key) {
+                        const { validFrom, validTo, subject } = new X509Certificate(config.server.auth.cert);
+                        response.certificate = { validFrom, validTo, subject };
                     }
+
+                    return res.json(response)
                 } else {
                     return res.json({
                         id: config.server.id,
@@ -100,11 +96,18 @@ export default async function router(schema: Schema, config: Config) {
             let auth = false
             if (config.server.auth.cert && config.server.auth.key) auth = true;
 
-            return res.json({
-                status: 'configured',
-                ...config.server,
-                auth
-            });
+            const response: Static<typeof ServerResponse> = {
+                    status: 'configured',
+                    ...config.server,
+                    auth
+            };
+
+            if (config.server.auth.cert && config.server.auth.key) {
+                const { validFrom, validTo, subject } = new X509Certificate(config.server.auth.cert);
+                response.certificate = { validFrom, validTo, subject };
+            }
+
+            return res.json(response);
         } catch (err) {
             return Err.respond(err, res);
         }
