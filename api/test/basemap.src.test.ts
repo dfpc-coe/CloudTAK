@@ -1,0 +1,129 @@
+import test from 'tape';
+import Flight from './flight.js';
+
+const flight = new Flight();
+
+flight.init();
+flight.takeoff();
+flight.user();
+
+test('GET: api/basemap', async (t) => {
+    try {
+        const res = await flight.fetch('/api/basemap', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin
+            }
+        }, true);
+
+        t.deepEquals(res.body, {
+            total: 0,
+            items: []
+        });
+    } catch (err) {
+        t.error(err, 'no error');
+    }
+
+    t.end();
+});
+
+test('POST: api/basemap - Invalid URL', async (t) => {
+    try {
+        const res = await flight.fetch('/api/basemap', {
+            method: 'POST',
+            auth: {
+                bearer: flight.token.admin
+            },
+            body: {
+                name: 'Test Basemap',
+                url: 'test',
+            }
+        }, true);
+
+        t.fail()
+    } catch (err) {
+        t.equals(String(err), 'AssertionError [ERR_ASSERTION]: {"status":400,"message":"Invalid URL provided","messages":[]}');
+    }
+
+    t.end();
+});
+
+test('POST: api/basemap - Invalid URL Protocol', async (t) => {
+    try {
+        const res = await flight.fetch('/api/basemap', {
+            method: 'POST',
+            auth: {
+                bearer: flight.token.admin
+            },
+            body: {
+                name: 'Test Basemap',
+                url: 'ftp://test.com/test',
+            }
+        }, true);
+
+        t.fail()
+    } catch (err) {
+        t.equals(String(err), 'AssertionError [ERR_ASSERTION]: {"status":400,"message":"Only HTTP and HTTPS Protocols are supported","messages":[]}');
+    }
+
+    t.end();
+});
+
+test('POST: api/basemap - Invalid URL - No Variables', async (t) => {
+    try {
+        const res = await flight.fetch('/api/basemap', {
+            method: 'POST',
+            auth: {
+                bearer: flight.token.admin
+            },
+            body: {
+                name: 'Test Basemap',
+                url: 'https://test.com/test',
+            }
+        }, true);
+
+        t.fail()
+    } catch (err) {
+        t.equals(String(err), 'AssertionError [ERR_ASSERTION]: {"status":400,"message":"Either ZXY or Quadkey variables must be used","messages":[]}');
+    }
+
+    t.end();
+});
+
+test('POST: api/basemap', async (t) => {
+    try {
+        const res = await flight.fetch('/api/basemap', {
+            method: 'POST',
+            auth: {
+                bearer: flight.token.admin
+            },
+            body: {
+                name: 'Test Basemap',
+                url: 'https://test.com/test/{z}/{x}/{y}',
+            }
+        }, true);
+
+        delete res.body.created;
+        delete res.body.updated
+
+        t.deepEqual(res.body, {
+            id: 1,
+            name: 'Test Basemap',
+            url: 'https://test.com/test/{z}/{x}/{y}',
+            overlay: false,
+            username: 'test@example.com',
+            minzoom: 0,
+            maxzoom: 16,
+            format: 'png',
+            style: 'zxy',
+            styles: [],
+            type: 'raster'
+        })
+    } catch (err) {
+        t.error(err)
+    }
+
+    t.end();
+});
+
+flight.landing();

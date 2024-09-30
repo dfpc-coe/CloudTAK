@@ -223,6 +223,8 @@ export default async function router(schema: Schema, config: Config) {
                 delete req.body.center;
             }
 
+            TileJSON.isValidURL(req.body.url);
+
             let username: string | null = null;
             if (user.access !== AuthUserAccess.ADMIN && req.body.scope === ResourceCreationScope.SERVER) {
                 throw new Err(400, null, 'Only Server Admins can create Server scoped basemaps');
@@ -274,6 +276,7 @@ export default async function router(schema: Schema, config: Config) {
             let center: Geometry | undefined = undefined;
             if (req.body.bounds) bounds = bboxPolygon(req.body.bounds as BBox).geometry;
             if (req.body.center) center = { type: 'Point', coordinates: req.body.center };
+            if (req.body.url) TileJSON.isValidURL(req.body.url);
 
             const existing = await config.cacher.get(Cacher.Miss(req.query, `basemap-${req.params.basemapid}`), async () => {
                 return await config.models.Basemap.from(Number(req.params.basemapid))
