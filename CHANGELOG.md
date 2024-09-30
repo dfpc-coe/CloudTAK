@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v4.2.0 - 2024-09-30
+
+- :white_check_mark: Add initial Basemap Tests
+- :white_check_mark: Add initial Server Config Tests
+- :rocket: Add initial Certificate expiry API for admin cert
+
 ### v4.1.1 - 2024-09-26
 
 - :bug: `API` Fix const assignment
