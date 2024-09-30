@@ -52,6 +52,30 @@ export default class TileJSON {
         if (errors.length) throw new Err(400, null, JSON.stringify(errors));
     }
 
+    static isValidURL(str: string): void {
+        let url: URL;
+
+        try {
+            url = new URL(str);
+        } catch (err) {
+            throw new Err(400, err, 'Invalid URL provided');
+        }
+
+        if (!['http:', 'https:'].includes(url.protocol)) {
+            throw new Err(400, null, 'Only HTTP and HTTPS Protocols are supported');
+        }
+
+        // Consistent Mapbox Style ZXY Endpoints: {z} vs TAK: {$z}
+        const pathname = decodeURIComponent(url.pathname).replace(/\{\$/, '{');
+
+        if (
+            !(pathname.includes('{z}') && pathname.includes('{x}') && pathname.includes('{y}'))
+            && !pathname.includes('{q}')
+        ) {
+            throw new Err(400, null, 'Either ZXY or Quadkey variables must be used');
+        }
+    }
+
     static json(config: TileJSONInterface): Static<typeof TileJSONType> {
         const bounds = config.bounds || [-180, -90, 180, 90];
         const center = config.center || pointOnFeature(bboxPolygon(bounds as BBox)).geometry.coordinates;

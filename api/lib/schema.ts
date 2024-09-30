@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm';
 import { Static } from '@sinclair/typebox'
 import type { StyleContainer } from './style.js';
+import { Polygon, Point } from 'geojson';
 import { geometry, GeometryType } from '@openaddresses/batch-generic';
 import { ConnectionAuth } from './connection-config.js';
 import { TAKGroup, TAKRole } from  './api/types.js';
@@ -90,8 +91,8 @@ export const Basemap = pgTable('basemaps', {
     url: text('url').notNull(),
     overlay: boolean('overlay').notNull().default(false),
     username: text('username').references(() => Profile.username),
-    bounds: geometry('bounds', { type: GeometryType.Polygon, srid: 4326 }),
-    center: geometry('center', { type: GeometryType.Point, srid: 4326 }),
+    bounds: geometry('bounds', { type: GeometryType.Polygon, srid: 4326 }).$type<Polygon>(),
+    center: geometry('center', { type: GeometryType.Point, srid: 4326 }).$type<Point>(),
     minzoom: integer('minzoom').notNull().default(0),
     maxzoom: integer('maxzoom').notNull().default(16),
     format: text('format').$type<Basemap_Format>().notNull().default(Basemap_Format.PNG),
