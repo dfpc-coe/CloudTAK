@@ -1,4 +1,5 @@
 import { Type } from '@sinclair/typebox'
+import { X509Certificate } from 'crypto';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth, { AuthUserAccess } from '../lib/auth.js';
@@ -32,11 +33,22 @@ export default async function router(schema: Schema, config: Config) {
                 if (config.server.auth.cert && config.server.auth.key) auth = true;
 
                 if (user.access === AuthUserAccess.ADMIN) {
-                    return res.json({
-                        status: 'configured',
-                        ...config.server,
-                        auth
-                    });
+                    if (auth) {
+                        const { validFrom, validTo, subject } = new X509Certificate(config.server.auth.cert);
+
+                        return res.json({
+                            status: 'configured',
+                            ...config.server,
+                            certificate: { validFrom, validTo, subject },
+                            auth
+                        });
+                    } else {
+                        return res.json({
+                            status: 'configured',
+                            ...config.server,
+                            auth
+                        });
+                    }
                 } else {
                     return res.json({
                         id: config.server.id,
