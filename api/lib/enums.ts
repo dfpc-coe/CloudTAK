@@ -30,7 +30,7 @@ export enum Basemap_Style {
 
 export enum Basemap_Type {
     RASTER = 'raster',
-    TERRAIN = 'terrain',
+    TERRAIN = 'raster-dem',
     VECTOR = 'vector',
 }
 
