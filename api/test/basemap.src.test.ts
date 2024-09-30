@@ -126,4 +126,40 @@ test('POST: api/basemap', async (t) => {
     t.end();
 });
 
+test('GET: api/basemap/1/tiles', async (t) => {
+    try {
+        const res = await flight.fetch('/api/basemap/1/tiles', {
+            method: 'POST',
+            auth: {
+                bearer: flight.token.admin
+            },
+            body: {
+                name: 'Test Basemap',
+                url: 'https://test.com/test/{z}/{x}/{y}',
+            }
+        }, true);
+
+        delete res.body.created;
+        delete res.body.updated
+
+        t.deepEqual(res.body, {
+            id: 1,
+            name: 'Test Basemap',
+            url: 'https://test.com/test/{z}/{x}/{y}',
+            overlay: false,
+            username: 'test@example.com',
+            minzoom: 0,
+            maxzoom: 16,
+            format: 'png',
+            style: 'zxy',
+            styles: [],
+            type: 'raster'
+        })
+    } catch (err) {
+        t.error(err)
+    }
+
+    t.end();
+});
+
 flight.landing();
