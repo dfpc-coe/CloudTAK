@@ -129,31 +129,23 @@ test('POST: api/basemap', async (t) => {
 test('GET: api/basemap/1/tiles', async (t) => {
     try {
         const res = await flight.fetch('/api/basemap/1/tiles', {
-            method: 'POST',
+            method: 'GET',
             auth: {
                 bearer: flight.token.admin
             },
-            body: {
-                name: 'Test Basemap',
-                url: 'https://test.com/test/{z}/{x}/{y}',
-            }
         }, true);
 
-        delete res.body.created;
-        delete res.body.updated
-
         t.deepEqual(res.body, {
-            id: 1,
+            tilejson: '2.2.0',
+            version: '1.0.0',
             name: 'Test Basemap',
-            url: 'https://test.com/test/{z}/{x}/{y}',
-            overlay: false,
-            username: 'test@example.com',
+            type: 'raster',
+            bounds: [ -180, -90, 180, 90 ],
+            center: [ 0, 0 ],
             minzoom: 0,
             maxzoom: 16,
-            format: 'png',
-            style: 'zxy',
-            styles: [],
-            type: 'raster'
+            tiles: [ 'http://localhost:5001/api/basemap/1/tiles/{z}/{x}/{y}' ],
+            layers: []
         })
     } catch (err) {
         t.error(err)
