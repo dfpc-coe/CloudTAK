@@ -58,7 +58,7 @@ export default class TileJSON {
         try {
             url = new URL(str);
         } catch (err) {
-            throw new Err(400, null, 'Invalid URL provided');
+            throw new Err(400, err, 'Invalid URL provided');
         }
 
         if (!['http:', 'https:'].includes(url.protocol)) {
