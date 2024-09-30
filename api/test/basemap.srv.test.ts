@@ -29,7 +29,7 @@ test('GET: api/basemap', async (t) => {
 
 test('POST: api/basemap - Invalid URL', async (t) => {
     try {
-        const res = await flight.fetch('/api/basemap', {
+        await flight.fetch('/api/basemap', {
             method: 'POST',
             auth: {
                 bearer: flight.token.admin
@@ -50,7 +50,7 @@ test('POST: api/basemap - Invalid URL', async (t) => {
 
 test('POST: api/basemap - Invalid URL Protocol', async (t) => {
     try {
-        const res = await flight.fetch('/api/basemap', {
+        await flight.fetch('/api/basemap', {
             method: 'POST',
             auth: {
                 bearer: flight.token.admin
@@ -71,7 +71,7 @@ test('POST: api/basemap - Invalid URL Protocol', async (t) => {
 
 test('POST: api/basemap - Invalid URL - No Variables', async (t) => {
     try {
-        const res = await flight.fetch('/api/basemap', {
+        await flight.fetch('/api/basemap', {
             method: 'POST',
             auth: {
                 bearer: flight.token.admin
@@ -191,7 +191,7 @@ test('PATCH: api/basemap/1', async (t) => {
 
 test('PATCH: api/basemap/1 - Invalid URL', async (t) => {
     try {
-        const res = await flight.fetch('/api/basemap/1', {
+        await flight.fetch('/api/basemap/1', {
             method: 'PATCH',
             auth: {
                 bearer: flight.token.admin
@@ -212,7 +212,7 @@ test('PATCH: api/basemap/1 - Invalid URL', async (t) => {
 
 test('DELETE: api/basemap/1', async (t) => {
     try {
-        const res = await flight.fetch('/api/basemap/1', {
+        await flight.fetch('/api/basemap/1', {
             method: 'DELETE',
             auth: {
                 bearer: flight.token.admin
