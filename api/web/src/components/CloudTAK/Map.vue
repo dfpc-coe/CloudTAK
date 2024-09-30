@@ -379,7 +379,7 @@
                     title='Close Menu Button'
                     :size='40'
                     :stroke='1'
-                    class='mx-2 cursor-pointer bg-dark'
+                    class='mx-2 cursor-pointer bg-dark rounded'
                     @click='closeAllMenu'
                 />
             </div>

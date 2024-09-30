@@ -281,13 +281,28 @@ export const useMapStore = defineStore('cloudtak', {
                         name: basemaps.items[0].name,
                         pos: -1,
                         type: 'raster',
-                        url: `/api/basemap/${basemaps.items[0].id}/tiles`,
+                        url: String(stdurl(`/api/basemap/${basemaps.items[0].id}/tiles?token=${localStorage.token}`)),
                         mode: 'basemap',
                         mode_id: String(basemaps.items[0].id)
                     });
 
                     this.overlays.push(basemap);
                 }
+            }
+
+            // Courtesy add an initial basemap
+            const burl = stdurl('/api/basemap');
+            burl.searchParams.append('type', 'raster-dem');
+            const basemaps = await std(burl) as APIList<Basemap>;
+
+            if (basemaps.items.length > 0) {
+                this.map.addSource('-2', {
+                    type: 'raster-dem',
+                    url: String(stdurl(`/api/basemap/${basemaps.items[0].id}/tiles?token=${localStorage.token}`)),
+                    tileSize: 256
+                })
+
+                this.map.setTerrain({ source: '-2' });
             }
 
             for (const item of items) {
