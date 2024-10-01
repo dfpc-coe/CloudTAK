@@ -82,31 +82,89 @@
                             class='cursor-pointer'
                             @click='zoomTo'
                         />
-                        <IconCode
-                            v-if='mode === "default"'
-                            v-tooltip='"Raw View"'
-                            :size='32'
-                            :stroke='1'
-                            class='cursor-pointer'
-                            @click='mode = "raw"'
-                        />
-                        <IconX
-                            v-if='mode === "raw"'
-                            v-tooltip='"Default View"'
-                            :size='32'
-                            :stroke='1'
-                            class='cursor-pointer'
-                            @click='mode = "default"'
-                        />
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <div class='col-12 px-2 py-2'>
+            <div
+                class='btn-group w-100'
+                role='group'
+            >
+                <input
+                    id='btn-mode-info'
+                    type='radio'
+                    class='btn-check'
+                    name='btn-mode'
+                    autocomplete='off'
+                    :checked='mode === "default"'
+                    @click='mode = "default"'
+                >
+                <label
+                    for='btn-mode-info'
+                    type='button'
+                    class='btn'
+                >
+                    <IconInfoCircle
+                        :size='20'
+                        :stroke='1'
+                        class='cursor-pointer'
+                        @click='mode = "raw"'
+                    />
+                    <span class='mx-2'>Info</span>
+                </label>
+                <template v-if='feat.properties.group'>
+                    <input
+                        id='btn-mode-channels'
+                        type='radio'
+                        class='btn-check'
+                        name='btn-mode'
+                        autocomplete='off'
+                        :checked='mode === "channels"'
+                        @click='mode = "channels"'
+                    >
+                    <label
+                        for='btn-mode-channels'
+                        type='button'
+                        class='btn'
+                    >
+                        <IconAffiliate
+                            :size='20'
+                            :stroke='1'
+                            class='cursor-pointer'
+                        />
+                        <span class='mx-2'>Channels</span>
+                    </label>
+                </template>
+                <input
+                    id='btn-mode-raw'
+                    type='radio'
+                    class='btn-check'
+                    name='btn-mode'
+                    autocomplete='off'
+                    :checked='mode === "raw"'
+                    @click='mode = "raw"'
+                >
+                <label
+                    for='btn-mode-raw'
+                    type='button'
+                    class='btn'
+                >
+                    <IconCode
+                        :size='20'
+                        :stroke='1'
+                        class='cursor-pointer'
+                    />
+                    <span class='mx-2'>Raw</span>
+                </label>
             </div>
         </div>
 
         <div
             v-if='mode === "default"'
             class='overflow-auto'
-            style='height: calc(100vh - 160px)'
+            style='height: calc(100vh - 225px)'
         >
             <div class='row g-0'>
                 <div
@@ -366,9 +424,17 @@
                 />
             </div>
         </template>
+        <template v-else-if='mode === "channels"'>
+            <div
+                style='height: calc(100vh - 225px)'
+                class='overflow-auto'
+            >
+                <Subscriptions :uid='feat.id' />
+            </div>
+        </template>
         <template v-else-if='mode === "raw"'>
             <div
-                style='height: calc(100vh - 160px)'
+                style='height: calc(100vh - 225px)'
                 class='overflow-auto'
             >
                 <pre v-text='feat' />
@@ -398,17 +464,19 @@ import Speed from './util/Speed.vue';
 import Elevation from './util/Elevation.vue';
 import Attachments from './util/Attachments.vue';
 import {
-    IconX,
     IconAmbulance,
     IconPlayerPlay,
     IconShare2,
     IconZoomPan,
     IconCode,
+    IconAffiliate,
     IconBattery1,
     IconBattery2,
     IconBattery3,
-    IconBattery4
+    IconBattery4,
+    IconInfoCircle,
 } from '@tabler/icons-vue';
+import Subscriptions from './util/Subscriptions.vue';
 import timediff from '/src/timediff.ts';
 import { std } from '/src/std.ts';
 import { useCOTStore } from '/src/stores/cots.ts';
@@ -440,6 +508,7 @@ export default {
     },
     watch: {
         '$route.params.uid': function() {
+            this.mode = 'default'
             const { feat, mission } = this.findCOT();
             this.feat = feat;
             this.mission = mission;
@@ -566,12 +635,19 @@ export default {
         }
     },
     components: {
-        IconX,
         IconCode,
+        IconAffiliate,
         IconShare2,
+        IconInfoCircle,
+        IconZoomPan,
+        IconAmbulance,
+        IconPlayerPlay,
+        IconBattery1,
+        IconBattery2,
+        IconBattery3,
+        IconBattery4,
         CoTStyle,
         CoTVideo,
-        IconZoomPan,
         Elevation,
         Attachments,
         Speed,
@@ -584,12 +660,7 @@ export default {
         TablerMarkdown,
         TablerToggle,
         TablerDelete,
-        IconAmbulance,
-        IconPlayerPlay,
-        IconBattery1,
-        IconBattery2,
-        IconBattery3,
-        IconBattery4
+        Subscriptions
     }
 }
 </script>

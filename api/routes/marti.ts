@@ -53,7 +53,7 @@ export default async function router(schema: Schema, config: Config) {
     });
 
     await schema.put('/marti/group', {
-        name: 'Upate Groups',
+        name: 'Update Groups',
         group: 'Marti',
         description: 'Helper API to update groups that the client is part of',
         query: Type.Object({
