@@ -88,27 +88,46 @@
         </div>
 
         <div class='col-12 px-2 py-2'>
-            <div class="btn-group w-100" role="group">
-                <input @click='mode = "default"' type="radio" class="btn-check" name="btn-mode" id="btn-mode-info" autocomplete="off" :checked="mode === 'default'">
+            <div
+                class='btn-group w-100'
+                role='group'
+            >
+                <input
+                    id='btn-mode-info'
+                    type='radio'
+                    class='btn-check'
+                    name='btn-mode'
+                    autocomplete='off'
+                    :checked='mode === "default"'
+                    @click='mode = "default"'
+                >
                 <label
-                    for="btn-mode-info"
-                    type="button"
-                    class="btn"
+                    for='btn-mode-info'
+                    type='button'
+                    class='btn'
                 >
                     <IconInfoCircle
-                            :size='20'
-                            :stroke='1'
-                            class='cursor-pointer'
-                            @click='mode = "raw"'
-                            />
+                        :size='20'
+                        :stroke='1'
+                        class='cursor-pointer'
+                        @click='mode = "raw"'
+                    />
                     <span class='mx-2'>Info</span>
                 </label>
                 <template v-if='feat.properties.group'>
-                    <input @click='mode = "channels"' type="radio" class="btn-check" name="btn-mode" id="btn-mode-channels" autocomplete="off" :checked='mode === "channels"'>
+                    <input
+                        id='btn-mode-channels'
+                        type='radio'
+                        class='btn-check'
+                        name='btn-mode'
+                        autocomplete='off'
+                        :checked='mode === "channels"'
+                        @click='mode = "channels"'
+                    >
                     <label
-                        for="btn-mode-channels"
-                        type="button"
-                        class="btn"
+                        for='btn-mode-channels'
+                        type='button'
+                        class='btn'
                     >
                         <IconAffiliate
                             :size='20'
@@ -118,11 +137,19 @@
                         <span class='mx-2'>Channels</span>
                     </label>
                 </template>
-                <input @click='mode = "raw"' type="radio" class="btn-check" name="btn-mode" id="btn-mode-raw" autocomplete="off" :checked="mode === 'raw'">
+                <input
+                    id='btn-mode-raw'
+                    type='radio'
+                    class='btn-check'
+                    name='btn-mode'
+                    autocomplete='off'
+                    :checked='mode === "raw"'
+                    @click='mode = "raw"'
+                >
                 <label
-                    for="btn-mode-raw"
-                    type="button"
-                    class="btn"
+                    for='btn-mode-raw'
+                    type='button'
+                    class='btn'
                 >
                     <IconCode
                         :size='20'
@@ -402,7 +429,7 @@
                 style='height: calc(100vh - 225px)'
                 class='overflow-auto'
             >
-                <Subscriptions :uid='feat.id'/>
+                <Subscriptions :uid='feat.id' />
             </div>
         </template>
         <template v-else-if='mode === "raw"'>
@@ -437,7 +464,6 @@ import Speed from './util/Speed.vue';
 import Elevation from './util/Elevation.vue';
 import Attachments from './util/Attachments.vue';
 import {
-    IconX,
     IconAmbulance,
     IconPlayerPlay,
     IconShare2,
@@ -609,7 +635,6 @@ export default {
         }
     },
     components: {
-        IconX,
         IconCode,
         IconAffiliate,
         IconShare2,
