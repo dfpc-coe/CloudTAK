@@ -212,7 +212,7 @@ test('PATCH: api/basemap/1 - Invalid URL', async (t) => {
 
 test('DELETE: api/basemap/1', async (t) => {
     try {
-        await flight.fetch('/api/basemap/1', {
+        const res = await flight.fetch('/api/basemap/1', {
             method: 'DELETE',
             auth: {
                 bearer: flight.token.admin

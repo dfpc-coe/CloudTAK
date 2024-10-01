@@ -110,7 +110,6 @@ import {
     IconLocation,
     IconLocationOff,
     IconRefresh,
-    IconSearch,
     IconEye,
     IconEyeOff,
 } from '@tabler/icons-vue';
@@ -190,7 +189,6 @@ export default {
     components: {
         IconEye,
         IconEyeOff,
-        IconSearch,
         IconLocation,
         IconLocationOff,
         NoChannelsInfo,
