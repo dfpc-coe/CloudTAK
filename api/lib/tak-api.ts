@@ -8,6 +8,7 @@ import Credentials from './api/credentials.js';
 import Contacts from './api/contacts.js';
 import Files from './api/files.js';
 import Group from './api/groups.js';
+import Subscription from './api/subscriptions.js';
 import Video from './api/video.js';
 import Export from './api/export.js';
 import Err from '@openaddresses/batch-error';
@@ -28,6 +29,7 @@ export default class TAKAPI {
     MissionLayer: MissionLayer;
     Credentials: Credentials;
     Contacts: Contacts;
+    Subscription: Subscription;
     Group: Group;
     Video: Video;
     Export: Export;
@@ -45,6 +47,7 @@ export default class TAKAPI {
         this.MissionLayer = new MissionLayer(this);
         this.Credentials = new Credentials(this);
         this.Contacts = new Contacts(this);
+        this.Subscription = new Subscription(this);
         this.Group = new Group(this);
         this.Video = new Video(this);
         this.Files = new Files(this);
