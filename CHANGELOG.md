@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v4.4.1 - 2024-10-01
+
+- :bug: `API` Set `useCache=true` when making Group List calls
+
 ### v4.4.0 - 2024-10-01
 
 - :rocket: `UI` Use geolocation.watchPosition API instead of individual getLocation calls
