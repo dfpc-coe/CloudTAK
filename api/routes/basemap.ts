@@ -86,8 +86,8 @@ export default async function router(schema: Schema, config: Config) {
                     try {
                         const b = await BasemapParser.parse(String(buffer));
 
-                        if (!b.basemap.customMapSource) return res.json(imported);
-                        const map = b.basemap.customMapSource;
+                        if (!b.raw.customMapSource) return res.json(imported);
+                        const map = b.raw.customMapSource;
 
                         imported.name = map.name._text;
                         imported.minzoom = map.minZoom._text;
