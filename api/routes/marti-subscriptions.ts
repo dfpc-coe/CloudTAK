@@ -31,7 +31,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const groups: Set<string> = new Set();
             (await api.Group.list()).data.forEach((group) => {
-                return group.name
+                groups.add(group.name)
             });
 
             const subs = await api.Subscription.list(req.query);
@@ -73,7 +73,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const groups: Set<string> = new Set();
             (await api.Group.list()).data.forEach((group) => {
-                return group.name
+                groups.add(group.name)
             });
 
             for (const sub of subs.data) {
