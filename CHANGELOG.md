@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v4.4.0 - 2024-10-01
+
+- :rocket: `UI` Use geolocation.watchPosition API instead of individual getLocation calls
+
 ### v4.3.0 - 2024-10-01
 
 - :tada: Add the ability to see what channels a user has active (limited to channels you have access to)
