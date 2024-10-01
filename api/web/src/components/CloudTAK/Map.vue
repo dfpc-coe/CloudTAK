@@ -133,7 +133,7 @@
                         :stroke='1'
                         class='cursor-pointer hover-button'
                         style='margin: 5px 5px 5px 5px;'
-                        @click='getLocation(true)'
+                        @click='getLocation'
                     />
                     <IconLockAccess
                         v-else-if='!radial.cot'
@@ -562,6 +562,44 @@ export default {
 
         this.loading.main = false;
 
+        if (("geolocation" in navigator)) {
+            navigator.geolocation.watchPosition((position) => {
+                if (position.coords.accuracy <= 50) {
+                    this.live_loc = {
+                        type: 'Feature',
+                        properties: {
+                            accuracy: position.coords.accuracy
+                        },
+                        geometry: {
+                            type: 'Point',
+                            coordinates: [
+                                position.coords.longitude,
+                                position.coords.latitude
+                            ],
+                        }
+                    }
+
+                    this.setYou(this.live_loc);
+                }
+            }, (err) => {
+                if (err.message.toLowerCase().includes('denied geolocation')) {
+                    this.live_loc_denied = true;
+                } else if (
+                    err.message !== 'Position unavailable'
+                    && err.message !== 'Position acquisition timed out'
+                    && err.message !== 'Timeout expired'
+                ) {
+                    this.$emit('err', err);
+                }
+            },{
+                maximumAge: 0,
+                timeout: 1500,
+                enableHighAccuracy: true
+            });
+        } else {
+            console.error('geolocation object not found on navigator');
+        }
+
         window.addEventListener('dragover', (e) => {
             e.preventDefault();
 
@@ -722,54 +760,16 @@ export default {
         getZoom: function() {
             return mapStore.map.getZoom();
         },
-        getLocation: function(flyTo = false) {
-            if (this.live_loc_denied && flyTo) throw new Error('Cannot navigate to your position as you denied location services');
-            else if (this.live_loc_denied) return;
-
-            if (flyTo && !("geolocation" in navigator)) {
-                throw new Error('GeoLocation is not available in this browser');
-            } else if (!("geolocation" in navigator)) {
-                console.error('geolocation object not found on navigator');
-                return;
+        getLocation: function() {
+            if (this.live_loc) {
+                throw new Error('No Location Determined');
+            } else if (this.live_loc_denied) {
+                throw new Error('Cannot navigate to your position as you denied location services');
             }
 
-            navigator.geolocation.getCurrentPosition((position) => {
-                if (flyTo) {
-                    mapStore.map.flyTo({
-                        center: [position.coords.longitude, position.coords.latitude],
-                        zoom: 14
-                    });
-                } else if (position.coords.accuracy <= 50) {
-                    this.live_loc = {
-                        type: 'Feature',
-                        properties: {
-                            accuracy: position.coords.accuracy
-                        },
-                        geometry: {
-                            type: 'Point',
-                            coordinates: [
-                                position.coords.longitude,
-                                position.coords.latitude
-                            ],
-                        }
-                    }
-
-                    this.setYou(this.live_loc);
-                }
-            }, (err) => {
-                if (err.message.toLowerCase().includes('denied geolocation')) {
-                    this.live_loc_denied = true;
-                } else if (
-                    err.message !== 'Position unavailable'
-                    && err.message !== 'Position acquisition timed out'
-                    && err.message !== 'Timeout expired'
-                ) {
-                    this.$emit('err', err);
-                }
-            },{
-                maximumAge: 0,
-                timeout: 1500,
-                enableHighAccuracy: true
+            mapStore.map.flyTo({
+                center: this.live_loc.geometry.coordinates,
+                zoom: 14
             });
         },
         startDraw: function(type) {
@@ -968,8 +968,6 @@ export default {
                     });
 
                     this.timerSelf = window.setInterval(() => {
-                        this.getLocation(false);
-
                         if (this.live_loc) {
                             connectionStore.sendCOT(profileStore.CoT(this.live_loc))
                         } else if (profileStore.profile.tak_loc) {
