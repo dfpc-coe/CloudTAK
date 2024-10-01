@@ -30,7 +30,9 @@ export default async function router(schema: Schema, config: Config) {
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
             const groups: Set<string> = new Set();
-            (await api.Group.list()).data.forEach((group) => {
+            (await api.Group.list({
+                useCache: true
+            })).data.forEach((group) => {
                 groups.add(group.name)
             });
 
@@ -72,7 +74,9 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             const groups: Set<string> = new Set();
-            (await api.Group.list()).data.forEach((group) => {
+            (await api.Group.list({
+                useCache: true
+            })).data.forEach((group) => {
                 groups.add(group.name)
             });
 
