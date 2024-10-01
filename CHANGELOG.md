@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v4.3.0 - 2024-10-01
+
+- :tada: Add the ability to see what channels a user has active (limited to channels you have access to)
+
 ### v4.2.0 - 2024-09-30
 
 - :white_check_mark: Add initial Basemap Tests
