@@ -29,7 +29,20 @@ export default async function router(schema: Schema, config: Config) {
             const profile = await config.models.Profile.from(user.email);
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
+            const groups: Set<string> = new Set();
+            (await api.Group.list({
+                useCache: true
+            })).data.forEach((group) => {
+                groups.add(group.name)
+            });
+
             const subs = await api.Subscription.list(req.query);
+
+            subs.data.forEach((sub) => {
+                return sub.groups.filter((group) => {
+                    return groups.has(group.name);
+                })
+            });
 
             return res.json(subs);
         } catch (err) {
@@ -60,9 +73,18 @@ export default async function router(schema: Schema, config: Config) {
                 limit: -1
             });
 
+            const groups: Set<string> = new Set();
+            (await api.Group.list({
+                useCache: true
+            })).data.forEach((group) => {
+                groups.add(group.name)
+            });
+
             for (const sub of subs.data) {
                 if (sub.clientUid === req.params.clientuid) {
-                    console.error(sub.groups);
+                    sub.groups = sub.groups.filter((group) => {
+                        return groups.has(group.name);
+                    });
                     return res.json(sub);
                 }
             }
