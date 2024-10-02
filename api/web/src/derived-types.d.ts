@@ -298,11 +298,13 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    type?: "raster" | "terrain" | "vector";
+                    type?: "raster" | "raster-dem" | "vector";
                     /** @description No Description */
-                    sort: "id" | "created" | "updated" | "name" | "url" | "username" | "bounds" | "center" | "minzoom" | "maxzoom" | "format" | "style" | "type";
+                    sort: "id" | "created" | "updated" | "name" | "url" | "overlay" | "username" | "bounds" | "center" | "minzoom" | "maxzoom" | "format" | "style" | "styles" | "type";
                     /** @description Filter results by a human readable name field */
                     filter: string;
+                    /** @description No Description */
+                    overlay: boolean;
                 };
                 header?: never;
                 path?: never;
@@ -324,14 +326,16 @@ export interface paths {
                                 updated: string;
                                 name: string;
                                 url: string;
+                                overlay: boolean;
                                 username: string | null;
-                                bounds: unknown | null;
-                                center: unknown | null;
                                 minzoom: number;
                                 maxzoom: number;
                                 format: string;
                                 style: string;
+                                styles: unknown[];
                                 type: string;
+                                bounds?: number[];
+                                center?: number[];
                             }[];
                         };
                     };
@@ -361,7 +365,7 @@ export interface paths {
                     content: {
                         "application/json": {
                             name?: string;
-                            type?: "raster" | "terrain" | "vector";
+                            type?: "raster" | "raster-dem" | "vector";
                             url?: string;
                             bounds?: unknown;
                             center?: unknown;
@@ -391,12 +395,14 @@ export interface paths {
                         /** @default user */
                         scope: "server" | "user";
                         url: string;
+                        /** @default false */
+                        overlay: boolean;
                         minzoom?: number;
                         maxzoom?: number;
                         format?: "png" | "jpeg" | "mvt";
                         /** @constant */
                         style?: "zxy";
-                        type?: "raster" | "terrain" | "vector";
+                        type?: "raster" | "raster-dem" | "vector";
                         bounds?: number[];
                         center?: number[];
                     };
@@ -415,14 +421,16 @@ export interface paths {
                             updated: string;
                             name: string;
                             url: string;
+                            overlay: boolean;
                             username: string | null;
-                            bounds: unknown | null;
-                            center: unknown | null;
                             minzoom: number;
                             maxzoom: number;
                             format: string;
                             style: string;
+                            styles: unknown[];
                             type: string;
+                            bounds?: number[];
+                            center?: number[];
                         };
                     };
                 };
@@ -470,14 +478,16 @@ export interface paths {
                             updated: string;
                             name: string;
                             url: string;
+                            overlay: boolean;
                             username: string | null;
-                            bounds: unknown | null;
-                            center: unknown | null;
                             minzoom: number;
                             maxzoom: number;
                             format: string;
                             style: string;
+                            styles: unknown[];
                             type: string;
+                            bounds?: number[];
+                            center?: number[];
                         } | string;
                     };
                 };
@@ -530,7 +540,7 @@ export interface paths {
                         format?: "png" | "jpeg" | "mvt";
                         /** @constant */
                         style?: "zxy";
-                        type?: "raster" | "terrain" | "vector";
+                        type?: "raster" | "raster-dem" | "vector";
                         bounds?: number[];
                         center?: number[];
                     };
@@ -549,14 +559,16 @@ export interface paths {
                             updated: string;
                             name: string;
                             url: string;
+                            overlay: boolean;
                             username: string | null;
-                            bounds: unknown | null;
-                            center: unknown | null;
                             minzoom: number;
                             maxzoom: number;
                             format: string;
                             style: string;
+                            styles: unknown[];
                             type: string;
+                            bounds?: number[];
+                            center?: number[];
                         };
                     };
                 };
@@ -589,7 +601,21 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            tilejson: string;
+                            version: string;
+                            name: string;
+                            minzoom: number;
+                            maxzoom: number;
+                            tiles: string[];
+                            bounds: number[];
+                            center: number[];
+                            type: string;
+                            layers: unknown[];
+                            format?: string;
+                        };
+                    };
                 };
             };
         };
@@ -7176,6 +7202,246 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/marti/subscription": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Helper API to list subscriptions that the client can see */
+        get: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    sortBy: "CALLSIGN" | "UID";
+                    /** @description No Description */
+                    direction: "ASCENDING" | "DESCENDING";
+                    /** @description No Description */
+                    page: number;
+                    /** @description No Description */
+                    limit: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            version: string;
+                            type: string;
+                            data: {
+                                dn: string | null;
+                                callsign: string;
+                                clientUid: string;
+                                lastReportMilliseconds: number;
+                                takClient: string;
+                                takVersion: string;
+                                username: string;
+                                groups: {
+                                    name: string;
+                                    direction: string;
+                                    created: string;
+                                    type: string;
+                                    bitpos: number;
+                                    active: boolean;
+                                    description?: string;
+                                }[];
+                                role: string;
+                                team: string;
+                                ipAddress: string;
+                                port: string;
+                                pendingWrites: number;
+                                numProcessed: number;
+                                protocol: string;
+                                xpath: string | null;
+                                subscriptionUid: string;
+                                appFramerate: string;
+                                battery: string;
+                                batteryStatus: string;
+                                batteryTemp: string;
+                                deviceDataRx: string;
+                                deviceDataTx: string;
+                                heapCurrentSize: string;
+                                heapFreeSize: string;
+                                heapMaxSize: string;
+                                deviceIPAddress: string;
+                                storageAvailable: string;
+                                storageTotal: string;
+                                incognito: boolean;
+                                handlerType: string;
+                                lastReportDiffMilliseconds: number;
+                            }[];
+                            messages?: string[];
+                            nodeId?: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marti/subscription/{:clientuid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Helper API to get a subscription */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            dn: string | null;
+                            callsign: string;
+                            clientUid: string;
+                            lastReportMilliseconds: number;
+                            takClient: string;
+                            takVersion: string;
+                            username: string;
+                            groups: {
+                                name: string;
+                                direction: string;
+                                created: string;
+                                type: string;
+                                bitpos: number;
+                                active: boolean;
+                                description?: string;
+                            }[];
+                            role: string;
+                            team: string;
+                            ipAddress: string;
+                            port: string;
+                            pendingWrites: number;
+                            numProcessed: number;
+                            protocol: string;
+                            xpath: string | null;
+                            subscriptionUid: string;
+                            appFramerate: string;
+                            battery: string;
+                            batteryStatus: string;
+                            batteryTemp: string;
+                            deviceDataRx: string;
+                            deviceDataTx: string;
+                            heapCurrentSize: string;
+                            heapFreeSize: string;
+                            heapMaxSize: string;
+                            deviceIPAddress: string;
+                            storageAvailable: string;
+                            storageTotal: string;
+                            incognito: boolean;
+                            handlerType: string;
+                            lastReportDiffMilliseconds: number;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marti/video": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Helper API to get list video streams */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description No Description */
+                    protocol?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            videoConnections: {
+                                uuid: string;
+                                active: boolean;
+                                alias: string;
+                                thumbnail: string | null;
+                                classification: string | null;
+                                feeds: {
+                                    uuid: string;
+                                    active: boolean;
+                                    alias: string;
+                                    url: string;
+                                    order: number | null;
+                                    macAddress: string;
+                                    roverPort: string;
+                                    ignoreEmbeddedKLV: string;
+                                    source: string | null;
+                                    networkTimeout: string;
+                                    bufferTime: string;
+                                    rtspReliable: string;
+                                    thumbnail: string | null;
+                                    classification: string | null;
+                                    latitude: string | null;
+                                    longitude: string | null;
+                                    fov: string | null;
+                                    heading: string | null;
+                                    range: string | null;
+                                    width: number | null;
+                                    height: number | null;
+                                    bitrate: number | null;
+                                }[];
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/marti/group": {
         parameters: {
             query?: never;
@@ -7358,240 +7624,6 @@ export interface paths {
                 };
             };
         };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/overlay": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Return a list of Server Overlays */
-        get: {
-            parameters: {
-                query: {
-                    /** @description Limit the number of responses returned */
-                    limit: number;
-                    /** @description Iterate through "pages" of items based on the "limit" query param */
-                    page: number;
-                    /** @description Order in which results are returned based on the "sort" query param */
-                    order: "asc" | "desc";
-                    /** @description Filter results by a human readable name field */
-                    filter: string;
-                    /** @description No Description */
-                    sort?: "id" | "name" | "created" | "updated" | "minzoom" | "maxzoom" | "format" | "type" | "styles" | "url";
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            total: number;
-                            items: {
-                                id: number;
-                                name: string;
-                                created: string;
-                                updated: string;
-                                minzoom: number;
-                                maxzoom: number;
-                                format: string;
-                                type: string;
-                                styles: unknown | null;
-                                url: string;
-                            }[];
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        /** Create a new Server Overlay */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        name: string;
-                        type: string;
-                        styles: unknown[];
-                        url: string;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: number;
-                            name: string;
-                            created: string;
-                            updated: string;
-                            minzoom: number;
-                            maxzoom: number;
-                            format: string;
-                            type: string;
-                            styles: unknown | null;
-                            url: string;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/overlay/{:overlay}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Create a new Server Overlay */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: number;
-                            name: string;
-                            created: string;
-                            updated: string;
-                            minzoom: number;
-                            maxzoom: number;
-                            format: string;
-                            type: string;
-                            styles: unknown | null;
-                            url: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Create a new Server Overlay */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        name?: string;
-                        type?: string;
-                        styles?: unknown[];
-                        url?: string;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: number;
-                            name: string;
-                            created: string;
-                            updated: string;
-                            minzoom: number;
-                            maxzoom: number;
-                            format: string;
-                            type: string;
-                            styles: unknown | null;
-                            url: string;
-                        };
-                    };
-                };
-            };
-        };
-        trace?: never;
-    };
-    "/overlay/{:overlay}/tiles": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get an overlay tilejson */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description No Description */
-                    token?: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            tilejson: string;
-                            name: string;
-                            minzoom: number;
-                            maxzoom: number;
-                            format: string;
-                            tiles: string[];
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -9342,6 +9374,11 @@ export interface paths {
                             api: string;
                             /** @description Once an admin certificate is configured it is not retrivable. This boolean refers to if a certificate is currently loaded */
                             auth: boolean;
+                            certificate?: {
+                                subject: string;
+                                validFrom: string;
+                                validTo: string;
+                            };
                         };
                     };
                 };
@@ -9396,6 +9433,11 @@ export interface paths {
                             api: string;
                             /** @description Once an admin certificate is configured it is not retrivable. This boolean refers to if a certificate is currently loaded */
                             auth: boolean;
+                            certificate?: {
+                                subject: string;
+                                validFrom: string;
+                                validTo: string;
+                            };
                         };
                     };
                 };

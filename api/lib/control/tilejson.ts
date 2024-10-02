@@ -66,7 +66,7 @@ export default class TileJSON {
         }
 
         // Consistent Mapbox Style ZXY Endpoints: {z} vs TAK: {$z}
-        const pathname = decodeURIComponent(url.pathname).replace(/\{\$/, '{');
+        const pathname = decodeURIComponent(url.pathname).replace(/\{\$/g, '{');
 
         if (
             !(pathname.includes('{z}') && pathname.includes('{x}') && pathname.includes('{y}'))
