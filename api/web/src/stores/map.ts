@@ -29,6 +29,7 @@ export const useMapStore = defineStore('cloudtak', {
         edit: null | MapGeoJSONFeature;
         container?: HTMLElement;
         hasTerrain: boolean;
+        isTerrainEnabled: boolean;
         isLoaded: boolean;
         bearing: number;
         selected: Map<string, MapGeoJSONFeature>;
@@ -49,6 +50,7 @@ export const useMapStore = defineStore('cloudtak', {
     } => {
         return {
             hasTerrain: false,
+            isTerrainEnabled: false,
             isLoaded: false,
             bearing: 0,
             edit: null,
@@ -127,11 +129,19 @@ export const useMapStore = defineStore('cloudtak', {
                     source: '-2',
                     exaggeration: 1.5
                 });
+
+                this.isTerrainEnabled = true;
             } else {
                 this.hasTerrain = false;
             }
         },
 
+        removeTerrain: function(): void {
+            this.map.setTerrain();
+            this.map.removeSource('-2');
+
+            this.isTerrainEnabled = false;
+        },
 
         /**
          * Given a mission Guid, attempt to refresh the Map Layer

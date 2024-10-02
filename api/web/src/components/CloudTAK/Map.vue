@@ -175,16 +175,16 @@
                     </div>
 
                     <Icon3dCubeSphere
-                        v-if='hasTerrain'
-                        v-tooltip='"3D Terrain"'
+                        v-tooltip='isTerrainEnabled ? "Disable 3D Terrain" : "Enable 3D Terrain"'
                         role='button'
                         tabindex='0'
                         title='3D Terrain'
                         :size='40'
                         :stroke='1'
                         class='cursor-pointer hover-button'
+                        :color='isTerrainEnabled ? "#1E90FF" : "#FFFFFF"'
                         style='margin: 5px 8px'
-                        @click='addTerrain'
+                        @click='isTerrainEnabled ? removeTerrain() : addTerrain()'
                     />
                 </div>
             </div>
@@ -512,7 +512,7 @@ export default {
         }
     },
     computed: {
-        ...mapState(useMapStore, ['bearing', 'select', 'radial', 'isLoaded', 'selected', 'hasTerrain']),
+        ...mapState(useMapStore, ['bearing', 'select', 'radial', 'isLoaded', 'selected', 'hasTerrain', 'isTerrainEnabled']),
         ...mapState(useProfileStore, ['profile', 'notifications']),
         mobileDetected: function() {
           //TODO: This needs to follow something like:
@@ -685,7 +685,7 @@ export default {
     },
     methods: {
         ...mapActions(useProfileStore, ['clearNotifications']),
-        ...mapActions(useMapStore, ['addTerrain']),
+        ...mapActions(useMapStore, ['addTerrain', 'removeTerrain']),
         selectFeat: function(feat) {
             mapStore.select.feats = [];
             const source = mapStore.featureSource(feat);
