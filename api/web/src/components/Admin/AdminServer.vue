@@ -68,6 +68,7 @@
                 <div class='col-lg-6 py-2'>
                     <TablerInput
                         v-model='server.provider_secret'
+                        type='password'
                         :disabled='!edit'
                         label='OAuth Client Secret'
                         placeholder='https://'
