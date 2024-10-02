@@ -116,7 +116,7 @@ export const useMapStore = defineStore('cloudtak', {
         // TODO: Convert to overlay
         addTerrain: async function(): void {
             const basemaps = await this.listTerrain();
-            if (basemaps.items.length) {
+            if (basemaps.items.length && !this.map.getSource('-2')) {
                 this.map.addSource('-2', {
                     type: 'raster-dem',
                     url: String(stdurl(`/api/basemap/${basemaps.items[0].id}/tiles?token=${localStorage.token}`)),
