@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v4.4.2 - 2024-10-02
+
+- :rocket: `API` Start to make improvements to caching behavior on initial load
+
 ### v4.4.1 - 2024-10-01
 
 - :bug: `API` Set `useCache=true` when making Group List calls
