@@ -103,7 +103,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             return null;
         },
-        listTerrain: async function(): APIList<Basemap> {
+        listTerrain: async function(): Promise<APIList<Basemap>> {
             // Courtesy add terrain data
             const burl = stdurl('/api/basemap');
             burl.searchParams.append('type', 'raster-dem');
@@ -114,13 +114,13 @@ export const useMapStore = defineStore('cloudtak', {
         },
 
         // TODO: Convert to overlay
-        addTerrain: async function(): void {
+        addTerrain: async function(): Promise<void> {
             const basemaps = await this.listTerrain();
-            if (basemaps.items.length && !this.map.getSource('-2')) {
+            if (this.map && basemaps.items.length && !this.map.getSource('-2')) {
                 this.map.addSource('-2', {
                     type: 'raster-dem',
                     url: String(stdurl(`/api/basemap/${basemaps.items[0].id}/tiles?token=${localStorage.token}`)),
-                    tileSize: 256
+                        tileSize: 256
                 })
 
                 this.map.setTerrain({
