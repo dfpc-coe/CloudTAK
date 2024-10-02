@@ -38,17 +38,18 @@
 </template>
 
 <script>
+import { defineComponent } from 'vue'
 import Coordinate from './util/Coordinate.vue';
 import CoordinateType from './util/CoordinateType.vue';
 import {
     TablerInput,
 } from '@tak-ps/vue-tabler';
-import { useMapStore } from '/src/stores/map.ts';
-import { useCOTStore } from '/src/stores/cots.ts';
+import { useMapStore } from '../../stores/map.ts';
+import { useCOTStore } from '../../stores/cots.ts';
 const cotStore = useCOTStore();
 const mapStore = useMapStore();
 
-export default {
+export default defineComponent({
     name: 'CoordInput',
     components: {
         TablerInput,
@@ -59,7 +60,7 @@ export default {
         'close'
     ],
     data: function() {
-        const center = mapStore.map.getCenter()
+        const center = mapStore.map ? mapStore.map.getCenter() : [0,0]
 
         return {
             name: '',
@@ -87,13 +88,15 @@ export default {
                 }
             });
 
-            mapStore.map.flyTo({
-                center: this.coordinates,
-                zoom: 14
-            });
+            if (mapStore.map) {
+                mapStore.map.flyTo({
+                    center: this.coordinates,
+                    zoom: 14
+                });
+            }
 
             this.$emit('close');
         },
     }
-}
+})
 </script>
