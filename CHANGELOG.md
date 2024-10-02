@@ -12,9 +12,14 @@
 
 ### Pending Release
 
+### v4.5.1 - 2024-10-02
+
+- :rocket: `UI` Use colour to show terrain enablement state
+- :rocket: `UI` Allow toggling 3D terrain on and off
+
 ### v4.5.0 - 2024-10-02
 
-- :tada: `API` Show a 3D Terrain button if 3D Terrain is enabled
+- :tada: `UI` Show a 3D Terrain button if 3D Terrain is enabled
 
 ### v4.4.2 - 2024-10-02
 
