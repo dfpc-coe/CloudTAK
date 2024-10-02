@@ -83,14 +83,14 @@
 
             <div
                 v-if='mode === "Default"'
-                class='position-absolute top-0 beginning-0 text-white py-2 px-2'
+                class='position-absolute top-0 beginning-0 text-white'
             >
                 <div
                     style='
                         z-index: 1;
-                        width: 50px;
+                        width: 60px;
                         background-color: rgba(0, 0, 0, 0.5);
-                        border-radius: 6px 6px 6px 6px;
+                        border-radius: 0px 0px 6px 0px;
                     '
                 >
                     <IconSearch
@@ -99,13 +99,13 @@
                         title='Search Button'
                         :size='40'
                         :stroke='1'
-                        style='margin: 5px 5px 5px 5px;'
+                        style='margin: 5px 8px'
                         class='cursor-pointer hover-button'
                         @click='search.shown = !search.shown'
                     />
 
                     <div
-                        style='margin: 5px 5px 5px 5px;'
+                        style='margin: 5px 8px'
                         class='cursor-pointer hover-button'
                         @click='setBearing(0)'
                     >
@@ -132,7 +132,7 @@
                         :size='40'
                         :stroke='1'
                         class='cursor-pointer hover-button'
-                        style='margin: 5px 5px 5px 5px;'
+                        style='margin: 5px 8px'
                         @click='getLocation'
                     />
                     <IconLockAccess
@@ -143,7 +143,7 @@
                         :size='40'
                         :stroke='1'
                         class='cursor-pointer hover-button'
-                        style='margin: 5px 5px 5px 5px;'
+                        style='margin: 5px 8px'
                         @click='locked.splice(0, locked.length)'
                     />
 
@@ -158,7 +158,7 @@
                             :size='40'
                             :stroke='1'
                             class='cursor-pointer hover-button'
-                            style='margin: 5px 5px 5px 5px;'
+                            style='margin: 5px 8px'
                             @click='setZoom(getZoom() + 1);'
                         />
                         <IconMinus
@@ -169,10 +169,23 @@
                             :size='40'
                             :stroke='1'
                             class='cursor-pointer hover-button'
-                            style='margin: 5px 5px 5px 5px;'
+                            style='margin: 5px 8px'
                             @click='setZoom(getZoom() - 1);'
                         />
                     </div>
+
+                    <Icon3dCubeSphere
+                        v-if='hasTerrain'
+                        v-tooltip='"3D Terrain"'
+                        role='button'
+                        tabindex='0'
+                        title='3D Terrain'
+                        :size='40'
+                        :stroke='1'
+                        class='cursor-pointer hover-button'
+                        style='margin: 5px 8px'
+                        @click='addTerrain'
+                    />
                 </div>
             </div>
 
@@ -379,7 +392,7 @@
                     title='Close Menu Button'
                     :size='40'
                     :stroke='1'
-                    class='mx-2 cursor-pointer bg-dark'
+                    class='mx-2 cursor-pointer bg-dark rounded'
                     @click='closeAllMenu'
                 />
             </div>
@@ -465,6 +478,7 @@ import {
     IconVector,
     IconBell,
     IconCircleArrowUp,
+    Icon3dCubeSphere,
 } from '@tabler/icons-vue';
 import SelectFeats from './util/SelectFeats.vue';
 import MultipleSelect from './util/MultipleSelect.vue';
@@ -498,7 +512,7 @@ export default {
         }
     },
     computed: {
-        ...mapState(useMapStore, ['bearing', 'select', 'radial', 'isLoaded', 'selected']),
+        ...mapState(useMapStore, ['bearing', 'select', 'radial', 'isLoaded', 'selected', 'hasTerrain']),
         ...mapState(useProfileStore, ['profile', 'notifications']),
         mobileDetected: function() {
           //TODO: This needs to follow something like:
@@ -671,6 +685,7 @@ export default {
     },
     methods: {
         ...mapActions(useProfileStore, ['clearNotifications']),
+        ...mapActions(useMapStore, ['addTerrain']),
         selectFeat: function(feat) {
             mapStore.select.feats = [];
             const source = mapStore.featureSource(feat);
@@ -1018,6 +1033,7 @@ export default {
         IconPencil,
         IconCursorText,
         IconCircleArrowUp,
+        Icon3dCubeSphere,
         IconX,
         CloudTAKFeatView,
     }
