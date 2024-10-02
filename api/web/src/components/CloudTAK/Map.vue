@@ -175,6 +175,7 @@
                     </div>
 
                     <Icon3dCubeSphere
+                        v-if='hasTerrain'
                         v-tooltip='"3D Terrain"'
                         role='button'
                         tabindex='0'
