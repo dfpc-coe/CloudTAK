@@ -28,6 +28,7 @@ export const useMapStore = defineStore('cloudtak', {
         draw?: terraDraw.TerraDraw;
         edit: null | MapGeoJSONFeature;
         container?: HTMLElement;
+        hasTerrain: boolean;
         isLoaded: boolean;
         bearing: number;
         selected: Map<string, MapGeoJSONFeature>;
@@ -47,6 +48,7 @@ export const useMapStore = defineStore('cloudtak', {
         overlays: Array<Overlay>
     } => {
         return {
+            hasTerrain: false,
             isLoaded: false,
             bearing: 0,
             edit: null,
@@ -101,6 +103,32 @@ export const useMapStore = defineStore('cloudtak', {
 
             return null;
         },
+        listTerrain: async function(): APIList<Basemap> {
+            // Courtesy add terrain data
+            const burl = stdurl('/api/basemap');
+            burl.searchParams.append('type', 'raster-dem');
+            burl.searchParams.append('limit', '1');
+            const basemaps = await std(burl) as APIList<Basemap>;
+
+            return basemaps;
+        },
+
+        // TODO: Convert to overlay
+        addTerrain: async function(): void {
+            const basemaps = await this.listTerrain();
+            if (basemaps.items.length) {
+                this.map.addSource('-2', {
+                    type: 'raster-dem',
+                    url: String(stdurl(`/api/basemap/${basemaps.items[0].id}/tiles?token=${localStorage.token}`)),
+                    tileSize: 256
+                })
+
+                this.map.setTerrain({ source: '-2' });
+            } else {
+                this.hasTerrain = false;
+            }
+        },
+
 
         /**
          * Given a mission Guid, attempt to refresh the Map Layer
@@ -290,21 +318,8 @@ export const useMapStore = defineStore('cloudtak', {
                 }
             }
 
-            // Courtesy add terrain data
-            const burl = stdurl('/api/basemap');
-            burl.searchParams.append('type', 'raster-dem');
-            const basemaps = await std(burl) as APIList<Basemap>;
-
-            if (basemaps.items.length > 0) {
-                this.map.addSource('-2', {
-                    type: 'raster-dem',
-                    url: String(stdurl(`/api/basemap/${basemaps.items[0].id}/tiles?token=${localStorage.token}`)),
-                    tileSize: 256
-                })
-
-                this.map.setTerrain({ source: '-2' });
-
-                console.error('RASTER DEM');
+            if ((await this.listTerrain()).total > 0) {
+                this.hasTerrain = true;
             }
 
             for (const item of items) {
