@@ -125,7 +125,7 @@ export const useMapStore = defineStore('cloudtak', {
 
                 this.map.setTerrain({
                     source: '-2',
-                    exaggeration: 2.5
+                    exaggeration: 1.5
                 });
             } else {
                 this.hasTerrain = false;
