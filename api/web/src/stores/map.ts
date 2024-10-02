@@ -290,7 +290,7 @@ export const useMapStore = defineStore('cloudtak', {
                 }
             }
 
-            // Courtesy add an initial basemap
+            // Courtesy add terrain data
             const burl = stdurl('/api/basemap');
             burl.searchParams.append('type', 'raster-dem');
             const basemaps = await std(burl) as APIList<Basemap>;
@@ -303,6 +303,8 @@ export const useMapStore = defineStore('cloudtak', {
                 })
 
                 this.map.setTerrain({ source: '-2' });
+
+                console.error('RASTER DEM');
             }
 
             for (const item of items) {
