@@ -137,8 +137,10 @@ export const useMapStore = defineStore('cloudtak', {
         },
 
         removeTerrain: function(): void {
-            this.map.setTerrain();
-            this.map.removeSource('-2');
+            if (this.map) {
+                this.map.setTerrain(null);
+                this.map.removeSource('-2');
+            }
 
             this.isTerrainEnabled = false;
         },
