@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v4.6.0 - 2024-10-03
+
+- :rocket: `UI` Add Sector Drawing Mode
+
 ### v4.5.1 - 2024-10-02
 
 - :rocket: `UI` Use colour to show terrain enablement state
