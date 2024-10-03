@@ -453,6 +453,7 @@ export const useMapStore = defineStore('cloudtak', {
                     new terraDraw.TerraDrawPolygonMode(),
                     new terraDraw.TerraDrawAngledRectangleMode(),
                     new terraDraw.TerraDrawFreehandMode(),
+                    new terraDraw.TerraDrawSectorMode(),
                     new terraDraw.TerraDrawSelectMode({
                         flags: {
                             polygon: {

@@ -360,6 +360,15 @@
                         </div>
                         <div
                             class='col-12 py-1 px-2 hover-button cursor-pointer'
+                            @click='startDraw("sector")'
+                        >
+                            <IconCone
+                                :size='25'
+                                :stroke='1'
+                            /> Draw Sector
+                        </div>
+                        <div
+                            class='col-12 py-1 px-2 hover-button cursor-pointer'
                             @click='startDraw("freehand")'
                         >
                             <IconLasso
@@ -473,6 +482,7 @@ import {
     IconX,
     IconPoint,
     IconLine,
+    IconCone,
     IconPolygon,
     IconCursorText,
     IconVector,
@@ -964,7 +974,11 @@ export default {
                             geometry
                         };
 
-                        if (mapStore.draw.getMode() === 'polygon' || mapStore.draw.getMode() === 'angled-rectangle') {
+                        if (
+                            mapStore.draw.getMode() === 'polygon'
+                            || mapStore.draw.getMode() === 'angled-rectangle'
+                            || mapStore.draw.getMode() === 'sector'
+                        ) {
                             feat.properties.type = 'u-d-f';
                         } else if (mapStore.draw.getMode() === 'linestring') {
                             feat.properties.type = 'u-d-f';
@@ -1027,6 +1041,7 @@ export default {
         IconLockAccess,
         IconPoint,
         IconLine,
+        IconCone,
         IconPolygon,
         IconVector,
         IconMenu2,
