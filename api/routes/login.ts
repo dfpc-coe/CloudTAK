@@ -23,32 +23,44 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            const email = await provider.login(req.body.username.toLowerCase(), req.body.password);
+            let profile;
 
-            if (config.server.provider_url) {
-                try {
-                    const response = await config.external.login(email);
+            if (config.server.auth.key && config.server.auth.cert) {
+                const email = await provider.login(req.body.username.toLowerCase(), req.body.password);
 
+                if (config.server.provider_url) {
+                    try {
+                        const response = await config.external.login(email);
+
+                        await config.models.Profile.commit(email, {
+                            ...response,
+                            last_login: new Date().toISOString()
+                        });
+                    } catch (err) {
+                        // If there are upstream errors the user is limited to WebTAK like functionality
+                        await config.models.Profile.commit(email, {
+                            system_admin: false,
+                            agency_admin: [],
+                            last_login: new Date().toISOString()
+                        });
+                        console.error(err);
+                    }
+                } else {
                     await config.models.Profile.commit(email, {
-                        ...response,
                         last_login: new Date().toISOString()
                     });
-                } catch (err) {
-                    // If there are upstream errors the user is limited to WebTAK like functionality
-                    await config.models.Profile.commit(email, {
-                        system_admin: false,
-                        agency_admin: [],
-                        last_login: new Date().toISOString()
-                    });
-                    console.error(err);
                 }
-            } else {
-                await config.models.Profile.commit(email, {
-                    last_login: new Date().toISOString()
-                });
-            }
 
-            const profile = await config.models.Profile.from(email);
+                profile = await config.models.Profile.from(email);
+            } else {
+                profile = await config.models.Profile.from(req.body.username);
+
+                // Only those marked as a System Admin in the database can log in
+                // without TAK Server Auth and initially configure the server 
+                if (!profile.system_admin) {
+                    throw new Err(401, null, 'Server must be configured by a System Administrator');
+                }
+            }
 
             let access = AuthUserAccess.USER
             if (profile.system_admin) {
@@ -59,8 +71,8 @@ export default async function router(schema: Schema, config: Config) {
 
             return res.json({
                 access,
-                email,
-                token: jwt.sign({ access, email }, config.SigningSecret, { expiresIn: '16h' })
+                email: profile.username,
+                token: jwt.sign({ access, email: profile.username }, config.SigningSecret, { expiresIn: '16h' })
             })
         } catch (err) {
             return Err.respond(err, res);
@@ -80,7 +92,10 @@ export default async function router(schema: Schema, config: Config) {
 
             const profile = await config.models.Profile.from(user.email);
 
-            await provider.valid(profile);
+            // If the server hasn't been configured the user won't have a valid cert
+            if (config.server.auth.key && config.server.auth.cert) {
+                await provider.valid(profile);
+            }
 
             return res.json({
                 email: user.email,

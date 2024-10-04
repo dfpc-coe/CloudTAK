@@ -96,7 +96,7 @@
             </div>
         </header>
 
-        <Loading v-if='loading && !$route.path.includes("login")' />
+        <Loading v-if='loading && !$route.path.includes("configure", "login")' />
         <router-view
             v-else
             :user='user'
@@ -152,9 +152,8 @@ export default defineComponent({
         loading: boolean;
         login: boolean;
         mounted: boolean;
+        err: null | Error;
         user: null | Login;
-        err: null | Error
-        server: null | Server
     }{
         return {
             loading: true,
@@ -162,7 +161,6 @@ export default defineComponent({
             mounted: false,
             user: null,
             err: null,
-            server: null,
         }
     },
     computed: {
@@ -173,7 +171,10 @@ export default defineComponent({
             if (!this.$route || !this.$route.name) {
                 return false;
             } else {
-                return (!String(this.$route.name).startsWith("home") && !["login"].includes(String(this.$route.name)))
+                return (
+                    !String(this.$route.name).startsWith("home")
+                    && !["login", "configure"].includes(String(this.$route.name))
+                )
             }
         }
     },
@@ -194,16 +195,28 @@ export default defineComponent({
         }
     },
     mounted: async function() {
+        const server = await std('/api/server') as Server;
+
         window.addEventListener('unhandledrejection', (e) => {
             this.err = e.reason;
         });
 
-        if (localStorage.token) {
-            await this.refreshLogin();
-        } else if (this.$route.name !== 'login') {
-            this.routeLogin();
+        if (!server || server.status === 'empty') {
+            delete localStorage.token;
+            this.$router.push("/configure");
+        } else {
+            if (localStorage.token) {
+                await this.refreshLogin();
+
+                if (server.status === 'unconfigured') {
+                    this.$router.push('/admin');
+                }
+            } else if (this.$route.name !== 'login') {
+                this.routeLogin();
+            }
         }
 
+        this.loading = false;
         this.mounted = true;
     },
     methods: {
@@ -221,8 +234,6 @@ export default defineComponent({
             const success = await this.getLogin();
 
             if (success) {
-                await this.getServer()
-
                 const profileStore = useProfileStore();
                 await profileStore.load();
             }
@@ -246,13 +257,6 @@ export default defineComponent({
 
             return true;
         },
-        getServer: async function() {
-            this.server = await std('/api/server') as Server;
-
-            if (!this.server || this.server.status === 'unconfigured') {
-                this.$router.push("/admin");
-            }
-        }
     }
 });
 </script>

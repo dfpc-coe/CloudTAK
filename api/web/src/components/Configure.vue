@@ -20,49 +20,58 @@
                                     >
                                 </div>
                                 <h2 class='h2 text-center mb-4'>
-                                    Login to your account
+                                    Welcome to CloudTAK
                                 </h2>
-                                <TablerLoading
-                                    v-if='loading'
-                                    desc='Logging in'
-                                />
+                                <h2 class='h4 text-center mb-4'>
+                                    Initial Administration User Configuration
+                                </h2>
+                                <TablerLoading v-if='loading'/>
                                 <template v-else>
-                                    <div class='mb-3'>
+                                    <div class='mb-2'>
                                         <TablerInput
-                                            v-model='username'
+                                            v-model='name'
                                             icon='user'
-                                            label='Username or Email'
-                                            placeholder='your@email.com'
-                                            @keyup.enter='createLogin'
+                                            label='Name'
+                                            placeholder='John Doe'
+                                            @keyup.enter='createUser'
                                         />
                                     </div>
                                     <div class='mb-2'>
-                                        <div class='d-flex'>
-                                            <label class='form-label mb-0'>
-                                                Password
-                                            </label>
-                                            <span class='ms-auto'>
-                                                <a
-                                                    class='cursor-pointer'
-                                                    @click='external("https://cotak.gov/forgot-password")'
-                                                >Forgot Password</a>
-                                            </span>
-                                        </div>
+                                        <TablerInput
+                                            v-model='email'
+                                            icon='user'
+                                            label='Email'
+                                            placeholder='your@email.com'
+                                            @keyup.enter='createUser'
+                                        />
+                                    </div>
+                                    <div class='mb-2'>
+                                        <TablerInput
+                                            v-model='phone'
+                                            label='Phone'
+                                            icon='user'
+                                            placeholder='###-###-####'
+                                            @keyup.enter='createUser'
+                                        />
+                                    </div>
+                                    <div class='mb-2'>
                                         <TablerInput
                                             v-model='password'
+                                            label='Password'
                                             icon='lock'
                                             type='password'
                                             placeholder='Your password'
-                                            @keyup.enter='createLogin'
+                                            autocomplete='off'
+                                            @keyup.enter='createUser'
                                         />
                                     </div>
                                     <div class='form-footer'>
                                         <button
                                             type='submit'
                                             class='btn btn-primary w-100'
-                                            @click='createLogin'
+                                            @click='createUser'
                                         >
-                                            Sign In
+                                            Create Admin
                                         </button>
                                     </div>
                                 </template>
@@ -78,7 +87,7 @@
     </div>
 </template>
 
-<script>
+<script lang='ts'>
 import { std } from '/src/std.ts';
 import {
     TablerLoading,
@@ -86,49 +95,42 @@ import {
 } from '@tak-ps/vue-tabler'
 
 export default {
-    name: 'UserLogin',
+    name: 'InitialConfigure',
     components: {
         TablerInput,
         TablerLoading
     },
-    emits: [
-        'login'
-    ],
     data: function() {
         return {
             loading: false,
-            username: '',
+            name: '',
+            email: '',
+            phone: '',
             password: ''
         }
     },
+    mounted: async function() {
+        const server = await std('/api/server') as Server;
+
+        if (!server || server.status === 'configured') {
+            delete localStorage.token;
+            window.location.href = '"/login"';
+        }
+    },
     methods: {
-        external: function(url) {
-            window.location = new URL(url);
-        },
-        createLogin: async function() {
+        createUser: async function() {
             this.loading = true;
-            try {
-                const login = await std('/api/login', {
-                    method: 'POST',
-                    body: {
-                        username: this.username,
-                        password: this.password
-                    }
-                });
-
-                localStorage.token = login.token;
-
-                this.$emit('login');
-
-                if (this.$route.query.redirect && !this.$route.query.redirect.includes('/login')) {
-                    this.$router.push(this.$route.query.redirect);
-                } else {
-                    this.$router.push("/");
+            await std('/api/user', {
+                method: 'POST',
+                body: {
+                    name: this.name,
+                    username: this.email,
+                    phone: this.phone,
+                    password: this.password
                 }
-            } catch (err) {
-                this.loading = false;
-                throw err;
-            }
+            })
+
+            this.$router.push('/login');
         }
     }
 }

@@ -274,6 +274,8 @@ const router = new VueRouter.createRouter({
 
         { path: '/login', name: 'login', component: () => import('./components/Login.vue') },
 
+        { path: '/configure', name: 'configure', component: () => import('./components/Configure.vue') },
+
         {
             path: '/admin',
             name: 'admin',
