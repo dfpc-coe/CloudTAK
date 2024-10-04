@@ -15,12 +15,10 @@ export default async function router(schema: Schema, config: Config) {
         res: ServerResponse
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req);
-
-            if (!config.server.auth) {
+            if (config.configure || !config.server.auth.key || !config.server.auth.cert) {
                 return res.json({
                     id: 1,
-                    status: 'unconfigured',
+                    status: config.configure ? 'empty' : 'unconfigured',
                     name: 'Default Server',
                     created: new Date().toISOString(),
                     updated: new Date().toISOString(),
@@ -29,8 +27,12 @@ export default async function router(schema: Schema, config: Config) {
                     auth: false
                 });
             } else {
+                const user = await Auth.as_user(config, req);
+
                 let auth = false
-                if (config.server.auth.cert && config.server.auth.key) auth = true;
+                if (config.server.auth.cert && config.server.auth.key) {
+                    auth = true;
+                }
 
                 if (user.access === AuthUserAccess.ADMIN) {
                     const response: Static<typeof ServerResponse> = {
