@@ -13,30 +13,7 @@ services:
         environment:
             - SigningSecret=coe-wildland-fire
             - POSTGRES=postgres://docker:docker@postgis:5432/gis
-            - API_URL=http://localhost:5001
-    store:
-        platform: linux/amd64
-        image: minio/minio:RELEASE.2024-08-17T01-24-54Z
-        restart: 'always'
-        ports:
-            - 9000:9000
-        command: server /data
-
-    events:
-        platform: linux/amd64
-        build: ./tasks/events/
-
-    task:
-        platform: linux/amd64
-        build: ./tasks/data/
-
-    pmtiles:
-        platform: linux/amd64
-        build: ./tasks/pmtiles/
-
-    hooks:
-        platform: linux/amd64
-        build: ./tasks/hooks/
+            - API_URL=localhost:5001
 
     postgis:
         platform: linux/amd64
@@ -48,3 +25,11 @@ services:
             - POSTGRES_DB=gis
             - POSTGRES_USER=docker
             - POSTGRES_PASSWORD=docker
+
+    store:
+        platform: linux/amd64
+        image: minio/minio:RELEASE.2024-08-17T01-24-54Z
+        restart: 'always'
+        ports:
+            - 9000:9000
+        command: server /data
