@@ -13,7 +13,11 @@ export function stdurl(url: string | URL): URL {
     }
 
     // Allow serving through Vue for hotloading
-    if (url.hostname === 'localhost') url.port = '5001'
+    // Disable if serving over 5000 as that's likely a docker compose install
+    if (
+        url.hostname === 'localhost'
+        && url.port !== '5000'
+    ) url.port = '5001'
 
     return url;
 }
