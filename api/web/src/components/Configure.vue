@@ -88,7 +88,7 @@
                                     </div>
                                     <div class='mb-2'>
                                         <TablerInput
-                                            v-model='body.api'
+                                            v-model='body.username'
                                             label='Administrator Username'
                                             description='An existing TAK user to use as an initial CloudTAK System Administrator - The TAK Server must respond with a cert for this username/password combo'
                                             autocomplete='username'
@@ -98,7 +98,8 @@
                                     </div>
                                     <div class='mb-2'>
                                         <TablerInput
-                                            v-model='body.api'
+                                            v-model='body.password'
+                                            type='password'
                                             label='Administrator Password'
                                             description='An existing TAK user to use as an initial CloudTAK System Administrator - The TAK Server must respond with a cert for this username/password combo'
                                             autocomplete='password'
@@ -231,12 +232,18 @@ export default {
             }
 
             this.loading = true;
-            await std('/api/server/1', {
-                method: 'PATCH',
-                body: this.body
-            })
 
-            this.$router.push('/login');
+            try {
+                await std('/api/server/1', {
+                    method: 'PATCH',
+                    body: this.body
+                })
+
+                this.$router.push('/login');
+            } catch (err) {
+                this.loading = false;
+                throw err;
+            }
         }
     }
 }
