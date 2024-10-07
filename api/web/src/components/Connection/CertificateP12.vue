@@ -22,6 +22,8 @@
             <template v-else>
                 <TablerInput
                     v-model='password'
+                    type='password'
+                    autocomplete='off'
                     label='P12 Password'
                     @keyup.enter='extract'
                 />
@@ -64,35 +66,45 @@ export default {
         }
     },
     mounted: function() {
-        this.$nextTick(() => {
-            this.dropzone = new Dropzone("#dropzone-default", {
-                autoProcessQueue: false
-            });
-
-            this.dropzone.on('addedfile', (file) => {
-                const read = new FileReader();
-                read.onload = (event) => {
-                    this.file = event.target.result;
-                };
-                read.readAsDataURL(file);
-            });
-        });
+        this.createDropzone();
     },
     methods: {
-        extract: function() {
-            const certs = convertToPem(atob(this.file.split('base64,')[1]), this.password);
-            const cert = certs.pemCertificate
-                .split('-----BEGIN CERTIFICATE-----')
-                .join('-----BEGIN CERTIFICATE-----\n')
-                .split('-----END CERTIFICATE-----')
-                .join('\n-----END CERTIFICATE-----');
-            const key = certs.pemKey
-                .split('-----BEGIN RSA PRIVATE KEY-----')
-                .join('-----BEGIN RSA PRIVATE KEY-----\n')
-                .split('-----END RSA PRIVATE KEY-----')
-                .join('\n-----END RSA PRIVATE KEY-----');
+        createDropzone: function() {
+            this.$nextTick(() => {
+                this.dropzone = new Dropzone("#dropzone-default", {
+                    autoProcessQueue: false,
+                });
 
-            this.$emit('certs', { key, cert });
+                this.dropzone.on('addedfile', (file) => {
+                    const read = new FileReader();
+                    read.onload = (event) => {
+                        this.file = event.target.result;
+                    };
+                    read.readAsDataURL(file);
+                });
+            });
+        },
+        extract: function() {
+            try {
+                const certs = convertToPem(atob(this.file.split('base64,')[1]), this.password);
+                const cert = certs.pemCertificate
+                    .split('-----BEGIN CERTIFICATE-----')
+                    .join('-----BEGIN CERTIFICATE-----\n')
+                    .split('-----END CERTIFICATE-----')
+                    .join('\n-----END CERTIFICATE-----');
+                const key = certs.pemKey
+                    .split('-----BEGIN RSA PRIVATE KEY-----')
+                    .join('-----BEGIN RSA PRIVATE KEY-----\n')
+                    .split('-----END RSA PRIVATE KEY-----')
+                    .join('\n-----END RSA PRIVATE KEY-----');
+
+                this.$emit('certs', { key, cert });
+            } catch (err) {
+                this.file = null;
+                this.password = '';
+                this.createDropzone();
+                throw err;
+            }
         }
     }
 }

@@ -33,6 +33,7 @@
                                             :error='errors.name'
                                             label='Server Name'
                                             placeholder='TAK Server Name'
+                                            description='Human Readable name for the server'
                                             @keyup.enter='updateServer'
                                         />
                                     </div>
@@ -41,6 +42,7 @@
                                             v-model='body.url'
                                             label='Server CoT API'
                                             placeholder='ssl://ops.example.com:8089'
+                                            description='Streaming COT API - Usually on port 8089'
                                             :error='errors.url'
                                             @keyup.enter='updateServer'
                                         />
@@ -49,6 +51,7 @@
                                         <TablerInput
                                             v-model='body.api'
                                             label='Server Marti API'
+                                            description='Marti API - Usually on port 8443'
                                             placeholder='https://ops.example.com:8443'
                                             :error='errors.api'
                                             @keyup.enter='updateServer'
@@ -58,14 +61,56 @@
                                     <div class='mb-2'>
                                         <label class='mx-2'>Admin Certificate</label>
                                         <CertificateP12
-                                            @certs='body.certs = $event'
+                                            v-if='!body.auth.cert || !body.auth.key'
+                                            @certs='body.auth = $event'
                                             @err='err = $event'
+                                        />
+
+                                        <template v-else>
+                                            <div class='col-12 d-flex align-items-center'>
+                                                <IconCheck
+                                                    :size='40'
+                                                    class='text-green'
+                                                />
+                                                <span class='mx-3'>Certificate Uploaded</span>
+
+                                                <div class='ms-auto'>
+                                                    <IconTrash
+                                                        v-tooltip='"Remove Certificate"'
+                                                        :size='32'
+                                                        :stroke='1'
+                                                        class='cursor-pointer'
+                                                        @click='body.auth = { cert: "", key: "" };'
+                                                    />
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                    <div class='mb-2'>
+                                        <TablerInput
+                                            v-model='body.api'
+                                            label='Administrator Username'
+                                            description='An existing TAK user to use as an initial CloudTAK System Administrator - The TAK Server must respond with a cert for this username/password combo'
+                                            autocomplete='username'
+                                            :error='errors.username'
+                                            @keyup.enter='updateServer'
+                                        />
+                                    </div>
+                                    <div class='mb-2'>
+                                        <TablerInput
+                                            v-model='body.api'
+                                            label='Administrator Password'
+                                            description='An existing TAK user to use as an initial CloudTAK System Administrator - The TAK Server must respond with a cert for this username/password combo'
+                                            autocomplete='password'
+                                            :error='errors.password'
+                                            @keyup.enter='updateServer'
                                         />
                                     </div>
                                     <div class='form-footer'>
                                         <button
                                             type='submit'
                                             class='btn btn-primary w-100'
+                                            :disabled='!body.auth.key'
                                             @click='updateServer'
                                         >
                                             Configure Server
@@ -73,9 +118,6 @@
                                     </div>
                                 </template>
                             </div>
-                        </div>
-                        <div class='text-center text-muted mt-3'>
-                            Don't have account yet? <a href='mailto:nicholas.ingalls@state.co.us'>Contact Us</a>
                         </div>
                     </div>
                 </div>
@@ -92,10 +134,16 @@ import {
     TablerLoading,
     TablerInput
 } from '@tak-ps/vue-tabler'
+import {
+    IconCheck,
+    IconTrash
+} from '@tabler/icons-vue';
 
 export default {
     name: 'InitialConfigure',
     components: {
+        IconCheck,
+        IconTrash,
         CertificateP12,
         TablerInput,
         TablerLoading
@@ -105,6 +153,8 @@ export default {
             loading: false,
             errors: {
                 name: '',
+                username: '',
+                password: '',
                 url: '',
                 api: ''
             },
@@ -112,7 +162,9 @@ export default {
                 name: '',
                 url: '',
                 api: '',
-                certs: {
+                username: '',
+                password: '',
+                auth: {
                     key: '',
                     cert: ''
                 }
@@ -138,6 +190,18 @@ export default {
                 this.errors.name = 'Name should be > 8 characters';
             } else {
                 this.errors.name = '';
+            }
+
+            if (this.body.username.trim().length === 0) {
+                this.errors.username = 'Username cannot be empty';
+            } else {
+                this.errors.username = '';
+            }
+
+            if (this.body.password.trim().length === 0) {
+                this.errors.password = 'Password cannot be empty';
+            } else {
+                this.errors.password = '';
             }
 
             try {
