@@ -25,7 +25,7 @@
                                 <h2 class='h4 text-center mb-4'>
                                     Initial Administration User Configuration
                                 </h2>
-                                <TablerLoading v-if='loading'/>
+                                <TablerLoading v-if='loading' />
                                 <template v-else>
                                     <div class='mb-2'>
                                         <TablerInput
@@ -89,6 +89,7 @@
 
 <script lang='ts'>
 import { std } from '/src/std.ts';
+import type { Server } from './types.ts';
 import {
     TablerLoading,
     TablerInput

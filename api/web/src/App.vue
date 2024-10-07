@@ -200,6 +200,7 @@ export default defineComponent({
             const server = await std('/api/server') as Server;
             status = server.status;
         } catch (err) {
+            console.warn('Server Error (Likely the server is in a configured state)', err);
             status = 'configured';
         }
 
