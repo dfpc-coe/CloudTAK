@@ -208,16 +208,12 @@ export default defineComponent({
             this.err = e.reason;
         });
 
-        if (status === 'empty') {
+        if (status === 'unconfigured') {
             delete localStorage.token;
             this.$router.push("/configure");
         } else {
             if (localStorage.token) {
                 await this.refreshLogin();
-
-                if (status === 'unconfigured') {
-                    this.$router.push('/admin');
-                }
             } else if (this.$route.name !== 'login') {
                 this.routeLogin();
             }
