@@ -30,6 +30,7 @@
                                     <div class='mb-2'>
                                         <TablerInput
                                             v-model='name'
+                                            autocomplete='name'
                                             icon='user'
                                             label='Name'
                                             placeholder='John Doe'
@@ -41,6 +42,7 @@
                                             v-model='email'
                                             icon='user'
                                             label='Email'
+                                            autocomplete='email'
                                             placeholder='your@email.com'
                                             @keyup.enter='createUser'
                                         />
@@ -50,6 +52,7 @@
                                             v-model='phone'
                                             label='Phone'
                                             icon='user'
+                                            autocomplete='tel'
                                             placeholder='###-###-####'
                                             @keyup.enter='createUser'
                                         />
@@ -61,7 +64,7 @@
                                             icon='lock'
                                             type='password'
                                             placeholder='Your password'
-                                            autocomplete='off'
+                                            autocomplete='on'
                                             @keyup.enter='createUser'
                                         />
                                     </div>
