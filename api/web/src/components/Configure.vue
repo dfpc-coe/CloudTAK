@@ -61,9 +61,8 @@
                                     <div class='mb-2'>
                                         <label class='mx-2'>Admin Certificate</label>
                                         <CertificateP12
-                                            v-if='!body.auth.cert || !body.auth.key'
+                                            v-if='!body.auth || !body.auth.cert || !body.auth.key'
                                             @certs='body.auth = $event'
-                                            @err='err = $event'
                                         />
 
                                         <template v-else>
@@ -78,7 +77,7 @@
                                                     <IconTrash
                                                         v-tooltip='"Remove Certificate"'
                                                         :size='32'
-                                                        :stroke='1'
+                                                        stroke='1'
                                                         class='cursor-pointer'
                                                         @click='body.auth = { cert: "", key: "" };'
                                                     />
@@ -111,7 +110,7 @@
                                         <button
                                             type='submit'
                                             class='btn btn-primary w-100'
-                                            :disabled='!body.auth.key'
+                                            :disabled='!body.auth || !body.auth.key'
                                             @click='updateServer'
                                         >
                                             Configure Server
@@ -129,7 +128,7 @@
 
 <script lang='ts'>
 import { std } from '../std.ts';
-import type { Server } from '../types.ts';
+import type { Server, Server_Update } from '../types.ts';
 import CertificateP12 from './Connection/CertificateP12.vue';
 import {
     TablerLoading,
@@ -149,7 +148,11 @@ export default {
         TablerInput,
         TablerLoading
     },
-    data: function() {
+    data: function(): {
+        loading: boolean;
+        errors: Record<string, string>;
+        body: Server_Update;
+    } {
         return {
             loading: false,
             errors: {
@@ -187,19 +190,19 @@ export default {
     },
     methods: {
         updateServer: async function() {
-            if (this.body.name.trim().length < 8) {
+            if (!this.body.name || this.body.name.trim().length < 8) {
                 this.errors.name = 'Name should be > 8 characters';
             } else {
                 this.errors.name = '';
             }
 
-            if (this.body.username.trim().length === 0) {
+            if (!this.body.username || this.body.username.trim().length === 0) {
                 this.errors.username = 'Username cannot be empty';
             } else {
                 this.errors.username = '';
             }
 
-            if (this.body.password.trim().length === 0) {
+            if (!this.body.password || this.body.password.trim().length === 0) {
                 this.errors.password = 'Password cannot be empty';
             } else {
                 this.errors.password = '';
@@ -213,7 +216,7 @@ export default {
                     this.errors.url = '';
                 }
             } catch (err) {
-                this.errors.url = err.message;
+                this.errors.url = err instanceof Error ? err.message : String(err);
             }
 
             try {
@@ -224,7 +227,7 @@ export default {
                     this.errors.api = '';
                 }
             } catch (err) {
-                this.errors.api = err.message;
+                this.errors.url = err instanceof Error ? err.message : String(err);
             }
 
             for (const e in this.errors) {
