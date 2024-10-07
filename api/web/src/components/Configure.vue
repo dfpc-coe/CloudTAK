@@ -234,7 +234,7 @@ export default {
             this.loading = true;
 
             try {
-                await std('/api/server/1', {
+                await std('/api/server', {
                     method: 'PATCH',
                     body: this.body
                 })
