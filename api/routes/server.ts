@@ -6,6 +6,10 @@ import Auth, { AuthUserAccess } from '../lib/auth.js';
 import { sql } from 'drizzle-orm';
 import Config from '../lib/config.js';
 import { ServerResponse } from '../lib/types.js';
+import TAKAPI, {
+    APIAuthCertificate,
+    APIAuthPassword
+} from '../lib/tak-api.js';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/server', {
@@ -15,10 +19,10 @@ export default async function router(schema: Schema, config: Config) {
         res: ServerResponse
     }, async (req, res) => {
         try {
-            if (config.configure || !config.server.auth.key || !config.server.auth.cert) {
+            if (!config.server.auth.key || !config.server.auth.cert) {
                 return res.json({
                     id: 1,
-                    status: config.configure ? 'empty' : 'unconfigured',
+                    status: 'unconfigured',
                     name: 'Default Server',
                     created: new Date().toISOString(),
                     updated: new Date().toISOString(),
@@ -76,6 +80,11 @@ export default async function router(schema: Schema, config: Config) {
             provider_url: Type.Optional(Type.String()),
             provider_secret: Type.Optional(Type.String()),
             provider_client: Type.Optional(Type.String()),
+
+            // Used during initial server config to test connection & set system admin
+            username: Type.Optional(Type.String()),
+            password: Type.Optional(Type.String()),
+
             auth: Type.Optional(Type.Object({
                 cert: Type.String(),
                 key: Type.String(),
@@ -84,9 +93,39 @@ export default async function router(schema: Schema, config: Config) {
         res: ServerResponse
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, { admin: true });
+            if (config.server.auth.key && config.server.auth.cert) {
+                await Auth.as_user(config, req, { admin: true });
+            }
 
             if (!config.server) throw new Err(400, null, 'Cannot patch a server that hasn\'t been created');
+
+            if (req.body.auth) {
+                const api = await TAKAPI.init(
+                    new URL(String(req.body.api)),
+                    new APIAuthCertificate(req.body.auth.cert, req.body.auth.key)
+                );
+
+                const config = await api.Files.config();
+                if (config.uploadSizeLimit === undefined) {
+                    throw new Err(400, null, 'Could not connect to TAK Server');
+                }
+            }
+
+            // An unconfigured server will set the first successful username/pass as a CloudTAK System Admin
+            if (!config.server.auth.key && !config.server.auth.cert && req.body.username && req.body.password) {
+                const auth = new APIAuthPassword(req.body.username, req.body.password)
+                const api = await TAKAPI.init(new URL(req.body.api), auth);
+
+                const certs = await api.Credentials.generate();
+
+                await config.models.Profile.generate({
+                    auth: certs,
+                    username: req.body.username,
+                    system_admin: true
+                });
+            } else if (!config.server.auth.key && !config.server.auth.cert && (!req.body.username || !req.body.password)) {
+                throw new Err(400, null, 'Initial configuration must include valid TAK Username & Password to set System Administrator');
+            }
 
             config.server = await config.models.Server.commit(config.server.id, {
                 ...req.body,
@@ -99,9 +138,9 @@ export default async function router(schema: Schema, config: Config) {
             if (config.server.auth.cert && config.server.auth.key) auth = true;
 
             const response: Static<typeof ServerResponse> = {
-                    status: 'configured',
-                    ...config.server,
-                    auth
+                status: 'configured',
+                ...config.server,
+                auth
             };
 
             if (config.server.auth.cert && config.server.auth.key) {
