@@ -58,6 +58,8 @@
                                     <div class='mb-2'>
                                         <label class='mx-2'>Admin Certificate</label>
                                         <CertificateP12
+                                            @certs='body.certs = $event'
+                                            @err='err = $event'
                                         />
                                     </div>
                                     <div class='form-footer'>
@@ -66,7 +68,7 @@
                                             class='btn btn-primary w-100'
                                             @click='updateServer'
                                         >
-                                            Create Admin
+                                            Configure Server
                                         </button>
                                     </div>
                                 </template>

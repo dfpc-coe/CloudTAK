@@ -348,16 +348,8 @@ export default {
         },
         p12upload: function(certs) {
             this.modal.upload = false;
-            this.connection.auth.cert = certs.pemCertificate
-                .split('-----BEGIN CERTIFICATE-----')
-                .join('-----BEGIN CERTIFICATE-----\n')
-                .split('-----END CERTIFICATE-----')
-                .join('\n-----END CERTIFICATE-----');
-            this.connection.auth.key = certs.pemKey
-                .split('-----BEGIN RSA PRIVATE KEY-----')
-                .join('-----BEGIN RSA PRIVATE KEY-----\n')
-                .split('-----END RSA PRIVATE KEY-----')
-                .join('\n-----END RSA PRIVATE KEY-----');
+            this.connection.auth.cert = certs.cert;
+            this.connection.auth.key = certs.key;
         },
         create: async function() {
             for (const field of ['name', 'description' ]) {
