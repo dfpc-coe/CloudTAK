@@ -195,20 +195,26 @@ export default defineComponent({
         }
     },
     mounted: async function() {
-        const server = await std('/api/server') as Server;
+        let status;
+        try {
+            const server = await std('/api/server') as Server;
+            status = server.status;
+        } catch (err) {
+            status = 'configured';
+        }
 
         window.addEventListener('unhandledrejection', (e) => {
             this.err = e.reason;
         });
 
-        if (!server || server.status === 'empty') {
+        if (status === 'empty') {
             delete localStorage.token;
             this.$router.push("/configure");
         } else {
             if (localStorage.token) {
                 await this.refreshLogin();
 
-                if (server.status === 'unconfigured') {
+                if (status === 'unconfigured') {
                     this.$router.push('/admin');
                 }
             } else if (this.$route.name !== 'login') {

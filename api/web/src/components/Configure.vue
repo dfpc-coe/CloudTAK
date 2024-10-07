@@ -110,11 +110,16 @@ export default {
         }
     },
     mounted: async function() {
-        const server = await std('/api/server') as Server;
+        let server: Server;
+        try {
+            server = await std('/api/server') as Server;
+        } catch (err) {
+            console.error(err);
+        }
 
         if (!server || server.status === 'configured') {
             delete localStorage.token;
-            window.location.href = '"/login"';
+            window.location.href = '/login';
         }
     },
     methods: {
