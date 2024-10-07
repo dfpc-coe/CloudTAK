@@ -54,7 +54,6 @@ export default {
         TablerInput
     },
     emits: [
-        'close',
         'certs'
     ],
     data: function() {
@@ -80,12 +79,20 @@ export default {
         });
     },
     methods: {
-        close: function() {
-            this.$emit('close');
-        },
         extract: function() {
             const certs = convertToPem(atob(this.file.split('base64,')[1]), this.password);
-            this.$emit('certs', certs);
+            const cert = certs.pemCertificate
+                .split('-----BEGIN CERTIFICATE-----')
+                .join('-----BEGIN CERTIFICATE-----\n')
+                .split('-----END CERTIFICATE-----')
+                .join('\n-----END CERTIFICATE-----');
+            const key = certs.pemKey
+                .split('-----BEGIN RSA PRIVATE KEY-----')
+                .join('-----BEGIN RSA PRIVATE KEY-----\n')
+                .split('-----END RSA PRIVATE KEY-----')
+                .join('\n-----END RSA PRIVATE KEY-----');
+
+            this.$emit('certs', { key, cert });
         }
     }
 }
