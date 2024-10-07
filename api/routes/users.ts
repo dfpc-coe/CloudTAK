@@ -44,47 +44,6 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.post('/user', {
-        name: 'Create User',
-        group: 'User',
-        description: 'Create a new user - Used on initial server configuraiton for creating the first administrator',
-        body: Type.Object({
-            name: Type.String(),
-            password: Type.String(),
-            username: Type.String(),
-            phone: Type.Optional(Type.String()),
-        }),
-        res: ProfileResponse
-    }, async (req, res) => {
-        try {
-            let user;
-            if (config.configure && !config.server.auth.key && !config.server.auth.cert) {
-
-                user = await config.models.Profile.generate({
-                    ...req.body,
-                    auth: {},
-                    system_admin: true
-                });
-
-                config.configure = false;
-            } else {
-                await Auth.as_user(config, req, { admin: true });
-
-                user = await config.models.Profile.generate({
-                    ...req.body,
-                    auth: {},
-                });
-            }
-
-            return res.json({
-                ...user,
-                agency_admin: user.agency_admin || []
-            });
-        } catch (err) {
-            return Err.respond(err, res);
-        }
-    })
-
     await schema.get('/user/:username', {
         name: 'Get User',
         group: 'User',

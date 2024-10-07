@@ -23,56 +23,48 @@
                                     Welcome to CloudTAK
                                 </h2>
                                 <h2 class='h4 text-center mb-4'>
-                                    Initial Administration User Configuration
+                                    Initial Server Configuration
                                 </h2>
                                 <TablerLoading v-if='loading' />
                                 <template v-else>
                                     <div class='mb-2'>
                                         <TablerInput
-                                            v-model='name'
-                                            autocomplete='name'
-                                            icon='user'
-                                            label='Name'
-                                            placeholder='John Doe'
-                                            @keyup.enter='createUser'
+                                            v-model='body.name'
+                                            :error='errors.name'
+                                            label='Server Name'
+                                            placeholder='TAK Server Name'
+                                            @keyup.enter='updateServer'
                                         />
                                     </div>
                                     <div class='mb-2'>
                                         <TablerInput
-                                            v-model='email'
-                                            icon='user'
-                                            label='Email'
-                                            autocomplete='email'
-                                            placeholder='your@email.com'
-                                            @keyup.enter='createUser'
+                                            v-model='body.url'
+                                            label='Server CoT API'
+                                            placeholder='ssl://ops.example.com:8089'
+                                            :error='errors.url'
+                                            @keyup.enter='updateServer'
                                         />
                                     </div>
                                     <div class='mb-2'>
                                         <TablerInput
-                                            v-model='phone'
-                                            label='Phone'
-                                            icon='user'
-                                            autocomplete='tel'
-                                            placeholder='###-###-####'
-                                            @keyup.enter='createUser'
+                                            v-model='body.api'
+                                            label='Server Marti API'
+                                            placeholder='https://ops.example.com:8443'
+                                            :error='errors.api'
+                                            @keyup.enter='updateServer'
                                         />
                                     </div>
+
                                     <div class='mb-2'>
-                                        <TablerInput
-                                            v-model='password'
-                                            label='Password'
-                                            icon='lock'
-                                            type='password'
-                                            placeholder='Your password'
-                                            autocomplete='on'
-                                            @keyup.enter='createUser'
+                                        <label class='mx-2'>Admin Certificate</label>
+                                        <CertificateP12
                                         />
                                     </div>
                                     <div class='form-footer'>
                                         <button
                                             type='submit'
                                             class='btn btn-primary w-100'
-                                            @click='createUser'
+                                            @click='updateServer'
                                         >
                                             Create Admin
                                         </button>
@@ -93,6 +85,7 @@
 <script lang='ts'>
 import { std } from '../std.ts';
 import type { Server } from '../types.ts';
+import CertificateP12 from './Connection/CertificateP12.vue';
 import {
     TablerLoading,
     TablerInput
@@ -101,16 +94,27 @@ import {
 export default {
     name: 'InitialConfigure',
     components: {
+        CertificateP12,
         TablerInput,
         TablerLoading
     },
     data: function() {
         return {
             loading: false,
-            name: '',
-            email: '',
-            phone: '',
-            password: ''
+            errors: {
+                name: '',
+                url: '',
+                api: ''
+            },
+            body: {
+                name: '',
+                url: '',
+                api: '',
+                certs: {
+                    key: '',
+                    cert: ''
+                }
+            }
         }
     },
     mounted: async function() {
@@ -127,16 +131,43 @@ export default {
         }
     },
     methods: {
-        createUser: async function() {
-            this.loading = true;
-            await std('/api/user', {
-                method: 'POST',
-                body: {
-                    name: this.name,
-                    username: this.email,
-                    phone: this.phone,
-                    password: this.password
+        updateServer: async function() {
+            if (this.body.name.trim().length < 8) {
+                this.errors.name = 'Name should be > 8 characters';
+            } else {
+                this.errors.name = '';
+            }
+
+            try {
+                const url = new URL(this.body.url)
+                if (url.protocol !== 'ssl:') {
+                    this.errors.url = 'Protocol should be ssl://'
+                } else {
+                    this.errors.url = '';
                 }
+            } catch (err) {
+                this.errors.url = err.message;
+            }
+
+            try {
+                const url = new URL(this.body.api)
+                if (url.protocol !== 'https:') {
+                    this.errors.api = 'Protocol should be https://'
+                } else {
+                    this.errors.api = '';
+                }
+            } catch (err) {
+                this.errors.api = err.message;
+            }
+
+            for (const e in this.errors) {
+                if (this.errors[e]) return;
+            }
+
+            this.loading = true;
+            await std('/api/server/1', {
+                method: 'PATCH',
+                body: this.body
             })
 
             this.$router.push('/login');

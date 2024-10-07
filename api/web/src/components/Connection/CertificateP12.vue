@@ -1,5 +1,5 @@
 <template>
-    <div class='card mx-2'>
+    <div class='card'>
         <div class='card-body text-center py-4'>
             <template v-if='!file'>
                 <form
