@@ -186,6 +186,7 @@
                                                 </template>
                                                 <template v-else-if='type === "p12"'>
                                                     <CertificateP12
+                                                        class='mx-2'
                                                         @certs='p12upload($event)'
                                                         @err='err = $event'
                                                     />
