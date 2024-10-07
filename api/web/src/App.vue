@@ -96,7 +96,7 @@
             </div>
         </header>
 
-        <Loading v-if='loading && !$route.path.includes("configure", "login")' />
+        <Loading v-if='loading && !$route.path.includes("configure") && !$route.path.includes("login")' />
         <router-view
             v-else
             :user='user'

@@ -88,8 +88,8 @@
 </template>
 
 <script lang='ts'>
-import { std } from '/src/std.ts';
-import type { Server } from './types.ts';
+import { std } from '../std.ts';
+import type { Server } from '../types.ts';
 import {
     TablerLoading,
     TablerInput
@@ -111,7 +111,7 @@ export default {
         }
     },
     mounted: async function() {
-        let server: Server;
+        let server;
         try {
             server = await std('/api/server') as Server;
         } catch (err) {
