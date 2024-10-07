@@ -31,7 +31,6 @@ export default class Config {
     nosinks: boolean;
     nocache: boolean;
     models: Models;
-    configure: boolean;
     StackName: string;
     HookURL?: string;
     SigningSecret: string;
@@ -61,7 +60,6 @@ export default class Config {
         nosinks: boolean;
         nocache: boolean;
         models: Models;
-        configure: boolean;
         StackName: string;
         API_URL: string;
         PMTILES_URL: string;
@@ -75,7 +73,6 @@ export default class Config {
         HookURL?: string;
     }) {
         this.silent = init.silent;
-        this.configure = init.configure;
         this.unsafe = init.unsafe;
         this.noevents = init.noevents;
         this.nometrics = init.nometrics;
@@ -167,8 +164,6 @@ export default class Config {
             });
         }
 
-        const users = await models.Profile.count();
-
         const config = new Config({
             unsafe: (args.unsafe || false),
             silent: (args.silent || false),
@@ -176,7 +171,6 @@ export default class Config {
             nometrics: (args.nometrics || false),
             nosinks: (args.nosinks || false),
             nocache: (args.nocache || false),
-            configure: users === 0 ? true : false,
             TileBaseURL: process.env.TileBaseURL ? new URL(process.env.TileBaseURL) : new URL('./data-dev/zipcodes.tilebase', import.meta.url),
             StackName: process.env.StackName,
             wsClients: new Map(),
