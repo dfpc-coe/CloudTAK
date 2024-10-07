@@ -53,10 +53,18 @@ export default async function router(schema: Schema, config: Config) {
 
                 profile = await config.models.Profile.from(email);
             } else {
-                profile = await config.models.Profile.from(req.body.username);
+                try {
+                    profile = await config.models.Profile.from(req.body.username);
+                } catch (err) {
+                    if (err instanceof Err && err.status === 404) {
+                        throw new Err(401, err, 'Invalid username or password');
+                    } else {
+                        throw err;
+                    }
+                }
 
                 // Only those marked as a System Admin in the database can log in
-                // without TAK Server Auth and initially configure the server 
+                // without TAK Server Auth and initially configure the server
                 if (!profile.system_admin) {
                     throw new Err(401, null, 'Server must be configured by a System Administrator');
                 }
