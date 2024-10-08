@@ -42,12 +42,8 @@ export default class Flight {
     srv?: any; // TODO: HTTP Server
     base: string;
     schema?: object;
-    routes: {
-        [k: string]: RegExp;
-    }
-    token: {
-        [k: string]: string;
-    }
+    routes: Record<string, RegExp>;
+    token: Record<string, string>;
 
     constructor() {
         this.base = 'http://localhost:5001';
@@ -249,16 +245,26 @@ export default class Flight {
     /**
      * Create a new user and return an API token for that user
      */
-    user() {
-        test('Create User: admin', async (t) => {
+    user(opts: {
+        admin?: boolean;
+    } = {}) {
+        if (opts.admin === undefined) opts.admin = true;
+
+        test('Create User', async (t) => {
             if (!this.config) throw new Error('TakeOff not completed');
 
+            const username = `${opts.admin ? 'admin' : 'user'}@example.com`;
             this.config.models.Profile.generate({
-                username: 'test@example.com',
-                system_admin: true,
+                username,
+                system_admin: opts.admin,
                 auth: { cert: 'cert123', key: 'key123' },
             });
-            this.token.admin = jwt.sign({ access: 'admin', email: 'test@example.com' }, 'coe-wildland-fire')
+
+            if (opts.admin) {
+                this.token.admin = jwt.sign({ access: 'admin', email: username }, 'coe-wildland-fire')
+            } else {
+                this.token.user = jwt.sign({ access: 'user', email: username }, 'coe-wildland-fire')
+            }
             t.end();
         });
     }

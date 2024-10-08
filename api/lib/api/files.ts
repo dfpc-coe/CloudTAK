@@ -16,6 +16,10 @@ export const Content = Type.Object({
   Name: Type.String()
 });
 
+export const Config = Type.Object({
+    uploadSizeLimit: Type.Integer()
+})
+
 export default class File {
     api: TAKAPI;
 
@@ -130,7 +134,7 @@ export default class File {
         });
     }
 
-    async config() {
+    async config(): Promise<Static<typeof Config>> {
         const url = new URL('/files/api/config', this.api.url);
 
         return await this.api.fetch(url, {

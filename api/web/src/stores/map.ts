@@ -28,6 +28,8 @@ export const useMapStore = defineStore('cloudtak', {
         draw?: terraDraw.TerraDraw;
         edit: null | MapGeoJSONFeature;
         container?: HTMLElement;
+        hasTerrain: boolean;
+        isTerrainEnabled: boolean;
         isLoaded: boolean;
         bearing: number;
         selected: Map<string, MapGeoJSONFeature>;
@@ -47,6 +49,8 @@ export const useMapStore = defineStore('cloudtak', {
         overlays: Array<Overlay>
     } => {
         return {
+            hasTerrain: false,
+            isTerrainEnabled: false,
             isLoaded: false,
             bearing: 0,
             edit: null,
@@ -100,6 +104,45 @@ export const useMapStore = defineStore('cloudtak', {
             }
 
             return null;
+        },
+        listTerrain: async function(): Promise<APIList<Basemap>> {
+            // Courtesy add terrain data
+            const burl = stdurl('/api/basemap');
+            burl.searchParams.append('type', 'raster-dem');
+            burl.searchParams.append('limit', '1');
+            const basemaps = await std(burl) as APIList<Basemap>;
+
+            return basemaps;
+        },
+
+        // TODO: Convert to overlay
+        addTerrain: async function(): Promise<void> {
+            const basemaps = await this.listTerrain();
+            if (this.map && basemaps.items.length && !this.map.getSource('-2')) {
+                this.map.addSource('-2', {
+                    type: 'raster-dem',
+                    url: String(stdurl(`/api/basemap/${basemaps.items[0].id}/tiles?token=${localStorage.token}`)),
+                        tileSize: 256
+                })
+
+                this.map.setTerrain({
+                    source: '-2',
+                    exaggeration: 1.5
+                });
+
+                this.isTerrainEnabled = true;
+            } else {
+                this.hasTerrain = false;
+            }
+        },
+
+        removeTerrain: function(): void {
+            if (this.map) {
+                this.map.setTerrain(null);
+                this.map.removeSource('-2');
+            }
+
+            this.isTerrainEnabled = false;
         },
 
         /**
@@ -281,13 +324,17 @@ export const useMapStore = defineStore('cloudtak', {
                         name: basemaps.items[0].name,
                         pos: -1,
                         type: 'raster',
-                        url: `/api/basemap/${basemaps.items[0].id}/tiles`,
+                        url: String(stdurl(`/api/basemap/${basemaps.items[0].id}/tiles?token=${localStorage.token}`)),
                         mode: 'basemap',
                         mode_id: String(basemaps.items[0].id)
                     });
 
                     this.overlays.push(basemap);
                 }
+            }
+
+            if ((await this.listTerrain()).total > 0) {
+                this.hasTerrain = true;
             }
 
             for (const item of items) {
@@ -406,6 +453,7 @@ export const useMapStore = defineStore('cloudtak', {
                     new terraDraw.TerraDrawPolygonMode(),
                     new terraDraw.TerraDrawAngledRectangleMode(),
                     new terraDraw.TerraDrawFreehandMode(),
+                    new terraDraw.TerraDrawSectorMode(),
                     new terraDraw.TerraDrawSelectMode({
                         flags: {
                             polygon: {

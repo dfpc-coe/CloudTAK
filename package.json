@@ -1,10 +1,10 @@
 {
     "name": "@tak-ps/CloudTAK",
     "type": "module",
-    "version": "4.1.0",
+    "version": "4.7.0",
     "description": "Facilitate ETL operations to bring non-TAK sources into a TAK Server",
     "scripts": {
-        "lint": "eslint cloudformation/**/*.js",
+        "lint": "eslint cloudformation/",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "engines": {
@@ -15,7 +15,7 @@
         "url": "git+https://github.com/dfpc-coe/CloudTAK.git"
     },
     "author": "Nick Ingalls <nick@ingalls.ca>",
-    "license": "ISC",
+    "license": "AGPL",
     "bugs": {
         "url": "https://github.com/dfpc-coe/CloudTAK/issues"
     },

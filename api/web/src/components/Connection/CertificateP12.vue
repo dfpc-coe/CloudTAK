@@ -1,5 +1,5 @@
 <template>
-    <div class='card mx-2'>
+    <div class='card'>
         <div class='card-body text-center py-4'>
             <template v-if='!file'>
                 <form
@@ -22,6 +22,8 @@
             <template v-else>
                 <TablerInput
                     v-model='password'
+                    type='password'
+                    autocomplete='off'
                     label='P12 Password'
                     @keyup.enter='extract'
                 />
@@ -54,7 +56,6 @@ export default {
         TablerInput
     },
     emits: [
-        'close',
         'certs'
     ],
     data: function() {
@@ -65,27 +66,45 @@ export default {
         }
     },
     mounted: function() {
-        this.$nextTick(() => {
-            this.dropzone = new Dropzone("#dropzone-default", {
-                autoProcessQueue: false
-            });
-
-            this.dropzone.on('addedfile', (file) => {
-                const read = new FileReader();
-                read.onload = (event) => {
-                    this.file = event.target.result;
-                };
-                read.readAsDataURL(file);
-            });
-        });
+        this.createDropzone();
     },
     methods: {
-        close: function() {
-            this.$emit('close');
+        createDropzone: function() {
+            this.$nextTick(() => {
+                this.dropzone = new Dropzone("#dropzone-default", {
+                    autoProcessQueue: false,
+                });
+
+                this.dropzone.on('addedfile', (file) => {
+                    const read = new FileReader();
+                    read.onload = (event) => {
+                        this.file = event.target.result;
+                    };
+                    read.readAsDataURL(file);
+                });
+            });
         },
         extract: function() {
-            const certs = convertToPem(atob(this.file.split('base64,')[1]), this.password);
-            this.$emit('certs', certs);
+            try {
+                const certs = convertToPem(atob(this.file.split('base64,')[1]), this.password);
+                const cert = certs.pemCertificate
+                    .split('-----BEGIN CERTIFICATE-----')
+                    .join('-----BEGIN CERTIFICATE-----\n')
+                    .split('-----END CERTIFICATE-----')
+                    .join('\n-----END CERTIFICATE-----');
+                const key = certs.pemKey
+                    .split('-----BEGIN RSA PRIVATE KEY-----')
+                    .join('-----BEGIN RSA PRIVATE KEY-----\n')
+                    .split('-----END RSA PRIVATE KEY-----')
+                    .join('\n-----END RSA PRIVATE KEY-----');
+
+                this.$emit('certs', { key, cert });
+            } catch (err) {
+                this.file = null;
+                this.password = '';
+                this.createDropzone();
+                throw err;
+            }
         }
     }
 }

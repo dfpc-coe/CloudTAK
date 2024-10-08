@@ -68,6 +68,7 @@
                 <div class='col-lg-6 py-2'>
                     <TablerInput
                         v-model='server.provider_secret'
+                        type='password'
                         :disabled='!edit'
                         label='OAuth Client Secret'
                         placeholder='https://'
@@ -121,6 +122,35 @@
                     <div class='col-auto d-flex align-items-center'>
                         Once Certificates are uploaded they cannot be viewed
                     </div>
+                    <div class='col-12 datagrid pt-2 pb-5'>
+                        <div class='datagrid-item pb-2'>
+                            <div class='datagrid-title'>
+                                Certificate Valid From
+                            </div>
+                            <div
+                                class='datagrid-content'
+                                v-text='server.certificate.validFrom'
+                            />
+                        </div>
+                        <div class='datagrid-item pb-2'>
+                            <div class='datagrid-title'>
+                                Certificate Valid To
+                            </div>
+                            <div
+                                class='datagrid-content'
+                                v-text='server.certificate.validTo'
+                            />
+                        </div>
+                        <div class='datagrid-item pb-2'>
+                            <div class='datagrid-title'>
+                                Certificate Subject
+                            </div>
+                            <div
+                                class='datagrid-content'
+                                v-text='server.certificate.subject'
+                            />
+                        </div>
+                    </div>
                     <div
                         v-if='edit'
                         class='col-auto ms-auto'
@@ -150,7 +180,7 @@
             </div>
             <div
                 class='position-absolute bottom-0 w-100'
-                style='height: 61px;'
+                style='height: 53px;'
             >
                 <div
                     v-if='server.updated'

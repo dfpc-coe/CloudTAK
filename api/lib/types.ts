@@ -37,7 +37,12 @@ export const ServerResponse = Type.Object({
     name: Type.String(),
     url: Type.String(),
     api: Type.String(),
-    auth: Type.Boolean({ "description": "Once an admin certificate is configured it is not retrivable. This boolean refers to if a certificate is currently loaded" })
+    auth: Type.Boolean({ "description": "Once an admin certificate is configured it is not retrivable. This boolean refers to if a certificate is currently loaded" }),
+    certificate: Type.Optional(Type.Object({
+        subject: Type.String(),
+        validFrom: Type.String(),
+        validTo: Type.String()
+    })),
 })
 
 export const ProfileResponse = Type.Object({

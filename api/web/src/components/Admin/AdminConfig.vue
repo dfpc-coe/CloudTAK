@@ -28,6 +28,7 @@
                     />
                     <TablerInput
                         v-model='config["agol::token"]'
+                        type='password'
                         :disabled='!edit'
                         label='ArcGIS Online API Token'
                     />
@@ -51,6 +52,7 @@
                     <div class='col-lg-6'>
                         <TablerInput
                             v-model='config["media::password"]'
+                            type='password'
                             :disabled='!edit'
                             label='Hosted Media Service Password'
                         />

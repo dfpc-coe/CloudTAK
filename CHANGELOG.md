@@ -12,6 +12,46 @@
 
 ### Pending Release
 
+### v4.7.0 - 2024-10-07
+
+- :rocket: `UI/API` Add initial configuration mode
+- :rocket: Rename `task-{{sha}}` to `data-{{sha}}` to match folder names
+
+### v4.6.0 - 2024-10-03
+
+- :rocket: `UI` Add Sector Drawing Mode
+
+### v4.5.1 - 2024-10-02
+
+- :rocket: `UI` Use colour to show terrain enablement state
+- :rocket: `UI` Allow toggling 3D terrain on and off
+
+### v4.5.0 - 2024-10-02
+
+- :tada: `UI` Show a 3D Terrain button if 3D Terrain is enabled
+
+### v4.4.2 - 2024-10-02
+
+- :rocket: `API` Start to make improvements to caching behavior on initial load
+
+### v4.4.1 - 2024-10-01
+
+- :bug: `API` Set `useCache=true` when making Group List calls
+
+### v4.4.0 - 2024-10-01
+
+- :rocket: `UI` Use geolocation.watchPosition API instead of individual getLocation calls
+
+### v4.3.0 - 2024-10-01
+
+- :tada: Add the ability to see what channels a user has active (limited to channels you have access to)
+
+### v4.2.0 - 2024-09-30
+
+- :white_check_mark: Add initial Basemap Tests
+- :white_check_mark: Add initial Server Config Tests
+- :rocket: Add initial Certificate expiry API for admin cert
+
 ### v4.1.1 - 2024-09-26
 
 - :bug: `API` Fix const assignment
