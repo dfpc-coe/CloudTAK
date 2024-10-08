@@ -69,7 +69,9 @@ export default async function router(schema: Schema, config: Config) {
             logging: Type.Boolean(),
             enabled: Type.Boolean(),
             body: Type.Object({
-                layer: Type.String(),
+                points: Type.Optional(Type.String()),
+                lines: Type.Optional(Type.String()),
+                polys: Type.Optional(Type.String()),
                 url: Type.String(),
                 username: Type.Optional(Type.String()),
                 password: Type.Optional(Type.String())
