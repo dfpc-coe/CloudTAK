@@ -6,6 +6,7 @@
     "scripts": {
         "lint": "eslint src/",
         "check": "tsc --noEmit src/index.ts",
+        "test": "test/test",
         "build": "tsup --target es2022 --format esm src/index.ts"
     },
     "dependencies": {
