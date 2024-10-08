@@ -20,7 +20,7 @@ export default {
                     ],
                     JobRoleArn: cf.getAtt('BatchJobRole', 'Arn'),
                     ExecutionRoleArn: cf.getAtt('BatchExecRole', 'Arn'),
-                    Image: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/coe-ecr-etl:task-', cf.ref('GitSha')]),
+                    Image: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/coe-ecr-etl:data-', cf.ref('GitSha')]),
                     ReadonlyRootFilesystem: false,
                     ResourceRequirements: [{
                         Type: 'VCPU',
