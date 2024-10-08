@@ -22,13 +22,13 @@ jobs:
           ref: ${{github.event.pull_request.head.sha || github.sha}}
 
       - name: Docker Data Task Build
-        run: docker compose build task
+        run: docker buildx build ./tasks/data -t cloudtak-data
 
       - name: Docker Data Task Lint
-        run: docker run cloudtak-task:latest npm run lint
+        run: docker run cloudtak-data:latest npm run lint
 
       - name: Docker Data Task Test
-        run: docker run cloudtak-task:latest npm test
+        run: docker run cloudtak-data:latest npm test
 
   pmtiles:
     runs-on: ubuntu-latest

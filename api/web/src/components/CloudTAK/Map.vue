@@ -83,14 +83,14 @@
 
             <div
                 v-if='mode === "Default"'
-                class='position-absolute top-0 beginning-0 text-white py-2 px-2'
+                class='position-absolute top-0 beginning-0 text-white'
             >
                 <div
                     style='
                         z-index: 1;
-                        width: 50px;
+                        width: 60px;
                         background-color: rgba(0, 0, 0, 0.5);
-                        border-radius: 6px 6px 6px 6px;
+                        border-radius: 0px 0px 6px 0px;
                     '
                 >
                     <IconSearch
@@ -99,13 +99,13 @@
                         title='Search Button'
                         :size='40'
                         :stroke='1'
-                        style='margin: 5px 5px 5px 5px;'
+                        style='margin: 5px 8px'
                         class='cursor-pointer hover-button'
                         @click='search.shown = !search.shown'
                     />
 
                     <div
-                        style='margin: 5px 5px 5px 5px;'
+                        style='margin: 5px 8px'
                         class='cursor-pointer hover-button'
                         @click='setBearing(0)'
                     >
@@ -132,8 +132,8 @@
                         :size='40'
                         :stroke='1'
                         class='cursor-pointer hover-button'
-                        style='margin: 5px 5px 5px 5px;'
-                        @click='getLocation(true)'
+                        style='margin: 5px 8px'
+                        @click='getLocation'
                     />
                     <IconLockAccess
                         v-else-if='!radial.cot'
@@ -143,7 +143,7 @@
                         :size='40'
                         :stroke='1'
                         class='cursor-pointer hover-button'
-                        style='margin: 5px 5px 5px 5px;'
+                        style='margin: 5px 8px'
                         @click='locked.splice(0, locked.length)'
                     />
 
@@ -158,7 +158,7 @@
                             :size='40'
                             :stroke='1'
                             class='cursor-pointer hover-button'
-                            style='margin: 5px 5px 5px 5px;'
+                            style='margin: 5px 8px'
                             @click='setZoom(getZoom() + 1);'
                         />
                         <IconMinus
@@ -169,10 +169,23 @@
                             :size='40'
                             :stroke='1'
                             class='cursor-pointer hover-button'
-                            style='margin: 5px 5px 5px 5px;'
+                            style='margin: 5px 8px'
                             @click='setZoom(getZoom() - 1);'
                         />
                     </div>
+
+                    <Icon3dCubeSphere
+                        v-tooltip='isTerrainEnabled ? "Disable 3D Terrain" : "Enable 3D Terrain"'
+                        role='button'
+                        tabindex='0'
+                        title='3D Terrain'
+                        :size='40'
+                        :stroke='1'
+                        class='cursor-pointer hover-button'
+                        :color='isTerrainEnabled ? "#1E90FF" : "#FFFFFF"'
+                        style='margin: 5px 8px'
+                        @click='isTerrainEnabled ? removeTerrain() : addTerrain()'
+                    />
                 </div>
             </div>
 
@@ -347,6 +360,15 @@
                         </div>
                         <div
                             class='col-12 py-1 px-2 hover-button cursor-pointer'
+                            @click='startDraw("sector")'
+                        >
+                            <IconCone
+                                :size='25'
+                                :stroke='1'
+                            /> Draw Sector
+                        </div>
+                        <div
+                            class='col-12 py-1 px-2 hover-button cursor-pointer'
                             @click='startDraw("freehand")'
                         >
                             <IconLasso
@@ -379,7 +401,7 @@
                     title='Close Menu Button'
                     :size='40'
                     :stroke='1'
-                    class='mx-2 cursor-pointer bg-dark'
+                    class='mx-2 cursor-pointer bg-dark rounded'
                     @click='closeAllMenu'
                 />
             </div>
@@ -460,11 +482,13 @@ import {
     IconX,
     IconPoint,
     IconLine,
+    IconCone,
     IconPolygon,
     IconCursorText,
     IconVector,
     IconBell,
     IconCircleArrowUp,
+    Icon3dCubeSphere,
 } from '@tabler/icons-vue';
 import SelectFeats from './util/SelectFeats.vue';
 import MultipleSelect from './util/MultipleSelect.vue';
@@ -498,7 +522,7 @@ export default {
         }
     },
     computed: {
-        ...mapState(useMapStore, ['bearing', 'select', 'radial', 'isLoaded', 'selected']),
+        ...mapState(useMapStore, ['bearing', 'select', 'radial', 'isLoaded', 'selected', 'hasTerrain', 'isTerrainEnabled']),
         ...mapState(useProfileStore, ['profile', 'notifications']),
         mobileDetected: function() {
           //TODO: This needs to follow something like:
@@ -561,6 +585,44 @@ export default {
         this.warnChannels = profileStore.hasNoChannels;
 
         this.loading.main = false;
+
+        if (("geolocation" in navigator)) {
+            navigator.geolocation.watchPosition((position) => {
+                if (position.coords.accuracy <= 50) {
+                    this.live_loc = {
+                        type: 'Feature',
+                        properties: {
+                            accuracy: position.coords.accuracy
+                        },
+                        geometry: {
+                            type: 'Point',
+                            coordinates: [
+                                position.coords.longitude,
+                                position.coords.latitude
+                            ],
+                        }
+                    }
+
+                    this.setYou(this.live_loc);
+                }
+            }, (err) => {
+                if (err.message.toLowerCase().includes('denied geolocation')) {
+                    this.live_loc_denied = true;
+                } else if (
+                    err.message !== 'Position unavailable'
+                    && err.message !== 'Position acquisition timed out'
+                    && err.message !== 'Timeout expired'
+                ) {
+                    this.$emit('err', err);
+                }
+            },{
+                maximumAge: 0,
+                timeout: 1500,
+                enableHighAccuracy: true
+            });
+        } else {
+            console.error('geolocation object not found on navigator');
+        }
 
         window.addEventListener('dragover', (e) => {
             e.preventDefault();
@@ -633,6 +695,7 @@ export default {
     },
     methods: {
         ...mapActions(useProfileStore, ['clearNotifications']),
+        ...mapActions(useMapStore, ['addTerrain', 'removeTerrain']),
         selectFeat: function(feat) {
             mapStore.select.feats = [];
             const source = mapStore.featureSource(feat);
@@ -722,54 +785,16 @@ export default {
         getZoom: function() {
             return mapStore.map.getZoom();
         },
-        getLocation: function(flyTo = false) {
-            if (this.live_loc_denied && flyTo) throw new Error('Cannot navigate to your position as you denied location services');
-            else if (this.live_loc_denied) return;
-
-            if (flyTo && !("geolocation" in navigator)) {
-                throw new Error('GeoLocation is not available in this browser');
-            } else if (!("geolocation" in navigator)) {
-                console.error('geolocation object not found on navigator');
-                return;
+        getLocation: function() {
+            if (this.live_loc) {
+                throw new Error('No Location Determined');
+            } else if (this.live_loc_denied) {
+                throw new Error('Cannot navigate to your position as you denied location services');
             }
 
-            navigator.geolocation.getCurrentPosition((position) => {
-                if (flyTo) {
-                    mapStore.map.flyTo({
-                        center: [position.coords.longitude, position.coords.latitude],
-                        zoom: 14
-                    });
-                } else if (position.coords.accuracy <= 50) {
-                    this.live_loc = {
-                        type: 'Feature',
-                        properties: {
-                            accuracy: position.coords.accuracy
-                        },
-                        geometry: {
-                            type: 'Point',
-                            coordinates: [
-                                position.coords.longitude,
-                                position.coords.latitude
-                            ],
-                        }
-                    }
-
-                    this.setYou(this.live_loc);
-                }
-            }, (err) => {
-                if (err.message.toLowerCase().includes('denied geolocation')) {
-                    this.live_loc_denied = true;
-                } else if (
-                    err.message !== 'Position unavailable'
-                    && err.message !== 'Position acquisition timed out'
-                    && err.message !== 'Timeout expired'
-                ) {
-                    this.$emit('err', err);
-                }
-            },{
-                maximumAge: 0,
-                timeout: 1500,
-                enableHighAccuracy: true
+            mapStore.map.flyTo({
+                center: this.live_loc.geometry.coordinates,
+                zoom: 14
             });
         },
         startDraw: function(type) {
@@ -949,7 +974,11 @@ export default {
                             geometry
                         };
 
-                        if (mapStore.draw.getMode() === 'polygon' || mapStore.draw.getMode() === 'angled-rectangle') {
+                        if (
+                            mapStore.draw.getMode() === 'polygon'
+                            || mapStore.draw.getMode() === 'angled-rectangle'
+                            || mapStore.draw.getMode() === 'sector'
+                        ) {
                             feat.properties.type = 'u-d-f';
                         } else if (mapStore.draw.getMode() === 'linestring') {
                             feat.properties.type = 'u-d-f';
@@ -968,8 +997,6 @@ export default {
                     });
 
                     this.timerSelf = window.setInterval(() => {
-                        this.getLocation(false);
-
                         if (this.live_loc) {
                             connectionStore.sendCOT(profileStore.CoT(this.live_loc))
                         } else if (profileStore.profile.tak_loc) {
@@ -1014,12 +1041,14 @@ export default {
         IconLockAccess,
         IconPoint,
         IconLine,
+        IconCone,
         IconPolygon,
         IconVector,
         IconMenu2,
         IconPencil,
         IconCursorText,
         IconCircleArrowUp,
+        Icon3dCubeSphere,
         IconX,
         CloudTAKFeatView,
     }

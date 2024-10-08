@@ -29,11 +29,10 @@
                                 <template v-else>
                                     <div class='mb-3'>
                                         <TablerInput
-                                            v-model='username'
+                                            v-model='body.username'
                                             icon='user'
                                             label='Username or Email'
                                             placeholder='your@email.com'
-                                            autocomplete='off'
                                             @keyup.enter='createLogin'
                                         />
                                     </div>
@@ -50,11 +49,10 @@
                                             </span>
                                         </div>
                                         <TablerInput
-                                            v-model='password'
+                                            v-model='body.password'
                                             icon='lock'
                                             type='password'
                                             placeholder='Your password'
-                                            autocomplete='off'
                                             @keyup.enter='createLogin'
                                         />
                                     </div>
@@ -99,8 +97,10 @@ export default {
     data: function() {
         return {
             loading: false,
-            username: '',
-            password: ''
+            body: {
+                username: '',
+                password: ''
+            }
         }
     },
     methods: {
@@ -112,10 +112,7 @@ export default {
             try {
                 const login = await std('/api/login', {
                     method: 'POST',
-                    body: {
-                        username: this.username,
-                        password: this.password
-                    }
+                    body: this.body
                 });
 
                 localStorage.token = login.token;

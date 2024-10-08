@@ -31,7 +31,7 @@ const AugmentedBasemapResponse = Type.Composite([
 
 export default async function router(schema: Schema, config: Config) {
     await schema.put('/basemap', {
-        name: 'Import BaseMaps',
+        name: 'Import Basemaps',
         group: 'BaseMap',
         description: `
             If the Content-Type if text/plain, then assume the body contains a TileJSON URL
@@ -86,8 +86,8 @@ export default async function router(schema: Schema, config: Config) {
                     try {
                         const b = await BasemapParser.parse(String(buffer));
 
-                        if (!b.basemap.customMapSource) return res.json(imported);
-                        const map = b.basemap.customMapSource;
+                        if (!b.raw.customMapSource) return res.json(imported);
+                        const map = b.raw.customMapSource;
 
                         imported.name = map.name._text;
                         imported.minzoom = map.minZoom._text;
@@ -135,7 +135,7 @@ export default async function router(schema: Schema, config: Config) {
     });
 
     await schema.get('/basemap', {
-        name: 'List BaseMaps',
+        name: 'List Basemaps',
         group: 'BaseMap',
         description: 'List BaseMaps',
         query: Type.Object({
@@ -190,7 +190,7 @@ export default async function router(schema: Schema, config: Config) {
     });
 
     await schema.post('/basemap', {
-        name: 'Create BaseMap',
+        name: 'Create Basemap',
         group: 'BaseMap',
         description: 'Register a new basemap',
         body: Type.Object({
@@ -223,6 +223,8 @@ export default async function router(schema: Schema, config: Config) {
                 delete req.body.center;
             }
 
+            TileJSON.isValidURL(req.body.url);
+
             let username: string | null = null;
             if (user.access !== AuthUserAccess.ADMIN && req.body.scope === ResourceCreationScope.SERVER) {
                 throw new Err(400, null, 'Only Server Admins can create Server scoped basemaps');
@@ -248,7 +250,7 @@ export default async function router(schema: Schema, config: Config) {
     });
 
     await schema.patch('/basemap/:basemapid', {
-        name: 'Update BaseMap',
+        name: 'Update Basemap',
         group: 'BaseMap',
         description: 'Update a basemap',
         params: Type.Object({
@@ -274,6 +276,7 @@ export default async function router(schema: Schema, config: Config) {
             let center: Geometry | undefined = undefined;
             if (req.body.bounds) bounds = bboxPolygon(req.body.bounds as BBox).geometry;
             if (req.body.center) center = { type: 'Point', coordinates: req.body.center };
+            if (req.body.url) TileJSON.isValidURL(req.body.url);
 
             const existing = await config.cacher.get(Cacher.Miss(req.query, `basemap-${req.params.basemapid}`), async () => {
                 return await config.models.Basemap.from(Number(req.params.basemapid))
@@ -304,7 +307,7 @@ export default async function router(schema: Schema, config: Config) {
     });
 
     await schema.get('/basemap/:basemapid', {
-        name: 'Get BaseMap',
+        name: 'Get Basemap',
         group: 'BaseMap',
         description: 'Get a basemap',
         params: Type.Object({
@@ -363,7 +366,7 @@ export default async function router(schema: Schema, config: Config) {
     });
 
     await schema.get('/basemap/:basemapid/tiles', {
-        name: 'Get BaseMap TileJSON',
+        name: 'Get Basemap TileJSON',
         group: 'BaseMap',
         description: 'Get a basemap tilejson',
         params: Type.Object({
@@ -402,7 +405,7 @@ export default async function router(schema: Schema, config: Config) {
     });
 
     await schema.get('/basemap/:basemapid/tiles/:z/:x/:y', {
-        name: 'Get BaseMap Tile',
+        name: 'Get Basemap Tile',
         group: 'BaseMap',
         description: 'Get a basemap tile',
         params: Type.Object({
@@ -446,7 +449,7 @@ export default async function router(schema: Schema, config: Config) {
     });
 
     await schema.delete('/basemap/:basemapid', {
-        name: 'Delete BaseMap',
+        name: 'Delete Basemap',
         group: 'BaseMap',
         description: 'Delete a basemap',
         params: Type.Object({
@@ -473,7 +476,7 @@ export default async function router(schema: Schema, config: Config) {
 
             return res.json({
                 status: 200,
-                message: 'BaseMap Deleted'
+                message: 'Basemap Deleted'
             });
         } catch (err) {
             return Err.respond(err, res);
