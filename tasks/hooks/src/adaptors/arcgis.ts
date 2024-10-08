@@ -3,12 +3,27 @@ import { geojsonToArcGIS } from '@terraformer/arcgis'
 import proj4 from 'proj4';
 
 export default async function arcgis(data: any): Promise<boolean> {
-    if (data.feat.geometry.type !== 'Point') {
+    if (
+        (data.feat.geometry.type === 'Point' && !data.body.points)
+        || (data.feat.geometry.type === 'LineString' && !data.body.lines)
+        || (data.feat.geometry.type === 'Polygon' && !data.body.polys)
+        || (!['Point', 'LineString', 'Polygon'].includes(data.feat.geometry.type))
+    ) {
+    }
+
+    let layer;
+    if (data.body.points && data.feat.geometry.type === 'Point') {
+         layer = data.body.points
+    } else if (data.body.lines && data.feat.geometry.type === 'LineString') {
+        layer = data.body.lines
+    } else if (data.body.polys && data.feat.geometry.type === 'Polygon') {
+        layer = data.body.polys;
+    } else {
         console.error(`ok - skipping ${data.feat.properties.callsign} due to geometry: ${data.feat.geometry.type}`);
         return false;
     }
 
-    const res_query = await fetch(data.body.layer + '/query', {
+    const res_query = await fetch(layer + '/query', {
         method: 'POST',
         headers: {
             'Referer': data.secrets.referer,
@@ -44,7 +59,7 @@ export default async function arcgis(data: any): Promise<boolean> {
     }
 
     if (!query.features.length) {
-        const res = await fetch(new URL(data.body.layer + '/addFeatures'), {
+        const res = await fetch(new URL(layer + '/addFeatures'), {
             method: 'POST',
             headers: {
                 'Referer': data.secrets.referer,
@@ -81,7 +96,7 @@ export default async function arcgis(data: any): Promise<boolean> {
     } else {
         const oid = query.features[0].attributes.objectid;
 
-        const res = await fetch(new URL(data.body.layer + '/updateFeatures'), {
+        const res = await fetch(new URL(layer + '/updateFeatures'), {
             method: 'POST',
             headers: {
                 'Referer': data.secrets.referer,
