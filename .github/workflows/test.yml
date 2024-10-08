@@ -30,6 +30,24 @@ jobs:
       - name: Docker Data Task Test
         run: docker run cloudtak-data:latest npm test
 
+  hooks:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{github.event.pull_request.head.sha || github.sha}}
+
+      - name: Docker Hooks Task Build
+        run: docker buildx build ./tasks/hooks -t cloudtak-hooks
+
+      - name: Docker Hooks Task Lint
+        run: docker run cloudtak-hooks:latest npm run lint
+
+      - name: Docker Data Task Test
+        run: docker run cloudtak-hooks:latest npm test
+
   pmtiles:
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false

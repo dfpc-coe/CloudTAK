@@ -1,6 +1,5 @@
 import { Geometry, Point, Polyline, Polygon } from 'arcgis-rest-api';
 import { geojsonToArcGIS } from '@terraformer/arcgis'
-// @ts-expect-error Default export behavior
 import proj4 from 'proj4';
 
 export default async function arcgis(data: any): Promise<boolean> {
@@ -58,10 +57,14 @@ export default async function arcgis(data: any): Promise<boolean> {
         let geom = geojsonToArcGIS(data.feat.geometry) as Polyline;
 
         console.error(geom);
+
+        geometry = geom;
     } else if (data.feat.geometry.type === 'Polygon') {
         let geom = geojsonToArcGIS(data.feat.geometry) as Polygon;
 
         console.error(geom);
+
+        geometry = geom;
     } else {
         throw new Error(`Incompatible Geometry: ${data.feat.geometry.type}`);
     }
