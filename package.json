@@ -15,7 +15,7 @@
         "url": "git+https://github.com/dfpc-coe/CloudTAK.git"
     },
     "author": "Nick Ingalls <nick@ingalls.ca>",
-    "license": "ISC",
+    "license": "AGPL",
     "bugs": {
         "url": "https://github.com/dfpc-coe/CloudTAK/issues"
     },
