@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v4.7.0 - 2024-10-07
+
+- :rocket: `UI/API` Add initial configuration mode
+- :rocket: Rename `task-{{sha}}` to `data-{{sha}}` to match folder names
+
 ### v4.6.0 - 2024-10-03
 
 - :rocket: `UI` Add Sector Drawing Mode
