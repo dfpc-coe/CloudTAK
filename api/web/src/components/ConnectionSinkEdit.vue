@@ -118,7 +118,7 @@
                                                     :url='sink.body.url'
                                                     :username='sink.body.username'
                                                     :password='sink.body.password'
-                                                    @layer='sink.body.layer = $event'
+                                                    @layer='sink.body.points = $event'
                                                     @close='esriView.view = false'
                                                 />
                                             </template>
@@ -127,7 +127,7 @@
                                             <div class='d-flex'>
                                                 <div class='ms-auto'>
                                                     <button
-                                                        v-if='sink.body.layer'
+                                                        v-if='sink.body.points'
                                                         class='cursor-pointer btn btn-primary'
                                                         @click='create'
                                                     >
@@ -207,7 +207,7 @@ export default {
                     url: '',
                     username: '',
                     password: '',
-                    layer: ''
+                    points: ''
                 },
                 logging: false,
                 enabled: true,

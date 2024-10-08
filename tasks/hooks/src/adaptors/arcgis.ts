@@ -1,16 +1,9 @@
-import { Point } from 'arcgis-rest-api';
+import { Geometry, Point, Polyline, Polygon } from 'arcgis-rest-api';
 import { geojsonToArcGIS } from '@terraformer/arcgis'
+// @ts-expect-error Default export behavior
 import proj4 from 'proj4';
 
 export default async function arcgis(data: any): Promise<boolean> {
-    if (
-        (data.feat.geometry.type === 'Point' && !data.body.points)
-        || (data.feat.geometry.type === 'LineString' && !data.body.lines)
-        || (data.feat.geometry.type === 'Polygon' && !data.body.polys)
-        || (!['Point', 'LineString', 'Polygon'].includes(data.feat.geometry.type))
-    ) {
-    }
-
     let layer;
     if (data.body.points && data.feat.geometry.type === 'Point') {
          layer = data.body.points
@@ -44,18 +37,33 @@ export default async function arcgis(data: any): Promise<boolean> {
 
     if (query.error) throw new Error(query.error.message);
 
-    let geometry = geojsonToArcGIS(data.feat.geometry) as Point;
-    if (!geometry.x || !geometry.y) throw new Error('Incompatible Geometry');
+    let geometry: Geometry;
+    if (data.feat.geometry.type === 'Point') {
+        let geom = geojsonToArcGIS(data.feat.geometry) as Point;
+        if (!geom.x || !geom.y) throw new Error('Incompatible Geometry');
 
-    const proj = proj4('EPSG:4326', 'EPSG:3857', [ geometry.x, geometry.y ]);
+        const proj = proj4('EPSG:4326', 'EPSG:3857', [ geom.x, geom.y ]);
 
-    geometry = {
-        x: proj[0],
-        y: proj[1],
-        spatialReference: {
-            wkid: 102100,
-            latestWkid: 3857
+        geom = {
+            x: proj[0],
+            y: proj[1],
+            spatialReference: {
+                wkid: 102100,
+                latestWkid: 3857
+            }
         }
+
+        geometry = geom;
+    } else if (data.feat.geometry.type === 'LineString') {
+        let geom = geojsonToArcGIS(data.feat.geometry) as Polyline;
+
+        console.error(geom);
+    } else if (data.feat.geometry.type === 'Polygon') {
+        let geom = geojsonToArcGIS(data.feat.geometry) as Polygon;
+
+        console.error(geom);
+    } else {
+        throw new Error(`Incompatible Geometry: ${data.feat.geometry.type}`);
     }
 
     if (!query.features.length) {
