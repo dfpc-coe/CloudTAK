@@ -13,7 +13,7 @@
     "artifacts": {
         "docker": [
             "coe-ecr-etl:{{gitsha}}",
-            "coe-ecr-etl:task-{{gitsha}}",
+            "coe-ecr-etl:data-{{gitsha}}",
             "coe-ecr-etl:pmtiles-{{gitsha}}",
             "coe-ecr-etl:hooks-{{gitsha}}",
             "coe-ecr-etl:events-{{gitsha}}"

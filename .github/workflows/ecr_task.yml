@@ -21,7 +21,7 @@ jobs:
     if: github.event.pull_request.draft == false
     strategy:
       matrix:
-        task: [task, pmtiles, hooks, events]
+        task: [data, pmtiles, hooks, events]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -35,7 +35,7 @@ jobs:
           aws-region: ${{secrets.AWS_REGION}}
 
       - name: Docker Build Task
-        run: docker compose build ${{ matrix.task }}
+        run: docker buildx build ./tasks/${{ matrix.task }} -t cloudtak-${{ matrix.task }}
 
       - name: Login to Amazon ECR
         id: login-ecr

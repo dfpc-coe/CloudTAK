@@ -4,7 +4,7 @@
     "version": "4.5.1",
     "description": "Facilitate ETL operations to bring non-TAK sources into a TAK Server",
     "scripts": {
-        "lint": "eslint cloudformation/**/*.js",
+        "lint": "eslint cloudformation/",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "engines": {
