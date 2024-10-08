@@ -70,7 +70,7 @@
                                     :pane='false'
                                     :url='sink.body.url'
                                     :sinkid='parseInt($route.params.sinkid)'
-                                    :layer='sink.body.layer'
+                                    :layer='sink.body.points'
                                 />
                             </div>
                             <div class='card-footer'>
