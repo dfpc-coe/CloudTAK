@@ -15,9 +15,6 @@ docker-compose up --build
 Once the database and API service have built, the server will start on port 5000.
 In your webbrowser visit `http://localhost:5000` to view the ETL UI
 
-For non-aws environments, the default username & password is `admin`, `admin`.
-This value can be customized via the `TAK_USERNAME` & `TAK_PASSWORD` env vars
-
 Installation outside of the docker environment is also fairly straightforward.
 In the `./api`, perform the following
 
