@@ -441,7 +441,7 @@
                                     />
                                 </td>
                                 <td>
-                                    <TablerInput v-model='feat.properties.video[prop]'/>
+                                    <TablerInput v-model='feat.properties.video[prop]' />
                                 </td>
                             </tr>
                         </tbody>
@@ -451,8 +451,8 @@
 
             <CoTSensor
                 v-if='feat.properties.sensor !== undefined'
-                class='my-2 mx-2'
                 v-model='feat.properties.sensor'
+                class='my-2 mx-2'
             />
 
             <CoTStyle
