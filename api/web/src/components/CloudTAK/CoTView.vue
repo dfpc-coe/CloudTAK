@@ -447,6 +447,12 @@
                 </div>
             </div>
 
+            <CoTSensor
+                v-if='feat.properties.sensor !== undefined'
+                class='my-2 mx-2'
+                v-model='feat.properties.sensor'
+            />
+
             <CoTStyle
                 v-if='feat.properties.archived'
                 :key='feat.id'
@@ -525,6 +531,7 @@ import CoTStyle from './util/CoTStyle.vue';
 import Coordinate from './util/Coordinate.vue';
 import Course from './util/Course.vue';
 import CoTVideo from './util/Video.vue';
+import CoTSensor from './util/Sensor.vue';
 import Phone from './util/Phone.vue';
 import Speed from './util/Speed.vue';
 import Elevation from './util/Elevation.vue';
@@ -722,6 +729,7 @@ export default {
         IconBattery4,
         CoTStyle,
         CoTVideo,
+        CoTSensor,
         Elevation,
         Attachments,
         Speed,
