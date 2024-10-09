@@ -121,7 +121,7 @@
                                             v-if='feat.properties.video === undefined'
                                             role='button'
                                             class='hover-dark px-2 py-2 d-flex align-items-center'
-                                            @click='feat.properties.video = {}'
+                                            @click='feat.properties.video = { url: "" }'
                                         >
                                             <IconMovie
                                                 :stroke='1'
@@ -428,7 +428,7 @@
                             >
                                 <td>
                                     <IconPlayerPlay
-                                        v-if='prop === "url"'
+                                        v-if='prop === "url" && feat.properties.video.url.length'
                                         v-tooltip='"View Video Stream"'
                                         class='cursor-pointer'
                                         size='32'
@@ -440,7 +440,9 @@
                                         v-text='prop'
                                     />
                                 </td>
-                                <td v-text='feat.properties.video[prop]' />
+                                <td>
+                                    <TablerInput v-model='feat.properties.video[prop]'/>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
