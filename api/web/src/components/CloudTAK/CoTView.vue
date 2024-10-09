@@ -94,12 +94,15 @@
 
                             <template #dropdown>
                                 <div class='px-1 py-1'>
-                                    <div v-if='
-                                        feat.properties.attachments !== undefined
-                                        && feat.properties.attachments !== undefined
-                                        && feat.properties.sensor !== undefined
-                                    '
-                                    >No Properties to add</div>
+                                    <div
+                                        v-if='
+                                            feat.properties.attachments !== undefined
+                                                && feat.properties.attachments !== undefined
+                                                && feat.properties.sensor !== undefined
+                                        '
+                                    >
+                                        No Properties to add
+                                    </div>
                                     <template v-else>
                                         <div
                                             v-if='feat.properties.attachments === undefined'
@@ -107,7 +110,12 @@
                                             class='hover-dark px-2 py-2 d-flex align-items-center'
                                             @click='feat.properties.attachments = []'
                                         >
-                                            <IconPaperclip :stroke='1' :size='32'/><div class='mx-2'>Add Attachment</div>
+                                            <IconPaperclip
+                                                :stroke='1'
+                                                :size='32'
+                                            /><div class='mx-2'>
+                                                Add Attachment
+                                            </div>
                                         </div>
                                         <div
                                             v-if='feat.properties.video === undefined'
@@ -115,7 +123,12 @@
                                             class='hover-dark px-2 py-2 d-flex align-items-center'
                                             @click='feat.properties.video = {}'
                                         >
-                                            <IconMovie :stroke='1' :size='32'/><div class='mx-2'>Add Video</div>
+                                            <IconMovie
+                                                :stroke='1'
+                                                :size='32'
+                                            /><div class='mx-2'>
+                                                Add Video
+                                            </div>
                                         </div>
                                         <div
                                             v-if='feat.properties.sensor === undefined'
@@ -123,7 +136,12 @@
                                             class='hover-dark px-2 py-2 d-flex align-items-center'
                                             @click='feat.properties.sensor = {}'
                                         >
-                                            <IconCone :stroke='1' :size='32'/><div class='mx-2'>Add Sensor</div>
+                                            <IconCone
+                                                :stroke='1'
+                                                :size='32'
+                                            /><div class='mx-2'>
+                                                Add Sensor
+                                            </div>
                                         </div>
                                     </template>
                                 </div>
