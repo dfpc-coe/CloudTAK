@@ -5,7 +5,7 @@
     "description": "Facilitate ETL operations to bring non-TAK sources into a TAK Server",
     "scripts": {
         "lint": "eslint build.js cloudformation/",
-        "build": "build.js",
+        "build": "./build.js",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "engines": {
