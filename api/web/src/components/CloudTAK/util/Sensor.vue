@@ -63,8 +63,9 @@
 </template>
 
 <script lang='ts'>
+import type { Static } from '@sinclair/typebox';
 import { defineComponent } from 'vue'
-import type { Feature } from '../../../types.ts';
+import { Types } from '@tak-ps/node-cot';
 import {
     TablerRange,
     TablerInput
@@ -86,9 +87,9 @@ export default defineComponent({
         'update:modelValue'
     ],
     data: function(): {
-        sensor: Required<Feature["properties"]["sensor"]>
+        sensor: Static<typeof Types.SensorAttributes>
     } {
-        const sensor = JSON.parse(JSON.stringify(this.modelValue)) as Required<Feature["properties"]["sensor"]>
+        let sensor = JSON.parse(JSON.stringify(this.modelValue)) as Static<typeof Types.SensorAttributes>
         if (!sensor.fov) sensor.fov = 0;
         if (!sensor.azimuth) sensor.azimuth = 0;
         if (!sensor.range) sensor.range = 0;
