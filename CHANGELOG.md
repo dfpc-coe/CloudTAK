@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v4.8.0 - 2024-10-09
+
+- :rocket: `UI` Hide CoTView properties with no values
+- :rocket: `UI` Allow adding properties such as Video/Sensor/Attachment via a 3 dot button
+- :tada: `UI` Support editing Sensor values in CoTView (Still not viewable on map)
+
 ### v4.7.0 - 2024-10-07
 
 - :rocket: `UI/API` Add initial configuration mode
