@@ -10,6 +10,7 @@ export default [
             "no-useless-escape": "warn",
             "arrow-parens": [ "error", "always" ],
             "n/no-process-exit": "warn",
+            "n/hashbang": "warn",
             "no-var": "error",
             "prefer-const": "error",
             "array-bracket-spacing": [ "error", "never" ],
