@@ -89,9 +89,9 @@ export default defineComponent({
         }
     },
     data: function(): {
-        sensor: Feature["properties"]["sensor"]
+        sensor: Required<Feature["properties"]["sensor"]>
     } {
-        const sensor = JSON.parse(JSON.stringify(this.modelValue))
+        const sensor = JSON.parse(JSON.stringify(this.modelValue)) as Required<Feature["properties"]["sensor"]>
         if (!sensor.fov) sensor.fov = 0;
         if (!sensor.azimuth) sensor.azimuth = 0;
         if (!sensor.range) sensor.range = 0;
