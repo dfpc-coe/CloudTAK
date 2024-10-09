@@ -1,4 +1,3 @@
-import path from 'node:path';
 import fs from 'node:fs/promises';
 import CP from 'child_process';
 
@@ -20,13 +19,13 @@ if (!process.argv[2]) {
     await api();
 
     for (const dir of await fs.readdir(new URL('./tasks/', import.meta.url))) {
-        await task(dir)
+        await task(dir);
     }
 } else {
     if (process.argv[2] === 'api') {
         await api();
     } else {
-        await task(process.argv[2])
+        await task(process.argv[2]);
     }
 }
 
@@ -42,7 +41,7 @@ function login() {
         `, (err) => {
             if (err) return reject(err);
             return resolve();
-        })
+        });
 
         $.stdout.pipe(process.stdout);
         $.stderr.pipe(process.stderr);
@@ -59,7 +58,7 @@ function api() {
         `, (err) => {
             if (err) return reject(err);
             return resolve();
-        })
+        });
 
         $.stdout.pipe(process.stdout);
         $.stderr.pipe(process.stderr);
@@ -77,7 +76,7 @@ async function task(task) {
         `, (err) => {
             if (err) return reject(err);
             return resolve();
-        })
+        });
 
         $.stdout.pipe(process.stdout);
         $.stderr.pipe(process.stderr);
