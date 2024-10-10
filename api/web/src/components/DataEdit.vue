@@ -182,8 +182,8 @@ export default {
                 auto_transform: true,
                 mission_sync: true,
                 mission_groups: [],
-                mission_role: 'MISSION_SUBSCRIBER',
-                mission_diff: false,
+                mission_role: 'MISSION_READONLY_SUBSCRIBER',
+                mission_diff: true,
                 description: '',
             }
         }
