@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v4.10.0 - 2024-10-09
+
+- :rocket: `UI` Enable Mission_Diff mode by default
+- :bug: `API` Ensure connection subscription is created on initial DataSync creation
+
 ### v4.9.0 - 2024-10-09
 
 - :rocket: `DevOps` Add top level build script for pushing ECR Images to given AWS account
