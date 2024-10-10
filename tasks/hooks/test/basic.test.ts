@@ -54,10 +54,6 @@ test('Basic Feature', async (t) => {
     let called = false;
     Sinon.stub(CW.CloudWatchClient.prototype, 'send').callsFake((command: any) => {
         called = true;
-
-        t.deepEquals(command.input.Namespace, 'TAKETL');
-        t.deepEquals(command.input.MetricData.length, 1);
-        t.deepEquals(command.input.MetricData[0].MetricName, 'ConnectionSinkSuccess');
         return Promise.resolve({});
     });
 
@@ -132,7 +128,7 @@ test('Basic Feature', async (t) => {
         t.error(err);
     }
 
-    t.ok(called, 'CloudWatch Metrics Must be called');
+    t.ok(!called, 'CloudWatch Metrics Must NOT be called (Only called for errors)');
     Sinon.restore();
     t.end();
 })
