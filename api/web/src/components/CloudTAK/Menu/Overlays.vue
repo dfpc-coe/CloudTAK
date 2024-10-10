@@ -4,6 +4,8 @@
             <IconPencil
                 v-if='isDraggable === false'
                 v-tooltip='"Edit Order"'
+                role='button'
+                tabindex='0'
                 class='cursor-pointer'
                 :size='32'
                 :stroke='1'
@@ -12,6 +14,8 @@
             <IconPencilCheck
                 v-else-if='isDraggable === true'
                 v-tooltip='"Save Order"'
+                role='button'
+                tabindex='0'
                 class='cursor-pointer'
                 :size='32'
                 :stroke='1'
@@ -22,6 +26,8 @@
                 v-if='!isDraggable'
                 v-tooltip='"Add Overlay"'
                 class='cursor-pointer'
+                role='button'
+                tabindex='0'
                 :size='32'
                 :stroke='1'
                 @click='$router.push("/menu/datas")'
@@ -43,6 +49,8 @@
                                     v-if='isDraggable'
                                     v-tooltip='"Draw to reorder"'
                                     class='drag-handle cursor-move'
+                                    role='button'
+                                    tabindex='0'
                                     :size='20'
                                     :stroke='1'
                                 />
@@ -60,6 +68,8 @@
                                         v-if='!isDraggable && !opened.includes(overlay.id)'
                                         :size='20'
                                         :stroke='1'
+                                        role='button'
+                                        tabindex='0'
                                         class='cursor-pointer'
                                         @click='opened.push(overlay.id)'
                                     />
@@ -67,6 +77,8 @@
                                         v-else-if='!isDraggable'
                                         :size='20'
                                         :stroke='1'
+                                        role='button'
+                                        tabindex='0'
                                         class='cursor-pointer'
                                         @click='opened.splice(opened.indexOf(overlay.id), 1)'
                                     />
