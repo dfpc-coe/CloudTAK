@@ -363,7 +363,7 @@ class EsriProxyServer {
     }
 
     async createLayer(layerDefinition: Static<typeof ESRILayerList> = {
-        layers: [DefaultLayerPoints, DefaultLayerLines, DefaultLayerPolys]
+        layers: [DefaultLayerPoints , DefaultLayerLines, DefaultLayerPolys]
     }): Promise<object> {
         const url = new URL(this.esri.base)
         url.pathname = url.pathname.replace(/\/rest/i, '/rest/admin' + this.esri.postfix + '/addToDefinition');
@@ -381,7 +381,7 @@ class EsriProxyServer {
 
         const json = await res.json()
 
-        if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
+        if (json.error) throw new Err(400, new Error(JSON.stringify(json.error)), 'ESRI Server Error: ' + json.error.message);
 
         return json;
     }
