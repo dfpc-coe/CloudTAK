@@ -56,11 +56,9 @@
 import { std } from '/src/std.ts';
 import {
     TablerInput,
-    TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
     IconRefresh,
-    IconCircleArrowLeft
 } from '@tabler/icons-vue'
 import MenuTemplate from '../util/MenuTemplate.vue';
 import { useConnectionStore } from '/src/stores/connection.ts';
@@ -72,9 +70,7 @@ export default {
     name: 'CloudTAKChat',
     components: {
         TablerInput,
-        TablerLoading,
         IconRefresh,
-        IconCircleArrowLeft,
         MenuTemplate
     },
     data: function() {
