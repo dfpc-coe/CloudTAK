@@ -20,7 +20,7 @@ export interface BatchJob {
  */
 export default class Batch {
     static async submitImport(config: Config, email: string, id: string, asset: string, task: object = {}): Promise<AWSBatch.SubmitJobCommandOutput> {
-        const batch = new AWSBatch.BatchClient({ region: process.env.AWS_DEFAULT_REGION });
+        const batch = new AWSBatch.BatchClient({ region: process.env.AWS_REGION });
 
         const batchres = await batch.send(new AWSBatch.SubmitJobCommand({
             jobName: `import-${id}`,
@@ -40,7 +40,7 @@ export default class Batch {
     }
 
     static async submitData(config: Config, data: InferSelectModel<typeof Data>, asset: string, task: object = {}): Promise<AWSBatch.SubmitJobCommandOutput> {
-        const batch = new AWSBatch.BatchClient({ region: process.env.AWS_DEFAULT_REGION });
+        const batch = new AWSBatch.BatchClient({ region: process.env.AWS_REGION });
 
         const jobName = `data-${data.id}-${asset.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 50)}`;
 
@@ -64,7 +64,7 @@ export default class Batch {
     }
 
     static async job(config: Config, jobid: string): Promise<BatchJob> {
-        const batch = new AWSBatch.BatchClient({ region: process.env.AWS_DEFAULT_REGION });
+        const batch = new AWSBatch.BatchClient({ region: process.env.AWS_REGION });
 
         const res = await batch.send(new AWSBatch.DescribeJobsCommand({
             jobs: [jobid]
@@ -93,7 +93,7 @@ export default class Batch {
     }
 
     static async list(config: Config, prefix: string): Promise<BatchJob[]> {
-        const batch = new AWSBatch.BatchClient({ region: process.env.AWS_DEFAULT_REGION });
+        const batch = new AWSBatch.BatchClient({ region: process.env.AWS_REGION });
 
         const res = await batch.send(new AWSBatch.ListJobsCommand({
             jobQueue: `${config.StackName}-queue`,

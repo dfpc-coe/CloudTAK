@@ -12,7 +12,7 @@ import process from 'node:process';
  */
 export default class Lambda {
     static async schema(config: Config, layerid: number, type: string = 'schema:input'): Promise<object> {
-        const lambda = new AWSLambda.LambdaClient({ region: process.env.AWS_DEFAULT_REGION });
+        const lambda = new AWSLambda.LambdaClient({ region: process.env.AWS_REGION });
         const FunctionName = `${config.StackName}-layer-${layerid}`;
 
         const res = await lambda.send(new AWSLambda.InvokeCommand({
@@ -28,7 +28,7 @@ export default class Lambda {
     }
 
     static async invoke(config: Config, layerid: number): Promise<void> {
-        const lambda = new AWSLambda.LambdaClient({ region: process.env.AWS_DEFAULT_REGION });
+        const lambda = new AWSLambda.LambdaClient({ region: process.env.AWS_REGION });
         const FunctionName = `${config.StackName}-layer-${layerid}`;
 
         await lambda.send(new AWSLambda.InvokeCommand({

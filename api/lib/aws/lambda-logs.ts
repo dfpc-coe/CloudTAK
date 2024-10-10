@@ -10,7 +10,7 @@ import process from 'node:process';
  */
 export default class LogGroup {
     static async delete(config: Config, layer: InferSelectModel<typeof Layer>): Promise<void> {
-        const cwl = new CloudWatchLogs.CloudWatchLogsClient({ region: process.env.AWS_DEFAULT_REGION });
+        const cwl = new CloudWatchLogs.CloudWatchLogsClient({ region: process.env.AWS_REGION });
 
         await cwl.send(new CloudWatchLogs.DeleteLogGroupCommand({
             logGroupName: `/aws/lambda/${config.StackName}-layer-${layer.id}`
@@ -23,7 +23,7 @@ export default class LogGroup {
             timestamp: number;
         }>
     }> {
-        const cwl = new CloudWatchLogs.CloudWatchLogsClient({ region: process.env.AWS_DEFAULT_REGION });
+        const cwl = new CloudWatchLogs.CloudWatchLogsClient({ region: process.env.AWS_REGION });
 
         let streams;
         try {

@@ -7,7 +7,7 @@ import process from 'node:process';
  */
 export default class ECR {
     static async list(): Promise<Array<ImageIdentifier>> {
-        const ecr = new AWSECR.ECRClient({ region: process.env.AWS_DEFAULT_REGION });
+        const ecr = new AWSECR.ECRClient({ region: process.env.AWS_REGION });
 
         try {
             const imageIds: ImageIdentifier[] = [];
@@ -27,7 +27,7 @@ export default class ECR {
     }
 
     static async delete(task: string, version: string): Promise<void> {
-        const ecr = new AWSECR.ECRClient({ region: process.env.AWS_DEFAULT_REGION });
+        const ecr = new AWSECR.ECRClient({ region: process.env.AWS_REGION });
 
         try {
             await ecr.send(new AWSECR.BatchDeleteImageCommand({
