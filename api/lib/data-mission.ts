@@ -65,6 +65,15 @@ export default class DataMission {
                 mission_token: mission.token || undefined
             });
 
+            const conn = config.conns.get(data.connection);
+            if (conn) {
+                await api.Mission.subscribe(data.name, {
+                    uid: conn.config.uid()
+                },{
+                    token: mission.token || undefined
+                });
+            }
+
             // The groups property isn't returned by Create
             // Make this second call to get the groups - TODO Talk to Josh
             mission = await api.Mission.get(data.name, {}, {
