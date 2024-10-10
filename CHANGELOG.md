@@ -12,7 +12,12 @@
 
 ### Pending Release
 
-### v4.10.0 - 2024-10-09
+### v4.11.0 - 2024-10-10
+
+- :rocket: `UI` Add Chat button from CoTView context to create a new chat
+- :rocket: `UI` Fix header of individual chat pane by using MenuTemplate component
+
+### v4.10.0 - 2024-10-10
 
 - :rocket: `UI` Enable Mission_Diff mode by default
 - :bug: `API` Ensure connection subscription is created on initial DataSync creation
