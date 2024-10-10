@@ -8,7 +8,7 @@ import process from 'node:process';
 export default class EC2 {
     static async eni(eni: string): Promise<string | null> {
         try {
-            const ec2 = new AWSEC2.EC2Client({ region: process.env.AWS_DEFAULT_REGION });
+            const ec2 = new AWSEC2.EC2Client({ region: process.env.AWS_REGION });
 
             const res = await ec2.send(new AWSEC2.DescribeNetworkInterfacesCommand({
                 NetworkInterfaceIds: [eni]
