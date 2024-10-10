@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v4.13.0 - 2024-10-10
+
+- :tada: `UI/API` Add support for storing TAK Derived LineStrings & Polygons to an ESRI Sink
+- :rocket: `UI` Add a bunch more `role=button` & `tabindex=0` for accessibility
+- :rocket: Migrate `DevOps` from old `AWS_DEFAULT_REGION` => `AWS_REGION` end var
+
 ### v4.12.0 - 2024-10-10
 
 - :rocket: `UI` Show Log Creation by default if MISSION_WRITE permission is present
