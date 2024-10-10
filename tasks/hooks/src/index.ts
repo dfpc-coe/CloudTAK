@@ -1,6 +1,6 @@
-import Lambda from "aws-lambda";
 import ArcGIS from './adaptors/arcgis.js';
-import CW from '@aws-sdk/client-cloudwatch';
+import * as Lambda from "aws-lambda";
+import * as CW from '@aws-sdk/client-cloudwatch';
 
 type Meta = {
     Timestamp: Date;

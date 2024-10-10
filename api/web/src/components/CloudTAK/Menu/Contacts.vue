@@ -4,6 +4,8 @@
             <IconRefresh
                 v-if='!loading'
                 v-tooltip='"Refresh"'
+                role='button'
+                tabindex='0'
                 :size='32'
                 :stroke='1'
                 class='cursor-pointer'

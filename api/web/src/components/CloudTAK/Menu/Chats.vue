@@ -5,6 +5,8 @@
                 v-tooltip='"New Chat"'
                 :size='32' 
                 :stroke='1' 
+                role='button'
+                tabindex='0'
                 class='cursor-pointer'
                 @click='$router.push("/menu/contacts")'
             />
@@ -13,6 +15,8 @@
                 v-tooltip='"Refresh"'
                 :size='32' 
                 :stroke='1' 
+                role='button'
+                tabindex='0'
                 class='cursor-pointer'
                 @click='fetchList'
             />
@@ -24,9 +28,14 @@
                 :create='false'
             />
             <template v-else>
-                <div class='col-12'>
+                <div
+                    class='col-12'
+                    role='menu'
+                >
                     <div
                         v-for='chat in chats.items'
+                        role='menuitem'
+                        tabindex='0'
                         class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'
                         @click='$router.push(`/menu/chats/${chat.chatroom}`)'
                     >

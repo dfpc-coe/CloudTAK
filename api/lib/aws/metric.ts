@@ -15,7 +15,7 @@ export default class Metric {
 
     constructor(stack: string) {
         this.stack = stack;
-        this.cw = new CloudWatch.CloudWatchClient({ region: process.env.AWS_DEFAULT_REGION });
+        this.cw = new CloudWatch.CloudWatchClient({ region: process.env.AWS_REGION });
         this.paused = false;
     }
 

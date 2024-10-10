@@ -9,7 +9,7 @@ export default class HookQueue {
     sqs: SQS.SQSClient;
 
     constructor() {
-        this.sqs = new SQS.SQSClient({ region: process.env.AWS_DEFAULT_REGION });
+        this.sqs = new SQS.SQSClient({ region: process.env.AWS_REGION });
     }
 
     async submit(

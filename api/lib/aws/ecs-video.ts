@@ -22,7 +22,7 @@ export default class ECSVideo {
      */
     async definitions(): Promise<Array<number>> {
         try {
-            const ecs = new AWSECS.ECSClient({ region: process.env.AWS_DEFAULT_REGION });
+            const ecs = new AWSECS.ECSClient({ region: process.env.AWS_REGION });
             const taskDefinitionArns: string[] = [];
 
             let res;
@@ -51,7 +51,7 @@ export default class ECSVideo {
      */
     async task(task: string): Promise<Task> {
         try {
-            const ecs = new AWSECS.ECSClient({ region: process.env.AWS_DEFAULT_REGION });
+            const ecs = new AWSECS.ECSClient({ region: process.env.AWS_REGION });
 
             const descs = await ecs.send(new AWSECS.DescribeTasksCommand({
                 cluster: `coe-ecs-${this.config.StackName.replace(/^coe-etl-/, '')}`,
@@ -78,7 +78,7 @@ export default class ECSVideo {
         }
 
         try {
-            const ecs = new AWSECS.ECSClient({ region: process.env.AWS_DEFAULT_REGION });
+            const ecs = new AWSECS.ECSClient({ region: process.env.AWS_REGION });
 
             await ecs.send(new AWSECS.StopTaskCommand({
                 cluster: `coe-ecs-${this.config.StackName.replace(/^coe-etl-/, '')}`,
@@ -95,7 +95,7 @@ export default class ECSVideo {
      */
     async tasks(): Promise<Array<Task>> {
         try {
-            const ecs = new AWSECS.ECSClient({ region: process.env.AWS_DEFAULT_REGION });
+            const ecs = new AWSECS.ECSClient({ region: process.env.AWS_REGION });
             const taskArns: string[] = [];
 
             let res;
@@ -128,7 +128,7 @@ export default class ECSVideo {
      */
     async run(): Promise<Task> {
         try {
-            const ecs = new AWSECS.ECSClient({ region: process.env.AWS_DEFAULT_REGION });
+            const ecs = new AWSECS.ECSClient({ region: process.env.AWS_REGION });
 
             const defs = await this.definitions();
 

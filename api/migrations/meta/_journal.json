@@ -463,6 +463,13 @@
       "when": 1727294631631,
       "tag": "0065_bumpy_magus",
       "breakpoints": true
+    },
+    {
+      "idx": 66,
+      "version": "7",
+      "when": 1728402823549,
+      "tag": "0066_dusty_earthquake",
+      "breakpoints": true
     }
   ]
 }

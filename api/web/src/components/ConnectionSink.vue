@@ -65,12 +65,76 @@
                                 </div>
                             </div>
                             <div class='card-body'>
+                                <div class='d-flex justify-content-center pb-4'>
+                                    <div class='btn-list'>
+                                        <div
+                                            class='btn-group'
+                                            role='group'
+                                        >
+                                            <input
+                                                v-model='mode'
+                                                type='radio'
+                                                class='btn-check'
+                                                name='geom-toolbar'
+                                                value='points'
+                                            >
+                                            <label
+                                                class='btn btn-icon px-3'
+                                                @click='mode="points"'
+                                            >
+                                                <IconPoint
+                                                    :size='32'
+                                                    :stroke='1'
+                                                /> Points
+                                            </label>
+                                            <input
+                                                v-model='mode'
+                                                type='radio'
+                                                class='btn-check'
+                                                name='geom-toolbar'
+                                                value='lines'
+                                            >
+                                            <label
+                                                class='btn btn-icon px-3'
+                                                @click='mode="lines"'
+                                            >
+                                                <IconLine
+                                                    :size='32'
+                                                    :stroke='1'
+                                                /> Lines
+                                            </label>
+                                            <input
+                                                v-model='mode'
+                                                type='radio'
+                                                class='btn-check'
+                                                name='geom-toolbar'
+                                                value='polys'
+                                            >
+                                            <label
+                                                class='btn btn-icon px-3'
+                                                @click='mode="polys"'
+                                            >
+                                                <IconPolygon
+                                                    :size='32'
+                                                    :stroke='1'
+                                                /> Polygons
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <TablerNone
+                                    v-if='!sink.body[mode]'
+                                    :create='false'
+                                    label='Layer Configured'
+                                />
                                 <EsriPortal
+                                    v-else
+                                    :key='mode'
                                     :disabled='true'
                                     :pane='false'
                                     :url='sink.body.url'
                                     :sinkid='parseInt($route.params.sinkid)'
-                                    :layer='sink.body.layer'
+                                    :layer='sink.body[mode]'
                                 />
                             </div>
                             <div class='card-footer'>
@@ -109,12 +173,16 @@ import { std } from '/src/std.ts';
 import PageFooter from './PageFooter.vue';
 import timeDiff from '../timediff.ts';
 import {
+    IconPoint,
+    IconLine,
+    IconPolygon,
     IconRefresh,
     IconSettings
 } from '@tabler/icons-vue'
 import EsriPortal from './util/EsriPortal.vue';
 import ConnectionSinkChart from './ConnectionSink/Chart.vue';
 import {
+    TablerNone,
     TablerAlert,
     TablerBreadCrumb,
     TablerLoading
@@ -123,6 +191,9 @@ import {
 export default {
     name: 'ConnectionSink',
     components: {
+        IconPoint,
+        IconLine,
+        IconPolygon,
         IconRefresh,
         IconSettings,
         PageFooter,
@@ -130,10 +201,12 @@ export default {
         EsriPortal,
         ConnectionSinkChart,
         TablerBreadCrumb,
+        TablerNone,
         TablerLoading,
     },
     data: function() {
         return {
+            mode: 'points',
             loading: true,
             sink: {}
         }

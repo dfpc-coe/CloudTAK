@@ -14,7 +14,7 @@ export type LogGroupOutput = {
 export default class LogGroup {
     static async list(stream: string): Promise<LogGroupOutput> {
         try {
-            const cwl = new CloudWatchLogs.CloudWatchLogsClient({ region: process.env.AWS_DEFAULT_REGION });
+            const cwl = new CloudWatchLogs.CloudWatchLogsClient({ region: process.env.AWS_REGION });
 
             const logs = await cwl.send(new CloudWatchLogs.GetLogEventsCommand({
                 logStreamName: stream,

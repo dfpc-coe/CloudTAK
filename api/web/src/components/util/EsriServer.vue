@@ -155,7 +155,7 @@
                                         />
                                         <div class='ms-auto btn-list'>
                                             <IconCheck
-                                                v-if='layer && layer.id === lyr.id'
+                                                v-if='layer && Number(layer.id) === lyr.id'
                                                 :size='32'
                                                 :stroke='1'
                                             />

@@ -13,7 +13,7 @@ export default class Alarm {
     }
 
     async list(): Promise<Map<number, string>> {
-        const cw = new CloudWatch.CloudWatchClient({ region: process.env.AWS_DEFAULT_REGION });
+        const cw = new CloudWatch.CloudWatchClient({ region: process.env.AWS_REGION });
 
         try {
             const map: Map<number, string>  = new Map();
@@ -38,7 +38,7 @@ export default class Alarm {
     }
 
     async get(layer: number): Promise<string> {
-        const cw = new CloudWatch.CloudWatchClient({ region: process.env.AWS_DEFAULT_REGION });
+        const cw = new CloudWatch.CloudWatchClient({ region: process.env.AWS_REGION });
 
         try {
             const res = await cw.send(new CloudWatch.DescribeAlarmsCommand({

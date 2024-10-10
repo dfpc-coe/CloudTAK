@@ -114,11 +114,70 @@
                                                 </div>
                                             </template>
                                             <template v-else>
+                                                <div class='d-flex justify-content-center pb-4'>
+                                                    <div class='btn-list'>
+                                                        <div
+                                                            class='btn-group'
+                                                            role='group'
+                                                        >
+                                                            <input
+                                                                v-model='mode'
+                                                                type='radio'
+                                                                class='btn-check'
+                                                                name='geom-toolbar'
+                                                                value='points'
+                                                            >
+                                                            <label
+                                                                class='btn btn-icon px-3'
+                                                                @click='mode="points"'
+                                                            >
+                                                                <IconPoint
+                                                                    :size='32'
+                                                                    :stroke='1'
+                                                                /> Points
+                                                            </label>
+                                                            <input
+                                                                v-model='mode'
+                                                                type='radio'
+                                                                class='btn-check'
+                                                                name='geom-toolbar'
+                                                                value='lines'
+                                                            >
+                                                            <label
+                                                                class='btn btn-icon px-3'
+                                                                @click='mode="lines"'
+                                                            >
+                                                                <IconLine
+                                                                    :size='32'
+                                                                    :stroke='1'
+                                                                /> Lines
+                                                            </label>
+                                                            <input
+                                                                v-model='mode'
+                                                                type='radio'
+                                                                class='btn-check'
+                                                                name='geom-toolbar'
+                                                                value='polys'
+                                                            >
+                                                            <label
+                                                                class='btn btn-icon px-3'
+                                                                @click='mode="polys"'
+                                                            >
+                                                                <IconPolygon
+                                                                    :size='32'
+                                                                    :stroke='1'
+                                                                /> Polygons
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                                 <EsriPortal
+                                                    :key='mode'
                                                     :url='sink.body.url'
                                                     :username='sink.body.username'
                                                     :password='sink.body.password'
-                                                    @layer='sink.body.layer = $event'
+                                                    :layer='sink.body[mode]'
+                                                    @layer='sink.body[mode] = $event'
                                                     @close='esriView.view = false'
                                                 />
                                             </template>
@@ -127,7 +186,7 @@
                                             <div class='d-flex'>
                                                 <div class='ms-auto'>
                                                     <button
-                                                        v-if='sink.body.layer'
+                                                        v-if='sink.body.points'
                                                         class='cursor-pointer btn btn-primary'
                                                         @click='create'
                                                     >
@@ -173,6 +232,11 @@ import { std } from '/src/std.ts';
 import PageFooter from './PageFooter.vue';
 import EsriPortal from './util/EsriPortal.vue';
 import {
+    IconPoint,
+    IconLine,
+    IconPolygon,
+} from '@tabler/icons-vue';
+import {
     TablerBreadCrumb,
     TablerEnum,
     TablerDelete,
@@ -188,9 +252,13 @@ export default {
         TablerInput,
         PageFooter,
         EsriPortal,
+        IconPoint,
+        IconLine,
+        IconPolygon,
     },
     data: function() {
         return {
+            mode: 'points',
             errors: {
                 name: '',
             },
@@ -207,7 +275,9 @@ export default {
                     url: '',
                     username: '',
                     password: '',
-                    layer: ''
+                    points: '',
+                    lines: '',
+                    polys: ''
                 },
                 logging: false,
                 enabled: true,
@@ -235,6 +305,10 @@ export default {
             for (const e in this.errors) {
                 if (this.errors[e]) return;
             }
+
+            if (!this.sink.body.points) delete this.sink.body.points;
+            if (!this.sink.body.lines) delete this.sink.body.lines;
+            if (!this.sink.body.polys) delete this.sink.body.polys;
 
             if (this.$route.params.sinkid) {
                 await std(`/api/connection/${this.$route.params.connectionid}/sink/${this.$route.params.sinkid}`, {
