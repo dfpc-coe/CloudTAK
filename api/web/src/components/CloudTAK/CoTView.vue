@@ -83,6 +83,15 @@
                             @click='zoomTo'
                         />
 
+                        <IconMessage
+                            v-if='feat.properties.group'
+                            v-tooltip='"Chat"'
+                            :size='32'
+                            :stroke='1'
+                            class='cursor-pointer'
+                            @click='$router.push(`/menu/chats/new?callsign=${feat.properties.callsign}&uid=${feat.id}`)'
+                        />
+
                         <TablerDropdown>
                             <IconDotsVertical
                                 v-tooltip='"Add Properties"'
@@ -541,6 +550,7 @@ import Attachments from './util/Attachments.vue';
 import {
     IconMovie,
     IconCone,
+    IconMessage,
     IconDotsVertical,
     IconAmbulance,
     IconPlayerPlay,
@@ -717,6 +727,7 @@ export default {
         IconCode,
         IconMovie,
         IconCone,
+        IconMessage,
         IconPaperclip,
         IconDotsVertical,
         IconAffiliate,
