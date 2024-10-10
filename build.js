@@ -92,7 +92,7 @@ function sha() {
         'rev-parse', 'HEAD'
     ]);
 
-    if (!git.stdout) return (new Error('Is this a git repo? Could not determine GitSha'));
+    if (!git.stdout) throw Error('Is this a git repo? Could not determine GitSha');
     return String(git.stdout).replace(/\n/g, '');
 
 }
