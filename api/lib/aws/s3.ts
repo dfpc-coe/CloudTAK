@@ -12,7 +12,7 @@ export default class S3 {
         try {
             if (!process.env.ASSET_BUCKET) throw new Err(400, null, 'ASSET_BUCKET not set');
 
-            const s3 = new S3AWS.S3Client({ region: process.env.AWS_DEFAULT_REGION });
+            const s3 = new S3AWS.S3Client({ region: process.env.AWS_REGION });
             const head = await s3.send(new S3AWS.HeadObjectCommand({
                 Bucket: process.env.ASSET_BUCKET,
                 Key: key
@@ -28,7 +28,7 @@ export default class S3 {
         try {
             if (!process.env.ASSET_BUCKET) throw new Err(400, null, 'ASSET_BUCKET not set');
 
-            const s3 = new S3AWS.S3Client({ region: process.env.AWS_DEFAULT_REGION });
+            const s3 = new S3AWS.S3Client({ region: process.env.AWS_REGION });
 
             const upload = new Upload({
                 client: s3,
@@ -49,7 +49,7 @@ export default class S3 {
         try {
             if (!process.env.ASSET_BUCKET) throw new Err(400, null, 'ASSET_BUCKET not set');
 
-            const s3 = new S3AWS.S3Client({ region: process.env.AWS_DEFAULT_REGION });
+            const s3 = new S3AWS.S3Client({ region: process.env.AWS_REGION });
 
             const res = await s3.send(new S3AWS.GetObjectCommand({
                 Bucket: process.env.ASSET_BUCKET,
@@ -67,7 +67,7 @@ export default class S3 {
         try {
             if (!process.env.ASSET_BUCKET) throw new Err(400, null, 'ASSET_BUCKET not set');
 
-            const s3 = new S3AWS.S3Client({ region: process.env.AWS_DEFAULT_REGION });
+            const s3 = new S3AWS.S3Client({ region: process.env.AWS_REGION });
             await s3.send(new S3AWS.HeadObjectCommand({
                 Bucket: process.env.ASSET_BUCKET,
                 Key: key
@@ -88,7 +88,7 @@ export default class S3 {
         try {
             if (!process.env.ASSET_BUCKET) throw new Err(400, null, 'ASSET_BUCKET not set');
 
-            const s3 = new S3AWS.S3Client({ region: process.env.AWS_DEFAULT_REGION });
+            const s3 = new S3AWS.S3Client({ region: process.env.AWS_REGION });
             const list = await s3.send(new S3AWS.ListObjectsV2Command({
                 Bucket: process.env.ASSET_BUCKET,
                 Prefix: fragment
@@ -111,7 +111,7 @@ export default class S3 {
         recurse: boolean
     } = { recurse: false }): Promise<void> {
         if (!process.env.ASSET_BUCKET) return;
-        const s3 = new S3AWS.S3Client({ region: process.env.AWS_DEFAULT_REGION });
+        const s3 = new S3AWS.S3Client({ region: process.env.AWS_REGION });
 
         if (!opts.recurse) {
             try {

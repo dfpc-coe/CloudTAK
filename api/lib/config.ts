@@ -111,8 +111,8 @@ export default class Config {
     }
 
     static async env(args: ConfigArgs): Promise<Config> {
-        if (!process.env.AWS_DEFAULT_REGION) {
-            process.env.AWS_DEFAULT_REGION = 'us-east-1';
+        if (!process.env.AWS_REGION) {
+            process.env.AWS_REGION = 'us-east-1';
         }
 
         let SigningSecret, API_URL, PMTILES_URL, DynamoDB, Bucket, HookURL;
@@ -178,7 +178,7 @@ export default class Config {
         });
 
         if (!config.silent) {
-            console.error('ok - set env AWS_DEFAULT_REGION: us-east-1');
+            console.error('ok - set env AWS_REGION: us-east-1');
             console.log(`ok - PMTiles: ${config.PMTILES_URL}`);
             console.error(`ok - StackName: ${config.StackName}`);
         }
@@ -195,7 +195,7 @@ export default class Config {
      * Return a prefix to an ARN
      */
     async fetchArnPrefix(service = ''): Promise<string> {
-        const sts = new STS.STSClient({ region: process.env.AWS_DEFAULT_REGION });
+        const sts = new STS.STSClient({ region: process.env.AWS_REGION });
         const account = await sts.send(new STS.GetCallerIdentityCommand({}));
         const res = [];
 
@@ -203,13 +203,13 @@ export default class Config {
 
         res.push(...account.Arn.split(':').splice(0, 2));
         res.push(service);
-        res.push(process.env.AWS_DEFAULT_REGION);
+        res.push(process.env.AWS_REGION);
         res.push(...account.Arn.split(':').splice(4, 1))
         return res.join(':');
     }
 
     static async fetchSigningSecret(StackName: string): Promise<string> {
-        const secrets = new SecretsManager.SecretsManagerClient({ region: process.env.AWS_DEFAULT_REGION });
+        const secrets = new SecretsManager.SecretsManagerClient({ region: process.env.AWS_REGION });
 
         const secret = await secrets.send(new SecretsManager.GetSecretValueCommand({
             SecretId: `${StackName}/api/secret`

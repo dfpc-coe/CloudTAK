@@ -12,7 +12,7 @@ export default class CloudFormation {
     }
 
     static async self(config: Config): Promise<AWSCloudFormation.Stack> {
-        const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_DEFAULT_REGION });
+        const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_REGION });
 
         const res = await cf.send(new AWSCloudFormation.DescribeStacksCommand({
             StackName: config.StackName
@@ -24,8 +24,8 @@ export default class CloudFormation {
     }
 
     static async create(config: Config, layerid: number, stack: object): Promise<void> {
-        const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_DEFAULT_REGION });
-        const cwl = new AWSCWL.CloudWatchLogsClient({ region: process.env.AWS_DEFAULT_REGION });
+        const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_REGION });
+        const cwl = new AWSCWL.CloudWatchLogsClient({ region: process.env.AWS_REGION });
 
         // LogGroups are managed in CloudFormation, if they are present already an error will throw
         try {
@@ -47,7 +47,7 @@ export default class CloudFormation {
     }
 
     static async update(config: Config, layerid: number, stack: object): Promise<void> {
-        const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_DEFAULT_REGION });
+        const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_REGION });
 
         const arn = await config.fetchArnPrefix('sns');
         await cf.send(new AWSCloudFormation.UpdateStackCommand({
@@ -61,7 +61,7 @@ export default class CloudFormation {
     static async status(config: Config, layerid: number): Promise<{
         status: string;
     }> {
-        const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_DEFAULT_REGION });
+        const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_REGION });
 
         try {
             const res = await cf.send(new AWSCloudFormation.DescribeStacksCommand({
@@ -83,7 +83,7 @@ export default class CloudFormation {
     }
 
     static async exists(config: Config, layerid: number): Promise<boolean> {
-        const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_DEFAULT_REGION });
+        const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_REGION });
 
         try {
             await cf.send(new AWSCloudFormation.DescribeStacksCommand({
@@ -101,7 +101,7 @@ export default class CloudFormation {
     }
 
     static async cancel(config: Config, layerid: number): Promise<void> {
-        const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_DEFAULT_REGION });
+        const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_REGION });
 
         await cf.send(new AWSCloudFormation.CancelUpdateStackCommand({
             StackName: this.stdname(config, layerid)
@@ -109,7 +109,7 @@ export default class CloudFormation {
     }
 
     static async delete(config: Config, layerid: number): Promise<void> {
-        const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_DEFAULT_REGION });
+        const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_REGION });
 
         await cf.send(new AWSCloudFormation.DeleteStackCommand({
             StackName: this.stdname(config, layerid)

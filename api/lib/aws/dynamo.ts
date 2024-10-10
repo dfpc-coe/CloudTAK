@@ -27,7 +27,7 @@ export default class Dynamo {
 
     async query(layerid: number, query: DynamoQuery): Promise<DynamoItem[]> {
         try {
-            const ddb = new DynamoDB.DynamoDBClient({region: process.env.AWS_DEFAULT_REGION });
+            const ddb = new DynamoDB.DynamoDBClient({region: process.env.AWS_REGION });
             const ddbdoc = DynamoDBDoc.DynamoDBDocumentClient.from(ddb);
 
             let KeyConditionExpression: string = `LayerId = :layerid`;
@@ -54,7 +54,7 @@ export default class Dynamo {
 
     async row(layerid: number, id: string): Promise<DynamoItem> {
         try {
-            const ddb = new DynamoDB.DynamoDBClient({region: process.env.AWS_DEFAULT_REGION });
+            const ddb = new DynamoDB.DynamoDBClient({region: process.env.AWS_REGION });
             const ddbdoc = DynamoDBDoc.DynamoDBDocumentClient.from(ddb);
 
             const row = await ddbdoc.send(new DynamoDBDoc.GetCommand({
@@ -79,7 +79,7 @@ export default class Dynamo {
 
     async put(feature: any): Promise<void> {
         try {
-            const ddb = new DynamoDB.DynamoDBClient({region: process.env.AWS_DEFAULT_REGION });
+            const ddb = new DynamoDB.DynamoDBClient({region: process.env.AWS_REGION });
             const ddbdoc = DynamoDBDoc.DynamoDBDocumentClient.from(ddb);
 
             await ddbdoc.send(new DynamoDBDoc.PutCommand({
@@ -99,7 +99,7 @@ export default class Dynamo {
 
     async puts(features: any[]): Promise<void> {
         try {
-            const ddb = new DynamoDB.DynamoDBClient({region: process.env.AWS_DEFAULT_REGION });
+            const ddb = new DynamoDB.DynamoDBClient({region: process.env.AWS_REGION });
             const ddbdoc = DynamoDBDoc.DynamoDBDocumentClient.from(ddb);
 
             const req: {
