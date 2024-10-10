@@ -275,7 +275,9 @@ export default {
                     url: '',
                     username: '',
                     password: '',
-                    points: ''
+                    points: '',
+                    lines: '',
+                    polys: ''
                 },
                 logging: false,
                 enabled: true,
@@ -303,6 +305,10 @@ export default {
             for (const e in this.errors) {
                 if (this.errors[e]) return;
             }
+
+            if (!this.sink.body.points) delete this.sink.body.points;
+            if (!this.sink.body.lines) delete this.sink.body.lines;
+            if (!this.sink.body.polys) delete this.sink.body.polys;
 
             if (this.$route.params.sinkid) {
                 await std(`/api/connection/${this.$route.params.connectionid}/sink/${this.$route.params.sinkid}`, {
