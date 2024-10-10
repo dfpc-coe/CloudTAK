@@ -1,69 +1,55 @@
 <template>
-    <div>
-        <div class='col-12 border-bottom border-light'>
-            <div class='modal-header px-0 mx-2'>
-                <IconCircleArrowLeft
-                    :size='32'
-                    :stroke='1'
-                    class='cursor-pointer'
-                    @click='$router.back()'
-                />
+    <MenuTemplate
+        :name='name'
+        :loading='loading'
+    >
+        <template #buttons>
+            <IconRefresh
+                :size='32'
+                :stroke='1'
+                class='cursor-pointer'
+                @click='fetchChats'
+            />
+        </template>
+        <template #default>
+            <div
+                v-for='chat in chats.items'
+                class='col-12 d-flex my-2 px-2'
+            >
                 <div
-                    class='modal-title'
-                    v-text='name'
-                />
-                <div class='btn-list'>
-                    <IconRefresh
-                        :size='32'
-                        :stroke='1'
-                        class='cursor-pointer'
-                        @click='fetchChats'
-                    />
+                    v-if='chat.sender_uid !== id'
+                    class='bg-blue px-2 py-2 rounded'
+                >
+                    <span v-text='chat.message' />
+                </div>
+                <div
+                    v-else
+                    class='ms-auto bg-gray-400 px-2 py-2 rounded'
+                >
+                    <span v-text='chat.message' />
                 </div>
             </div>
-        </div>
-        <div class='px-2 py-2'>
-            <TablerLoading v-if='loading' />
-            <template v-else>
-                <div
-                    v-for='chat in chats.items'
-                    class='col-12 d-flex my-2'
-                >
-                    <div
-                        v-if='chat.sender_uid !== id'
-                        class='bg-blue px-2 py-2 rounded'
-                    >
-                        <span v-text='chat.message' />
-                    </div>
-                    <div
-                        v-else
-                        class='ms-auto bg-gray-400 px-2 py-2 rounded'
-                    >
-                        <span v-text='chat.message' />
-                    </div>
-                </div>
 
-                <div class='border-top border-blue position-absolute start-0 bottom-0 end-0'>
-                    <div class='row mx-2 mt-2'>
-                        <div class='col-12'>
-                            <TablerInput
-                                v-model='message'
-                                @keyup.enter='sendMessage'
-                            />
-                        </div>
-                        <div class='col-12 my-2'>
-                            <button
-                                class='w-100 btn btn-primary'
-                                @click='sendMessage'
-                            >
-                                Send
-                            </button>
-                        </div>
+            <div class='border-top border-blue position-absolute start-0 bottom-0 end-0'>
+                <div class='row mx-2 mt-2'>
+                    <div class='col-12'>
+                        <TablerInput
+                            v-model='message'
+                            @keyup.enter='sendMessage'
+                        />
+                    </div>
+                    <div class='col-12 my-2'>
+                        <button
+                            class='w-100 btn btn-primary'
+                            @click='sendMessage'
+                        >
+                            Send
+                        </button>
                     </div>
                 </div>
-            </template>
-        </div>
-    </div>
+            </div>
+        </template>
+    </MenuTemplate>
 </template>
 
 <script>
@@ -76,6 +62,7 @@ import {
     IconRefresh,
     IconCircleArrowLeft
 } from '@tabler/icons-vue'
+import MenuTemplate from '../util/MenuTemplate.vue';
 import { useConnectionStore } from '/src/stores/connection.ts';
 const connectionStore = useConnectionStore();
 import { useProfileStore } from '/src/stores/profile.ts';
@@ -87,7 +74,8 @@ export default {
         TablerInput,
         TablerLoading,
         IconRefresh,
-        IconCircleArrowLeft
+        IconCircleArrowLeft,
+        MenuTemplate
     },
     data: function() {
         return {
