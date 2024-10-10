@@ -115,6 +115,8 @@
                                         v-tooltip='"Zoom To Overlay"'
                                         :size='20'
                                         :stroke='1'
+                                        role='button'
+                                        tabindex='0'
                                         class='cursor-pointer'
                                         @click.stop.prevent='zoomTo(overlay)'
                                     />
@@ -126,6 +128,8 @@
                                         :key='overlay.id'
                                         v-tooltip='"Delete Overlay"'
                                         :size='20'
+                                        role='button'
+                                        tabindex='0'
                                         displaytype='icon'
                                         @delete='removeOverlay(overlay)'
                                     />
@@ -135,12 +139,16 @@
                                         v-tooltip='"Hide Layer"'
                                         :size='20'
                                         :stroke='1'
+                                        role='button'
+                                        tabindex='0'
                                         class='cursor-pointer'
                                         @click.stop.prevent='overlay.update({ visible: !overlay.visible })'
                                     />
                                     <IconEyeOff
                                         v-else
                                         v-tooltip='"Show Layer"'
+                                        role='button'
+                                        tabindex='0'
                                         :size='20'
                                         :stroke='1'
                                         class='cursor-pointer'
