@@ -6,42 +6,7 @@
         :loading='loading.logs'
         :none='!mission.logs.length && createLog === false'
     >
-        <template #buttons>
-            <IconPlus
-                v-if='role.permissions.includes("MISSION_WRITE")'
-                v-tooltip='"Create Log"'
-                :size='32'
-                :stroke='1'
-                class='cursor-pointer'
-                @click='createLog = ""'
-            />
-        </template>
-
-        <template v-if='createLog !== false'>
-            <div class='mx-2'>
-                <TablerInput
-                    v-model='createLog'
-                    label='Create Log'
-                    :rows='4'
-                />
-
-                <div class='d-flex my-2'>
-                    <div class='ms-auto'>
-                        <button
-                            class='btn btn-primary'
-                            @click='submitLog'
-                        >
-                            Save Log
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </template>
-
-        <div
-            v-else
-            class='rows px-2'
-        >
+        <div class='rows px-2'>
             <div
                 v-for='log in mission.logs'
                 :key='log.id'
@@ -72,6 +37,28 @@
                 </div>
             </div>
         </div>
+
+        <template v-if='role.permissions.includes("MISSION_WRITE")'>
+            <div class='mx-2'>
+                <TablerInput
+                    v-model='createLog'
+                    label='Create Log'
+                    :rows='4'
+                />
+
+                <div class='d-flex my-2'>
+                    <div class='ms-auto'>
+                        <button
+                            class='btn btn-primary'
+                            @click='submitLog'
+                        >
+                            Save Log
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
     </MenuTemplate>
 </template>
 
@@ -99,10 +86,10 @@ export default {
         token: String,
         role: Object
     },
-    emits: ['refresh'],
+    emits: [ 'refresh' ],
     data: function() {
         return {
-            createLog: false,
+            createLog: '',
             loading: {
                 logs: false,
             },
@@ -122,7 +109,7 @@ export default {
         },
         submitLog: async function() {
             this.loading.logs = true;
-            await std(`/api/marti/missions/${this.mission.name}/log`, {
+            const log = await std(`/api/marti/missions/${this.mission.name}/log`, {
                 method: 'POST',
                 headers: {
                     MissionAuthorization: this.token
@@ -131,7 +118,8 @@ export default {
                     content: this.createLog
                 }
             });
-            this.createLog = false;
+
+            this.createLog = '';
             this.loading.logs = false;
             this.$emit('refresh');
         }
