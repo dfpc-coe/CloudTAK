@@ -65,7 +65,6 @@
 <script>
 import { std } from '/src/std.ts';
 import {
-    IconPlus,
     IconTrash,
 } from '@tabler/icons-vue';
 import {
@@ -78,7 +77,6 @@ export default {
     components: {
         MenuTemplate,
         TablerInput,
-        IconPlus,
         IconTrash,
     },
     props: {
@@ -109,7 +107,7 @@ export default {
         },
         submitLog: async function() {
             this.loading.logs = true;
-            const log = await std(`/api/marti/missions/${this.mission.name}/log`, {
+            await std(`/api/marti/missions/${this.mission.name}/log`, {
                 method: 'POST',
                 headers: {
                     MissionAuthorization: this.token
