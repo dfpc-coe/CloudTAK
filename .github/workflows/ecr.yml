@@ -38,7 +38,7 @@ jobs:
         run: npm run build -- ${{matrix.task}}
         env:
           AWS_ACCOUNT_ID: ${{secrets.AWS_ACCOUNT_ID}}
-          AWS_REGION: ${{secrets.AWS_REGION
+          AWS_REGION: ${{secrets.AWS_REGION}}
 
       - name: Configure AWS Credentials (STAGING)
         uses: aws-actions/configure-aws-credentials@v4
@@ -51,5 +51,5 @@ jobs:
         run: npm run build -- ${{matrix.task}}
         env:
           AWS_ACCOUNT_ID: ${{secrets.AWS_STAGING_ACCOUNT_ID}}
-          AWS_REGION: ${{secrets.AWS_STAGING_REGION
+          AWS_REGION: ${{secrets.AWS_STAGING_REGION}}
 
