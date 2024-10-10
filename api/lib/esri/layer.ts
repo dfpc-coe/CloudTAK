@@ -160,7 +160,7 @@ export const DefaultLayerLines: Static<typeof ESRILayer> = {
     displayField: 'callsign',
     supportedQueryFormats: 'JSON',
     capabilities: "Create,Delete,Query,Update,Editing,Extract,Sync",
-    geometryType: 'esriGeometryLine',
+    geometryType: 'esriGeometryPolyline',
     allowGeometryUpdates: true,
     hasAttachments: false,
     hasM: false,
