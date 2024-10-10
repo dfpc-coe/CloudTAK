@@ -38,17 +38,17 @@ export default async function arcgis(data: any): Promise<boolean> {
 
     let geometry: Geometry;
     if (data.feat.geometry.type === 'Point') {
-        let geom = geojsonToArcGIS(data.feat.geometry) as Point;
+        const geom = geojsonToArcGIS(data.feat.geometry) as Point;
         if (!geom.x || !geom.y) throw new Error('Incompatible Geometry');
 
         const proj = proj4('EPSG:4326', 'EPSG:3857', [ geom.x, geom.y ]);
 
-        geom.x = proj[0],
-        geom.y = proj[1],
+        geom.x = proj[0];
+        geom.y = proj[1];
 
         geometry = geom;
     } else if (data.feat.geometry.type === 'LineString') {
-        let geom = geojsonToArcGIS(data.feat.geometry) as Polyline;
+        const geom = geojsonToArcGIS(data.feat.geometry) as Polyline;
 
         geom.paths = geom.paths.map((paths) => {
             return paths.map((p) => {
@@ -58,7 +58,7 @@ export default async function arcgis(data: any): Promise<boolean> {
 
         geometry = geom;
     } else if (data.feat.geometry.type === 'Polygon') {
-        let geom = geojsonToArcGIS(data.feat.geometry) as Polygon;
+        const geom = geojsonToArcGIS(data.feat.geometry) as Polygon;
 
         geom.rings = geom.rings.map((ring) => {
             return ring.map((r) => {
