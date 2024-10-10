@@ -43,30 +43,37 @@ export default async function arcgis(data: any): Promise<boolean> {
 
         const proj = proj4('EPSG:4326', 'EPSG:3857', [ geom.x, geom.y ]);
 
-        geom = {
-            x: proj[0],
-            y: proj[1],
-            spatialReference: {
-                wkid: 102100,
-                latestWkid: 3857
-            }
-        }
+        geom.x = proj[0],
+        geom.y = proj[1],
 
         geometry = geom;
     } else if (data.feat.geometry.type === 'LineString') {
         let geom = geojsonToArcGIS(data.feat.geometry) as Polyline;
 
-        console.error(geom);
+        geom.paths = geom.paths.map((paths) => {
+            return paths.map((p) => {
+                return proj4('EPSG:4326', 'EPSG:3857', p);
+            })
+        })
 
         geometry = geom;
     } else if (data.feat.geometry.type === 'Polygon') {
         let geom = geojsonToArcGIS(data.feat.geometry) as Polygon;
 
-        console.error(geom);
+        geom.rings = geom.rings.map((ring) => {
+            return ring.map((r) => {
+                return proj4('EPSG:4326', 'EPSG:3857', r);
+            })
+        })
 
         geometry = geom;
     } else {
         throw new Error(`Incompatible Geometry: ${data.feat.geometry.type}`);
+    }
+
+    geometry.spatialReference = {
+        wkid: 102100,
+        latestWkid: 3857
     }
 
     if (!query.features.length) {
@@ -101,7 +108,7 @@ export default async function arcgis(data: any): Promise<boolean> {
 
         if (process.env.DEBUG) console.error('/addFeatures', data.feat.properties.callsign, 'Res:', JSON.stringify(body));
 
-        if (body.addResults[0].error) throw new Error(JSON.stringify(body.addResults[0].error));
+        if (body.addResults.length && body.addResults[0].error) throw new Error(JSON.stringify(body.addResults[0].error));
 
         return true;
     } else {
@@ -138,7 +145,7 @@ export default async function arcgis(data: any): Promise<boolean> {
 
         if (process.env.DEBUG) console.error('/updateFeatures', data.feat.properties.callsign, 'Res:', JSON.stringify(body));
 
-        if (body.updateResults[0].error) throw new Error(JSON.stringify(body.updateResults[0].error));
+        if (body.updateResults.length && body.updateResults[0].error) throw new Error(JSON.stringify(body.updateResults[0].error));
 
         return true;
     }
