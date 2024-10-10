@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v4.9.0 - 2024-10-09
+
+- :rocket: `DevOps` Add top level build script for pushing ECR Images to given AWS account
+- :rocket: `DevOps` Switch GH Actions to use new build pipeline
+
 ### v4.8.0 - 2024-10-09
 
 - :rocket: `UI` Hide CoTView properties with no values
