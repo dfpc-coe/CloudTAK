@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v4.12.0 - 2024-10-10
+
+- :rocket: `UI` Show Log Creation by default if MISSION_WRITE permission is present
+
 ### v4.11.0 - 2024-10-10
 
 - :rocket: `UI` Add Chat button from CoTView context to create a new chat
