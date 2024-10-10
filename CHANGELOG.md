@@ -12,6 +12,20 @@
 
 ### Pending Release
 
+### v4.12.0 - 2024-10-10
+
+- :rocket: `UI` Show Log Creation by default if MISSION_WRITE permission is present
+
+### v4.11.0 - 2024-10-10
+
+- :rocket: `UI` Add Chat button from CoTView context to create a new chat
+- :rocket: `UI` Fix header of individual chat pane by using MenuTemplate component
+
+### v4.10.0 - 2024-10-10
+
+- :rocket: `UI` Enable Mission_Diff mode by default
+- :bug: `API` Ensure connection subscription is created on initial DataSync creation
+
 ### v4.9.0 - 2024-10-09
 
 - :rocket: `DevOps` Add top level build script for pushing ECR Images to given AWS account
