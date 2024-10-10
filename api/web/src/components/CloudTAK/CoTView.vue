@@ -82,6 +82,71 @@
                             class='cursor-pointer'
                             @click='zoomTo'
                         />
+
+                        <TablerDropdown>
+                            <IconDotsVertical
+                                v-tooltip='"Add Properties"'
+                                :size='32'
+                                :stroke='1'
+                                class='cursor-pointer'
+                                @click='zoomTo'
+                            />
+
+                            <template #dropdown>
+                                <div class='px-1 py-1'>
+                                    <div
+                                        v-if='
+                                            feat.properties.attachments !== undefined
+                                                && feat.properties.attachments !== undefined
+                                                && feat.properties.sensor !== undefined
+                                        '
+                                    >
+                                        No Properties to add
+                                    </div>
+                                    <template v-else>
+                                        <div
+                                            v-if='feat.properties.attachments === undefined'
+                                            role='button'
+                                            class='hover-dark px-2 py-2 d-flex align-items-center'
+                                            @click='feat.properties.attachments = []'
+                                        >
+                                            <IconPaperclip
+                                                :stroke='1'
+                                                :size='32'
+                                            /><div class='mx-2'>
+                                                Add Attachment
+                                            </div>
+                                        </div>
+                                        <div
+                                            v-if='feat.properties.video === undefined'
+                                            role='button'
+                                            class='hover-dark px-2 py-2 d-flex align-items-center'
+                                            @click='feat.properties.video = { url: "" }'
+                                        >
+                                            <IconMovie
+                                                :stroke='1'
+                                                :size='32'
+                                            /><div class='mx-2'>
+                                                Add Video
+                                            </div>
+                                        </div>
+                                        <div
+                                            v-if='feat.properties.sensor === undefined'
+                                            role='button'
+                                            class='hover-dark px-2 py-2 d-flex align-items-center'
+                                            @click='feat.properties.sensor = {}'
+                                        >
+                                            <IconCone
+                                                :stroke='1'
+                                                :size='32'
+                                            /><div class='mx-2'>
+                                                Add Sensor
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                        </TablerDropdown>
                     </div>
                 </div>
             </div>
@@ -241,7 +306,7 @@
             </div>
 
             <Attachments
-                v-if='!feat.properties.contact'
+                v-if='!feat.properties.contact && feat.properties.attachments !== undefined'
                 :attachments='feat.properties.attachments || []'
                 @attachment='addAttachment($event)'
             />
@@ -363,7 +428,7 @@
                             >
                                 <td>
                                     <IconPlayerPlay
-                                        v-if='prop === "url"'
+                                        v-if='prop === "url" && feat.properties.video.url.length'
                                         v-tooltip='"View Video Stream"'
                                         class='cursor-pointer'
                                         size='32'
@@ -375,12 +440,20 @@
                                         v-text='prop'
                                     />
                                 </td>
-                                <td v-text='feat.properties.video[prop]' />
+                                <td>
+                                    <TablerInput v-model='feat.properties.video[prop]' />
+                                </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
+
+            <CoTSensor
+                v-if='feat.properties.sensor !== undefined'
+                v-model='feat.properties.sensor'
+                class='my-2 mx-2'
+            />
 
             <CoTStyle
                 v-if='feat.properties.archived'
@@ -452,18 +525,23 @@ import {
     TablerInput,
     TablerToggle,
     TablerDelete,
-    TablerMarkdown
+    TablerMarkdown,
+    TablerDropdown
 } from '@tak-ps/vue-tabler';
 import Share from './util/Share.vue';
 import CoTStyle from './util/CoTStyle.vue';
 import Coordinate from './util/Coordinate.vue';
 import Course from './util/Course.vue';
 import CoTVideo from './util/Video.vue';
+import CoTSensor from './util/Sensor.vue';
 import Phone from './util/Phone.vue';
 import Speed from './util/Speed.vue';
 import Elevation from './util/Elevation.vue';
 import Attachments from './util/Attachments.vue';
 import {
+    IconMovie,
+    IconCone,
+    IconDotsVertical,
     IconAmbulance,
     IconPlayerPlay,
     IconShare2,
@@ -475,6 +553,7 @@ import {
     IconBattery3,
     IconBattery4,
     IconInfoCircle,
+    IconPaperclip,
 } from '@tabler/icons-vue';
 import Subscriptions from './util/Subscriptions.vue';
 import timediff from '/src/timediff.ts';
@@ -636,6 +715,10 @@ export default {
     },
     components: {
         IconCode,
+        IconMovie,
+        IconCone,
+        IconPaperclip,
+        IconDotsVertical,
         IconAffiliate,
         IconShare2,
         IconInfoCircle,
@@ -648,6 +731,7 @@ export default {
         IconBattery4,
         CoTStyle,
         CoTVideo,
+        CoTSensor,
         Elevation,
         Attachments,
         Speed,
@@ -659,6 +743,7 @@ export default {
         TablerInput,
         TablerMarkdown,
         TablerToggle,
+        TablerDropdown,
         TablerDelete,
         Subscriptions
     }
