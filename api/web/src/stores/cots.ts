@@ -29,7 +29,7 @@ export const useCOTStore = defineStore('cots', {
 
         subscriptions: Map<string, {
             meta: Mission;
-            logs: Set<MissionLog>;
+            logs: Array<MissionLog>;
             cots: Map<string, COT>;
         }>;
         subscriptionPending: Map<string, string>;
@@ -144,7 +144,7 @@ export const useCOTStore = defineStore('cots', {
 
                 sub = {
                     meta: mission,
-                    logs: new Set(logs),
+                    logs: logs,
                     cots: new Map()
                 };
 
