@@ -99,7 +99,13 @@ export default async function router(schema: Schema, config: Config) {
         body: Type.Object({
             content: Type.String()
         }),
-        res: GenericMartiResponse
+        res: Type.Object({
+            version: Type.String(),
+            type: Type.String(),
+            data:  MissionLog,
+            messages: Type.Optional(Type.Array(Type.String())),
+            nodeId: Type.Optional(Type.String())
+        })
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
