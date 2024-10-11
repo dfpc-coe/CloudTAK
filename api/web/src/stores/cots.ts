@@ -143,9 +143,7 @@ export const useCOTStore = defineStore('cots', {
                 delete mission.logs;
 
                 sub = {
-                    meta: await std('/api/marti/missions/' + encodeURIComponent(guid), {
-                        headers
-                    }) as Mission,
+                    meta: mission,
                     logs: new Set(logs),
                     cots: new Map()
                 };

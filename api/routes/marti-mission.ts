@@ -32,7 +32,7 @@ export default async function router(schema: Schema, config: Config) {
                 description: 'If true, include changes array in the resulting Mission'
             }),
             logs: Type.Boolean({
-                default: false
+                default: false,
                 description: 'If true, include logs array in the resulting Mission'
             }),
             secago: Type.Optional(Type.Integer()),
