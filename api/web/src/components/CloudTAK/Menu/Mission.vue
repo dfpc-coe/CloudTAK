@@ -263,8 +263,7 @@ export default {
             try {
                 this.loading.mission = true;
                 const url = stdurl(`/api/marti/missions/${this.$route.params.mission}`);
-                url.searchParams.append('changes', 'false');
-                url.searchParams.append('logs', 'true');
+
                 this.mission = await std(url, {
                     headers: {
                         MissionAuthorization: this.token
