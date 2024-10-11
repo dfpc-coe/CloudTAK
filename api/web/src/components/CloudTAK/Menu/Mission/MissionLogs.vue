@@ -106,7 +106,7 @@ export default {
                 },
             });
 
-            this.logs = list.data;
+            this.logs = list.items;
 
             this.loading.logs = false;
         },
