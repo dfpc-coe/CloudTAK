@@ -84,8 +84,6 @@ const props = defineProps({
     }
 })
 
-interface MissionLogInterface extends MissionLog {};
-
 const createLog = ref('');
 const logs = ref<MissionLog[]>([]);
 const loading = ref({
