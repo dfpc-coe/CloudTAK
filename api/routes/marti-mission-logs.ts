@@ -11,16 +11,13 @@ import TAKAPI, {
 } from '../lib/tak-api.js';
 
 export default async function router(schema: Schema, config: Config) {
-    await schema.post('/marti/missions/:name/log', {
+    await schema.get('/marti/missions/:name/log', {
         name: 'List Logs',
         group: 'MartiMissionLog',
         params: Type.Object({
             name: Type.String(),
         }),
         description: 'Helper API to add a log to a mission',
-        body: Type.Object({
-            content: Type.String()
-        }),
         res: Type.Object({
             total: Type.Integer(),
             items: Type.Array(MissionLog)
@@ -30,7 +27,6 @@ export default async function router(schema: Schema, config: Config) {
             const user = await Auth.as_user(config, req);
 
             const auth = (await config.models.Profile.from(user.email)).auth;
-            const creatorUid = user.email;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
