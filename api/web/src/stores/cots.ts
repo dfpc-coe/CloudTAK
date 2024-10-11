@@ -124,12 +124,6 @@ export const useCOTStore = defineStore('cots', {
             const headers: Record<string, string> = {};
             if (token) headers.MissionAuthorization = token;
 
-            const fc = await std('/api/marti/missions/' + encodeURIComponent(guid) + '/cot', {
-                headers
-            }) as FeatureCollection;
-
-            for (const feat of fc.features) this.add(feat as Feature, guid);
-
             let sub = this.subscriptions.get(guid)
 
             if (!sub) {
@@ -150,6 +144,12 @@ export const useCOTStore = defineStore('cots', {
 
                 this.subscriptions.set(guid, sub)
             }
+
+            const fc = await std('/api/marti/missions/' + encodeURIComponent(guid) + '/cot', {
+                headers
+            }) as FeatureCollection;
+
+            for (const feat of fc.features) this.add(feat as Feature, guid);
 
             return this.collection(sub.cots)
         },
