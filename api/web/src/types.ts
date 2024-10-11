@@ -20,7 +20,7 @@ export type VideoLease = paths["/video/lease/{:lease}"]["get"]["responses"]["200
 export type Group = paths["/marti/group"]["get"]["responses"]["200"]["content"]["application/json"]["data"][0]
 
 export type Mission = paths["/marti/missions/{:name}"]["get"]["responses"]["200"]["content"]["application/json"];
-export type MissionLog = Required<paths["/marti/missions/{:name}"]["get"]["responses"]["200"]["content"]["application/json"]["logs"]>;
+export type MissionLog = Required<paths["/marti/missions/{:name}"]["get"]["responses"]["200"]["content"]["application/json"]["logs"][0]>;
 
 export type Server_Update = paths["/server"]["patch"]["requestBody"]["content"]["application/json"]
 export type Server = paths["/server"]["get"]["responses"]["200"]["content"]["application/json"]
