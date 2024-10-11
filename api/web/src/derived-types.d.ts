@@ -6303,7 +6303,40 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Helper API to add a log to a mission */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: string;
+                                content: string;
+                                creatorUid: string;
+                                missionNames: string[];
+                                servertime: string;
+                                dtg?: string;
+                                created: string;
+                                contentHashes: unknown[];
+                                keywords: unknown[];
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
         put?: never;
         /** Helper API to add a log to a mission */
         post: {
@@ -6382,7 +6415,17 @@ export interface paths {
                         "application/json": {
                             version: string;
                             type: string;
-                            data: unknown;
+                            data: {
+                                id: string;
+                                content: string;
+                                creatorUid: string;
+                                missionNames: string[];
+                                servertime: string;
+                                dtg?: string;
+                                created: string;
+                                contentHashes: unknown[];
+                                keywords: unknown[];
+                            };
                             messages?: string[];
                             nodeId?: string;
                         };
