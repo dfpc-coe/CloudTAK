@@ -62,6 +62,14 @@ export default class {
         return;
     }
 
+    async get(
+        id: string,
+    ): Promise<TAKItem<Static<typeof MissionLog>>> {
+        const url = new URL(`/Marti/api/missions/logs/entries/${encodeURIComponent(id)}`, this.api.url);
+
+        return await this.api.fetch(url);
+    }
+
     /**
      * Create a log entry on a Mission Sync
      *
