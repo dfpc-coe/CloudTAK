@@ -58,10 +58,15 @@ export default class {
             method: 'DELETE',
             headers: this.#headers(opts),
         });
-    
+
         return;
     }
 
+    /**
+     * Get a log entry on a Mission Sync
+     *
+     * {@link https://docs.tak.gov/api/takserver/redoc#tag/mission-api/operation/getOneLogEntry TAK Server Docs}.
+     */
     async get(
         id: string,
     ): Promise<TAKItem<Static<typeof MissionLog>>> {
