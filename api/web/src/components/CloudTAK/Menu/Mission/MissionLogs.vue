@@ -97,7 +97,7 @@ export default {
         await this.fetchLogs()
     },
     methods: {
-        fetchLogs: async function(log) {
+        fetchLogs: async function() {
             this.loading.logs = true;
             const list = await std(`/api/marti/missions/${this.mission.name}/log`, {
                 method: 'GET',
