@@ -6,7 +6,7 @@ import COT from './cots/cot.ts'
 import { defineStore } from 'pinia'
 import type { GeoJSONSourceDiff } from 'maplibre-gl';
 import { std, stdurl } from '../std.ts';
-import type { Feature, Mission, APIList } from '../types.ts';
+import type { Feature, Mission, MissionLog, APIList } from '../types.ts';
 import type { FeatureCollection, Polygon } from 'geojson';
 import { booleanWithin } from '@turf/boolean-within';
 import { useProfileStore } from './profile.ts';
@@ -29,6 +29,7 @@ export const useCOTStore = defineStore('cots', {
 
         subscriptions: Map<string, {
             meta: Mission;
+            logs: Set<MissionLog>;
             cots: Map<string, COT>;
         }>;
         subscriptionPending: Map<string, string>;
@@ -132,10 +133,20 @@ export const useCOTStore = defineStore('cots', {
             let sub = this.subscriptions.get(guid)
 
             if (!sub) {
+                const url = stdurl('/api/marti/missions/' + encodeURIComponent(guid));
+                url.searchParams.append('logs', 'true');
+                const mission = await std('/api/marti/missions/' + encodeURIComponent(guid), {
+                    headers
+                }) as Mission;
+
+                const logs = mission.logs || [] as Array<MissionLog>;
+                delete mission.logs;
+
                 sub = {
                     meta: await std('/api/marti/missions/' + encodeURIComponent(guid), {
                         headers
                     }) as Mission,
+                    logs: new Set(logs),
                     cots: new Map()
                 };
 
