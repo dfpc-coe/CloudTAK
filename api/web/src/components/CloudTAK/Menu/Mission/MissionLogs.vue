@@ -4,11 +4,11 @@
         :back='false'
         :border='false'
         :loading='loading.logs'
-        :none='!mission.logs.length && createLog === false'
+        :none='!logs.length && createLog === false'
     >
         <div class='rows px-2'>
             <div
-                v-for='log in mission.logs'
+                v-for='log in logs'
                 :key='log.id'
                 class='col-12'
             >
@@ -87,12 +87,29 @@ export default {
     data: function() {
         return {
             createLog: '',
+            logs: [],
             loading: {
                 logs: false,
             },
         }
     },
+    mounted: async function() {
+        await this.fetchLogs()
+    },
     methods: {
+        fetchLogs: async function(log) {
+            this.loading.logs = true;
+            const list = await std(`/api/marti/missions/${this.mission.name}/log`, {
+                method: 'GET',
+                headers: {
+                    MissionAuthorization: this.token
+                },
+            });
+
+            this.logs = list.data;
+
+            this.loading.logs = false;
+        },
         deleteLog: async function(log) {
             this.loading.logs = true;
             await std(`/api/marti/missions/${this.mission.name}/log/${log.id}`, {
