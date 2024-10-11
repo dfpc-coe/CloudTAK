@@ -1,7 +1,8 @@
 <h1 align=center>CloudTAK</h1>
 
 <p align=center>Full Featured in-browser TAK Client powered by AWS</p>
-<p align=center>& Facilitate ETL operations to bring non-TAK sources into a TAK Server</p>
+<p align=center>&</p>
+<p align=center>Facilitate ETL operations to bring non-TAK sources into a TAK Server</p>
 
 <img src='./docs/Screenshot.png' alt='Screenshot of CloudTAK'/>
 
