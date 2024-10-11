@@ -85,7 +85,7 @@ const props = defineProps({
 })
 
 const createLog = ref('');
-const logs = ref<any[]>([]);
+const logs = ref<MissionLog[]>([]);
 const loading = ref({
     logs: false
 });
