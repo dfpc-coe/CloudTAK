@@ -2,7 +2,7 @@
 * CotStore - Store & perform updates on all underlying CoT Features
 */
 
-import COT from './cots/cot.ts'
+import COT from './base/cot.ts'
 import { defineStore } from 'pinia'
 import type { GeoJSONSourceDiff } from 'maplibre-gl';
 import { std, stdurl } from '../std.ts';
@@ -129,7 +129,7 @@ export const useCOTStore = defineStore('cots', {
             if (!sub) {
                 const url = stdurl('/api/marti/missions/' + encodeURIComponent(guid));
                 url.searchParams.append('logs', 'true');
-                const mission = await std('/api/marti/missions/' + encodeURIComponent(guid), {
+                const mission = await std(url, {
                     headers
                 }) as Mission;
 

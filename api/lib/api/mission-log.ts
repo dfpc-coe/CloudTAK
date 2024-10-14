@@ -2,6 +2,7 @@ import TAKAPI from '../tak-api.js';
 import { Type, Static } from '@sinclair/typebox';
 import type { TAKItem } from './types.js';
 import type { MissionOptions } from './mission.js';
+import { GUIDMatch } from './mission.js';
 
 export const MissionLog = Type.Object({
     id: Type.String(),
@@ -41,6 +42,10 @@ export default class {
         } else {
             return {};
         }
+    }
+
+    #isGUID(id: string): boolean {
+        return GUIDMatch.test(id)
     }
 
     /**
@@ -87,6 +92,10 @@ export default class {
     ): Promise<TAKItem<Static<typeof MissionLog>>> {
         const url = new URL(`/Marti/api/missions/logs/entries`, this.api.url);
 
+        if (this.#isGUID(mission)) {
+            mission = (await this.api.Mission.get(mission, {}, opts)).name;
+        }
+
         return await this.api.fetch(url, {
             method: 'POST',
             headers: this.#headers(opts),
@@ -109,6 +118,10 @@ export default class {
         opts?: Static<typeof MissionOptions>
     ): Promise<TAKItem<Static<typeof MissionLog>>> {
         const url = new URL(`/Marti/api/missions/logs/entries`, this.api.url);
+
+        if (this.#isGUID(mission)) {
+            mission = (await this.api.Mission.get(mission, {}, opts)).name;
+        }
 
         return await this.api.fetch(url, {
             method: 'PUT',
