@@ -43,10 +43,10 @@
 <script lang='ts'>
 import { defineComponent } from 'vue'
 import { std } from '../../../../src/std.ts';
+import type { VideoLease } from '../../../types.ts';
 import type Player from 'video.js/dist/types/player.d.ts';
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
-import type { VideoLease } from '../../../types.ts';
 import {
     TablerNone,
     TablerAlert,

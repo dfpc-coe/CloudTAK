@@ -21,15 +21,12 @@ test('GET: api/server - Admin', async (t) => {
         delete res.body.updated;
 
         t.deepEquals(res.body, {
-            status: 'configured',
             id: 1,
+            status: 'unconfigured',
             name: 'Default Server',
-            url: 'ssl://ops.example.com:8089',
-            auth: false,
-            api: 'https://ops.example.com:8443',
-            provider_url: '',
-            provider_secret: '',
-            provider_client: ''
+            url: '',
+            api: '',
+            auth: false
         });
     } catch (err) {
         t.error(err, 'no error');
@@ -51,12 +48,12 @@ test('GET: api/server - User', async (t) => {
         delete res.body.updated;
 
         t.deepEquals(res.body, {
-            status: 'configured',
             id: 1,
+            status: 'unconfigured',
             name: 'Default Server',
-            url: 'ssl://ops.example.com:8089',
-            auth: false,
-            api: 'https://ops.example.com:8443',
+            url: '',
+            api: '',
+            auth: false
         });
     } catch (err) {
         t.error(err, 'no error');

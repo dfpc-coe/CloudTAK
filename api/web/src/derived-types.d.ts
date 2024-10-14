@@ -3006,7 +3006,9 @@ export interface paths {
                         logging: boolean;
                         enabled: boolean;
                         body: {
-                            layer: string;
+                            points?: string;
+                            lines?: string;
+                            polys?: string;
                             url: string;
                             username?: string;
                             password?: string;
@@ -6301,7 +6303,40 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Helper API to add a log to a mission */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: string;
+                                content: string;
+                                creatorUid: string;
+                                missionNames: string[];
+                                servertime: string;
+                                dtg?: string;
+                                created: string;
+                                contentHashes: unknown[];
+                                keywords: unknown[];
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
         put?: never;
         /** Helper API to add a log to a mission */
         post: {
@@ -6340,6 +6375,64 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/marti/missions/{:name}/log/{:logid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Helper API to update a log on a mission */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        content: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            version: string;
+                            type: string;
+                            data: {
+                                id: string;
+                                content: string;
+                                creatorUid: string;
+                                missionNames: string[];
+                                servertime: string;
+                                dtg?: string;
+                                created: string;
+                                contentHashes: unknown[];
+                                keywords: unknown[];
+                            };
+                            messages?: string[];
+                            nodeId?: string;
+                        };
+                    };
+                };
+            };
+        };
         trace?: never;
     };
     "/marti/missions/{:name}/log/{:log}": {
@@ -6391,13 +6484,13 @@ export interface paths {
         /** Helper API to get a single mission */
         get: {
             parameters: {
-                query?: {
+                query: {
                     /** @description No Description */
                     password?: string;
-                    /** @description No Description */
-                    changes?: boolean;
-                    /** @description No Description */
-                    logs?: boolean;
+                    /** @description If true, include changes array in the resulting Mission */
+                    changes: boolean;
+                    /** @description If true, include logs array in the resulting Mission */
+                    logs: boolean;
                     /** @description No Description */
                     secago?: number;
                     /** @description No Description */

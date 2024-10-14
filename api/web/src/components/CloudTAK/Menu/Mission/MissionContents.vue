@@ -145,6 +145,7 @@ export default {
     ],
     data: function() {
         return {
+            err: null,
             subscribed: undefined,
             mode: 'info',
             password: '',

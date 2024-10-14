@@ -6,7 +6,7 @@ import COT from './cots/cot.ts'
 import { defineStore } from 'pinia'
 import type { GeoJSONSourceDiff } from 'maplibre-gl';
 import { std, stdurl } from '../std.ts';
-import type { Feature, Mission, APIList } from '../types.ts';
+import type { Feature, Mission, MissionLog, APIList } from '../types.ts';
 import type { FeatureCollection, Polygon } from 'geojson';
 import { booleanWithin } from '@turf/boolean-within';
 import { useProfileStore } from './profile.ts';
@@ -29,6 +29,7 @@ export const useCOTStore = defineStore('cots', {
 
         subscriptions: Map<string, {
             meta: Mission;
+            logs: Array<MissionLog>;
             cots: Map<string, COT>;
         }>;
         subscriptionPending: Map<string, string>;
@@ -123,24 +124,32 @@ export const useCOTStore = defineStore('cots', {
             const headers: Record<string, string> = {};
             if (token) headers.MissionAuthorization = token;
 
-            const fc = await std('/api/marti/missions/' + encodeURIComponent(guid) + '/cot', {
-                headers
-            }) as FeatureCollection;
-
-            for (const feat of fc.features) this.add(feat as Feature, guid);
-
             let sub = this.subscriptions.get(guid)
 
             if (!sub) {
+                const url = stdurl('/api/marti/missions/' + encodeURIComponent(guid));
+                url.searchParams.append('logs', 'true');
+                const mission = await std('/api/marti/missions/' + encodeURIComponent(guid), {
+                    headers
+                }) as Mission;
+
+                const logs = mission.logs || [] as Array<MissionLog>;
+                delete mission.logs;
+
                 sub = {
-                    meta: await std('/api/marti/missions/' + encodeURIComponent(guid), {
-                        headers
-                    }) as Mission,
+                    meta: mission,
+                    logs: logs,
                     cots: new Map()
                 };
 
                 this.subscriptions.set(guid, sub)
             }
+
+            const fc = await std('/api/marti/missions/' + encodeURIComponent(guid) + '/cot', {
+                headers
+            }) as FeatureCollection;
+
+            for (const feat of fc.features) this.add(feat as Feature, guid);
 
             return this.collection(sub.cots)
         },

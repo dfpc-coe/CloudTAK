@@ -27,8 +27,14 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Helper API to get a single mission',
         query: Type.Object({
             password: Type.Optional(Type.String()),
-            changes: Type.Optional(Type.Boolean()),
-            logs: Type.Optional(Type.Boolean()),
+            changes: Type.Boolean({
+                default: false,
+                description: 'If true, include changes array in the resulting Mission'
+            }),
+            logs: Type.Boolean({
+                default: false,
+                description: 'If true, include logs array in the resulting Mission'
+            }),
             secago: Type.Optional(Type.Integer()),
             start: Type.Optional(Type.String()),
             end: Type.Optional(Type.String())
