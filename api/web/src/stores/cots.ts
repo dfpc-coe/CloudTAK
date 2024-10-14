@@ -6,6 +6,7 @@ import COT from './base/cot.ts'
 import { defineStore } from 'pinia'
 import type { GeoJSONSourceDiff } from 'maplibre-gl';
 import { std, stdurl } from '../std.ts';
+import Subscription from './base/mission.ts';
 import type { Feature, Mission, MissionLog, APIList } from '../types.ts';
 import type { FeatureCollection, Polygon } from 'geojson';
 import { booleanWithin } from '@turf/boolean-within';
@@ -27,11 +28,7 @@ export const useCOTStore = defineStore('cots', {
         pending: Map<string, COT>;
         pendingDelete: Set<string>;
 
-        subscriptions: Map<string, {
-            meta: Mission;
-            logs: Array<MissionLog>;
-            cots: Map<string, COT>;
-        }>;
+        subscriptions: Map<string, Subscription>;
         subscriptionPending: Map<string, string>;
     } => {
         return {
@@ -121,32 +118,15 @@ export const useCOTStore = defineStore('cots', {
          * Load Latest CoTs from Mission Sync
          */
         loadMission: async function(guid: string, token?: string): Promise<FeatureCollection> {
-            const headers: Record<string, string> = {};
-            if (token) headers.MissionAuthorization = token;
-
             let sub = this.subscriptions.get(guid)
 
             if (!sub) {
-                const url = stdurl('/api/marti/missions/' + encodeURIComponent(guid));
-                url.searchParams.append('logs', 'true');
-                const mission = await std(url, {
-                    headers
-                }) as Mission;
-
-                const logs = mission.logs || [] as Array<MissionLog>;
-                delete mission.logs;
-
-                sub = {
-                    meta: mission,
-                    logs: logs,
-                    cots: new Map()
-                };
-
+                sub = await Subscription.load(guid);
                 this.subscriptions.set(guid, sub)
             }
 
             const fc = await std('/api/marti/missions/' + encodeURIComponent(guid) + '/cot', {
-                headers
+                headers: Subscription.headers(token)
             }) as FeatureCollection;
 
             for (const feat of fc.features) this.add(feat as Feature, guid);
