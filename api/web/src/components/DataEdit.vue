@@ -36,6 +36,7 @@
                                             v-model='data.name'
                                             label='Data Name'
                                             description='The human readable name of the Data Layer'
+                                            :disabled='$route.params.dataid'
                                             :error='errors.name'
                                         />
                                     </div>
