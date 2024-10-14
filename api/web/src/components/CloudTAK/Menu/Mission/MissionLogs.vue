@@ -4,11 +4,10 @@
         :back='false'
         :border='false'
         :loading='loading.logs'
-        :none='!mission.logs.length && createLog === false'
     >
         <div class='rows px-2'>
             <div
-                v-for='log in mission.logs'
+                v-for='(log, logidx) in logs'
                 :key='log.id'
                 class='col-12'
             >
@@ -16,9 +15,9 @@
                     <IconTrash
                         v-if='role.permissions.includes("MISSION_WRITE")'
                         :size='32'
-                        :stroke='1'
+                        stroke='1'
                         class='position-absolute cursor-pointer end-0 mx-2 my-2'
-                        @click='deleteLog(log)'
+                        @click='deleteLog(logidx)'
                     />
                     <pre
                         class='rounded mb-1'
@@ -58,12 +57,13 @@
                 </div>
             </div>
         </template>
-
     </MenuTemplate>
 </template>
 
-<script>
-import { std } from '/src/std.ts';
+<script setup lang='ts'>
+import { ref, defineProps, onMounted } from 'vue'
+import { std } from '../../../../../src/std.ts';
+import type { MissionLog } from '../../../../types.ts';
 import {
     IconTrash,
 } from '@tabler/icons-vue';
@@ -72,55 +72,74 @@ import {
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../../util/MenuTemplate.vue';
 
-export default {
-    name: 'MissionLogs',
-    components: {
-        MenuTemplate,
-        TablerInput,
-        IconTrash,
+const props = defineProps({
+    mission: {
+        type: Object,
+        required: true
     },
-    props: {
-        mission: Object,
-        token: String,
-        role: Object
-    },
-    emits: [ 'refresh' ],
-    data: function() {
-        return {
-            createLog: '',
-            loading: {
-                logs: false,
-            },
-        }
-    },
-    methods: {
-        deleteLog: async function(log) {
-            this.loading.logs = true;
-            await std(`/api/marti/missions/${this.mission.name}/log/${log.id}`, {
-                method: 'DELETE',
-                headers: {
-                    MissionAuthorization: this.token
-                },
-            });
-            this.loading.logs = false;
-            this.$emit('refresh');
-        },
-        submitLog: async function() {
-            this.loading.logs = true;
-            await std(`/api/marti/missions/${this.mission.name}/log`, {
-                method: 'POST',
-                headers: {
-                    MissionAuthorization: this.token
-                },
-                body: {
-                    content: this.createLog
-                }
-            });
-
-            this.createLog = '';
-            this.loading.logs = false;
-            this.$emit('refresh');
-        }
+    token: String,
+    role: {
+        type: Object,
+        required: true
     }
+})
+
+const createLog = ref('');
+const logs = ref<MissionLog[]>([]);
+const loading = ref({
+    logs: false
+});
+
+onMounted(async () => {
+    await fetchLogs()
+});
+
+
+function headers(): Record<string, string> {
+    if (props.token) {
+        return {
+            MissionAuthorization: props.token
+        }
+    } else {
+        return {};
+    }
+}
+
+async function fetchLogs() {
+    loading.value.logs = true;
+    const list = await std(`/api/marti/missions/${props.mission.name}/log`, {
+        method: 'GET',
+        headers: headers()
+    }) as { items: Array<MissionLog> };
+
+    logs.value = list.items;
+
+    loading.value.logs = false;
+}
+
+async function deleteLog(logidx: number): Promise<void> {
+    loading.value.logs = true;
+    await std(`/api/marti/missions/${props.mission.name}/log/${logs.value[logidx].id}`, {
+        method: 'DELETE',
+        headers: headers()
+    });
+
+    await fetchLogs();
+}
+
+async function submitLog() {
+    loading.value.logs = true;
+
+    await std(`/api/marti/missions/${props.mission.name}/log`, {
+        method: 'POST',
+        headers: headers(),
+        body: {
+            content: createLog.value
+        }
+    });
+
+    createLog.value = '';
+
+    await fetchLogs();
 }
 </script>
