@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v4.15.1 - 2024-10-14
+
+- :bug: `UI/API` Disallow name changes to Data Syncs
+
 ### v4.15.0 - 2024-10-14
 
 - :bug: `UI` Fix bug where a refresh wouldn't add Data Sync layer back on map state
