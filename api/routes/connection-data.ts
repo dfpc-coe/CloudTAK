@@ -167,7 +167,6 @@ export default async function router(schema: Schema, config: Config) {
             dataid: Type.Integer({ minimum: 1 }),
         }),
         body: Type.Object({
-            name: Type.String(),
             description: Type.String(),
             auto_transform: Type.Optional(Type.Boolean()),
             mission_diff: Type.Optional(Type.Boolean()),
