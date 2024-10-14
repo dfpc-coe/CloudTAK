@@ -66,11 +66,9 @@ export const useConnectionStore = defineStore('connection', {
                 } else if (body.type === 'task') {
                     const task = body.data as Feature;
 
-                    if (task.properties.type === 't-x-m-c') {
+                    if (task.properties.type.startsWith('t-x-m-c')) {
                         // Mission Change Tasking
-                        cotStore.subChange(task);
-                    } else if (task.properties.type === 't-x-m-c-l') {
-                        console.error('NEW LOG', task.properties);
+                        await cotStore.subChange(task);
                     } else if (task.properties.type === 't-x-d-d') {
                         // CoT Delete Tasking
                         console.error('DELETE', task.properties);

@@ -50,7 +50,7 @@ import {
 import {
     IconUser,
 } from '@tabler/icons-vue'
-import Overlay from '/src/stores/overlays/base.ts';
+import Overlay from '/src/stores/base/overlay.ts';
 import { useMapStore } from '/src/stores/map.ts';
 const mapStore = useMapStore();
 
