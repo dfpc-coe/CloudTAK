@@ -12,11 +12,14 @@
 
 ### Pending Release
 
-### v4.14.0 - 2024-10-14
+### v4.15.0 - 2024-10-14
 
 - :bug: `UI` Fix bug where a refresh wouldn't add Data Sync layer back on map state
 - :rocket: `UI` Strongly Type the MissionLog Menu
 - :rocket: `UI` Avoid a full mission refresh when a log is added or deleted
+
+### v4.14.0 - 2024-10-14
+
 - :rocket: `API` Add List Logs endpoint
 
 ### v4.13.0 - 2024-10-10
