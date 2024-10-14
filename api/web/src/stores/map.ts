@@ -8,7 +8,7 @@
 */
 
 import { defineStore } from 'pinia'
-import Overlay from './overlays/base.ts';
+import Overlay from './base/overlay.ts';
 import { std, stdurl } from '../std.js';
 import mapgl from 'maplibre-gl'
 import * as terraDraw from 'terra-draw';

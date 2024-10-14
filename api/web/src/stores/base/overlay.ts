@@ -5,7 +5,7 @@ import type {
 import type { FeatureCollection } from 'geojson';
 import mapgl from 'maplibre-gl'
 import type { LayerSpecification } from 'maplibre-gl'
-import cotStyles from './styles.ts'
+import cotStyles from '../utils/styles.ts'
 import { std, stdurl } from '../../std.js';
 import { useProfileStore } from '../profile.js';
 

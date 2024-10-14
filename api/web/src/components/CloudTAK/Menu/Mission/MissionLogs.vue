@@ -73,6 +73,8 @@ import {
     TablerNone
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../../util/MenuTemplate.vue';
+import { useCOTStore } from '../../../../stores/cots.ts';
+const cotStore = useCOTStore();
 
 const props = defineProps({
     mission: {
@@ -88,14 +90,17 @@ const props = defineProps({
 
 const createLog = ref('');
 const logs = ref<MissionLog[]>([]);
-const loading = ref({
-    logs: false
-});
+const loading = ref({ logs: false });
 
 onMounted(async () => {
-    await fetchLogs()
-});
+    const sub = cotStore.subscriptions.get(props.mission.guid);
 
+    if (!sub) {
+        await fetchLogs()
+    } else {
+        logs.value = sub.logs;
+    }
+});
 
 function headers(): Record<string, string> {
     if (props.token) {
@@ -109,7 +114,7 @@ function headers(): Record<string, string> {
 
 async function fetchLogs() {
     loading.value.logs = true;
-    const list = await std(`/api/marti/missions/${props.mission.name}/log`, {
+    const list = await std(`/api/marti/missions/${props.mission.guid}/log`, {
         method: 'GET',
         headers: headers()
     }) as { items: Array<MissionLog> };
@@ -121,7 +126,7 @@ async function fetchLogs() {
 
 async function deleteLog(logidx: number): Promise<void> {
     loading.value.logs = true;
-    await std(`/api/marti/missions/${props.mission.name}/log/${logs.value[logidx].id}`, {
+    await std(`/api/marti/missions/${props.mission.guid}/log/${logs.value[logidx].id}`, {
         method: 'DELETE',
         headers: headers()
     });
@@ -132,7 +137,7 @@ async function deleteLog(logidx: number): Promise<void> {
 async function submitLog() {
     loading.value.logs = true;
 
-    await std(`/api/marti/missions/${props.mission.name}/log`, {
+    await std(`/api/marti/missions/${props.mission.guid}/log`, {
         method: 'POST',
         headers: headers(),
         body: {
