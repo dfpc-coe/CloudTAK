@@ -21,6 +21,7 @@ export type Group = paths["/marti/group"]["get"]["responses"]["200"]["content"][
 
 export type Mission = paths["/marti/missions/{:name}"]["get"]["responses"]["200"]["content"]["application/json"];
 export type MissionLog = paths["/marti/missions/{:name}/log/{:logid}"]["patch"]["responses"]["200"]["content"]["application/json"]["data"];
+export type MissionLogList = paths["/marti/missions/{:name}/log"]["get"]["responses"]["200"]["content"]["application/json"];
 
 export type Server_Update = paths["/server"]["patch"]["requestBody"]["content"]["application/json"]
 export type Server = paths["/server"]["get"]["responses"]["200"]["content"]["application/json"]

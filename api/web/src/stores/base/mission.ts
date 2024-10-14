@@ -1,6 +1,6 @@
 import COT from './cot.ts'
 import { std, stdurl } from '../../std.ts';
-import type { Mission, MissionLog } from '../../types.ts';
+import type { Mission, MissionLog, MissionLogList } from '../../types.ts';
 
 export default class Subscription {
     meta: Mission;
@@ -37,6 +37,16 @@ export default class Subscription {
         const headers: Record<string, string> = {};
         if (token) headers.MissionAuthorization = token;
         return headers;
+    }
+
+    async updateLogs() {
+        const url = stdurl('/api/marti/missions/' + encodeURIComponent(this.meta.guid) + '/log');
+
+        const logs = await std(url, {
+            headers: this.headers()
+        }) as MissionLogList;
+
+        this.logs = logs.items;
     }
 
     headers(): Record<string, string> {
