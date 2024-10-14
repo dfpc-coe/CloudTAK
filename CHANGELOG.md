@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v4.14.0 - 2024-10-14
+
+- :bug: `UI` Fix bug where a refresh wouldn't add Data Sync layer back on map state
+- :rocket: `UI` Strongly Type the MissionLog Menu
+- :rocket: `UI` Avoid a full mission refresh when a log is added or deleted
+- :rocket: `API` Add List Logs endpoint
+
 ### v4.13.0 - 2024-10-10
 
 - :tada: `UI/API` Add support for storing TAK Derived LineStrings & Polygons to an ESRI Sink
