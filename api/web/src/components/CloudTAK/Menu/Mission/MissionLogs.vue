@@ -5,7 +5,8 @@
         :border='false'
         :loading='loading.logs'
     >
-        <div class='rows px-2'>
+        <TablerNone v-if='!logs.length' :create='false' :compact='true' label='Logs'/>
+        <div v-else class='rows px-2'>
             <div
                 v-for='(log, logidx) in logs'
                 :key='log.id'
@@ -69,6 +70,7 @@ import {
 } from '@tabler/icons-vue';
 import {
     TablerInput,
+    TablerNone
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../../util/MenuTemplate.vue';
 
