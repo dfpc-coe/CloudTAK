@@ -56,7 +56,7 @@ export const useCOTStore = defineStore('cots', {
             return videos;
         },
 
-        subChange: function(task: Feature): void {
+        subChange: async function(task: Feature): Promise<void> {
             if (task.properties.type === 't-x-m-c' && task.properties.mission && task.properties.mission.missionChanges) {
                 let updateGuid;
 
@@ -84,6 +84,16 @@ export const useCOTStore = defineStore('cots', {
                     const mapStore = useMapStore();
                     mapStore.updateMissionData(updateGuid);
                 }
+            } else if (task.properties.type === 't-x-m-c-l') {
+                const sub = this.subscriptions.get(task.properties.mission.guid);
+                if (!sub) {
+                    console.error(`Cannot refresh ${task.properties.mission.guid} logs as it is not subscribed`);
+                    return;
+                }
+
+                await sub.updateLogs();
+            } else {
+                console.warn('Unknown Mission Task', JSON.stringify(task));
             }
         },
 
