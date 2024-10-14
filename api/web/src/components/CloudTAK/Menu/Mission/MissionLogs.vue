@@ -5,8 +5,16 @@
         :border='false'
         :loading='loading.logs'
     >
-        <TablerNone v-if='!logs.length' :create='false' :compact='true' label='Logs'/>
-        <div v-else class='rows px-2'>
+        <TablerNone
+            v-if='!logs.length'
+            :create='false'
+            :compact='true'
+            label='Logs'
+        />
+        <div
+            v-else
+            class='rows px-2'
+        >
             <div
                 v-for='(log, logidx) in logs'
                 :key='log.id'

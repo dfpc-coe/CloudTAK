@@ -7,7 +7,7 @@ import { defineStore } from 'pinia'
 import type { GeoJSONSourceDiff } from 'maplibre-gl';
 import { std, stdurl } from '../std.ts';
 import Subscription from './base/mission.ts';
-import type { Feature, Mission, MissionLog, APIList } from '../types.ts';
+import type { Feature, APIList } from '../types.ts';
 import type { FeatureCollection, Polygon } from 'geojson';
 import { booleanWithin } from '@turf/boolean-within';
 import { useProfileStore } from './profile.ts';
