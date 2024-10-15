@@ -134,6 +134,7 @@ export default {
     ],
     data: function() {
         return {
+            err: null,
             loading: true,
             changes: [],
         }
