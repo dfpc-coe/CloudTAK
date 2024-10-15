@@ -39,13 +39,46 @@ export default class Subscription {
         return headers;
     }
 
-    async updateLogs() {
-        const url = stdurl('/api/marti/missions/' + encodeURIComponent(this.meta.guid) + '/log');
+    static async logCreate(guid: string, token: string | undefined, body: object): Promise<void> {
+        const url = stdurl('/api/marti/missions/' + encodeURIComponent(guid) + '/log');
 
-        const logs = await std(url, {
-            headers: this.headers()
+        const log = await std(url, {
+            method: 'POST',
+            headers: Subscription.headers(token)
+        });
+
+        return;
+    }
+
+    static async logDelete(guid: string, token: string | undefined, logid: string): Promise<void> {
+        const url = stdurl('/api/marti/missions/' + encodeURIComponent(guid) + '/log/' + encodeURIComponent(logid));
+
+        await std(url, {
+            method: 'DELETE',
+            headers: Subscription.headers(token)
+        });
+
+        return;
+    }
+
+    static async logList(guid: string, token?: string): Promise<MissionLogList> {
+        const url = stdurl('/api/marti/missions/' + encodeURIComponent(guid) + '/log');
+
+        const list = await std(url, {
+            method: 'GET',
+            headers: Subscription.headers(token)
         }) as MissionLogList;
 
+        list.items = list.items.map((l) => {
+            if (!l.content) l.content = '';
+            return l;
+        });
+
+        return list;
+    }
+
+    async updateLogs() {
+        const logs = await Subscription.logList(this.meta.guid);
         this.logs.splice(0, this.logs.length, ...logs.items);
     }
 

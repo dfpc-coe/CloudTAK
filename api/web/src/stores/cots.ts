@@ -84,7 +84,7 @@ export const useCOTStore = defineStore('cots', {
                     const mapStore = useMapStore();
                     mapStore.updateMissionData(updateGuid);
                 }
-            } else if (task.properties.type === 't-x-m-c-l') {
+            } else if (task.properties.type === 't-x-m-c-l' && task.properties.mission && task.properties.mission.guid) {
                 const sub = this.subscriptions.get(task.properties.mission.guid);
                 if (!sub) {
                     console.error(`Cannot refresh ${task.properties.mission.guid} logs as it is not subscribed`);

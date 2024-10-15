@@ -13,14 +13,14 @@ export const MissionLog = Type.Object({
     dtg: Type.Optional(Type.String()),
     created: Type.String(),
     contentHashes: Type.Array(Type.Unknown()),
-    keywords: Type.Array(Type.Unknown())
+    keywords: Type.Array(Type.String())
 });
 
 export const CreateMissionLog = Type.Object({
     content: Type.String(),
     creatorUid: Type.String(),
     contentHashes: Type.Optional(Type.Array(Type.Unknown())),
-    keywords: Type.Optional(Type.Array(Type.Unknown()))
+    keywords: Type.Optional(Type.Array(Type.String()))
 });
 
 export const UpdateMissionLog = Type.Composite([ CreateMissionLog, Type.Object({
