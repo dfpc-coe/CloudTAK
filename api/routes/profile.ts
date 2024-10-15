@@ -5,6 +5,7 @@ import Auth from '../lib/auth.js';
 import { ProfileResponse } from '../lib/types.js'
 import Config from '../lib/config.js';
 import { TAKRole, TAKGroup } from '../lib/api/types.js'
+import { sql } from 'drizzle-orm';
 import { Profile_Text, Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance } from  '../lib/enums.js';
 
 export default async function router(schema: Schema, config: Config) {
@@ -46,7 +47,10 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
-            const profile = await config.models.Profile.commit(user.email, req.body);
+            const profile = await config.models.Profile.commit(user.email, {
+                ...req.body,
+                updated: sql`Now()`
+            });
 
             return res.json(profile);
         } catch (err) {

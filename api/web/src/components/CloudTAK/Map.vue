@@ -12,10 +12,8 @@
         <Loading v-if='loading.main || !isLoaded' />
 
         <template v-if='isLoaded && !loading.main'>
-            <WarnChannels
-                v-if='warnChannels'
-                @close='warnChannels = false'
-            />
+            <WarnConfiguration v-if='warnConfiguration' @close='warnConfiguration = false' />
+            <WarnChannels v-else-if='warnChannels' @close='warnChannels = false' />
 
             <div
                 v-if='profile'
@@ -462,6 +460,7 @@
 
 <script>
 import WarnChannels from './util/WarnChannels.vue';
+import WarnConfiguration from './util/WarnConfiguration.vue';
 import Status from '../util/Status.vue';
 import CoordInput from './CoordInput.vue';
 import CoordinateType from './util/CoordinateType.vue';
@@ -583,6 +582,7 @@ export default {
         ]);
 
         this.warnChannels = profileStore.hasNoChannels;
+        this.warnConfiguration = profileStore.hasNoConfiguration;
 
         this.loading.main = false;
 
@@ -654,6 +654,7 @@ export default {
             height: window.innerHeight,
             width: window.innerWidth,
             warnChannels: false,        // Show a popup if no channels are selected on load
+            warnConfiguration: false,   // Show a popup if role/groups hasn't been set
             search: {
                 shown: false,
                 filter: '',
@@ -1018,6 +1019,7 @@ export default {
         Status,
         CoordInput,
         WarnChannels,
+        WarnConfiguration,
         CoordinateType,
         SideMenu,
         Loading,
