@@ -195,12 +195,10 @@ export default {
             'media::url': '',
             'media::username': '',
             'media::password': '',
-
-            'group::names': {}
         }
 
         for (const group of groups) {
-            config['group::names'][group] = '';
+            config[`group::${group}`] = '';
         }
 
         return {
