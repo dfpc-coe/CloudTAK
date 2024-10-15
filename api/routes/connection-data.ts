@@ -8,6 +8,7 @@ import S3 from '../lib/aws/s3.js';
 import { sql, inArray, and } from 'drizzle-orm';
 import DataMission from '../lib/data-mission.js';
 import { StandardResponse, DataResponse, DataListResponse } from '../lib/types.js';
+import { MissionSubscriberRole } from '../lib/api/mission.js';
 import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: Config) {
@@ -110,11 +111,15 @@ export default async function router(schema: Schema, config: Config) {
         body: Type.Object({
             name: Default.NameField,
             description: Default.DescriptionField,
-            auto_transform: Type.Optional(Type.Boolean()),
+            auto_transform: Type.Boolean({
+                default: true
+            }),
             mission_diff: Type.Optional(Type.Boolean()),
-            mission_sync: Type.Optional(Type.Boolean()),
+            mission_sync: Type.Boolean({
+                default: true
+            }),
             mission_groups: Type.Optional(Type.Array(Type.String())),
-            mission_role: Type.Optional(Type.String())
+            mission_role: Type.Optional(MissionSubscriberRole)
         }),
         res: DataResponse
     }, async (req, res) => {
@@ -123,7 +128,7 @@ export default async function router(schema: Schema, config: Config) {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             }, req.params.connectionid);
 
-            if (req.body.mission_diff && req.body.mission_role !== 'MISSION_READONLY_SUBSCRIBER') {
+            if (req.body.mission_diff && req.body.mission_role !== MissionSubscriberRole.MISSION_READONLY_SUBSCRIBER) {
                 throw new Err(400, null, 'MissionDiff can only be used when role is: MISSION_READONLY_SUBSCRIBER')
             }
 

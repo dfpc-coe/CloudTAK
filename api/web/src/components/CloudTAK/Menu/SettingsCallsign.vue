@@ -61,27 +61,48 @@ export default {
         return {
             loading: true,
             profile: {},
-            profileSchema: {}
+            config: {}
         }
     },
     computed: {
         tak_groups: function() {
-            return this.profileSchema.properties.tak_group.anyOf.map((a) => { return a.const });
+            const groups = [];
+            for (const g in this.config.groups) {
+                if (this.config.groups[g]) {
+                    groups.push(`${g} - ${this.config.groups[g]}`);
+                } else {
+                    groups.push(g);
+                }
+            }
+
+            return groups;
         },
         tak_roles: function() {
-            return this.profileSchema.properties.tak_role.anyOf.map((a) => { return a.const });
+            return this.config.roles;
         }
     },
     mounted: async function() {
         this.loading = true;
-        await this.fetchProfileSchema();
+        await this.fetchConfig();
         await profileStore.load();
-        this.profile = JSON.parse(JSON.stringify(profileStore.profile));
+        const profile = JSON.parse(JSON.stringify(profileStore.profile));
+        profile.tak_groups
+        this.profile = profile;
+
         this.loading = false;
     },
     methods: {
-        fetchProfileSchema: async function() {
-            this.profileSchema = (await std('/api/schema?method=PATCH&url=/profile')).body
+        fetchConfig: async function() {
+            const config = await std('/api/config/group');
+            const groups = {};
+            for (const key in config.groups) {
+                groups[key.replace('group::', '')] = config.groups[key];
+            }
+
+            this.config = {
+                groups,
+                roles: config.roles
+            };
         },
         updateProfile: async function() {
             await profileStore.update(this.profile);

@@ -83,4 +83,50 @@ export default async function router(schema: Schema, config: Config) {
             return Err.respond(err, res);
         }
     });
+
+    await schema.get('/config/group', {
+        name: 'List Groups',
+        group: 'Config',
+        description: 'Return Group Config',
+        res: Type.Object({
+            roles: Type.Array(Type.String()),
+            groups: Type.Record(Type.String(), Type.String()),
+        })
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req);
+
+            const keys = [
+                'group::Yellow',
+                'group::Cyan',
+                'group::Green',
+                'group::Red',
+                'group::Purple',
+                'group::Orange',
+                'group::Blue',
+                'group::Magenta',
+                'group::White',
+                'group::Maroon',
+                'group::Dark Blue',
+                'group::Teal',
+                'group::Dark Green',
+                'group::Brown',
+            ];
+
+            const final: Record<string, string> = {};
+            (await Promise.allSettled(keys.map((key) => {
+                return config.models.Setting.from(key);
+            }))).forEach((k) => {
+                if (k.status === 'rejected') return;
+                return final[k.value.key] = k.value.value;
+            });
+
+            return res.json({
+                roles: [ "Team Member", "Team Lead", "HQ", "Sniper", "Medic", "Forward Observer", "RTO", "K9" ],
+                groups: final
+            });
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
 }
