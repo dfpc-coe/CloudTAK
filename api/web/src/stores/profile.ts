@@ -26,6 +26,10 @@ export const useProfileStore = defineStore('profile', {
             }
 
             return true;
+        },
+        hasNoConfiguration: function(): boolean {
+            if (!this.profile) return false;
+            return this.profile.created === this.profile.updated;
         }
     },
     actions: {
