@@ -18,8 +18,18 @@
             <div
                 v-for='(log, logidx) in logs'
                 :key='log.id'
-                class='col-12'
+                class='col-12 pb-2'
             >
+                <div class='d-flex'>
+                    <label
+                        class='subheader'
+                        v-text='log.creatorUid'
+                    />
+                    <label
+                        class='subheader ms-auto'
+                        v-text='log.created'
+                    />
+                </div>
                 <div class='col-12 position-relative'>
                     <IconTrash
                         v-if='role.permissions.includes("MISSION_WRITE")'
@@ -33,14 +43,13 @@
                         v-text='log.content || "None"'
                     />
                 </div>
-                <div class='d-flex'>
-                    <label
-                        class='subheader'
-                        v-text='log.creatorUid'
-                    />
-                    <label
-                        class='subheader ms-auto'
-                        v-text='log.created'
+
+                <div class='col-12'>
+                    <span
+                        v-for='keyword in log.keywords'
+                        :key='keyword'
+                        v-text='keyword'
+                        class='me-1 badge badge-outline bg-blue-lt'
                     />
                 </div>
             </div>
