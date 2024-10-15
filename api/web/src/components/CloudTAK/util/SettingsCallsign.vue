@@ -51,11 +51,20 @@ export default {
         TablerEnum,
         TablerLoading,
     },
+    emits: [
+        'update'
+    ],
     data: function() {
         return {
             loading: true,
             profile: {},
             config: {}
+        }
+    },
+    props: {
+        mode: {
+            type: String,
+            default: 'router'
         }
     },
     computed: {
@@ -107,7 +116,11 @@ export default {
             profile.tak_group = profile.tak_group.replace(/\s-\s.*$/, '');
 
             await profileStore.update(profile);
-            this.$router.push("/menu/settings");
+            if (this.mode === 'router') {
+                this.$router.push("/menu/settings");
+            } else {
+                this.$emit('update');
+            }
         }
     }
 }
