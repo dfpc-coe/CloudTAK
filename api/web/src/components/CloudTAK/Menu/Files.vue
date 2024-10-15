@@ -112,7 +112,7 @@ import {
 import MenuTemplate from '../util/MenuTemplate.vue';
 import timeDiff from '../../../timediff.ts';
 import { useMapStore } from '/src/stores/map.ts';
-import Overlay from '/src/stores/overlays/base.ts';
+import Overlay from '/src/stores/base/overlay.ts';
 const mapStore = useMapStore();
 
 export default {

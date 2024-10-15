@@ -92,7 +92,7 @@
 
 <script>
 import { std, stdurl } from '/src/std.ts';
-import Overlay from '/src/stores/overlays/base.ts';
+import Overlay from '/src/stores/base/overlay.ts';
 import BasemapEditModal from './Basemaps/EditModal.vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import {

@@ -111,7 +111,7 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../../util/MenuTemplate.vue';
-import Overlay from '/src/stores/overlays/base.ts';
+import Overlay from '/src/stores/base/overlay.ts';
 import { useMapStore } from '/src/stores/map.ts';
 const mapStore = useMapStore();
 import { useCOTStore } from '/src/stores/cots.ts';
