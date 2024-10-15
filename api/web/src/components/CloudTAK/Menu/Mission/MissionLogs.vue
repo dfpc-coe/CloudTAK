@@ -5,10 +5,17 @@
         :border='false'
         :loading='loading.logs'
     >
+        <div class='col-12 pb-2 px-2'>
+            <TablerInput
+                v-model='paging.filter'
+                icon='search'
+                placeholder='Filter'
+            />
+        </div>
+
         <TablerNone
-            v-if='!logs.length'
+            v-if='!filteredLogs.length'
             :create='false'
-            :compact='true'
             label='Logs'
         />
         <div
@@ -16,7 +23,7 @@
             class='rows px-2'
         >
             <div
-                v-for='(log, logidx) in logs'
+                v-for='(log, logidx) in filteredLogs'
                 :key='log.id'
                 class='col-12 pb-2'
             >
@@ -79,7 +86,8 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, defineProps, onMounted } from 'vue'
+import { ref, computed, defineProps, onMounted } from 'vue'
+import type { ComputedRef } from 'vue';
 import { std } from '../../../../../src/std.ts';
 import type { MissionLog } from '../../../../types.ts';
 import {
@@ -90,6 +98,7 @@ import {
     TablerNone
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../../util/MenuTemplate.vue';
+import Subscription from '../../../../stores/base/mission.ts';
 import { useCOTStore } from '../../../../stores/cots.ts';
 const cotStore = useCOTStore();
 
@@ -105,6 +114,7 @@ const props = defineProps({
     }
 })
 
+const paging = ref({ filter: '' });
 const createLog = ref('');
 const logs = ref<MissionLog[]>([]);
 const loading = ref({ logs: false });
@@ -119,47 +129,34 @@ onMounted(async () => {
     }
 });
 
-function headers(): Record<string, string> {
-    if (props.token) {
-        return {
-            MissionAuthorization: props.token
-        }
+const filteredLogs: ComputedRef<Array<MissionLog>> = computed(() => {
+    if (paging.value.filter.trim() === '') {
+        return logs.value;
     } else {
-        return {};
+        const filter = paging.value.filter.toLowerCase();
+        return logs.value.filter((log) => {
+            return log.content.toLowerCase().includes(filter);
+        })
     }
-}
+});
 
 async function fetchLogs() {
     loading.value.logs = true;
-    const list = await std(`/api/marti/missions/${props.mission.guid}/log`, {
-        method: 'GET',
-        headers: headers()
-    }) as { items: Array<MissionLog> };
-
-    logs.value = list.items;
-
+    logs.value = (await Subscription.logList(props.mission.guid, props.token)).items;
     loading.value.logs = false;
 }
 
 async function deleteLog(logidx: number): Promise<void> {
     loading.value.logs = true;
-    await std(`/api/marti/missions/${props.mission.guid}/log/${logs.value[logidx].id}`, {
-        method: 'DELETE',
-        headers: headers()
-    });
-
+    await Subscription.logDelete(props.mission.guid, props.token, logs.value[logidx].id);
     await fetchLogs();
 }
 
 async function submitLog() {
     loading.value.logs = true;
 
-    await std(`/api/marti/missions/${props.mission.guid}/log`, {
-        method: 'POST',
-        headers: headers(),
-        body: {
-            content: createLog.value
-        }
+    await Subscription.logCreate(props.mission.guid, props.token, {
+        content: createLog.value
     });
 
     createLog.value = '';

@@ -1299,7 +1299,6 @@ export interface paths {
             requestBody: {
                 content: {
                     "application/json": {
-                        name: string;
                         description: string;
                         auto_transform?: boolean;
                         mission_diff?: boolean;
@@ -6330,7 +6329,7 @@ export interface paths {
                                 dtg?: string;
                                 created: string;
                                 contentHashes: unknown[];
-                                keywords: unknown[];
+                                keywords: string[];
                             }[];
                         };
                     };
@@ -6424,7 +6423,7 @@ export interface paths {
                                 dtg?: string;
                                 created: string;
                                 contentHashes: unknown[];
-                                keywords: unknown[];
+                                keywords: string[];
                             };
                             messages?: string[];
                             nodeId?: string;
@@ -6539,7 +6538,7 @@ export interface paths {
                                 dtg?: string;
                                 created: string;
                                 contentHashes: unknown[];
-                                keywords: unknown[];
+                                keywords: string[];
                             }[];
                             contents: {
                                 timestamp: string;
@@ -6635,7 +6634,7 @@ export interface paths {
                                 dtg?: string;
                                 created: string;
                                 contentHashes: unknown[];
-                                keywords: unknown[];
+                                keywords: string[];
                             }[];
                             contents: {
                                 timestamp: string;
