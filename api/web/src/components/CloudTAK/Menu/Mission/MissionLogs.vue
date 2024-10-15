@@ -55,8 +55,8 @@
                     <span
                         v-for='keyword in log.keywords'
                         :key='keyword'
-                        v-text='keyword'
                         class='me-1 badge badge-outline bg-blue-lt'
+                        v-text='keyword'
                     />
                 </div>
             </div>
@@ -88,7 +88,6 @@
 <script setup lang='ts'>
 import { ref, computed, defineProps, onMounted } from 'vue'
 import type { ComputedRef } from 'vue';
-import { std } from '../../../../../src/std.ts';
 import type { MissionLog } from '../../../../types.ts';
 import {
     IconTrash,

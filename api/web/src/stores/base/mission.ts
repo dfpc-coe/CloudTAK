@@ -42,8 +42,9 @@ export default class Subscription {
     static async logCreate(guid: string, token: string | undefined, body: object): Promise<void> {
         const url = stdurl('/api/marti/missions/' + encodeURIComponent(guid) + '/log');
 
-        const log = await std(url, {
+        await std(url, {
             method: 'POST',
+            body: body,
             headers: Subscription.headers(token)
         });
 
