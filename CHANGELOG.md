@@ -12,6 +12,16 @@
 
 ### Pending Release
 
+### v4.16.0 - 2024-10-15
+
+- :rocket: Add `group::` config
+- :rocket: `UI` Show None state if no logs are present
+- :tada: `UI` Sketch out Mission Container Class
+- :rocket: Log updates from another device in subscribed mission will now automatically show up
+- :rocket: Migrate MissionLog pane to TS
+- :rocket: `UI` Show keywords array
+- :rocket: `API` Strongly Type MissionLog keywords
+
 ### v4.15.1 - 2024-10-14
 
 - :bug: `UI/API` Disallow name changes to Data Syncs
