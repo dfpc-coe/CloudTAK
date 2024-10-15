@@ -46,7 +46,7 @@ export default class Subscription {
             headers: this.headers()
         }) as MissionLogList;
 
-        this.logs = logs.items;
+        this.logs.splice(0, this.logs.length, ...logs.items);
     }
 
     headers(): Record<string, string> {
