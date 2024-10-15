@@ -12,9 +12,13 @@
 
 ### Pending Release
 
+### v4.18.0 - 2024-10-15
+
+- :tada: Add a modal if the Profile hasn't been configured
+
 ### v4.17.0 - 2024-10-15
 
-- :data: Add the ability to set custom group names in the TAK_Group dropdown
+- :tada: Add the ability to set custom group names in the TAK_Group dropdown
 
 ### v4.16.0 - 2024-10-15
 
