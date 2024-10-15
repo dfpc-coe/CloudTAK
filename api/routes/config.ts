@@ -42,7 +42,22 @@ export default async function router(schema: Schema, config: Config) {
 
             'media::url': Type.Optional(Type.String()),
             'media::username': Type.Optional(Type.String()),
-            'media::password': Type.Optional(Type.String())
+            'media::password': Type.Optional(Type.String()),
+
+            'group::Yellow': Type.Optional(Type.String()),
+            'group::Cyan': Type.Optional(Type.String()),
+            'group::Green': Type.Optional(Type.String()),
+            'group::Red': Type.Optional(Type.String()),
+            'group::Purple': Type.Optional(Type.String()),
+            'group::Orange': Type.Optional(Type.String()),
+            'group::Blue': Type.Optional(Type.String()),
+            'group::Magenta': Type.Optional(Type.String()),
+            'group::White': Type.Optional(Type.String()),
+            'group::Maroon': Type.Optional(Type.String()),
+            'group::Dark Blue': Type.Optional(Type.String()),
+            'group::Teal': Type.Optional(Type.String()),
+            'group::Dark Green': Type.Optional(Type.String()),
+            'group::Brown': Type.Optional(Type.String()),
         }),
         res: Type.Any()
     }, async (req, res) => {
