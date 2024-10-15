@@ -20,42 +20,92 @@
                 </div>
             </div>
             <div class='card-body row'>
-                <div class='col-lg-12 py-2'>
-                    <TablerToggle
-                        v-model='config["agol::enabled"]'
-                        :disabled='!edit'
-                        label='ArcGIS Online Enabled'
-                    />
-                    <TablerInput
-                        v-model='config["agol::token"]'
-                        type='password'
-                        :disabled='!edit'
-                        label='ArcGIS Online API Token'
-                    />
+                <div
+                    @click='opened.has("agol") ? opened.delete("agol") : opened.add("agol")'
+                    class='col-lg-12 hover-light py-2 cursor-pointer'
+                >
+                    <IconChevronDown v-if='opened.has("agol")'/>
+                    <IconChevronRight v-else/>
+
+                    <span class='mx-2 user-select-none'>ArcGIS Online</span>
                 </div>
 
-                <div class='col-lg-12 py-2 row'>
-                    <TablerInput
-                        v-model='config["media::url"]'
-                        :disabled='!edit'
-                        label='Hosted Media Service URL'
-                    />
-
-                    <div class='col-lg-6'>
-                        <TablerInput
-                            v-model='config["media::username"]'
-                            :disabled='!edit'
-                            label='Hosted Media Service Username'
-                        />
+                <div v-if='opened.has("agol")' class='col-lg-12 py-2 border rounded'>
+                    <div class='row'>
+                        <div class='col-lg-12'>
+                            <TablerToggle
+                                v-model='config["agol::enabled"]'
+                                :disabled='!edit'
+                                label='ArcGIS Online Enabled'
+                            />
+                            <TablerInput
+                                v-model='config["agol::token"]'
+                                type='password'
+                                :disabled='!edit'
+                                label='ArcGIS Online API Token'
+                            />
+                        </div>
                     </div>
+                </div>
 
-                    <div class='col-lg-6'>
-                        <TablerInput
-                            v-model='config["media::password"]'
-                            type='password'
-                            :disabled='!edit'
-                            label='Hosted Media Service Password'
-                        />
+                <div
+                    @click='opened.has("media") ? opened.delete("media") : opened.add("media")'
+                    class='col-lg-12 hover-light py-2 cursor-pointer'
+                >
+                    <IconChevronDown v-if='opened.has("media")'/>
+                    <IconChevronRight v-else/>
+
+                    <span class='mx-2 user-select-none'>Media Server</span>
+                </div>
+
+                <div v-if='opened.has("media")' class='col-lg-12 py-2 border rounded'>
+                    <div class='row'>
+                        <div class='col-lg-12'>
+                            <TablerInput
+                                v-model='config["media::url"]'
+                                :disabled='!edit'
+                                label='Hosted Media Service URL'
+                            />
+                        </div>
+
+                        <div class='col-lg-6'>
+                            <TablerInput
+                                v-model='config["media::username"]'
+                                :disabled='!edit'
+                                label='Hosted Media Service Username'
+                            />
+                        </div>
+
+                        <div class='col-lg-6'>
+                            <TablerInput
+                                v-model='config["media::password"]'
+                                type='password'
+                                :disabled='!edit'
+                                label='Hosted Media Service Password'
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    @click='opened.has("groups") ? opened.delete("groups") : opened.add("groups")'
+                    class='col-lg-12 hover-light py-2 cursor-pointer'
+                >
+                    <IconChevronDown v-if='opened.has("groups")'/>
+                    <IconChevronRight v-else/>
+
+                    <span class='mx-2 user-select-none'>TAK User Groups</span>
+                </div>
+
+                <div v-if='opened.has("groups")' class='col-lg-12 py-2 border rounded'>
+                    <div class='row'>
+                        <div v-for='group in groups' :key='group' class='col-lg-12'>
+                            <TablerInput
+                                :label='group'
+                                v-model='config[`group::${group}`]'
+                                :disabled='!edit'
+                            />
+                        </div>
                     </div>
                 </div>
 
@@ -91,7 +141,9 @@ import {
     TablerInput
 } from '@tak-ps/vue-tabler';
 import {
-    IconSettings
+    IconSettings,
+    IconChevronRight,
+    IconChevronDown,
 } from '@tabler/icons-vue';
 import timeDiff from '../../timediff.ts';
 
@@ -99,22 +151,49 @@ export default {
     name: 'AdminConfig',
     components: {
         IconSettings,
+        IconChevronRight,
+        IconChevronDown,
         TablerLoading,
         TablerToggle,
         TablerInput,
     },
     data: function() {
+        const groups = [
+            "Yellow",
+            "Cyan",
+            "Green",
+            "Red",
+            "Purple",
+            "Orange",
+            "Blue",
+            "Magenta",
+            "White",
+            "Maroon",
+            "Dark Blue",
+            "Teal",
+            "Dark Green",
+            "Brown",
+        ];
+
+        const config = {
+            'agol::enabled': false,
+            'agol::token': '',
+
+            'media::url': '',
+            'media::username': '',
+            'media::password': ''
+        }
+
+        for (const group of groups) {
+            config[`group::${group}`] = '';
+        }
+
         return {
             edit: false,
             loading: true,
-            config: {
-                'agol::enabled': false,
-                'agol::token': '',
-
-                'media::url': '',
-                'media::username': '',
-                'media::password': ''
-            }
+            opened: new Set(),
+            groups,
+            config
         }
     },
     mounted: async function() {
@@ -135,6 +214,7 @@ export default {
                 if (config[key] === undefined) continue;
                 this.config[key] = config[key];
             }
+
             this.loading = false;
         },
         postConfig: async function() {
