@@ -80,10 +80,12 @@ export default defineComponent({
             loading: true
         }
     },
-    unmounted: function() {
+    unmounted: async function() {
         if (this.player) {
             this.player.dispose();
         }
+
+        await this.deleteLease();
     },
     mounted: async function() {
         await this.requestLease();
@@ -95,7 +97,21 @@ export default defineComponent({
         }
     },
     methods: {
-        requestLease: async function() {
+        deleteLease: async function(): Promise<void> {
+            if (!this.lease) return;
+
+            try {
+                await std(`/api/video/lease/${this.lease.id}`, {
+                    method: 'DELETE',
+                });
+
+                this.loading = false;
+            } catch (err) {
+                this.loading = false;
+                this.err = err instanceof Error ? err : new Error(String(err));
+            }
+        },
+        requestLease: async function(): Promise<void> {
             try {
                 const { lease, protocols } = await std('/api/video/lease', {
                     method: 'POST',
