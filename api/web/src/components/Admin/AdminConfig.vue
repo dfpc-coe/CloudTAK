@@ -99,10 +99,10 @@
 
                 <div v-if='opened.has("groups")' class='col-lg-12 py-2 border rounded'>
                     <div class='row'>
-                        <div v-for='group in groups' :key='group' class='col-lg-12'>
+                        <div v-for='group in Object.keys(config["group::names"])' :key='group' class='col-lg-12'>
                             <TablerInput
                                 :label='group'
-                                v-model='config[`group::${group}`]'
+                                v-model='config["group::names"][group]'
                                 :disabled='!edit'
                             />
                         </div>
@@ -181,11 +181,13 @@ export default {
 
             'media::url': '',
             'media::username': '',
-            'media::password': ''
+            'media::password': '',
+
+            'group::names': {}
         }
 
         for (const group of groups) {
-            config[`group::${group}`] = '';
+            config['group::names'][group] = '';
         }
 
         return {
