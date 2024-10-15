@@ -46,7 +46,7 @@
                                                 <IconServer
                                                     :size='32'
                                                     :stroke='1'
-                                                /><span class='mx-3'>TAK Server</span>
+                                                /><span class='mx-3'>TAK Server Connection</span>
                                             </span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
@@ -58,7 +58,7 @@
                                             ><IconSettings
                                                 :size='32'
                                                 :stroke='1'
-                                            /><span class='mx-3'>Settings</span></span>
+                                            /><span class='mx-3'>CloudTAK Settings</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
@@ -88,7 +88,7 @@
                                                     "cursor-pointer": $route.name !== "admin-task"
                                                 }'
                                                 @click='$router.push(`/admin/task`)'
-                                            ><IconBrandDocker 
+                                            ><IconBrandDocker
                                                 :size='32'
                                                 :stroke='1'
                                             /><span class='mx-3'>Registered Tasks</span></span>
@@ -121,7 +121,7 @@
                                                     "cursor-pointer": $route.name !== "admin-data"
                                                 }'
                                                 @click='$router.push(`/admin/data`)'
-                                            ><IconDatabase 
+                                            ><IconDatabase
                                                 :size='32'
                                                 :stroke='1'
                                             /><span class='mx-3'>Data Syncs</span></span>
@@ -132,7 +132,7 @@
                                                     "cursor-pointer": !$route.name.startsWith("admin-user")
                                                 }'
                                                 @click='$router.push(`/admin/user`)'
-                                            ><IconUsers 
+                                            ><IconUsers
                                                 :size='32'
                                                 :stroke='1'
                                             /><span class='mx-3'>Users</span></span>
@@ -143,7 +143,7 @@
                                                     "cursor-pointer": !$route.name.includes("admin-video")
                                                 }'
                                                 @click='$router.push(`/admin/video`)'
-                                            ><IconVideo 
+                                            ><IconVideo
                                                 :size='32'
                                                 :stroke='1'
                                             /><span class='mx-3'>Video Services</span></span>
@@ -154,7 +154,7 @@
                                                     "cursor-pointer": !$route.name.includes("admin-export")
                                                 }'
                                                 @click='$router.push(`/admin/export`)'
-                                            ><IconDatabaseExport 
+                                            ><IconDatabaseExport
                                                 :size='32'
                                                 :stroke='1'
                                             /><span class='mx-3'>Export</span></span>
