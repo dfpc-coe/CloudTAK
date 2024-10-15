@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v4.17.0 - 2024-10-15
+
+- :data: Add the ability to set custom group names in the TAK_Group dropdown
+
 ### v4.16.0 - 2024-10-15
 
 - :rocket: Add `group::` config
