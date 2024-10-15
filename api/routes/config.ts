@@ -42,7 +42,9 @@ export default async function router(schema: Schema, config: Config) {
 
             'media::url': Type.Optional(Type.String()),
             'media::username': Type.Optional(Type.String()),
-            'media::password': Type.Optional(Type.String())
+            'media::password': Type.Optional(Type.String()),
+
+            'group::names': Type.Optional(Type.Record(Type.String(), Type.String()))
         }),
         res: Type.Any()
     }, async (req, res) => {

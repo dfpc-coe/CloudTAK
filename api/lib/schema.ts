@@ -276,7 +276,7 @@ export const LayerAlert = pgTable('layer_alerts', {
 
 export const Setting = pgTable('settings', {
     key: text('key').primaryKey(),
-    value: text('value').notNull().default('')
+    value: json('value').notNull().default('')
 });
 
 export const Server = pgTable('server', {
