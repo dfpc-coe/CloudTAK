@@ -86,7 +86,11 @@ export default {
         await this.fetchConfig();
         await profileStore.load();
         const profile = JSON.parse(JSON.stringify(profileStore.profile));
-        profile.tak_groups = this.config.groups[profile.tak_groups];
+
+        if (this.config.groups[profile.tak_group]) {
+            profile.tak_group = `${profile.tak_group} - ${this.config.groups[profile.tak_group]}`;
+        }
+
         this.profile = profile;
         this.loading = false;
     },
@@ -104,7 +108,11 @@ export default {
             };
         },
         updateProfile: async function() {
-            await profileStore.update(this.profile);
+            const profile = JSON.parse(JSON.stringify(this.profile));
+
+            profile.tak_group = profile.tak_group.replace(/\s-\s.*$/, '');
+
+            await profileStore.update(profile);
             this.$router.push("/menu/settings");
         }
     }
