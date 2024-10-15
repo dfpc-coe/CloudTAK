@@ -131,7 +131,7 @@ const logs = ref<MissionLog[]>([]);
 const loading = ref<{
     logs: boolean,
     create: boolean,
-    ids: Set<string>
+    ids: Set<number>
 }> ({
     logs: false,
     create: false,
