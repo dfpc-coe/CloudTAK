@@ -27,7 +27,10 @@
                 :key='log.id'
                 class='col-12 pb-2'
             >
-                <TablerLoading v-if='loading.ids.has(logidx)' desc='Deleting Log'/>
+                <TablerLoading
+                    v-if='loading.ids.has(logidx)'
+                    desc='Deleting Log'
+                />
                 <template v-else>
                     <div class='d-flex'>
                         <label
@@ -65,18 +68,25 @@
             </div>
         </div>
 
-        <TablerLoading v-if='loading.create' desc='Creating Log' :compact='true'/>
+        <TablerLoading
+            v-if='loading.create'
+            desc='Creating Log'
+            :compact='true'
+        />
 
         <template v-if='role.permissions.includes("MISSION_WRITE")'>
             <div class='mx-2'>
                 <TablerInput
                     v-model='createLog'
                     label='Create Log'
-                    @keyup.enter='submitOnEnter ? submitLog() : undefined'
                     :rows='4'
+                    @keyup.enter='submitOnEnter ? submitLog() : undefined'
                 />
 
-                <TablerToggle label='Submit on Enter' v-model='submitOnEnter'/>
+                <TablerToggle
+                    v-model='submitOnEnter'
+                    label='Submit on Enter'
+                />
 
                 <div class='d-flex my-2'>
                     <div class='ms-auto'>

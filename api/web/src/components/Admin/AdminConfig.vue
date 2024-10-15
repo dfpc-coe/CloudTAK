@@ -21,16 +21,19 @@
             </div>
             <div class='card-body row'>
                 <div
-                    @click='opened.has("agol") ? opened.delete("agol") : opened.add("agol")'
                     class='col-lg-12 hover-light py-2 cursor-pointer'
+                    @click='opened.has("agol") ? opened.delete("agol") : opened.add("agol")'
                 >
-                    <IconChevronDown v-if='opened.has("agol")'/>
-                    <IconChevronRight v-else/>
+                    <IconChevronDown v-if='opened.has("agol")' />
+                    <IconChevronRight v-else />
 
                     <span class='mx-2 user-select-none'>ArcGIS Online</span>
                 </div>
 
-                <div v-if='opened.has("agol")' class='col-lg-12 py-2 border rounded'>
+                <div
+                    v-if='opened.has("agol")'
+                    class='col-lg-12 py-2 border rounded'
+                >
                     <div class='row'>
                         <div class='col-lg-12'>
                             <TablerToggle
@@ -49,16 +52,19 @@
                 </div>
 
                 <div
-                    @click='opened.has("media") ? opened.delete("media") : opened.add("media")'
                     class='col-lg-12 hover-light py-2 cursor-pointer'
+                    @click='opened.has("media") ? opened.delete("media") : opened.add("media")'
                 >
-                    <IconChevronDown v-if='opened.has("media")'/>
-                    <IconChevronRight v-else/>
+                    <IconChevronDown v-if='opened.has("media")' />
+                    <IconChevronRight v-else />
 
                     <span class='mx-2 user-select-none'>Media Server</span>
                 </div>
 
-                <div v-if='opened.has("media")' class='col-lg-12 py-2 border rounded'>
+                <div
+                    v-if='opened.has("media")'
+                    class='col-lg-12 py-2 border rounded'
+                >
                     <div class='row'>
                         <div class='col-lg-12'>
                             <TablerInput
@@ -88,21 +94,28 @@
                 </div>
 
                 <div
-                    @click='opened.has("groups") ? opened.delete("groups") : opened.add("groups")'
                     class='col-lg-12 hover-light py-2 cursor-pointer'
+                    @click='opened.has("groups") ? opened.delete("groups") : opened.add("groups")'
                 >
-                    <IconChevronDown v-if='opened.has("groups")'/>
-                    <IconChevronRight v-else/>
+                    <IconChevronDown v-if='opened.has("groups")' />
+                    <IconChevronRight v-else />
 
                     <span class='mx-2 user-select-none'>TAK User Groups</span>
                 </div>
 
-                <div v-if='opened.has("groups")' class='col-lg-12 py-2 border rounded'>
+                <div
+                    v-if='opened.has("groups")'
+                    class='col-lg-12 py-2 border rounded'
+                >
                     <div class='row'>
-                        <div v-for='group in Object.keys(config["group::names"])' :key='group' class='col-lg-12'>
+                        <div
+                            v-for='group in groups'
+                            :key='group'
+                            class='col-lg-12'
+                        >
                             <TablerInput
+                                v-model='config[`group::${group}`]'
                                 :label='group'
-                                v-model='config["group::names"][group]'
                                 :disabled='!edit'
                             />
                         </div>
