@@ -86,9 +86,8 @@ export default {
         await this.fetchConfig();
         await profileStore.load();
         const profile = JSON.parse(JSON.stringify(profileStore.profile));
-        profile.tak_groups
+        profile.tak_groups = this.config.groups[profile.tak_groups];
         this.profile = profile;
-
         this.loading = false;
     },
     methods: {

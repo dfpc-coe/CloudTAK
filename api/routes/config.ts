@@ -121,6 +121,10 @@ export default async function router(schema: Schema, config: Config) {
                 return final[k.value.key] = k.value.value;
             });
 
+            for (const group of keys) {
+                if (!final[group]) final[group] = '';
+            }
+
             return res.json({
                 roles: [ "Team Member", "Team Lead", "HQ", "Sniper", "Medic", "Forward Observer", "RTO", "K9" ],
                 groups: final
