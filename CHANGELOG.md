@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v4.18.1 - 2024-10-15
+
+- :rocket: Delete leases when possible
+
 ### v4.18.0 - 2024-10-15
 
 - :tada: Add a modal if the Profile hasn't been configured
