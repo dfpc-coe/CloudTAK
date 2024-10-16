@@ -84,6 +84,7 @@ export default async function router(schema: Schema, config: Config) {
                         error: err instanceof Error ? err.message : String(err),
                         feature: feat
                     })
+
                     console.error(`Failed to decode ${String(err)}: feature: ${JSON.stringify(feat)}`);
                 }
             }
@@ -128,6 +129,7 @@ export default async function router(schema: Schema, config: Config) {
                         existMap.set(String(feat.id), feat);
                     }
 
+
                     for (const cot of cots) {
                         const exist = existMap.get(cot.uid());
                         if (exist && data.mission_diff) {
@@ -136,12 +138,10 @@ export default async function router(schema: Schema, config: Config) {
                         }
 
                         cot.addDest({ mission: data.name, path: `layer-${layer.id}`, after: '' });
-                        cots.push(cot)
                     }
                 } else {
                     for (const cot of cots) {
                         cot.addDest({ mission: data.name });
-                        cots.push(cot)
                     }
                 }
             }
@@ -166,7 +166,6 @@ export default async function router(schema: Schema, config: Config) {
                     return item;
                 }));
             }
-
 
             res.json({
                 status: errors.length ? 400 : 200,
