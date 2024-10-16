@@ -6,11 +6,10 @@
     >
         <template #buttons>
             <TablerIconButton
-                icon='IconPlus'
                 v-if='!upload && role.permissions.includes("MISSION_WRITE")'
                 title='Upload File'
                 @click='upload = true'
-            />
+            ><IconPlus :size='32' stroke='1'/></TablerIconButton>
         </template>
 
         <TablerAlert
@@ -103,6 +102,7 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import {
+    IconPlus,
     IconFileImport,
     IconDownload,
 } from '@tabler/icons-vue';
@@ -122,6 +122,7 @@ export default {
     name: 'MissionContents',
     components: {
         Status,
+        IconPlus,
         MenuTemplate,
         TablerNone,
         UploadImport,
