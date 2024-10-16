@@ -167,7 +167,7 @@ export default async function router(schema: Schema, config: Config) {
                 }));
             }
 
-            res.json({
+            res.status(errors.length ? 400 : 200).json({
                 status: errors.length ? 400 : 200,
                 message: 'Submitted',
                 errors
