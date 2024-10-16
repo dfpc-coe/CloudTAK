@@ -40,18 +40,13 @@
                 label='Layers'
             />
             <template v-else>
-                <div
+                <Feature
                     v-for='feat of feats.values()'
+                    :deleteButton='false'
                     :key='feat.id'
-                    class='hover-dark py-2 mx-2'
-                >
-                    <IconMapPin
-                        :size='32'
-                        :stroke='1'
-                    />
-
-                    <span v-text='feat.properties.callsign || "UNKNOWN"' />
-                </div>
+                    :feature='feat'
+                    :mission='mission'
+                />
                 <div
                     v-for='layer in layers'
                     :key='layer.uid'
@@ -182,6 +177,7 @@ import {
     TablerDelete,
     TablerLoading
 } from '@tak-ps/vue-tabler';
+import Feature from '../../util/Feature.vue';
 import MenuTemplate from '../../util/MenuTemplate.vue';
 import MissionLayerCreate from './MissionLayerCreate.vue';
 import MissionLayerEdit from './MissionLayerEdit.vue';
@@ -189,6 +185,7 @@ import MissionLayerEdit from './MissionLayerEdit.vue';
 export default {
     name: 'MissionLayers',
     components: {
+        Feature,
         IconChevronRight,
         IconChevronDown,
         IconFiles,
