@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v4.19.1 - 2024-10-16
+
+- :rocket: Match actual `status` to status returned in body
+
 ### v4.19.0 - 2024-10-16
 
 - :rocket: Show Mission Sync password errors inline
