@@ -1,14 +1,10 @@
 <template>
     <MenuTemplate name='Contacts'>
         <template #buttons>
-            <IconRefresh
+            <TablerIconButton
                 v-if='!loading'
-                v-tooltip='"Refresh"'
-                role='button'
-                tabindex='0'
-                :size='32'
-                :stroke='1'
-                class='cursor-pointer'
+                icon='IconRefresh'
+                title='Refresh'
                 @click='fetchList'
             />
         </template>
@@ -69,13 +65,11 @@ import MenuTemplate from '../util/MenuTemplate.vue';
 import {
     TablerNone,
     TablerInput,
-    TablerLoading
+    TablerLoading,
+    TablerIconButton
 } from '@tak-ps/vue-tabler';
 import Contact from '../util/Contact.vue';
 import NoChannelsInfo from '../util/NoChannelsInfo.vue';
-import {
-    IconRefresh,
-} from '@tabler/icons-vue';
 
 export default {
     name: 'CloudTAKContacts',
@@ -85,7 +79,7 @@ export default {
         NoChannelsInfo,
         TablerInput,
         TablerLoading,
-        IconRefresh,
+        TablerIconButton,
         MenuTemplate
     },
     data: function() {
