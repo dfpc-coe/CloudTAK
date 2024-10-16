@@ -72,6 +72,7 @@
                                 <TablerInput
                                     v-model='mission.password'
                                     placeholder='Password'
+                                    :error='errors[mission.guid]'
                                     @keyup.enter='openMission(mission, true)'
                                 />
 
@@ -177,6 +178,7 @@ export default {
             create: false,
             loading: true,
             subscribed: new Set(),
+            errors: {},
             paging: {
                 filter: ''
             },
@@ -213,8 +215,16 @@ export default {
                 const o = mapStore.getOverlayByMode('mission', mission.guid);
                 this.$router.push(`/menu/missions/${mission.guid}?token=${encodeURIComponent(o.token)}`);
             } else if (mission.passwordProtected && usePassword) {
-                const getMission = await this.fetchMission(mission, mission.password);
-                this.$router.push(`/menu/missions/${mission.guid}?token=${encodeURIComponent(getMission.token)}`);
+                try {
+                    const getMission = await this.fetchMission(mission, mission.password);
+                    this.$router.push(`/menu/missions/${mission.guid}?token=${encodeURIComponent(getMission.token)}`);
+                } catch (err) {
+                    if (err.message.includes('Illegal attempt to access mission')) {
+                        this.errors[mission.guid] = 'Invalid Password';
+                    } else {
+                        this.errors[mission.guid] = err.message;
+                    }
+                }
             } else if (mission.passwordProtected && mission.password === undefined) {
                 mission.password = '';
             } else if (!mission.passwordProtected) {
