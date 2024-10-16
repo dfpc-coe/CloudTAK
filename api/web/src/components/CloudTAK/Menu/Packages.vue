@@ -4,21 +4,17 @@
         :loading='loading'
     >
         <template #buttons>
-            <IconPlus
+            <TablerIconButton
                 v-if='!loading'
-                v-tooltip='"Create Package"'
-                :size='32'
-                :stroke='1'
-                class='cursor-pointer'
+                icon='IconPlus'
+                title='Create Package'
                 @click='upload = true'
             />
 
-            <IconRefresh
+            <TablerIconButton
                 v-if='!loading'
-                v-tooltip='"Refresh"'
-                :size='32'
-                :stroke='1'
-                class='cursor-pointer'
+                icon='IconRefresh'
+                title='Refresh'
                 @click='fetchList'
             />
         </template>
@@ -89,12 +85,10 @@ import MenuTemplate from '../util/MenuTemplate.vue';
 import { std, stdurl } from '/src/std.ts';
 import {
     TablerNone,
+    TablerAlert,
+    TablerIconButton,
     TablerInput,
 } from '@tak-ps/vue-tabler';
-import {
-    IconPlus,
-    IconRefresh,
-} from '@tabler/icons-vue';
 import timeDiff from '../../../timediff.ts';
 import ChannelInfo from '../util/ChannelInfo.vue';
 import NoChannelsInfo from '../util/NoChannelsInfo.vue';
@@ -109,9 +103,9 @@ export default {
         NoChannelsInfo,
         ChannelInfo,
         TablerInput,
+        TablerAlert,
+        TablerIconButton,
         TablerNone,
-        IconPlus,
-        IconRefresh,
         MenuTemplate
     },
     data: function() {

@@ -8,25 +8,19 @@
             }'
         >
             <div class='modal-header px-0 mx-2'>
-                <IconCircleX
+                <TablerIconButton
                     v-if='backType === "close"'
-                    role='button'
-                    tabindex='0'
-                    :size='32'
-                    :stroke='1'
-                    class='cursor-pointer'
+                    title='Close Menu'
+                    icon='IconCircleX'
                     @click='$router.push("/")'
                 />
-                <IconCircleArrowLeft
+                <TablerIconButton
                     v-if='backType === "back"'
-                    role='button'
-                    tabindex='0'
-                    :size='32'
-                    :stroke='1'
-                    class='cursor-pointer'
+                    title='Close Menu'
+                    icon='IconCircleArrowLeft'
                     @click='$router.back()'
                 />
-                <div v-else />
+                <div v-else/>
 
                 <div
                     class='modal-title d-flex mx-auto'
@@ -64,6 +58,7 @@ import {
 import {
     TablerNone,
     TablerLoading,
+    TablerIconButton,
 } from '@tak-ps/vue-tabler';
 
 export default {
@@ -71,6 +66,7 @@ export default {
     components: {
         TablerNone,
         TablerLoading,
+        TablerIconButton,
         IconCircleX,
         IconCircleArrowLeft,
     },
