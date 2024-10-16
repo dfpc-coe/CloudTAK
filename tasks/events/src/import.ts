@@ -54,7 +54,6 @@ export default async function(md: Event) {
         } else if (imported.mode === 'Package') {
             const pkg = await DataPackage.parse(md.Local);
 
-            // TODO Support Geospatial Files
             const cots = await pkg.cots();
             for (const cot of cots) {
                 const feat = cot.to_geojson();
@@ -88,6 +87,8 @@ export default async function(md: Event) {
                     }
                 });
             }
+
+            
 
             await API.updateImport(md, {
                 status: 'Success',
