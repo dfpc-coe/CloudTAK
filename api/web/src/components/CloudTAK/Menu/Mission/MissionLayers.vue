@@ -5,17 +5,17 @@
         :border='false'
     >
         <template #buttons>
-            <IconPlus
+            <TablerIconButton
                 v-if='!createLayer && role.permissions.includes("MISSION_WRITE")'
+                title='New Mission Layer'
+                icon='IconPlus'
                 :size='24'
-                :stroke='1'
-                class='cursor-pointer'
                 @click='createLayer = true'
             />
-            <IconRefresh
+            <TablerIconButton
+                title='Refresh Mission Layers'
+                icon='IconRefresh'
                 :size='24'
-                :stroke='1'
-                class='cursor-pointer'
                 @click='refresh'
             />
         </template>
@@ -105,11 +105,11 @@
                                 v-text='`${layer.uids.length} Features`'
                             />
 
-                            <IconPencil
+                            <TablerIconButton
                                 v-if='role.permissions.includes("MISSION_WRITE")'
+                                title='Edit Name'
+                                icon='IconPencil'
                                 :size='24'
-                                :stroke='1'
-                                class='cursor-pointer'
                                 @click='layer._edit = true'
                             />
 
@@ -117,7 +117,6 @@
                                 v-if='role.permissions.includes("MISSION_WRITE")'
                                 displaytype='icon'
                                 :size='24'
-                                :stroke='1'
                                 @delete='deleteLayer(layer)'
                             />
                         </div>
@@ -162,9 +161,6 @@ import { std, stdurl } from '/src/std.ts';
 import {
     IconChevronRight,
     IconChevronDown,
-    IconPlus,
-    IconPencil,
-    IconRefresh,
     IconFiles,
     IconMapPin,
     IconMapPins,
@@ -175,7 +171,8 @@ import {
 import {
     TablerNone,
     TablerDelete,
-    TablerLoading
+    TablerLoading,
+    TablerIconButton,
 } from '@tak-ps/vue-tabler';
 import Feature from '../../util/Feature.vue';
 import MenuTemplate from '../../util/MenuTemplate.vue';
@@ -189,20 +186,18 @@ export default {
         IconChevronRight,
         IconChevronDown,
         IconFiles,
-        IconPencil,
         IconMapPin,
         IconMapPins,
         IconFolder,
         IconMap,
         IconPin,
-        IconPlus,
-        IconRefresh,
         TablerDelete,
         MenuTemplate,
         MissionLayerEdit,
         MissionLayerCreate,
         TablerNone,
-        TablerLoading
+        TablerLoading,
+        TablerIconButton,
     },
     props: {
         mission: Object,
