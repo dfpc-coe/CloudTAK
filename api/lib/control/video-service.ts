@@ -148,9 +148,9 @@ export default class VideoServiceControl {
 
         return {
             configured: true,
-            url: video.value,
-            username: user.value,
-            password: pass.value,
+            url: video.value || '',
+            username: user.value || '',
+            password: pass.value || '',
         }
     }
 

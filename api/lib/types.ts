@@ -9,6 +9,17 @@ import { Feature } from '@tak-ps/node-cot';
 export const LayerResponse = AugmentedLayer;
 export const DataResponse = AugmentedData;
 
+export const LayerError = Type.Object({
+    error: Type.String(),
+    feature: Feature.InputFeature
+});
+
+export const StandardLayerResponse = Type.Object({
+    status: Type.Integer(),
+    message: Type.String(),
+    errors: Type.Array(LayerError)
+});
+
 export const StandardResponse = Type.Object({
     status: Type.Integer(),
     message: Type.String()
