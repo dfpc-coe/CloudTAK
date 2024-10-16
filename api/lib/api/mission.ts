@@ -8,6 +8,12 @@ import { TAKItem, TAKList } from './types.js';
 import { MissionLog } from './mission-log.js';
 import type { Feature } from '@tak-ps/node-cot';
 
+export enum MissionSubscriberRole {
+    MISSION_OWNER = 'MISSION_OWNER',
+    MISSION_SUBSCRIBER = 'MISSION_SUBSCRIBER',
+    MISSION_READONLY_SUBSCRIBER = 'MISSION_READONLY_SUBSCRIBER'
+}
+
 export const Mission = Type.Object({
     name: Type.String(),
     description: Type.String(),
@@ -23,7 +29,10 @@ export const Mission = Type.Object({
     externalData: Type.Array(Type.Unknown()),
     feeds: Type.Array(Type.Unknown()),
     mapLayers: Type.Array(Type.Unknown()),
-    ownerRole: Type.Optional(Type.Array(Type.Unknown())),
+    ownerRole: Type.Optional(Type.Object({
+        permissions: Type.Array(Type.String()),
+        type: Type.Enum(MissionSubscriberRole)
+    })),
     inviteOnly: Type.Boolean(),
     expiration: Type.Number(),
     guid: Type.String(),
@@ -62,12 +71,6 @@ export const MissionChange = Type.Object({
     details: Type.Optional(Type.Any()),
     contentResource: Type.Optional(Type.Any())
 });
-
-export enum MissionSubscriberRole {
-    MISSION_OWNER = 'MISSION_OWNER',
-    MISSION_SUBSCRIBER = 'MISSION_SUBSCRIBER',
-    MISSION_READONLY_SUBSCRIBER = 'MISSION_READONLY_SUBSCRIBER'
-}
 
 export const MissionRole = Type.Object({
     permissions: Type.Array(Type.String()),

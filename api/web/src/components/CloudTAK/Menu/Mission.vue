@@ -11,11 +11,10 @@
                 @delete='deleteMission'
             />
             <TablerIconButton
-                icon='IconRefresh'
                 v-if='!loading.initial'
                 title='Refresh'
                 @click='refresh'
-            />
+            ><IconRefresh :size='32' stroke='1'/></TablerIconButton>
         </template>
         <template #default>
             <TablerAlert
@@ -150,6 +149,7 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import {
+    IconRefresh,
     IconBoxMultiple,
     IconArticle,
     IconTimeline,
@@ -167,6 +167,7 @@ import MenuTemplate from '../util/MenuTemplate.vue';
 export default {
     name: 'MissionSync',
     components: {
+        IconRefresh,
         MenuTemplate,
         TablerAlert,
         TablerDelete,

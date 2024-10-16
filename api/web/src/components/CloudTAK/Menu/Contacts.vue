@@ -6,7 +6,7 @@
                 icon='IconRefresh'
                 title='Refresh'
                 @click='fetchList'
-            />
+            ><IconRefresh :size='32' stroke='1'/></TablerIconButton>
         </template>
         <template #default>
             <div
@@ -63,6 +63,9 @@ const cotStore = useCOTStore();
 import { std, stdurl } from '/src/std.ts';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import {
+    IconRefresh
+} from '@tabler/icons-vue';
+import {
     TablerNone,
     TablerInput,
     TablerLoading,
@@ -80,6 +83,7 @@ export default {
         TablerInput,
         TablerLoading,
         TablerIconButton,
+        IconRefresh,
         MenuTemplate
     },
     data: function() {

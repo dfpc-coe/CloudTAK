@@ -6,17 +6,15 @@
         <template #buttons>
             <TablerIconButton
                 v-if='!loading'
-                icon='IconPlus'
                 title='Create Package'
                 @click='upload = true'
-            />
+            ><IconPlus :size='32' stroke='1'/></TablerIconButton>
 
             <TablerIconButton
                 v-if='!loading'
-                icon='IconRefresh'
                 title='Refresh'
                 @click='fetchList'
-            />
+            ><IconRefresh :size='32' stroke='1'/></TablerIconButton>
         </template>
         <template #default>
             <div
@@ -83,12 +81,17 @@
 <script>
 import MenuTemplate from '../util/MenuTemplate.vue';
 import { std, stdurl } from '/src/std.ts';
+
 import {
     TablerNone,
     TablerAlert,
     TablerIconButton,
     TablerInput,
 } from '@tak-ps/vue-tabler';
+import {
+    IconPlus,
+    IconRefresh,
+} from '@tabler/icons-vue';
 import timeDiff from '../../../timediff.ts';
 import ChannelInfo from '../util/ChannelInfo.vue';
 import NoChannelsInfo from '../util/NoChannelsInfo.vue';
@@ -100,6 +103,8 @@ export default {
     name: 'CloudTAKPackages',
     components: {
         Upload,
+        IconPlus,
+        IconRefresh,
         NoChannelsInfo,
         ChannelInfo,
         TablerInput,

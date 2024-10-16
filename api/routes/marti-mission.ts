@@ -159,7 +159,7 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.String(),
         }),
         description: 'Helper API to create a mission',
-        body: Type.Omit(MissionCreateInput, ['creatorUid', 'ownerRole']),
+        body: Type.Omit(MissionCreateInput, ['creatorUid']),
         res: Mission
     }, async (req, res) => {
         try {

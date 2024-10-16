@@ -8,16 +8,14 @@
             <TablerIconButton
                 v-if='!createLayer && role.permissions.includes("MISSION_WRITE")'
                 title='New Mission Layer'
-                icon='IconPlus'
                 :size='24'
                 @click='createLayer = true'
-            />
+            ><IconPlus :size='32' stroke='1'/></TablerIconButton>
             <TablerIconButton
                 title='Refresh Mission Layers'
-                icon='IconRefresh'
                 :size='24'
                 @click='refresh'
-            />
+            ><IconRefresh :size='32' stroke='1'/></TablerIconButton>
         </template>
 
         <div class='col-12'>
@@ -159,6 +157,8 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import {
+    IconPlus,
+    IconRefresh,
     IconChevronRight,
     IconChevronDown,
     IconFiles,
@@ -182,6 +182,8 @@ import MissionLayerEdit from './MissionLayerEdit.vue';
 export default {
     name: 'MissionLayers',
     components: {
+        IconPlus,
+        IconRefresh,
         Feature,
         IconChevronRight,
         IconChevronDown,
