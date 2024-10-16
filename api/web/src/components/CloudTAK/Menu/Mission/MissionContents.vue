@@ -5,12 +5,10 @@
         :border='false'
     >
         <template #buttons>
-            <IconPlus
+            <TablerIconButton
+                icon='IconPlus'
                 v-if='!upload && role.permissions.includes("MISSION_WRITE")'
-                v-tooltip='"Upload File"'
-                :size='32'
-                :stroke='1'
-                class='cursor-pointer'
+                title='Upload File'
                 @click='upload = true'
             />
         </template>
@@ -105,13 +103,13 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import {
-    IconPlus,
     IconFileImport,
     IconDownload,
 } from '@tabler/icons-vue';
 import UploadImport from '../../util/UploadImport.vue';
 import Status from '../../../util/Status.vue';
 import {
+    TablerIconButton,
     TablerAlert,
     TablerNone,
     TablerDelete,
@@ -129,7 +127,7 @@ export default {
         UploadImport,
         TablerAlert,
         TablerDelete,
-        IconPlus,
+        TablerIconButton,
         IconFileImport,
         IconDownload,
     },
