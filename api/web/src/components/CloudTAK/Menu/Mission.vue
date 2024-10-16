@@ -14,7 +14,12 @@
                 v-if='!loading.initial'
                 title='Refresh'
                 @click='refresh'
-            ><IconRefresh :size='32' stroke='1'/></TablerIconButton>
+            >
+                <IconRefresh
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
         </template>
         <template #default>
             <TablerAlert

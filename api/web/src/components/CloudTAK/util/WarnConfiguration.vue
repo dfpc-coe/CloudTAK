@@ -17,7 +17,10 @@
             </div>
         </div>
         <div class='modal-body text-white'>
-            <SettingsCallsign mode='emit' @update='$emit("close")'/>
+            <SettingsCallsign
+                mode='emit'
+                @update='$emit("close")'
+            />
         </div>
     </TablerModal>
 </template>

@@ -10,12 +10,22 @@
                 title='New Mission Layer'
                 :size='24'
                 @click='createLayer = true'
-            ><IconPlus :size='32' stroke='1'/></TablerIconButton>
+            >
+                <IconPlus
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
             <TablerIconButton
                 title='Refresh Mission Layers'
                 :size='24'
                 @click='refresh'
-            ><IconRefresh :size='32' stroke='1'/></TablerIconButton>
+            >
+                <IconRefresh
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
         </template>
 
         <div class='col-12'>
@@ -40,8 +50,8 @@
             <template v-else>
                 <Feature
                     v-for='feat of feats.values()'
-                    :deleteButton='false'
                     :key='feat.id'
+                    :delete-button='false'
                     :feature='feat'
                     :mission='mission'
                 />

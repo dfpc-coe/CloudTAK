@@ -9,7 +9,12 @@
                 v-if='!upload && role.permissions.includes("MISSION_WRITE")'
                 title='Upload File'
                 @click='upload = true'
-            ><IconPlus :size='32' stroke='1'/></TablerIconButton>
+            >
+                <IconPlus
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
         </template>
 
         <TablerAlert
