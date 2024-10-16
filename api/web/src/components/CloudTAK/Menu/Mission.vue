@@ -11,11 +11,11 @@
                 @delete='deleteMission'
             />
             <TablerIconButton
-                :icon='IconRefresh'
+                icon='IconRefresh'
                 v-if='!loading.initial'
                 title='Refresh'
                 @click='refresh'
-            ><IconRefresh :size='32' :stroke='1'/></TablerIconButton>
+            />
         </template>
         <template #default>
             <TablerAlert
@@ -156,7 +156,6 @@ import {
     IconFiles,
     IconInfoSquare,
     IconUsers,
-    IconRefresh,
 } from '@tabler/icons-vue';
 import {
     TablerAlert,
@@ -177,7 +176,6 @@ export default {
         IconFiles,
         IconInfoSquare,
         IconUsers,
-        IconRefresh,
         IconTimeline
     },
     emits: [
