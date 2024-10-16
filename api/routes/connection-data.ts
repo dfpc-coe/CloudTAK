@@ -119,7 +119,7 @@ export default async function router(schema: Schema, config: Config) {
                 default: true
             }),
             mission_groups: Type.Optional(Type.Array(Type.String())),
-            mission_role: Type.Optional(MissionSubscriberRole)
+            mission_role: Type.Optional(Type.Enum(MissionSubscriberRole))
         }),
         res: DataResponse
     }, async (req, res) => {

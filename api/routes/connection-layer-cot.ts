@@ -8,7 +8,7 @@ import Style from '../lib/style.js';
 import DDBQueue from '../lib/queue.js';
 import Config from '../lib/config.js';
 import CoT, { Feature } from '@tak-ps/node-cot';
-import { StandardResponse } from '../lib/types.js';
+import { StandardLayerResponse, LayerError } from '../lib/types.js';
 import TAKAPI, { APIAuthCertificate, } from '../lib/tak-api.js';
 
 export default async function router(schema: Schema, config: Config) {
@@ -30,7 +30,7 @@ export default async function router(schema: Schema, config: Config) {
             uids: Type.Optional(Type.Array(Type.String())),
             features: Type.Array(Feature.InputFeature)
         }),
-        res: StandardResponse
+        res: StandardLayerResponse
     }, async (req, res) => {
         try {
             await Auth.as_resource(config, req, {
@@ -60,23 +60,38 @@ export default async function router(schema: Schema, config: Config) {
 
             let pooledClient;
             let data;
-            const cots = [];
+
             if (!layer.data) {
                 pooledClient = await config.conns.get(layer.connection);
-
-                for (const feat of req.body.features) {
-                    cots.push(CoT.from_geojson(feat))
-                }
             } else if (layer.data) {
                 data = await config.models.Data.from(layer.data);
 
-                if (!data.mission_sync) {
-                    return res.status(202).json({ status: 202, message: 'Recieved but Data Mission Sync Disabled' });
-                }
-
                 pooledClient = await config.conns.get(data.connection);
-
                 if (!pooledClient) throw new Err(500, null, `Pooled Client for ${data.connection} not found in config`);
+            }
+
+            if (!pooledClient || !pooledClient.config || !pooledClient.config.enabled) {
+                return res.json({ status: 200, message: 'Recieved but Connection Paused', errors: [] });
+            }
+
+            const errors: Array<Static<typeof LayerError>> = [];
+            const cots = [];
+            for (const feat of req.body.features) {
+                try {
+                    cots.push(CoT.from_geojson(feat))
+                } catch (err) {
+                    errors.push({
+                        error: err instanceof Error ? err.message : String(err),
+                        feature: feat
+                    })
+                    console.error(`Failed to decode ${String(err)}: feature: ${JSON.stringify(feat)}`);
+                }
+            }
+
+            if (layer.data && data) {
+                if (!data.mission_sync) {
+                    return res.status(202).json({ status: 202, message: 'Recieved but Data Mission Sync Disabled', errors });
+                }
 
                 if (data.mission_diff) {
                     if (!Array.isArray(req.body.uids)) {
@@ -113,10 +128,8 @@ export default async function router(schema: Schema, config: Config) {
                         existMap.set(String(feat.id), feat);
                     }
 
-                    for (const feat of req.body.features) {
-                        const cot = CoT.from_geojson(feat);
-
-                        const exist = existMap.get(String(feat.id));
+                    for (const cot of cots) {
+                        const exist = existMap.get(cot.uid());
                         if (exist && data.mission_diff) {
                             const b = CoT.from_geojson(exist);
                             if (!cot.isDiff(b)) continue;
@@ -126,19 +139,14 @@ export default async function router(schema: Schema, config: Config) {
                         cots.push(cot)
                     }
                 } else {
-                    for (const feat of req.body.features) {
-                        const cot = CoT.from_geojson(feat);
+                    for (const cot of cots) {
                         cot.addDest({ mission: data.name });
                         cots.push(cot)
                     }
                 }
             }
 
-            if (!pooledClient || !pooledClient.config || !pooledClient.config.enabled) {
-                return res.json({ status: 200, message: 'Recieved but Connection Paused' });
-            }
-
-            if (cots.length === 0) return res.json({ status: 200, message: 'No features found' });
+            if (cots.length === 0) return res.json({ status: 200, message: 'No features found', errors });
 
             pooledClient.tak.write(cots);
 
@@ -159,9 +167,11 @@ export default async function router(schema: Schema, config: Config) {
                 }));
             }
 
+
             res.json({
-                status: 200,
-                message: 'Submitted'
+                status: errors.length ? 400 : 200,
+                message: 'Submitted',
+                errors
             });
         } catch (err) {
             return Err.respond(err, res);

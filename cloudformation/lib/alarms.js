@@ -44,6 +44,7 @@ export default {
                 }]
             }
         },
+
         EventAlarm: {
             Type: 'AWS::CloudWatch::Alarm',
             Properties: {
