@@ -12,6 +12,14 @@
 
 ### Pending Release
 
+### v4.19.0 - 2024-10-16
+
+- :rocket: Show Mission Sync password errors inline
+- :bug: Fix `ownerRole` response types which had resulted in error on Mission Create
+- :tada: Allow for tolerant GeoJSON parsing and return failed features & reason in response
+- :rocket: Start to use `TablerIconButton` for standard accessibility features
+- :rocket: Use `TablerDelete` when deleting Mission Sync Logs
+
 ### v4.18.1 - 2024-10-15
 
 - :rocket: Delete leases when possible
