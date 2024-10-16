@@ -10,14 +10,12 @@
                 displaytype='icon'
                 @delete='deleteMission'
             />
-            <IconRefresh
+            <TablerIconButton
+                :icon='IconRefresh'
                 v-if='!loading.initial'
-                v-tooltip='"Refresh"'
-                :size='32'
-                :stroke='1'
-                class='cursor-pointer'
+                title='Refresh'
                 @click='refresh'
-            />
+            ><IconRefresh :size='32' :stroke='1'/></TablerIconButton>
         </template>
         <template #default>
             <TablerAlert
@@ -163,6 +161,7 @@ import {
 import {
     TablerAlert,
     TablerDelete,
+    TablerIconButton,
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
 
@@ -172,6 +171,7 @@ export default {
         MenuTemplate,
         TablerAlert,
         TablerDelete,
+        TablerIconButton,
         IconBoxMultiple,
         IconArticle,
         IconFiles,
