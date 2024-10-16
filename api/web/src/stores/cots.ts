@@ -283,7 +283,7 @@ export const useCOTStore = defineStore('cots', {
             const feats: Set<COT> = new Set();
 
             for (const value of store.values()) {
-                if (value.path === path) {
+                if (value.path === path && value.properties.archived) {
                     feats.add(value);
                 }
             }
