@@ -5,14 +5,16 @@
         :border='false'
     >
         <template #buttons>
-            <IconPlus
+            <TablerIconButton
                 v-if='!upload && role.permissions.includes("MISSION_WRITE")'
-                v-tooltip='"Upload File"'
-                :size='32'
-                :stroke='1'
-                class='cursor-pointer'
+                title='Upload File'
                 @click='upload = true'
-            />
+            >
+                <IconPlus
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
         </template>
 
         <TablerAlert
@@ -112,6 +114,7 @@ import {
 import UploadImport from '../../util/UploadImport.vue';
 import Status from '../../../util/Status.vue';
 import {
+    TablerIconButton,
     TablerAlert,
     TablerNone,
     TablerDelete,
@@ -124,12 +127,13 @@ export default {
     name: 'MissionContents',
     components: {
         Status,
+        IconPlus,
         MenuTemplate,
         TablerNone,
         UploadImport,
         TablerAlert,
         TablerDelete,
-        IconPlus,
+        TablerIconButton,
         IconFileImport,
         IconDownload,
     },

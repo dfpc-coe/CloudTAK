@@ -8,24 +8,27 @@
             }'
         >
             <div class='modal-header px-0 mx-2'>
-                <IconCircleX
+                <TablerIconButton
                     v-if='backType === "close"'
-                    role='button'
-                    tabindex='0'
-                    :size='32'
-                    :stroke='1'
-                    class='cursor-pointer'
+                    title='Close Menu'
                     @click='$router.push("/")'
-                />
-                <IconCircleArrowLeft
+                >
+                    <IconCircleX
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+                <TablerIconButton
                     v-if='backType === "back"'
-                    role='button'
-                    tabindex='0'
-                    :size='32'
-                    :stroke='1'
-                    class='cursor-pointer'
+                    title='Close Menu'
+                    icon='IconCircleArrowLeft'
                     @click='$router.back()'
-                />
+                >
+                    <IconCircleArrowLeft
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
                 <div v-else />
 
                 <div
@@ -56,59 +59,57 @@
     </div>
 </template>
 
-<script>
-import {
-    IconCircleX,
-    IconCircleArrowLeft,
-} from '@tabler/icons-vue'
+<script setup lang='ts'>
+
 import {
     TablerNone,
     TablerLoading,
+    TablerIconButton,
 } from '@tak-ps/vue-tabler';
 
-export default {
-    name: 'MenuTemplate',
-    components: {
-        TablerNone,
-        TablerLoading,
-        IconCircleX,
-        IconCircleArrowLeft,
-    },
-    props: {
-        name: {
-            type: String,
-            required: true
-        },
-        border: {
-            type: Boolean,
-            default: true
-        },
-        back: {
-            type: Boolean,
-            default: true
-        },
-        loading: {
-            type: Boolean,
-            default: false,
-        },
-        none: {
-            type: Boolean,
-            default: false,
-        }
-    },
-    computed: {
-        backType: function() {
-            if (!this.back) return "none";
+import {
+    IconCircleX,
+    IconCircleArrowLeft
+} from '@tabler/icons-vue';
 
-            if (
-                !this.$router.options.history.state.back
-                || this.$router.options.history.state.back === '/'
-            ) {
-                return 'close'
-            } else {
-                return 'back'
-            }
-        }
+import { useRouter } from 'vue-router'
+import { defineProps, computed } from 'vue';
+
+const router = useRouter()
+
+const props = defineProps({
+    name: {
+        type: String,
+        required: true
+    },
+    border: {
+        type: Boolean,
+        default: true
+    },
+    back: {
+        type: Boolean,
+        default: true
+    },
+    loading: {
+        type: Boolean,
+        default: false,
+    },
+    none: {
+        type: Boolean,
+        default: false,
     }
-}
+});
+
+const backType = computed(() => {
+    if (!props.back) return "none";
+
+    if (
+        !router.options.history.state.back
+        || router.options.history.state.back === '/'
+    ) {
+        return 'close'
+    } else {
+        return 'back'
+    }
+});
 </script>

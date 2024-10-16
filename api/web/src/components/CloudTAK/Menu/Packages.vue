@@ -4,23 +4,27 @@
         :loading='loading'
     >
         <template #buttons>
-            <IconPlus
+            <TablerIconButton
                 v-if='!loading'
-                v-tooltip='"Create Package"'
-                :size='32'
-                :stroke='1'
-                class='cursor-pointer'
+                title='Create Package'
                 @click='upload = true'
-            />
+            >
+                <IconPlus
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
 
-            <IconRefresh
+            <TablerIconButton
                 v-if='!loading'
-                v-tooltip='"Refresh"'
-                :size='32'
-                :stroke='1'
-                class='cursor-pointer'
+                title='Refresh'
                 @click='fetchList'
-            />
+            >
+                <IconRefresh
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
         </template>
         <template #default>
             <div
@@ -87,8 +91,11 @@
 <script>
 import MenuTemplate from '../util/MenuTemplate.vue';
 import { std, stdurl } from '/src/std.ts';
+
 import {
     TablerNone,
+    TablerAlert,
+    TablerIconButton,
     TablerInput,
 } from '@tak-ps/vue-tabler';
 import {
@@ -106,12 +113,14 @@ export default {
     name: 'CloudTAKPackages',
     components: {
         Upload,
+        IconPlus,
+        IconRefresh,
         NoChannelsInfo,
         ChannelInfo,
         TablerInput,
+        TablerAlert,
+        TablerIconButton,
         TablerNone,
-        IconPlus,
-        IconRefresh,
         MenuTemplate
     },
     data: function() {

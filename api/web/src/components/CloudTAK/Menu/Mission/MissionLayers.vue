@@ -5,19 +5,27 @@
         :border='false'
     >
         <template #buttons>
-            <IconPlus
+            <TablerIconButton
                 v-if='!createLayer && role.permissions.includes("MISSION_WRITE")'
+                title='New Mission Layer'
                 :size='24'
-                :stroke='1'
-                class='cursor-pointer'
                 @click='createLayer = true'
-            />
-            <IconRefresh
+            >
+                <IconPlus
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
+            <TablerIconButton
+                title='Refresh Mission Layers'
                 :size='24'
-                :stroke='1'
-                class='cursor-pointer'
                 @click='refresh'
-            />
+            >
+                <IconRefresh
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
         </template>
 
         <div class='col-12'>
@@ -40,18 +48,13 @@
                 label='Layers'
             />
             <template v-else>
-                <div
+                <Feature
                     v-for='feat of feats.values()'
                     :key='feat.id'
-                    class='hover-dark py-2 mx-2'
-                >
-                    <IconMapPin
-                        :size='32'
-                        :stroke='1'
-                    />
-
-                    <span v-text='feat.properties.callsign || "UNKNOWN"' />
-                </div>
+                    :delete-button='false'
+                    :feature='feat'
+                    :mission='mission'
+                />
                 <div
                     v-for='layer in layers'
                     :key='layer.uid'
@@ -110,11 +113,11 @@
                                 v-text='`${layer.uids.length} Features`'
                             />
 
-                            <IconPencil
+                            <TablerIconButton
                                 v-if='role.permissions.includes("MISSION_WRITE")'
+                                title='Edit Name'
+                                icon='IconPencil'
                                 :size='24'
-                                :stroke='1'
-                                class='cursor-pointer'
                                 @click='layer._edit = true'
                             />
 
@@ -122,7 +125,6 @@
                                 v-if='role.permissions.includes("MISSION_WRITE")'
                                 displaytype='icon'
                                 :size='24'
-                                :stroke='1'
                                 @delete='deleteLayer(layer)'
                             />
                         </div>
@@ -165,11 +167,10 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import {
+    IconPlus,
+    IconRefresh,
     IconChevronRight,
     IconChevronDown,
-    IconPlus,
-    IconPencil,
-    IconRefresh,
     IconFiles,
     IconMapPin,
     IconMapPins,
@@ -180,8 +181,10 @@ import {
 import {
     TablerNone,
     TablerDelete,
-    TablerLoading
+    TablerLoading,
+    TablerIconButton,
 } from '@tak-ps/vue-tabler';
+import Feature from '../../util/Feature.vue';
 import MenuTemplate from '../../util/MenuTemplate.vue';
 import MissionLayerCreate from './MissionLayerCreate.vue';
 import MissionLayerEdit from './MissionLayerEdit.vue';
@@ -189,23 +192,24 @@ import MissionLayerEdit from './MissionLayerEdit.vue';
 export default {
     name: 'MissionLayers',
     components: {
+        IconPlus,
+        IconRefresh,
+        Feature,
         IconChevronRight,
         IconChevronDown,
         IconFiles,
-        IconPencil,
         IconMapPin,
         IconMapPins,
         IconFolder,
         IconMap,
         IconPin,
-        IconPlus,
-        IconRefresh,
         TablerDelete,
         MenuTemplate,
         MissionLayerEdit,
         MissionLayerCreate,
         TablerNone,
-        TablerLoading
+        TablerLoading,
+        TablerIconButton,
     },
     props: {
         mission: Object,

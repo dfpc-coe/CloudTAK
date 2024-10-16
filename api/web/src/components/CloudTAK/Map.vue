@@ -12,8 +12,14 @@
         <Loading v-if='loading.main || !isLoaded' />
 
         <template v-if='isLoaded && !loading.main'>
-            <WarnConfiguration v-if='warnConfiguration' @close='warnConfiguration = false' />
-            <WarnChannels v-else-if='warnChannels' @close='warnChannels = false' />
+            <WarnConfiguration
+                v-if='warnConfiguration'
+                @close='warnConfiguration = false'
+            />
+            <WarnChannels
+                v-else-if='warnChannels'
+                @close='warnChannels = false'
+            />
 
             <div
                 v-if='profile'

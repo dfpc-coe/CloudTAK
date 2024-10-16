@@ -10,14 +10,16 @@
                 displaytype='icon'
                 @delete='deleteMission'
             />
-            <IconRefresh
+            <TablerIconButton
                 v-if='!loading.initial'
-                v-tooltip='"Refresh"'
-                :size='32'
-                :stroke='1'
-                class='cursor-pointer'
+                title='Refresh'
                 @click='refresh'
-            />
+            >
+                <IconRefresh
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
         </template>
         <template #default>
             <TablerAlert
@@ -152,32 +154,34 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import {
+    IconRefresh,
     IconBoxMultiple,
     IconArticle,
     IconTimeline,
     IconFiles,
     IconInfoSquare,
     IconUsers,
-    IconRefresh,
 } from '@tabler/icons-vue';
 import {
     TablerAlert,
     TablerDelete,
+    TablerIconButton,
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
 
 export default {
     name: 'MissionSync',
     components: {
+        IconRefresh,
         MenuTemplate,
         TablerAlert,
         TablerDelete,
+        TablerIconButton,
         IconBoxMultiple,
         IconArticle,
         IconFiles,
         IconInfoSquare,
         IconUsers,
-        IconRefresh,
         IconTimeline
     },
     emits: [

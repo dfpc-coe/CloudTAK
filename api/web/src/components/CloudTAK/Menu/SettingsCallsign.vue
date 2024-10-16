@@ -1,7 +1,7 @@
 <template>
     <MenuTemplate name='Callsign &amp; Device'>
         <div class='mx-2'>
-            <SettingsCallsign/>
+            <SettingsCallsign />
         </div>
     </MenuTemplate>
 </template>
