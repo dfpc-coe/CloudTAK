@@ -8,13 +8,23 @@
                 v-if='!loading'
                 title='Create Package'
                 @click='upload = true'
-            ><IconPlus :size='32' stroke='1'/></TablerIconButton>
+            >
+                <IconPlus
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
 
             <TablerIconButton
                 v-if='!loading'
                 title='Refresh'
                 @click='fetchList'
-            ><IconRefresh :size='32' stroke='1'/></TablerIconButton>
+            >
+                <IconRefresh
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
         </template>
         <template #default>
             <div

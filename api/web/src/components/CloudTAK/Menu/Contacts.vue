@@ -6,7 +6,12 @@
                 icon='IconRefresh'
                 title='Refresh'
                 @click='fetchList'
-            ><IconRefresh :size='32' stroke='1'/></TablerIconButton>
+            >
+                <IconRefresh
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
         </template>
         <template #default>
             <div

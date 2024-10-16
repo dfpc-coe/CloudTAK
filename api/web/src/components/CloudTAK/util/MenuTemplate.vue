@@ -12,14 +12,24 @@
                     v-if='backType === "close"'
                     title='Close Menu'
                     @click='$router.push("/")'
-                ><IconCircleX :size='32' stroke='1'/></TablerIconButton>
+                >
+                    <IconCircleX
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
                 <TablerIconButton
                     v-if='backType === "back"'
                     title='Close Menu'
                     icon='IconCircleArrowLeft'
                     @click='$router.back()'
-                ><IconCircleArrowLeft :size='32' stroke='1'/></TablerIconButton>
-                <div v-else/>
+                >
+                    <IconCircleArrowLeft
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+                <div v-else />
 
                 <div
                     class='modal-title d-flex mx-auto'

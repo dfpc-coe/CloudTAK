@@ -51,6 +51,12 @@ export default {
         TablerEnum,
         TablerLoading,
     },
+    props: {
+        mode: {
+            type: String,
+            default: 'router'
+        }
+    },
     emits: [
         'update'
     ],
@@ -59,12 +65,6 @@ export default {
             loading: true,
             profile: {},
             config: {}
-        }
-    },
-    props: {
-        mode: {
-            type: String,
-            default: 'router'
         }
     },
     computed: {
