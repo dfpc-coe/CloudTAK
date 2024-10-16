@@ -52,10 +52,6 @@
 
 <script>
 import {
-    IconCircleX,
-    IconCircleArrowLeft,
-} from '@tabler/icons-vue'
-import {
     TablerNone,
     TablerLoading,
     TablerIconButton,
@@ -67,8 +63,6 @@ export default {
         TablerNone,
         TablerLoading,
         TablerIconButton,
-        IconCircleX,
-        IconCircleArrowLeft,
     },
     props: {
         name: {
