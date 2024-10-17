@@ -19,13 +19,11 @@
             />
 
             <div class='ms-auto btn-list'>
-                <IconRefresh
+                <TablerIconButton
                     v-if='editLease.id'
-                    :size='32'
-                    stroke='1'
-                    class='cursor-pointer'
                     @click='fetchLease'
-                />
+                ><IconRefresh :size='32' stroke='1'/></TablerIconButton>
+
                 <TablerDelete
                     v-if='editLease.id'
                     displaytype='icon'
@@ -158,7 +156,25 @@
                             Video Streaming Protocols
                         </div>
                         <template v-if='expired(lease.expiration)'>
-                            <TablerAlert :err='new Error("Expired Lease")'/>
+                            <TablerAlert
+                                title='Expired Lease'
+                                :err='new Error("Renew the lease to continue using the video stream")'
+                                :advanced='false'
+                            />
+
+                            <div class='col-12 d-flex justify-content-center pb-3'>
+                                <TablerEnum
+                                    v-model='editLease.duration'
+                                    :options='["16 Hours", "12 Hours", "6 Hours", "1 Hour"]'
+                                    style='width: 300px;'
+                                />
+                            </div>
+                            <div class='col-12 d-flex justify-content-center'>
+                                <button
+                                    class='btn btn-primary'
+                                    style='width: 280px'
+                                >Renew Lease</button>
+                            </div>
                         </template>
                         <template v-else>
                             <div
@@ -176,7 +192,7 @@
             </div>
             <div class='modal-footer'>
                 <button
-                    v-if='protocols.rtsp'
+                    v-if='protocols.rtsp && !expired(lease.expiration)'
                     class='btn btn-secondary'
                     @click='wizard = 1'
                 >
@@ -200,7 +216,7 @@
 <script setup lang='ts'>
 import { std } from '../../../../std.ts';
 import CopyField from '../../util/CopyField.vue';
-import { defineProps, defineEmits, ref, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import type { VideoLease, VideoLeaseResponse, VideoLeaseProtocols } from '../../../../types.ts';
 import {
     IconRefresh,
@@ -211,6 +227,7 @@ import {
     IconChevronDown,
 } from '@tabler/icons-vue';
 import {
+    TablerIconButton,
     TablerLoading,
     TablerAlert,
     TablerModal,
