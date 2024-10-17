@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v4.19.2 - 2024-10-17
+
+- :arrow-up: Update to `@types/express@5`
+
 ### v4.19.1 - 2024-10-16
 
 - :rocket: Match actual `status` to status returned in body
