@@ -4,19 +4,34 @@
             <TablerIconButton
                 title='Create Iconset'
                 @click='editModal = {}'
-            ><IconPlus :size='32' :stroke='1'/></TablerIconButton>
+            >
+                <IconPlus
+                    :size='32'
+                    :stroke='1'
+                />
+            </TablerIconButton>
 
             <TablerIconButton
                 v-if='!upload'
                 title='Zip Upload'
                 @click='upload = true'
-            ><IconFileUpload :size='32' :stroke='1'/></TablerIconButton>
+            >
+                <IconFileUpload
+                    :size='32'
+                    :stroke='1'
+                />
+            </TablerIconButton>
 
             <TablerIconButton
                 v-if='!loading'
                 title='Refresh'
                 @click='fetchList'
-            ><IconRefresh :size='32' :stroke='1'/></TablerIconButton>
+            >
+                <IconRefresh
+                    :size='32'
+                    :stroke='1'
+                />
+            </TablerIconButton>
         </template>
         <template #default>
             <template v-if='upload'>
@@ -118,7 +133,12 @@
                                 <TablerIconButton
                                     title='Download TAK Zip'
                                     @click.stop='download(iconset)'
-                                ><IconDownload :size='32' :stroke='1'/></TablerIconButton>
+                                >
+                                    <IconDownload
+                                        :size='32'
+                                        :stroke='1'
+                                    />
+                                </TablerIconButton>
                             </div>
                         </div>
                     </div>
@@ -167,7 +187,6 @@ import {
     IconRefresh,
     IconDownload,
     IconFileUpload,
-    IconSearch,
     IconAlbum,
     IconPhoto,
     IconPlus
@@ -191,7 +210,6 @@ export default {
         TablerLoading,
         TablerIconButton,
         IconRefresh,
-        IconSearch,
     },
     data: function() {
         return {

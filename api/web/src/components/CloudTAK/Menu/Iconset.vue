@@ -5,18 +5,33 @@
                 v-if='iconset.username || profile.system_admin'
                 title='Create Icon'
                 @click='editIconModal = {}'
-            ><IconPlus :size='32' :stroke='1'/></TablerIconButton>
+            >
+                <IconPlus
+                    :size='32'
+                    :stroke='1'
+                />
+            </TablerIconButton>
 
             <TablerIconButton
                 v-if='iconset.username || profile.system_admin'
                 title='Settings'
                 @click='editIconsetModal = iconset'
-            ><IconSettings :size='32' :stroke='1'/></TablerIconButton>
+            >
+                <IconSettings
+                    :size='32'
+                    :stroke='1'
+                />
+            </TablerIconButton>
 
             <TablerIconButton
                 title='Download TAK Zip'
                 @click.stop='download'
-            ><IconDownload :size='32' :stroke='1'/></TablerIconButton>
+            >
+                <IconDownload
+                    :size='32'
+                    :stroke='1'
+                />
+            </TablerIconButton>
 
             <TablerDelete
                 v-if='iconset.username || profile.system_admin'
