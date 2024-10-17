@@ -292,6 +292,7 @@ export default async function router(schema: Schema, config: Config) {
         body: Type.Object({
             name: Default.NameField,
             data: Type.String(),
+            data_alt: Type.Optional(Type.String()),
             type2525b: Type.Optional(Type.Union([Type.String(), Type.Null()]))
         }),
         res: IconResponse
@@ -404,6 +405,7 @@ export default async function router(schema: Schema, config: Config) {
         body: Type.Object({
             name: Type.Optional(Type.String()),
             data: Type.Optional(Type.String()),
+            data_alt: Type.Optional(Type.String()),
             type2525b: Type.Optional(Type.Union([Type.String(), Type.Null()]))
         }),
         res: IconResponse

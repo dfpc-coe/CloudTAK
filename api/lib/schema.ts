@@ -160,7 +160,7 @@ export const Icon = pgTable('icons', {
     iconset: text().notNull().references(() => Iconset.uid),
     type2525b: text(),
     data: text().notNull(),
-    data_alt: text().notNull(),
+    data_alt: text(),
     path: text().notNull()
 });
 
