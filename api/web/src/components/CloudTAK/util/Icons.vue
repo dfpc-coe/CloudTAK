@@ -4,21 +4,9 @@
             <h3 class='card-title'>
                 Icons
             </h3>
-
-            <div class='ms-auto btn-list'>
-                <IconSearch
-                    :size='32'
-                    :stroke='1'
-                    class='cursor-pointer'
-                    @click='search = !search'
-                />
-            </div>
         </div>
 
-        <div
-            v-if='search'
-            class='col-12 px-2'
-        >
+        <div class='col-12 px-2'>
             <TablerInput
                 v-model='paging.filter'
                 placeholder='Filter'
@@ -102,16 +90,14 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
-    IconSearch
 } from '@tabler/icons-vue'
 
 export default {
-    name: 'IconCombineds',
+    name: 'IconsCombined',
     components: {
         TablerNone,
         TablerPager,
         TablerInput,
-        IconSearch,
         TablerLoading
     },
     props: {
@@ -127,7 +113,6 @@ export default {
         return {
             err: false,
             loading: true,
-            search: false,
             paging: {
                 filter: '',
                 limit: 100 - 4, // keeps the icon in an even grid
@@ -140,9 +125,6 @@ export default {
         }
     },
     watch: {
-        search: function() {
-            if (!this.search) this.paging.filter = '';
-        },
         paging: {
             deep: true,
             handler: async function() {
@@ -151,7 +133,6 @@ export default {
         }
     },
     mounted: async function() {
-        // If the icon has a `:` it is part of an iconset, otherwise it is derived from the type
         await this.fetchList();
     },
     methods: {
@@ -166,7 +147,7 @@ export default {
             url.searchParams.append('filter', this.paging.filter);
             url.searchParams.append('limit', this.paging.limit);
             url.searchParams.append('page', this.paging.page);
-            if (this.iconset && this.iconset.includes(':')) url.searchParams.append('iconset', this.iconset);
+            if (this.iconset) url.searchParams.append('iconset', this.iconset);
             this.list = await std(url);
             this.loading = false;
         }

@@ -1,29 +1,37 @@
 <template>
     <MenuTemplate name='Iconsets'>
         <template #buttons>
-            <IconPlus
-                v-tooltip='"Create Iconset"'
-                :size='32'
-                :stroke='1'
-                class='cursor-pointer'
+            <TablerIconButton
+                title='Create Iconset'
                 @click='editModal = {}'
-            />
-            <IconFileUpload
+            >
+                <IconPlus
+                    :size='32'
+                    :stroke='1'
+                />
+            </TablerIconButton>
+
+            <TablerIconButton
                 v-if='!upload'
-                v-tooltip='"Zip Upload"'
-                :size='32'
-                :stroke='1'
-                class='cursor-pointer'
+                title='Zip Upload'
                 @click='upload = true'
-            />
-            <IconRefresh
+            >
+                <IconFileUpload
+                    :size='32'
+                    :stroke='1'
+                />
+            </TablerIconButton>
+
+            <TablerIconButton
                 v-if='!loading'
-                v-tooltip='"Refresh"'
-                :size='32'
-                :stroke='1'
-                class='cursor-pointer'
+                title='Refresh'
                 @click='fetchList'
-            />
+            >
+                <IconRefresh
+                    :size='32'
+                    :stroke='1'
+                />
+            </TablerIconButton>
         </template>
         <template #default>
             <template v-if='upload'>
@@ -86,21 +94,9 @@
                             <h3 class='card-title'>
                                 Iconsets
                             </h3>
-
-                            <div class='ms-auto btn-list'>
-                                <IconSearch
-                                    :size='32'
-                                    :stroke='1'
-                                    class='cursor-pointer'
-                                    @click='search = !search'
-                                />
-                            </div>
                         </div>
 
-                        <div
-                            v-if='search'
-                            class='col-12 px-2'
-                        >
+                        <div class='col-12 px-2'>
                             <TablerInput
                                 v-model='paging.filter'
                                 placeholder='Filter'
@@ -134,13 +130,15 @@
                                     v-else
                                     class='mx-3 ms-auto badge border bg-red text-white'
                                 >Private</span>
-                                <IconDownload
-                                    v-tooltip='"Download TAK Zip"'
-                                    :size='32'
-                                    :stroke='1'
-                                    class='cursor-pointer'
+                                <TablerIconButton
+                                    title='Download TAK Zip'
                                     @click.stop='download(iconset)'
-                                />
+                                >
+                                    <IconDownload
+                                        :size='32'
+                                        :stroke='1'
+                                    />
+                                </TablerIconButton>
                             </div>
                         </div>
                     </div>
@@ -183,12 +181,12 @@ import {
     TablerPager,
     TablerInput,
     TablerLoading,
+    TablerIconButton,
 } from '@tak-ps/vue-tabler';
 import {
     IconRefresh,
     IconDownload,
     IconFileUpload,
-    IconSearch,
     IconAlbum,
     IconPhoto,
     IconPlus
@@ -210,8 +208,8 @@ export default {
         TablerPager,
         TablerInput,
         TablerLoading,
+        TablerIconButton,
         IconRefresh,
-        IconSearch,
     },
     data: function() {
         return {
@@ -220,7 +218,6 @@ export default {
             loading: true,
             upload: false,
             editModal: false,
-            search: false,
             paging: {
                 limit: 20,
                 filter: '',
