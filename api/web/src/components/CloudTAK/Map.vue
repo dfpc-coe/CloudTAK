@@ -924,7 +924,7 @@ export default {
                     // Eventually make a sprite URL part of the overlay so KMLs can load a sprite package
                     const iconsets = await std('/api/iconset');
                     for (const iconset of iconsets.items) {
-                        mapStore.map.addSprite(iconset.uid, String(stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=${iconset.uid}`)))
+                        mapStore.map.addSprite(iconset.uid, String(stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=${iconset.uid}&alt=true`)))
                     }
 
                     await mapStore.initOverlays();
