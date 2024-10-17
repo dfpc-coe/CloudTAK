@@ -15,90 +15,90 @@ import { json, boolean, numeric, integer, timestamp, pgTable, serial, varchar, t
 
 /** Internal Tables for Postgis for use with drizzle-kit push:pg */
 export const SpatialRefSys = pgTable('spatial_ref_sys', {
-    srid: integer('srid').primaryKey(),
-    auth_name: varchar('auth_name', { length: 256 }),
-    auth_srid: integer('auth_srid'),
-    srtext: varchar('srtext', { length: 2048 }),
-    proj4text: varchar('proj4text', { length: 2048 })
+    srid: integer().primaryKey(),
+    auth_name: varchar({ length: 256 }),
+    auth_srid: integer(),
+    srtext: varchar({ length: 2048 }),
+    proj4text: varchar({ length: 2048 })
 });
 
 /** ==== END ==== */
 
 export const Profile = pgTable('profile', {
-    id: integer('id'),
-    name: text('name').default('Unknown'),
-    username: text('username').primaryKey(),
-    last_login: timestamp('last_login', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    auth: json('auth').$type<ConnectionAuth>().notNull(),
-    created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    phone: text('phone').notNull().default(''),
-    tak_callsign: text('tak_callsign').notNull().default('CloudTAK User'),
-    tak_group: text('tak_group').$type<TAKGroup>().notNull().default(TAKGroup.ORANGE),
-    tak_role: text('tak_role').$type<TAKRole>().notNull().default(TAKRole.TEAM_MEMBER),
-    tak_loc: geometry('tak_loc', { srid: 4326, type: GeometryType.Point }),
-    display_stale: text('display_stale').$type<Profile_Stale>().notNull().default(Profile_Stale.TenMinutes),
-    display_distance: text('display_distance').$type<Profile_Distance>().notNull().default(Profile_Distance.MILE),
-    display_elevation: text('display_elevation').$type<Profile_Elevation>().notNull().default(Profile_Elevation.FEET),
-    display_speed: text('display_speed').$type<Profile_Speed>().notNull().default(Profile_Speed.MPH),
-    display_text: text('display_text').$type<Profile_Text>().notNull().default(Profile_Text.Medium),
-    system_admin: boolean('system_admin').notNull().default(false),
-    agency_admin: json('agency_admin').notNull().$type<Array<number>>().default([])
+    id: integer(),
+    name: text().default('Unknown'),
+    username: text().primaryKey(),
+    last_login: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    auth: json().$type<ConnectionAuth>().notNull(),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    phone: text().notNull().default(''),
+    tak_callsign: text().notNull().default('CloudTAK User'),
+    tak_group: text().$type<TAKGroup>().notNull().default(TAKGroup.ORANGE),
+    tak_role: text().$type<TAKRole>().notNull().default(TAKRole.TEAM_MEMBER),
+    tak_loc: geometry({ srid: 4326, type: GeometryType.Point }),
+    display_stale: text().$type<Profile_Stale>().notNull().default(Profile_Stale.TenMinutes),
+    display_distance: text().$type<Profile_Distance>().notNull().default(Profile_Distance.MILE),
+    display_elevation: text().$type<Profile_Elevation>().notNull().default(Profile_Elevation.FEET),
+    display_speed: text().$type<Profile_Speed>().notNull().default(Profile_Speed.MPH),
+    display_text: text().$type<Profile_Text>().notNull().default(Profile_Text.Medium),
+    system_admin: boolean().notNull().default(false),
+    agency_admin: json().notNull().$type<Array<number>>().default([])
 });
 
 export const ProfileChat = pgTable('profile_chats', {
-    id: serial('id').primaryKey(),
-    username: text('username').notNull().references(() => Profile.username),
-    chatroom: text('chatroom').notNull(),
-    sender_callsign: text('sender_callsign').notNull(),
-    sender_uid: text('sender_uid').notNull(),
-    created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    message_id: text('message_id').notNull(),
-    message: text('message').notNull()
+    id: serial().primaryKey(),
+    username: text().notNull().references(() => Profile.username),
+    chatroom: text().notNull(),
+    sender_callsign: text().notNull(),
+    sender_uid: text().notNull(),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    message_id: text().notNull(),
+    message: text().notNull()
 });
 
 export const VideoLease = pgTable('video_lease', {
-    id: serial('id').primaryKey(),
-    name: text('name').notNull(),
-    created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    username: text('username').notNull().references(() => Profile.username),
+    id: serial().primaryKey(),
+    name: text().notNull(),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    username: text().notNull().references(() => Profile.username),
 
-    ephemeral: boolean('ephemeral').notNull().default(false),
-    expiration: timestamp('expiration', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now() + INTERVAL 1 HOUR;`),
-    path: text('path').notNull(),
-    stream_user: text('stream_user'),
-    stream_pass: text('stream_pass'),
+    ephemeral: boolean().notNull().default(false),
+    expiration: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now() + INTERVAL 1 HOUR;`),
+    path: text().notNull(),
+    stream_user: text(),
+    stream_pass: text(),
 
     // Optional Proxy Mode
-    proxy: text('proxy'),
+    proxy: text(),
 });
 
 export const ProfileFeature = pgTable('profile_features', {
-    id: text('id').primaryKey(),
-    path: text('path').notNull().default('/'),
-    username: text('username').notNull().references(() => Profile.username),
-    properties: json('properties').notNull().default({}),
-    geometry: geometry('geometry', { type: GeometryType.GeometryZ, srid: 4326 }).notNull()
+    id: text().primaryKey(),
+    path: text().notNull().default('/'),
+    username: text().notNull().references(() => Profile.username),
+    properties: json().notNull().default({}),
+    geometry: geometry({ type: GeometryType.GeometryZ, srid: 4326 }).notNull()
 });
 
 export const Basemap = pgTable('basemaps', {
-    id: serial('id').primaryKey(),
-    created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    name: text('name').notNull(),
-    url: text('url').notNull(),
-    overlay: boolean('overlay').notNull().default(false),
-    username: text('username').references(() => Profile.username),
-    bounds: geometry('bounds', { type: GeometryType.Polygon, srid: 4326 }).$type<Polygon>(),
-    center: geometry('center', { type: GeometryType.Point, srid: 4326 }).$type<Point>(),
-    minzoom: integer('minzoom').notNull().default(0),
-    maxzoom: integer('maxzoom').notNull().default(16),
-    format: text('format').$type<Basemap_Format>().notNull().default(Basemap_Format.PNG),
-    style: text('style').$type<Basemap_Style>().notNull().default(Basemap_Style.ZXY),
-    styles: json('styles').$type<Array<unknown>>().notNull().default([]),
-    type: text('type').$type<Basemap_Type>().notNull().default(Basemap_Type.RASTER)
+    id: serial().primaryKey(),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    name: text().notNull(),
+    url: text().notNull(),
+    overlay: boolean().notNull().default(false),
+    username: text().references(() => Profile.username),
+    bounds: geometry({ type: GeometryType.Polygon, srid: 4326 }).$type<Polygon>(),
+    center: geometry({ type: GeometryType.Point, srid: 4326 }).$type<Point>(),
+    minzoom: integer().notNull().default(0),
+    maxzoom: integer().notNull().default(16),
+    format: text().$type<Basemap_Format>().notNull().default(Basemap_Format.PNG),
+    style: text().$type<Basemap_Style>().notNull().default(Basemap_Style.ZXY),
+    styles: json().$type<Array<unknown>>().notNull().default([]),
+    type: text().$type<Basemap_Type>().notNull().default(Basemap_Type.RASTER)
 }, (table) => {
     return {
         username_idx: index("basemaps_username_idx").on(table.username),
