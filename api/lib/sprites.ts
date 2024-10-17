@@ -8,6 +8,7 @@ const SpriteSmith = promisify(spritesmith.run);
 
 type SpriteConfig = {
     name?: string;
+    useDataAlt?: boolean;
 };
 
 export default async function(icons: Array<Static<typeof IconResponse>>, config: SpriteConfig = {}) {
@@ -16,7 +17,7 @@ export default async function(icons: Array<Static<typeof IconResponse>>, config:
             return new Vinyl({
                 // @ts-expect-error Deal with indexing issue on icon
                 path: config.name ? icon[config.name] + '.png' : icon.path.replace(/.*?\//, ''),
-                contents: Buffer.from(icon.data, 'base64'),
+                contents: Buffer.from(config.useDataAlt && icon.data_alt ? icon.data_alt : icon.data, 'base64'),
             })
         })
     });
