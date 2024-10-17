@@ -22,7 +22,12 @@
                 <TablerIconButton
                     v-if='editLease.id'
                     @click='fetchLease'
-                ><IconRefresh :size='32' stroke='1'/></TablerIconButton>
+                >
+                    <IconRefresh
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
 
                 <TablerDelete
                     v-if='editLease.id'
@@ -155,7 +160,7 @@
                         <div class='subheader pt-4'>
                             Video Streaming Protocols
                         </div>
-                        <template v-if='expired(lease.expiration)'>
+                        <template v-if='expired(editLease.expiration)'>
                             <TablerAlert
                                 title='Expired Lease'
                                 :err='new Error("Renew the lease to continue using the video stream")'
@@ -171,10 +176,12 @@
                             </div>
                             <div class='col-12 d-flex justify-content-center'>
                                 <button
-                                    @click='saveLease(false)'
                                     class='btn btn-primary'
                                     style='width: 280px'
-                                >Renew Lease</button>
+                                    @click='saveLease(false)'
+                                >
+                                    Renew Lease
+                                </button>
                             </div>
                         </template>
                         <template v-else>
@@ -193,7 +200,7 @@
             </div>
             <div class='modal-footer'>
                 <button
-                    v-if='protocols.rtsp && !expired(lease.expiration)'
+                    v-if='protocols.rtsp && !expired(editLease.expiration)'
                     class='btn btn-secondary'
                     @click='wizard = 1'
                 >
@@ -251,6 +258,7 @@ const editLease = ref<{
     id?: number
     name: string
     duration: string
+    expiration?: string 
     stream_user: string | null
     stream_pass: string | null
 }>({
@@ -272,7 +280,8 @@ onMounted(async () => {
     loading.value = false
 });
 
-function expired(expiration: string) {
+function expired(expiration?: string) {
+    if (!expiration) return false;
     return +new Date(expiration) < +new Date();
 }
 
@@ -322,6 +331,8 @@ async function saveLease(close: boolean) {
 
             protocols.value = res.protocols;
         }
+
+        loading.value = true;
     } else {
         const res = await std('/api/video/lease', {
             method: 'POST',

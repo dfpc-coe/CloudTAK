@@ -6,13 +6,23 @@
         <template #buttons>
             <TablerIconButton
                 v-if='mode === "lease"'
-                @click='lease={}'
                 title='Get Lease'
-            ><IconPlus :size='32' stroke='1'/></TablerIconButton>
+                @click='lease={}'
+            >
+                <IconPlus
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
             <TablerIconButton
-                @click='refresh'
                 title='Refresh'
-            ><IconRefresh :size='32' stroke='1'/></TablerIconButton>
+                @click='refresh'
+            >
+                <IconRefresh
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
         </template>
         <template #default>
             <div
@@ -91,8 +101,8 @@
                     :create='false'
                 />
                 <div
-                    v-else
                     v-for='l in leases.items'
+                    v-else
                     :key='l.id'
                     class='col-12 py-2 px-3 d-flex align-items-center hover-dark cursor-pointer'
                     @click='lease = l'
