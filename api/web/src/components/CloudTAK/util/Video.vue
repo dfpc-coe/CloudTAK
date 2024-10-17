@@ -43,7 +43,7 @@
 <script lang='ts'>
 import { defineComponent } from 'vue'
 import { std } from '../../../../src/std.ts';
-import type { VideoLease } from '../../../types.ts';
+import type { VideoLeaseResponse } from '../../../types.ts';
 import type Player from 'video.js/dist/types/player.d.ts';
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
@@ -72,9 +72,9 @@ export default defineComponent({
     data: function(): {
         loading: boolean,
         err?: Error,
-        lease?: VideoLease["lease"],
+        lease?: VideoLeaseResponse["lease"],
         player?: Player,
-        protocols?: VideoLease["protocols"]
+        protocols?: VideoLeaseResponse["protocols"]
     } {
         return {
             loading: true
@@ -121,7 +121,7 @@ export default defineComponent({
                         duration: 1 * 60 * 60,
                         proxy: this.video
                     }
-                }) as VideoLease
+                }) as VideoLeaseResponse
 
                 this.lease = lease;
                 this.protocols = protocols;
