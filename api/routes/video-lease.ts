@@ -46,9 +46,9 @@ export default async function router(schema: Schema, config: Config) {
                 `
             });
 
-            return res.json(list);
+            res.json(list);
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -78,12 +78,12 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
-            return res.json({
+            res.json({
                 lease,
                 protocols: await videoControl.protocols(lease)
             });
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -130,12 +130,12 @@ export default async function router(schema: Schema, config: Config) {
                 proxy: req.body.proxy
             })
 
-            return res.json({
+            res.json({
                 lease,
                 protocols: await videoControl.protocols(lease)
             });
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -170,12 +170,12 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
-            return res.json({
+            res.json({
                 lease,
                 protocols: await videoControl.protocols(lease)
             });
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -203,12 +203,12 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
-            return res.json({
+            res.json({
                 status: 200,
                 message: 'Video Lease Deleted'
             });
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 }

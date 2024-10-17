@@ -80,31 +80,34 @@ export default async function router(schema: Schema, config: Config) {
                     try {
                         buffer = await stream2buffer(file);
                     } catch (err) {
-                        return Err.respond(err, res);
+                        Err.respond(err, res);
                     }
                 }).on('finish', async () => {
                     try {
                         const b = await BasemapParser.parse(String(buffer));
 
-                        if (!b.raw.customMapSource) return res.json(imported);
-                        const map = b.raw.customMapSource;
+                        if (!b.raw.customMapSource) {
+                            res.json(imported);
+                        } else {
+                            const map = b.raw.customMapSource;
 
-                        imported.name = map.name._text;
-                        imported.minzoom = map.minZoom._text;
-                        imported.maxzoom = map.maxZoom._text;
-                        if (map.url) imported.url = map.url._text;
+                            imported.name = map.name._text;
+                            imported.minzoom = map.minZoom._text;
+                            imported.maxzoom = map.maxZoom._text;
+                            if (map.url) imported.url = map.url._text;
 
-                        if (map.tileType) {
-                            imported.format = toEnum.fromString(Type.Enum(Basemap_Format), map.tileType._text);
+                            if (map.tileType) {
+                                imported.format = toEnum.fromString(Type.Enum(Basemap_Format), map.tileType._text);
+                            }
+
+                            res.json(imported);
                         }
-
-                        return res.json(imported);
                     } catch (err) {
                         Err.respond(err, res);
                     }
                 });
 
-                return req.pipe(bb);
+                req.pipe(bb);
             } else if (req.headers['content-type'] && req.headers['content-type'].startsWith('text/plain')) {
                 const url = new URL(String(await stream2buffer(req)));
                 const tjres = await fetch(url);
@@ -125,12 +128,12 @@ export default async function router(schema: Schema, config: Config) {
                     imported.format = toEnum.fromString(Type.Enum(Basemap_Format), path.parse(url.pathname).ext.replace('.', ''));
                 }
 
-                return res.json(imported);
+                res.json(imported);
             } else {
                 throw new Err(400, null, 'Unsupported Content-Type');
             }
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -174,7 +177,7 @@ export default async function router(schema: Schema, config: Config) {
                 `
             });
 
-            return res.json({
+            res.json({
                 total: list.total,
                 items: list.items.map((basemap) => {
                     return {
@@ -185,7 +188,7 @@ export default async function router(schema: Schema, config: Config) {
                 })
             });
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -239,13 +242,13 @@ export default async function router(schema: Schema, config: Config) {
                 username
             });
 
-            return res.json({
+            res.json({
                 ...basemap,
                 bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
                 center: basemap.center ? basemap.center.coordinates : undefined,
             });
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -296,13 +299,13 @@ export default async function router(schema: Schema, config: Config) {
 
             await config.cacher.del(`basemap-${req.params.basemapid}`);
 
-            return res.json({
+            res.json({
                 ...basemap,
                 bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
                 center: basemap.center ? basemap.center.coordinates : undefined,
             });
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -352,16 +355,16 @@ export default async function router(schema: Schema, config: Config) {
                     }
                 });
 
-                return res.send(xml);
+                res.send(xml);
             } else {
-                return res.json({
+                res.json({
                     ...basemap,
                     bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
                     center: basemap.center ? basemap.center.coordinates : undefined,
                 });
             }
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -398,9 +401,9 @@ export default async function router(schema: Schema, config: Config) {
                 url
             });
 
-            return res.json(json);
+            res.json(json);
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -444,7 +447,7 @@ export default async function router(schema: Schema, config: Config) {
                 }
             );
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -474,12 +477,12 @@ export default async function router(schema: Schema, config: Config) {
 
             await config.cacher.del(`basemap-${req.params.basemapid}`);
 
-            return res.json({
+            res.json({
                 status: 200,
                 message: 'Basemap Deleted'
             });
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 }

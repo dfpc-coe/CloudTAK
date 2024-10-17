@@ -40,7 +40,7 @@ export default async function router(schema: Schema, config: Config) {
                 `
             });
 
-            return res.json({
+            res.json({
                 total: list.total,
                 items: list.items.map((feat) => {
                     // @ts-expect-error Legacy features
@@ -56,7 +56,7 @@ export default async function router(schema: Schema, config: Config) {
                 })
             })
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -78,12 +78,12 @@ export default async function router(schema: Schema, config: Config) {
                 starts_with(path, ${req.query.path}) AND username = ${user.email}
             `);
 
-            return res.json({
+            res.json({
                 status: 200,
                 message: 'Features Deleted'
             });
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -136,9 +136,9 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
-            return res.json(feat)
+            res.json(feat)
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -160,12 +160,12 @@ export default async function router(schema: Schema, config: Config) {
                 id = ${req.params.id} AND username = ${user.email}
             `);
 
-            return res.json({
+            res.json({
                 status: 200,
                 message: 'Feature Deleted'
             });
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -190,12 +190,12 @@ export default async function router(schema: Schema, config: Config) {
             // @ts-expect-error Legacy features
             feat.properties.archived = true;
 
-            return res.json({
+            res.json({
                 type: 'Feature',
                 ...feat
             } as Static<typeof ProfileFeature>)
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 }

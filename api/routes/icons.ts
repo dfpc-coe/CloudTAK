@@ -73,9 +73,9 @@ export default async function router(schema: Schema, config: Config) {
                 `
             });
 
-            return res.json(list);
+            res.json(list);
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -112,9 +112,9 @@ export default async function router(schema: Schema, config: Config) {
                 username
             });
 
-            return res.json(iconset);
+            res.json(iconset);
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -158,9 +158,9 @@ export default async function router(schema: Schema, config: Config) {
             delete req.body.public;
             const iconset = await config.models.Iconset.commit(req.params.iconset, req.body);
 
-            return res.json(iconset);
+            res.json(iconset);
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -242,10 +242,10 @@ export default async function router(schema: Schema, config: Config) {
 
                 archive.finalize();
             } else {
-                return res.json(iconset);
+                res.json(iconset);
             }
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -272,12 +272,12 @@ export default async function router(schema: Schema, config: Config) {
             await config.models.Icon.delete(sql`iconset = ${req.params.iconset}`);
             await config.models.Iconset.delete(String(req.params.iconset));
 
-            return res.json({
+            res.json({
                 status: 200,
                 message: 'Iconset Deleted'
             });
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -315,9 +315,9 @@ export default async function router(schema: Schema, config: Config) {
                 iconset: iconset.uid
             });
 
-            return res.json(icon);
+            res.json(icon);
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -361,10 +361,10 @@ export default async function router(schema: Schema, config: Config) {
                 `
             });
 
-            return res.json(list)
+            res.json(list)
 
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -387,9 +387,9 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             const icon = await config.models.Icon.from(sql`${req.params.iconset} = iconset AND ${req.params.icon} = name`);
-            return res.json(icon);
+            res.json(icon);
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -429,9 +429,9 @@ export default async function router(schema: Schema, config: Config) {
 
             icon = await config.models.Icon.commit(icon.id, req.body);
 
-            return res.json(icon);
+            res.json(icon);
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -458,12 +458,12 @@ export default async function router(schema: Schema, config: Config) {
 
             await config.models.Icon.delete(sql`${req.params.iconset} = iconset AND ${req.params.icon} = name`);
 
-            return res.json({
+            res.json({
                 status: 200,
                 message: 'Icon Deleted'
             });
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -490,9 +490,10 @@ export default async function router(schema: Schema, config: Config) {
             const icon = await config.models.Icon.from(sql`
                 (${req.params.iconset} = iconset AND ${req.params.icon} = name)
             `);
-            return res.status(200).send(Buffer.from(icon.data, 'base64'));
+
+            res.status(200).send(Buffer.from(icon.data, 'base64'));
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -521,7 +522,7 @@ export default async function router(schema: Schema, config: Config) {
             else if (req.query.scope === ResourceCreationScope.USER) scope = sql`username IS NOT NULL`;
 
             if (req.query.iconset && SpriteMap[req.query.iconset]) {
-                return res.json(SpriteMap[req.query.iconset].json);
+                res.json(SpriteMap[req.query.iconset].json);
             } else {
                 const icons = await config.models.Icon.list({
                     limit: 1000,
@@ -536,10 +537,10 @@ export default async function router(schema: Schema, config: Config) {
 
                 SpriteMap[req.query.iconset] = { image: sprites.image, json: sprites.json };
 
-                return res.json(sprites.json);
+                res.json(sprites.json);
             }
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -569,7 +570,7 @@ export default async function router(schema: Schema, config: Config) {
 
             res.type('png');
             if (SpriteMap[req.query.iconset]) {
-                return res.send(SpriteMap[req.query.iconset].image);
+                res.send(SpriteMap[req.query.iconset].image);
             } else {
                 const icons = await config.models.Icon.list({
                     limit: 1000,
@@ -583,10 +584,10 @@ export default async function router(schema: Schema, config: Config) {
 
                 SpriteMap[req.query.iconset] = { image: sprites.image, json: sprites.json };
 
-                return res.send(sprites.image);
+                res.send(sprites.image);
             }
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 }

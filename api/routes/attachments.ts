@@ -47,12 +47,12 @@ export default async function router(schema: Schema, config: Config) {
                 });
             }
 
-            return res.json({
+            res.json({
                 total: items.length,
                 items
             });
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -89,7 +89,7 @@ export default async function router(schema: Schema, config: Config) {
                 try {
                     const files = await Promise.all(uploads);
 
-                    return res.json({
+                    res.json({
                         ...files[0]
                     })
                 } catch (err) {
@@ -97,9 +97,9 @@ export default async function router(schema: Schema, config: Config) {
                 }
             });
 
-            return req.pipe(bb);
+            req.pipe(bb);
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -125,7 +125,7 @@ export default async function router(schema: Schema, config: Config) {
 
             stream.pipe(res);
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 }

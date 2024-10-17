@@ -56,7 +56,7 @@ export default async function router(schema: Schema, config: Config) {
 
             res.json(list);
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -97,7 +97,7 @@ export default async function router(schema: Schema, config: Config) {
 
             res.json(list);
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -146,20 +146,20 @@ export default async function router(schema: Schema, config: Config) {
                         mission_groups: Array.isArray(mission.groups) ? mission.groups : [mission.groups]
                     });
                 }
+
+                res.json({
+                    mission_exists: true,
+                    ...data
+                });
             } catch (err) {
-                return res.json({
+                res.json({
                     mission_exists: false,
                     mission_error: err instanceof Error ? err.message : String(err),
                     ...data
                 });
             }
-
-            return res.json({
-                mission_exists: true,
-                ...data
-            });
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -205,20 +205,20 @@ export default async function router(schema: Schema, config: Config) {
 
             try {
                 await DataMission.sync(config, data);
+
+                res.json({
+                    mission_exists: true,
+                    ...data
+                });
             } catch (err) {
-                return res.json({
+                res.json({
                     mission_exists: false,
                     mission_error: err instanceof Error ? err.message : String(err),
                     ...data
                 });
             }
-
-            return res.json({
-                mission_exists: true,
-                ...data
-            });
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -245,20 +245,20 @@ export default async function router(schema: Schema, config: Config) {
 
             try {
                 await DataMission.sync(config, data);
+
+                res.json({
+                    mission_exists: true,
+                    ...data
+                });
             } catch (err) {
-                return res.json({
+                res.json({
                     mission_exists: false,
                     mission_error: err instanceof Error ? err.message : String(err),
                     ...data
                 });
             }
-
-            return res.json({
-                mission_exists: true,
-                ...data
-            });
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -289,23 +289,23 @@ export default async function router(schema: Schema, config: Config) {
             try {
                 data.mission_sync = false;
                 await DataMission.sync(config, data);
+
+                await config.models.Data.delete(req.params.dataid);
+
+                res.json({
+                    status: 200,
+                    message: `Data Deleted`
+                });
             } catch (err) {
                 await config.models.Data.delete(req.params.dataid);
 
-                return res.json({
+                res.json({
                     status: 200,
                     message: `Data Deleted - But TAK Server had an upstream error. Provide an admin with this error message ${String(err)}`
                 });
             }
-
-            await config.models.Data.delete(req.params.dataid);
-
-            return res.json({
-                status: 200,
-                message: `Data Deleted`
-            });
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 }

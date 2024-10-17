@@ -23,9 +23,9 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
-            return res.json(await assetList(config, `profile/${user.email}/`));
+            res.json(await assetList(config, `profile/${user.email}/`));
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -52,12 +52,12 @@ export default async function router(schema: Schema, config: Config) {
                 await S3.del(`profile/${user.email}/${req.params.asset}.pmtiles`);
             }
 
-            return res.json({
+            res.json({
                 status: 200,
                 message: 'Asset Deleted'
             });
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -80,7 +80,7 @@ export default async function router(schema: Schema, config: Config) {
 
             stream.pipe(res);
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -106,9 +106,9 @@ export default async function router(schema: Schema, config: Config) {
             const url = new URL(`${config.PMTILES_URL}/tiles/profile/${user.email}/${req.params.asset}`);
             url.searchParams.append('token', token);
 
-            return res.redirect(String(url));
+            res.redirect(String(url));
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 }
