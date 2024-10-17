@@ -146,7 +146,9 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
-            if (cots.length === 0) throw new Err(200, null, 'No features found');
+            if (cots.length === 0) {
+                throw new Err(200, null, 'No features found');
+            }
 
             pooledClient.tak.write(cots);
 
@@ -173,7 +175,15 @@ export default async function router(schema: Schema, config: Config) {
                 errors
             });
         } catch (err) {
-            Err.respond(err, res);
+            if (err instanceof Err && err.status === 200) {
+                res.json({
+                    status: 200,
+                    message: err.message,
+                    errors: []
+                });
+            } else {
+                Err.respond(err, res);
+            }
         }
     });
 }
