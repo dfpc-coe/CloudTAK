@@ -10,9 +10,9 @@ export default async function router(schema: Schema) {
         res: Type.Any()
     }, async (req, res) => {
         try {
-            return res.json(schema.docs.base)
+            res.json(schema.docs.base)
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 }

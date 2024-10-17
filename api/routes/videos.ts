@@ -23,9 +23,9 @@ export default async function router(schema: Schema, config: Config) {
 
             const configuration = await videoControl.configuration();
 
-            return res.json(configuration);
+            res.json(configuration);
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -41,9 +41,9 @@ export default async function router(schema: Schema, config: Config) {
 
             const configuration = await videoControl.configure(req.body);
 
-            return res.json(configuration);
+            res.json(configuration);
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -63,41 +63,41 @@ export default async function router(schema: Schema, config: Config) {
             const versions = await video.definitions();
 
             if (!versions.length) {
-                return res.json({ total: 0, versions: [], items: [] });
-            }
+                res.json({ total: 0, versions: [], items: [] });
+            } else {
+                const items = await video.tasks();
 
-            const items = await video.tasks();
+                const list: {
+                    total: number;
+                    versions: number[]
+                    items: Array<Static<typeof VideoResponse>>
+                } = {
+                    total: items.length,
+                    versions,
+                    items: []
+                };
 
-            const list: {
-                total: number;
-                versions: number[]
-                items: Array<Static<typeof VideoResponse>>
-            } = {
-                total: items.length,
-                versions,
-                items: []
-            };
+                for (const item of items) {
+                    if (!item.taskArn) throw new Err(500, null, 'Video TaskARN is not defined');
+                    if (!item.taskDefinitionArn) throw new Err(500, null, 'Video TaskDefinitionARN is not defined');
 
-            for (const item of items) {
-                if (!item.taskArn) throw new Err(500, null, 'Video TaskARN is not defined');
-                if (!item.taskDefinitionArn) throw new Err(500, null, 'Video TaskDefinitionARN is not defined');
+                    const i: Static<typeof VideoResponse> = {
+                        id: item.taskArn.replace(/.*\//, ''),
+                        version: Number(item.taskDefinitionArn.replace(/.*:/, '')),
+                        created: (item.startedAt ?? new Date()).toISOString(),
+                        status: item.lastStatus || '',
+                        statusDesired: item.desiredStatus || 'UNKNOWN',
+                        memory: Number(item.memory),
+                        cpu: Number(item.cpu)
+                    }
 
-                const i: Static<typeof VideoResponse> = {
-                    id: item.taskArn.replace(/.*\//, ''),
-                    version: Number(item.taskDefinitionArn.replace(/.*:/, '')),
-                    created: (item.startedAt ?? new Date()).toISOString(),
-                    status: item.lastStatus || '',
-                    statusDesired: item.desiredStatus || 'UNKNOWN',
-                    memory: Number(item.memory),
-                    cpu: Number(item.cpu)
+                    list.items.push(i);
                 }
 
-                list.items.push(i);
+                res.json(list);
             }
-
-            return res.json(list);
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -113,9 +113,9 @@ export default async function router(schema: Schema, config: Config) {
         try {
             await Auth.as_user(config, req, { admin: true });
 
-            return res.json(await videoControl.path(req.params.path));
+            res.json(await videoControl.path(req.params.path));
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -144,9 +144,9 @@ export default async function router(schema: Schema, config: Config) {
                 cpu: Number(item.cpu)
             }
 
-            return res.json(i);
+            res.json(i);
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -189,9 +189,9 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
-            return res.json(i);
+            res.json(i);
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -209,12 +209,12 @@ export default async function router(schema: Schema, config: Config) {
 
             await video.delete(req.params.serverid);
 
-            return res.json({
+            res.json({
                 status: 200,
                 message: 'Deleting Server',
             });
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 }

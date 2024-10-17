@@ -50,9 +50,9 @@ export default async function router(schema: Schema, config: Config) {
                 `
             });
 
-            return res.json(list);
+            res.json(list);
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -91,9 +91,9 @@ export default async function router(schema: Schema, config: Config) {
 
             await config.cacher.del(`connection-${req.params.connectionid}-sinks`);
 
-            return res.json(sink);
+            res.json(sink);
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -126,9 +126,9 @@ export default async function router(schema: Schema, config: Config) {
 
             await config.cacher.del(`connection-${req.params.connectionid}-sinks`);
 
-            return res.json(sink);
+            res.json(sink);
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -150,9 +150,9 @@ export default async function router(schema: Schema, config: Config) {
             const sink = await config.models.ConnectionSink.from(req.params.sinkid);
             if (sink.connection !== connection.id) throw new Err(400, null, 'Sink must belong to parent connection');
 
-            return res.json(sink);
+            res.json(sink);
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -223,9 +223,9 @@ export default async function router(schema: Schema, config: Config) {
                 });
             }
 
-            return res.json(statsres);
+            res.json(statsres);
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -251,12 +251,12 @@ export default async function router(schema: Schema, config: Config) {
 
             await config.cacher.del(`connection-${req.params.connectionid}-sinks`);
 
-            return res.json({
+            res.json({
                 status: 200,
                 message: 'Sink Deleted'
             });
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 }

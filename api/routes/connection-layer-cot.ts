@@ -71,7 +71,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             if (!pooledClient || !pooledClient.config || !pooledClient.config.enabled) {
-                return res.json({ status: 200, message: 'Recieved but Connection Paused', errors: [] });
+                throw new Err(200, null, 'Recieved but Connection Paused');
             }
 
             const errors: Array<Static<typeof LayerError>> = [];
@@ -91,7 +91,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (layer.data && data) {
                 if (!data.mission_sync) {
-                    return res.status(202).json({ status: 202, message: 'Recieved but Data Mission Sync Disabled', errors });
+                    throw new Err(202, null, 'Recieved but Data Mission Sync Disabled');
                 }
 
                 if (data.mission_diff) {
@@ -146,7 +146,7 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
-            if (cots.length === 0) return res.json({ status: 200, message: 'No features found', errors });
+            if (cots.length === 0) throw new Err(200, null, 'No features found');
 
             pooledClient.tak.write(cots);
 
@@ -173,7 +173,7 @@ export default async function router(schema: Schema, config: Config) {
                 errors
             });
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 }

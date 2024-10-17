@@ -45,9 +45,9 @@ export default async function router(schema: Schema, config: Config) {
                 `
             });
 
-            return res.json(list);
+            res.json(list);
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -74,9 +74,9 @@ export default async function router(schema: Schema, config: Config) {
                 connection: req.params.connectionid
             });
 
-            return res.json(token);
+            res.json(token);
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -106,9 +106,9 @@ export default async function router(schema: Schema, config: Config) {
                 ...req.body
             });
 
-            return res.json({ status: 200, message: 'Connection Token Updated' });
+            res.json({ status: 200, message: 'Connection Token Updated' });
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -132,9 +132,9 @@ export default async function router(schema: Schema, config: Config) {
 
             await config.models.ConnectionToken.delete(sql`id = ${token.id}::INT`);
 
-            return res.json({ status: 200, message: 'Connection Token Deleted' });
+            res.json({ status: 200, message: 'Connection Token Deleted' });
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 }

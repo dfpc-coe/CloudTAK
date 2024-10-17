@@ -63,9 +63,9 @@ export default async function router(schema: Schema, config: Config) {
                 })()
             ])
 
-            return res.json(response);
+            res.json(response);
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -90,9 +90,9 @@ export default async function router(schema: Schema, config: Config) {
                 response.items = await geocode.forward(req.query.query, req.query.magicKey);
             }
 
-            return res.json(response);
+            res.json(response);
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -116,9 +116,9 @@ export default async function router(schema: Schema, config: Config) {
                 response.items = await geocode.suggest(req.query.query);
             }
 
-            return res.json(response);
+            res.json(response);
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 }

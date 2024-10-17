@@ -27,12 +27,12 @@ export default async function router(schema: Schema, config: Config) {
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
             await api.Files.delete(req.params.hash);
 
-            return res.json({
+            res.json({
                 status: 200,
                 message: 'File Deleted'
             });
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -59,7 +59,7 @@ export default async function router(schema: Schema, config: Config) {
 
             file.pipe(res);
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 }

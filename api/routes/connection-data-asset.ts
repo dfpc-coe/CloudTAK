@@ -55,9 +55,9 @@ export default async function router(schema: Schema, config: Config) {
                 return a;
             });
 
-            return res.json({ ...list, assets });
+            res.json({ ...list, assets });
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -113,10 +113,9 @@ export default async function router(schema: Schema, config: Config) {
                 token: data.mission_token || undefined
             });
 
-            return res.json(missionContent);
+            res.json(missionContent);
         } catch (err) {
-            console.error(err);
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -152,36 +151,36 @@ export default async function router(schema: Schema, config: Config) {
                     files: 1
                 }
             });
+
+            const assets: Promise<void>[] = [];
+            bb.on('file', async (fieldname, file, blob) => {
+                try {
+                    const passThrough = new Stream.PassThrough();
+                    file.pipe(passThrough);
+
+                    assets.push(S3.put(`data/${data.id}/${blob.filename}`, passThrough));
+                } catch (err) {
+                    Err.respond(err, res);
+                }
+            }).on('finish', async () => {
+                try {
+                    if (!assets.length) throw new Err(400, null, 'No Asset Provided');
+
+                    await assets[0];
+
+                    res.json({
+                        status: 200,
+                        message: 'Asset Uploaded'
+                    });
+                } catch (err) {
+                    Err.respond(err, res);
+                }
+            });
+
+            req.pipe(bb);
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
-
-        const assets: Promise<void>[] = [];
-        bb.on('file', async (fieldname, file, blob) => {
-            try {
-                const passThrough = new Stream.PassThrough();
-                file.pipe(passThrough);
-
-                assets.push(S3.put(`data/${data.id}/${blob.filename}`, passThrough));
-            } catch (err) {
-                return Err.respond(err, res);
-            }
-        }).on('finish', async () => {
-            try {
-                if (!assets.length) throw new Err(400, null, 'No Asset Provided');
-
-                await assets[0];
-
-                return res.json({
-                    status: 200,
-                    message: 'Asset Uploaded'
-                });
-            } catch (err) {
-                Err.respond(err, res);
-            }
-        });
-
-        return req.pipe(bb);
     });
 
     await schema.post('/connection/:connectionid/data/:dataid/asset/:asset.:ext', {
@@ -209,12 +208,12 @@ export default async function router(schema: Schema, config: Config) {
 
             await Batch.submitData(config, data, `${req.params.asset}.${req.params.ext}`);
 
-            return res.json({
+            res.json({
                 status: 200,
                 message: 'Conversion Initiated'
             });
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -272,12 +271,12 @@ export default async function router(schema: Schema, config: Config) {
                 await S3.del(`data/${req.params.dataid}/${file}`);
             }
 
-            return res.json({
+            res.json({
                 status: 200,
                 message: 'Asset Deleted'
             });
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -308,7 +307,7 @@ export default async function router(schema: Schema, config: Config) {
 
             stream.pipe(res);
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -344,7 +343,7 @@ export default async function router(schema: Schema, config: Config) {
 
             return res.redirect(String(url));
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 }

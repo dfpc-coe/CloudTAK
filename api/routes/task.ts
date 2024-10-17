@@ -75,9 +75,9 @@ export default async function router(schema: Schema, config: Config) {
                 `
             });
 
-            return res.json(list);
+            res.json(list);
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -98,9 +98,9 @@ export default async function router(schema: Schema, config: Config) {
 
             const task = await config.models.Task.generate(req.body);
 
-            return res.json(task);
+            res.json(task);
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -118,12 +118,12 @@ export default async function router(schema: Schema, config: Config) {
 
             const { total, tasks } = await listTasks();
 
-            return res.json({
+            res.json({
                 total,
                 items: Object.fromEntries(tasks)
             });
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -146,12 +146,12 @@ export default async function router(schema: Schema, config: Config) {
             const { tasks } = await listTasks();
 
             const list = tasks.get(req.params.task);
-            return res.json({
+            res.json({
                 total: list ? list.length : 0,
                 versions: semver.desc(list || [])
             });
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -195,12 +195,12 @@ export default async function router(schema: Schema, config: Config) {
 
             await ECR.delete(req.params.task, req.params.version);
 
-            return res.json({
+            res.json({
                 status: 200,
                 message: 'Deleted Task Version'
             });
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -223,9 +223,9 @@ export default async function router(schema: Schema, config: Config) {
 
             const task = await config.models.Task.commit(req.params.task, req.body);
 
-            return res.json(task);
+            res.json(task);
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -247,14 +247,14 @@ export default async function router(schema: Schema, config: Config) {
 
             if (task.readme) {
                 const readmeres = await fetch(task.readme);
-                return res.json({
+                res.json({
                     body: await readmeres.text()
                 })
             } else {
-                return res.json({ body: '' });
+                res.json({ body: '' });
             }
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 }

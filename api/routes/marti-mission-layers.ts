@@ -35,9 +35,9 @@ export default async function router(schema: Schema, config: Config) {
                 opts
             );
 
-            return res.json(list);
+            res.json(list);
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -76,9 +76,9 @@ export default async function router(schema: Schema, config: Config) {
                 opts
             );
 
-            return res.json(create);
+            res.json(create);
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -117,12 +117,12 @@ export default async function router(schema: Schema, config: Config) {
                 );
             }
 
-            return res.json({
+            res.json({
                 status: 200,
                 message: 'Layer Updated'
             });
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -155,12 +155,12 @@ export default async function router(schema: Schema, config: Config) {
                 opts
             );
 
-            return res.json({
+            res.json({
                 status: 200,
                 message: 'Layer Deleted'
             });
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 }

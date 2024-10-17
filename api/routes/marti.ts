@@ -46,9 +46,9 @@ export default async function router(schema: Schema, config: Config) {
                 useCache: req.query.useCache
             });
 
-            return res.json(groups);
+            res.json(groups);
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -89,9 +89,9 @@ export default async function router(schema: Schema, config: Config) {
 
             const groups = await api.Group.list({});
 
-            return res.json(groups);
+            res.json(groups);
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -108,9 +108,9 @@ export default async function router(schema: Schema, config: Config) {
 
             const contacts = await api.Contacts.list();
 
-            return res.json(contacts);
+            res.json(contacts);
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -134,9 +134,9 @@ export default async function router(schema: Schema, config: Config) {
 
             const certs = await api.Credentials.generate();
 
-            return res.json(certs);
+            res.json(certs);
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 }

@@ -49,7 +49,7 @@ export default async function router(schema: Schema, config: Config) {
                             name: meta.filename,
                         });
                     } catch (err) {
-                        return Err.respond(err, res);
+                         Err.respond(err, res);
                     }
                 }).on('finish', async () => {
                     const out = await pkg.finalize()
@@ -68,15 +68,15 @@ export default async function router(schema: Schema, config: Config) {
 
                     if (!pkgres.results.length) throw new Err(404, null, 'Package not found');
 
-                    return res.json(pkgres.results[0]);
+                    res.json(pkgres.results[0]);
                 });
 
-                return req.pipe(bb);
+                req.pipe(bb);
             } else {
                 throw new Err(400, null, 'Unsupported Content-Type');
             }
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -172,9 +172,9 @@ export default async function router(schema: Schema, config: Config) {
                 client.tak.write([cot]);
             }
 
-            return res.json(content)
+            res.json(content)
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -196,12 +196,12 @@ export default async function router(schema: Schema, config: Config) {
                 tool: 'public'
             });
 
-            return res.json({
+            res.json({
                 total: pkg.resultCount,
                 items: pkg.results
             });
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -225,9 +225,9 @@ export default async function router(schema: Schema, config: Config) {
 
             if (!pkg.results.length) throw new Err(404, null, 'Package not found');
 
-            return res.json(pkg.results[0]);
+            res.json(pkg.results[0]);
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -269,12 +269,12 @@ export default async function router(schema: Schema, config: Config) {
 
             await api.Files.adminDelete(pkg.Hash);
 
-            return res.json({
+            res.json({
                 status: 200,
                 message: 'Package Deleted'
             });
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 }

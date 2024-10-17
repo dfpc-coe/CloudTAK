@@ -39,9 +39,9 @@ export default async function router(schema: Schema, config: Config) {
                 username: user.email
             })
 
-            return res.json(imp)
+            res.json(imp)
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -89,15 +89,15 @@ export default async function router(schema: Schema, config: Config) {
                 })())
             }).on('finish', async () => {
                 try {
-                    return res.json(imported)
+                    res.json(imported)
                 } catch (err) {
                     Err.respond(err, res);
                 }
             });
 
-            return req.pipe(bb);
+            req.pipe(bb);
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -150,7 +150,7 @@ export default async function router(schema: Schema, config: Config) {
                 })())
             }).on('finish', async () => {
                 try {
-                    return res.json({
+                    res.json({
                         imports: await Promise.all(uploads)
                     });
                 } catch (err) {
@@ -158,9 +158,9 @@ export default async function router(schema: Schema, config: Config) {
                 }
             });
 
-            return req.pipe(bb);
+            req.pipe(bb);
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -185,9 +185,9 @@ export default async function router(schema: Schema, config: Config) {
                 if (imported.username !== user.email) throw new Err(400, null, 'You did not create this import');
             }
 
-            return res.json(imported);
+            res.json(imported);
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -222,9 +222,9 @@ export default async function router(schema: Schema, config: Config) {
                 updated: sql`Now()`
             });
 
-            return res.json(imported);
+            res.json(imported);
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -254,12 +254,12 @@ export default async function router(schema: Schema, config: Config) {
 
             await config.models.Import.delete(req.params.import);
 
-            return res.json({
+            res.json({
                 status: 200,
                 message: 'Import Deleted'
             });
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -295,9 +295,9 @@ export default async function router(schema: Schema, config: Config) {
                 `
             });
 
-            return res.json(list);
+            res.json(list);
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -319,9 +319,9 @@ export default async function router(schema: Schema, config: Config) {
 
             await importControl.batch(imported.username, imported.id);
 
-            return res.json(imported)
+            res.json(imported)
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -342,19 +342,19 @@ export default async function router(schema: Schema, config: Config) {
             const imported = await config.models.Import.from(req.params.import);
 
             if (!imported.batch) {
-                return res.json({ logs: [] })
-            }
-
-            const job = await Batch.job(config, imported.batch);
-
-            if (job.logstream) {
-                const logs = await Logs.list(job.logstream);
-                return res.json(logs)
+                res.json({ logs: [] })
             } else {
-                return res.json({ logs: [] })
+                const job = await Batch.job(config, imported.batch);
+
+                if (job.logstream) {
+                    const logs = await Logs.list(job.logstream);
+                    res.json(logs)
+                } else {
+                    res.json({ logs: [] })
+                }
             }
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 }

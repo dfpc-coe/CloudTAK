@@ -65,7 +65,7 @@ export default async function router(schema: Schema, config: Config) {
 
             res.json(list);
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -116,7 +116,7 @@ export default async function router(schema: Schema, config: Config) {
 
             res.json(alerts[0] as InferSelectModel<typeof LayerAlert>);
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -153,7 +153,7 @@ export default async function router(schema: Schema, config: Config) {
                 message: 'Alerts Removed'
             });
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -194,7 +194,7 @@ export default async function router(schema: Schema, config: Config) {
                 message: 'Alert Removed'
             });
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 }

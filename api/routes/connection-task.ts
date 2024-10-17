@@ -41,9 +41,9 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
             }
 
-            return res.json(await CF.status(config, layer.id));
+            res.json(await CF.status(config, layer.id));
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -72,12 +72,12 @@ export default async function router(schema: Schema, config: Config) {
 
             await CF.cancel(config, layer.id);
 
-            return res.json({
+            res.json({
                 status: 200,
                 message: 'Stack Update Cancelled'
             });
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -106,12 +106,12 @@ export default async function router(schema: Schema, config: Config) {
 
             await Lambda.invoke(config, layer.id)
 
-            return res.json({
+            res.json({
                 status: 200,
                 message: 'Manually Invoked Lambda'
             });
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -140,9 +140,9 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
             }
 
-            return res.json(await Logs.list(config, layer));
+            res.json(await Logs.list(config, layer));
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -184,9 +184,9 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, `ETL Error: ${schema.errorMessage}`);
             }
 
-            return res.json({ schema });
+            res.json({ schema });
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -224,9 +224,9 @@ export default async function router(schema: Schema, config: Config) {
             const lambda = await Lambda.generate(config, layer);
             await CloudFormation.create(config, layer.id, lambda);
 
-            return res.json(await CF.status(config, layer.id));
+            res.json(await CF.status(config, layer.id));
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 }
