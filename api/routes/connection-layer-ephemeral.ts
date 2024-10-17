@@ -38,9 +38,9 @@ export default async function router(schema: Schema, config: Config) {
 
             await config.cacher.del(`layer-${req.params.layerid}`);
 
-            return res.json(layer.ephemeral)
+            res.json(layer.ephemeral)
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 }

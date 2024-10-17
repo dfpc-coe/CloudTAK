@@ -39,9 +39,9 @@ export default async function router(schema: Schema, config: Config) {
                 `
             });
 
-            return res.json(list)
+            res.json(list)
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -59,9 +59,9 @@ export default async function router(schema: Schema, config: Config) {
 
             const template = await config.models.LayerTemplate.from(req.params.templateid);
 
-            return res.json(template)
+            res.json(template)
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -87,9 +87,9 @@ export default async function router(schema: Schema, config: Config) {
                 updated: sql<string>`Now()`,
             });
 
-            return res.json(template)
+            res.json(template)
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -107,12 +107,12 @@ export default async function router(schema: Schema, config: Config) {
 
             await config.models.LayerTemplate.delete(req.params.templateid);
 
-            return res.json({
+            res.json({
                 status: 200,
                 message: 'Layer Template Deleted'
             })
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -139,9 +139,9 @@ export default async function router(schema: Schema, config: Config) {
                 ...req.body,
             });
 
-            return res.json(template)
+            res.json(template)
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 }

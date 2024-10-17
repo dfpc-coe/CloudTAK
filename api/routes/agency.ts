@@ -29,15 +29,16 @@ export default async function router(schema: Schema, config: Config) {
             const profile = await config.models.Profile.from(user.email);
 
             if (!config.server.provider_url || !config.server.provider_secret || !config.server.provider_client) {
-                return res.json({ total: 0, items: [] })
+                res.json({ total: 0, items: [] })
+            } else if (!profile.id) {
+                throw new Err(400, null, 'External ID must be set on profile');
+            } else  {
+                const list = await config.external.agencies(profile.id, req.query.filter);
+
+                res.json(list);
             }
-
-            if (!profile.id) throw new Err(400, null, 'External ID must be set on profile');
-            const list = await config.external.agencies(profile.id, req.query.filter);
-
-            return res.json(list);
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -61,9 +62,9 @@ export default async function router(schema: Schema, config: Config) {
             if (!profile.id) throw new Err(400, null, 'External ID must be set on profile');
             const agency = await config.external.agency(profile.id, req.params.agencyid);
 
-            return res.json(agency);
+            res.json(agency);
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 }

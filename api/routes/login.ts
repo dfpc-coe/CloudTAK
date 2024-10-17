@@ -63,13 +63,13 @@ export default async function router(schema: Schema, config: Config) {
                 access = AuthUserAccess.AGENCY
             }
 
-            return res.json({
+            res.json({
                 access,
                 email: profile.username,
                 token: jwt.sign({ access, email: profile.username }, config.SigningSecret, { expiresIn: '16h' })
             })
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -91,12 +91,12 @@ export default async function router(schema: Schema, config: Config) {
                 await provider.valid(profile);
             }
 
-            return res.json({
+            res.json({
                 email: user.email,
                 access: user.access
             });
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 }

@@ -25,16 +25,16 @@ export default async function router(schema: Schema, config: Config) {
             const info = types.cots.get(type);
 
             if (!info) {
-                return res.json({
+                res.json({
                     cot: req.params.type,
                     full: req.params.type,
                     desc: 'Unknown CoT Type'
                 })
             } else {
-                return res.json(info);
+                res.json(info);
             }
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 }

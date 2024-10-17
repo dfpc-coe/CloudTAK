@@ -41,12 +41,12 @@ export default async function router(schema: Schema, config: Config) {
                 opts
             );
 
-            return res.json({
+            res.json({
                 total: (mission.logs || []).length,
                 items: mission.logs || []
             });
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -82,9 +82,9 @@ export default async function router(schema: Schema, config: Config) {
                 opts
             );
 
-            return res.json(mission);
+            res.json(mission);
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -128,9 +128,9 @@ export default async function router(schema: Schema, config: Config) {
                 opts
             );
 
-            return res.json(mission);
+            res.json(mission);
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -159,12 +159,12 @@ export default async function router(schema: Schema, config: Config) {
                 opts
             );
 
-            return res.json({
+            res.json({
                 status: 200,
                 message: 'Log Entry Deleted'
             });
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 }

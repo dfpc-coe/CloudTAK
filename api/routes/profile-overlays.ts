@@ -90,7 +90,7 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
-            return res.json({
+            res.json({
                 removed,
                 total: overlays.total,
                 items: overlays.items.map((o) => {
@@ -101,7 +101,7 @@ export default async function router(schema: Schema, config: Config) {
                 })
             });
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -120,12 +120,12 @@ export default async function router(schema: Schema, config: Config) {
             const overlay = await config.models.ProfileOverlay.from(req.params.overlay)
             if (overlay.username !== user.email) throw new Err(401, null, 'Cannot get another\'s overlay');
 
-            return res.json({
+            res.json({
                 ...overlay,
                 opacity: Number(overlay.opacity)
             });
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -159,12 +159,12 @@ export default async function router(schema: Schema, config: Config) {
 
             overlay = await config.models.ProfileOverlay.commit(req.params.overlay, req.body)
 
-            return res.json({
+            res.json({
                 ...overlay,
                 opacity: Number(overlay.opacity)
             });
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -220,15 +220,15 @@ export default async function router(schema: Schema, config: Config) {
                 });
             }
 
-            return res.json({
+            res.json({
                 ...overlay,
                 opacity: Number(overlay.opacity)
             });
         } catch (err) {
             if (String(err).includes('duplicate key value violates unique constraint')) {
-                return Err.respond(new Err(400, err instanceof Error ? err : new Error(String(err)), 'Overlay appears to exist - cannot add duplicate'), res)
+                 Err.respond(new Err(400, err instanceof Error ? err : new Error(String(err)), 'Overlay appears to exist - cannot add duplicate'), res)
             } else {
-                return Err.respond(err, res);
+                 Err.respond(err, res);
             }
         }
     });
@@ -264,12 +264,12 @@ export default async function router(schema: Schema, config: Config) {
                 });
             }
 
-            return res.json({
+            res.json({
                 status: 200,
                 message: 'Overlay Removed'
             });
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 }

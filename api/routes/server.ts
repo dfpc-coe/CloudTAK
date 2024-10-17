@@ -20,7 +20,7 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             if (!config.server.auth.key || !config.server.auth.cert) {
-                return res.json({
+                res.json({
                     id: 1,
                     status: 'unconfigured',
                     name: 'Default Server',
@@ -50,9 +50,9 @@ export default async function router(schema: Schema, config: Config) {
                         response.certificate = { validFrom, validTo, subject };
                     }
 
-                    return res.json(response)
+                    res.json(response)
                 } else {
-                    return res.json({
+                    res.json({
                         id: config.server.id,
                         status: 'configured',
                         name: config.server.name,
@@ -65,7 +65,7 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -148,9 +148,9 @@ export default async function router(schema: Schema, config: Config) {
                 response.certificate = { validFrom, validTo, subject };
             }
 
-            return res.json(response);
+            res.json(response);
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 }

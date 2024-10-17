@@ -77,7 +77,7 @@ export default async function router(schema: Schema, config: Config) {
                 })
             });
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -113,20 +113,20 @@ export default async function router(schema: Schema, config: Config) {
 
             try {
                 await DataMission.sync(config, data);
+
+                res.json({
+                    mission_exists: true,
+                    ...data
+                });
             } catch (err) {
-                return res.json({
+                res.json({
                     mission_exists: false,
                     mission_error: err instanceof Error ? err.message : String(err),
                     ...data
                 });
             }
-
-            return res.json({
-                mission_exists: true,
-                ...data
-            });
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -154,12 +154,12 @@ export default async function router(schema: Schema, config: Config) {
                 return await config.models.Layer.from(req.params.layerid);
             });
 
-            return res.json({
+            res.json({
                 status: config.StackName !== 'test' ? await alarm.get(layer.id) : 'unknown',
                 ...layer
             });
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 }

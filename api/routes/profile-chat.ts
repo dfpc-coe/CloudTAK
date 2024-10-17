@@ -20,9 +20,9 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req);
             const chats = await config.models.ProfileChat.chats(user.email);
-            return res.json(chats);
+            res.json(chats);
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -56,9 +56,9 @@ export default async function router(schema: Schema, config: Config) {
                     AND chatroom = ${req.params.chatroom}
                 `
             });
-            return res.json(chats);
+            res.json(chats);
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 }

@@ -52,12 +52,12 @@ export default async function router(schema: Schema, config: Config) {
                 }
             });
 
-            return res.json({
+            res.json({
                 type: 'FeatureCollection',
                 features
             });
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -97,14 +97,14 @@ export default async function router(schema: Schema, config: Config) {
 
             const feat = await ddb.row(layer.id, req.params.featid);
 
-            return res.json({
+            res.json({
                 id: feat.Id,
                 type: 'Feature',
                 properties: feat.Properties,
                 geometry: feat.Geometry
             });
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 }
