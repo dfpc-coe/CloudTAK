@@ -292,6 +292,7 @@ export default async function router(schema: Schema, config: Config) {
         body: Type.Object({
             name: Default.NameField,
             data: Type.String(),
+            data_alt: Type.Optional(Type.String()),
             type2525b: Type.Optional(Type.Union([Type.String(), Type.Null()]))
         }),
         res: IconResponse
@@ -404,6 +405,7 @@ export default async function router(schema: Schema, config: Config) {
         body: Type.Object({
             name: Type.Optional(Type.String()),
             data: Type.Optional(Type.String()),
+            data_alt: Type.Optional(Type.String()),
             type2525b: Type.Optional(Type.Union([Type.String(), Type.Null()]))
         }),
         res: IconResponse
@@ -476,6 +478,10 @@ export default async function router(schema: Schema, config: Config) {
         }),
         query: Type.Object({
             token: Type.Optional(Type.String()),
+            alt: Type.Boolean({
+                default: false,
+                description: 'Use alternate icon if possible'
+            })
         }),
         description: 'Icon Data',
     }, async (req, res) => {
@@ -491,7 +497,11 @@ export default async function router(schema: Schema, config: Config) {
                 (${req.params.iconset} = iconset AND ${req.params.icon} = name)
             `);
 
-            res.status(200).send(Buffer.from(icon.data, 'base64'));
+            if (req.query.alt && icon.data_alt) {
+                res.status(200).send(Buffer.from(icon.data, 'base64'));
+            } else {
+                res.status(200).send(Buffer.from(icon.data, 'base64'));
+            }
         } catch (err) {
             Err.respond(err, res);
         }
@@ -533,7 +543,9 @@ export default async function router(schema: Schema, config: Config) {
                     `
                 })
 
-                const sprites = await Sprites(icons.items);
+                const sprites = await Sprites(icons.items, {
+                    useDataAlt: true
+                });
 
                 SpriteMap[req.query.iconset] = { image: sprites.image, json: sprites.json };
 
@@ -580,7 +592,9 @@ export default async function router(schema: Schema, config: Config) {
                         AND ${scope}
                     `
                 })
-                const sprites = await Sprites(icons.items);
+                const sprites = await Sprites(icons.items, {
+                    useDataAlt: true
+                });
 
                 SpriteMap[req.query.iconset] = { image: sprites.image, json: sprites.json };
 

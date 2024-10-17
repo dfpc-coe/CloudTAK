@@ -75,7 +75,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             const errors: Array<Static<typeof LayerError>> = [];
-            const cots = [];
+            let cots = [];
             for (const feat of req.body.features) {
                 try {
                     cots.push(CoT.from_geojson(feat))
@@ -129,16 +129,17 @@ export default async function router(schema: Schema, config: Config) {
                         existMap.set(String(feat.id), feat);
                     }
 
-
-                    for (const cot of cots) {
+                    cots = cots.filter((cot) => {
                         const exist = existMap.get(cot.uid());
                         if (exist && data.mission_diff) {
                             const b = CoT.from_geojson(exist);
-                            if (!cot.isDiff(b)) continue;
+                            if (!cot.isDiff(b)) return false;
                         }
 
                         cot.addDest({ mission: data.name, path: `layer-${layer.id}`, after: '' });
-                    }
+
+                        return true;
+                    })
                 } else {
                     for (const cot of cots) {
                         cot.addDest({ mission: data.name });
