@@ -171,6 +171,7 @@
                             </div>
                             <div class='col-12 d-flex justify-content-center'>
                                 <button
+                                    @click='saveLease(false)'
                                     class='btn btn-primary'
                                     style='width: 280px'
                                 >Renew Lease</button>
@@ -204,7 +205,7 @@
                 </button>
                 <button
                     class='btn btn-primary'
-                    @click='saveLease'
+                    @click='saveLease(true)'
                 >
                     Save
                 </button>
@@ -299,18 +300,30 @@ async function deleteLease() {
     emit('refresh');
 }
 
-async function saveLease() {
+async function saveLease(close: boolean) {
     loading.value = true;
 
     if (editLease.value.id) {
-        await std(`/api/video/lease/${editLease.value.id}`, {
+        const res = await std(`/api/video/lease/${editLease.value.id}`, {
             method: 'PATCH',
-            body: editLease.value
+            body: {
+                ...editLease.value,
+                duration: parseInt(editLease.value.duration.split(' ')[0]) * 60 * 60
+            }
         }) as VideoLeaseResponse;
 
-        emit('refresh');
+        if (close) {
+            emit('refresh');
+        } else {
+            editLease.value = {
+                ...res.lease,
+                duration: '16 Hours'
+            }
+
+            protocols.value = res.protocols;
+        }
     } else {
-        const { lease } = await std('/api/video/lease', {
+        const res = await std('/api/video/lease', {
             method: 'POST',
             body: {
                 name: editLease.value.name,
@@ -318,15 +331,15 @@ async function saveLease() {
             }
         }) as VideoLeaseResponse;
 
-        if (editLease.value.id) {
-            emit('refresh')
+        if (editLease.value.id && close) {
+            emit('refresh');
         } else {
             editLease.value = {
-                ...lease,
+                ...res.lease,
                 duration: '16 Hours'
             }
 
-            await fetchLease();
+            protocols.value = res.protocols;
         }
 
         loading.value = false;
