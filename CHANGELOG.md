@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v4.20.0 - 2024-10-17
+
+- :tada: `UI` Add ability to renew lease & show if lease is expired
+- :rocket: `UI` Show expired leases in Lease List
+- :rocket: `API` Add ability to PATCH duration
+- :rocket: Migrate VideoLeaseModal to TS
+
 ### v4.19.2 - 2024-10-17
 
 - :arrow-up: Update to `@types/express@5`
