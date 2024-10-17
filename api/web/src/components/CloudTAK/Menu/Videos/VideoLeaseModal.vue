@@ -5,7 +5,7 @@
             type='button'
             class='btn-close'
             aria-label='Close'
-            @click='$emit("refresh")'
+            @click='emit("refresh")'
         />
         <div class='modal-header'>
             <div
@@ -19,13 +19,16 @@
             />
 
             <div class='ms-auto btn-list'>
-                <IconRefresh
+                <TablerIconButton
                     v-if='editLease.id'
-                    :size='32'
-                    :stroke='1'
-                    class='cursor-pointer'
                     @click='fetchLease'
-                />
+                >
+                    <IconRefresh
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+
                 <TablerDelete
                     v-if='editLease.id'
                     displaytype='icon'
@@ -50,7 +53,10 @@
                         <div class='subheader pt-4'>
                             RTSP Path
                         </div>
-                        <CopyField :text='protocols.rtsp.url.replace(/.*\//, "")' />
+                        <CopyField
+                            v-if='protocols.rtsp'
+                            :text='protocols.rtsp.url.replace(/.*\//, "")'
+                        />
                     </div>
                 </div>
             </div>
@@ -63,7 +69,7 @@
                     >
                         <IconChevronLeft
                             :size='20'
-                            :stroke='1'
+                            stroke='1'
                         />
                         <span
                             v-if='wizard === 1'
@@ -90,7 +96,7 @@
                             >Done</span>
                             <IconChevronRight
                                 :size='20'
-                                :stroke='1'
+                                stroke='1'
                             />
                         </button>
                     </div>
@@ -123,12 +129,12 @@
                         <IconSquareChevronRight
                             v-if='!advanced'
                             :size='32'
-                            :stroke='1'
+                            stroke='1'
                         />
                         <IconChevronDown
                             v-else
                             :size='32'
-                            :stroke='1'
+                            stroke='1'
                         />
                         Advanced Options
                     </label>
@@ -154,31 +160,59 @@
                         <div class='subheader pt-4'>
                             Video Streaming Protocols
                         </div>
-                        <div
-                            v-for='protocol in protocols'
-                            class='pt-2'
-                        >
-                            <div v-text='protocol.name' />
-                            <CopyField :text='protocol.url' />
-                        </div>
+                        <template v-if='expired(editLease.expiration)'>
+                            <TablerAlert
+                                title='Expired Lease'
+                                :err='new Error("Renew the lease to continue using the video stream")'
+                                :advanced='false'
+                            />
+
+                            <div class='col-12 d-flex justify-content-center pb-3'>
+                                <TablerEnum
+                                    v-model='editLease.duration'
+                                    :options='["16 Hours", "12 Hours", "6 Hours", "1 Hour"]'
+                                    style='width: 300px;'
+                                />
+                            </div>
+                            <div class='col-12 d-flex justify-content-center'>
+                                <button
+                                    class='btn btn-primary'
+                                    style='width: 280px'
+                                    @click='saveLease(false)'
+                                >
+                                    Renew Lease
+                                </button>
+                            </div>
+                        </template>
+                        <template v-else>
+                            <div
+                                v-for='protocol in protocols'
+                                class='pt-2'
+                            >
+                                <template v-if='protocol'>
+                                    <div v-text='protocol.name' />
+                                    <CopyField :text='protocol.url' />
+                                </template>
+                            </div>
+                        </template>
                     </template>
                 </div>
             </div>
             <div class='modal-footer'>
                 <button
-                    v-if='protocols.rtsp'
+                    v-if='protocols.rtsp && !expired(editLease.expiration)'
                     class='btn btn-secondary'
                     @click='wizard = 1'
                 >
                     <IconWand
                         :size='20'
-                        :stroke='1'
+                        stroke='1'
                     />
                     <span class='mx-2'>UAS Tool Wizard</span>
                 </button>
                 <button
                     class='btn btn-primary'
-                    @click='saveLease'
+                    @click='saveLease(true)'
                 >
                     Save
                 </button>
@@ -187,9 +221,11 @@
     </TablerModal>
 </template>
 
-<script>
-import { std } from '/src/std.ts';
+<script setup lang='ts'>
+import { std } from '../../../../std.ts';
 import CopyField from '../../util/CopyField.vue';
+import { ref, onMounted } from 'vue';
+import type { VideoLease, VideoLeaseResponse, VideoLeaseProtocols } from '../../../../types.ts';
 import {
     IconRefresh,
     IconWand,
@@ -199,110 +235,125 @@ import {
     IconChevronDown,
 } from '@tabler/icons-vue';
 import {
+    TablerIconButton,
     TablerLoading,
+    TablerAlert,
     TablerModal,
     TablerInput,
     TablerEnum,
     TablerDelete
 } from '@tak-ps/vue-tabler'
 
-export default {
-    name: 'VideoLeaseModal',
-    components: {
-        CopyField,
-        IconWand,
-        IconRefresh,
-        IconSquareChevronRight,
-        IconChevronRight,
-        IconChevronLeft,
-        IconChevronDown,
-        TablerModal,
-        TablerEnum,
-        TablerInput,
-        TablerDelete,
-        TablerLoading,
-    },
-    props: {
-        lease: {
-            type: Object,
-            required: true
+const props = defineProps<{
+    lease: VideoLease
+}>();
+
+const emit = defineEmits([ 'close', 'refresh' ])
+
+const loading = ref(true);
+const wizard = ref(0);
+const advanced = ref(false);
+const protocols = ref<VideoLeaseProtocols>({});
+const editLease = ref<{
+    id?: number
+    name: string
+    duration: string
+    expiration?: string 
+    stream_user: string | null
+    stream_pass: string | null
+}>({
+    name: '',
+    duration: '16 Hours',
+    stream_user: '',
+    stream_pass: ''
+});
+
+onMounted(async () => {
+    if (props.lease.id) {
+        editLease.value = {
+            ...props.lease,
+            duration: '16 Hours'
         }
-    },
-    emits: [
-        'close',
-        'refresh'
-    ],
-    data: function() {
-        return {
-            loading: true,
-            wizard: 0,
-            advanced: false,
-            protocols: {},
-            editLease: {
-                name: '',
-                duration: '16 Hours',
-                stream_user: '',
-                stream_pass: ''
+        await fetchLease();
+    }
+
+    loading.value = false
+});
+
+function expired(expiration?: string) {
+    if (!expiration) return false;
+    return +new Date(expiration) < +new Date();
+}
+
+async function fetchLease() {
+    loading.value = true;
+
+    const res = await std(`/api/video/lease/${editLease.value.id}`, {
+        method: 'GET',
+    }) as VideoLeaseResponse;
+
+    editLease.value = {
+        ...res.lease,
+        duration: '16 Hours'
+    }
+    protocols.value = res.protocols;
+
+    loading.value = false;
+}
+
+async function deleteLease() {
+    await std(`/api/video/lease/${props.lease.id}`, {
+        method: 'DELETE',
+    });
+
+    emit('refresh');
+}
+
+async function saveLease(close: boolean) {
+    loading.value = true;
+
+    if (editLease.value.id) {
+        const res = await std(`/api/video/lease/${editLease.value.id}`, {
+            method: 'PATCH',
+            body: {
+                ...editLease.value,
+                duration: parseInt(editLease.value.duration.split(' ')[0]) * 60 * 60
             }
-        }
-    },
-    mounted: async function() {
-        if (this.lease.id) {
-            this.editLease = this.lease;
-            await this.fetchLease();
-        }
+        }) as VideoLeaseResponse;
 
-        this.loading = false
-    },
-    methods: {
-        fetchLease: async function() {
-            this.loading = true;
-
-            const { lease, protocols } = await std(`/api/video/lease/${this.editLease.id}`, {
-                method: 'GET',
-            });
-
-            this.editLease = lease;
-            this.protocols = protocols;
-
-            this.loading = false;
-        },
-        deleteLease: async function() {
-            await std(`/api/video/lease/${this.lease.id}`, {
-                method: 'DELETE',
-            });
-
-            this.$emit('refresh');
-        },
-        saveLease: async function() {
-            this.loading = true;
-
-            if (this.editLease.id) {
-                await std(`/api/video/lease/${this.editLease.id}`, {
-                    method: 'PATCH',
-                    body: this.editLease
-                });
-                this.$emit('refresh');
-            } else {
-                const { lease } = await std('/api/video/lease', {
-                    method: 'POST',
-                    body: {
-                        name: this.editLease.name,
-                        duration: parseInt(this.editLease.duration.split(' ')[0]) * 60 * 60
-                    }
-                });
-
-                if (this.editLease.id) {
-                    this.$emit('refresh')
-                } else {
-                    this.editLease = lease;
-
-                    await this.fetchLease();
-                }
-
-                this.loading = false;
+        if (close) {
+            emit('refresh');
+        } else {
+            editLease.value = {
+                ...res.lease,
+                duration: '16 Hours'
             }
-        },
+
+            protocols.value = res.protocols;
+        }
+
+        loading.value = true;
+    } else {
+        const res = await std('/api/video/lease', {
+            method: 'POST',
+            body: {
+                name: editLease.value.name,
+                duration: parseInt(editLease.value.duration.split(' ')[0]) * 60 * 60
+            }
+        }) as VideoLeaseResponse;
+
+        if (editLease.value.id && close) {
+            emit('refresh');
+        } else {
+            editLease.value = {
+                ...res.lease,
+                duration: '16 Hours'
+            }
+
+            protocols.value = res.protocols;
+        }
+
+        loading.value = false;
     }
 }
 </script>

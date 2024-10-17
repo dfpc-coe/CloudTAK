@@ -148,6 +148,10 @@ export default async function router(schema: Schema, config: Config) {
         }),
         body: Type.Object({
             name: Type.Optional(Type.String()),
+            duration: Type.Optional(Type.Integer({
+                minimum: 0,
+                description: 'Duration in Seconds'
+            })),
         }),
         res: Type.Object({
             lease: VideoLeaseResponse,
@@ -157,14 +161,24 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req);
 
+            if (user.access !== AuthUserAccess.ADMIN && req.body.duration > 60 * 60 * 16) {
+                throw new Err(400, null, 'Only Administrators can request a lease > 16 hours')
+            }
+
             let lease;
             if (user.access === AuthUserAccess.ADMIN) {
-                lease = await config.models.VideoLease.commit(req.params.lease, req.body);
+                lease = await config.models.VideoLease.commit(req.params.lease, {
+                    ...req.body,
+                    expiration: moment().add(req.body.duration, 'seconds').toISOString(),
+                });
             } else {
                 lease = await config.models.VideoLease.from(req.params.lease);
 
                 if (lease.username === user.email) {
-                    lease = await config.models.VideoLease.commit(req.params.lease, req.body);
+                    lease = await config.models.VideoLease.commit(req.params.lease, {
+                        ...req.body,
+                        expiration: moment().add(req.body.duration, 'seconds').toISOString(),
+                    });
                 } else {
                     throw new Err(400, null, 'You can only update a lease you created');
                 }
