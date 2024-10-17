@@ -103,7 +103,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, defineProps, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import type { ComputedRef } from 'vue';
 import type { MissionLog } from '../../../../types.ts';
 import {
