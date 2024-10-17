@@ -1,1 +1,4 @@
-ALTER TABLE "settings" ALTER COLUMN "value" SET DATA TYPE json;
+UPDATE settings
+    SET value = Replace(value, '"', '')
+    WHERE Starts_With(key, 'group:')
+
