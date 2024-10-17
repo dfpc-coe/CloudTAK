@@ -77,9 +77,9 @@ export default async function router(schema: Schema, config: Config) {
                 else json.status.live++;
             }
 
-            return res.json(json);
+            res.json(json);
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -120,13 +120,13 @@ export default async function router(schema: Schema, config: Config) {
 
             const { validFrom, validTo, subject } = new X509Certificate(conn.auth.cert);
 
-            return res.json({
+            res.json({
                 status: config.conns.status(conn.id),
                 certificate: { validFrom, validTo, subject },
                 ...conn
             });
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -173,13 +173,13 @@ export default async function router(schema: Schema, config: Config) {
 
             const { validFrom, validTo, subject } = new X509Certificate(conn.auth.cert);
 
-            return res.json({
+            res.json({
                 status: config.conns.status(conn.id),
                 certificate: { validFrom, validTo, subject },
                 ...conn
             });
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -200,13 +200,13 @@ export default async function router(schema: Schema, config: Config) {
             const conn = await config.models.Connection.from(req.params.connectionid);
             const { validFrom, validTo, subject } = new X509Certificate(conn.auth.cert);
 
-            return res.json({
+            res.json({
                 status: config.conns.status(conn.id),
                 certificate: { validFrom, validTo, subject },
                 ...conn
             });
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -237,13 +237,13 @@ export default async function router(schema: Schema, config: Config) {
 
             const { validFrom, validTo, subject } = new X509Certificate(conn.auth.cert);
 
-            return res.json({
+            res.json({
                 status: config.conns.status(conn.id),
                 certificate: { validFrom, validTo, subject },
                 ...conn
             });
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -279,12 +279,12 @@ export default async function router(schema: Schema, config: Config) {
 
             config.conns.delete(req.params.connectionid);
 
-            return res.json({
+            res.json({
                 status: 200,
                 message: 'Connection Deleted'
             });
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -315,42 +315,42 @@ export default async function router(schema: Schema, config: Config) {
             const map: Map<string, number> = new Map();
 
             if (!stats.length) {
-                return res.json({ stats: [] });
-            }
+                res.json({ stats: [] });
+            } else {
+                const stat = stats[0];
 
-            const stat = stats[0];
+                if (!stat.Timestamps) stat.Timestamps = [];
+                if (!stat.Values) stat.Values = [];
 
-            if (!stat.Timestamps) stat.Timestamps = [];
-            if (!stat.Values) stat.Values = [];
+                for (let i = 0; i < stat.Timestamps.length; i++) {
+                    timestamps.add(stat.Timestamps[i]);
+                    map.set(String(stat.Timestamps[i]), Number(stat.Values[i]));
+                }
 
-            for (let i = 0; i < stat.Timestamps.length; i++) {
-                timestamps.add(stat.Timestamps[i]);
-                map.set(String(stat.Timestamps[i]), Number(stat.Values[i]));
-            }
-
-            const ts_arr = Array.from(timestamps).sort((d1, d2) => {
-                return d1.getTime() - d2.getTime();
-            }).map((d) => {
-                return String(d);
-            });
-
-            const statsres: {
-                stats: Array<{
-                    label: string;
-                    success: number;
-                }>
-            } = { stats: [] }
-
-            for (const ts of ts_arr) {
-                statsres.stats.push({
-                    label: ts,
-                    success: map.get(ts) || 0,
+                const ts_arr = Array.from(timestamps).sort((d1, d2) => {
+                    return d1.getTime() - d2.getTime();
+                }).map((d) => {
+                    return String(d);
                 });
-            }
 
-            return res.json(statsres);
+                const statsres: {
+                    stats: Array<{
+                        label: string;
+                        success: number;
+                    }>
+                } = { stats: [] }
+
+                for (const ts of ts_arr) {
+                    statsres.stats.push({
+                        label: ts,
+                        success: map.get(ts) || 0,
+                    });
+                }
+
+                res.json(statsres);
+            }
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 }

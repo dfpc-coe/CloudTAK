@@ -44,9 +44,9 @@ export default async function router(schema: Schema, config: Config) {
                 })
             });
 
-            return res.json(subs);
+            res.json(subs);
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -80,18 +80,21 @@ export default async function router(schema: Schema, config: Config) {
                 groups.add(group.name)
             });
 
+            let done = false;
             for (const sub of subs.data) {
                 if (sub.clientUid === req.params.clientuid) {
                     sub.groups = sub.groups.filter((group) => {
                         return groups.has(group.name);
                     });
-                    return res.json(sub);
+
+                    res.json(sub);
+                    done = true;
                 }
             }
 
-            throw new Err(404, null, `Subscription for ${req.params.clientuid} not found`);
+            if (!done) throw new Err(404, null, `Subscription for ${req.params.clientuid} not found`);
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 }

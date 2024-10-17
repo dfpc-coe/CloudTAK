@@ -19,9 +19,9 @@ export default async function router(schema: Schema, config: Config) {
             const user = await Auth.as_user(config, req);
             const profile = await config.models.Profile.from(user.email);
 
-            return res.json(profile);
+            res.json(profile);
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -52,9 +52,9 @@ export default async function router(schema: Schema, config: Config) {
                 updated: sql`Now()`
             });
 
-            return res.json(profile);
+            res.json(profile);
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 

@@ -35,7 +35,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const list = await Batch.list(config, `data-${data.id}`);
 
-            return res.json({
+            res.json({
                 total: list.length,
                 items: list.map((job) => {
                     return {
@@ -48,7 +48,7 @@ export default async function router(schema: Schema, config: Config) {
                 })
             });
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -76,7 +76,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const job = await Batch.job(config, req.params.jobid);
 
-            return res.json({
+            res.json({
                 id: job.id,
                 asset: job.asset,
                 status: job.status,
@@ -84,7 +84,7 @@ export default async function router(schema: Schema, config: Config) {
                 updated: job.updated
             });
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -116,14 +116,14 @@ export default async function router(schema: Schema, config: Config) {
 
             if (job.logstream) {
                 const logs = await Logs.list(job.logstream);
-                return res.json(logs)
+                res.json(logs)
             } else {
-                return res.json({
+                res.json({
                     logs: []
                 })
             }
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 }

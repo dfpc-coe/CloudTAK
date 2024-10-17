@@ -56,9 +56,9 @@ export default async function router(schema: Schema, config: Config) {
                 opts
             );
 
-            return res.json(mission);
+            res.json(mission);
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -85,9 +85,9 @@ export default async function router(schema: Schema, config: Config) {
 
             const features = await api.Mission.latestFeats(req.params.name, opts);
 
-            return res.json({ type: 'FeatureCollection', features });
+            res.json({ type: 'FeatureCollection', features });
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -116,9 +116,9 @@ export default async function router(schema: Schema, config: Config) {
                 opts
             );
 
-            return res.json(changes);
+            res.json(changes);
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -146,9 +146,10 @@ export default async function router(schema: Schema, config: Config) {
                 req.query,
                 opts
             );
-            return res.json(mission);
+
+            res.json(mission);
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -172,9 +173,9 @@ export default async function router(schema: Schema, config: Config) {
                 creatorUid: user.email
             });
 
-            return res.json(mission);
+            res.json(mission);
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -192,9 +193,9 @@ export default async function router(schema: Schema, config: Config) {
 
             const missions = await api.Mission.list(req.query);
 
-            return res.json(missions);
+            res.json(missions);
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -221,9 +222,9 @@ export default async function router(schema: Schema, config: Config) {
                 opts
             );
 
-            return res.json(role);
+            res.json(role);
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -250,9 +251,9 @@ export default async function router(schema: Schema, config: Config) {
                 opts
             );
 
-            return res.json(subs);
+            res.json(subs);
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -279,9 +280,9 @@ export default async function router(schema: Schema, config: Config) {
                 opts
             );
 
-            return res.json(roles);
+            res.json(roles);
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -316,9 +317,9 @@ export default async function router(schema: Schema, config: Config) {
                 opts
             );
 
-            return res.json(missions);
+            res.json(missions);
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -369,9 +370,9 @@ export default async function router(schema: Schema, config: Config) {
                 opts
             );
 
-            return res.json(missionContent);
+            res.json(missionContent);
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -404,9 +405,9 @@ export default async function router(schema: Schema, config: Config) {
                 opts
             );
 
-            return res.json(missionContent);
+            res.json(missionContent);
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 }

@@ -26,9 +26,9 @@ export default async function router(schema: Schema, config: Config) {
                 return final[k.value.key] = String(k.value.value);
             });
 
-            return res.json(final);
+            res.json(final);
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -78,9 +78,9 @@ export default async function router(schema: Schema, config: Config) {
                 return final[k.value.key] = String(k.value.value);
             });
 
-            return res.json(final);
+            res.json(final);
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -125,12 +125,12 @@ export default async function router(schema: Schema, config: Config) {
                 if (!final[group]) final[group] = '';
             }
 
-            return res.json({
+            res.json({
                 roles: [ "Team Member", "Team Lead", "HQ", "Sniper", "Medic", "Forward Observer", "RTO", "K9" ],
                 groups: final
             });
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 }

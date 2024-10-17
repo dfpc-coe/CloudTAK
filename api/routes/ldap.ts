@@ -34,9 +34,9 @@ export default async function router(schema: Schema, config: Config) {
 
             const list = await config.external.channels(profile.id, req.query)
 
-            return res.json(list);
+            res.json(list);
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 
@@ -92,9 +92,9 @@ export default async function router(schema: Schema, config: Config) {
 
             const certs = await api.Credentials.generate();
 
-            return res.json(certs)
+            res.json(certs)
         } catch (err) {
-            return Err.respond(err, res);
+             Err.respond(err, res);
         }
     });
 }

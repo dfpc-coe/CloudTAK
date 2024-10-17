@@ -27,9 +27,9 @@ export default async function router(schema: Schema, config: Config) {
                 useCache: true
             });
 
-            return res.json(list);
+            res.json(list);
         } catch (err) {
-            return Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 }
