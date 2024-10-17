@@ -332,7 +332,7 @@ async function saveLease(close: boolean) {
             protocols.value = res.protocols;
         }
 
-        loading.value = true;
+        loading.value = false;
     } else {
         const res = await std('/api/video/lease', {
             method: 'POST',
