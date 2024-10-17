@@ -1,27 +1,23 @@
 <template>
     <MenuTemplate :name='iconset.name'>
         <template #buttons>
-            <IconPlus
+            <TablerIconButton
                 v-if='iconset.username || profile.system_admin'
-                v-tooltip='"Create Icon"'
-                :size='32'
-                :stroke='1'
-                class='cursor-pointer'
+                title='Create Icon'
                 @click='editIconModal = {}'
-            /> <IconSettings
+            ><IconPlus :size='32' :stroke='1'/></TablerIconButton>
+
+            <TablerIconButton
                 v-if='iconset.username || profile.system_admin'
-                class='cursor-pointer'
-                :size='32'
-                :stroke='1'
+                title='Settings'
                 @click='editIconsetModal = iconset'
-            />
-            <IconDownload
-                v-tooltip='"Download TAK Zip"'
-                :size='32'
-                :stroke='1'
-                class='cursor-pointer'
+            ><IconSettings :size='32' :stroke='1'/></TablerIconButton>
+
+            <TablerIconButton
+                title='Download TAK Zip'
                 @click.stop='download'
-            />
+            ><IconDownload :size='32' :stroke='1'/></TablerIconButton>
+
             <TablerDelete
                 v-if='iconset.username || profile.system_admin'
                 displaytype='icon'
@@ -60,7 +56,8 @@ import { std, stdurl } from '/src/std.ts';
 import CombinedIcons from '../util/Icons.vue'
 import {
     TablerDelete,
-    TablerLoading
+    TablerLoading,
+    TablerIconButton,
 } from '@tak-ps/vue-tabler';
 import {
     IconPlus,
@@ -84,7 +81,8 @@ export default {
         MenuTemplate,
         CombinedIcons,
         TablerDelete,
-        TablerLoading
+        TablerLoading,
+        TablerIconButton
     },
     data: function() {
         return {
