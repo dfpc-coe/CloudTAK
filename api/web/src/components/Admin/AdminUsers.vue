@@ -6,13 +6,10 @@
             </h1>
 
             <div class='ms-auto btn-list'>
-                <IconRefresh
-                    v-tooltip='"Refresh"'
-                    :size='32'
-                    :stroke='1'
-                    class='cursor-pointer'
+                <TablerIconButton
+                    title='Refresh'
                     @click='fetchList'
-                />
+                ><IconRefresh :size='32' stroke='1'/></TablerIconButton>
             </div>
         </div>
         <div style='min-height: 20vh; margin-bottom: 61px'>
@@ -22,7 +19,8 @@
                 class='mx-1 my-2'
             />
 
-            <TablerLoading v-if='loading' />
+            <TablerAlert v-if='error' :err='error'/>
+            <TablerLoading v-else-if='loading' />
             <TablerNone
                 v-else-if='!list.items.length'
                 label='Users'
@@ -41,7 +39,7 @@
                     <tbody>
                         <tr
                             v-for='user in list.items'
-                            :key='user.id'
+                            :key='user.username'
                             class='cursor-pointer'
                             @click='$router.push(`/admin/user/${user.username}`)'
                         >
@@ -70,89 +68,81 @@
     </div>
 </template>
 
-<script>
-import { std, stdurl } from '/src/std.ts';
+<script setup lang='ts'>
+import { ref, watch, onMounted } from 'vue';
+import { std, stdurl } from '../../std.ts';
+import type { User, UserList } from '../../types.ts';
 import TableHeader from '../util/TableHeader.vue'
 import TableFooter from '../util/TableFooter.vue'
 import {
     TablerNone,
+    TablerAlert,
     TablerInput,
-    TablerLoading
+    TablerLoading,
+    TablerIconButton
 } from '@tak-ps/vue-tabler';
 import {
     IconRefresh,
 } from '@tabler/icons-vue'
 
-export default {
-    name: 'UsersAdmin',
-    components: {
-        TablerNone,
-        TablerInput,
-        TablerLoading,
-        IconRefresh,
-        TableHeader,
-        TableFooter,
-    },
-    data: function() {
-        return {
-            err: false,
-            loading: true,
-            header: [],
-            paging: {
-                filter: '',
-                sort: 'last_login',
-                order: 'desc',
-                limit: 100,
-                page: 0
-            },
-            list: {
-                total: 0,
-                items: []
-            }
-        }
-    },
-    watch: {
-       paging: {
-            deep: true,
-            handler: async function() {
-                await this.fetchList();
-            }
-        }
-    },
-    mounted: async function() {
-        await this.listLayerSchema();
-        await this.fetchList();
-    },
-    methods: {
-        listLayerSchema: async function() {
-            const schema = await std('/api/schema?method=GET&url=/user');
-            this.header = ['username', 'last_login', 'phone'].map((h) => {
-                return { name: h, display: true };
-            });
+const error = ref<Error | undefined>(undefined);
+const loading = ref(true);
 
-            this.header.push(...schema.query.properties.sort.enum.map((h) => {
-                return {
-                    name: h,
-                    display: false
-                }
-            }).filter((h) => {
-                for (const hknown of this.header) {
-                    if (hknown.name === h.name) return false;
-                }
-                return true;
-            }));
-        },
-        fetchList: async function() {
-            this.loading = true;
-            const url = stdurl('/api/user');
-            url.searchParams.append('filter', this.paging.filter);
-            url.searchParams.append('limit', this.paging.limit);
-            url.searchParams.append('sort', this.paging.sort);
-            url.searchParams.append('order', this.paging.order);
-            url.searchParams.append('page', this.paging.page);
-            this.list = await std(url);
-            this.loading = false;
+type Header = { name: keyof User, display: boolean };
+const header = ref<Array<Header>>([])
+const list = ref<UserList>({ total: 0, items: [] });
+const paging = ref({
+    filter: '',
+    sort: 'last_login',
+    order: 'desc',
+    limit: 100,
+    page: 0
+});
+
+watch(paging, async () => {
+    await fetchList();
+});
+
+onMounted(async () => {
+    await listLayerSchema();
+    await fetchList();
+});
+
+async function listLayerSchema() {
+    const schema = await std('/api/schema?method=GET&url=/user');
+
+    header.value = ['username', 'last_login', 'phone'].map((h) => {
+        return { name: h, display: true } as Header;
+    });
+
+    // @ts-expect-error No strong types on Schema objects
+    header.value.push(...schema.query.properties.sort.enum.map((h: string) => {
+        return {
+            name: h,
+            display: false
         }
+    }).filter((h: { name: string, display: boolean }) => {
+        for (const hknown of header.value) {
+            if (hknown.name === h.name) return false;
+        }
+        return true;
+    }));
+}
+
+async function fetchList() {
+    try {
+        loading.value = true;
+        const url = stdurl('/api/user');
+        url.searchParams.append('filter', paging.value.filter);
+        url.searchParams.append('limit', String(paging.value.limit));
+        url.searchParams.append('page', String(paging.value.page));
+        url.searchParams.append('sort', paging.value.sort);
+        url.searchParams.append('order', paging.value.order);
+        list.value = await std(url) as UserList;
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
     }
+
+    loading.value = false;
 }
 </script>
