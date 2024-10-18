@@ -14,13 +14,10 @@
             />
 
             <div class='ms-auto btn-list'>
-                <IconRefresh
-                    v-tooltip='"Refresh"'
-                    :size='32'
-                    :stroke='1'
-                    class='cursor-pointer'
+                <TablerIconButton
+                    title='Refresh'
                     @click='fetchUser'
-                />
+                ><IconRefresh :size='32' :stroke='1'/></TablerIconButton>
             </div>
         </div>
         <div class='card-body'>
@@ -66,7 +63,8 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import {
-    TablerLoading
+    TablerLoading,
+    TablerIconButton
 } from '@tak-ps/vue-tabler';
 import {
     IconRefresh,
@@ -79,6 +77,7 @@ export default {
         IconRefresh,
         IconCircleArrowLeft,
         TablerLoading,
+        TablerIconButton,
     },
     data: function() {
         return {
