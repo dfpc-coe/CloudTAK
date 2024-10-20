@@ -173,9 +173,15 @@
                                     </div>
                                 </div>
                                 <div class='col-12 col-md-9 position-relative'>
-                                    <router-view
-                                        :data='data'
-                                    />
+                                    <Suspense>
+                                        <router-view
+                                            :data='data'
+                                        />
+
+                                        <template #fallback>
+                                            <TablerLoading/>
+                                        </template>
+                                    </Suspense>
                                 </div>
                             </div>
                         </div>
