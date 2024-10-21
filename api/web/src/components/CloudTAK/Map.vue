@@ -592,6 +592,10 @@ export default {
 
         this.loading.main = false;
 
+        if (Notification.permission !== 'granted') {
+            Notification.requestPermission()
+        }
+
         if (("geolocation" in navigator)) {
             navigator.geolocation.watchPosition((position) => {
                 if (position.coords.accuracy <= 50) {
