@@ -76,9 +76,10 @@ export const useConnectionStore = defineStore('connection', {
                         console.warn('Unknown Task', JSON.stringify(task));
                     }
                 } else if (body.type === 'chat') {
-                    profileStore.notifications.push({
+                    profileStore.pushNotification({
                         type: 'Chat',
-                        name: 'New Chat',
+                        name: `${body.data.properties.chat.senderCallsign} to ${body.data.properties.chat.chatroom} says:`,
+                        body: body.data.properties.remarks,
                         url: `/menu/chats`
                     });
                 } else {

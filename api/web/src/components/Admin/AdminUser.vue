@@ -17,7 +17,12 @@
                 <TablerIconButton
                     title='Refresh'
                     @click='fetchUserLoading'
-                ><IconRefresh :size='32' stroke='1'/></TablerIconButton>
+                >
+                    <IconRefresh
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
             </div>
         </div>
         <div class='card-body'>
