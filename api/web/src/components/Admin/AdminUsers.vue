@@ -9,7 +9,12 @@
                 <TablerIconButton
                     title='Refresh'
                     @click='fetchList'
-                ><IconRefresh :size='32' stroke='1'/></TablerIconButton>
+                >
+                    <IconRefresh
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
             </div>
         </div>
         <div style='min-height: 20vh; margin-bottom: 61px'>
@@ -19,7 +24,10 @@
                 class='mx-1 my-2'
             />
 
-            <TablerAlert v-if='error' :err='error'/>
+            <TablerAlert
+                v-if='error'
+                :err='error'
+            />
             <TablerLoading v-else-if='loading' />
             <TablerNone
                 v-else-if='!list.items.length'

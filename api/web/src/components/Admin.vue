@@ -179,7 +179,7 @@
                                         />
 
                                         <template #fallback>
-                                            <TablerLoading/>
+                                            <TablerLoading />
                                         </template>
                                     </Suspense>
                                 </div>
