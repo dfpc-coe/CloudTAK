@@ -1,6 +1,6 @@
 <template>
     <div
-        class='page page-center'
+        class='page page-center cloudtak-gradient'
         style='overflow: auto;'
     >
         <div class='container container-normal py-4'>
