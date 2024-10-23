@@ -22,10 +22,14 @@ export default async function router(schema: Schema, config: Config) {
             }, req.params.connectionid);
 
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(connection.auth.cert, connection.auth.key));
-
+            
             const list = await api.Group.list({
                 useCache: true
             });
+
+            if (list.data && list.data.length > 1) {
+                list.warning = 'Warning: Multiple channels selected. Please confirm this is your intended action.';
+            }
 
             res.json(list);
         } catch (err) {
