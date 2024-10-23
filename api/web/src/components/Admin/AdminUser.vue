@@ -67,7 +67,7 @@
 
 <script setup lang='ts'>
 import { std, stdurl } from '../../std.ts';
-import type { User, UserList } from '../../types.ts';
+import type { User } from '../../types.ts';
 import {
     TablerLoading,
     TablerIconButton
@@ -77,7 +77,7 @@ import {
     IconCircleArrowLeft,
 } from '@tabler/icons-vue'
 
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import { useRoute } from 'vue-router'
 
 const route = useRoute()

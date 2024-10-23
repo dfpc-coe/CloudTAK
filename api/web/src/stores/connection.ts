@@ -76,12 +76,17 @@ export const useConnectionStore = defineStore('connection', {
                         console.warn('Unknown Task', JSON.stringify(task));
                     }
                 } else if (body.type === 'chat') {
-                    profileStore.pushNotification({
-                        type: 'Chat',
-                        name: `${body.data.properties.chat.senderCallsign} to ${body.data.properties.chat.chatroom} says:`,
-                        body: body.data.properties.remarks,
-                        url: `/menu/chats`
-                    });
+                    const chat = (body.data as Feature).properties;
+                    if (chat.chat) {
+                        profileStore.pushNotification({
+                            type: 'Chat',
+                            name: `${chat.chat.senderCallsign} to ${chat.chat.chatroom} says:`,
+                            body: chat.remarks || '',
+                            url: `/menu/chats`
+                        });
+                    } else {
+                        console.log('UNKNOWN Chat', body.data);
+                    }
                 } else {
                     console.log('UNKNOWN', body.data);
                 }
