@@ -264,7 +264,20 @@ export default defineComponent({
 });
 </script>
 
-<style>
+<style lang='scss'>
+$cloudtak-yellow: #FFB703;
+$cloudtak-orange: #FF9820;
+$cloudtak-navy: #023047;
+$cloudtak-blue: #07556D;
+
+.cloudtak-gradient {
+    background: radial-gradient(at left top, $cloudtak-blue, $cloudtak-navy);
+}
+
+.btn-primary {
+    background-color: #07556D !important;
+}
+
 .hover-button-hidden {
     visibility: hidden;
 }

@@ -44,6 +44,32 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
+    await schema.patch('/user/:username', {
+        name: 'Update User',
+        group: 'User',
+        description: 'Update a User',
+        params: Type.Object({
+            username: Type.String(),
+        }),
+        body: Type.Object({
+            system_admin: Type.Optional(Type.Boolean())
+        }),
+        res: ProfileResponse
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req, { admin: true });
+
+            const user = await config.models.Profile.commit(req.params.username, req.body);
+
+            res.json({
+                ...user,
+                agency_admin: user.agency_admin || []
+            });
+        } catch (err) {
+             Err.respond(err, res);
+        }
+    });
+
     await schema.get('/user/:username', {
         name: 'Get User',
         group: 'User',

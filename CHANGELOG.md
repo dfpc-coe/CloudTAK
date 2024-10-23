@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v4.21.0 - 2024-10-17
+
+- :bug: Fix Iconset Filter in UI
+- :tada: Add `data_alt` field to show a different icon in CloudTAK than the Iconset Default
+- :bug: Automatically resize to a width of 32px on all spritesheets
+- :bug: Fix a bug where CoT messages that didn 't need to be updated in a Data Sync were injected into the channel
+
 ### v4.20.0 - 2024-10-17
 
 - :tada: `UI` Add ability to renew lease & show if lease is expired
