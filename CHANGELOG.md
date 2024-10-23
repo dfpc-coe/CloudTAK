@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v4.21.0 - 2024-10-23
+
+- :rocket: `UI` Snazz up the login page
+- :rocket: `UI` Rewrite AdminUser.vue in TS
+- :rocket: `UI` Add support for JS Notification API
+
 ### v4.21.0 - 2024-10-17
 
 - :bug: Fix Iconset Filter in UI
