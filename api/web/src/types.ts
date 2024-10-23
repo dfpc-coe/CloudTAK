@@ -22,6 +22,9 @@ export type VideoLeaseResponse = paths["/video/lease/{:lease}"]["get"]["response
 
 export type Group = paths["/marti/group"]["get"]["responses"]["200"]["content"]["application/json"]["data"][0]
 
+export type User = paths["/user/{:username}"]["get"]["responses"]["200"]["content"]["application/json"];
+export type UserList = paths["/user"]["get"]["responses"]["200"]["content"]["application/json"];
+
 export type Mission = paths["/marti/missions/{:name}"]["get"]["responses"]["200"]["content"]["application/json"];
 export type MissionLog = paths["/marti/missions/{:name}/log/{:logid}"]["patch"]["responses"]["200"]["content"]["application/json"]["data"];
 export type MissionLogList = paths["/marti/missions/{:name}/log"]["get"]["responses"]["200"]["content"]["application/json"];

@@ -16,7 +16,10 @@ export default async function(icons: Array<Static<typeof IconResponse>>, config:
     const src = [];
     for (const icon of icons) {
         const contents = await Sharp(Buffer.from(config.useDataAlt && icon.data_alt ? icon.data_alt : icon.data, 'base64'))
-            .resize(32)
+            .resize(32, 32, {
+                fit: 'contain',
+                background: {r: 0, g: 0, b: 0, alpha: 0}
+            })
             .png()
             .toBuffer();
 

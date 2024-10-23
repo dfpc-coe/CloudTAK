@@ -4,7 +4,7 @@
             <IconCircleArrowLeft
                 class='cursor-pointer'
                 :size='32'
-                :stroke='1'
+                stroke='1'
                 @click='$router.push("/admin/user")'
             />
 
@@ -14,20 +14,22 @@
             />
 
             <div class='ms-auto btn-list'>
-                <IconRefresh
-                    v-tooltip='"Refresh"'
-                    :size='32'
-                    :stroke='1'
-                    class='cursor-pointer'
-                    @click='fetchUser'
-                />
+                <TablerIconButton
+                    title='Refresh'
+                    @click='fetchUserLoading'
+                >
+                    <IconRefresh
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
             </div>
         </div>
         <div class='card-body'>
             <TablerLoading v-if='loading' />
             <template v-else>
                 <div class='datagrid'>
-                    <template v-for='ele in Object.keys(user)'>
+                    <template v-for='ele in getKeys(user)'>
                         <div
                             v-if='user[ele]'
                             class='datagrid-item'
@@ -63,39 +65,37 @@
     </div>
 </template>
 
-<script>
-import { std, stdurl } from '/src/std.ts';
+<script setup lang='ts'>
+import { std, stdurl } from '../../std.ts';
+import type { User } from '../../types.ts';
 import {
-    TablerLoading
+    TablerLoading,
+    TablerIconButton
 } from '@tak-ps/vue-tabler';
 import {
     IconRefresh,
     IconCircleArrowLeft,
 } from '@tabler/icons-vue'
 
-export default {
-    name: 'UserAdmin',
-    components: {
-        IconRefresh,
-        IconCircleArrowLeft,
-        TablerLoading,
-    },
-    data: function() {
-        return {
-            loading: true,
-            user: {}
-        }
-    },
-    mounted: async function() {
-        await this.fetchUser();
-    },
-    methods: {
-        fetchUser: async function() {
-            this.loading = true;
-            const url = stdurl(`/api/user/${this.$route.params.user}`);
-            this.user = await std(url);
-            this.loading = false;
-        }
-    }
+import { ref } from 'vue';
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
+
+async function fetchUser(): Promise<User> {
+    const url = stdurl(`/api/user/${route.params.user}`);
+    return await std(url) as User;
+}
+
+const loading = ref(false);
+const user = ref<User>(await fetchUser());
+
+const getKeys = <T extends object>(obj: T) => Object.keys(obj) as Array<keyof T>
+
+async function fetchUserLoading(): Promise<void> {
+    loading.value = true;
+    const url = stdurl(`/api/user/${route.params.user}`);
+    user.value = await std(url) as User;
+    loading.value = false;
 }
 </script>

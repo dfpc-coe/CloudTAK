@@ -165,7 +165,8 @@ export default function styles(id: string, opts: {
                     ['linear'],
                     ['zoom'],
                     4, 0.8,
-                    8, 1
+                    8, 1,
+                    18, 1.2,
                 ],
                 'icon-rotate': ['get', 'course'],
                 'icon-allow-overlap': true,

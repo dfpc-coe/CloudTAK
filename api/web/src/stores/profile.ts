@@ -3,13 +3,16 @@ import { defineStore } from 'pinia'
 import { std, stdurl } from '../std.ts';
 import type { Group, Profile, Profile_Update } from '../types.ts';
 
+export type Notification = {
+    type: string;
+    name: string;
+    body: string;
+    url: string;
+}
+
 export const useProfileStore = defineStore('profile', {
     state: (): {
-        notifications: Array<{
-            type: string;
-            name: string;
-            url: string;
-        }>;
+        notifications: Array<Notification>;
         channels: Array<Group>;
         profile: Profile | null;
     } => {
@@ -35,6 +38,21 @@ export const useProfileStore = defineStore('profile', {
     actions: {
         clearNotifications: function(): void {
             this.notifications = [];
+        },
+        pushNotification: function(notification: Notification): void {
+            this.notifications.push(notification);
+
+            if (Notification.permission !== 'denied') {
+                const n = new Notification(notification.name, {
+                    body: notification.body
+                });        
+
+                n.onclick = (event) => {
+                    event.preventDefault(); // prevent the browser from focusing the Notification's tab
+                    console.error(n);
+                };
+
+            }
         },
         load: async function(): Promise<void> {
             this.profile = await std('/api/profile') as Profile;
