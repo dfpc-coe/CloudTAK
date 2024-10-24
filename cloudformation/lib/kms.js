@@ -2,6 +2,13 @@ import cf from '@openaddresses/cloudfriend';
 
 export default {
     Resources: {
+        KMSAlias: {
+            Type: 'AWS::KMS::Alias',
+            Properties: {
+                AliasName: cf.join(['alias/', cf.stackName]),
+                TargetKeyId: cf.ref('KMS')
+            }
+        },
         KMS: {
             Type : 'AWS::KMS::Key',
             Properties: {

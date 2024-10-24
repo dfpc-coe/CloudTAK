@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v4.22.0 - 2024-10-24
+
+- :rocket: `DevOps` Add KMS Key Alias
+
 ### v4.21.0 - 2024-10-23
 
 - :rocket: `UI` Snazz up the login page
