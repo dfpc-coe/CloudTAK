@@ -48,13 +48,13 @@ export const tile_path = (
 
     if (match) {
         const g = match.groups!;
-        return { ok: true, meta: false, name: g.NAME, tile: [+g.Z, +g.X, +g.Y], ext: g.EXT };
+        return { ok: true, meta: false, name: decodeURIComponent(g.NAME), tile: [+g.Z, +g.X, +g.Y], ext: g.EXT };
     } else {
         const meta_match = path.match(META);
 
         if (meta_match) {
             const g = meta_match.groups!;
-            return { ok: true, meta: true, name: g.NAME, tile: [0, 0, 0], ext: g.EXT };
+            return { ok: true, meta: true, name: decodeURIComponent(g.NAME), tile: [0, 0, 0], ext: g.EXT };
         } else {
             return { ok: false, meta: false, name: "", tile: [0, 0, 0], ext: "" };
         }
