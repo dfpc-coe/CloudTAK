@@ -87,7 +87,7 @@
 
                                 <span
                                     class='mx-2 user-select-none text-truncate'
-                                    style='width: 240px;'
+                                    style='width: 200px;'
                                     :class='{
                                         "cursor-pointer": ["data", "profile"].includes(overlay.mode)
                                             && overlay.type === "vector"
