@@ -1,17 +1,5 @@
 <template>
     <div style='overflow: auto;'>
-        <div class='page-wrapper'>
-            <div class='page-header d-print-none'>
-                <div class='container-xl'>
-                    <div class='row g-2 align-items-center'>
-                        <div class='col d-flex'>
-                            <TablerBreadCrumb />
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <div class='page-body'>
             <div class='container-xl'>
                 <div class='row row-deck row-cards'>
@@ -200,7 +188,6 @@ import PageFooter from './PageFooter.vue';
 import {
     TablerAlert,
     TablerLoading,
-    TablerBreadCrumb,
 } from '@tak-ps/vue-tabler'
 import {
     IconNetwork,
@@ -241,7 +228,6 @@ export default {
         IconNetwork,
         PageFooter,
         TablerLoading,
-        TablerBreadCrumb,
     }
 }
 </script>
