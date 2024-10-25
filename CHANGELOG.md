@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v4.26.0 - 2024-10-25
+
+- :bug: `API` Add support for `%` decoding in PMTiles URL Validity Check
+- :rocket: `UI` Use `TablerIconButton` for buttons in Overlay manager to improve accessibility
+- :rocket: `UI` Fix Delete Icon size in Overlay Manager
+- :rocket: `UI` Add CloudTAK Gradient to backend
+
 ### v4.25.0 - 2024-10-25
 
 - :rocket: `DevOps` After analyzing our traffic for the past 60 days we didn't have a PMTiles invocation above 100mb. Reduced Lambda Memory to 256mb

@@ -26,7 +26,7 @@
         <div class='card-body'>
             <TablerLoading v-if='loading' />
             <template v-else-if='edit'>
-                <div class='col-12'>
+                <div class='col-12 pb-4'>
                     <TablerToggle
                         label='System Administrator'
                         v-model='user.system_admin'
