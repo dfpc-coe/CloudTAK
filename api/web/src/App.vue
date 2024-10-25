@@ -1,5 +1,5 @@
 <template>
-    <div class='page h-100'>
+    <div class='page h-100 cloudtak-gradient'>
         <header
             v-if='navShown'
             class='navbar navbar-expand-md d-print-none'
