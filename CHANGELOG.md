@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v4.23.0 - 2024-10-25
+
+- :rocket: `PMTiles` Standardize Error Format
+
 ### v4.22.0 - 2024-10-24
 
 - :rocket: `DevOps` Add KMS Key Alias
