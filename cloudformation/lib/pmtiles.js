@@ -7,7 +7,7 @@ export default {
             DependsOn: ['SigningSecret'],
             Properties: {
                 FunctionName: cf.join([cf.stackName, '-pmtiles']),
-                MemorySize: 512,
+                MemorySize: 256,
                 Timeout: 15,
                 Description: 'Return Mapbox Vector Tiles from a PMTiles Store',
                 PackageType: 'Image',
