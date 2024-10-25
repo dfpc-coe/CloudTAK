@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v4.24.0 - 2024-10-25
+
+- :rocket: `DevOps` After analyzing our traffic for the past 60 days we didn't have a PMTiles invocation above 100mb. Reduced Lambda Memory to 256mb
+
 ### v4.23.0 - 2024-10-25
 
 - :rocket: `PMTiles` Standardize Error Format
