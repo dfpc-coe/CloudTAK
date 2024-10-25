@@ -1,37 +1,23 @@
 <template>
     <MenuTemplate name='Overlays'>
         <template #buttons>
-            <IconPencil
+            <TablerIconButton
                 v-if='isDraggable === false'
-                v-tooltip='"Edit Order"'
-                role='button'
-                tabindex='0'
-                class='cursor-pointer'
-                :size='32'
-                :stroke='1'
+                title='"Edit Order"'
                 @click='isDraggable = true'
-            />
-            <IconPencilCheck
-                v-else-if='isDraggable === true'
-                v-tooltip='"Save Order"'
-                role='button'
-                tabindex='0'
-                class='cursor-pointer'
-                :size='32'
-                :stroke='1'
-                @click='isDraggable = false'
-            />
+            ><IconPencil :size='32' :stroke='1' /></TablerIconButton>
 
-            <IconPlus
+            <TablerIconButton
+                v-else-if='isDraggable === true'
+                title='"Save Order"'
+                @click='isDraggable = false'
+            ><IconPencilCheck :size='32' :stroke='1'/></TablerIconButton>
+
+            <TablerIconButton
                 v-if='!isDraggable'
-                v-tooltip='"Add Overlay"'
-                class='cursor-pointer'
-                role='button'
-                tabindex='0'
-                :size='32'
-                :stroke='1'
+                title='"Add Overlay"'
                 @click='$router.push("/menu/datas")'
-            />
+            ><IconPlus :size='32' :stroke='1' /></TablerIconButton>
         </template>
         <template #default>
             <TablerLoading v-if='loading || !isLoaded' />
@@ -199,6 +185,7 @@
 import MenuTemplate from '../util/MenuTemplate.vue';
 import {
     TablerDelete,
+    TablerIconButton,
     TablerLoading,
     TablerRange
 } from '@tak-ps/vue-tabler';
@@ -308,6 +295,7 @@ export default {
         TreeVector,
         TreeMission,
         TablerRange,
+        TablerIconButton,
         TablerLoading,
         TablerDelete,
         IconGripVertical,

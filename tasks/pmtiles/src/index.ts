@@ -31,9 +31,9 @@ async function nativeDecompress(
 // Lambda needs to run with 512MB, empty function takes about 70
 const CACHE = new pmtiles.ResolvedValueCache(undefined, undefined, nativeDecompress);
 // eslint-disable-next-line no-useless-escape
-const TILE = /^\/(?<NAME>[0-9a-zA-Z\/!\-@_\.\*\'\(\)]+)\/(?<Z>\d+)\/(?<X>\d+)\/(?<Y>\d+).(?<EXT>[a-z]+)$/;
+const TILE = /^\/(?<NAME>[0-9a-zA-Z\/!\-@_\.\%\*\'\(\)]+)\/(?<Z>\d+)\/(?<X>\d+)\/(?<Y>\d+).(?<EXT>[a-z]+)$/;
 // eslint-disable-next-line no-useless-escape
-const META = /^\/(?<NAME>[0-9a-zA-Z\/!\-@_\.\*\'\(\)]+)$/;
+const META = /^\/(?<NAME>[0-9a-zA-Z\/!\-@_\.\%\*\'\(\)]+)$/;
 
 export const tile_path = (
     path: string,
@@ -336,6 +336,7 @@ export const handlerRaw = async (
             throw err;
         }
     }
+
     return apiError(404, "Invalid URL");
 };
 
