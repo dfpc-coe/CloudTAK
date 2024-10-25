@@ -4,7 +4,7 @@
     "type": "module",
     "private": true,
     "scripts": {
-        "tsc": "tsc --noEmit --watch",
+        "check": "tsc --noEmit --watch",
         "lint": "eslint src/index.ts",
         "build": "tsup --target es2022 --format esm src/index.ts"
     },

@@ -103,8 +103,25 @@ const apiResp = (
     isBase64Encoded = false,
     headers: Headers = {}
 ): Lambda.APIGatewayProxyResult => {
-    return { statusCode, body, headers, isBase64Encoded };
+    return {
+        statusCode,
+        body,
+        headers,
+        isBase64Encoded
+    };
 };
+
+const apiError = (
+    statusCode: number,
+    message: string,
+): Lambda.APIGatewayProxyResult => {
+    return apiResp(statusCode, JSON.stringify({
+        status: statusCode, message
+    }), false, {
+        'Content-Type': 'application/json'
+    })
+}
+
 
 // Assumes event is a API Gateway V2 or Lambda Function URL formatted dict
 // and returns API Gateway V2 / Lambda Function dict responses
@@ -118,10 +135,10 @@ export const handlerRaw = async (
     if (event && event.pathParameters && event.pathParameters.proxy) {
         path = "/" + event.pathParameters.proxy;
     } else {
-        return apiResp(500, "Proxy integration missing tile_path parameter");
+        return apiError(500, "Proxy integration missing tile_path parameter");
     }
 
-    if (!path) return apiResp(500, "Invalid event configuration");
+    if (!path) return apiError(500, "Invalid event configuration");
 
     const headers: Headers = {
         "Access-Control-Allow-Origin": '*',
@@ -129,25 +146,19 @@ export const handlerRaw = async (
     };
 
     if (!event.queryStringParameters || !event.queryStringParameters.token) {
-        return apiResp(400, JSON.stringify({
-            status: 400,
-            message: 'token query param required'
-        }));
+        return apiError(400, 'token query param required');
     }
 
     try {
         jwt.verify(event.queryStringParameters.token, process.env.SigningSecret);
     } catch (err) {
-        return apiResp(401, JSON.stringify({
-            status: 401,
-            message: 'Invalid Token',
-            advanced: err instanceof Error ? err.message : String(err)
-        }));
+        console.error(err);
+        return apiError(401, 'Invalid Token')
     }
 
     const { ok, name, tile, ext, meta } = tile_path(path);
 
-    if (!ok) return apiResp(400, "Invalid tile URL", false, headers);
+    if (!ok) return apiError(400, "Invalid tile URL");
 
     const source = new S3Source(name);
     const p = new pmtiles.PMTiles(source, CACHE, nativeDecompress);
@@ -175,13 +186,13 @@ export const handlerRaw = async (
                 .split(',')
                 .map((comp) => { return Number(comp) });
 
-            if (lnglat.length !== 2) return apiResp(400, "Invalid LngLat", false, headers);
-            if (isNaN(lnglat[0]) || isNaN(lnglat[1])) return apiResp(400, "Invalid LngLat (Non-Numeric)", false, headers);
+            if (lnglat.length !== 2) return apiError(400, "Invalid LngLat");
+            if (isNaN(lnglat[0]) || isNaN(lnglat[1])) return apiError(400, "Invalid LngLat (Non-Numeric)");
             query.lnglat = lnglat;
-            if (isNaN(query.zoom)) return apiResp(400, "Invalid Integer Zoom", false, headers);
-            if (isNaN(query.limit)) return apiResp(400, "Invalid Integer Limit", false, headers);
-            if (query.zoom > header.maxZoom) return apiResp(400, "Above Layer MaxZoom", false, headers);
-            if (query.zoom < header.minZoom) return apiResp(400, "Below Layer MinZoom", false, headers);
+            if (isNaN(query.zoom)) return apiError(400, "Invalid Integer Zoom");
+            if (isNaN(query.limit)) return apiError(400, "Invalid Integer Limit");
+            if (query.zoom > header.maxZoom) return apiError(400, "Above Layer MaxZoom");
+            if (query.zoom < header.minZoom) return apiError(400, "Below Layer MinZoom");
 
             const xyz = TB.pointToTile(query.lnglat[0], query.lnglat[1], query.zoom)
             const tile = await p.getZxy(xyz[2], xyz[0], xyz[1]);
@@ -267,12 +278,7 @@ export const handlerRaw = async (
                     // allow this for now. Eventually we will delete this in favor of .mvt
                     continue;
                 }
-                return apiResp(
-                    400,
-                    "Bad request: archive has type ." + pair[1],
-                    false,
-                    headers
-                );
+                return apiError(400, "Bad request: archive has type ." + pair[1]);
             }
         }
 
@@ -315,7 +321,7 @@ export const handlerRaw = async (
         }
     } catch (err: any) {
         if ((err as Error).name === "AccessDenied") {
-            return apiResp(403, "Bucket access unauthorized", false, headers);
+            return apiError(403, "Bucket access unauthorized");
         }
 
         console.error(err);
@@ -330,7 +336,7 @@ export const handlerRaw = async (
             throw err;
         }
     }
-    return apiResp(404, "Invalid URL", false, headers);
+    return apiError(404, "Invalid URL");
 };
 
 export const handler = async (
