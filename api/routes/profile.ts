@@ -19,6 +19,7 @@ export default async function router(schema: Schema, config: Config) {
             const user = await Auth.as_user(config, req);
             const profile = await config.models.Profile.from(user.email);
 
+            // @ts-expect-error Update Batch-Generic to specify actual geometry type (Point) instead of Geometry
             res.json(profile);
         } catch (err) {
              Err.respond(err, res);
@@ -52,6 +53,7 @@ export default async function router(schema: Schema, config: Config) {
                 updated: sql`Now()`
             });
 
+            // @ts-expect-error Update Batch-Generic to specify actual geometry type (Point) instead of Geometry
             res.json(profile);
         } catch (err) {
              Err.respond(err, res);

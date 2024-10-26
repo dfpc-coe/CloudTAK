@@ -1,3 +1,8 @@
+
+let CSP = `add_header 'Content-Security-Policy' "default-src 'self' *.${process.env.API_URL}; $\{IMG}; $\{WORKER}; $\{CONNECT}; $\{STYLE_SRC_ATTR}; $\{STYLE_SRC_ELEM}; $\{FONT}; upgrade-insecure-requests;" always;`
+if (process.env.API_URL.includes('localhost')) CSP = '';
+
+console.log(`
 user nginx;
 worker_processes auto;
 error_log /var/log/nginx/error.log warn;
@@ -31,13 +36,13 @@ http {
         add_header 'Strict-Transport-Security' 'max-age=31536000; includeSubDomains; preload' always;
         add_header 'Permissions-Policy' 'fullscreen=(self), geolocation=(self), clipboard-read=(self), clipboard-write=(self)' always;
 
-        set $IMG "img-src 'self' data: *.API_URL";
+        set $IMG "img-src 'self' data: *.${process.env.API_URL}";
         set $FONT "font-src 'self' data:";
         set $WORKER "worker-src 'self' blob:";
         set $STYLE_SRC_ELEM "style-src-elem 'self' 'unsafe-inline'";
         set $STYLE_SRC_ATTR "style-src-attr 'unsafe-inline'";
-        set $CONNECT "connect-src 'self' *.API_URL:* *.ROOT_URL:*";
-        add_header 'Content-Security-Policy' "default-src 'self' *.API_URL; ${IMG}; ${WORKER}; ${CONNECT}; ${STYLE_SRC_ATTR}; ${STYLE_SRC_ELEM}; ${FONT}; upgrade-insecure-requests;" always;
+        set $CONNECT "connect-src 'self' *.${process.env.API_URL}:* *.ROOT_URL:*";
+        ${CSP}
 
         location = / {
             add_header 'X-Content-Type-Options' 'nosniff' always;
@@ -45,7 +50,7 @@ http {
             add_header 'Referrer-Policy' 'strict-origin-when-cross-origin' always;
             add_header 'Strict-Transport-Security' 'max-age=31536000; includeSubDomains; preload' always;
             add_header 'Permissions-Policy' 'fullscreen=(self), geolocation=(self), clipboard-read=(self), clipboard-write=(self)' always;
-            add_header 'Content-Security-Policy' "default-src 'self' *.API_URL; ${IMG}; ${WORKER}; ${CONNECT}; ${STYLE_SRC_ATTR}; ${STYLE_SRC_ELEM}; ${FONT}; upgrade-insecure-requests;" always;
+            ${CSP}
 
             add_header 'Cache-Control' 'no-store, no-cache, must-revalidate' always;
             add_header 'Expires' 0 always;
@@ -93,3 +98,4 @@ http {
 
     }
 }
+`)

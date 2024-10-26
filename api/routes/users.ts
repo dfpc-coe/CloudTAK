@@ -38,6 +38,7 @@ export default async function router(schema: Schema, config: Config) {
                 `
             });
 
+            // @ts-expect-error Update Batch-Generic to specify actual geometry type (Point) instead of Geometry
             res.json(list);
         } catch (err) {
              Err.respond(err, res);
@@ -61,6 +62,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const user = await config.models.Profile.commit(req.params.username, req.body);
 
+            // @ts-expect-error Update Batch-Generic to specify actual geometry type (Point) instead of Geometry
             res.json({
                 ...user,
                 agency_admin: user.agency_admin || []
@@ -84,6 +86,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const user = await config.models.Profile.from(req.params.username);
 
+            // @ts-expect-error Update Batch-Generic to specify actual geometry type (Point) instead of Geometry
             res.json({
                 ...user,
                 agency_admin: user.agency_admin || []
