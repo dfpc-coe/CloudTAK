@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v4.27.0 - 2024-10-26
+
+- :rocket: `DevOps` Generate nginx config from NodeJS script to disable CSP in docker compose
+- :rocket: `API` Update Core Deps
+- :tada: `API` Load CloudTAK-Data repo in Docker image
+- :tada: `API` Load Basemaps when no basemaps have been configured in CloudTAK from CloudTAK-Data repo to avoid blank map in first login of new server
+
 ### v4.26.0 - 2024-10-25
 
 - :bug: `API` Add support for `%` decoding in PMTiles URL Validity Check
