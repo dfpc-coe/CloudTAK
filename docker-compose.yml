@@ -8,6 +8,7 @@ services:
             - store
         ports:
             - "5000:5000"
+            - "5001:5001"
         environment:
             - SigningSecret=coe-wildland-fire
             - POSTGRES=postgres://docker:docker@postgis:5432/gis
