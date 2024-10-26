@@ -47,6 +47,10 @@ try {
 
 const pkg = JSON.parse(String(fs.readFileSync(new URL('./package.json', import.meta.url))));
 
+process.on('uncaughtException', (exception) => {
+  console.error('Error', exception);
+});
+
 if (import.meta.url === `file://${process.argv[1]}`) {
     const config = await Config.env({
         silent: args.silent || false,

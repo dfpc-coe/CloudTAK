@@ -5,12 +5,14 @@ EXPOSE 5000
 ENV HOME=/home/etl
 WORKDIR $HOME
 
-RUN apk add nodejs-current npm memcached python3 make bash g++ openssl postgresql-client grep
+RUN apk add git nodejs-current npm memcached python3 make bash g++ openssl postgresql-client grep
 
 WORKDIR $HOME/api
 
-COPY package.json ./
-COPY package-lock.json ./
+ADD package.json ./
+ADD package-lock.json ./
+
+RUN git clone --branch v1.1.0 --depth 1 https://github.com/dfpc-coe/CloudTAK-Data.git data
 
 RUN npm install
 
@@ -24,9 +26,7 @@ RUN cd web \
     && cd ..
 
 RUN npm run lint \
-    && npm run build
-
-COPY ./nginx.conf /etc/nginx/nginx.conf
-COPY ./start $HOME/api
+    && npm run build \
+    && mv data dist/
 
 CMD ["./start"]
