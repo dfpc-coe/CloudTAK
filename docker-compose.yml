@@ -8,10 +8,12 @@ services:
             - store
         ports:
             - "5000:5000"
+            - "5001:5001"
         environment:
             - SigningSecret=coe-wildland-fire
             - POSTGRES=postgres://docker:docker@postgis:5432/gis
-            - API_URL=localhost:5001
+            - API_URL=localhost:5000
+            - ROOT_URL=localhost:5001
 
     postgis:
         platform: linux/amd64
