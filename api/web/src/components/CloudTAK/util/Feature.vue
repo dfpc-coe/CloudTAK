@@ -37,9 +37,16 @@
             class='ms-auto btn-list hover-button-hidden'
         >
             <TablerDelete
+                v-if='deleteAction === "delete"'
                 :size='20'
                 displaytype='icon'
+                @delete='deleteCOT'
+            />
+            <IconTrash
+                v-else
+                :size='20'
                 @click='deleteCOT'
+                :stroke='1'
             />
         </div>
     </div>
@@ -51,7 +58,8 @@ import {
     TablerDelete
 } from '@tak-ps/vue-tabler';
 import {
-    IconMapPin
+    IconMapPin,
+    IconTrash
 } from '@tabler/icons-vue';
 import { useCOTStore } from '/src/stores/cots.ts';
 const cotStore = useCOTStore();
@@ -63,8 +71,10 @@ export default {
     components: {
         Contact,
         TablerDelete,
+        IconTrash,
         IconMapPin
     },
+    emits: ['delete'],
     props: {
         feature: {
             type: Object,
@@ -76,6 +86,10 @@ export default {
         deleteButton: {
             type: Boolean,
             default: true
+        },
+        deleteAction: {
+            type: String,
+            default: 'delete' //emit or delete
         },
         hover: {
             type: Boolean,
@@ -99,7 +113,11 @@ export default {
     },
     methods: {
         deleteCOT: async function() {
-            await cotStore.delete(this.feature.id);
+            if (this.deleteAction === 'delete') {
+                await cotStore.delete(this.feature.id);
+            } else {
+                this.$emit('delete');
+            }
         },
         flyTo: function() {
             if (!this.isZoomable) return;

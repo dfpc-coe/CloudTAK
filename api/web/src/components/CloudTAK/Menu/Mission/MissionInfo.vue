@@ -99,11 +99,6 @@
                         :inline='true'
                         desc='Updating Subscription...'
                     />
-
-                    <TablerToggle
-                        v-if='subscribed === true'
-                        label='Auto Add'
-                    />
                 </div>
             </div>
         </div>
@@ -116,7 +111,6 @@ import type { MissionSubscriptions } from '../../../../types.ts'
 import Subscription from '../../../../stores/base/mission.ts';
 import {
     TablerLoading,
-    TablerToggle,
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../../util/MenuTemplate.vue';
 import Overlay from '../../../../stores/base/overlay.ts';
