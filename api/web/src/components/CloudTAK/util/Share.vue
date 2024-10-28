@@ -6,13 +6,11 @@
                 v-if='compact'
                 class='ms-auto'
             >
-                <IconX
-                    v-tooltip='"Cancel Share"'
-                    class='cursor-pointer mx-2 my-2'
-                    :size='20'
-                    :stroke='1'
+                <TablerIconButton
+                    title='Cancel Share'
+                    class='mx-2 my-2'
                     @click='$emit("cancel")'
-                />
+                ><IconX :size='20' :stroke='1'/></TablerIconButton>
             </div>
         </div>
 
@@ -48,9 +46,9 @@
                         "col-4 px-1 py-1": !compact
                     }'
                 >
-                    <button
+                    <TablerButton
                         v-tooltip='"Share to Selected"'
-                        class='w-100 btn btn-primary'
+                        class='w-100 btn-primary'
                         :style='compact ? "height: 30px" : ""'
                         @click='share'
                     >
@@ -60,7 +58,7 @@
                             :stroke='1'
                         />
                         <span v-else>Share to Selected</span>
-                    </button>
+                    </TablerButton>
                 </div>
                 <div
                     :class='{
@@ -68,9 +66,9 @@
                         "col-4 px-1 py-1": !compact
                     }'
                 >
-                    <button
+                    <TablerButton
                         v-tooltip='"Broadcast to All"'
-                        class='w-100 btn btn-secondary'
+                        class='w-100 btn-secondary'
                         :style='compact ? "height: 30px" : ""'
                         @click='broadcast'
                     >
@@ -80,20 +78,20 @@
                             :stroke='1'
                         />
                         <span v-else>Broadcast to All</span>
-                    </button>
+                    </TablerButton>
                 </div>
                 <div
                     v-if='!compact'
                     class='col-4 px-1 py-1 pb-1'
                 >
-                    <button
+                    <TablerButton
                         v-tooltip='"Cancel Share"'
-                        class='w-100 btn btn-secondary'
+                        class='w-100 btn-secondary'
                         :style='compact ? "height: 30px" : ""'
                         @click='$emit("cancel")'
                     >
                         Cancel
-                    </button>
+                    </TablerButton>
                 </div>
             </div>
         </template>
@@ -104,7 +102,9 @@
 import { std, stdurl } from '/src/std.ts';
 import {
     TablerNone,
-    TablerLoading
+    TablerLoading,
+    TablerButton,
+    TablerIconButton
 } from '@tak-ps/vue-tabler';
 import {
     IconX,
@@ -127,6 +127,8 @@ export default {
         IconShare2,
         TablerNone,
         TablerLoading,
+        TablerButton,
+        TablerIconButton,
     },
     props: {
         feats: {
