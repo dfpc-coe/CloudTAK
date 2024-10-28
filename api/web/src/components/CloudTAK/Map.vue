@@ -77,7 +77,6 @@
                 v-if='selected.size'
                 class='position-absolute begin-0 text-white bg-dark'
                 style='
-                    z-index: 1;
                     bottom: 40px;
                     width: 250px;
                 '
