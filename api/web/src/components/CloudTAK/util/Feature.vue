@@ -22,13 +22,34 @@
         }'
         @click='flyTo'
     >
-        <IconMapPin
-            :size='20'
-            :stroke='1'
-            class='me-2'
-        />
+        <span class='me-2'>
+            <IconLine
+                v-if='feature.geometry && feature.geometry.type === "LineString"'
+                :size='20'
+                :color='feature.properties.stroke || "white"'
+                stroke='1'
+            />
+            <IconCone
+                v-else-if='feature.properties && feature.properties.sensor'
+                :size='20'
+                :color='feature.properties.stroke || "white"'
+                stroke='1'
+            />
+            <IconPolygon
+                v-else-if='feature.geometry && feature.geometry.type === "Polygon"'
+                :size='20'
+                :color='feature.properties.fill || "white"'
+                stroke='1'
+            />
+            <IconMapPin
+                v-else
+                :size='20'
+                stroke='1'
+            />
+        </span>
         <div
             class='text-truncate user-select-none'
+            style='width: 180px;'
             v-text='feature.properties.callsign || feature.properties.name || "Unnamed"'
         />
 
@@ -46,6 +67,7 @@
                 v-else
                 :size='20'
                 @click='deleteCOT'
+                class='cursor-pointer'
                 :stroke='1'
             />
         </div>
@@ -59,7 +81,10 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     IconMapPin,
-    IconTrash
+    IconTrash,
+    IconLine,
+    IconCone,
+    IconPolygon,
 } from '@tabler/icons-vue';
 import { useCOTStore } from '/src/stores/cots.ts';
 const cotStore = useCOTStore();
@@ -71,8 +96,11 @@ export default {
     components: {
         Contact,
         TablerDelete,
+        IconMapPin,
         IconTrash,
-        IconMapPin
+        IconLine,
+        IconCone,
+        IconPolygon,
     },
     emits: ['delete'],
     props: {
