@@ -13,7 +13,7 @@
                         v-tooltip='"Clear Selection"'
                         class='cursor-pointer mx-2 my-2'
                         :size='20'
-                        :stroke='1'
+                        stroke='1'
                         @click='selected.clear()'
                     />
                 </div>
@@ -27,18 +27,12 @@
             >
                 <div
                     v-for='select in selected.values()'
-                    class='col-12 d-flex hover-dark'
+                    class='col-12'
                 >
-                    <span
-                        class='mx-2 my-2 user-select-none'
-                        v-text='select.properties.callsign'
-                    />
-                    <IconTrash
-                        v-tooltip='"Remove from Selection"'
-                        :size='20'
-                        :stroke='1'
-                        class='ms-auto cursor-pointer mx-2 my-2'
-                        @click='selected.delete(select.properties.id)'
+                    <Feature
+                        :feature='select'
+                        deleteAction='emit'
+                        @delete='selected.delete(select.properties.id)'
                     />
                 </div>
             </div>
@@ -53,7 +47,7 @@
                 >
                     <IconPackageExport
                         :size='20'
-                        :stroke='1'
+                        stroke='1'
                     />
                     <span class='mx-2'>Share</span>
                 </button>
@@ -71,32 +65,21 @@
     </div>
 </template>
 
-<script>
+<script setup lang='ts'>
+import { ref } from 'vue';
+import Feature from './Feature.vue';
 import {
     IconPackageExport,
-    IconTrash,
     IconX,
 } from '@tabler/icons-vue';
 import Share from './Share.vue';
 
-export default {
-    name: 'SelectFeats',
-    components: {
-        Share,
-        IconTrash,
-        IconPackageExport,
-        IconX,
-    },
-    props: {
-        selected: {
-            type: Object,
-            required: true
-        }
-    },
-    data: function() {
-        return {
-            share: false
-        }
+defineProps({
+    selected: {
+        type: Object,
+        required: true
     }
-}
+});
+
+const share = ref(false);
 </script>
