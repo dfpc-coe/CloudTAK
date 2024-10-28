@@ -57,7 +57,7 @@
 
                     <template #dropdown>
                         <div clas='col-12'>
-                            <div @click='shareMissionFeatures' class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2'>
+                            <div v-if='false' class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2'>
                                 <IconAmbulance :size='32' stroke='1'/>
                                 Add to Data Sync
                             </div>
