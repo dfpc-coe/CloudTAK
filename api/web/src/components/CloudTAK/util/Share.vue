@@ -1,6 +1,7 @@
 <template>
     <div class='mb-2'>
         <div class='sticky-top col-12 d-flex align-items-center user-select-none'>
+            <span class='subheader mx-2'>Share Features</span>
             <div
                 v-if='compact'
                 class='ms-auto'
@@ -22,10 +23,11 @@
         />
         <template v-else>
             <div
-                class='overflow-auto'
+                class='overflow-auto position-absolute'
                 :style='`
-                    height: calc(100% - 36px - ${compact ? "30px" : "100px"});
+                    height: calc(100% - 36px - ${compact ? "40px" : "100px"});
                     margin-bottom: ${compact ? "30px" : "100px"};
+                    width: 100%;
                 `'
             >
                 <Contact
@@ -42,8 +44,8 @@
             <div class='position-absolute row g-0 bottom-0 start-0 end-0 bg-dark'>
                 <div
                     :class='{
-                        "col-6 px-1": compact,
-                        "col-4 px-1": !compact
+                        "col-6 px-1 py-1": compact,
+                        "col-4 px-1 py-1": !compact
                     }'
                 >
                     <button
@@ -62,8 +64,8 @@
                 </div>
                 <div
                     :class='{
-                        "col-6 px-1": compact,
-                        "col-4 px-1": !compact
+                        "col-6 px-1 py-1": compact,
+                        "col-4 px-1 py-1": !compact
                     }'
                 >
                     <button
@@ -82,7 +84,7 @@
                 </div>
                 <div
                     v-if='!compact'
-                    class='col-4 px-1 pb-1'
+                    class='col-4 px-1 py-1 pb-1'
                 >
                     <button
                         v-tooltip='"Cancel Share"'

@@ -8,14 +8,11 @@
                 <div class='subheader mx-2 my-2'>
                     Selected Features
                 </div>
-                <div class='ms-auto'>
-                    <IconX
-                        v-tooltip='"Clear Selection"'
-                        class='cursor-pointer mx-2 my-2'
-                        :size='20'
-                        stroke='1'
+                <div class='ms-auto px-2'>
+                    <TablerIconButton
+                        title='Clear Selection'
                         @click='selected.clear()'
-                    />
+                    ><IconX :size='20' stroke='1'/></TablerIconButton>
                 </div>
             </div>
             <div
@@ -72,6 +69,9 @@ import {
     IconPackageExport,
     IconX,
 } from '@tabler/icons-vue';
+import {
+    TablerIconButton
+} from '@tak-ps/vue-tabler';
 import Share from './Share.vue';
 
 defineProps({
