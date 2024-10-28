@@ -11,7 +11,8 @@ import {
     MissionChangesInput,
     MissionListInput,
     MissionDeleteInput,
-    MissionCreateInput
+    MissionCreateInput,
+    MissionSubscriber
 } from '../lib/api/mission.js';
 import TAKAPI, {
     APIAuthCertificate,
@@ -265,7 +266,11 @@ export default async function router(schema: Schema, config: Config) {
         }),
         description: 'List subscriptions associated with a mission',
         res: Type.Object({
-            data: Type.Array(MissionRole)
+            version: Type.String(),
+            type: Type.String(),
+            data: Type.Array(MissionSubscriber),
+            messages: Type.Optional(Type.Array(Type.String())),
+            nodeId: Type.Optional(Type.String())
         })
     }, async (req, res) => {
         try {
