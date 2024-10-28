@@ -99,90 +99,87 @@
                         :inline='true'
                         desc='Updating Subscription...'
                     />
+
+                    <TablerToggle
+                        v-if='subscribed === true'
+                        label='Auto Add'
+                    />
                 </div>
             </div>
         </div>
     </MenuTemplate>
 </template>
 
-<script>
-import { std, stdurl } from '/src/std.ts';
+<script setup lang='ts'>
+import { ref, computed, onMounted } from 'vue';
+import type { MissionSubscriptions } from '../../../../types.ts'
+import Subscription from '../../../../stores/base/mission.ts';
 import {
-    TablerLoading
+    TablerLoading,
+    TablerToggle,
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../../util/MenuTemplate.vue';
-import Overlay from '/src/stores/base/overlay.ts';
-import { useMapStore } from '/src/stores/map.ts';
+import Overlay from '../../../../stores/base/overlay.ts';
+import { useMapStore } from '../../../../stores/map.ts';
 const mapStore = useMapStore();
-import { useCOTStore } from '/src/stores/cots.ts';
-const cotStore = useCOTStore();
 
-export default {
-    name: 'MissionInfo',
-    components: {
-        MenuTemplate,
-        TablerLoading
+const props = defineProps({
+    mission: {
+        type: Object,
+        required: true
     },
-    props: {
-        mission: Object,
-        token: String,
-        role: Object,
-    },
-    data: function() {
-        return {
-            createLayer: false,
-            loading: {
-                users: false,
-                layers: true,
-                subscribe: false,
-            },
-            layers: [],
-            subscriptions: []
-        }
-    },
-    computed: {
-        subscribed: function() {
-            if (this.loading.subscribe) return;
-            return !!mapStore.getOverlayByMode('mission', this.mission.guid);
-        }
-    },
-    mounted: async function() {
-        await this.fetchSubscriptions();
-    },
-    methods: {
-        fetchSubscriptions: async function() {
-            const url = stdurl(`/api/marti/missions/${this.mission.name}/subscriptions/roles`);
-            this.subscriptions = (await std(url, {
-                headers: {
-                    MissionAuthorization: this.token
-                }
-            })).data;
-            this.loading.users = false;
-        },
-        subscribe: async function(subscribed) {
-            this.loading.subscribe = true;
-            const overlay = mapStore.getOverlayByMode('mission', this.mission.guid);
-
-            if (subscribed === true && !overlay) {
-                const missionOverlay = await Overlay.create(mapStore.map, {
-                    name: this.mission.name,
-                    url: `/mission/${encodeURIComponent(this.mission.name)}`,
-                    type: 'geojson',
-                    mode: 'mission',
-                    token: this.token,
-                    mode_id: this.mission.guid,
-                })
-
-                mapStore.overlays.push(missionOverlay);
-
-                mapStore.map.getSource(String(missionOverlay.id))
-                    .setData(await cotStore.loadMission(this.mission.guid, missionOverlay.token));
-            } else if (subscribed === false && overlay) {
-                await mapStore.removeOverlay(overlay);
-            }
-
-            this.loading.subscribe = false;
-        },
+    token: String,
+    role: {
+        type: Object,
+        required: true
     }
+});
+
+onMounted(async () => {
+    await fetchSubscriptions();
+});
+
+const loading = ref({
+    users: false,
+    subscribe: false,
+});
+
+const subscriptions = ref<MissionSubscriptions>([])
+
+const subscribed = computed(() => {
+    if (loading.value.subscribe) return;
+    return !!mapStore.getOverlayByMode('mission', props.mission.guid);
+});
+
+async function fetchSubscriptions() {
+    loading.value.users = true;
+    subscriptions.value = await Subscription.subscriptions(props.mission.guid, props.token)
+    loading.value.users = false;
+}
+
+async function subscribe(subscribed: boolean) {
+    loading.value.subscribe = true;
+    const overlay = mapStore.getOverlayByMode('mission', props.mission.guid);
+
+    if (subscribed === true && !overlay) {
+        if (!mapStore.map) throw new Error('Cannot subscribe before map is loaded');
+
+        // @ts-expect-error Map.Style is missing properties (probably a MapLibreGL@5 issue)
+        const missionOverlay = await Overlay.create(mapStore.map, {
+            name: props.mission.name,
+            url: `/mission/${encodeURIComponent(props.mission.name)}`,
+            type: 'geojson',
+            mode: 'mission',
+            token: props.token,
+            mode_id: props.mission.guid,
+        })
+
+        mapStore.overlays.push(missionOverlay);
+        mapStore.updateMissionData(props.mission.guid);
+    } else if (subscribed === false && overlay) {
+        await mapStore.removeOverlay(overlay);
+    }
+
+    loading.value.subscribe = false;
 }
 </script>

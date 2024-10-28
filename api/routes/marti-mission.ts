@@ -264,7 +264,9 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.String(),
         }),
         description: 'List subscriptions associated with a mission',
-        res: GenericMartiResponse
+        res: Type.Object({
+            data: Type.Array(MissionRole)
+        })
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);

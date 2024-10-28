@@ -1,12 +1,20 @@
 import COT from './cot.ts'
 import { std, stdurl } from '../../std.ts';
-import type { Mission, MissionLog, MissionLogList } from '../../types.ts';
+import type {
+    Mission,
+    MissionLog,
+    MissionLogList,
+    MissionSubscriptions
+} from '../../types.ts';
 
 export default class Subscription {
     meta: Mission;
     token?: string;
     logs: Array<MissionLog>;
     cots: Map<string, COT>;
+
+    // Should features be automatically added
+    auto: boolean;
 
     constructor(
         mission: Mission,
@@ -17,6 +25,8 @@ export default class Subscription {
         this.logs = logs;
         this.token = token;
         this.cots = new Map();
+
+        this.auto = false;
     }
 
     static async load(guid: string, token?: string): Promise<Subscription> {
@@ -37,6 +47,19 @@ export default class Subscription {
         const headers: Record<string, string> = {};
         if (token) headers.MissionAuthorization = token;
         return headers;
+    }
+
+    static async subscriptions(guid: string, token: string | undefined): Promise<MissionSubscriptions> {
+        const url = stdurl(`/api/marti/missions/${encodeURIComponent(guid)}/subscriptions/roles`);
+
+        const res = await std(url, {
+            method: 'GET',
+            headers: Subscription.headers(token)
+        }) as {
+            data: MissionSubscriptions
+        };
+
+        return res.data
     }
 
     static async logCreate(guid: string, token: string | undefined, body: object): Promise<MissionLog> {
