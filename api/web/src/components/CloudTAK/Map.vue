@@ -796,7 +796,7 @@ export default {
             return mapStore.map.getZoom();
         },
         getLocation: function() {
-            if (this.live_loc) {
+            if (!this.live_loc) {
                 throw new Error('No Location Determined');
             } else if (this.live_loc_denied) {
                 throw new Error('Cannot navigate to your position as you denied location services');
