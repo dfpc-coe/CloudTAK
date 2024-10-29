@@ -31,6 +31,12 @@ export default cf.merge(
                 Type: 'String',
                 Default: 'prod'
             },
+            EnableExecute: {
+                Description: 'Allow SSH into docker container - should only be enabled for limited debugging',
+                Type: 'String',
+                AllowedValues: ['true', 'false'],
+                Default: 'false'
+            },
             HostedURL: {
                 Description: 'URL of domain/subdomain at which the API is hosted ie: "map.example.com"',
                 Type: 'String'
