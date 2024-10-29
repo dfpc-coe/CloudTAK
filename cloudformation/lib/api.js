@@ -132,6 +132,15 @@ export default {
                     PolicyDocument: {
                         Statement: [{
                             Effect: 'Allow',
+                            Action: [
+                                'ssmmessages:CreateControlChannel',
+                                'ssmmessages:CreateDataChannel',
+                                'ssmmessages:OpenControlChannel',
+                                'ssmmessages:OpenDataChannel'
+                            ],
+                            Resource: '*'
+                        },{
+                            Effect: 'Allow',
                             Resource: [
                                 cf.join(['arn:', cf.partition, ':s3:::', cf.ref('AssetBucket')]),
                                 cf.join(['arn:', cf.partition, ':s3:::', cf.ref('AssetBucket'), '/*'])
