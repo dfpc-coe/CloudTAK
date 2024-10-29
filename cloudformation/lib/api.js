@@ -439,6 +439,7 @@ export default {
                 TaskDefinition: cf.ref('TaskDefinition'),
                 LaunchType: 'FARGATE',
                 PropagateTags: 'SERVICE',
+                EnableExecuteCommand: cf.ref('EnableExecute'),
                 HealthCheckGracePeriodSeconds: 300,
                 DesiredCount: 1,
                 NetworkConfiguration: {
