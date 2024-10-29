@@ -12,6 +12,17 @@
 
 ### Pending Release
 
+### v4.28.0 - 2024-10-29
+
+- :rocket: `API` Strongly type Mission Subscription Roles API
+- :rocket: `UI` Cleaner Share Menu
+- :rocket: `UI` Add ability to delete multiple selected markers
+- :tada: `DevOps` Add ability to optionally exec into container
+- :bug: `UI` Fix error when clicking on find my location button if no location can be found
+- :rocket: `UI` Migrate `Select` modal to use `Feature` component for CoT listing
+- :rocket: `UI` Show Colour and Geometry type in `Feature` component
+- :tada: Add 0 Invocation Alarms to ETL Layers
+
 ### v4.27.0 - 2024-10-26
 
 - :rocket: `DevOps` Generate nginx config from NodeJS script to disable CSP in docker compose
