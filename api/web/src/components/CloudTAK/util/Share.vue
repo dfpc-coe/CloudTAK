@@ -10,7 +10,12 @@
                     title='Cancel Share'
                     class='mx-2 my-2'
                     @click='$emit("cancel")'
-                ><IconX :size='20' :stroke='1'/></TablerIconButton>
+                >
+                    <IconX
+                        :size='20'
+                        :stroke='1'
+                    />
+                </TablerIconButton>
             </div>
         </div>
 

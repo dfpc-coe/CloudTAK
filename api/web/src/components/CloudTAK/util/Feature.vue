@@ -66,9 +66,9 @@
             <IconTrash
                 v-else
                 :size='20'
-                @click='deleteCOT'
                 class='cursor-pointer'
                 :stroke='1'
+                @click='deleteCOT'
             />
         </div>
     </div>
@@ -102,7 +102,6 @@ export default {
         IconCone,
         IconPolygon,
     },
-    emits: ['delete'],
     props: {
         feature: {
             type: Object,
@@ -128,6 +127,7 @@ export default {
             default: true
         }
     },
+    emits: ['delete'],
     computed: {
         isZoomable: function() {
             if (this.mission) {

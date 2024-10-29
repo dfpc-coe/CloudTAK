@@ -3,7 +3,7 @@
         class='col-12'
         style='max-height: 400px'
     >
-        <TablerLoading v-if='loading'/>
+        <TablerLoading v-if='loading' />
         <template v-else-if='!share'>
             <div class='sticky-top col-12 d-flex align-items-center user-select-none'>
                 <div class='subheader mx-2 my-2'>
@@ -13,7 +13,12 @@
                     <TablerIconButton
                         title='Clear Selection'
                         @click='selected.clear()'
-                    ><IconX :size='20' stroke='1'/></TablerIconButton>
+                    >
+                        <IconX
+                            :size='20'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
                 </div>
             </div>
             <div
@@ -29,7 +34,7 @@
                 >
                     <Feature
                         :feature='select'
-                        deleteAction='emit'
+                        delete-action='emit'
                         @delete='selected.delete(select.properties.id)'
                     />
                 </div>
@@ -44,30 +49,48 @@
                         class='me-1'
                         @click='share = true'
                     >
-                        <IconPackageExport :size='20' stroke='1'/>
+                        <IconPackageExport
+                            :size='20'
+                            stroke='1'
+                        />
                         <span class='mx-2'>Share</span>
                     </TablerButton>
-                <TablerDropdown>
-                    <TablerButton
-                        title='More Options'
-                        style='height: 30px'
-                    >
-                        <IconDotsVertical :size='20' stroke='1'/>
-                    </TablerButton>
+                    <TablerDropdown>
+                        <TablerButton
+                            title='More Options'
+                            style='height: 30px'
+                        >
+                            <IconDotsVertical
+                                :size='20'
+                                stroke='1'
+                            />
+                        </TablerButton>
 
-                    <template #dropdown>
-                        <div clas='col-12'>
-                            <div v-if='false' class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2'>
-                                <IconAmbulance :size='32' stroke='1'/>
-                                Add to Data Sync
+                        <template #dropdown>
+                            <div clas='col-12'>
+                                <div
+                                    v-if='false'
+                                    class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2'
+                                >
+                                    <IconAmbulance
+                                        :size='32'
+                                        stroke='1'
+                                    />
+                                    Add to Data Sync
+                                </div>
+                                <div
+                                    class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2'
+                                    @click='deleteFeatures'
+                                >
+                                    <IconTrash
+                                        :size='32'
+                                        stroke='1'
+                                    />
+                                    Delete Features
+                                </div>
                             </div>
-                            <div @click='deleteFeatures' class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2'>
-                                <IconTrash :size='32' stroke='1'/>
-                                Delete Features
-                            </div>
-                        </div>
-                    </template>
-                </TablerDropdown>
+                        </template>
+                    </TablerDropdown>
                 </div>
             </div>
         </template>
@@ -86,7 +109,7 @@
 <script setup lang='ts'>
 import { ref } from 'vue';
 import Feature from './Feature.vue';
-import { useCOTStore } from '/src/stores/cots.ts';
+import { useCOTStore } from '../../../../src/stores/cots.ts';
 import {
     IconPackageExport,
     IconDotsVertical,
