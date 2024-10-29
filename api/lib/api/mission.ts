@@ -228,17 +228,7 @@ export default class {
             headers: this.#headers(opts),
         });
 
-        //TODO Get response from ARA why this happens
-        if (typeof changes === 'string') {
-            return {
-                version: '',
-                nodeId: '',
-                type: '',
-                data: [],
-            }
-        } else {
-            return changes;
-        }
+        return changes;
     }
 
     /**
