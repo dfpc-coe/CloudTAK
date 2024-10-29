@@ -78,6 +78,27 @@ export default class Lambda {
                         TreatMissingData: 'missing'
                     }
                 },
+                LambdaNoInvocationAlarm: {
+                    Type: 'AWS::CloudWatch::Alarm',
+                    Properties: {
+                        AlarmName: cf.join([StackName, '-no-invocations']),
+                        ActionsEnabled: true,
+                        AlarmActions: [ ],
+                        MetricName: 'Invocations',
+                        Namespace: 'AWS/Lambda',
+                        Statistic: 'Maximum',
+                        Dimensions: [{
+                            Name: 'FunctionName',
+                            Value: StackName
+                        }],
+                        Period: layer.alarm_period,
+                        EvaluationPeriods: layer.alarm_evals,
+                        DatapointsToAlarm: layer.alarm_points,
+                        Threshold: layer.alarm_threshold,
+                        ComparisonOperator: 'LessThanOrEqualToThreshold',
+                        TreatMissingData: 'missing'
+                    }
+                },
                 ETLFunction: {
                     Type: 'AWS::Lambda::Function',
                     Properties: {
@@ -104,6 +125,10 @@ export default class Lambda {
 
         if (layer.priority !== 'off') {
             stack.Resources.LambdaAlarm.Properties.AlarmActions.push(
+                cf.join(['arn:', cf.partition, ':sns:', cf.region, `:`, cf.accountId, `:${config.StackName}-${layer.priority}-urgency`])
+            )
+
+            stack.Resources.LambdaNoInvocationAlarm.Properties.AlarmActions.push(
                 cf.join(['arn:', cf.partition, ':sns:', cf.region, `:`, cf.accountId, `:${config.StackName}-${layer.priority}-urgency`])
             )
         }
