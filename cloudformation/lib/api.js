@@ -132,6 +132,15 @@ export default {
                     PolicyDocument: {
                         Statement: [{
                             Effect: 'Allow',
+                            Action: [
+                                'ssmmessages:CreateControlChannel',
+                                'ssmmessages:CreateDataChannel',
+                                'ssmmessages:OpenControlChannel',
+                                'ssmmessages:OpenDataChannel'
+                            ],
+                            Resource: '*'
+                        },{
+                            Effect: 'Allow',
                             Resource: [
                                 cf.join(['arn:', cf.partition, ':s3:::', cf.ref('AssetBucket')]),
                                 cf.join(['arn:', cf.partition, ':s3:::', cf.ref('AssetBucket'), '/*'])
@@ -439,6 +448,7 @@ export default {
                 TaskDefinition: cf.ref('TaskDefinition'),
                 LaunchType: 'FARGATE',
                 PropagateTags: 'SERVICE',
+                EnableExecuteCommand: cf.ref('EnableExecute'),
                 HealthCheckGracePeriodSeconds: 300,
                 DesiredCount: 1,
                 NetworkConfiguration: {

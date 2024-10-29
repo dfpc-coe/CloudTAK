@@ -5,19 +5,34 @@
                 v-if='isDraggable === false'
                 title='"Edit Order"'
                 @click='isDraggable = true'
-            ><IconPencil :size='32' :stroke='1' /></TablerIconButton>
+            >
+                <IconPencil
+                    :size='32'
+                    :stroke='1'
+                />
+            </TablerIconButton>
 
             <TablerIconButton
                 v-else-if='isDraggable === true'
                 title='"Save Order"'
                 @click='isDraggable = false'
-            ><IconPencilCheck :size='32' :stroke='1'/></TablerIconButton>
+            >
+                <IconPencilCheck
+                    :size='32'
+                    :stroke='1'
+                />
+            </TablerIconButton>
 
             <TablerIconButton
                 v-if='!isDraggable'
                 title='"Add Overlay"'
                 @click='$router.push("/menu/datas")'
-            ><IconPlus :size='32' :stroke='1' /></TablerIconButton>
+            >
+                <IconPlus
+                    :size='32'
+                    :stroke='1'
+                />
+            </TablerIconButton>
         </template>
         <template #default>
             <TablerLoading v-if='loading || !isLoaded' />

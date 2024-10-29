@@ -223,10 +223,12 @@ export default class {
             }
         }
 
-        return await this.api.fetch(url, {
+        const changes = await this.api.fetch(url, {
             method: 'GET',
             headers: this.#headers(opts),
         });
+
+        return changes;
     }
 
     /**
@@ -382,7 +384,7 @@ export default class {
     async subscriptionRoles(
         name: string,
         opts?: Static<typeof MissionOptions>
-    ): Promise<TAKList<any>> {
+    ): Promise<TAKList<Array<Static<typeof MissionSubscriber>>>> {
         const url = this.#isGUID(name)
             ? new URL(`/Marti/api/missions/guid/${encodeURIComponent(name)}/subscriptions/roles`, this.api.url)
             : new URL(`/Marti/api/missions/${this.#encodeName(name)}/subscriptions/roles`, this.api.url);

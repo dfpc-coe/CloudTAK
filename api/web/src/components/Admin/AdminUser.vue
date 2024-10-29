@@ -4,7 +4,12 @@
             <TablerIconButton
                 title='Back'
                 @click='$router.push("/admin/user")'
-            ><IconCircleArrowLeft :size='32' stroke='1'/></TablerIconButton>
+            >
+                <IconCircleArrowLeft
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
 
             <h1
                 class='card-title mx-2'
@@ -16,11 +21,21 @@
                     v-if='!edit'
                     title='Edit User'
                     @click='edit = true'
-                ><IconSettings :size='32' stroke='1' /></TablerIconButton>
+                >
+                    <IconSettings
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
                 <TablerIconButton
                     title='Refresh'
                     @click='fetchUserLoading'
-                ><IconRefresh :size='32' stroke='1' /></TablerIconButton>
+                >
+                    <IconRefresh
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
             </div>
         </div>
         <div class='card-body'>
@@ -28,16 +43,26 @@
             <template v-else-if='edit'>
                 <div class='col-12 pb-4'>
                     <TablerToggle
-                        label='System Administrator'
                         v-model='user.system_admin'
+                        label='System Administrator'
                     />
                 </div>
 
                 <div class='col-12 d-flex align-items-center'>
-                    <button @click='fetchUserLoading' class='btn btn-secondary'>Cancel</button>
+                    <button
+                        class='btn btn-secondary'
+                        @click='fetchUserLoading'
+                    >
+                        Cancel
+                    </button>
 
                     <div class='ms-auto'>
-                        <button @click='saveUser' class='btn btn-primary'>Save</button>
+                        <button
+                            class='btn btn-primary'
+                            @click='saveUser'
+                        >
+                            Save
+                        </button>
                     </div>
                 </div>
             </template>
