@@ -615,13 +615,9 @@ export default {
                     this.setYou(this.live_loc);
                 }
             }, (err) => {
-                if (err.message.toLowerCase().includes('denied geolocation')) {
+                if (err.code === 0) {
                     this.live_loc_denied = true;
-                } else if (
-                    err.message !== 'Position unavailable'
-                    && err.message !== 'Position acquisition timed out'
-                    && err.message !== 'Timeout expired'
-                ) {
+                } else if (!err.code) {
                     this.$emit('err', err);
                 }
             },{
