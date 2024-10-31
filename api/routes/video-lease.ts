@@ -165,23 +165,10 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'Only Administrators can request a lease > 16 hours')
             }
 
-            let lease = await config.models.VideoLease.from(req.params.lease);
-
-            if (user.access === AuthUserAccess.ADMIN) {
-                lease = await config.models.VideoLease.commit(req.params.lease, {
-                    ...req.body,
-                    expiration: req.body.duration ? moment().add(req.body.duration, 'seconds').toISOString() : lease.expiration,
-                });
-            } else {
-                if (lease.username === user.email) {
-                    lease = await config.models.VideoLease.commit(req.params.lease, {
-                        ...req.body,
-                        expiration: req.body.duration ? moment().add(req.body.duration, 'seconds').toISOString() : lease.expiration,
-                    });
-                } else {
-                    throw new Err(400, null, 'You can only update a lease you created');
-                }
-            }
+            const lease = await videoControl.commit(req.params.lease, req.body, {
+                username: user.email,
+                admin: user.access === AuthUserAccess.ADMIN
+            });
 
             res.json({
                 lease,
