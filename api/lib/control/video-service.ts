@@ -2,6 +2,7 @@ import Err from '@openaddresses/batch-error';
 import Config from '../config.js';
 import { Type, Static } from '@sinclair/typebox';
 import { VideoLeaseResponse } from '../types.js';
+import moment from 'moment';
 import fetch from '../fetch.js';
 
 export const Protocols = Type.Object({
@@ -279,7 +280,6 @@ export default class VideoServiceControl {
         proxy?: string;
     }): Promise<Static<typeof VideoLeaseResponse>> {
         const video = await this.settings();
-
         if (!video.configured) throw new Err(400, null, 'Media Integration is not configured');
 
         const headers = this.headers(video.username, video.password);
@@ -349,6 +349,57 @@ export default class VideoServiceControl {
         return lease;
     }
 
+    async commit(leaseid: string, body: { name?: string, duration?: number }, opts: {
+        username: string;
+        admin: boolean;
+    }): Promise<Static<typeof VideoLeaseResponse>> {
+        const video = await this.settings();
+        if (!video.configured) throw new Err(400, null, 'Media Integration is not configured');
+
+        let lease = await this.config.models.VideoLease.from(leaseid);
+
+        if (opts.admin) {
+            lease = await this.config.models.VideoLease.commit(leaseid, {
+                ...body,
+                expiration: body.duration ? moment().add(body.duration, 'seconds').toISOString() : lease.expiration,
+            });
+        } else if (lease.username === opts.username) {
+            lease = await this.config.models.VideoLease.commit(leaseid, {
+                ...body,
+                expiration: body.duration ? moment().add(body.duration, 'seconds').toISOString() : lease.expiration,
+            });
+        } else {
+            throw new Err(400, null, 'You can only update a lease you created');
+        }
+
+        try {
+            await this.path(lease.path);
+        } catch (err) {
+            if (err instanceof Err && err.status === 404) {
+                const url = new URL(`/v3/config/paths/add/${lease.path}`, video.url);
+                url.port = '9997';
+
+                const headers = this.headers(video.username, video.password);
+                headers.append('Content-Type', 'application/json');
+
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify({
+                        name: lease.path
+                    }),
+                })
+
+                if (!res.ok) throw new Err(500, null, await res.text())
+            } else {
+                throw err;
+            }
+        }
+
+
+        return lease;
+    }
+
     async path(pathid: string): Promise<Static<typeof PathConfig>> {
         const video = await this.settings();
         if (!video.configured) throw new Err(400, null, 'Media Integration is not configured');
@@ -363,7 +414,11 @@ export default class VideoServiceControl {
             headers,
         });
 
-        return await res.typed(PathConfig);
+        if (res.ok) {
+            return await res.typed(PathConfig);
+        } else {
+            throw new Err(res.status, new Error(await res.text()), 'Media Server Error');
+        }
     }
 
     async delete(leaseid: string): Promise<void> {
