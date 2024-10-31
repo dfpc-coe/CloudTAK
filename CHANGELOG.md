@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v4.30.0 - 2024-10-31
+
+- :rocket: `API` Ensure Media Server is resynced on VideoLease Patch call
+
 ### v4.29.0 - 2024-10-31
 
 - :bug: `UI` More generic location error handling in the CloudTAK UI
