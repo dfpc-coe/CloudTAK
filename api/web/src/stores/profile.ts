@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 import { std, stdurl } from '../std.ts';
 import type { Group, Profile, Profile_Update } from '../types.ts';
 
-export type Notification = {
+export type TAKNotification = {
     type: string;
     name: string;
     body: string;
@@ -12,7 +12,7 @@ export type Notification = {
 
 export const useProfileStore = defineStore('profile', {
     state: (): {
-        notifications: Array<Notification>;
+        notifications: Array<TAKNotification>;
         channels: Array<Group>;
         profile: Profile | null;
     } => {
@@ -39,13 +39,13 @@ export const useProfileStore = defineStore('profile', {
         clearNotifications: function(): void {
             this.notifications = [];
         },
-        pushNotification: function(notification: Notification): void {
+        pushNotification: function(notification: TAKNotification): void {
             this.notifications.push(notification);
 
-            if (Notification.permission !== 'denied') {
+            if (Notification && Notification.permission !== 'denied') {
                 const n = new Notification(notification.name, {
                     body: notification.body
-                });        
+                });
 
                 n.onclick = (event) => {
                     event.preventDefault(); // prevent the browser from focusing the Notification's tab

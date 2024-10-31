@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v4.29.0 - 2024-10-31
+
+- :bug: `UI` More generic location error handling in the CloudTAK UI
+- :bug: `UI` Ensure `Notification` api object is present
+
 ### v4.28.0 - 2024-10-29
 
 - :rocket: `API` Strongly type Mission Subscription Roles API
