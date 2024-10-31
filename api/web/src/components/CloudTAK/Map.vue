@@ -591,7 +591,7 @@ export default {
 
         this.loading.main = false;
 
-        if (Notification.permission !== 'granted') {
+        if (Notification && Notification.permission !== 'granted') {
             Notification.requestPermission()
         }
 
