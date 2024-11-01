@@ -23,7 +23,7 @@
         </template>
 
         <template #default>
-            <div class='col-12 px-2 py-2'>
+            <div v-if='!share' class='col-12 px-2 py-2'>
                 <TablerInput
                     v-model='paging.filter'
                     icon='search'
@@ -35,6 +35,12 @@
             <TablerAlert
                 v-else-if='error'
                 :err='error'
+            />
+            <Share
+                v-if='share'
+                style='height: 70vh'
+                @done='share = undefined'
+                @cancel='share = undefined'
             />
             <TablerNone
                 v-else-if='!list.items.length'
@@ -80,7 +86,7 @@
                                     <div clas='col-12'>
                                         <div
                                             v-if='(!basemap.username && profile && profile.system_admin) || basemap.username'
-                                            class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2'
+                                            class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2 py-2'
                                             @click.stop.prevent='editModal = basemap'
                                         >
                                             <IconSettings
@@ -88,7 +94,27 @@
                                                 :size='32'
                                                 stroke='1'
                                             />
-                                            Edit Basemap
+                                            <span class='mx-2'>Edit Basemap</span>
+                                        </div>
+                                        <div
+                                            class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2 py-2'
+                                            @click.stop.prevent='download(basemap)'
+                                        >
+                                            <IconDownload
+                                                :size='32'
+                                                stroke='1'
+                                            />
+                                            <span class='mx-2'>Download XML</span>
+                                        </div>
+                                        <div
+                                            class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2 py-2'
+                                            @click.stop.prevent='share = true'
+                                        >
+                                            <IconShare2
+                                                :size='32'
+                                                stroke='1'
+                                            />
+                                            <span class='mx-2'>Share</span>
                                         </div>
                                     </div>
                                 </template>
@@ -125,6 +151,7 @@ import { std, stdurl } from '../../../std.ts';
 import Overlay from '../../../stores/base/overlay.ts';
 import BasemapEditModal from './Basemaps/EditModal.vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
+import Share from '../util/Share.vue';
 import {
     TablerNone,
     TablerInput,
@@ -132,12 +159,15 @@ import {
     TablerAlert,
     TablerButton,
     TablerLoading,
-    TablerIconButton
+    TablerIconButton,
+    TablerDropdown
 } from '@tak-ps/vue-tabler';
 import {
     IconPlus,
+    IconShare2,
     IconRefresh,
     IconSettings,
+    IconDownload,
     IconDotsVertical,
 } from '@tabler/icons-vue'
 import { useMapStore } from '../../../stores/map.ts';
@@ -148,6 +178,7 @@ const profileStore = useProfileStore();
 const error = ref<Error | undefined>();
 const loading = ref(true);
 const editModal = ref();
+const share = ref<Basemap | undefined>();
 const paging = ref({
     filter: '',
     limit: 30,
@@ -215,6 +246,10 @@ async function setBasemap(basemap: Basemap) {
             mode_id: basemap.id
         }, { before }));
     }
+}
+
+function download(basemap: Basemap) {
+    window.open(stdurl(`api/basemap/${basemap.id}?format=xml&download=true&token=${localStorage.token}`), '_blank');
 }
 
 async function fetchList() {
