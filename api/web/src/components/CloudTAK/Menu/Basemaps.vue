@@ -39,6 +39,7 @@
             <Share
                 v-else-if='share'
                 style='height: 70vh'
+                :basemaps='share'
                 @done='share = undefined'
                 @cancel='share = undefined'
             />
@@ -108,7 +109,7 @@
                                         </div>
                                         <div
                                             class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2 py-2'
-                                            @click.stop.prevent='shareBasemap(basemap)'
+                                            @click.stop.prevent='share = [basemap.id]'
                                         >
                                             <IconShare2
                                                 :size='32'
@@ -146,7 +147,8 @@
 
 <script setup lang='ts'>
 import { onMounted, ref, computed, watch } from 'vue';
-import type { BasemapList, Basemap } from '../../../types.ts';
+import type { BasemapList, Basemap, Server, Package } from '../../../types.ts';
+import type { Feature } from 'geojson';
 import { std, stdurl } from '../../../std.ts';
 import Overlay from '../../../stores/base/overlay.ts';
 import BasemapEditModal from './Basemaps/EditModal.vue';
@@ -178,7 +180,7 @@ const profileStore = useProfileStore();
 const error = ref<Error | undefined>();
 const loading = ref(true);
 const editModal = ref();
-const share = ref<Basemap | undefined>();
+const share = ref<Array<number> | undefined>();
 const paging = ref({
     filter: '',
     limit: 30,
@@ -203,28 +205,6 @@ watch(editModal, async () => {
 watch(paging, async () => {
     await fetchList();
 });
-
-async function shareBasemap(basemap: Basemap) {
-    loading.value = true;
-
-    try {
-        const res = await std('/api/marti/package', {
-            method: 'PUT',
-            body: {
-                type: 'FeatureCollection',
-                basemaps: [basemap.id]
-            }
-        })
-
-        console.error(res);
-
-        share.value = basemap;
-        loading.value = false;
-    } catch (err) {
-        loading.value = false;
-        throw err;
-    }
-}
 
 async function setBasemap(basemap: Basemap) {
     const hasBasemap = mapStore.overlays.some((overlay) => {
@@ -274,19 +254,8 @@ function download(basemap: Basemap) {
     window.open(stdurl(`api/basemap/${basemap.id}?format=xml&download=true&token=${localStorage.token}`), '_blank');
 }
 
-function shareFeat(basemap: Basemap): Feature {
-    return {
-        type: 'Feature',
-        properties: {
-            type: 'b-f-t-r',
-            how: 'h-e',
-            metadata: {},
-        },
-        geometry: {
-            type: 'Point',
-            coordinates: [0, 0, 0]
-        }
-    }
+async function fetchServer(): Promise<Server> {
+    return await std('/api/server') as Server;
 }
 
 async function fetchList() {

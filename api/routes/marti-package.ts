@@ -152,7 +152,7 @@ export default async function router(schema: Schema, config: Config) {
                 })).to_xml();
 
                 await pkg.addFile(xml, {
-                    name: basemap.name
+                    name: `basemap-${basemap.id}.xml`
                 });
             }
 
