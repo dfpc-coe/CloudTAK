@@ -39,6 +39,7 @@ export type Profile = paths["/profile"]["get"]["responses"]["200"]["content"]["a
 export type Profile_Update = paths["/profile"]["patch"]["requestBody"]["content"]["application/json"]
 
 export type Basemap = paths["/basemap/{:basemapid}"]["patch"]["responses"]["200"]["content"]["application/json"]
+export type BasemapList = paths["/basemap"]["get"]["responses"]["200"]["content"]["application/json"]
 
 export type Feature = paths["/profile/feature/{:id}"]["get"]["responses"]["200"]["content"]["application/json"] & {
     properties: {
