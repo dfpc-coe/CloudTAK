@@ -1,21 +1,25 @@
 <template>
     <MenuTemplate name='Basemaps'>
         <template #buttons>
-            <IconPlus
-                v-tooltip='"Create Basemap"'
-                :size='32'
-                :stroke='1'
-                class='cursor-pointer'
+            <TablerIconButton
+                title='Create Basemap'
                 @click='editModal = {}'
-            />
-            <IconRefresh
+            >
+                <IconPlus
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
+            <TablerIconButton
                 v-if='!loading'
-                v-tooltip='"Refresh"'
-                :size='32'
-                :stroke='1'
-                class='cursor-pointer'
+                title='Refresh'
                 @click='fetchList'
-            />
+            >
+                <IconRefresh
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
         </template>
 
         <template #default>
@@ -28,6 +32,10 @@
             </div>
 
             <TablerLoading v-if='loading' />
+            <TablerAlert
+                v-else-if='error'
+                :err='error'
+            />
             <TablerNone
                 v-else-if='!list.items.length'
                 label='Basemaps'
@@ -57,14 +65,34 @@
                                 class='mx-3 ms-auto badge border bg-red text-white'
                             >Private</span>
 
-                            <IconSettings
-                                v-if='(!basemap.username && profile.system_admin) || basemap.username'
-                                v-tooltip='"Edit Basemap"'
-                                :size='32'
-                                :stroke='1'
-                                class='cursor-pointer'
-                                @click.stop.prevent='editModal = basemap'
-                            />
+                            <TablerDropdown>
+                                <TablerButton
+                                    title='More Options'
+                                    style='height: 30px'
+                                >
+                                    <IconDotsVertical
+                                        :size='20'
+                                        stroke='1'
+                                    />
+                                </TablerButton>
+
+                                <template #dropdown>
+                                    <div clas='col-12'>
+                                        <div
+                                            v-if='(!basemap.username && profile && profile.system_admin) || basemap.username'
+                                            class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2'
+                                            @click.stop.prevent='editModal = basemap'
+                                        >
+                                            <IconSettings
+                                                v-tooltip='"Edit Basemap"'
+                                                :size='32'
+                                                stroke='1'
+                                            />
+                                            Edit Basemap
+                                        </div>
+                                    </div>
+                                </template>
+                            </TablerDropdown>
                         </div>
                     </div>
                 </div>
@@ -90,128 +118,117 @@
     />
 </template>
 
-<script>
-import { std, stdurl } from '/src/std.ts';
-import Overlay from '/src/stores/base/overlay.ts';
+<script setup lang='ts'>
+import { onMounted, ref, computed, watch } from 'vue';
+import type { BasemapList, Basemap } from '../../../types.ts';
+import { std, stdurl } from '../../../std.ts';
+import Overlay from '../../../stores/base/overlay.ts';
 import BasemapEditModal from './Basemaps/EditModal.vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import {
     TablerNone,
     TablerInput,
     TablerPager,
-    TablerLoading
+    TablerAlert,
+    TablerButton,
+    TablerLoading,
+    TablerIconButton
 } from '@tak-ps/vue-tabler';
 import {
     IconPlus,
     IconRefresh,
     IconSettings,
+    IconDotsVertical,
 } from '@tabler/icons-vue'
-import { mapState } from 'pinia'
-import { useMapStore } from '/src/stores/map.ts';
-import { useProfileStore } from '/src/stores/profile.ts';
+import { useMapStore } from '../../../stores/map.ts';
+import { useProfileStore } from '../../../stores/profile.ts';
 const mapStore = useMapStore();
+const profileStore = useProfileStore();
 
-export default {
-    name: 'CloudTAKBaseMaps',
-    data: function() {
-        return {
-            err: false,
-            loading: true,
-            query: false,
-            editModal: false,
-            paging: {
-                filter: '',
-                limit: 30,
-                page: 0
-            },
-            list: {
-                total: 0,
-                items: []
-            }
-        }
-    },
-    mounted: async function() {
-        await this.fetchList();
-    },
-    computed: {
-        ...mapState(useProfileStore, ['profile']),
-    },
-    watch: {
-        editModal: async function() {
-            await this.fetchList();
-        },
-        query: function() {
-            if (!this.query) this.paging.filter = '';
-        },
-        paging: {
-            deep: true,
-            handler: async function() {
-                await this.fetchList();
-            },
-        }
-    },
-    methods: {
-        setBasemap: async function(basemap) {
-            const hasBasemap = mapStore.overlays.some((overlay) => {
-                return overlay.mode === 'basemap';
-            });
+const error = ref<Error | undefined>();
+const loading = ref(true);
+const editModal = ref();
+const paging = ref({
+    filter: '',
+    limit: 30,
+    page: 0
+});
 
-            if (hasBasemap) {
-                for (let i = 0; i < mapStore.overlays.length; i++) {
-                    const overlay = mapStore.overlays[i];
+const list = ref<BasemapList>({
+    total: 0,
+    items: []
+});
 
-                    if (overlay.mode === 'basemap') {
-                        if (mapStore.overlays[i + 1]) {
-                            await overlay.replace({
-                                name: basemap.name,
-                                url: `/api/basemap/${basemap.id}/tiles`,
-                                mode_id: String(basemap.id)
-                            }, {
-                                before: mapStore.overlays[i + 1].styles[0].id
-                            });
-                        } else {
-                            await overlay.replace({
-                                name: basemap.name,
-                                url: `/api/basemap/${basemap.id}/tiles`,
-                                mode_id: String(basemap.id)
-                            });
-                        }
-                        break;
-                    }
+onMounted(async () => {
+    await fetchList();
+});
+
+const profile = computed(() => profileStore.profile);
+
+watch(editModal, async () => {
+    await fetchList();
+});
+
+watch(paging, async () => {
+    await fetchList();
+});
+
+async function setBasemap(basemap: Basemap) {
+    const hasBasemap = mapStore.overlays.some((overlay) => {
+        return overlay.mode === 'basemap';
+    });
+
+    if (hasBasemap) {
+        for (let i = 0; i < mapStore.overlays.length; i++) {
+            const overlay = mapStore.overlays[i];
+
+            if (overlay.mode === 'basemap') {
+                if (mapStore.overlays[i + 1]) {
+                    await overlay.replace({
+                        name: basemap.name,
+                        url: `/api/basemap/${basemap.id}/tiles`,
+                        mode_id: String(basemap.id)
+                    }, {
+                        before: mapStore.overlays[i + 1].styles[0].id
+                    });
+                } else {
+                    await overlay.replace({
+                        name: basemap.name,
+                        url: `/api/basemap/${basemap.id}/tiles`,
+                        mode_id: String(basemap.id)
+                    });
                 }
-            } else {
-                const before = String(mapStore.overlays[0].styles[0].id);
-
-                mapStore.overlays.unshift(await Overlay.create(mapStore.map, {
-                    name: basemap.name,
-                    pos: -1,
-                    type: 'raster',
-                    url: `/api/basemap/${basemap.id}/tiles`,
-                    mode: 'basemap',
-                    mode_id: basemap.id
-                }, { before }));
+                break;
             }
-        },
-        fetchList: async function() {
-            this.loading = true;
-            const url = stdurl('/api/basemap');
-            if (this.paging.filter) url.searchParams.append('filter', this.paging.filter);
-            url.searchParams.append('limit', this.paging.limit);
-            url.searchParams.append('page', this.paging.page);
-            this.list = await std(url);
-            this.loading = false;
         }
-    },
-    components: {
-        TablerNone,
-        TablerPager,
-        TablerInput,
-        IconSettings,
-        IconPlus,
-        IconRefresh,
-        TablerLoading,
-        BasemapEditModal,
-        MenuTemplate
+    } else {
+        const before = String(mapStore.overlays[0].styles[0].id);
+
+        if (!mapStore.map) throw new Error('Cannot create basemap before map is loaded');
+        // @ts-expect-error Style error in MapboxGL
+        mapStore.overlays.unshift(await Overlay.create(mapStore.map, {
+            name: basemap.name,
+            pos: -1,
+            type: 'raster',
+            url: `/api/basemap/${basemap.id}/tiles`,
+            mode: 'basemap',
+            mode_id: basemap.id
+        }, { before }));
     }
+}
+
+async function fetchList() {
+    try {
+        loading.value = true;
+        const url = stdurl('/api/basemap');
+        if (paging.value.filter) url.searchParams.append('filter', paging.value.filter);
+        url.searchParams.append('limit', String(paging.value.limit));
+        url.searchParams.append('page', String(paging.value.page));
+        list.value = await std(url) as BasemapList;
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    }
+
+    loading.value = false;
 }
 </script>
