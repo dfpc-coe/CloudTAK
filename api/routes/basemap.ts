@@ -8,7 +8,6 @@ import Cacher from '../lib/cacher.js';
 import busboy from 'busboy';
 import Config from '../lib/config.js';
 import { Response } from 'express';
-import xml2js from 'xml2js';
 import stream2buffer from '../lib/stream.js';
 import bboxPolygon from '@turf/bbox-polygon';
 import { Param } from '@openaddresses/batch-generic'
@@ -35,11 +34,11 @@ export default async function router(schema: Schema, config: Config) {
     if (count === 0) {
         try {
             await fs.access(new URL('../data/', import.meta.url));
-    
+
             for (const file of await fs.readdir(new URL('../data/basemaps/', import.meta.url))) {
                 console.error(`ok - loading basemap ${file}`);
                 const b = (await BasemapParser.parse(String(await fs.readFile(new URL(`../data/basemaps/${file}`, import.meta.url))))).to_json();
-                  
+
                 await config.models.Basemap.generate({
                     name: b.name || 'Unknown',
                     url: b.url,
@@ -361,21 +360,19 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             if (req.query.format === 'xml') {
-                const builder = new xml2js.Builder();
-
                 res.setHeader('Content-Type', 'text/xml');
 
-                const xml: string = builder.buildObject({
+                const xml: string = (new BasemapParser({
                     customMapSource: {
-                        name: { _: basemap.name },
-                        minZoom: { _: basemap.minzoom },
-                        maxZoom: { _: basemap.maxzoom },
-                        tileType: { _: basemap.format },
-                        tileUpdate: { _: 'None' },
-                        url: { _: basemap.url },
-                        backgroundColor: { _: '#000000' },
+                        name: { _text: basemap.name },
+                        minZoom: { _text: basemap.minzoom },
+                        maxZoom: { _text: basemap.maxzoom },
+                        tileType: { _text: basemap.format },
+                        tileUpdate: { _text: 'None' },
+                        url: { _text: basemap.url },
+                        backgroundColor: { _text: '#000000' },
                     }
-                });
+                })).to_xml();
 
                 res.send(xml);
             } else {
