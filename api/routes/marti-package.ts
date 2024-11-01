@@ -11,6 +11,7 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth, { AuthUserAccess }  from '../lib/auth.js';
 import Config from '../lib/config.js';
+import { Basemap as BasemapParser } from '@tak-ps/node-cot';
 import { Content } from '../lib/api/files.js';
 import { Package } from '../lib/api/package.js';
 import TAKAPI, {
@@ -30,11 +31,11 @@ export default async function router(schema: Schema, config: Config) {
             const auth = profile.auth;
             const creatorUid = profile.username;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
-
             const id = crypto.randomUUID();
-            const pkg = new DataPackage(id, id);
 
             if (req.headers['content-type'] && req.headers['content-type'].startsWith('multipart/form-data')) {
+                const pkg = new DataPackage(id, id);
+
                 const bb = busboy({
                     headers: req.headers,
                     limits: {
@@ -86,14 +87,19 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Helper API to create share package',
         body: Type.Object({
             type: Type.Literal('FeatureCollection'),
-            uids: Type.Optional(Type.Array(Type.String())),
+            uids: Type.Array(Type.String(), {
+                default: []
+            }),
+            basemaps: Type.Array(Type.Number(), {
+                default: []
+            }),
             features: Type.Array(Type.Object({
                 id: Type.String(),
                 type: Type.Literal('Feature'),
                 properties: Type.Any(),
                 geometry: Type.Any()
             }), {
-                minItems: 1
+                default: []
             })
         }),
         res: Content
@@ -104,6 +110,10 @@ export default async function router(schema: Schema, config: Config) {
             const profile = await config.models.Profile.from(user.email);
             const auth = profile.auth;
             const creatorUid = profile.username;
+
+            if (!req.body.basemaps.length && !req.body.features.length) {
+                throw new Err(400, null, 'Cannot share an empty package');
+            }
 
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
@@ -122,6 +132,28 @@ export default async function router(schema: Schema, config: Config) {
                 }
 
                 await pkg.addCoT(CoT.from_geojson(feat))
+            }
+
+            for (const basemapid of req.body.basemaps) {
+                const basemap = await config.models.Basemap.from(basemapid);
+                if (basemap.username && basemap.username !== user.email && user.access === AuthUserAccess.USER) {
+                    throw new Err(400, null, 'You don\'t have permission to access this resource');
+                }
+                const xml: string = (new BasemapParser({
+                    customMapSource: {
+                        name: { _text: basemap.name },
+                        minZoom: { _text: basemap.minzoom },
+                        maxZoom: { _text: basemap.maxzoom },
+                        tileType: { _text: basemap.format },
+                        tileUpdate: { _text: 'None' },
+                        url: { _text: basemap.url },
+                        backgroundColor: { _text: '#000000' },
+                    }
+                })).to_xml();
+
+                await pkg.addFile(xml, {
+                    name: basemap.name
+                });
             }
 
             for (const hash of attachmentMap.keys()) {
@@ -161,7 +193,7 @@ export default async function router(schema: Schema, config: Config) {
                 sizeInBytes: size
             });
 
-            if (client && req.body.uids) {
+            if (client && req.body.uids.length) {
                 if (!cot.raw.event.detail) cot.raw.event.detail = {};
                 cot.raw.event.detail.marti = {
                     dest: req.body.uids.map((uid) => {

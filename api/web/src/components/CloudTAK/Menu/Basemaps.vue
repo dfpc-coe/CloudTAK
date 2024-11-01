@@ -37,7 +37,7 @@
                 :err='error'
             />
             <Share
-                v-if='share'
+                v-else-if='share'
                 style='height: 70vh'
                 @done='share = undefined'
                 @cancel='share = undefined'
@@ -108,7 +108,7 @@
                                         </div>
                                         <div
                                             class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2 py-2'
-                                            @click.stop.prevent='share = true'
+                                            @click.stop.prevent='shareBasemap(basemap)'
                                         >
                                             <IconShare2
                                                 :size='32'
@@ -204,6 +204,28 @@ watch(paging, async () => {
     await fetchList();
 });
 
+async function shareBasemap(basemap: Basemap) {
+    loading.value = true;
+
+    try {
+        const res = await std('/api/marti/package', {
+            method: 'PUT',
+            body: {
+                type: 'FeatureCollection',
+                basemaps: [basemap.id]
+            }
+        })
+
+        console.error(res);
+
+        share.value = basemap;
+        loading.value = false;
+    } catch (err) {
+        loading.value = false;
+        throw err;
+    }
+}
+
 async function setBasemap(basemap: Basemap) {
     const hasBasemap = mapStore.overlays.some((overlay) => {
         return overlay.mode === 'basemap';
@@ -250,6 +272,21 @@ async function setBasemap(basemap: Basemap) {
 
 function download(basemap: Basemap) {
     window.open(stdurl(`api/basemap/${basemap.id}?format=xml&download=true&token=${localStorage.token}`), '_blank');
+}
+
+function shareFeat(basemap: Basemap): Feature {
+    return {
+        type: 'Feature',
+        properties: {
+            type: 'b-f-t-r',
+            how: 'h-e',
+            metadata: {},
+        },
+        geometry: {
+            type: 'Point',
+            coordinates: [0, 0, 0]
+        }
+    }
 }
 
 async function fetchList() {
