@@ -136,10 +136,8 @@ export default {
         TablerIconButton,
     },
     props: {
-        feats: {
-            type: Array,
-            required: true,
-        },
+        feats: { type: Array },
+        basemaps: { type: Array },
         compact: {
             type: Boolean,
             default: false
@@ -174,7 +172,7 @@ export default {
     methods: {
         /** Feats often come from Vector Tiles which don't contain the full feature */
         currentFeats: function() {
-            return this.feats.map((f) => {
+            return (this.feats || []).map((f) => {
                 if (f.properties.type === 'b-f-t-r') {
                     // FileShare is manually generated and won't exist in CoT Store
                     return f;
@@ -195,10 +193,8 @@ export default {
             // CoTs with Attachments must always be send via a DataPackage
             if (
                 feats.length === 1
-                && (
-                    !feats[0].properties.attachments
-                    || feats[0].properties.attachments.length === 0
-                )
+                && !this.basemaps
+                && (!feats[0].properties.attachments || feats[0].properties.attachments.length === 0)
             ) {
                 for (const contact of this.selected) {
                     const feat = JSON.parse(JSON.stringify(feats[0]));
@@ -211,6 +207,7 @@ export default {
                     body: {
                         type: 'FeatureCollection',
                         uids: Array.from(this.selected).map((contact) => { return contact.uid }),
+                        basemaps: this.basemaps || [],
                         features: feats.map((f) => {
                             f = JSON.parse(JSON.stringify(f));
                             return { id: f.id || f.properties.id, type: f.type, properties: f.properties, geometry: f.geometry }
@@ -224,7 +221,11 @@ export default {
         broadcast: async function() {
             const feats = this.currentFeats();
 
-            if (feats.length === 1) {
+            if (
+                feats.length === 1
+                && !this.basemaps
+                && (!feats[0].properties.attachments || feats[0].properties.attachments.length === 0)
+            ) {
                 connectionStore.sendCOT(JSON.parse(JSON.stringify(feats[0])));
                 this.$emit('done');
             } else {
@@ -232,6 +233,7 @@ export default {
                     method: 'PUT',
                     body: {
                         type: 'FeatureCollection',
+                        basemaps: this.basemaps || [],
                         features: feats.map((f) => {
                             f = JSON.parse(JSON.stringify(f));
                             return { id: f.id || f.properties.id, type: f.type, properties: f.properties, geometry: f.geometry }
