@@ -23,7 +23,10 @@
         </template>
 
         <template #default>
-            <div v-if='!share' class='col-12 px-2 py-2'>
+            <div
+                v-if='!share'
+                class='col-12 px-2 py-2'
+            >
                 <TablerInput
                     v-model='paging.filter'
                     icon='search'
@@ -147,8 +150,7 @@
 
 <script setup lang='ts'>
 import { onMounted, ref, computed, watch } from 'vue';
-import type { BasemapList, Basemap, Server, Package } from '../../../types.ts';
-import type { Feature } from 'geojson';
+import type { BasemapList, Basemap } from '../../../types.ts';
 import { std, stdurl } from '../../../std.ts';
 import Overlay from '../../../stores/base/overlay.ts';
 import BasemapEditModal from './Basemaps/EditModal.vue';
@@ -252,10 +254,6 @@ async function setBasemap(basemap: Basemap) {
 
 function download(basemap: Basemap) {
     window.open(stdurl(`api/basemap/${basemap.id}?format=xml&download=true&token=${localStorage.token}`), '_blank');
-}
-
-async function fetchServer(): Promise<Server> {
-    return await std('/api/server') as Server;
 }
 
 async function fetchList() {
