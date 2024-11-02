@@ -162,7 +162,7 @@ export const useMapStore = defineStore('cloudtak', {
             const sub = cotStore.subscriptions.get(guid);
             if (!sub) {
                 if (!overlay.mode_id) throw new Error('Internal Error: ModeID not set');
-                const fc = await cotStore.loadMission(overlay.mode_id, overlay.token);
+                const fc = await cotStore.loadMission(overlay.mode_id, overlay.token || undefined);
                 // @ts-expect-error Source.setData is not defined
                 oStore.setData(fc);
             } else {
