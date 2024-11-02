@@ -82,7 +82,7 @@ export const useCOTStore = defineStore('cots', {
 
                 if (updateGuid) {
                     const mapStore = useMapStore();
-                    mapStore.updateMissionData(updateGuid);
+                    await mapStore.updateMissionData(updateGuid);
                 }
             } else if (task.properties.type === 't-x-m-c-l' && task.properties.mission && task.properties.mission.guid) {
                 const sub = this.subscriptions.get(task.properties.mission.guid);
@@ -420,7 +420,7 @@ export const useCOTStore = defineStore('cots', {
                 sub.cots.set(String(cot.id), cot);
 
                 const mapStore = useMapStore();
-                mapStore.updateMissionData(mission_guid);
+                await mapStore.updateMissionData(mission_guid);
             } else {
                 let is_mission_cot = false;
                 for (const value of this.subscriptions.values()) {

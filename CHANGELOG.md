@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v4.31.1 - 2024-11-02
+
+- :bug: `API/UI` Fix Mission Sync Subscription
+
 ### v4.31.0 - 2024-11-01
 
 - :rocket: `API/UI` Allow Sharing Basemaps
