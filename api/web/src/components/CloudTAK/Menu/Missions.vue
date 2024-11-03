@@ -137,7 +137,7 @@ import {
     TablerAlert,
     TablerModal
 } from '@tak-ps/vue-tabler';
-import type { MissionList } from '../../../../src/types.ts';
+import type { Mission, MissionList } from '../../../../src/types.ts';
 import { std, stdurl } from '../../../../src/std.ts';
 import {
     IconPlus,
@@ -150,7 +150,7 @@ import ChannelInfo from '../util/ChannelInfo.vue';
 import { useProfileStore } from '../../../../src/stores/profile.ts';
 import EmptyInfo from '../util/EmptyInfo.vue';
 import { useMapStore } from '../../../../src/stores/map.ts';
-import Mission from '../../../../src/stores/base/mission.ts';
+import Subscription from '../../../../src/stores/base/mission.ts';
 const mapStore = useMapStore();
 
 const error = ref<Error | undefined>();
@@ -168,21 +168,21 @@ onMounted(async () => {
 });
 
 const hasNoChannels = computed(() => useProfileStore.hasNoChannels);
-const filteredList = computed(() => {
+const filteredList: Array<Mission> = computed(() => {
     return list.value.data.filter((mission) => {
         return mission.name.toLowerCase()
             .includes(paging.value.filter.toLowerCase());
     })
 });
 
-const filteredListRemainder = computed(() => {
-    return filteredList.filter((mission) => {
+const filteredListRemainder: Array<Mission> = computed(() => {
+    return filteredList.value.filter((mission) => {
         return !subscribed.value.has(mission.guid)
     })
 });
 
-const filteredListSubscribed = computed(() => {
-    return filteredList.filter((mission) => {
+const filteredListSubscribed: Array<Mission> = computed(() => {
+    return filteredList.value.filter((mission) => {
         return subscribed.value.has(mission.guid)
     })
 });
@@ -209,7 +209,7 @@ async function openMission(mission, usePassword) {
     }
 }
 
-async function fetchMission(mission, password) {
+async function fetchMission(mission: Mission, password?: string) {
     const url = stdurl(`/api/marti/missions/${mission.guid}`);
     if (password) url.searchParams.append('password', password);
 
@@ -223,7 +223,7 @@ async function fetchMissions() {
     try {
         loading.value = true;
 
-        list.value = await Mission.list();
+        list.value = await Subscription.list();
 
         for (const item of list.value.data) {
             if (mapStore.getOverlayByMode('mission', item.guid)) {

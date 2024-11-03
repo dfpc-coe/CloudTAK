@@ -54,13 +54,7 @@ export default class Subscription {
         const url = stdurl('/api/marti/mission');
         url.searchParams.append('passwordProtected', String(opts.passwordProtected));
         url.searchParams.append('defaultRole', String(opts.defaultRole));
-        this.list = await std(url);
-
-        const list = await std(url, {
-            method: 'GET',
-        }) as MissionList;
-
-        return list;
+        return await std(url) as MissionList;
     }
 
     static headers(token?: string): Record<string, string> {
