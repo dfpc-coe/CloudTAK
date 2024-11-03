@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v4.31.2 - 2024-11-03
+
+- :bug: `UI` Fix Initial Basemap Load
+
 ### v4.31.1 - 2024-11-02
 
 - :bug: `API/UI` Fix Mission Sync Subscription

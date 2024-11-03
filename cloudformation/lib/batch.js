@@ -2,6 +2,27 @@ import cf from '@openaddresses/cloudfriend';
 
 export default {
     Resources: {
+        BatchDataLambda: {
+            Type: 'AWS::Lambda::Function',
+            Properties: {
+                FunctionName: cf.join([cf.stackName, '-data-job']),
+                MemorySize: 512,
+                Timeout: 900,
+                Description: 'Process short data conversion requests',
+                PackageType: 'Image',
+                Environment: {
+                    Variables: {
+                        StackName: cf.stackName,
+                        TAK_ETL_URL: cf.join(['https://', cf.ref('HostedURL')]),
+                        TAK_ETL_BUCKET: cf.ref('AssetBucket')
+                    }
+                },
+                Role: cf.getAtt('BatchJobRole', 'Arn'),
+                Code: {
+                    ImageUri: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/coe-ecr-etl:data-', cf.ref('GitSha')])
+                }
+            }
+        },
         BatchDataJob: {
             Type: 'AWS::Batch::JobDefinition',
             Properties: {
@@ -73,6 +94,12 @@ export default {
                         Principal: {
                             Service: 'ecs-tasks.amazonaws.com'
                         }
+                    },{
+                        Effect: 'Allow',
+                        Principal: {
+                            Service: 'lambda.amazonaws.com'
+                        },
+                        Action: 'sts:AssumeRole'
                     }]
                 },
                 Policies: [{
