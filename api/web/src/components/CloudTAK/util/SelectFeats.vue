@@ -4,7 +4,7 @@
         style='max-height: 400px'
     >
         <TablerLoading v-if='loading' />
-        <template v-else-if='!share'>
+        <template v-else-if='share === ShareType.NONE'>
             <div class='sticky-top col-12 d-flex align-items-center user-select-none'>
                 <div class='subheader mx-2 my-2'>
                     Selected Features
@@ -47,7 +47,7 @@
                     <TablerButton
                         style='height: 30px; width: 200px;'
                         class='me-1'
-                        @click='share = true'
+                        @click='share = ShareType.USERS'
                     >
                         <IconPackageExport
                             :size='20'
@@ -69,8 +69,8 @@
                         <template #dropdown>
                             <div clas='col-12'>
                                 <div
-                                    v-if='false'
                                     class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2'
+                                    @click='share = ShareType.MISSION'
                                 >
                                     <IconAmbulance
                                         :size='32'
@@ -94,13 +94,22 @@
                 </div>
             </div>
         </template>
-        <template v-else>
+        <template v-else-if='share === ShareType.USERS'>
             <Share
                 style='height: 400px;'
                 :feats='Array.from(selected.values())'
                 :compact='true'
                 @done='selected.clear()'
-                @cancel='share = false'
+                @cancel='share = ShareType.NONE'
+            />
+        </template>
+        <template v-else-if='share === ShareType.MISSION'>
+            <ShareToMission
+                style='height: 400px;'
+                :feats='Array.from(selected.values())'
+                :compact='true'
+                @done='selected.clear()'
+                @cancel='share = ShareType.NONE'
             />
         </template>
     </div>
@@ -124,6 +133,7 @@ import {
     TablerIconButton
 } from '@tak-ps/vue-tabler';
 import Share from './Share.vue';
+import ShareToMission from './ShareToMission.vue';
 
 const cotStore = useCOTStore();
 
@@ -134,8 +144,14 @@ const props = defineProps({
     }
 });
 
+enum ShareType {
+    NONE = 'none',
+    MISSION = 'mission',
+    USERS = 'users'
+}
+
 const loading = ref(false);
-const share = ref(false);
+const share = ref<ShareType>(ShareType.NONE);
 
 async function deleteFeatures() {
     loading.value = true;

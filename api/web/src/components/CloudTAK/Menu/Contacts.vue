@@ -25,7 +25,7 @@
                 />
             </div>
 
-            <NoChannelsInfo v-if='hasNoChannels' />
+            <EmptyInfo v-if='hasNoChannels' />
 
             <TablerLoading v-if='loading' />
             <TablerNone
@@ -77,14 +77,14 @@ import {
     TablerIconButton
 } from '@tak-ps/vue-tabler';
 import Contact from '../util/Contact.vue';
-import NoChannelsInfo from '../util/NoChannelsInfo.vue';
+import EmptyInfo from '../util/EmptyInfo.vue';
 
 export default {
     name: 'CloudTAKContacts',
     components: {
         Contact,
         TablerNone,
-        NoChannelsInfo,
+        EmptyInfo,
         TablerInput,
         TablerLoading,
         TablerIconButton,

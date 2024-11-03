@@ -139,7 +139,9 @@ export const useCOTStore = defineStore('cots', {
                 headers: Subscription.headers(token)
             }) as FeatureCollection;
 
-            for (const feat of fc.features) this.add(feat as Feature, guid);
+            for (const feat of fc.features) {
+                this.add(feat as Feature, guid);
+            }
 
             return this.collection(sub.cots)
         },

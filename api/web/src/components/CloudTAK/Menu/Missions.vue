@@ -4,20 +4,14 @@
         :loading='loading'
     >
         <template #buttons>
-            <IconPlus
-                v-tooltip='"Create Sync"'
-                :size='32'
-                :stroke='1'
-                class='cursor-pointer'
+            <TablerIconButton
+                title='Create Sync'
                 @click='create = true'
-            />
-            <IconRefresh
-                v-tooltip='"Refresh"'
-                :size='32'
-                :stroke='1'
-                class='cursor-pointer'
+            ><IconPlus :size='32' :stroke='1'/></TablerIconButton>
+            <TablerIconButton
+                title='Refresh'
                 @click='fetchMissions'
-            />
+            > <IconRefresh :size='32' :stroke='1' /></TablerIconButton>
         </template>
         <template #default>
             <div class='col-12 px-2 py-2'>
@@ -30,7 +24,7 @@
 
             <ChannelInfo />
 
-            <NoChannelsInfo v-if='hasNoChannels' />
+            <EmptyInfo v-if='hasNoChannels' />
 
             <TablerNone
                 v-if='!list.data.length'
@@ -38,8 +32,8 @@
                 label='Data Sync'
             />
             <TablerAlert
-                v-else-if='err'
-                :err='err'
+                v-else-if='error'
+                :err='error'
             />
             <template v-else>
                 <div
@@ -125,22 +119,26 @@
             @click='create = false'
         />
         <MissionCreate
-            @mission='$router.push(`/menu/missions/${$event.guid}`)'
+            @mission='router.push(`/menu/missions/${$event.guid}`)'
             @close='create = false'
         />
     </TablerModal>
 </template>
 
-<script>
+<script setup lang='ts'>
+import { ref, onMounted, computed } from 'vue';
 import MissionCreate from './Mission/MissionCreate.vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
+import { useRouter } from 'vue-router';
 import {
+    TablerIconButton,
     TablerInput,
     TablerNone,
     TablerAlert,
     TablerModal
 } from '@tak-ps/vue-tabler';
-import { std, stdurl } from '/src/std.ts';
+import type { MissionList } from '../../../../src/types.ts';
+import { std, stdurl } from '../../../../src/std.ts';
 import {
     IconPlus,
     IconLock,
@@ -149,115 +147,93 @@ import {
     IconRefresh,
 } from '@tabler/icons-vue';
 import ChannelInfo from '../util/ChannelInfo.vue';
-import { mapGetters } from 'pinia'
-import { useProfileStore } from '/src/stores/profile.ts';
-import NoChannelsInfo from '../util/NoChannelsInfo.vue';
-import { useMapStore } from '/src/stores/map.ts';
+import { useProfileStore } from '../../../../src/stores/profile.ts';
+import EmptyInfo from '../util/EmptyInfo.vue';
+import { useMapStore } from '../../../../src/stores/map.ts';
+import Mission from '../../../../src/stores/base/mission.ts';
 const mapStore = useMapStore();
 
-export default {
-    name: 'CloudTAKMissions',
-    components: {
-        NoChannelsInfo,
-        ChannelInfo,
-        MenuTemplate,
-        TablerNone,
-        TablerAlert,
-        TablerInput,
-        TablerModal,
-        MissionCreate,
-        IconPlus,
-        IconLock,
-        IconLockOpen,
-        IconAccessPoint,
-        IconRefresh,
-    },
-    data: function() {
-        return {
-            err: false,
-            create: false,
-            loading: true,
-            subscribed: new Set(),
-            errors: {},
-            paging: {
-                filter: ''
-            },
-            list: {
-                data: [],
+const error = ref<Error | undefined>();
+const create = ref(false)
+const loading = ref(true)
+const subscribed = ref(new Set());
+const errors = ref<Record<string, string | undefined>>({})
+const router = useRouter();
+
+const paging = ref({ filter: '' });
+const list = ref<MissionList>({ data: [], });
+
+onMounted(async () => {
+    await fetchMissions();
+});
+
+const hasNoChannels = computed(() => useProfileStore.hasNoChannels);
+const filteredList = computed(() => {
+    return list.value.data.filter((mission) => {
+        return mission.name.toLowerCase()
+            .includes(paging.value.filter.toLowerCase());
+    })
+});
+
+const filteredListRemainder = computed(() => {
+    return filteredList.filter((mission) => {
+        return !subscribed.value.has(mission.guid)
+    })
+});
+
+const filteredListSubscribed = computed(() => {
+    return filteredList.filter((mission) => {
+        return subscribed.value.has(mission.guid)
+    })
+});
+
+async function openMission(mission, usePassword) {
+    if (mission.passwordProtected && subscribed.value.has(mission.guid)) {
+        const o = mapStore.getOverlayByMode('mission', mission.guid);
+        router.push(`/menu/missions/${mission.guid}?token=${encodeURIComponent(o.token)}`);
+    } else if (mission.passwordProtected && usePassword) {
+        try {
+            const getMission = await fetchMission(mission, mission.password);
+            router.push(`/menu/missions/${mission.guid}?token=${encodeURIComponent(getMission.token)}`);
+        } catch (err) {
+            if (err.message.includes('Illegal attempt to access mission')) {
+                errors.value[mission.guid] = 'Invalid Password';
+            } else {
+                errors.value[mission.guid] = err.message;
             }
-        };
-    },
-    mounted: async function() {
-        await this.fetchMissions();
-    },
-    computed: {
-        ...mapGetters(useProfileStore, ['hasNoChannels']),
-        filteredList: function() {
-            return this.list.data.filter((mission) => {
-                return mission.name.toLowerCase()
-                    .includes(this.paging.filter.toLowerCase());
-            })
-        },
-        filteredListRemainder: function() {
-            return this.filteredList.filter((mission) => {
-                return !this.subscribed.has(mission.guid)
-            })
-        },
-        filteredListSubscribed: function() {
-            return this.filteredList.filter((mission) => {
-                return this.subscribed.has(mission.guid)
-            })
         }
-    },
-    methods: {
-        openMission: async function(mission, usePassword) {
-            if (mission.passwordProtected && this.subscribed.has(mission.guid)) {
-                const o = mapStore.getOverlayByMode('mission', mission.guid);
-                this.$router.push(`/menu/missions/${mission.guid}?token=${encodeURIComponent(o.token)}`);
-            } else if (mission.passwordProtected && usePassword) {
-                try {
-                    const getMission = await this.fetchMission(mission, mission.password);
-                    this.$router.push(`/menu/missions/${mission.guid}?token=${encodeURIComponent(getMission.token)}`);
-                } catch (err) {
-                    if (err.message.includes('Illegal attempt to access mission')) {
-                        this.errors[mission.guid] = 'Invalid Password';
-                    } else {
-                        this.errors[mission.guid] = err.message;
-                    }
-                }
-            } else if (mission.passwordProtected && mission.password === undefined) {
-                mission.password = '';
-            } else if (!mission.passwordProtected) {
-                this.$router.push(`/menu/missions/${mission.guid}?password=${encodeURIComponent(mission.password)}`);
-            }
-        },
-        fetchMission: async function(mission, password) {
-            const url = stdurl(`/api/marti/missions/${mission.guid}`);
-            if (password) url.searchParams.append('password', password);
-
-            const m = await std(url);
-            return m;
-        },
-        fetchMissions: async function() {
-            this.err = false;
-
-            try {
-                this.loading = true;
-                const url = stdurl('/api/marti/mission');
-                url.searchParams.append('passwordProtected', 'true');
-                url.searchParams.append('defaultRole', 'true');
-                this.list = await std(url);
-
-                for (const item of this.list.data) {
-                    if (mapStore.getOverlayByMode('mission', item.guid)) {
-                        this.subscribed.add(item.guid);
-                    }
-                }
-            } catch (err) {
-                this.err = err;
-            }
-            this.loading = false;
-        }
+    } else if (mission.passwordProtected && mission.password === undefined) {
+        mission.password = '';
+    } else if (!mission.passwordProtected) {
+        router.push(`/menu/missions/${mission.guid}?password=${encodeURIComponent(mission.password)}`);
     }
+}
+
+async function fetchMission(mission, password) {
+    const url = stdurl(`/api/marti/missions/${mission.guid}`);
+    if (password) url.searchParams.append('password', password);
+
+    const m = await std(url);
+    return m;
+}
+
+async function fetchMissions() {
+    error.value = undefined;
+
+    try {
+        loading.value = true;
+
+        list.value = await Mission.list();
+
+        for (const item of list.value.data) {
+            if (mapStore.getOverlayByMode('mission', item.guid)) {
+                subscribed.value.add(item.guid);
+            }
+        }
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    }
+
+    loading.value = false;
 }
 </script>

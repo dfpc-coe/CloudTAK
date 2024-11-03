@@ -371,29 +371,24 @@ export const useMapStore = defineStore('cloudtak', {
             }));
 
             // Data Syncs are specially loaded as they are dynamic
-            const promises = [];
             for (const overlay of this.overlays) {
-                promises.push(async () => {
-                    if (overlay.mode === 'mission' && overlay.mode_id) {
-                        const cotStore = useCOTStore();
-                        const source = map.getSource(String(overlay.id));
-                        if (!source) return;
+                if (overlay.mode === 'mission' && overlay.mode_id) {
+                    const cotStore = useCOTStore();
+                    const source = map.getSource(String(overlay.id));
 
-                        try {
-                            // @ts-expect-error Source.setData is not defined
-                            source.setData(await cotStore.loadMission(overlay.mode_id, overlay.token));
-                        } catch (err) {
-                            // TODO: Handle this gracefully
-                            // The Mission Sync is either:
-                            // - Deleted
-                            // - Part of a channel that is no longer active
-                            overlay._error = err instanceof Error ? err : new Error(String(err));
-                        }
+                    if (!source) continue;
+
+                    try {
+                        await this.updateMissionData(overlay.mode_id);
+                    } catch (err) {
+                        // TODO: Handle this gracefully
+                        // The Mission Sync is either:
+                        // - Deleted
+                        // - Part of a channel that is no longer active
+                        overlay._error = err instanceof Error ? err : new Error(String(err));
                     }
-                });
+                }
             }
-
-            await Promise.allSettled(promises);
         },
         /**
          * Determine if the feature is from the CoT store or a clicked VT feature
