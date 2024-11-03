@@ -3,6 +3,7 @@ import { std, stdurl } from '../../std.ts';
 import type {
     Mission,
     MissionLog,
+    MissionList,
     MissionLogList,
     MissionSubscriptions
 } from '../../types.ts';
@@ -41,6 +42,25 @@ export default class Subscription {
         delete mission.logs;
 
         return new Subscription(mission, logs);
+    }
+
+    static async list(opts: {
+        passwordProtected?: boolean;
+        defaultRole?: boolean;
+    } = {}): Promise<MissionList> {
+        if (opts.passwordProtected === undefined) opts.passwordProtected = true;
+        if (opts.defaultRole === undefined) opts.defaultRole = true;
+
+        const url = stdurl('/api/marti/mission');
+        url.searchParams.append('passwordProtected', String(opts.passwordProtected));
+        url.searchParams.append('defaultRole', String(opts.defaultRole));
+        this.list = await std(url);
+
+        const list = await std(url, {
+            method: 'GET',
+        }) as MissionList;
+
+        return list;
     }
 
     static headers(token?: string): Record<string, string> {
