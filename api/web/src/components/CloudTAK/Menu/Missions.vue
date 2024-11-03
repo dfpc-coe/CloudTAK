@@ -7,11 +7,11 @@
             <TablerIconButton
                 title='Create Sync'
                 @click='create = true'
-            ><IconPlus :size='32' :stroke='1'/></TablerIconButton>
+            ><IconPlus :size='32' stroke='1'/></TablerIconButton>
             <TablerIconButton
                 title='Refresh'
                 @click='fetchMissions'
-            > <IconRefresh :size='32' :stroke='1' /></TablerIconButton>
+            > <IconRefresh :size='32' stroke='1' /></TablerIconButton>
         </template>
         <template #default>
             <div class='col-12 px-2 py-2'>
@@ -24,10 +24,10 @@
 
             <ChannelInfo />
 
-            <EmptyInfo v-if='hasNoChannels' />
+            <EmptyInfo v-if='profileStore.hasNoChannels' />
 
             <TablerNone
-                v-if='!list.data.length'
+                v-if='!list.length'
                 :create='false'
                 label='Data Sync'
             />
@@ -40,19 +40,19 @@
                     v-for='(mission, mission_it) in filteredListSubscribed.concat(filteredListRemainder) '
                     :key='mission_it'
                     class='cursor-pointer col-12 py-2 hover-dark'
-                    @click='openMission(mission)'
+                    @click='openMission(mission, false)'
                 >
                     <div class='px-3 d-flex'>
                         <div class='d-flex justify-content-center align-items-center'>
                             <IconLock
                                 v-if='mission.passwordProtected'
                                 :size='32'
-                                :stroke='1'
+                                stroke='1'
                             />
                             <IconLockOpen
                                 v-else
                                 :size='32'
-                                :stroke='1'
+                                stroke='1'
                             />
                         </div>
                         <div class='mx-2'>
@@ -94,10 +94,10 @@
                         </div>
                         <div class='col-auto ms-auto align-items-center d-flex'>
                             <IconAccessPoint
-                                v-if='subscribed.has(mission.guid)'
+                                v-if='cotStore.subscriptions.has(mission.guid)'
                                 v-tooltip='"Subscribed"'
                                 :size='32'
-                                :stroke='1'
+                                stroke='1'
                                 class='text-green'
                             />
                         </div>
@@ -150,45 +150,45 @@ import ChannelInfo from '../util/ChannelInfo.vue';
 import { useProfileStore } from '../../../../src/stores/profile.ts';
 import EmptyInfo from '../util/EmptyInfo.vue';
 import { useMapStore } from '../../../../src/stores/map.ts';
+import { useCOTStore } from '../../../../src/stores/cots.ts';
 import Subscription from '../../../../src/stores/base/mission.ts';
 const mapStore = useMapStore();
+const cotStore = useCOTStore();
 
 const error = ref<Error | undefined>();
 const create = ref(false)
 const loading = ref(true)
-const subscribed = ref(new Set());
 const errors = ref<Record<string, string | undefined>>({})
 const router = useRouter();
 
 const paging = ref({ filter: '' });
-const list = ref<MissionList>({ data: [], });
+const list = ref<Array<Mission>>([]);
 
 onMounted(async () => {
     await fetchMissions();
 });
 
-const hasNoChannels = computed(() => useProfileStore.hasNoChannels);
-const filteredList: Array<Mission> = computed(() => {
-    return list.value.data.filter((mission) => {
+const filteredList = computed((): Array<Mission> => {
+    return list.value.filter((mission) => {
         return mission.name.toLowerCase()
             .includes(paging.value.filter.toLowerCase());
     })
 });
 
-const filteredListRemainder: Array<Mission> = computed(() => {
+const filteredListRemainder = computed((): Array<Mission> => {
     return filteredList.value.filter((mission) => {
-        return !subscribed.value.has(mission.guid)
+        return !cotStore.subscriptions.has(mission.guid)
     })
 });
 
-const filteredListSubscribed: Array<Mission> = computed(() => {
+const filteredListSubscribed = computed((): Array<Mission> => {
     return filteredList.value.filter((mission) => {
-        return subscribed.value.has(mission.guid)
+        return cotStore.subscriptions.has(mission.guid)
     })
 });
 
-async function openMission(mission, usePassword) {
-    if (mission.passwordProtected && subscribed.value.has(mission.guid)) {
+async function openMission(mission: Mission, usePassword: boolean) {
+    if (mission.passwordProtected && cotStore.subscriptions.has(mission.guid)) {
         const o = mapStore.getOverlayByMode('mission', mission.guid);
         router.push(`/menu/missions/${mission.guid}?token=${encodeURIComponent(o.token)}`);
     } else if (mission.passwordProtected && usePassword) {
@@ -196,10 +196,10 @@ async function openMission(mission, usePassword) {
             const getMission = await fetchMission(mission, mission.password);
             router.push(`/menu/missions/${mission.guid}?token=${encodeURIComponent(getMission.token)}`);
         } catch (err) {
-            if (err.message.includes('Illegal attempt to access mission')) {
+            if (err instanceof Error && err.message.includes('Illegal attempt to access mission')) {
                 errors.value[mission.guid] = 'Invalid Password';
             } else {
-                errors.value[mission.guid] = err.message;
+                errors.value[mission.guid] = err instanceof Error ? err.message : String(err);
             }
         }
     } else if (mission.passwordProtected && mission.password === undefined) {
@@ -209,7 +209,7 @@ async function openMission(mission, usePassword) {
     }
 }
 
-async function fetchMission(mission: Mission, password?: string) {
+async function fetchMission(mission: Mission, password?: string): Promise<Mission> {
     const url = stdurl(`/api/marti/missions/${mission.guid}`);
     if (password) url.searchParams.append('password', password);
 
@@ -223,13 +223,7 @@ async function fetchMissions() {
     try {
         loading.value = true;
 
-        list.value = await Subscription.list();
-
-        for (const item of list.value.data) {
-            if (mapStore.getOverlayByMode('mission', item.guid)) {
-                subscribed.value.add(item.guid);
-            }
-        }
+        list.value = (await Subscription.list()).data;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }

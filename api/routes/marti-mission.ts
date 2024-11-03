@@ -185,7 +185,13 @@ export default async function router(schema: Schema, config: Config) {
         group: 'MartiMissions',
         description: 'Helper API to list missions',
         query: MissionListInput,
-        res: GenericMartiResponse
+        res: Type.Object({
+            version: Type.String(),
+            type: Type.String(),
+            data: Type.Array(Mission),
+            messages: Type.Optional(Type.Array(Type.String())),
+            nodeId: Type.Optional(Type.String())
+        })
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
