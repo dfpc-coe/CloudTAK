@@ -329,7 +329,7 @@ export const useMapStore = defineStore('cloudtak', {
                         name: basemaps.items[0].name,
                         pos: -1,
                         type: 'raster',
-                        url: String(stdurl(`/api/basemap/${basemaps.items[0].id}/tiles?token=${localStorage.token}`)),
+                        url: String(stdurl(`/api/basemap/${basemaps.items[0].id}/tiles`)),
                         mode: 'basemap',
                         mode_id: String(basemaps.items[0].id)
                     });
