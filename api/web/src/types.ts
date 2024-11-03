@@ -26,7 +26,7 @@ export type User = paths["/user/{:username}"]["get"]["responses"]["200"]["conten
 export type UserList = paths["/user"]["get"]["responses"]["200"]["content"]["application/json"];
 
 export type Mission = paths["/marti/missions/{:name}"]["get"]["responses"]["200"]["content"]["application/json"];
-export type MissionList = paths["/marti/missions"]["get"]["responses"]["200"]["content"]["application/json"];
+export type MissionList = paths["/marti/mission"]["get"]["responses"]["200"]["content"]["application/json"];
 export type MissionLog = paths["/marti/missions/{:name}/log/{:logid}"]["patch"]["responses"]["200"]["content"]["application/json"]["data"];
 export type MissionLogList = paths["/marti/missions/{:name}/log"]["get"]["responses"]["200"]["content"]["application/json"];
 export type MissionSubscriptions = paths["/marti/missions/{:name}/subscriptions/roles"]["get"]["responses"]["200"]["content"]["application/json"]["data"];
