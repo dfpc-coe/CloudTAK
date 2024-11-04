@@ -23,8 +23,8 @@
         </template>
         <template #default>
             <TablerAlert
-                v-if='err'
-                :err='err'
+                v-if='error'
+                :err='error'
             />
             <template v-else>
                 <div
@@ -192,7 +192,7 @@ export default {
         const token = this.$route.query.token;
 
         return {
-            err: null,
+            error: null,
             subscribed: undefined,
             token,
             upload: false,
@@ -259,7 +259,7 @@ export default {
 
                 this.$router.replace('/menu/missions');
             } catch (err) {
-                this.err = err;
+                this.error = err;
             }
             this.loading.delete = false;
         },
@@ -274,11 +274,6 @@ export default {
                     }
                 });
 
-            } catch (err) {
-                this.err = err;
-            }
-
-            try {
                 const suburl = stdurl(`/api/marti/missions/${this.mission.guid}/role`);
                 this.role = await std(suburl, {
                     headers: {
@@ -287,9 +282,10 @@ export default {
                 });
             } catch (err) {
                 if (!err.message.includes('NOT_FOUND')) {
-                    throw err;
+                    this.error = err;
                 }
             }
+
             this.loading.initial = false;
             this.loading.mission = false;
         }

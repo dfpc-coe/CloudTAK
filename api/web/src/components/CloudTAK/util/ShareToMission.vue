@@ -55,7 +55,10 @@
                                     :style='compact ? "margin-left: 8px" : "margin-left: 16px;"'
                                 />
                             </div>
-                            <span class='mx-2' v-text='mission.meta.name' />
+                            <span
+                                class='mx-2'
+                                v-text='mission.meta.name'
+                            />
                         </div>
                     </div>
                 </div>
