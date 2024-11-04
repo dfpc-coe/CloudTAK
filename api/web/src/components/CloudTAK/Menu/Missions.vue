@@ -7,11 +7,21 @@
             <TablerIconButton
                 title='Create Sync'
                 @click='create = true'
-            ><IconPlus :size='32' stroke='1'/></TablerIconButton>
+            >
+                <IconPlus
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
             <TablerIconButton
                 title='Refresh'
                 @click='fetchMissions'
-            > <IconRefresh :size='32' stroke='1' /></TablerIconButton>
+            >
+                <IconRefresh
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
         </template>
         <template #default>
             <div class='col-12 px-2 py-2'>
@@ -60,11 +70,11 @@
                                 <span v-text='mission.name' />
                             </div>
                             <div
-                                v-if='mission.password !== undefined'
+                                v-if='typeof missionPasswords[mission.guid] === "string"'
                                 class='d-flex'
                             >
                                 <TablerInput
-                                    v-model='mission.password'
+                                    v-model='missionPasswords[mission.guid]'
                                     placeholder='Password'
                                     :error='errors[mission.guid]'
                                     @keyup.enter='openMission(mission, true)'
@@ -137,7 +147,7 @@ import {
     TablerAlert,
     TablerModal
 } from '@tak-ps/vue-tabler';
-import type { Mission, MissionList } from '../../../../src/types.ts';
+import type { Mission } from '../../../../src/types.ts';
 import { std, stdurl } from '../../../../src/std.ts';
 import {
     IconPlus,
@@ -159,6 +169,7 @@ const profileStore = useProfileStore();
 const error = ref<Error | undefined>();
 const create = ref(false)
 const loading = ref(true)
+const missionPasswords = ref<Record<string, string>>({});
 const errors = ref<Record<string, string | undefined>>({})
 const router = useRouter();
 
@@ -173,19 +184,25 @@ const filteredList = computed((): Array<Mission> => {
     return list.value.filter((mission) => {
         return mission.name.toLowerCase()
             .includes(paging.value.filter.toLowerCase());
-    }).sort((a, b) => {
-        return !cotStore.subscriptions.has(a.guid)
+    }).sort((a) => {
+        return !cotStore.subscriptions.has(a.guid) ? 1 : -1;
     })
 });
 
 async function openMission(mission: Mission, usePassword: boolean) {
     if (mission.passwordProtected && cotStore.subscriptions.has(mission.guid)) {
         const o = mapStore.getOverlayByMode('mission', mission.guid);
-        router.push(`/menu/missions/${mission.guid}?token=${encodeURIComponent(o.token)}`);
+
+        let fragment = `/menu/missions/${mission.guid}`;
+        if (o && o.token) fragment = `${fragment}?token=${encodeURIComponent(o.token)}`;
+        router.push(fragment);
     } else if (mission.passwordProtected && usePassword) {
         try {
-            const getMission = await fetchMission(mission, mission.password);
-            router.push(`/menu/missions/${mission.guid}?token=${encodeURIComponent(getMission.token)}`);
+            const getMission = await fetchMission(mission, missionPasswords.value[mission.guid]);
+
+            let fragment = `/menu/missions/${mission.guid}`;
+            if (getMission && getMission.token) fragment = `${fragment}?token=${encodeURIComponent(getMission.token)}`;
+            router.push(fragment);
         } catch (err) {
             if (err instanceof Error && err.message.includes('Illegal attempt to access mission')) {
                 errors.value[mission.guid] = 'Invalid Password';
@@ -193,10 +210,10 @@ async function openMission(mission: Mission, usePassword: boolean) {
                 errors.value[mission.guid] = err instanceof Error ? err.message : String(err);
             }
         }
-    } else if (mission.passwordProtected && mission.password === undefined) {
-        mission.password = '';
+    } else if (mission.passwordProtected && missionPasswords.value[mission.guid] === undefined) {
+        missionPasswords.value[mission.guid] = '';
     } else if (!mission.passwordProtected) {
-        router.push(`/menu/missions/${mission.guid}?password=${encodeURIComponent(mission.password)}`);
+        router.push(`/menu/missions/${mission.guid}?password=${encodeURIComponent(missionPasswords.value[mission.guid])}`);
     }
 }
 
@@ -204,7 +221,7 @@ async function fetchMission(mission: Mission, password?: string): Promise<Missio
     const url = stdurl(`/api/marti/missions/${mission.guid}`);
     if (password) url.searchParams.append('password', password);
 
-    const m = await std(url);
+    const m = await std(url) as Mission;
     return m;
 }
 
