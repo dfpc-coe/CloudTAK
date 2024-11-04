@@ -1,133 +1,127 @@
 <template>
     <div class='col-12'>
-        <TablerLoading
-            v-if='loading.initial'
-            desc='Loading Mission'
-        />
-        <template v-else>
-            <div class='modal-header'>
-                <div class='row'>
-                    <div class='col-auto'>
-                        <IconLock
-                            v-if='mission.passwordProtected'
-                            :size='32'
-                            :stroke='1'
-                        />
-                        <IconLockOpen
-                            v-else
-                            :size='32'
-                            :stroke='1'
-                        />
-                    </div>
-                    <div class='col-auto row'>
-                        <div class='col-12'>
-                            <span>Create Mission</span>
-                        </div>
+        <div class='modal-header'>
+            <div class='row'>
+                <div class='col-auto'>
+                    <IconLock
+                        v-if='mission.passwordProtected'
+                        :size='32'
+                        stroke='1'
+                    />
+                    <IconLockOpen
+                        v-else
+                        :size='32'
+                        stroke='1'
+                    />
+                </div>
+                <div class='col-auto row'>
+                    <div class='col-12'>
+                        <span>Create Mission</span>
                     </div>
                 </div>
             </div>
-            <TablerLoading
-                v-if='loading.mission'
-                desc='Saving Mission'
-            />
-            <TablerAlert
-                v-else-if='err'
-                :err='err'
-            />
-            <template v-else>
-                <div class='modal-body row g-2'>
-                    <TablerInput
-                        v-model='mission.name'
-                        label='Name'
-                    />
+        </div>
+        <TablerLoading
+            v-if='loading'
+            desc='Saving Mission'
+        />
+        <TablerAlert
+            v-else-if='error'
+            :err='error'
+        />
+        <template v-else>
+            <div class='modal-body row g-2'>
+                <TablerInput
+                    v-model='mission.name'
+                    label='Name'
+                />
 
-                    <div class='col-12'>
-                        <label class='px-2 w-100'>Groups (Channels)</label>
-                        <div
-                            class='mx-1 d-flex'
-                            style='padding-right: 15px;'
-                        >
-                            <input
-                                type='text'
-                                class='form-control'
-                                disabled
-                                :value='mission.groups.length ? mission.groups.join(", ") : "None"'
-                            >
-                            <button
-                                class='btn btn-sm'
-                                @click='modal.groups = true'
-                            >
-                                <IconListSearch
-                                    :size='32'
-                                    :stroke='1'
-                                    class='cursor-pointer mx-2'
-                                />
-                            </button>
-                        </div>
-                    </div>
-
-                    <TablerInput
-                        v-model='mission.password'
-                        :disabled='!mission.passwordProtected'
-                        type='password'
-                        label='Password'
-                    >
-                        <TablerToggle
-                            v-model='mission.passwordProtected'
-                            label='Password Protected'
-                        />
-                    </TablerInput>
-
-                    <label
-                        class='subheader mt-3 cursor-pointer'
-                        @click='advanced = !advanced'
-                    >
-                        <IconSquareChevronRight
-                            v-if='!advanced'
-                            :size='32'
-                            :stroke='1'
-                        />
-                        <IconChevronDown
-                            v-else
-                            :size='32'
-                            :stroke='1'
-                        />
-                        Advanced Options
-                    </label>
-
+                <div class='col-12'>
+                    <label class='px-2 w-100'>Groups (Channels)</label>
                     <div
-                        v-if='advanced'
-                        class='col-12'
+                        class='mx-1 d-flex'
+                        style='padding-right: 15px;'
                     >
-                        <div class='row g-2'>
-                            <div class='col-12'>
-                                <TablerEnum
-                                    v-model='mission.role'
-                                    label='Default Role'
-                                    :options='["Read-Only", "Subscriber", "Owner"]'
-                                />
-                            </div>
-                            <div class='col-12'>
-                                <TablerInput
-                                    v-model='mission.description'
-                                    label='Description'
-                                />
-                            </div>
-                        </div>
+                        <input
+                            type='text'
+                            class='form-control'
+                            disabled
+                            :value='mission.groups.length ? mission.groups.join(", ") : "None"'
+                        >
+                        <button
+                            class='btn btn-sm'
+                            @click='modal.groups = true'
+                        >
+                            <IconListSearch
+                                :size='32'
+                                stroke='1'
+                                class='cursor-pointer mx-2'
+                            />
+                        </button>
                     </div>
+                </div>
 
-                    <div class='col-12 d-flex'>
-                        <div class='ms-auto'>
-                            <button
-                                class='btn btn-primary'
-                                @click='createMission'
-                            >
-                                Create Mission
-                            </button>
+                <TablerInput
+                    v-model='mission.password'
+                    :disabled='!mission.passwordProtected'
+                    type='password'
+                    label='Password'
+                >
+                    <TablerToggle
+                        v-model='mission.passwordProtected'
+                        label='Password Protected'
+                    />
+                </TablerInput>
+
+                <label
+                    class='subheader mt-3 cursor-pointer'
+                    @click='advanced = !advanced'
+                >
+                    <IconSquareChevronRight
+                        v-if='!advanced'
+                        :size='32'
+                        stroke='1'
+                    />
+                    <IconChevronDown
+                        v-else
+                        :size='32'
+                        stroke='1'
+                    />
+                    Advanced Options
+                </label>
+
+                <div
+                    v-if='advanced'
+                    class='col-12'
+                >
+                    <div class='row g-2'>
+                        <div class='col-12'>
+                            <TablerEnum
+                                v-model='mission.role'
+                                label='Default Role'
+                                :options='["Read-Only", "Subscriber", "Owner"]'
+                            />
+                        </div>
+                        <div class='col-12'>
+                            <TablerInput
+                                v-model='mission.description'
+                                label='Description'
+                            />
                         </div>
                     </div>
                 </div>
-            </template>
+
+                <div class='col-12 d-flex'>
+                    <div class='ms-auto'>
+                        <button
+                            class='btn btn-primary'
+                            @click='createMission'
+                        >
+                            Create Mission
+                        </button>
+                    </div>
+                </div>
+            </div>
         </template>
 
         <GroupSelect
@@ -138,8 +132,11 @@
     </div>
 </template>
 
-<script>
-import { std, stdurl } from '/src/std.ts';
+<script setup lang='ts'>
+import { ref } from 'vue';
+import { std, stdurl } from '../../../../std.ts';
+import type { Mission, Mission_Create } from '../../../../types.ts';
+import { useMapStore } from '../../../../stores/map.ts'
 import {
     IconLock,
     IconLockOpen,
@@ -148,6 +145,7 @@ import {
     IconChevronDown,
 } from '@tabler/icons-vue';
 import GroupSelect from '../../../util/GroupSelectModal.vue';
+import Overlay from '../../../../stores/base/overlay.ts';
 import {
     TablerAlert,
     TablerInput,
@@ -156,71 +154,67 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 
-export default {
-    name: 'MissionCreate',
-    components: {
-        IconSquareChevronRight,
-        IconChevronDown,
-        GroupSelect,
-        TablerAlert,
-        TablerLoading,
-        TablerInput,
-        TablerEnum,
-        TablerToggle,
-        IconListSearch,
-        IconLock,
-        IconLockOpen
-    },
-    data: function() {
-        return {
-            err: null,
-            loading: {
-                mission: false,
-            },
-            modal: {
-                groups: false
-            },
-            advanced: false,
-            mission: {
-                name: '',
-                passwordProtected: false,
-                role: 'Subscriber',
-                description: '',
-                groups: [],
-                hashtags: ''
-            }
-        }
-    },
-    methods: {
-        createMission: async function() {
-            this.loading.mission = true;
-            try {
-                this.loading.mission = true;
+const mapStore = useMapStore();
+const emit = defineEmits(['mission']);
 
-                const url = stdurl(`/api/marti/missions/${this.mission.name}`);
+const error = ref<Error | undefined>();
+const loading = ref(false);
+const modal = ref({
+    groups: false
+});
+const advanced = ref(false);
+const mission = ref({
+    name: '',
+    password: '',
+    passwordProtected: false,
+    role: 'Subscriber',
+    description: '',
+    groups: [],
+    hashtags: ''
+});
 
-                const body = {
-                    group: this.mission.groups,
-                    description: this.mission.description || ''
-                };
+async function createMission() {
+    loading.value = true;
+    try {
+        loading.value = true;
 
-                if (this.mission.role === 'Subscriber') body.defaultRole = 'MISSION_SUBSCRIBER';
-                if (this.mission.role === 'Read-Only') body.defaultRole = 'MISSION_READONLY_SUBSCRIBER';
-                if (this.mission.role === 'Owner') body.defaultRole = 'MISSION_OWNER';
+        const url = stdurl(`/api/marti/missions/${mission.value.name}`);
 
-                if (this.mission.passwordProtected) body.password = this.mission.password;
+        const body: Mission_Create = {
+            group: mission.value.groups,
+            description: mission.value.description || ''
+        };
 
-                const res = await std(url, {
-                    method: 'POST',
-                    body
-                });
+        if (mission.value.role === 'Subscriber') body.defaultRole = 'MISSION_SUBSCRIBER';
+        if (mission.value.role === 'Read-Only') body.defaultRole = 'MISSION_READONLY_SUBSCRIBER';
+        if (mission.value.role === 'Owner') body.defaultRole = 'MISSION_OWNER';
 
-                this.$emit('mission', res);
-            } catch (err) {
-                this.err = err;
-            }
-            this.loading.mission = false;
-        }
+        if (mission.value.passwordProtected) body.password = mission.value.password;
+
+        const res = await std(url, {
+            method: 'POST',
+            body
+        }) as Mission;
+
+        if (!mapStore.map) throw new Error('Cannot subscribe before map is loaded');
+
+        // @ts-expect-error Map.Style is missing properties (probably a MapLibreGL@5 issue)
+        const missionOverlay = await Overlay.create(mapStore.map, {
+            name: res.name,
+            url: `/mission/${encodeURIComponent(res.name)}`,
+            type: 'geojson',
+            mode: 'mission',
+            token: res.token,
+            mode_id: res.guid,
+        })
+
+        mapStore.overlays.push(missionOverlay);
+        await mapStore.updateMissionData(res.guid);
+
+        emit('mission', res);
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
     }
+    loading.value = false;
 }
 </script>

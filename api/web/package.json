@@ -11,7 +11,7 @@
         "lint": "eslint ./src/"
     },
     "dependencies": {
-        "@tak-ps/vue-tabler": "^3.55.2",
+        "@tak-ps/vue-tabler": "^3.58.0",
         "@sinclair/typebox": "^0.33.15",
         "@tabler/core": "^1.0.0-beta16",
         "@tabler/icons-vue": "^3.0.0",

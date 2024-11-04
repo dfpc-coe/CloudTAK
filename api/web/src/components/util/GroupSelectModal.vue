@@ -1,6 +1,7 @@
 <template>
     <TablerModal
         style='height: 80vh;'
+        @keyup.esc='$emit(&apos;close&apos;)'
     >
         <button
             type='button'
@@ -15,7 +16,7 @@
             </div>
         </div>
         <div
-            class='modal-body overflow-auto'
+            class='overflow-auto'
             style='height: 50vh;'
         >
             <GroupSelect
@@ -30,7 +31,9 @@
             <TablerButton
                 class='btn btn-primary'
                 @click='$emit("close")'
-            >Submit</TablerButton>
+            >
+                Submit
+            </TablerButton>
         </div>
     </TablerModal>
 </template>
