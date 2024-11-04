@@ -214,7 +214,8 @@ async function createMission() {
         })
 
         mapStore.overlays.push(missionOverlay);
-        await mapStore.updateMissionData(res.guid);
+
+        await mapStore.loadMission(res.guid);
 
         emit('mission', res);
     } catch (err) {

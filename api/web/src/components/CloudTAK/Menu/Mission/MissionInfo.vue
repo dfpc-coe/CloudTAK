@@ -169,7 +169,7 @@ async function subscribe(subscribed: boolean) {
         })
 
         mapStore.overlays.push(missionOverlay);
-        await mapStore.updateMissionData(props.mission.guid);
+        await mapStore.loadMission(props.mission.guid);
     } else if (subscribed === false && overlay) {
         await mapStore.removeOverlay(overlay);
     }

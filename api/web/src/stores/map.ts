@@ -8,12 +8,13 @@
 */
 
 import { defineStore } from 'pinia'
+import Subscription from './base/mission.ts';
 import Overlay from './base/overlay.ts';
 import { std, stdurl } from '../std.js';
 import mapgl from 'maplibre-gl'
 import * as terraDraw from 'terra-draw';
 import type { ProfileOverlay, Basemap, APIList } from '../types.ts';
-import type { Feature } from 'geojson';
+import type { FeatureCollection, Feature } from 'geojson';
 import type {
     LngLat,
     Point,
@@ -146,32 +147,28 @@ export const useMapStore = defineStore('cloudtak', {
         },
 
         /**
-         * Given a mission Guid, attempt to refresh the Map Layer
+         * Given a mission Guid, attempt to refresh the Map Layer, loading the mission if it isn't already loaded
          * @returns {boolean} True if successful, false if not
          */
-        updateMissionData: async function(guid: string): Promise<boolean> {
+        loadMission: async function(guid: string): Promise<boolean> {
             const overlay = this.getOverlayByMode('mission', guid)
-            if (!overlay) return false;
+            if (!overlay || !overlay.mode_id) return false;
 
-            if (!this.map) throw new Error('Cannot updateMissionData before map has loaded');
+            if (!this.map) throw new Error('Cannot loadMission before map has loaded');
             const oStore = this.map.getSource(String(overlay.id));
             if (!oStore) return false
 
             const cotStore = useCOTStore();
 
-            const sub = cotStore.subscriptions.get(guid);
+            let sub = cotStore.subscriptions.get(guid);
 
             if (!sub) {
-                if (!overlay.mode_id) throw new Error('Internal Error: ModeID not set');
-                const fc = await cotStore.loadMission(overlay.mode_id, overlay.token || undefined);
-                // @ts-expect-error Source.setData is not defined
-                oStore.setData(fc);
-            } else {
-                const fc = cotStore.collection(sub.cots);
-                // @ts-expect-error Source.setData is not defined
-                oStore.setData(fc);
-
+                sub = await Subscription.load(guid, overlay.token || undefined);
+                cotStore.subscriptions.set(guid, sub)
             }
+
+            // @ts-expect-error Source.setData is not defined
+            oStore.setData(sub.collection());
 
             return true;
         },
@@ -379,7 +376,7 @@ export const useMapStore = defineStore('cloudtak', {
                     if (!source) continue;
 
                     try {
-                        await this.updateMissionData(overlay.mode_id);
+                        await this.loadMission(overlay.mode_id);
                     } catch (err) {
                         // TODO: Handle this gracefully
                         // The Mission Sync is either:
