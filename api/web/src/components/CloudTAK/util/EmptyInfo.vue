@@ -7,11 +7,11 @@
                 class='mx-2'
             />
             <div>
-                <span v-if='type === InfoType.CHANNELS'>
+                <span v-if='type === "Channels"'>
                     No Channels are selected
                 </span>
-                <span v-else-if='type === InfoType.MISSIONS'>
-                    No Data Syncs have been subscribed to
+                <span v-else-if='type === "Missions"'>
+                    No Data Syncs have been subscribed to that have Write Access
                 </span>
             </div>
         </div>

@@ -3,6 +3,7 @@ import { std, stdurl } from '../../std.ts';
 import type {
     Mission,
     MissionLog,
+    MissionRole,
     MissionList,
     MissionLogList,
     MissionSubscriptions
@@ -10,6 +11,7 @@ import type {
 
 export default class Subscription {
     meta: Mission;
+    role: MissionRole;
     token?: string;
     logs: Array<MissionLog>;
     cots: Map<string, COT>;
@@ -19,10 +21,12 @@ export default class Subscription {
 
     constructor(
         mission: Mission,
+        role: MissionRole,
         logs: Array<MissionLog>,
         token?: string
     ) {
         this.meta = mission;
+        this.role = role;
         this.logs = logs;
         this.token = token;
         this.cots = new Map();
@@ -41,7 +45,11 @@ export default class Subscription {
         const logs = mission.logs || [] as Array<MissionLog>;
         delete mission.logs;
 
-        return new Subscription(mission, logs);
+        const role = await std('/api/marti/missions/' + encodeURIComponent(guid) + '/role', {
+            headers: Subscription.headers(token)
+        }) as MissionRole;
+
+        return new Subscription(mission, role, logs);
     }
 
     static async list(opts: {
