@@ -82,7 +82,7 @@ export const useCOTStore = defineStore('cots', {
 
                 if (updateGuid) {
                     const mapStore = useMapStore();
-                    await mapStore.updateMissionData(updateGuid);
+                    await mapStore.loadMission(updateGuid);
                 }
             } else if (task.properties.type === 't-x-m-c-l' && task.properties.mission && task.properties.mission.guid) {
                 const sub = this.subscriptions.get(task.properties.mission.guid);
@@ -122,28 +122,6 @@ export const useCOTStore = defineStore('cots', {
                     skipSave: true
                 });
             }
-        },
-
-        /**
-         * Load Latest CoTs from Mission Sync
-         */
-        loadMission: async function(guid: string, token?: string): Promise<FeatureCollection> {
-            let sub = this.subscriptions.get(guid)
-
-            if (!sub) {
-                sub = await Subscription.load(guid, token);
-                this.subscriptions.set(guid, sub)
-            }
-
-            const fc = await std('/api/marti/missions/' + encodeURIComponent(guid) + '/cot', {
-                headers: Subscription.headers(token)
-            }) as FeatureCollection;
-
-            for (const feat of fc.features) {
-                this.add(feat as Feature, guid);
-            }
-
-            return this.collection(sub.cots)
         },
 
         /**
@@ -339,18 +317,6 @@ export const useCOTStore = defineStore('cots', {
         },
 
         /**
-         * Return a FeatureCollection of a non-default CoT Store
-         */
-        collection(store: Map<string, COT>): FeatureCollection {
-            return {
-                type: 'FeatureCollection',
-                features: Array.from(store.values()).map((f: COT) => {
-                    return f.as_rendered();
-                })
-            }
-        },
-
-        /**
          * Return a CoT by ID if it exists
          */
         get: function(id: string, opts?: {
@@ -422,7 +388,7 @@ export const useCOTStore = defineStore('cots', {
                 sub.cots.set(String(cot.id), cot);
 
                 const mapStore = useMapStore();
-                await mapStore.updateMissionData(mission_guid);
+                await mapStore.loadMission(mission_guid);
             } else {
                 let is_mission_cot = false;
                 for (const value of this.subscriptions.values()) {

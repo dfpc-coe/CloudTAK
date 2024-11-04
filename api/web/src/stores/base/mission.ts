@@ -1,5 +1,9 @@
 import COT from './cot.ts'
 import { std, stdurl } from '../../std.ts';
+import type { Feature } from '../../types.ts';
+import type {
+    FeatureCollection
+} from 'geojson'
 import type {
     Mission,
     MissionLog,
@@ -34,6 +38,15 @@ export default class Subscription {
         this.auto = false;
     }
 
+    collection(): FeatureCollection {
+        return {
+            type: 'FeatureCollection',
+            features: Array.from(this.cots.values()).map((f: COT) => {
+                return f.as_rendered();
+            })
+        }
+    }
+
     static async load(guid: string, token?: string): Promise<Subscription> {
         const url = stdurl('/api/marti/missions/' + encodeURIComponent(guid));
         url.searchParams.append('logs', 'true');
@@ -49,7 +62,18 @@ export default class Subscription {
             headers: Subscription.headers(token)
         }) as MissionRole;
 
-        return new Subscription(mission, role, logs);
+        const sub = new Subscription(mission, role, logs);
+
+        const fc = await std('/api/marti/missions/' + encodeURIComponent(guid) + '/cot', {
+            headers: Subscription.headers(token)
+        }) as FeatureCollection;
+
+        for (const feat of fc.features) {
+            const cot = new COT(feat as Feature);
+            sub.cots.set(String(cot.id), cot);
+        }
+
+        return sub;
     }
 
     static async list(opts: {
