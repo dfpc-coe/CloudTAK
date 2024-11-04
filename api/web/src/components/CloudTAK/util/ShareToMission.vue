@@ -155,7 +155,8 @@ async function share() {
     const feats = currentFeats();
 
     for (let feat of feats) {
-        feat = JSON.parse(JSON.stringify(feats));
+        feat = JSON.parse(JSON.stringify(feat));
+
         feat.properties.dest = [];
         for (const mission of selected.value) {
             feat.properties.dest.push({
