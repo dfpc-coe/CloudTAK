@@ -12,6 +12,16 @@
 
 ### Pending Release
 
+### v4.32.0 - 2024-11-04
+
+- :rocket: Migrate Missions List to TS
+- :rocket: Automatically subscribe to a mission if you create it
+- :data: Add ability to share a list of CoTs with a mission if subscribed
+- :bug: Fix issue where Mission Data wouldn't populate after subscribe
+- :bug: Creating Mission with password results in error due to call to /role with undefined
+- :bug: Attempting to subscribe to a mission with a password results in an error
+- :bug: Battery Status not shown on CoT View
+
 ### v4.31.2 - 2024-11-03
 
 - :bug: `UI` Fix Initial Basemap Load
