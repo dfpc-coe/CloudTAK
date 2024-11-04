@@ -31,10 +31,12 @@
         />
         <template v-else>
             <div class='modal-body row g-2'>
-                <TablerInput
-                    v-model='mission.name'
-                    label='Name'
-                />
+                <div class='col-12'>
+                    <TablerInput
+                        v-model='mission.name'
+                        label='Name'
+                    />
+                </div>
 
                 <div class='col-12'>
                     <label class='px-2 w-100'>Groups (Channels)</label>
@@ -46,7 +48,7 @@
                             type='text'
                             class='form-control'
                             disabled
-                            :value='mission.groups.length ? mission.groups.join(", ") : "None"'
+                            :value='mission.groups.length ? mission.groups.join(", ") : "All Channels"'
                         >
                         <button
                             class='btn btn-sm'
@@ -61,17 +63,12 @@
                     </div>
                 </div>
 
-                <TablerInput
-                    v-model='mission.password'
-                    :disabled='!mission.passwordProtected'
-                    type='password'
-                    label='Password'
-                >
-                    <TablerToggle
-                        v-model='mission.passwordProtected'
-                        label='Password Protected'
+                <div class='col-12'>
+                    <TablerInput
+                        v-model='mission.description'
+                        label='Description'
                     />
-                </TablerInput>
+                </div>
 
                 <label
                     class='subheader mt-3 cursor-pointer'
@@ -96,16 +93,24 @@
                 >
                     <div class='row g-2'>
                         <div class='col-12'>
+                            <TablerToggle
+                                v-model='mission.passwordProtected'
+                                label='Password Protected'
+                            />
+                            <TablerInput
+                                v-if='mission.passwordProtected'
+                                v-model='mission.password'
+                                :disabled='!mission.passwordProtected'
+                                type='password'
+                                label='Password'
+                            />
+                        </div>
+
+                        <div class='col-12'>
                             <TablerEnum
                                 v-model='mission.role'
                                 label='Default Role'
                                 :options='["Read-Only", "Subscriber", "Owner"]'
-                            />
-                        </div>
-                        <div class='col-12'>
-                            <TablerInput
-                                v-model='mission.description'
-                                label='Description'
                             />
                         </div>
                     </div>
