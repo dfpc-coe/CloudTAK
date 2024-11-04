@@ -37,7 +37,7 @@
             />
             <template v-else>
                 <div
-                    v-for='(mission, mission_it) in filteredListSubscribed.concat(filteredListRemainder) '
+                    v-for='(mission, mission_it) in filteredList'
                     :key='mission_it'
                     class='cursor-pointer col-12 py-2 hover-dark'
                     @click='openMission(mission, false)'
@@ -154,6 +154,7 @@ import { useCOTStore } from '../../../../src/stores/cots.ts';
 import Subscription from '../../../../src/stores/base/mission.ts';
 const mapStore = useMapStore();
 const cotStore = useCOTStore();
+const profileStore = useProfileStore();
 
 const error = ref<Error | undefined>();
 const create = ref(false)
@@ -172,18 +173,8 @@ const filteredList = computed((): Array<Mission> => {
     return list.value.filter((mission) => {
         return mission.name.toLowerCase()
             .includes(paging.value.filter.toLowerCase());
-    })
-});
-
-const filteredListRemainder = computed((): Array<Mission> => {
-    return filteredList.value.filter((mission) => {
-        return !cotStore.subscriptions.has(mission.guid)
-    })
-});
-
-const filteredListSubscribed = computed((): Array<Mission> => {
-    return filteredList.value.filter((mission) => {
-        return cotStore.subscriptions.has(mission.guid)
+    }).sort((a, b) => {
+        return !cotStore.subscriptions.has(a.guid)
     })
 });
 
