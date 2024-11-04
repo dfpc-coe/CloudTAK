@@ -14,7 +14,7 @@ import { std, stdurl } from '../std.js';
 import mapgl from 'maplibre-gl'
 import * as terraDraw from 'terra-draw';
 import type { ProfileOverlay, Basemap, APIList } from '../types.ts';
-import type { FeatureCollection, Feature } from 'geojson';
+import type { Feature } from 'geojson';
 import type {
     LngLat,
     Point,
