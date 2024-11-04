@@ -159,7 +159,7 @@ async function share() {
         feat.properties.dest = [];
         for (const mission of selected.value) {
             feat.properties.dest.push({
-                mission: mission.meta.guid
+                mission: mission.meta.name
             });
         }
 
