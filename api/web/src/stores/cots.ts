@@ -131,7 +131,7 @@ export const useCOTStore = defineStore('cots', {
             let sub = this.subscriptions.get(guid)
 
             if (!sub) {
-                sub = await Subscription.load(guid);
+                sub = await Subscription.load(guid, token);
                 this.subscriptions.set(guid, sub)
             }
 
