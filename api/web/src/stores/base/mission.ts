@@ -62,7 +62,7 @@ export default class Subscription {
             headers: Subscription.headers(token)
         }) as MissionRole;
 
-        const sub = new Subscription(mission, role, logs);
+        const sub = new Subscription(mission, role, logs, token);
 
         const fc = await std('/api/marti/missions/' + encodeURIComponent(guid) + '/cot', {
             headers: Subscription.headers(token)
