@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v4.32.1 - 2024-11-04
+
+- :arrow_up: Update to latest node-cot
+
 ### v4.32.0 - 2024-11-04
 
 - :rocket: Migrate Missions List to TS
