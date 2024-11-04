@@ -22,7 +22,7 @@
                 />
             </div>
 
-            <NoChannelsInfo v-if='hasNoChannels' />
+            <EmptyInfo v-if='hasNoChannels' />
 
             <TablerLoading v-if='loading' />
             <TablerNone
@@ -105,7 +105,7 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
-import NoChannelsInfo from '../util/NoChannelsInfo.vue';
+import EmptyInfo from '../util/EmptyInfo.vue';
 import {
     IconLocation,
     IconLocationOff,
@@ -191,7 +191,7 @@ export default {
         IconEyeOff,
         IconLocation,
         IconLocationOff,
-        NoChannelsInfo,
+        EmptyInfo,
         IconRefresh,
         TablerNone,
         TablerInput,

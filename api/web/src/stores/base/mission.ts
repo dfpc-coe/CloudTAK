@@ -1,14 +1,21 @@
 import COT from './cot.ts'
 import { std, stdurl } from '../../std.ts';
+import type { Feature } from '../../types.ts';
+import type {
+    FeatureCollection
+} from 'geojson'
 import type {
     Mission,
     MissionLog,
+    MissionRole,
+    MissionList,
     MissionLogList,
     MissionSubscriptions
 } from '../../types.ts';
 
 export default class Subscription {
     meta: Mission;
+    role: MissionRole;
     token?: string;
     logs: Array<MissionLog>;
     cots: Map<string, COT>;
@@ -18,15 +25,26 @@ export default class Subscription {
 
     constructor(
         mission: Mission,
+        role: MissionRole,
         logs: Array<MissionLog>,
         token?: string
     ) {
         this.meta = mission;
+        this.role = role;
         this.logs = logs;
         this.token = token;
         this.cots = new Map();
 
         this.auto = false;
+    }
+
+    collection(): FeatureCollection {
+        return {
+            type: 'FeatureCollection',
+            features: Array.from(this.cots.values()).map((f: COT) => {
+                return f.as_rendered();
+            })
+        }
     }
 
     static async load(guid: string, token?: string): Promise<Subscription> {
@@ -40,7 +58,35 @@ export default class Subscription {
         const logs = mission.logs || [] as Array<MissionLog>;
         delete mission.logs;
 
-        return new Subscription(mission, logs);
+        const role = await std('/api/marti/missions/' + encodeURIComponent(guid) + '/role', {
+            headers: Subscription.headers(token)
+        }) as MissionRole;
+
+        const sub = new Subscription(mission, role, logs, token);
+
+        const fc = await std('/api/marti/missions/' + encodeURIComponent(guid) + '/cot', {
+            headers: Subscription.headers(token)
+        }) as FeatureCollection;
+
+        for (const feat of fc.features) {
+            const cot = new COT(feat as Feature);
+            sub.cots.set(String(cot.id), cot);
+        }
+
+        return sub;
+    }
+
+    static async list(opts: {
+        passwordProtected?: boolean;
+        defaultRole?: boolean;
+    } = {}): Promise<MissionList> {
+        if (opts.passwordProtected === undefined) opts.passwordProtected = true;
+        if (opts.defaultRole === undefined) opts.defaultRole = true;
+
+        const url = stdurl('/api/marti/mission');
+        url.searchParams.append('passwordProtected', String(opts.passwordProtected));
+        url.searchParams.append('defaultRole', String(opts.defaultRole));
+        return await std(url) as MissionList;
     }
 
     static headers(token?: string): Record<string, string> {
