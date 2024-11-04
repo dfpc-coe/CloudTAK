@@ -533,7 +533,7 @@ export default class {
      *
      * {@link https://docs.tak.gov/api/takserver/redoc#tag/mission-api/operation/getAllMissions_1 TAK Server Docs}.
      */
-    async list(query: Static<typeof MissionListInput>) {
+    async list(query: Static<typeof MissionListInput>): Promise<TAKList<Static<typeof Mission>>> {
         const url = new URL('/Marti/api/missions', this.api.url);
 
         let q: keyof Static<typeof MissionListInput>;

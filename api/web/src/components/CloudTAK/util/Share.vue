@@ -53,6 +53,7 @@
                 >
                     <TablerButton
                         v-tooltip='"Share to Selected"'
+                        :disabled='selected.size === 0'
                         class='w-100 btn-primary'
                         :style='compact ? "height: 30px" : ""'
                         @click='share'
@@ -184,10 +185,6 @@ export default {
             });
         },
         share: async function() {
-            if (!this.selected.size) {
-                throw new Error('No Users Selected to Share With');
-            }
-
             const feats = this.currentFeats();
 
             // CoTs with Attachments must always be send via a DataPackage

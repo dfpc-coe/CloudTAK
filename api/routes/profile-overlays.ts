@@ -257,11 +257,17 @@ export default async function router(schema: Schema, config: Config) {
                 const profile = await config.models.Profile.from(user.email);
                 const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
-                await api.Mission.unsubscribe(overlay.mode_id, {
-                    uid: `ANDROID-CloudTAK-${user.email}`
-                },{
-                    token: overlay.token || undefined
-                });
+                try {
+                    await api.Mission.unsubscribe(overlay.mode_id, {
+                        uid: `ANDROID-CloudTAK-${user.email}`
+                    },{
+                        token: overlay.token || undefined
+                    });
+                } catch (err) {
+                    // Currently ignored as this usually just means the Mission has been deleted
+                    // TODO Ask ARA to return a 4xx error code
+                    console.error(err);
+                }
             }
 
             res.json({

@@ -48,7 +48,7 @@
                 </div>
 
                 <ChannelInfo label='Data Packages' />
-                <NoChannelsInfo v-if='hasNoChannels' />
+                <EmptyInfo v-if='hasNoChannels' />
 
                 <TablerAlert
                     v-if='err'
@@ -104,7 +104,7 @@ import {
 } from '@tabler/icons-vue';
 import timeDiff from '../../../timediff.ts';
 import ChannelInfo from '../util/ChannelInfo.vue';
-import NoChannelsInfo from '../util/NoChannelsInfo.vue';
+import EmptyInfo from '../util/EmptyInfo.vue';
 import Upload from '../../util/Upload.vue';
 import { useProfileStore } from '/src/stores/profile.ts';
 import { mapGetters } from 'pinia'
@@ -115,7 +115,7 @@ export default {
         Upload,
         IconPlus,
         IconRefresh,
-        NoChannelsInfo,
+        EmptyInfo,
         ChannelInfo,
         TablerInput,
         TablerAlert,

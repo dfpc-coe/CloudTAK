@@ -639,7 +639,7 @@ export default {
             }
         });
 
-        window.addEventListener('keydown', (e) => {
+        window.addEventListener('keyup', (e) => {
             if (e.key == 'Escape') {
                 if (mapStore.radial.mode) {
                     this.closeRadial()

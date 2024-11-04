@@ -1,6 +1,7 @@
 <template>
     <TablerModal
         style='height: 80vh;'
+        @keyup.esc='$emit(&apos;close&apos;)'
     >
         <button
             type='button'
@@ -14,14 +15,26 @@
                 Channel Selection
             </div>
         </div>
-
-        <GroupSelect
-            :model-value='modelValue'
-            :disabled='disabled'
-            :button='button'
-            :connection='connection'
-            @update:model-value='$emit("update:modelValue", $event)'
-        />
+        <div
+            class='overflow-auto'
+            style='height: 50vh;'
+        >
+            <GroupSelect
+                :model-value='modelValue'
+                :disabled='disabled'
+                :button='button'
+                :connection='connection'
+                @update:model-value='$emit("update:modelValue", $event)'
+            />
+        </div>
+        <div class='modal-footer'>
+            <TablerButton
+                class='btn btn-primary'
+                @click='$emit("close")'
+            >
+                Submit
+            </TablerButton>
+        </div>
     </TablerModal>
 </template>
 
@@ -29,6 +42,7 @@
 import { std, stdurl } from '/src/std.ts';
 import {
     TablerModal,
+    TablerButton
 } from '@tak-ps/vue-tabler';
 import GroupSelect from './GroupSelect.vue';
 
@@ -37,6 +51,7 @@ export default {
     components: {
         GroupSelect,
         TablerModal,
+        TablerButton
     },
     props: {
         disabled: {

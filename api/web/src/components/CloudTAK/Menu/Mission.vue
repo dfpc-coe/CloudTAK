@@ -23,8 +23,8 @@
         </template>
         <template #default>
             <TablerAlert
-                v-if='err'
-                :err='err'
+                v-if='error'
+                :err='error'
             />
             <template v-else>
                 <div
@@ -139,14 +139,14 @@
                         :stroke='1'
                     /></label>
                 </div>
-            </template>
 
-            <router-view
-                :mission='mission'
-                :token='token'
-                :role='role'
-                @refresh='refresh'
-            />
+                <router-view
+                    :mission='mission'
+                    :token='token'
+                    :role='role'
+                    @refresh='refresh'
+                />
+            </template>
         </template>
     </MenuTemplate>
 </template>
@@ -168,6 +168,10 @@ import {
     TablerIconButton,
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
+import { useMapStore } from '/src/stores/map.ts';
+const mapStore = useMapStore();
+import { useCOTStore } from '/src/stores/cots.ts';
+const cotStore = useCOTStore();
 
 export default {
     name: 'MissionSync',
@@ -192,7 +196,7 @@ export default {
         const token = this.$route.query.token;
 
         return {
-            err: null,
+            error: null,
             subscribed: undefined,
             token,
             upload: false,
@@ -204,8 +208,8 @@ export default {
                 delete: false
             },
             role: {
-                type: 'MISSION_SUBSCRIBER',
-                permissions: ['MISSION_READ']
+                type: 'NONE',
+                permissions: []
             },
             mission: {
                 guid: this.$route.params.guid,
@@ -257,39 +261,41 @@ export default {
                 });
                 if (list.data.length !== 1) throw new Error('Mission Error');
 
+                const overlay = mapStore.getOverlayByMode('mission', this.mission.guid);
+                if (overlay) await mapStore.removeOverlay(overlay);
+
                 this.$router.replace('/menu/missions');
             } catch (err) {
-                this.err = err;
+                this.error = err;
             }
             this.loading.delete = false;
         },
         fetchMission: async function() {
             try {
-                this.loading.mission = true;
-                const url = stdurl(`/api/marti/missions/${this.$route.params.mission}`);
+                const mission = cotStore.subscriptions.get(this.$route.params.mission);
 
-                this.mission = await std(url, {
-                    headers: {
-                        MissionAuthorization: this.token
+                if (mission) {
+                    this.mission = mission.meta;
+                    this.role = mission.role;
+
+                    if (mission.token) {
+                        this.token = mission.token;
                     }
-                });
+                } else {
 
-            } catch (err) {
-                this.err = err;
-            }
+                    this.loading.mission = true;
+                    const url = stdurl(`/api/marti/missions/${this.$route.params.mission}`);
 
-            try {
-                const suburl = stdurl(`/api/marti/missions/${this.mission.guid}/role`);
-                this.role = await std(suburl, {
-                    headers: {
-                        MissionAuthorization: this.token
-                    }
-                });
-            } catch (err) {
-                if (!err.message.includes('NOT_FOUND')) {
-                    throw err;
+                    this.mission = await std(url, {
+                        headers: {
+                            MissionAuthorization: this.token
+                        }
+                    });
                 }
+            } catch (err) {
+                this.error = err;
             }
+
             this.loading.initial = false;
             this.loading.mission = false;
         }

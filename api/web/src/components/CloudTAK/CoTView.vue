@@ -38,7 +38,7 @@
                             :stroke='1'
                         />
                     </span>
-                    <div class='col-12'>
+                    <div class='col-auto'>
                         <TablerInput
                             v-if='feat.properties.archived'
                             v-model='feat.properties.callsign'

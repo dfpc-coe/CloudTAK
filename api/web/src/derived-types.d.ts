@@ -278,6 +278,392 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/basemap": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List BaseMaps */
+        get: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    scope?: "server" | "user";
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    type?: "raster" | "raster-dem" | "vector";
+                    /** @description No Description */
+                    sort: "id" | "created" | "updated" | "name" | "url" | "overlay" | "username" | "bounds" | "center" | "minzoom" | "maxzoom" | "format" | "style" | "styles" | "type";
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
+                    /** @description No Description */
+                    overlay: boolean;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: number;
+                                created: string;
+                                updated: string;
+                                name: string;
+                                url: string;
+                                overlay: boolean;
+                                username: string | null;
+                                minzoom: number;
+                                maxzoom: number;
+                                format: string;
+                                style: string;
+                                styles: unknown[];
+                                type: string;
+                                bounds?: number[];
+                                center?: number[];
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        /**
+         *                 If the Content-Type if text/plain, then assume the body contains a TileJSON URL
+         *                 Alternatively, if the Content-Type is a MultiPart upload, assume the input is a TAK XML document
+         *
+         *                 Both return as many BaseMap fields as possible to use in the creation of a new BaseMap
+         *              */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            name?: string;
+                            type?: "raster" | "raster-dem" | "vector";
+                            url?: string;
+                            bounds?: unknown;
+                            center?: unknown;
+                            minzoom?: number;
+                            maxzoom?: number;
+                            /** @constant */
+                            style?: "zxy";
+                            format?: "png" | "jpeg" | "mvt";
+                        };
+                    };
+                };
+            };
+        };
+        /** Register a new basemap */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Human readable name */
+                        name: string;
+                        /** @default user */
+                        scope: "server" | "user";
+                        url: string;
+                        /** @default false */
+                        overlay: boolean;
+                        minzoom?: number;
+                        maxzoom?: number;
+                        format?: "png" | "jpeg" | "mvt";
+                        /** @constant */
+                        style?: "zxy";
+                        type?: "raster" | "raster-dem" | "vector";
+                        bounds?: number[];
+                        center?: number[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            url: string;
+                            overlay: boolean;
+                            username: string | null;
+                            minzoom: number;
+                            maxzoom: number;
+                            format: string;
+                            style: string;
+                            styles: unknown[];
+                            type: string;
+                            bounds?: number[];
+                            center?: number[];
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/basemap/{:basemapid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a basemap */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description No Description */
+                    download?: boolean;
+                    /** @description No Description */
+                    format?: string;
+                    /** @description No Description */
+                    token?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            url: string;
+                            overlay: boolean;
+                            username: string | null;
+                            minzoom: number;
+                            maxzoom: number;
+                            format: string;
+                            style: string;
+                            styles: unknown[];
+                            type: string;
+                            bounds?: number[];
+                            center?: number[];
+                        } | string;
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /** Delete a basemap */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update a basemap */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Human readable name */
+                        name?: string;
+                        url?: string;
+                        minzoom?: number;
+                        maxzoom?: number;
+                        format?: "png" | "jpeg" | "mvt";
+                        /** @constant */
+                        style?: "zxy";
+                        type?: "raster" | "raster-dem" | "vector";
+                        bounds?: number[];
+                        center?: number[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            url: string;
+                            overlay: boolean;
+                            username: string | null;
+                            minzoom: number;
+                            maxzoom: number;
+                            format: string;
+                            style: string;
+                            styles: unknown[];
+                            type: string;
+                            bounds?: number[];
+                            center?: number[];
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/basemap/{:basemapid}/tiles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a basemap tilejson */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description No Description */
+                    token?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            tilejson: string;
+                            version: string;
+                            name: string;
+                            minzoom: number;
+                            maxzoom: number;
+                            tiles: string[];
+                            bounds: number[];
+                            center: number[];
+                            type: string;
+                            layers: unknown[];
+                            format?: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/basemap/{:basemapid}/tiles/{:z}/{:x}/{:y}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a basemap tile */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description No Description */
+                    token?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/config": {
         parameters: {
             query?: never;
@@ -1171,392 +1557,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/basemap": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List BaseMaps */
-        get: {
-            parameters: {
-                query: {
-                    /** @description No Description */
-                    scope?: "server" | "user";
-                    /** @description Limit the number of responses returned */
-                    limit: number;
-                    /** @description Iterate through "pages" of items based on the "limit" query param */
-                    page: number;
-                    /** @description Order in which results are returned based on the "sort" query param */
-                    order: "asc" | "desc";
-                    /** @description No Description */
-                    type?: "raster" | "raster-dem" | "vector";
-                    /** @description No Description */
-                    sort: "id" | "created" | "updated" | "name" | "url" | "overlay" | "username" | "bounds" | "center" | "minzoom" | "maxzoom" | "format" | "style" | "styles" | "type";
-                    /** @description Filter results by a human readable name field */
-                    filter: string;
-                    /** @description No Description */
-                    overlay: boolean;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            total: number;
-                            items: {
-                                id: number;
-                                created: string;
-                                updated: string;
-                                name: string;
-                                url: string;
-                                overlay: boolean;
-                                username: string | null;
-                                minzoom: number;
-                                maxzoom: number;
-                                format: string;
-                                style: string;
-                                styles: unknown[];
-                                type: string;
-                                bounds?: number[];
-                                center?: number[];
-                            }[];
-                        };
-                    };
-                };
-            };
-        };
-        /**
-         *                 If the Content-Type if text/plain, then assume the body contains a TileJSON URL
-         *                 Alternatively, if the Content-Type is a MultiPart upload, assume the input is a TAK XML document
-         *
-         *                 Both return as many BaseMap fields as possible to use in the creation of a new BaseMap
-         *              */
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            name?: string;
-                            type?: "raster" | "raster-dem" | "vector";
-                            url?: string;
-                            bounds?: unknown;
-                            center?: unknown;
-                            minzoom?: number;
-                            maxzoom?: number;
-                            /** @constant */
-                            style?: "zxy";
-                            format?: "png" | "jpeg" | "mvt";
-                        };
-                    };
-                };
-            };
-        };
-        /** Register a new basemap */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        /** @description Human readable name */
-                        name: string;
-                        /** @default user */
-                        scope: "server" | "user";
-                        url: string;
-                        /** @default false */
-                        overlay: boolean;
-                        minzoom?: number;
-                        maxzoom?: number;
-                        format?: "png" | "jpeg" | "mvt";
-                        /** @constant */
-                        style?: "zxy";
-                        type?: "raster" | "raster-dem" | "vector";
-                        bounds?: number[];
-                        center?: number[];
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: number;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            url: string;
-                            overlay: boolean;
-                            username: string | null;
-                            minzoom: number;
-                            maxzoom: number;
-                            format: string;
-                            style: string;
-                            styles: unknown[];
-                            type: string;
-                            bounds?: number[];
-                            center?: number[];
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/basemap/{:basemapid}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get a basemap */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description No Description */
-                    download?: boolean;
-                    /** @description No Description */
-                    format?: string;
-                    /** @description No Description */
-                    token?: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: number;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            url: string;
-                            overlay: boolean;
-                            username: string | null;
-                            minzoom: number;
-                            maxzoom: number;
-                            format: string;
-                            style: string;
-                            styles: unknown[];
-                            type: string;
-                            bounds?: number[];
-                            center?: number[];
-                        } | string;
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        /** Delete a basemap */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        /** Update a basemap */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        /** @description Human readable name */
-                        name?: string;
-                        url?: string;
-                        minzoom?: number;
-                        maxzoom?: number;
-                        format?: "png" | "jpeg" | "mvt";
-                        /** @constant */
-                        style?: "zxy";
-                        type?: "raster" | "raster-dem" | "vector";
-                        bounds?: number[];
-                        center?: number[];
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: number;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            url: string;
-                            overlay: boolean;
-                            username: string | null;
-                            minzoom: number;
-                            maxzoom: number;
-                            format: string;
-                            style: string;
-                            styles: unknown[];
-                            type: string;
-                            bounds?: number[];
-                            center?: number[];
-                        };
-                    };
-                };
-            };
-        };
-        trace?: never;
-    };
-    "/basemap/{:basemapid}/tiles": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get a basemap tilejson */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description No Description */
-                    token?: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            tilejson: string;
-                            version: string;
-                            name: string;
-                            minzoom: number;
-                            maxzoom: number;
-                            tiles: string[];
-                            bounds: number[];
-                            center: number[];
-                            type: string;
-                            layers: unknown[];
-                            format?: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/basemap/{:basemapid}/tiles/{:z}/{:x}/{:y}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get a basemap tile */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description No Description */
-                    token?: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/layer/{:layerid}/cot": {
         parameters: {
             query?: never;
@@ -1682,6 +1682,17 @@ export interface paths {
                                     range?: number;
                                     azimuth?: number;
                                     north?: number;
+                                    fovBlue?: number;
+                                    fovAlpha?: number;
+                                    fovGreen?: number;
+                                    fovRed?: number;
+                                    strokeWeight?: number;
+                                    strokeColor?: number;
+                                    rangeLines?: number;
+                                    rangeLineStrokeWeight?: number;
+                                    rangeLineStrokeColor?: number;
+                                    displayMagneticReference?: number;
+                                    hideFov?: boolean;
                                     type?: string;
                                     version?: string;
                                     model?: string;
@@ -1882,6 +1893,17 @@ export interface paths {
                                             range?: number;
                                             azimuth?: number;
                                             north?: number;
+                                            fovBlue?: number;
+                                            fovAlpha?: number;
+                                            fovGreen?: number;
+                                            fovRed?: number;
+                                            strokeWeight?: number;
+                                            strokeColor?: number;
+                                            rangeLines?: number;
+                                            rangeLineStrokeWeight?: number;
+                                            rangeLineStrokeColor?: number;
+                                            displayMagneticReference?: number;
+                                            hideFov?: boolean;
                                             type?: string;
                                             version?: string;
                                             model?: string;
@@ -4530,6 +4552,360 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Imports */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort?: "id" | "created" | "updated" | "name" | "status" | "error" | "batch" | "result" | "username" | "mode" | "mode_id" | "config";
+                    /** @description No Description */
+                    mode?: "Unknown" | "Mission" | "Package";
+                    /** @description No Description */
+                    mode_id?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: string;
+                                created: string;
+                                updated: string;
+                                name: string;
+                                status: string;
+                                error: string | null;
+                                batch: string | null;
+                                result: unknown;
+                                username: string;
+                                mode: string;
+                                mode_id: string | null;
+                                config: unknown;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        /** Import up to 5 unknown assets into the imports manager at a time */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            imports: {
+                                file: string;
+                                uid: string;
+                                ext: string;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        /** Import an unknown asset into the imports manager */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Human readable name */
+                        name: string;
+                        mode?: "Unknown" | "Mission" | "Package";
+                        mode_id?: string;
+                        config?: unknown;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            status: string;
+                            error: string | null;
+                            batch: string | null;
+                            result: unknown;
+                            username: string;
+                            mode: string;
+                            mode_id: string | null;
+                            config: unknown;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/import/{:import}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Import */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            status: string;
+                            error: string | null;
+                            batch: string | null;
+                            result: unknown;
+                            username: string;
+                            mode: string;
+                            mode_id: string | null;
+                            config: unknown;
+                        };
+                    };
+                };
+            };
+        };
+        /** Import an asset into a previously configured import container */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            status: string;
+                            error: string | null;
+                            batch: string | null;
+                            result: unknown;
+                            username: string;
+                            mode: string;
+                            mode_id: string | null;
+                            config: unknown;
+                        };
+                    };
+                };
+            };
+        };
+        post?: never;
+        /** Delete Import */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update Import */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        status?: string;
+                        error?: string;
+                        result?: unknown;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            status: string;
+                            error: string | null;
+                            batch: string | null;
+                            result: unknown;
+                            username: string;
+                            mode: string;
+                            mode_id: string | null;
+                            config: unknown;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/import/{:import}/batch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Import Batch Job Logs */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            logs: {
+                                message: string;
+                                timestamp: number;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Attach a Batch Job to an instance */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            status: string;
+                            error: string | null;
+                            batch: string | null;
+                            result: unknown;
+                            username: string;
+                            mode: string;
+                            mode_id: string | null;
+                            config: unknown;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/iconset": {
         parameters: {
             query?: never;
@@ -5113,360 +5489,6 @@ export interface paths {
         };
         put?: never;
         post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/import": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Imports */
-        get: {
-            parameters: {
-                query: {
-                    /** @description Limit the number of responses returned */
-                    limit: number;
-                    /** @description Iterate through "pages" of items based on the "limit" query param */
-                    page: number;
-                    /** @description Order in which results are returned based on the "sort" query param */
-                    order: "asc" | "desc";
-                    /** @description No Description */
-                    sort?: "id" | "created" | "updated" | "name" | "status" | "error" | "batch" | "result" | "username" | "mode" | "mode_id" | "config";
-                    /** @description No Description */
-                    mode?: "Unknown" | "Mission" | "Package";
-                    /** @description No Description */
-                    mode_id?: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            total: number;
-                            items: {
-                                id: string;
-                                created: string;
-                                updated: string;
-                                name: string;
-                                status: string;
-                                error: string | null;
-                                batch: string | null;
-                                result: unknown;
-                                username: string;
-                                mode: string;
-                                mode_id: string | null;
-                                config: unknown;
-                            }[];
-                        };
-                    };
-                };
-            };
-        };
-        /** Import up to 5 unknown assets into the imports manager at a time */
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            imports: {
-                                file: string;
-                                uid: string;
-                                ext: string;
-                            }[];
-                        };
-                    };
-                };
-            };
-        };
-        /** Import an unknown asset into the imports manager */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        /** @description Human readable name */
-                        name: string;
-                        mode?: "Unknown" | "Mission" | "Package";
-                        mode_id?: string;
-                        config?: unknown;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: string;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            status: string;
-                            error: string | null;
-                            batch: string | null;
-                            result: unknown;
-                            username: string;
-                            mode: string;
-                            mode_id: string | null;
-                            config: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/import/{:import}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Import */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: string;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            status: string;
-                            error: string | null;
-                            batch: string | null;
-                            result: unknown;
-                            username: string;
-                            mode: string;
-                            mode_id: string | null;
-                            config: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        /** Import an asset into a previously configured import container */
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: string;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            status: string;
-                            error: string | null;
-                            batch: string | null;
-                            result: unknown;
-                            username: string;
-                            mode: string;
-                            mode_id: string | null;
-                            config: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        post?: never;
-        /** Delete Import */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        /** Update Import */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        status?: string;
-                        error?: string;
-                        result?: unknown;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: string;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            status: string;
-                            error: string | null;
-                            batch: string | null;
-                            result: unknown;
-                            username: string;
-                            mode: string;
-                            mode_id: string | null;
-                            config: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        trace?: never;
-    };
-    "/import/{:import}/batch": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Import Batch Job Logs */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            logs: {
-                                message: string;
-                                timestamp: number;
-                            }[];
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        /** Attach a Batch Job to an instance */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: string;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            status: string;
-                            error: string | null;
-                            batch: string | null;
-                            result: unknown;
-                            username: string;
-                            mode: string;
-                            mode_id: string | null;
-                            config: unknown;
-                        };
-                    };
-                };
-            };
-        };
         delete?: never;
         options?: never;
         head?: never;
@@ -7078,7 +7100,61 @@ export interface paths {
                         "application/json": {
                             version: string;
                             type: string;
-                            data: unknown;
+                            data: {
+                                name: string;
+                                description: string;
+                                chatRoom: string;
+                                baseLayer: string;
+                                bbox: string;
+                                path: string;
+                                classification: string;
+                                tool: string;
+                                keywords: unknown[];
+                                creatorUid: string;
+                                createTime: string;
+                                externalData: unknown[];
+                                feeds: unknown[];
+                                mapLayers: unknown[];
+                                ownerRole?: {
+                                    permissions: string[];
+                                    type: "MISSION_OWNER" | "MISSION_SUBSCRIBER" | "MISSION_READONLY_SUBSCRIBER";
+                                };
+                                inviteOnly: boolean;
+                                expiration: number;
+                                guid: string;
+                                uids: unknown[];
+                                logs?: {
+                                    id: string;
+                                    content: string;
+                                    creatorUid: string;
+                                    missionNames: string[];
+                                    servertime: string;
+                                    dtg?: string;
+                                    created: string;
+                                    contentHashes: unknown[];
+                                    keywords: string[];
+                                }[];
+                                contents: {
+                                    timestamp: string;
+                                    creatorUid: string;
+                                    data: {
+                                        keywords: string[];
+                                        mimeType: string;
+                                        name: string;
+                                        hash: string;
+                                        submissionTime: string;
+                                        submitter: string;
+                                        uid: string;
+                                        creatorUid: string;
+                                        size: number;
+                                        expiration: number;
+                                    };
+                                }[];
+                                passwordProtected: boolean;
+                                token?: string;
+                                groups?: string | string[];
+                                missionChanges?: unknown[];
+                            }[];
                             messages?: string[];
                             nodeId?: string;
                         };
@@ -7200,11 +7276,21 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
+                            version: string;
+                            type: string;
                             data: {
-                                permissions: string[];
-                                hibernateLazyInitializer?: unknown;
-                                type: "MISSION_OWNER" | "MISSION_SUBSCRIBER" | "MISSION_READONLY_SUBSCRIBER";
+                                token?: string;
+                                clientUid: string;
+                                username: string;
+                                createTime: string;
+                                role: {
+                                    permissions: string[];
+                                    hibernateLazyInitializer?: unknown;
+                                    type: "MISSION_OWNER" | "MISSION_SUBSCRIBER" | "MISSION_READONLY_SUBSCRIBER";
+                                };
                             }[];
+                            messages?: string[];
+                            nodeId?: string;
                         };
                     };
                 };
@@ -7406,7 +7492,11 @@ export interface paths {
                     "application/json": {
                         /** @constant */
                         type: "FeatureCollection";
-                        uids?: string[];
+                        /** @default [] */
+                        uids: string[];
+                        /** @default [] */
+                        basemaps: number[];
+                        /** @default [] */
                         features: {
                             id: string;
                             /** @constant */
@@ -8348,6 +8438,17 @@ export interface paths {
                                         range?: number;
                                         azimuth?: number;
                                         north?: number;
+                                        fovBlue?: number;
+                                        fovAlpha?: number;
+                                        fovGreen?: number;
+                                        fovRed?: number;
+                                        strokeWeight?: number;
+                                        strokeColor?: number;
+                                        rangeLines?: number;
+                                        rangeLineStrokeWeight?: number;
+                                        rangeLineStrokeColor?: number;
+                                        displayMagneticReference?: number;
+                                        hideFov?: boolean;
                                         type?: string;
                                         version?: string;
                                         model?: string;
@@ -8558,6 +8659,17 @@ export interface paths {
                                 range?: number;
                                 azimuth?: number;
                                 north?: number;
+                                fovBlue?: number;
+                                fovAlpha?: number;
+                                fovGreen?: number;
+                                fovRed?: number;
+                                strokeWeight?: number;
+                                strokeColor?: number;
+                                rangeLines?: number;
+                                rangeLineStrokeWeight?: number;
+                                rangeLineStrokeColor?: number;
+                                displayMagneticReference?: number;
+                                hideFov?: boolean;
                                 type?: string;
                                 version?: string;
                                 model?: string;
@@ -8754,6 +8866,17 @@ export interface paths {
                                     range?: number;
                                     azimuth?: number;
                                     north?: number;
+                                    fovBlue?: number;
+                                    fovAlpha?: number;
+                                    fovGreen?: number;
+                                    fovRed?: number;
+                                    strokeWeight?: number;
+                                    strokeColor?: number;
+                                    rangeLines?: number;
+                                    rangeLineStrokeWeight?: number;
+                                    rangeLineStrokeColor?: number;
+                                    displayMagneticReference?: number;
+                                    hideFov?: boolean;
                                     type?: string;
                                     version?: string;
                                     model?: string;
@@ -9005,6 +9128,17 @@ export interface paths {
                                     range?: number;
                                     azimuth?: number;
                                     north?: number;
+                                    fovBlue?: number;
+                                    fovAlpha?: number;
+                                    fovGreen?: number;
+                                    fovRed?: number;
+                                    strokeWeight?: number;
+                                    strokeColor?: number;
+                                    rangeLines?: number;
+                                    rangeLineStrokeWeight?: number;
+                                    rangeLineStrokeColor?: number;
+                                    displayMagneticReference?: number;
+                                    hideFov?: boolean;
                                     type?: string;
                                     version?: string;
                                     model?: string;
