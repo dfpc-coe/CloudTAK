@@ -373,7 +373,6 @@ export const useMapStore = defineStore('cloudtak', {
             // Data Syncs are specially loaded as they are dynamic
             for (const overlay of this.overlays) {
                 if (overlay.mode === 'mission' && overlay.mode_id) {
-                    const cotStore = useCOTStore();
                     const source = map.getSource(String(overlay.id));
 
                     if (!source) continue;

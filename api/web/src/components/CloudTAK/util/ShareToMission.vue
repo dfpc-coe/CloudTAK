@@ -35,7 +35,7 @@
                 `'
             >
                 <div v-for='mission in missions'>
-                    <span v-text='mission'/>
+                    <span v-text='mission' />
                 </div>
             </div>
             <div class='position-absolute row g-0 bottom-0 start-0 end-0 bg-dark'>
@@ -70,28 +70,25 @@
 
 <script setup lang='ts'>
 import { ref, computed } from 'vue';
-import { std, stdurl } from '../../../../src/std.ts';
 import EmptyInfo from './EmptyInfo.vue';
 import {
-    TablerNone,
     TablerLoading,
     TablerButton,
     TablerIconButton
 } from '@tak-ps/vue-tabler';
 import {
     IconX,
-    IconBroadcast,
     IconShare2
 } from '@tabler/icons-vue';
-import { useConnectionStore } from '../../../../src/stores/connection.ts';
 import { useCOTStore } from '../../../../src/stores/cots.ts';
 
 const cotStore = useCOTStore();
-const connectionStore = useConnectionStore();
+//import { useConnectionStore } from '../../../../src/stores/connection.ts';
+//const connectionStore = useConnectionStore();
 
 const missions = computed(() => Array.from(cotStore.subscriptions.values()) );
 
-const props = defineProps({
+defineProps({
     compact: {
         type: Boolean,
         default: false
@@ -105,5 +102,5 @@ const props = defineProps({
 const emit = defineEmits(['cancel', 'done']);
 
 const loading = ref(false);
-const selected = ref(new Set());
+//const selected = ref(new Set());
 </script>

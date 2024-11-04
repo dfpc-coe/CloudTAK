@@ -23,15 +23,10 @@ import {
     IconAlertCircle
 } from '@tabler/icons-vue';
 
-enum InfoType {
-    CHANNELS = 'Channels',
-    MISSIONS = 'missions'
-};
-
-const props = defineProps({
+defineProps({
     type: {
         type: String,
-        default: InfoType.CHANNELS
+        default: 'Channels'
     }
 })
 </script>
