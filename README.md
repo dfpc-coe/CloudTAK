@@ -1,3 +1,5 @@
+<img src='./docs/CloudTAKLogo.svg' alt='CloudTAK Logo'/>
+
 <h1 align=center>CloudTAK</h1>
 
 <p align=center>Full Featured in-browser TAK Client powered by AWS</p>
