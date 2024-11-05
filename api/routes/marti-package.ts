@@ -87,6 +87,10 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Helper API to create share package',
         body: Type.Object({
             type: Type.Literal('FeatureCollection'),
+            public: Type.Boolean({
+                default: false,
+                description: 'Should the Data Package be a public package, if so it will be published to the Data Package list'
+            }),
             uids: Type.Array(Type.String(), {
                 default: []
             }),
@@ -173,12 +177,21 @@ export default async function router(schema: Schema, config: Config) {
 
             const { size } = await fsp.stat(out);
 
-            const content = await api.Files.upload({
-                name: id,
-                contentLength: size,
-                keywords: [],
-                creatorUid: creatorUid,
-            }, fs.createReadStream(out));
+            let content;
+            if (req.body.public) {
+                const hash = await DataPackage.hash(out);
+
+                content = await api.Files.uploadPackage({
+                    name: pkg.settings.name, creatorUid, hash
+                }, fs.createReadStream(out));
+            } else {
+                content = await api.Files.upload({
+                    name: id,
+                    contentLength: size,
+                    keywords: [],
+                    creatorUid,
+                }, fs.createReadStream(out));
+            }
 
             await pkg.destroy();
 
