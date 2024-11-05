@@ -1,4 +1,4 @@
-<img src='./docs/CloudTAKLogo.svg' alt='CloudTAK Logo'/>
+<p align=center><img src='./docs/CloudTAKLogo.svg' alt='CloudTAK Logo' width='128'/></p>
 
 <h1 align=center>CloudTAK</h1>
 
