@@ -72,6 +72,16 @@
                                     class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2'
                                     @click='share = ShareType.MISSION'
                                 >
+                                    <IconPackages
+                                        :size='32'
+                                        stroke='1'
+                                    />
+                                    New Data Package
+                                </div>
+                                <div
+                                    class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2'
+                                    @click='share = ShareType.MISSION'
+                                >
                                     <IconAmbulance
                                         :size='32'
                                         stroke='1'
@@ -123,6 +133,7 @@ import {
     IconPackageExport,
     IconDotsVertical,
     IconAmbulance,
+    IconPackages,
     IconTrash,
     IconX,
 } from '@tabler/icons-vue';
