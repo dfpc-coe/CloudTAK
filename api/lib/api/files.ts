@@ -27,6 +27,12 @@ export default class File {
         this.api = api;
     }
 
+    // TODO Investigate this endpoint
+    list() {
+        new URL(`/Marti/api/sync/search`, this.api.url);
+        // param hash=<hash>
+    } 
+
     async meta(hash: string): Promise<string> {
         const url = new URL(`/Marti/sync/${encodeURIComponent(hash)}/metadata`, this.api.url);
 
@@ -67,11 +73,12 @@ export default class File {
         });
     }
 
+    // TODO Return a Content Object
     async uploadPackage(opts: {
         name: string;
         creatorUid: string;
         hash: string;
-    }, body: Readable | Buffer): Promise<Static<typeof Content>> {
+    }, body: Readable | Buffer): Promise<string> {
         const url = new URL(`/Marti/sync/missionupload`, this.api.url);
         url.searchParams.append('filename', opts.name)
         url.searchParams.append('creatorUid', opts.creatorUid)
@@ -87,7 +94,7 @@ export default class File {
         const res = await this.api.fetch(url, {
             method: 'POST',
             body: form
-        });
+        }) as string;
 
         return res;
     }

@@ -70,6 +70,16 @@
                             <div clas='col-12'>
                                 <div
                                     class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2'
+                                    @click='share = ShareType.PACKAGE'
+                                >
+                                    <IconPackages
+                                        :size='32'
+                                        stroke='1'
+                                    />
+                                    New Data Package
+                                </div>
+                                <div
+                                    class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2'
                                     @click='share = ShareType.MISSION'
                                 >
                                     <IconAmbulance
@@ -112,6 +122,15 @@
                 @cancel='share = ShareType.NONE'
             />
         </template>
+        <template v-else-if='share === ShareType.PACKAGE'>
+            <ShareToPackage
+                style='height: 400px;'
+                :feats='Array.from(selected.values())'
+                :compact='true'
+                @done='selected.clear()'
+                @cancel='share = ShareType.NONE'
+            />
+        </template>
     </div>
 </template>
 
@@ -123,6 +142,7 @@ import {
     IconPackageExport,
     IconDotsVertical,
     IconAmbulance,
+    IconPackages,
     IconTrash,
     IconX,
 } from '@tabler/icons-vue';
@@ -134,6 +154,7 @@ import {
 } from '@tak-ps/vue-tabler';
 import Share from './Share.vue';
 import ShareToMission from './ShareToMission.vue';
+import ShareToPackage from './ShareToPackage.vue';
 
 const cotStore = useCOTStore();
 
@@ -147,6 +168,7 @@ const props = defineProps({
 enum ShareType {
     NONE = 'none',
     MISSION = 'mission',
+    PACKAGE = 'package',
     USERS = 'users'
 }
 

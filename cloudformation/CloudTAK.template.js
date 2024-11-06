@@ -55,7 +55,6 @@ export default cf.merge(
         service: cf.getAtt('Service', 'Name'),
         loadbalancer: cf.getAtt('ELB', 'LoadBalancerFullName'),
         targetgroup: cf.getAtt('TargetGroup', 'TargetGroupFullName')
-
     }),
     RDSAlarms({
         prefix: 'Batch',
