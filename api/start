@@ -4,13 +4,6 @@ set -x
 set -euo pipefail
 
 echo "API_URL: ${API_URL}"
-if [[ ${API_URL} =~ "localhost" ]]; then
-    export ROOT_URL=${API_URL}
-    echo "ROOT_URL: ${ROOT_URL}"
-else
-    export ROOT_URL=$(echo "${API_URL}" | grep -Po "[a-z]+\.[a-z]+$")
-    echo "ROOT_URL: ${ROOT_URL}"
-fi
 
 node nginx.conf.js > /etc/nginx/nginx.conf
 
