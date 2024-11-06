@@ -1,5 +1,4 @@
-
-let CSP = `add_header 'Content-Security-Policy' "default-src 'self' *.${process.env.API_URL}; $\{IMG}; $\{MEDIA} $\{WORKER}; $\{CONNECT}; $\{STYLE_SRC_ATTR}; $\{STYLE_SRC_ELEM}; $\{FONT}; upgrade-insecure-requests;" always;`
+let CSP = `add_header 'Content-Security-Policy' "default-src 'self' *.${process.env.API_URL}; $\{IMG}; $\{MEDIA}; $\{WORKER}; $\{CONNECT}; $\{STYLE_SRC_ATTR}; $\{STYLE_SRC_ELEM}; $\{FONT}; upgrade-insecure-requests;" always;`
 if (process.env.API_URL.includes('localhost')) CSP = '';
 
 console.log(`
