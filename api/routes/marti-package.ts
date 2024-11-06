@@ -86,7 +86,14 @@ export default async function router(schema: Schema, config: Config) {
         group: 'MartiPackages',
         description: 'Helper API to create share package',
         body: Type.Object({
-            type: Type.Literal('FeatureCollection'),
+            type: Type.Optional(Type.Literal('FeatureCollection')),
+            name: Type.Optional(Type.String({
+                description: 'Data Package Name'
+            })),
+            public: Type.Boolean({
+                default: false,
+                description: 'Should the Data Package be a public package, if so it will be published to the Data Package list'
+            }),
             uids: Type.Array(Type.String(), {
                 default: []
             }),
@@ -118,7 +125,7 @@ export default async function router(schema: Schema, config: Config) {
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
             const id = crypto.randomUUID();
-            const pkg = new DataPackage(id, id);
+            const pkg = new DataPackage(id, req.body.name || id);
 
             pkg.setEphemeral();
 
@@ -173,27 +180,50 @@ export default async function router(schema: Schema, config: Config) {
 
             const { size } = await fsp.stat(out);
 
-            const content = await api.Files.upload({
-                name: id,
-                contentLength: size,
-                keywords: [],
-                creatorUid: creatorUid,
-            }, fs.createReadStream(out));
+            let content;
+            if (req.body.public) {
+                const hash = await DataPackage.hash(out);
+
+                await api.Files.uploadPackage({
+                    name: pkg.settings.name, creatorUid, hash
+                }, fs.createReadStream(out));
+
+                // TODO Ask ARA for a Content endpoint to lookup by hash to mirror upload API
+                content = {
+                    UID: id,
+                    SubmissionDateTime: new Date().toISOString(),
+                    Keywords: [],
+                    MIMEType: 'application/octet-stream',
+                    SubmissionUser: user.email,
+                    PrimaryKey: hash,
+                    Hash: hash,
+                    CreatorUid: creatorUid,
+                    Name: pkg.settings.name
+                }
+            } else {
+                content = await api.Files.upload({
+                    name: id,
+                    contentLength: size,
+                    keywords: [],
+                    creatorUid,
+                }, fs.createReadStream(out));
+            }
 
             await pkg.destroy();
 
             const client = config.conns.get(profile.username);
-            const cot = new FileShare({
-                filename: id,
-                name: id,
-                senderCallsign: profile.tak_callsign,
-                senderUid: `ANDROID-CloudTAK-${profile.username}`,
-                senderUrl: `${config.server.api}/Marti/sync/content?hash=${content.Hash}`,
-                sha256: content.Hash,
-                sizeInBytes: size
-            });
 
             if (client && req.body.uids.length) {
+                const cot = new FileShare({
+                    filename: id,
+                    name: id,
+                    senderCallsign: profile.tak_callsign,
+                    senderUid: `ANDROID-CloudTAK-${profile.username}`,
+                    senderUrl: `${config.server.api}/Marti/sync/content?hash=${content.Hash}`,
+                    sha256: content.Hash,
+                    sizeInBytes: size
+                });
+
                 if (!cot.raw.event.detail) cot.raw.event.detail = {};
                 cot.raw.event.detail.marti = {
                     dest: req.body.uids.map((uid) => {

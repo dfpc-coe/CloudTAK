@@ -1,5 +1,6 @@
 <template>
     <MenuTemplate
+        :key='mission.guid'
         :name='mission.name || "Mission"'
         :loading='loading.initial || loading.mission'
     >
@@ -219,6 +220,9 @@ export default {
         }
     },
     watch: {
+        '$route.params.mission': async function() {
+            await this.refresh();
+        },
         upload: async function() {
             if (!this.upload) await this.refresh();
         }

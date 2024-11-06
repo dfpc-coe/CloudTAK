@@ -137,6 +137,11 @@ export default {
             },
         }
     },
+    watch: {
+        $route: async function() {
+            await this.fetch();
+        }
+    },
     computed: {
         ...mapState(useProfileStore, ['profile']),
         shareFeat: function() {
