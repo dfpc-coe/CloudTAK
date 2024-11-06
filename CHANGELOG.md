@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v4.33.0 - 2024-11-06
+
+- :tada: Allow creating a Public DataPackage from a selection of CoTs
+- :bug: Fix CSP Policy Issue when a ROOT_URL needs to be replaced (formerly done in ./start, now done in nginx.conf.js)
+- :bug: Remove all Public Access to RDS Instances
+
 ### v4.32.1 - 2024-11-04
 
 - :arrow_up: Update to latest node-cot
