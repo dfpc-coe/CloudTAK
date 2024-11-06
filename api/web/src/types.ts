@@ -25,6 +25,8 @@ export type Group = paths["/marti/group"]["get"]["responses"]["200"]["content"][
 export type User = paths["/user/{:username}"]["get"]["responses"]["200"]["content"]["application/json"];
 export type UserList = paths["/user"]["get"]["responses"]["200"]["content"]["application/json"];
 
+export type Content = paths["/marti/package"]["put"]["responses"]["200"]["content"]["application/json"];
+
 export type Mission = paths["/marti/missions/{:name}"]["get"]["responses"]["200"]["content"]["application/json"];
 export type Mission_Create = paths["/marti/missions/{:name}"]["post"]["requestBody"]["content"]["application/json"]
 export type MissionRole = paths["/marti/missions/{:name}/role"]["get"]["responses"]["200"]["content"]["application/json"];

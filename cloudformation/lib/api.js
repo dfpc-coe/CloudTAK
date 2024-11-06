@@ -42,7 +42,6 @@ export default {
                     cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-subnet-public-b']))
                 ]
             }
-
         },
         ELBSecurityGroup: {
             Type : 'AWS::EC2::SecurityGroup',

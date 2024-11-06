@@ -1,5 +1,5 @@
 
-let CSP = `add_header 'Content-Security-Policy' "default-src 'self' *.${process.env.API_URL}; $\{IMG}; $\{WORKER}; $\{CONNECT}; $\{STYLE_SRC_ATTR}; $\{STYLE_SRC_ELEM}; $\{FONT}; upgrade-insecure-requests;" always;`
+let CSP = `add_header 'Content-Security-Policy' "default-src 'self' *.${process.env.API_URL}; $\{IMG}; $\{MEDIA} $\{WORKER}; $\{CONNECT}; $\{STYLE_SRC_ATTR}; $\{STYLE_SRC_ELEM}; $\{FONT}; upgrade-insecure-requests;" always;`
 if (process.env.API_URL.includes('localhost')) CSP = '';
 
 console.log(`
@@ -37,6 +37,7 @@ http {
         add_header 'Permissions-Policy' 'fullscreen=(self), geolocation=(self), clipboard-read=(self), clipboard-write=(self)' always;
 
         set $IMG "img-src 'self' data: *.${process.env.API_URL}";
+        set $MEDIA "media-src 'self' *.${process.env.API_URL}:*";
         set $FONT "font-src 'self' data:";
         set $WORKER "worker-src 'self' blob:";
         set $STYLE_SRC_ELEM "style-src-elem 'self' 'unsafe-inline'";
