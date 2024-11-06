@@ -1,7 +1,7 @@
 <template>
     <div class='mb-2'>
         <div class='sticky-top col-12 d-flex align-items-center user-select-none'>
-            <span class='subheader mx-2'>Add to Mission</span>
+            <span class='subheader mx-2'>Add to Data Sync</span>
             <div
                 v-if='compact'
                 class='ms-auto'
@@ -23,7 +23,7 @@
         <TablerLoading v-if='loading' />
         <EmptyInfo
             v-else-if='!missions.length'
-            type='missions'
+            type='Missions'
         />
         <template v-else>
             <div
@@ -36,7 +36,6 @@
             >
                 <div v-for='mission in missions'>
                     <div
-                        v-if='mission.role.permissions.includes("MISSION_WRITE")'
                         class='col-12 cursor-pointer hover-dark py-2'
                         @click='selected.has(mission) ? selected.delete(mission) : selected.add(mission)'
                     >
@@ -77,7 +76,7 @@
                             :size='20'
                             stroke='1'
                         />
-                        <span v-else>Add to Mission</span>
+                        <span v-else>Add to Data Sync</span>
                     </TablerButton>
                 </div>
                 <div class='col-6 px-1 py-1'>
@@ -118,7 +117,12 @@ import Subscription from '../../../../src/stores/base/mission.ts'
 const cotStore = useCOTStore();
 const connectionStore = useConnectionStore();
 
-const missions = computed(() => Array.from(cotStore.subscriptions.values()) );
+const missions = computed(() => {
+    return Array.from(cotStore.subscriptions.values())
+        .filter((mission) => {
+            return mission.role.permissions.includes("MISSION_WRITE")
+        })
+});
 
 const props = defineProps({
     feats: {
