@@ -12,6 +12,14 @@
 
 ### Pending Release
 
+### v4.34.0 - 2024-11-07
+
+- :bug: Fix subscription bug where an unsubscribe wouldn't clean up the cotstore.subscription
+- :tada: Allow subscribed missions to be exported as Data Packages
+- :rocket: Migrate Mission menu to TS
+- :rocket: Migrate Menu to TS
+- :rocket: Increase non-admin lease time to 24 hours
+
 ### v4.33.0 - 2024-11-06
 
 - :tada: Allow creating a Public DataPackage from a selection of CoTs
