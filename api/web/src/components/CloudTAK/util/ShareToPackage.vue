@@ -88,7 +88,7 @@ function currentFeats(): Array<Feature> {
             // FileShare is manually generated and won't exist in CoT Store
             return f;
         } else {
-            return cotStore.get(f.id);
+            return cotStore.get(f.id) || f;
         }
     }).filter((f) => {
         return !!f;

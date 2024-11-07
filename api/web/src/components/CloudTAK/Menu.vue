@@ -12,9 +12,11 @@
         `'
     >
         <div class='position-relative h-100 container px-0'>
-            <router-view
-                v-if='!["home", "home-menu"].includes($route.name)'
-            />
+            <template
+                v-if='!["home", "home-menu"].includes(String(route.name))'
+            >
+                <router-view/>
+            </template>
             <template v-else>
                 <div
                     v-if='!compact'
@@ -43,7 +45,7 @@
                             "py-2 px-3 hover-dark": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
-                        @click='push("/menu/settings")'
+                        @click='router.push("/menu/settings")'
                     >
                         <IconSettings
                             v-tooltip='{
@@ -54,7 +56,7 @@
                             title='Open Settings Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
-                            :stroke='1'
+                            stroke='1'
                         />
                         <span
                             v-if='!compact'
@@ -69,7 +71,7 @@
                             "py-2 px-3 hover-dark": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
-                        @click='push("/menu/overlays")'
+                        @click='router.push("/menu/overlays")'
                     >
                         <IconBoxMultiple
                             v-tooltip='{
@@ -80,7 +82,7 @@
                             title='Open Overlays Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
-                            :stroke='1'
+                            stroke='1'
                         />
                         <span
                             v-if='!compact'
@@ -95,7 +97,7 @@
                             "py-2 px-3 hover-dark": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
-                        @click='push("/menu/contacts")'
+                        @click='router.push("/menu/contacts")'
                     >
                         <IconUsers
                             v-tooltip='{
@@ -106,7 +108,7 @@
                             title='Open Contacts Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
-                            :stroke='1'
+                            stroke='1'
                         />
                         <span
                             v-if='!compact'
@@ -121,7 +123,7 @@
                             "py-2 px-3 hover-dark": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
-                        @click='push("/menu/basemaps")'
+                        @click='router.push("/menu/basemaps")'
                     >
                         <IconMap
                             v-tooltip='{
@@ -132,7 +134,7 @@
                             title='Open Basemaps Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
-                            :stroke='1'
+                            stroke='1'
                         />
                         <span
                             v-if='!compact'
@@ -147,7 +149,7 @@
                             "py-2 px-3 hover-dark": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
-                        @click='push("/menu/missions")'
+                        @click='router.push("/menu/missions")'
                     >
                         <IconAmbulance
                             v-tooltip='{
@@ -158,7 +160,7 @@
                             title='Open Data Syncs Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
-                            :stroke='1'
+                            stroke='1'
                         />
                         <span
                             v-if='!compact'
@@ -173,7 +175,7 @@
                             "py-2 px-3 hover-dark": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
-                        @click='push("/menu/packages")'
+                        @click='router.push("/menu/packages")'
                     >
                         <IconPackages
                             v-tooltip='{
@@ -184,7 +186,7 @@
                             title='Open Data Packages Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
-                            :stroke='1'
+                            stroke='1'
                         />
                         <span
                             v-if='!compact'
@@ -199,7 +201,7 @@
                             "py-2 px-3 hover-dark": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
-                        @click='push("/menu/channels")'
+                        @click='router.push("/menu/channels")'
                     >
                         <IconAffiliate
                             v-tooltip='{
@@ -210,7 +212,7 @@
                             title='Open Channels Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
-                            :stroke='1'
+                            stroke='1'
                         />
                         <span
                             v-if='!compact'
@@ -225,7 +227,7 @@
                             "py-2 px-3 hover-dark": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
-                        @click='push("/menu/videos")'
+                        @click='router.push("/menu/videos")'
                     >
                         <IconVideo
                             v-tooltip='{
@@ -236,7 +238,7 @@
                             title='Open Videos Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
-                            :stroke='1'
+                            stroke='1'
                         />
                         <span
                             v-if='!compact'
@@ -251,7 +253,7 @@
                             "py-2 px-3 hover-dark": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
-                        @click='push("/menu/chats")'
+                        @click='router.push("/menu/chats")'
                     >
                         <IconMessage
                             v-tooltip='{
@@ -262,7 +264,7 @@
                             title='Open Chats Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
-                            :stroke='1'
+                            stroke='1'
                         />
                         <span
                             v-if='!compact'
@@ -277,7 +279,7 @@
                             "py-2 px-3 hover-dark": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
-                        @click='push("/menu/files")'
+                        @click='router.push("/menu/files")'
                     >
                         <IconFiles
                             v-tooltip='{
@@ -288,7 +290,7 @@
                             title='Open Files Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
-                            :stroke='1'
+                            stroke='1'
                         />
                         <span
                             v-if='!compact'
@@ -303,7 +305,7 @@
                             "py-2 px-3 hover-dark": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
-                        @click='push("/menu/imports")'
+                        @click='router.push("/menu/imports")'
                     >
                         <IconFileImport
                             v-tooltip='{
@@ -314,7 +316,7 @@
                             title='Open Imports Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
-                            :stroke='1'
+                            stroke='1'
                         />
                         <span
                             v-if='!compact'
@@ -329,7 +331,7 @@
                             "py-2 px-3 hover-dark": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
-                        @click='push("/menu/iconsets")'
+                        @click='router.push("/menu/iconsets")'
                     >
                         <IconPhoto
                             v-tooltip='{
@@ -340,7 +342,7 @@
                             title='Open Iconsets Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
-                            :stroke='1'
+                            stroke='1'
                         />
                         <span
                             v-if='!compact'
@@ -350,14 +352,14 @@
                     </div>
 
                     <div
-                        v-if='profile.system_admin || profile.agency_admin.length'
+                        v-if='profile && (profile.system_admin || profile.agency_admin.length)'
                         role='menuitem'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
-                        @click='push("/menu/connections")'
+                        @click='router.push("/menu/connections")'
                     >
                         <IconNetwork
                             v-tooltip='{
@@ -368,7 +370,7 @@
                             title='Open Connections Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
-                            :stroke='1'
+                            stroke='1'
                         />
                         <span
                             v-if='!compact'
@@ -383,14 +385,14 @@
                         </span>
                     </div>
                     <div
-                        v-if='profile.system_admin'
+                        v-if='profile && profile.system_admin'
                         role='menuitem'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
-                        @click='push("/admin")'
+                        @click='router.push("/admin")'
                     >
                         <IconServerCog
                             v-tooltip='{
@@ -401,7 +403,7 @@
                             title='Open Server Admin Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
-                            :stroke='1'
+                            stroke='1'
                         />
                         <span
                             v-if='!compact'
@@ -421,11 +423,11 @@
             <div
                 class='position-absolute bottom-0 start-0 end-0'
                 :class='{
-                    "bg-dark border-top border-white": !compact && $route.name === "home-menu"
+                    "bg-dark border-top border-white": !compact && String(route.name) === "home-menu"
                 }'
             >
                 <div
-                    v-if='$route.name === "home-menu" && !compact'
+                    v-if='String(route.name) === "home-menu" && !compact'
                     class='row g-0 align-items-center'
                 >
                     <div
@@ -436,12 +438,12 @@
                             <IconUser
                                 title='User Icon'
                                 :size='32'
-                                :stroke='1'
+                                stroke='1'
                                 class='mx-2'
                             />
                             <span
                                 style='font-size: 18px;'
-                                v-text='profile.username'
+                                v-text='profile ? profile.username : "Username"'
                             />
                         </div>
                     </div>
@@ -457,11 +459,11 @@
                             tabindex='0'
                             title='Logout'
                             :size='32'
-                            :stroke='1'
+                            stroke='1'
                         />
                     </div>
                 </div>
-                <div v-else-if='["home", "home-menu"].includes($route.name)'>
+                <div v-else-if='["home", "home-menu"].includes(String(route.name))'>
                     <Status
                         class='mx-2 my-2'
                         :status='open ? "success" : "fail"'
@@ -473,7 +475,8 @@
     </div>
 </template>
 
-<script>
+<script setup lang='ts'>
+import { computed } from 'vue';
 import {
     IconMap,
     IconUser,
@@ -493,47 +496,24 @@ import {
     IconAffiliate,
 } from '@tabler/icons-vue';
 import Status from '../util/Status.vue';
-import { mapState } from 'pinia'
-import { useProfileStore } from '/src/stores/profile.ts';
-import { useConnectionStore } from '/src/stores/connection.ts';
+import { useProfileStore } from '../../../src/stores/profile.ts';
+import { useConnectionStore } from '../../../src/stores/connection.ts';
+import { useRouter, useRoute } from 'vue-router';
+const route = useRoute();
+const router = useRouter();
 
-export default {
-    name: 'CloudTAKMenu',
-    computed: {
-        ...mapState(useProfileStore, ['profile']),
-        ...mapState(useConnectionStore, ['open']),
-    },
-    components: {
-        Status,
-        IconServerCog,
-        IconBoxMultiple,
-        IconPackages,
-        IconPhoto,
-        IconMessage,
-        IconNetwork,
-        IconAffiliate,
-        IconAmbulance,
-        IconSettings,
-        IconFileImport,
-        IconFiles,
-        IconLogout,
-        IconVideo,
-        IconUser,
-        IconUsers,
-        IconMap
-    },
-    props: {
-        compact: Boolean,
-    },
-    methods: {
-        push: function(path) {
-            this.$router.push(path);
-        },
-        logout: function() {
-            this.user = null;
-            delete localStorage.token;
-            this.$router.push("/login");
-        },
-    }
+const connectionStore = useConnectionStore();
+const profileStore = useProfileStore();
+
+const profile = computed(() => profileStore.profile);
+const open = computed(() => connectionStore.open);
+
+defineProps({
+    compact: Boolean,
+})
+
+function logout() {
+    delete localStorage.token;
+    router.push("/login");
 }
 </script>

@@ -1,5 +1,6 @@
 import COT from './cot.ts'
 import { std, stdurl } from '../../std.ts';
+import { useCOTStore } from '../cots.ts';
 import type { Feature } from '../../types.ts';
 import type {
     FeatureCollection
@@ -47,13 +48,27 @@ export default class Subscription {
         }
     }
 
+    async delete(): Promise<void> {
+        const cotStore = useCOTStore();
+
+        await Subscription.delete(this.meta.guid, this.token);
+        cotStore.subscriptions.delete(this.meta.guid);
+    }
+
+    async updateLogs(): Promise<void> {
+        const logs = await Subscription.logList(this.meta.guid);
+        this.logs.splice(0, this.logs.length, ...logs.items);
+    }
+
+    headers(): Record<string, string> {
+        return Subscription.headers(this.token);
+    }
+
     static async load(guid: string, token?: string): Promise<Subscription> {
         const url = stdurl('/api/marti/missions/' + encodeURIComponent(guid));
         url.searchParams.append('logs', 'true');
 
-        const mission = await std(url, {
-            headers: Subscription.headers(token)
-        }) as Mission;
+        const mission = await this.fetch(guid, token, { logs: true });
 
         const logs = mission.logs || [] as Array<MissionLog>;
         delete mission.logs;
@@ -74,6 +89,26 @@ export default class Subscription {
         }
 
         return sub;
+    }
+
+    static async fetch(guid: string, token?: string, opts: {
+        logs?: boolean
+    } = {}): Promise<Mission> {
+        const url = stdurl('/api/marti/missions/' + encodeURIComponent(guid));
+        if (opts.logs) url.searchParams.append('logs', 'true');
+
+        return await std(url, {
+            headers: Subscription.headers(token)
+        }) as Mission;
+    }
+
+    static async delete(guid: string, token?: string): Promise<void> {
+        const url = stdurl(`/api/marti/missions/${guid}`);
+        const list = await std(url, {
+            method: 'DELETE',
+            headers: Subscription.headers(token)
+        }) as { data: Array<unknown> };
+        if (list.data.length !== 1) throw new Error('Mission Error');
     }
 
     static async list(opts: {
@@ -147,14 +182,5 @@ export default class Subscription {
         });
 
         return list;
-    }
-
-    async updateLogs() {
-        const logs = await Subscription.logList(this.meta.guid);
-        this.logs.splice(0, this.logs.length, ...logs.items);
-    }
-
-    headers(): Record<string, string> {
-        return Subscription.headers(this.token);
     }
 }

@@ -1,8 +1,7 @@
 <template>
     <MenuTemplate
-        :key='mission.guid'
-        :name='mission.name || "Mission"'
-        :loading='loading.initial || loading.mission'
+        :name='mission ? mission.name : "Mission"'
+        :loading='!mission || loading'
     >
         <template #buttons>
             <TablerDelete
@@ -11,10 +10,36 @@
                 displaytype='icon'
                 @delete='deleteMission'
             />
+            <TablerDropdown
+                v-if='missionSub'
+            >
+                <TablerIconButton
+                    title='More Options'
+                >
+                    <IconDotsVertical
+                        :size='20'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+
+                <template #dropdown>
+                    <div clas='col-12'>
+                        <div
+                            class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2 py-2'
+                            @click='shareToPackage = true'
+                        >
+                            <IconPackages
+                                :size='32'
+                                stroke='1'
+                            />
+                            <span class='mx-2'>Export Data Package</span>
+                        </div>
+                    </div>
+                </template>
+            </TablerDropdown>
             <TablerIconButton
-                v-if='!loading.initial'
                 title='Refresh'
-                @click='refresh'
+                @click='fetchMission'
             >
                 <IconRefresh
                     :size='32'
@@ -27,6 +52,11 @@
                 v-if='error'
                 :err='error'
             />
+            <ShareToPackage
+                v-if='shareToPackage && missionSub'
+                @close='shareToPackage = false'
+                :feats='missionSub.collection().features as Feature[]'
+            />
             <template v-else>
                 <div
                     class='px-2 py-2 round btn-group w-100'
@@ -37,8 +67,8 @@
                         type='radio'
                         class='btn-check'
                         autocomplete='off'
-                        :checked='$route.name === "home-menu-mission-info"'
-                        @click='$router.replace(`/menu/missions/${$route.params.mission}/info`)'
+                        :checked='route.name === "home-menu-mission-info"'
+                        @click='router.replace(`/menu/missions/${route.params.mission}/info`)'
                     >
                     <label
                         for='info'
@@ -47,7 +77,7 @@
                     ><IconInfoSquare
                         v-tooltip='"Metadata"'
                         :size='32'
-                        :stroke='1'
+                        stroke='1'
                     /></label>
 
                     <input
@@ -55,8 +85,8 @@
                         type='radio'
                         class='btn-check'
                         autocomplete='off'
-                        :checked='$route.name === "home-menu-mission-layers"'
-                        @click='$router.replace(`/menu/missions/${$route.params.mission}/layers`)'
+                        :checked='route.name === "home-menu-mission-layers"'
+                        @click='router.replace(`/menu/missions/${route.params.mission}/layers`)'
                     >
                     <label
                         for='layer'
@@ -65,7 +95,7 @@
                     ><IconBoxMultiple
                         v-tooltip='"Layers"'
                         :size='32'
-                        :stroke='1'
+                        stroke='1'
                     /></label>
 
                     <input
@@ -73,8 +103,8 @@
                         type='radio'
                         class='btn-check'
                         autocomplete='off'
-                        :checked='$route.name === "home-menu-mission-users"'
-                        @click='$router.replace(`/menu/missions/${$route.params.mission}/users`)'
+                        :checked='route.name === "home-menu-mission-users"'
+                        @click='router.replace(`/menu/missions/${route.params.mission}/users`)'
                     >
                     <label
                         for='users'
@@ -83,7 +113,7 @@
                     ><IconUsers
                         v-tooltip='"Users"'
                         :size='32'
-                        :stroke='1'
+                        stroke='1'
                     /></label>
 
                     <input
@@ -91,8 +121,8 @@
                         type='radio'
                         class='btn-check'
                         autocomplete='off'
-                        :checked='$route.name === "home-menu-mission-timeline"'
-                        @click='$router.replace(`/menu/missions/${$route.params.mission}/timeline`)'
+                        :checked='route.name === "home-menu-mission-timeline"'
+                        @click='router.replace(`/menu/missions/${route.params.mission}/timeline`)'
                     >
                     <label
                         for='timeline'
@@ -101,7 +131,7 @@
                     ><IconTimeline
                         v-tooltip='"Timeline"'
                         :size='32'
-                        :stroke='1'
+                        stroke='1'
                     /></label>
 
                     <input
@@ -109,8 +139,8 @@
                         type='radio'
                         class='btn-check'
                         autocomplete='off'
-                        :checked='$route.name === "home-menu-mission-logs"'
-                        @click='$router.replace(`/menu/missions/${$route.params.mission}/logs`)'
+                        :checked='route.name === "home-menu-mission-logs"'
+                        @click='router.replace(`/menu/missions/${route.params.mission}/logs`)'
                     >
                     <label
                         for='logs'
@@ -119,7 +149,7 @@
                     ><IconArticle
                         v-tooltip='"Logs"'
                         :size='32'
-                        :stroke='1'
+                        stroke='1'
                     /></label>
 
                     <input
@@ -127,8 +157,8 @@
                         type='radio'
                         class='btn-check'
                         autocomplete='off'
-                        :checked='$route.name === "home-menu-mission-contents"'
-                        @click='$router.replace(`/menu/missions/${$route.params.mission}/contents`)'
+                        :checked='route.name === "home-menu-mission-contents"'
+                        @click='router.replace(`/menu/missions/${route.params.mission}/contents`)'
                     >
                     <label
                         for='contents'
@@ -137,7 +167,7 @@
                     ><IconFiles
                         v-tooltip='"Files"'
                         :size='32'
-                        :stroke='1'
+                        stroke='1'
                     /></label>
                 </div>
 
@@ -145,18 +175,22 @@
                     :mission='mission'
                     :token='token'
                     :role='role'
-                    @refresh='refresh'
+                    @refresh='fetchMission'
                 />
             </template>
         </template>
     </MenuTemplate>
 </template>
 
-<script>
-import { std, stdurl } from '/src/std.ts';
+<script setup lang='ts'>
+import { ref, watch, onMounted } from 'vue';
+import type { Feature, Mission, MissionRole } from '../../../../src/types.ts';
+import Subscription from '../../../../src/stores/base/mission.ts';
 import {
     IconRefresh,
+    IconPackages,
     IconBoxMultiple,
+    IconDotsVertical,
     IconArticle,
     IconTimeline,
     IconFiles,
@@ -165,144 +199,93 @@ import {
 } from '@tabler/icons-vue';
 import {
     TablerAlert,
+    TablerDropdown,
     TablerDelete,
-    TablerIconButton,
+    TablerIconButton
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
-import { useMapStore } from '/src/stores/map.ts';
+import ShareToPackage from '../util/ShareToPackage.vue';
+import { useRoute, useRouter } from 'vue-router';
+import { useMapStore } from '../../../../src/stores/map.ts';
 const mapStore = useMapStore();
-import { useCOTStore } from '/src/stores/cots.ts';
+import { useCOTStore } from '../../../../src/stores/cots.ts';
 const cotStore = useCOTStore();
+const route = useRoute();
+const router = useRouter();
 
-export default {
-    name: 'MissionSync',
-    components: {
-        IconRefresh,
-        MenuTemplate,
-        TablerAlert,
-        TablerDelete,
-        TablerIconButton,
-        IconBoxMultiple,
-        IconArticle,
-        IconFiles,
-        IconInfoSquare,
-        IconUsers,
-        IconTimeline
-    },
-    emits: [
-        'close',
-        'select'
-    ],
-    data: function() {
-        const token = this.$route.query.token;
+const error = ref<Error | undefined>(undefined);
+const token = ref<string | undefined>(route.query.token ? String(route.query.token) : undefined)
+const loading = ref(false);
 
-        return {
-            error: null,
-            subscribed: undefined,
-            token,
-            upload: false,
-            createLog: false,
-            loading: {
-                initial: !this.$route.query.passwordProtected,
-                mission: !this.$route.query.passwordProtected,
-                users: true,
-                delete: false
-            },
-            role: {
-                type: 'NONE',
-                permissions: []
-            },
-            mission: {
-                guid: this.$route.params.guid,
-                passwordProtected: this.$route.query.passwordProtected,
-            },
-            imports: [],
+const shareToPackage = ref(false);
+
+const role = ref<MissionRole>({ type: 'MISSION_READONLY_SUBSCRIBER', permissions: [] });
+const mission = ref<Mission | undefined>(undefined)
+const missionSub = ref<Subscription | undefined>(undefined)
+
+// TODO BROKEN
+watch(cotStore.subscriptions, () => {
+    const subMission = cotStore.subscriptions.get(String(route.params.mission));
+
+    if (subMission) {
+        missionSub.value = subMission;
+    } else if (!subMission && missionSub) {
+        missionSub.value = undefined;
+    }
+})
+
+watch(route, async function() {
+    await fetchMission();
+});
+
+onMounted(async () => {
+    await fetchMission();
+})
+
+async function deleteMission() {
+    const subMission = cotStore.subscriptions.get(String(route.params.mission));
+    loading.value = true;
+
+    try {
+        if (subMission) {
+            await subMission.delete();
+
+            const overlay = mapStore.getOverlayByMode('mission', String(route.params.mission));
+            if (overlay) await mapStore.removeOverlay(overlay);
+        } else {
+            await Subscription.delete(String(route.params.mission), token.value);
         }
-    },
-    watch: {
-        '$route.params.mission': async function() {
-            await this.refresh();
-        },
-        upload: async function() {
-            if (!this.upload) await this.refresh();
-        }
-    },
-    mounted: async function() {
-        await this.refresh();
-    },
-    methods: {
-        refresh: async function() {
-            await this.fetchMission();
-        },
-        downloadFile: function(file) {
-            const url = stdurl(`/api/marti/api/files/${file.hash}`)
-            url.searchParams.append('token', localStorage.token);
-            url.searchParams.append('name', file.name);
-            return url;
-        },
-        deleteFile: async function(file) {
-            await std(`/api/marti/missions/${this.mission.guid}/upload/${file.hash}`, {
-                method: 'DELETE',
-                headers: {
-                    MissionAuthorization: this.token
-                }
-            });
 
-            this.fetchMission();
-        },
-        genConfig: function() {
-            return { id: this.mission.name }
-        },
-        deleteMission: async function() {
-            try {
-                this.loading.delete = true;
-                const url = stdurl(`/api/marti/missions/${this.mission.guid}`);
-                const list = await std(url, {
-                    method: 'DELETE',
-                    headers: {
-                        MissionAuthorization: this.token
-                    }
-                });
-                if (list.data.length !== 1) throw new Error('Mission Error');
+        router.replace('/menu/missions');
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    }
 
-                const overlay = mapStore.getOverlayByMode('mission', this.mission.guid);
-                if (overlay) await mapStore.removeOverlay(overlay);
+    loading.value = false;
+}
 
-                this.$router.replace('/menu/missions');
-            } catch (err) {
-                this.error = err;
-            }
-            this.loading.delete = false;
-        },
-        fetchMission: async function() {
-            try {
-                const mission = cotStore.subscriptions.get(this.$route.params.mission);
+async function fetchMission(): Promise<void> {
+    mission.value = undefined;
+    missionSub.value = undefined;
 
-                if (mission) {
-                    this.mission = mission.meta;
-                    this.role = mission.role;
+    const subMission = cotStore.subscriptions.get(String(route.params.mission));
 
-                    if (mission.token) {
-                        this.token = mission.token;
-                    }
-                } else {
+    try {
+        if (subMission) {
+            missionSub.value = subMission;
 
-                    this.loading.mission = true;
-                    const url = stdurl(`/api/marti/missions/${this.$route.params.mission}`);
+            role.value = subMission.role;
 
-                    this.mission = await std(url, {
-                        headers: {
-                            MissionAuthorization: this.token
-                        }
-                    });
-                }
-            } catch (err) {
-                this.error = err;
+            if (subMission.token) {
+                token.value = subMission.token;
             }
 
-            this.loading.initial = false;
-            this.loading.mission = false;
+            mission.value = subMission.meta;
+        } else {
+            mission.value = await Subscription.fetch(String(route.params.mission), token.value);
         }
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
     }
 }
 </script>
