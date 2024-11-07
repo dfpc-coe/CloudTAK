@@ -29,7 +29,7 @@ export const useCOTStore = defineStore('cots', {
         pendingDelete: Set<string>;
 
         subscriptions: Map<string, Subscription>;
-        subscriptionPending: Map<string, string>;
+        subscriptionPending: Map<string, string>; // UID, Mission Guid
     } => {
         return {
             cots: new Map(),                // Store all on-screen CoT messages
