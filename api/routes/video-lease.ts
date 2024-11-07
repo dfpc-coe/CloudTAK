@@ -117,8 +117,8 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req);
 
-            if (user.access !== AuthUserAccess.ADMIN && req.body.duration > 60 * 60 * 16) {
-                throw new Err(400, null, 'Only Administrators can request a lease > 16 hours')
+            if (user.access !== AuthUserAccess.ADMIN && req.body.duration > 60 * 60 * 24) {
+                throw new Err(400, null, 'Only Administrators can request a lease > 24 hours')
             }
 
             const lease = await videoControl.generate({
@@ -161,8 +161,8 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req);
 
-            if (user.access !== AuthUserAccess.ADMIN && req.body.duration && req.body.duration > 60 * 60 * 16) {
-                throw new Err(400, null, 'Only Administrators can request a lease > 16 hours')
+            if (user.access !== AuthUserAccess.ADMIN && req.body.duration && req.body.duration > 60 * 60 * 24) {
+                throw new Err(400, null, 'Only Administrators can request a lease > 24 hours')
             }
 
             const lease = await videoControl.commit(req.params.lease, req.body, {
