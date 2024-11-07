@@ -118,7 +118,7 @@
                     <TablerEnum
                         v-if='!editLease.id'
                         v-model='editLease.duration'
-                        :options='["16 Hours", "12 Hours", "6 Hours", "1 Hour"]'
+                        :options='["24 Hours", "16 Hours", "12 Hours"]'
                         label='Lease Duration'
                     />
 
@@ -258,7 +258,7 @@ const editLease = ref<{
     id?: number
     name: string
     duration: string
-    expiration?: string 
+    expiration?: string
     stream_user: string | null
     stream_pass: string | null
 }>({

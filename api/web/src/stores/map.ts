@@ -90,7 +90,7 @@ export const useMapStore = defineStore('cloudtak', {
             this.overlays.splice(pos, 1)
 
             await overlay.delete();
-            if (overlay.mode === 'mission') {
+            if (overlay.mode === 'mission' && overlay.mode_id) {
                 const cotStore = useCOTStore();
                 cotStore.subscriptions.delete(overlay.mode_id);
             }

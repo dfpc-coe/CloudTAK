@@ -55,7 +55,7 @@
             <ShareToPackage
                 v-if='shareToPackage && missionSub'
                 @close='shareToPackage = false'
-                :feats='missionSub.collection().features'
+                :feats='missionSub.collection().features as Feature[]'
             />
             <template v-else>
                 <div
@@ -184,7 +184,7 @@
 
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
-import type { Mission, MissionRole } from '../../../../src/types.ts';
+import type { Feature, Mission, MissionRole } from '../../../../src/types.ts';
 import Subscription from '../../../../src/stores/base/mission.ts';
 import {
     IconRefresh,
