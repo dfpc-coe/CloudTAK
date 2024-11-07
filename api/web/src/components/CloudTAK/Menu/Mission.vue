@@ -10,7 +10,9 @@
                 displaytype='icon'
                 @delete='deleteMission'
             />
-            <TablerDropdown>
+            <TablerDropdown
+                v-if='missionSub'
+            >
                 <TablerIconButton
                     title='More Options'
                 >
@@ -24,6 +26,7 @@
                     <div clas='col-12'>
                         <div
                             class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2 py-2'
+                            @click='shareToPackage = true'
                         >
                             <IconPackages
                                 :size='32'
@@ -48,6 +51,11 @@
             <TablerAlert
                 v-if='error'
                 :err='error'
+            />
+            <ShareToPackage
+                v-if='shareToPackage && missionSub'
+                @close='shareToPackage = false'
+                :feats='missionSub.collection().features'
             />
             <template v-else>
                 <div
@@ -175,7 +183,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import type { Mission, MissionRole } from '../../../../src/types.ts';
 import Subscription from '../../../../src/stores/base/mission.ts';
 import {
@@ -196,6 +204,7 @@ import {
     TablerIconButton
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
+import ShareToPackage from '../util/ShareToPackage.vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useMapStore } from '../../../../src/stores/map.ts';
 const mapStore = useMapStore();
@@ -208,12 +217,29 @@ const error = ref<Error | undefined>(undefined);
 const token = ref<string | undefined>(route.query.token ? String(route.query.token) : undefined)
 const loading = ref(false);
 
+const shareToPackage = ref(false);
+
 const role = ref<MissionRole>({ type: 'MISSION_READONLY_SUBSCRIBER', permissions: [] });
 const mission = ref<Mission | undefined>(undefined)
+const missionSub = ref<Subscription | undefined>(undefined)
+
+// TODO BROKEN
+watch(cotStore.subscriptions, () => {
+    const subMission = cotStore.subscriptions.get(String(route.params.mission));
+    if (!missionSub && subMission) {
+        missionSub.value = subMission;
+    } else if (!subMission && missionSub) {
+        missionSub.value = undefined;
+    }
+})
 
 watch(route, async function() {
     await fetchMission();
 });
+
+onMounted(async () => {
+    await fetchMission();
+})
 
 async function deleteMission() {
     const subMission = cotStore.subscriptions.get(String(route.params.mission));
@@ -239,11 +265,14 @@ async function deleteMission() {
 
 async function fetchMission(): Promise<void> {
     mission.value = undefined;
+    missionSub.value = undefined;
 
     const subMission = cotStore.subscriptions.get(String(route.params.mission));
 
     try {
         if (subMission) {
+            missionSub.value = subMission;
+
             role.value = subMission.role;
 
             if (subMission.token) {
@@ -253,7 +282,6 @@ async function fetchMission(): Promise<void> {
             mission.value = subMission.meta;
         } else {
             mission.value = await Subscription.fetch(String(route.params.mission), token.value);
-
         }
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));

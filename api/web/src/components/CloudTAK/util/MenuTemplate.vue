@@ -35,7 +35,7 @@
                     class='modal-title d-flex mx-auto'
                     v-text='name'
                 />
-                <div class='btn-list'>
+                <div class='col-auto btn-list align-items-center'>
                     <slot name='buttons' />
                 </div>
             </div>
