@@ -226,7 +226,8 @@ const missionSub = ref<Subscription | undefined>(undefined)
 // TODO BROKEN
 watch(cotStore.subscriptions, () => {
     const subMission = cotStore.subscriptions.get(String(route.params.mission));
-    if (!missionSub && subMission) {
+
+    if (subMission) {
         missionSub.value = subMission;
     } else if (!subMission && missionSub) {
         missionSub.value = undefined;
