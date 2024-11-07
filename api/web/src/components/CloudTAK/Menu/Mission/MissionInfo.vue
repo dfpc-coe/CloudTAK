@@ -25,6 +25,7 @@
                         :inline='true'
                     />
                     <div
+                        v-else
                         class='datagrid-content'
                         v-text='subscriptions.length'
                     />

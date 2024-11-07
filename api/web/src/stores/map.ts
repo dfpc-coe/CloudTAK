@@ -88,7 +88,12 @@ export const useMapStore = defineStore('cloudtak', {
             if (pos === -1) return;
 
             this.overlays.splice(pos, 1)
+
             await overlay.delete();
+            if (overlay.mode === 'mission') {
+                const cotStore = useCOTStore();
+                cotStore.subscriptions.delete(overlay.mode_id);
+            }
         },
         getOverlayById(id: number): Overlay | null {
             for (const overlay of this.overlays) {
