@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v4.35.0 - 2024-11-08
+
+- :bug: `DevOps` Tighten up Media Task SG ingress to only needed ports. Note: You will have to deploy this by manually setting the ingress ports to [] and then setting them to the ports in this version
+
 ### v4.34.0 - 2024-11-07
 
 - :bug: Fix subscription bug where an unsubscribe wouldn't clean up the cotstore.subscription

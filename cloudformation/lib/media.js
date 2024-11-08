@@ -14,31 +14,31 @@ export default {
                 SecurityGroupIngress: [{
                     Description: 'RTSP Protocol',
                     CidrIp: '0.0.0.0/0',
-                    IpProtocol: -1,
+                    IpProtocol: 'tcp',
                     FromPort: 8554,
                     ToPort: 8554
                 },{
                     Description: 'WebRTC Protocol',
                     CidrIp: '0.0.0.0/0',
-                    IpProtocol: -1,
+                    IpProtocol: 'tcp',
                     FromPort: 8889,
                     ToPort: 8889
                 },{
                     Description: 'SRT Protocol',
                     CidrIp: '0.0.0.0/0',
-                    IpProtocol: -1,
+                    IpProtocol: 'tcp',
                     FromPort: 8890,
                     ToPort: 8890
                 },{
                     Description: 'HLS Protocol',
                     CidrIp: '0.0.0.0/0',
-                    IpProtocol: -1,
+                    IpProtocol: 'tcp',
                     FromPort: 8888,
                     ToPort: 8888
                 },{
                     Description: 'RTMP Protocol',
                     CidrIp: '0.0.0.0/0',
-                    IpProtocol: -1,
+                    IpProtocol: 'tcp',
                     FromPort: 1935,
                     ToPort: 1935
                 }],
