@@ -39,11 +39,15 @@ export default class Subscription {
         this.auto = false;
     }
 
-    collection(): FeatureCollection {
+    collection(raw = false): FeatureCollection {
         return {
             type: 'FeatureCollection',
             features: Array.from(this.cots.values()).map((f: COT) => {
-                return f.as_rendered();
+                if (raw) {
+                    return f.as_feature();
+                } else {
+                    return f.as_rendered();
+                }
             })
         }
     }
