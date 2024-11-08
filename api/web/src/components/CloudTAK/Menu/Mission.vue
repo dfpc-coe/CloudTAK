@@ -55,7 +55,7 @@
             <ShareToPackage
                 v-if='shareToPackage && missionSub'
                 @close='shareToPackage = false'
-                :feats='missionSub.collection().features as Feature[]'
+                :feats='missionSub.collection(true).features as Feature[]'
             />
             <template v-else>
                 <div
