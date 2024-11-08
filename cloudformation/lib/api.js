@@ -478,8 +478,9 @@ export default {
                 GroupDescription: 'Allow access to docker port 5000',
                 VpcId: cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-vpc'])),
                 SecurityGroupIngress: [{
-                    CidrIp: '0.0.0.0/0',
+                    Description: 'ELB Traffic',
                     IpProtocol: 'tcp',
+                    SourceSecurityGroupId: cf.ref('ELBSecurityGroup'),
                     FromPort: 5000,
                     ToPort: 5000
                 }]
