@@ -154,11 +154,11 @@ export default async function router(schema: Schema, config: Config) {
                             if (!pathMapEntry) {
                                 console.error(`DOES NOT EXIST: ${currentPath}`)
 
-                                const layer = await api.MissionLayer.create(
+                                const missionLayer = await api.MissionLayer.create(
                                     data.name,
                                     {
                                         uid: `layer-${layer.id}-${crypto.randomUUID()}`,
-                                        name: path,
+                                        name: p,
                                         type: MissionLayerType.UID,
                                         parentUid: pathMapEntryLast.uid,
                                         creatorUid: `connection-${data.connection}-data-${data.id}`
@@ -166,10 +166,12 @@ export default async function router(schema: Schema, config: Config) {
                                     { token: data.mission_token || undefined }
                                 );
 
-                                console.error('NEW LAYER', layer);
-                            }
+                                pathMap.set(currentPath, missionLayer.data);
 
-                            pathMapEntryLast = pathMapEntry;
+                                pathMapEntryLast = missionLayer.data;
+                            } else {
+                                pathMapEntryLast = pathMapEntry;
+                            }
                         }
                     }
 
