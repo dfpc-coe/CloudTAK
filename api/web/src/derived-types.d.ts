@@ -1587,6 +1587,7 @@ export interface paths {
                             id?: string;
                             /** @constant */
                             type: "Feature";
+                            path?: string;
                             properties: {
                                 /** @default UNKNOWN */
                                 callsign?: string;
@@ -1698,9 +1699,23 @@ export interface paths {
                                     model?: string;
                                 };
                                 video?: {
+                                    uid?: string;
                                     sensor?: string;
                                     spi?: string;
                                     url?: string;
+                                    connection?: {
+                                        uid: string;
+                                        address: string;
+                                        networkTimeout?: number;
+                                        path?: string;
+                                        protocol?: string;
+                                        bufferTime?: number;
+                                        port?: number;
+                                        roverPort?: number;
+                                        rtspReliable?: number;
+                                        ignoreEmbeddedKLV?: boolean;
+                                        alias?: string;
+                                    };
                                 };
                                 links?: {
                                     type?: string;
@@ -1734,12 +1749,14 @@ export interface paths {
                                     uid?: string;
                                     callsign?: string;
                                     mission?: string;
+                                    "mission-guid"?: string;
                                     after?: string;
                                     path?: string;
                                 } | {
                                     uid?: string;
                                     callsign?: string;
                                     mission?: string;
+                                    "mission-guid"?: string;
                                     after?: string;
                                     path?: string;
                                 }[];
@@ -1798,6 +1815,7 @@ export interface paths {
                                     id?: string;
                                     /** @constant */
                                     type: "Feature";
+                                    path?: string;
                                     properties: {
                                         /** @default UNKNOWN */
                                         callsign: string;
@@ -1909,9 +1927,23 @@ export interface paths {
                                             model?: string;
                                         };
                                         video?: {
+                                            uid?: string;
                                             sensor?: string;
                                             spi?: string;
                                             url?: string;
+                                            connection?: {
+                                                uid: string;
+                                                address: string;
+                                                networkTimeout?: number;
+                                                path?: string;
+                                                protocol?: string;
+                                                bufferTime?: number;
+                                                port?: number;
+                                                roverPort?: number;
+                                                rtspReliable?: number;
+                                                ignoreEmbeddedKLV?: boolean;
+                                                alias?: string;
+                                            };
                                         };
                                         links?: {
                                             type?: string;
@@ -1945,12 +1977,14 @@ export interface paths {
                                             uid?: string;
                                             callsign?: string;
                                             mission?: string;
+                                            "mission-guid"?: string;
                                             after?: string;
                                             path?: string;
                                         } | {
                                             uid?: string;
                                             callsign?: string;
                                             mission?: string;
+                                            "mission-guid"?: string;
                                             after?: string;
                                             path?: string;
                                         }[];
@@ -7491,7 +7525,14 @@ export interface paths {
                 content: {
                     "application/json": {
                         /** @constant */
-                        type: "FeatureCollection";
+                        type?: "FeatureCollection";
+                        /** @description Data Package Name */
+                        name?: string;
+                        /**
+                         * @description Should the Data Package be a public package, if so it will be published to the Data Package list
+                         * @default false
+                         */
+                        public: boolean;
                         /** @default [] */
                         uids: string[];
                         /** @default [] */
@@ -8454,9 +8495,23 @@ export interface paths {
                                         model?: string;
                                     };
                                     video?: {
+                                        uid?: string;
                                         sensor?: string;
                                         spi?: string;
                                         url?: string;
+                                        connection?: {
+                                            uid: string;
+                                            address: string;
+                                            networkTimeout?: number;
+                                            path?: string;
+                                            protocol?: string;
+                                            bufferTime?: number;
+                                            port?: number;
+                                            roverPort?: number;
+                                            rtspReliable?: number;
+                                            ignoreEmbeddedKLV?: boolean;
+                                            alias?: string;
+                                        };
                                     };
                                     links?: {
                                         type?: string;
@@ -8490,12 +8545,14 @@ export interface paths {
                                         uid?: string;
                                         callsign?: string;
                                         mission?: string;
+                                        "mission-guid"?: string;
                                         after?: string;
                                         path?: string;
                                     } | {
                                         uid?: string;
                                         callsign?: string;
                                         mission?: string;
+                                        "mission-guid"?: string;
                                         after?: string;
                                         path?: string;
                                     }[];
@@ -8521,6 +8578,7 @@ export interface paths {
                                     };
                                     flow?: Record<string, never>;
                                 };
+                                path: string;
                                 geometry: {
                                     /** @constant */
                                     type: "Point";
@@ -8534,8 +8592,6 @@ export interface paths {
                                     type: "Polygon";
                                     coordinates: number[][][];
                                 };
-                                /** @default / */
-                                path: string;
                             }[];
                         };
                     };
@@ -8675,9 +8731,23 @@ export interface paths {
                                 model?: string;
                             };
                             video?: {
+                                uid?: string;
                                 sensor?: string;
                                 spi?: string;
                                 url?: string;
+                                connection?: {
+                                    uid: string;
+                                    address: string;
+                                    networkTimeout?: number;
+                                    path?: string;
+                                    protocol?: string;
+                                    bufferTime?: number;
+                                    port?: number;
+                                    roverPort?: number;
+                                    rtspReliable?: number;
+                                    ignoreEmbeddedKLV?: boolean;
+                                    alias?: string;
+                                };
                             };
                             links?: {
                                 type?: string;
@@ -8711,12 +8781,14 @@ export interface paths {
                                 uid?: string;
                                 callsign?: string;
                                 mission?: string;
+                                "mission-guid"?: string;
                                 after?: string;
                                 path?: string;
                             } | {
                                 uid?: string;
                                 callsign?: string;
                                 mission?: string;
+                                "mission-guid"?: string;
                                 after?: string;
                                 path?: string;
                             }[];
@@ -8742,6 +8814,7 @@ export interface paths {
                             };
                             flow?: Record<string, never>;
                         };
+                        path: string;
                         geometry: {
                             /** @constant */
                             type: "Point";
@@ -8755,8 +8828,6 @@ export interface paths {
                             type: "Polygon";
                             coordinates: number[][][];
                         };
-                        /** @default / */
-                        path: string;
                     };
                 };
             };
@@ -8882,9 +8953,23 @@ export interface paths {
                                     model?: string;
                                 };
                                 video?: {
+                                    uid?: string;
                                     sensor?: string;
                                     spi?: string;
                                     url?: string;
+                                    connection?: {
+                                        uid: string;
+                                        address: string;
+                                        networkTimeout?: number;
+                                        path?: string;
+                                        protocol?: string;
+                                        bufferTime?: number;
+                                        port?: number;
+                                        roverPort?: number;
+                                        rtspReliable?: number;
+                                        ignoreEmbeddedKLV?: boolean;
+                                        alias?: string;
+                                    };
                                 };
                                 links?: {
                                     type?: string;
@@ -8918,12 +9003,14 @@ export interface paths {
                                     uid?: string;
                                     callsign?: string;
                                     mission?: string;
+                                    "mission-guid"?: string;
                                     after?: string;
                                     path?: string;
                                 } | {
                                     uid?: string;
                                     callsign?: string;
                                     mission?: string;
+                                    "mission-guid"?: string;
                                     after?: string;
                                     path?: string;
                                 }[];
@@ -8949,6 +9036,7 @@ export interface paths {
                                 };
                                 flow?: Record<string, never>;
                             };
+                            path: string;
                             geometry: {
                                 /** @constant */
                                 type: "Point";
@@ -8962,8 +9050,6 @@ export interface paths {
                                 type: "Polygon";
                                 coordinates: number[][][];
                             };
-                            /** @default / */
-                            path: string;
                         };
                     };
                 };
@@ -9144,9 +9230,23 @@ export interface paths {
                                     model?: string;
                                 };
                                 video?: {
+                                    uid?: string;
                                     sensor?: string;
                                     spi?: string;
                                     url?: string;
+                                    connection?: {
+                                        uid: string;
+                                        address: string;
+                                        networkTimeout?: number;
+                                        path?: string;
+                                        protocol?: string;
+                                        bufferTime?: number;
+                                        port?: number;
+                                        roverPort?: number;
+                                        rtspReliable?: number;
+                                        ignoreEmbeddedKLV?: boolean;
+                                        alias?: string;
+                                    };
                                 };
                                 links?: {
                                     type?: string;
@@ -9180,12 +9280,14 @@ export interface paths {
                                     uid?: string;
                                     callsign?: string;
                                     mission?: string;
+                                    "mission-guid"?: string;
                                     after?: string;
                                     path?: string;
                                 } | {
                                     uid?: string;
                                     callsign?: string;
                                     mission?: string;
+                                    "mission-guid"?: string;
                                     after?: string;
                                     path?: string;
                                 }[];
@@ -9211,6 +9313,7 @@ export interface paths {
                                 };
                                 flow?: Record<string, never>;
                             };
+                            path: string;
                             geometry: {
                                 /** @constant */
                                 type: "Point";
@@ -9224,8 +9327,6 @@ export interface paths {
                                 type: "Polygon";
                                 coordinates: number[][][];
                             };
-                            /** @default / */
-                            path: string;
                         };
                     };
                 };
@@ -9863,6 +9964,7 @@ export interface paths {
                             name: string;
                             url: string;
                             api: string;
+                            webtak: string;
                             /** @description Once an admin certificate is configured it is not retrivable. This boolean refers to if a certificate is currently loaded */
                             auth: boolean;
                             certificate?: {
@@ -9893,6 +9995,7 @@ export interface paths {
                     "application/json": {
                         url: string;
                         api: string;
+                        webtak: string;
                         name?: string;
                         provider_url?: string;
                         provider_secret?: string;
@@ -9924,6 +10027,7 @@ export interface paths {
                             name: string;
                             url: string;
                             api: string;
+                            webtak: string;
                             /** @description Once an admin certificate is configured it is not retrivable. This boolean refers to if a certificate is currently loaded */
                             auth: boolean;
                             certificate?: {
