@@ -4,19 +4,16 @@
             <div class='container-xl'>
                 <div class='row row-deck row-cards'>
                     <div class='col-lg-12'>
-                        <TablerLoading
-                            v-if='!profile'
-                            desc='Loading Profile'
-                        />
-                        <TablerAlert
-                            v-else-if='!profile.system_admin'
-                            :err='new Error("Insufficient Access")'
-                        />
-                        <div
-                            v-else
-                            class='card'
-                        >
-                            <div class='row g-0'>
+                        <div class='card'>
+                            <TablerLoading
+                                v-if='!profile'
+                                desc='Loading Profile'
+                            />
+                            <TablerAlert
+                                v-else-if='!profile.system_admin'
+                                :err='new Error("Insufficient Access")'
+                            />
+                            <div v-else class='row g-0'>
                                 <div class='col-12 col-md-3 border-end'>
                                     <div class='card-body'>
                                         <h4 class='subheader'>
