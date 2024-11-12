@@ -21,7 +21,7 @@ export default class AuthProvider {
 
     async login(username: string, password: string): Promise<string> {
         const auth = new APIAuthPassword(username, password)
-        const api = await TAKAPI.init(new URL(this.config.server.api), auth);
+        const api = await TAKAPI.init(new URL(this.config.server.webtak), auth);
 
         const contents = await api.OAuth.parse(auth.jwt)
 
@@ -29,7 +29,7 @@ export default class AuthProvider {
         try {
             profile = await this.config.models.Profile.from(username);
         } catch (err) {
-            if (err instanceof Err && err.name === 'PublicError' && err.status === 404) {
+            if (err instanceof Error && err.message.includes('Item Not Found')) {
                 profile = await this.config.models.Profile.generate({
                     username: username,
                     auth: await api.Credentials.generate()
@@ -62,7 +62,7 @@ export default class AuthProvider {
             console.error(`Error: CertificateExpiration: ${validTo}: ${err}`);
 
             if (password) {
-                const api = await TAKAPI.init(new URL(this.config.server.api), new APIAuthPassword(profile.username, password));
+                const api = await TAKAPI.init(new URL(this.config.server.webtak), new APIAuthPassword(profile.username, password));
                 profile = await this.config.models.Profile.commit(profile.username, {
                     auth: await api.Credentials.generate()
                 });
@@ -81,7 +81,7 @@ export default class AuthProvider {
         } catch (err) {
             if (err instanceof Error && err.message.includes('org.springframework.security.authentication.BadCredentialsException')) {
                 if (password) {
-                    const api = await TAKAPI.init(new URL(this.config.server.api), new APIAuthPassword(profile.username, password));
+                    const api = await TAKAPI.init(new URL(this.config.server.webtak), new APIAuthPassword(profile.username, password));
                     profile = await this.config.models.Profile.commit(profile.username, {
                         auth: await api.Credentials.generate()
                     });
