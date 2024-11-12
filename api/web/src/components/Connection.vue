@@ -16,86 +16,85 @@
             <div class='container-xl'>
                 <div class='row row-deck row-cards'>
                     <div class='col-lg-12'>
-                        <TablerLoading v-if='loading.connection' />
 
-                        <div
-                            v-else
-                            class='card'
-                        >
-                            <div class='card-header'>
-                                <ConnectionStatus :connection='connection' />
+                        <div class='card' >
+                            <TablerLoading v-if='loading.connection' />
+                            <template v-else>
+                                <div class='card-header'>
+                                    <ConnectionStatus :connection='connection' />
 
-                                <a
-                                    class='card-title cursor-pointer mx-2'
-                                    @click='$router.push(`/connection/${connection.id}`)'
-                                    v-text='connection.name'
-                                />
-
-                                <div class='ms-auto d-flex align-items-center btn-list'>
-                                    <AgencyBadge :connection='connection' />
-
-                                    <IconPlugConnected
-                                        v-tooltip='"Cycle Connection"'
-                                        :size='32'
-                                        :stroke='1'
-                                        class='cursor-pointer'
-                                        @click='refresh'
+                                    <a
+                                        class='card-title cursor-pointer mx-2'
+                                        @click='$router.push(`/connection/${connection.id}`)'
+                                        v-text='connection.name'
                                     />
-                                    <IconRefresh
-                                        v-tooltip='"Refresh"'
-                                        :size='32'
-                                        :stroke='1'
-                                        class='cursor-pointer'
-                                        @click='fetch'
-                                    />
-                                    <IconSettings
-                                        v-tooltip='"Edit"'
-                                        :size='32'
-                                        :stroke='1'
-                                        class='cursor-pointer'
-                                        @click='$router.push(`/connection/${connection.id}/edit`)'
-                                    />
-                                </div>
-                            </div>
-                            <div class='card-body'>
-                                <div class='row g-2'>
-                                    <div class='col-12'>
-                                        <TablerMarkdown :markdown='connection.description' />
-                                    </div>
-                                    <div class='col-12 datagrid'>
-                                        <div class='datagrid-item pb-2'>
-                                            <div class='datagrid-title'>
-                                                Certificate Valid From
-                                            </div>
-                                            <div
-                                                class='datagrid-content'
-                                                v-text='connection.certificate.validFrom'
-                                            />
-                                        </div>
-                                        <div class='datagrid-item pb-2'>
-                                            <div class='datagrid-title'>
-                                                Certificate Valid To
-                                            </div>
-                                            <div
-                                                class='datagrid-content'
-                                                v-text='connection.certificate.validTo'
-                                            />
-                                        </div>
-                                        <div class='datagrid-item pb-2'>
-                                            <div class='datagrid-title'>
-                                                Certificate Subject
-                                            </div>
-                                            <div
-                                                class='datagrid-content'
-                                                v-text='connection.certificate.subject'
-                                            />
-                                        </div>
+
+                                    <div class='ms-auto d-flex align-items-center btn-list'>
+                                        <AgencyBadge :connection='connection' />
+
+                                        <IconPlugConnected
+                                            v-tooltip='"Cycle Connection"'
+                                            :size='32'
+                                            :stroke='1'
+                                            class='cursor-pointer'
+                                            @click='refresh'
+                                        />
+                                        <IconRefresh
+                                            v-tooltip='"Refresh"'
+                                            :size='32'
+                                            :stroke='1'
+                                            class='cursor-pointer'
+                                            @click='fetch'
+                                        />
+                                        <IconSettings
+                                            v-tooltip='"Edit"'
+                                            :size='32'
+                                            :stroke='1'
+                                            class='cursor-pointer'
+                                            @click='$router.push(`/connection/${connection.id}/edit`)'
+                                        />
                                     </div>
                                 </div>
-                            </div>
-                            <div class='card-footer'>
-                                Last updated <span v-text='timeDiff(connection.updated)' />
-                            </div>
+                                <div class='card-body'>
+                                    <div class='row g-2'>
+                                        <div class='col-12'>
+                                            <TablerMarkdown :markdown='connection.description' />
+                                        </div>
+                                        <div class='col-12 datagrid'>
+                                            <div class='datagrid-item pb-2'>
+                                                <div class='datagrid-title'>
+                                                    Certificate Valid From
+                                                </div>
+                                                <div
+                                                    class='datagrid-content'
+                                                    v-text='connection.certificate.validFrom'
+                                                />
+                                            </div>
+                                            <div class='datagrid-item pb-2'>
+                                                <div class='datagrid-title'>
+                                                    Certificate Valid To
+                                                </div>
+                                                <div
+                                                    class='datagrid-content'
+                                                    v-text='connection.certificate.validTo'
+                                                />
+                                            </div>
+                                            <div class='datagrid-item pb-2'>
+                                                <div class='datagrid-title'>
+                                                    Certificate Subject
+                                                </div>
+                                                <div
+                                                    class='datagrid-content'
+                                                    v-text='connection.certificate.subject'
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class='card-footer'>
+                                    Last updated <span v-text='timeDiff(connection.updated)' />
+                                </div>
+                            </template>
                         </div>
                     </div>
 
