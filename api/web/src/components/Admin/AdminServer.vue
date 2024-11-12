@@ -49,6 +49,15 @@
                 </div>
                 <div class='col-lg-12 py-2'>
                     <TablerInput
+                        v-model='server.webtak'
+                        :disabled='!edit'
+                        label='TAK Server WebTAK (Public API)'
+                        placeholder='https://'
+                        :error='errors.webtak'
+                    />
+                </div>
+                <div class='col-lg-12 py-2'>
+                    <TablerInput
                         v-model='server.provider_url'
                         :disabled='!edit'
                         label='OAuth Authentication API'
@@ -240,7 +249,8 @@ export default {
                 key: '',
                 name: '',
                 url: '',
-                api: ''
+                api: '',
+                webtak: ''
             },
             server: {
                 id: null,
@@ -252,6 +262,7 @@ export default {
                 name: '',
                 url: '',
                 api: '',
+                webtak: '',
             }
         }
     },
@@ -288,7 +299,7 @@ export default {
                 this.errors[field] = !this.server[field] ? 'Cannot be empty' : '';
             }
 
-            for (const field of ['api', 'url']) {
+            for (const field of ['api', 'url', 'webtak']) {
                 if (!this.errors[field]) {
                     try {
                         new URL(this.server[field]);
@@ -305,6 +316,7 @@ export default {
                 name: this.server.name,
                 url: this.server.url,
                 api: this.server.api,
+                webtak: this.server.webtak,
                 provider_url: this.server.provider_url,
                 provider_client: this.server.provider_client,
                 provider_secret: this.server.provider_secret
