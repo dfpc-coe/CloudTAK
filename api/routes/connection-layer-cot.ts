@@ -1,5 +1,6 @@
 import { Static, Type } from '@sinclair/typebox'
 import Schema from '@openaddresses/batch-schema';
+import crypto from 'node:crypto';
 import Err from '@openaddresses/batch-error';
 import { Item as QueueItem } from '../lib/queue.js'
 import Cacher from '../lib/cacher.js';
@@ -8,6 +9,7 @@ import Style from '../lib/style.js';
 import DDBQueue from '../lib/queue.js';
 import Config from '../lib/config.js';
 import CoT, { Feature } from '@tak-ps/node-cot';
+import { MissionLayerType } from '../lib/api/mission-layer.js';
 import { StandardLayerResponse, LayerError } from '../lib/types.js';
 import TAKAPI, { APIAuthCertificate, } from '../lib/tak-api.js';
 
@@ -103,34 +105,6 @@ export default async function router(schema: Schema, config: Config) {
                     // Once NodeJS supports Set.difference we can simplify this
                     const inputFeats = new Set(req.body.uids);
 
-                    const layers = (await api.MissionLayer.list(
-                        data.name,
-                        { token: data.mission_token || undefined }
-                    )).data;
-
-                    const layerMap: Map<string, any> = new Map();
-
-                    for (const layer of layers) {
-                        if (layer.uid === `layer-${layer.id}`) {
-                            layerMap.set('/', layer);
-                        }
-                    }
-
-                    console.error(JSON.stringify(layers))
-
-                    /*
-                    await api.MissionLayer.create(
-                        data.name,
-                        {
-                            uid: `layer-${l.id}`,
-                            name: l.name,
-                            type: MissionLayerType.UID,
-                            creatorUid: `connection-${data.connection}-data-${data.id}`
-                        },
-                        { token: data.mission_token || undefined }
-                    );
-                    */
-
                     const features = await api.MissionLayer.latestFeats(
                         data.name,
                         `layer-${layer.id}`,
@@ -155,6 +129,48 @@ export default async function router(schema: Schema, config: Config) {
                     const existMap: Map<string, Static<typeof Feature.Feature>> = new Map()
                     for (const feat of features) {
                         existMap.set(String(feat.id), feat);
+                    }
+
+                    const pathMap = await api.MissionLayer.listAsPathMap(
+                        data.name,
+                        { token: data.mission_token || undefined }
+                    );
+
+                    for (const cot of cots) {
+                        if (cot.path === '/') continue;
+
+                        const path = cot.path.split('/').filter((p) => !!p);
+
+                        let pathMapEntryLast = pathMap.get(`/${encodeURIComponent(layer.name)}/`);
+                        if (!pathMapEntryLast) continue;
+
+                        const pathSegs = [];
+                        for (const p of path) {
+                            pathSegs.push(encodeURIComponent(p));
+
+                            const currentPath = `/${encodeURIComponent(layer.name)}/${pathSegs.join('/')}/`;
+                            const pathMapEntry = pathMap.get(currentPath);
+
+                            if (!pathMapEntry) {
+                                console.error(`DOES NOT EXIST: ${currentPath}`)
+
+                                const layer = await api.MissionLayer.create(
+                                    data.name,
+                                    {
+                                        uid: `layer-${layer.id}-${crypto.randomUUID()}`,
+                                        name: path,
+                                        type: MissionLayerType.UID,
+                                        parentUid: pathMapEntryLast.uid,
+                                        creatorUid: `connection-${data.connection}-data-${data.id}`
+                                    },
+                                    { token: data.mission_token || undefined }
+                                );
+
+                                console.error('NEW LAYER', layer);
+                            }
+
+                            pathMapEntryLast = pathMapEntry;
+                        }
                     }
 
                     cots = cots.filter((cot) => {
