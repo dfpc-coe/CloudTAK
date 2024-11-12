@@ -3,7 +3,7 @@
         v-for='layer in layers'
         :key='layer.uid'
     >
-        <div class='col-12 hover-dark d-flex align-items-center px-2 py-2'>
+        <div class='col-12 hover-dark d-flex align-items-center px-2 py-1'>
             <IconChevronRight
                 v-if='layer.type === "UID" && !opened.has(layer.uid)'
                 :size='32'
@@ -53,7 +53,11 @@
             <div class='ms-auto btn-list d-flex align-items-center'>
                 <span
                     v-if='layer.type === "UID"'
-                    class='mx-3 ms-auto badge border bg-blue text-white'
+                    class='mx-3 ms-auto badge border text-white'
+                    :class='{
+                        "bg-blue": layer.uids && layer.uids.length > 0,
+                        "bg-gray": !layer.uids || layer.uids.length === 0
+                    }'
                     v-text='`${layer.uids ? layer.uids.length : 0} Features`'
                 />
 
@@ -86,6 +90,13 @@
             v-else-if='opened.has(layer.uid) && layer.type === "UID"'
             class='mx-2'
         >
+            <Feature
+                v-for='cot of layer.uids'
+                :key='cot.data'
+                :delete-button='false'
+                :feature='feats.get(cot.data)'
+                :mission='mission'
+            />
             <MissionLayer
                 v-if='layer.mission_layers && layer.mission_layers.length'
                 :layers='layer.mission_layers'
@@ -94,20 +105,11 @@
                 :role='role'
             />
 
-
             <TablerNone
                 v-if='!layer.uids || !layer.uids.length'
                 :create='false'
                 :compact='true'
                 class='py-2'
-            />
-
-            <Feature
-                v-for='cot of layer.uids'
-                :key='cot.data'
-                :delete-button='false'
-                :feature='feats.get(cot.data)'
-                :mission='mission'
             />
         </div>
     </div>
