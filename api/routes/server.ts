@@ -28,6 +28,7 @@ export default async function router(schema: Schema, config: Config) {
                     updated: new Date().toISOString(),
                     url: '',
                     api: '',
+                    webtak: '',
                     auth: false
                 });
             } else {
@@ -60,6 +61,7 @@ export default async function router(schema: Schema, config: Config) {
                         updated: config.server.updated,
                         url: config.server.url,
                         api: config.server.api,
+                        webtak: config.server.webtak,
                         auth
                     })
                 }
@@ -76,6 +78,7 @@ export default async function router(schema: Schema, config: Config) {
         body: Type.Object({
             url: Type.String(),
             api: Type.String(),
+            webtak: Type.String(),
             name: Type.Optional(Type.String()),
             provider_url: Type.Optional(Type.String()),
             provider_secret: Type.Optional(Type.String()),
@@ -114,7 +117,7 @@ export default async function router(schema: Schema, config: Config) {
             // An unconfigured server will set the first successful username/pass as a CloudTAK System Admin
             if (!config.server.auth.key && !config.server.auth.cert && req.body.username && req.body.password) {
                 const auth = new APIAuthPassword(req.body.username, req.body.password)
-                const api = await TAKAPI.init(new URL(req.body.api), auth);
+                const api = await TAKAPI.init(new URL(req.body.webtak), auth);
 
                 const certs = await api.Credentials.generate();
 

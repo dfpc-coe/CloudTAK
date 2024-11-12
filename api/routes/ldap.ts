@@ -86,7 +86,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             const api = await TAKAPI.init(
-                new URL(config.server.api),
+                new URL(config.server.webtak),
                 new APIAuthPassword(user.email, password)
             );
 

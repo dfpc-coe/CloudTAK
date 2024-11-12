@@ -57,6 +57,16 @@
                                             @keyup.enter='updateServer'
                                         />
                                     </div>
+                                    <div class='mb-2'>
+                                        <TablerInput
+                                            v-model='body.webtak'
+                                            label='Server Cert Issuance API'
+                                            description='Marti WebAPI - Usually on port 8446 - Must use a publically trusted SSL cert and not a self-signed cert'
+                                            placeholder='https://ops.example.com:8446'
+                                            :error='errors.webtak'
+                                            @keyup.enter='updateServer'
+                                        />
+                                    </div>
 
                                     <div class='mb-2'>
                                         <label class='mx-2'>Admin Certificate</label>
@@ -166,6 +176,7 @@ export default {
                 name: '',
                 url: '',
                 api: '',
+                webtak: '',
                 username: '',
                 password: '',
                 auth: {
