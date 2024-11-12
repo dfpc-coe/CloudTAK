@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v4.37.0 - 2024-11-12
+
+- :bug: Fix issue where if the WebTAK API wasn't hosted on `443` then CloudTAK Could not be configured
+
 ### v4.36.0 - 2024-11-08
 
 - :rocket: `DevOps` Restrict all ECS Task Traffic as coming from the ALB
