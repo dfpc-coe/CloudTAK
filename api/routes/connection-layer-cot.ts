@@ -152,8 +152,6 @@ export default async function router(schema: Schema, config: Config) {
                             const pathMapEntry = pathMap.get(currentPath);
 
                             if (!pathMapEntry) {
-                                console.error(`DOES NOT EXIST: ${currentPath}`)
-
                                 const missionLayer = await api.MissionLayer.create(
                                     data.name,
                                     {
@@ -173,6 +171,8 @@ export default async function router(schema: Schema, config: Config) {
                                 pathMapEntryLast = pathMapEntry;
                             }
                         }
+
+                        cot.addDest({ mission: data.name, path: pathMapEntryLast.uid, after: '' });
                     }
 
                     cots = cots.filter((cot) => {
@@ -182,8 +182,6 @@ export default async function router(schema: Schema, config: Config) {
                             // TODO: Check for path change
                             if (!cot.isDiff(b)) return false;
                         }
-
-                        cot.addDest({ mission: data.name, path: `layer-${layer.id}`, after: '' });
 
                         return true;
                     })
