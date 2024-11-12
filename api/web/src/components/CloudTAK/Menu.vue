@@ -15,7 +15,7 @@
             <template
                 v-if='!["home", "home-menu"].includes(String(route.name))'
             >
-                <router-view/>
+                <router-view />
             </template>
             <template v-else>
                 <div

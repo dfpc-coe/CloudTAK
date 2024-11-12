@@ -17,7 +17,7 @@ export enum MissionLayerType {
 export const MissionLayer = Type.Object({
     name: Type.String({ minLength: 1 }),
     type: Type.Enum(MissionLayerType),
-    parentUid: Type.String(),
+    parentUid: Type.Optional(Type.String()),
     uid: Type.String(),
     mission_layers: Type.Optional(Type.Array(Type.Any())),
     uids: Type.Optional(Type.Array(Type.Object({
@@ -27,7 +27,7 @@ export const MissionLayer = Type.Object({
         timestamp: Type.String(),
         creatorUid: Type.String(),
         keywords: Type.Optional(Type.Array(Type.String())),
-        detail: Type.Optional(Type.Object({
+        details: Type.Optional(Type.Object({
             type: Type.String(),
             callsign: Type.String(),
             color: Type.String(),
@@ -174,13 +174,14 @@ export default class {
     ): Promise<Static<typeof MissionLayer>> {
         const layers = await this.list(name, opts);
 
+        // TODO this will only return top level layers - need to recurse to lower level layers
         for (const layer of layers.data) {
             if (layer.uid === layerUid) {
                 return layer;
             }
         }
 
-        throw new Err(404, null, `Layer ${layerUid} not found`);
+        throw new Err(404, null, `Layer ${layerUid} not found - only top level layers will be returned`);
     }
 
     async create(

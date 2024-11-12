@@ -119,8 +119,8 @@
 
     <TablerModal
         v-if='create'
-        @keyup.esc='create = false'
         size='xl'
+        @keyup.esc='create = false'
     >
         <div class='modal-status bg-red' />
         <button
