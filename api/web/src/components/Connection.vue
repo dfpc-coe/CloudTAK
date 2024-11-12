@@ -16,8 +16,7 @@
             <div class='container-xl'>
                 <div class='row row-deck row-cards'>
                     <div class='col-lg-12'>
-
-                        <div class='card' >
+                        <div class='card'>
                             <TablerLoading v-if='loading.connection' />
                             <template v-else>
                                 <div class='card-header'>
