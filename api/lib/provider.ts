@@ -29,7 +29,7 @@ export default class AuthProvider {
         try {
             profile = await this.config.models.Profile.from(username);
         } catch (err) {
-            if (err instanceof Err && err.name === 'PublicError' && err.status === 404) {
+            if (err instanceof Error && err.message.includes('Item Not Found')) {
                 profile = await this.config.models.Profile.generate({
                     username: username,
                     auth: await api.Credentials.generate()
