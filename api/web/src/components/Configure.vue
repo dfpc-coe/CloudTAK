@@ -170,7 +170,8 @@ export default {
                 username: '',
                 password: '',
                 url: '',
-                api: ''
+                api: '',
+                webtak: ''
             },
             body: {
                 name: '',
