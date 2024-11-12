@@ -103,6 +103,34 @@ export default async function router(schema: Schema, config: Config) {
                     // Once NodeJS supports Set.difference we can simplify this
                     const inputFeats = new Set(req.body.uids);
 
+                    const layers = (await api.MissionLayer.list(
+                        data.name,
+                        { token: data.mission_token || undefined }
+                    )).data;
+
+                    const layerMap: Map<string, any> = new Map();
+
+                    for (const layer of layers) {
+                        if (layer.uid === `layer-${layer.id}`) {
+                            layerMap.set('/', layer);
+                        }
+                    }
+
+                    console.error(JSON.stringify(layers))
+
+                    /*
+                    await api.MissionLayer.create(
+                        data.name,
+                        {
+                            uid: `layer-${l.id}`,
+                            name: l.name,
+                            type: MissionLayerType.UID,
+                            creatorUid: `connection-${data.connection}-data-${data.id}`
+                        },
+                        { token: data.mission_token || undefined }
+                    );
+                    */
+
                     const features = await api.MissionLayer.latestFeats(
                         data.name,
                         `layer-${layer.id}`,
@@ -133,6 +161,7 @@ export default async function router(schema: Schema, config: Config) {
                         const exist = existMap.get(cot.uid());
                         if (exist && data.mission_diff) {
                             const b = CoT.from_geojson(exist);
+                            // TODO: Check for path change
                             if (!cot.isDiff(b)) return false;
                         }
 
