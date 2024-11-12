@@ -477,6 +477,13 @@
       "when": 1729191573168,
       "tag": "0067_strange_lifeguard",
       "breakpoints": true
+    },
+    {
+      "idx": 68,
+      "version": "7",
+      "when": 1731434691066,
+      "tag": "0068_panoramic_sugar_man",
+      "breakpoints": true
     }
   ]
 }
