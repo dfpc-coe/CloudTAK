@@ -85,6 +85,22 @@ export default class {
         }
     }
 
+    async listAsPathMap(
+        name: string,
+        opts?: Static<typeof MissionOptions>
+    ): Promise<Map<string, Static<typeof MissionLayer>>> {
+        const layers = (await this.list(name, opts)).data;
+
+        const pathMap: Map<string, Static<typeof MissionLayer>> = new Map();
+
+        for (const layer of layers) {
+console.error(layer);
+            pathMap.set(`/${encodeURIComponent(layer.name)}/`, layer);
+        }
+
+        return pathMap;
+    }
+
     async list(
         name: string,
         opts?: Static<typeof MissionOptions>
