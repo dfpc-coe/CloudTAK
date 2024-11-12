@@ -100,6 +100,7 @@
             <MissionLayer
                 v-if='layer.mission_layers && layer.mission_layers.length'
                 :layers='layer.mission_layers'
+                :feats='feats'
                 :mission='mission'
                 :token='token'
                 :role='role'
