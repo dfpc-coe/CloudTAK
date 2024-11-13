@@ -42,123 +42,27 @@
                 desc='Loading Layers...'
             />
             <TablerNone
-                v-else-if='!layers.length && !feats.size'
+                v-else-if='!layers.length && !orphaned.size'
                 :create='false'
                 :compact='true'
                 label='Layers'
             />
             <template v-else>
                 <Feature
-                    v-for='feat of feats.values()'
-                    :key='feat.id'
+                    v-for='uid of Array.from(orphaned)'
+                    :key='uid'
                     :delete-button='false'
-                    :feature='feat'
+                    :feature='feats.get(uid)'
                     :mission='mission'
                 />
-                <div
-                    v-for='layer in layers'
-                    :key='layer.uid'
-                >
-                    <div class='col-12 hover-dark d-flex align-items-center px-2 py-2'>
-                        <IconChevronRight
-                            v-if='layer.type === "UID" && !layer._open'
-                            :size='32'
-                            :stroke='1'
-                            class='cursor-pointer'
-                            @click='layer._open = true'
-                        />
-                        <IconChevronDown
-                            v-else-if='layer.type === "UID" && layer._open'
-                            :size='32'
-                            :stroke='1'
-                            class='cursor-pointer'
-                            @click='layer._open = false'
-                        />
-
-                        <IconFiles
-                            v-if='layer.type === "CONTENTS"'
-                            :size='32'
-                            :stroke='1'
-                        />
-                        <IconMapPins
-                            v-else-if='layer.type === "UID"'
-                            :size='32'
-                            :stroke='1'
-                        />
-                        <IconFolder
-                            v-else-if='layer.type === "GROUP"'
-                            :size='32'
-                            :stroke='1'
-                        />
-                        <IconMap
-                            v-else-if='layer.type === "MAPLAYER"'
-                            :size='32'
-                            :stroke='1'
-                        />
-                        <IconPin
-                            v-else-if='layer.type === "ITEM"'
-                            :size='32'
-                            :stroke='1'
-                        />
-
-                        <span
-                            class='mx-2'
-                            v-text='layer.name'
-                        />
-
-                        <div class='ms-auto btn-list d-flex align-items-center'>
-                            <span
-                                v-if='layer.type === "UID"'
-                                class='mx-3 ms-auto badge border bg-blue text-white'
-                                v-text='`${layer.uids.length} Features`'
-                            />
-
-                            <TablerIconButton
-                                v-if='role.permissions.includes("MISSION_WRITE")'
-                                title='Edit Name'
-                                icon='IconPencil'
-                                :size='24'
-                                @click='layer._edit = true'
-                            />
-
-                            <TablerDelete
-                                v-if='role.permissions.includes("MISSION_WRITE")'
-                                displaytype='icon'
-                                :size='24'
-                                @delete='deleteLayer(layer)'
-                            />
-                        </div>
-                    </div>
-
-                    <MissionLayerEdit
-                        v-if='layer._edit'
-                        :mission='mission'
-                        :layer='layer'
-                        :role='role'
-                        @cancel='layer._edit = false'
-                        @layer='refresh'
-                    />
-                    <div
-                        v-else-if='layer._open && layer.type === "UID"'
-                    >
-                        <div
-                            v-for='cot of layer.uids'
-                            :key='cot.data'
-                            class='hover-dark py-2'
-                            style='padding-left: 24px'
-                        >
-                            <IconMapPin
-                                :size='32'
-                                :stroke='1'
-                            />
-
-                            <span
-                                class='mx-2'
-                                v-text='cot.details.callsign || "UNKNOWN"'
-                            />
-                        </div>
-                    </div>
-                </div>
+                <MissionLayerTree
+                    :layers='layers'
+                    :feats='feats'
+                    :mission='mission'
+                    :role='role'
+                    :token='token'
+                    @refresh='refresh'
+                />
             </template>
         </div>
     </MenuTemplate>
@@ -169,25 +73,16 @@ import { std, stdurl } from '/src/std.ts';
 import {
     IconPlus,
     IconRefresh,
-    IconChevronRight,
-    IconChevronDown,
-    IconFiles,
-    IconMapPin,
-    IconMapPins,
-    IconFolder,
-    IconMap,
-    IconPin,
 } from '@tabler/icons-vue';
 import {
     TablerNone,
-    TablerDelete,
     TablerLoading,
     TablerIconButton,
 } from '@tak-ps/vue-tabler';
 import Feature from '../../util/Feature.vue';
 import MenuTemplate from '../../util/MenuTemplate.vue';
+import MissionLayerTree from './MissionLayerTree.vue';
 import MissionLayerCreate from './MissionLayerCreate.vue';
-import MissionLayerEdit from './MissionLayerEdit.vue';
 
 export default {
     name: 'MissionLayers',
@@ -195,17 +90,8 @@ export default {
         IconPlus,
         IconRefresh,
         Feature,
-        IconChevronRight,
-        IconChevronDown,
-        IconFiles,
-        IconMapPin,
-        IconMapPins,
-        IconFolder,
-        IconMap,
-        IconPin,
-        TablerDelete,
         MenuTemplate,
-        MissionLayerEdit,
+        MissionLayerTree,
         MissionLayerCreate,
         TablerNone,
         TablerLoading,
@@ -223,6 +109,7 @@ export default {
                 layers: true,
             },
             feats: new Map(),
+            orphaned: new Set(),
             layers: [],
         }
     },
@@ -261,6 +148,20 @@ export default {
 
             for (const feat of fc.features) {
                 this.feats.set(feat.id, feat);
+                this.orphaned.add(feat.id);
+            }
+        },
+        removeFeatures: async function(layers) {
+            for (const layer of layers) {
+                if (layer.type === 'UID' && layer.uids && layer.uids.length) {
+                    for (const cot of layer.uids) {
+                        this.orphaned.delete(cot.data);
+                    }
+                }
+
+                if (layer.mission_layers) {
+                    this.removeFeatures(layer.mission_layers);
+                }
             }
         },
         fetchLayers: async function() {
@@ -275,13 +176,7 @@ export default {
                 return l;
             });
 
-            for (const layer of this.layers) {
-                if (layer.type === "UID" && layer.uids.length) {
-                    for (const cot of layer.uids) {
-                        this.feats.delete(cot.data);
-                    }
-                }
-            }
+            this.removeFeatures(this.layers);
         },
     }
 }

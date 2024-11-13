@@ -21,18 +21,23 @@
 
 
         <TablerLoading v-if='loading' />
-        <div v-else class='row mx-2'>
+        <div
+            v-else
+            class='row mx-2'
+        >
             <div class='col-12'>
                 <TablerInput
-                    label='Package Name'
                     v-model='body.name'
+                    label='Package Name'
                 />
             </div>
             <div class='col-12 pt-3'>
                 <TablerButton
-                    @click='share'
                     class='w-100'
-                >Create</TablerButton>
+                    @click='share'
+                >
+                    Create
+                </TablerButton>
             </div>
         </div>
     </div>

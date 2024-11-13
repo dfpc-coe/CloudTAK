@@ -1,20 +1,17 @@
 import { Static, Type } from '@sinclair/typebox'
 import Schema from '@openaddresses/batch-schema';
+import crypto from 'node:crypto';
 import Err from '@openaddresses/batch-error';
-import { Item as QueueItem } from '../lib/queue.js'
 import Cacher from '../lib/cacher.js';
 import Auth, { AuthResourceAccess } from '../lib/auth.js';
 import Style from '../lib/style.js';
-import DDBQueue from '../lib/queue.js';
 import Config from '../lib/config.js';
 import CoT, { Feature } from '@tak-ps/node-cot';
+import { MissionLayerType } from '../lib/api/mission-layer.js';
 import { StandardLayerResponse, LayerError } from '../lib/types.js';
 import TAKAPI, { APIAuthCertificate, } from '../lib/tak-api.js';
 
 export default async function router(schema: Schema, config: Config) {
-    const ddb = new DDBQueue(config.StackName);
-    ddb.on('error', (err) => { console.error(err); });
-
     await schema.post('/layer/:layerid/cot', {
         name: 'Post COT',
         group: 'Internal',
@@ -129,14 +126,79 @@ export default async function router(schema: Schema, config: Config) {
                         existMap.set(String(feat.id), feat);
                     }
 
+                    const pathMap = await api.MissionLayer.listAsPathMap(
+                        data.name,
+                        { token: data.mission_token || undefined }
+                    );
+
+                    for (const cot of cots) {
+                        if (cot.path === '/') continue;
+
+                        const path = cot.path.split('/').filter((p) => !!p);
+
+                        let pathMapEntryLast = pathMap.get(`/${encodeURIComponent(layer.name)}/`);
+                        if (!pathMapEntryLast) continue;
+
+                        const pathSegs = [];
+                        for (const p of path) {
+                            pathSegs.push(encodeURIComponent(p));
+
+                            const currentPath = `/${encodeURIComponent(layer.name)}/${pathSegs.join('/')}/`;
+                            const pathMapEntry = pathMap.get(currentPath);
+
+                            if (!pathMapEntry) {
+                                const missionLayer = await api.MissionLayer.create(
+                                    data.name,
+                                    {
+                                        uid: `layer-${layer.id}-${crypto.randomUUID()}`,
+                                        name: p,
+                                        type: MissionLayerType.UID,
+                                        parentUid: pathMapEntryLast.uid,
+                                        creatorUid: `connection-${data.connection}-data-${data.id}`
+                                    },
+                                    { token: data.mission_token || undefined }
+                                );
+
+                                pathMap.set(currentPath, missionLayer.data);
+
+                                pathMapEntryLast = missionLayer.data;
+                            } else {
+                                pathMapEntryLast = pathMapEntry;
+                            }
+                        }
+
+                        cot.addDest({ mission: data.name, path: pathMapEntryLast.uid, after: '' });
+                        if (!pathMapEntryLast.uids) pathMapEntryLast.uids = [];
+                        pathMapEntryLast.uids.push({ data: cot.uid(), timestamp: new Date().toISOString(), creatorUid: `connection-${data.connection}-data-${data.id}` });
+                    }
+
+                    for (const [key, pathLayer] of pathMap.entries()) {
+                        // TODO: This currently doesn't handle that if a leaf is deleted, the parent node, now a leaf
+                        // might be empty now
+
+                        if (!key.startsWith(`/${encodeURIComponent(layer.name)}/`)) {
+                            continue;
+                        }
+
+                        if (api.MissionLayer.isEmpty(pathLayer)) {
+                                await api.MissionLayer.delete(
+                                    data.name,
+                                    {
+                                        uid: [ pathLayer.uid ],
+                                        creatorUid: `connection-${data.connection}-data-${data.id}`
+                                    },
+                                    { token: data.mission_token || undefined }
+                                );
+                        }
+                    }
+
                     cots = cots.filter((cot) => {
                         const exist = existMap.get(cot.uid());
                         if (exist && data.mission_diff) {
                             const b = CoT.from_geojson(exist);
+                            // TODO: Check for path change
                             if (!cot.isDiff(b)) return false;
                         }
-
-                        cot.addDest({ mission: data.name, path: `layer-${layer.id}`, after: '' });
 
                         return true;
                     })
@@ -154,21 +216,6 @@ export default async function router(schema: Schema, config: Config) {
             pooledClient.tak.write(cots);
 
             config.conns.cots(pooledClient.config, cots);
-
-            // TODO Only GeoJSON Features go to Dynamo, this should also store CoT XML
-            if (layer.logging && req.query.logging !== false) {
-                ddb.queue(req.body.features.map((feat) => {
-                    const item: QueueItem = {
-                        id: String(feat.id),
-                        layer: layer.id,
-                        type: feat.type,
-                        properties: feat.properties,
-                        geometry: feat.geometry
-                    }
-
-                    return item;
-                }));
-            }
 
             res.status(errors.length ? 400 : 200).json({
                 status: errors.length ? 400 : 200,

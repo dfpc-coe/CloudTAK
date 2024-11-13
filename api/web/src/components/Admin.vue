@@ -13,7 +13,10 @@
                                 v-else-if='!profile.system_admin'
                                 :err='new Error("Insufficient Access")'
                             />
-                            <div v-else class='row g-0'>
+                            <div
+                                v-else
+                                class='row g-0'
+                            >
                                 <div class='col-12 col-md-3 border-end'>
                                     <div class='card-body'>
                                         <h4 class='subheader'>

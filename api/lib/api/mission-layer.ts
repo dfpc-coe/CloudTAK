@@ -1,5 +1,5 @@
 import TAKAPI from '../tak-api.js';
-import { TAKList } from './types.js';
+import { TAKList, TAKItem } from './types.js';
 import { Type, Static } from '@sinclair/typebox';
 import type { MissionOptions } from './mission.js';
 import { GUIDMatch } from './mission.js';
@@ -17,17 +17,17 @@ export enum MissionLayerType {
 export const MissionLayer = Type.Object({
     name: Type.String({ minLength: 1 }),
     type: Type.Enum(MissionLayerType),
-    parentUid: Type.String(),
+    parentUid: Type.Optional(Type.String()),
     uid: Type.String(),
-    mission_layers: Type.Array(Type.Any()),
-    uids: Type.Array(Type.Object({
+    mission_layers: Type.Optional(Type.Array(Type.Any())),
+    uids: Type.Optional(Type.Array(Type.Object({
         data: Type.String({
             description: 'The UID of the COT'
         }),
         timestamp: Type.String(),
         creatorUid: Type.String(),
         keywords: Type.Optional(Type.Array(Type.String())),
-        detail: Type.Optional(Type.Object({
+        details: Type.Optional(Type.Object({
             type: Type.String(),
             callsign: Type.String(),
             color: Type.String(),
@@ -36,9 +36,9 @@ export const MissionLayer = Type.Object({
                 lon: Type.Number()
             })
         }))
-    })),
-    contents: Type.Array(Type.Any()),
-    maplayers: Type.Array(Type.Any())
+    }))),
+    contents: Type.Optional(Type.Array(Type.Any())),
+    maplayers: Type.Optional(Type.Array(Type.Any()))
 });
 
 export const DeleteInput = Type.Object({
@@ -85,6 +85,42 @@ export default class {
         }
     }
 
+    isEmpty(layer: Static<typeof MissionLayer>): boolean {
+        if (layer.mission_layers && layer.mission_layers.length) return false;
+        if (layer.uids && layer.uids.length) return false;
+        if (layer.contents && layer.contents.length) return false;
+        if (layer.maplayers && layer.maplayers.length) return false;
+        return true;
+    }
+
+    async listAsPathMap(
+        name: string,
+        opts?: Static<typeof MissionOptions>
+    ): Promise<Map<string, Static<typeof MissionLayer>>> {
+        const layers = (await this.list(name, opts)).data;
+
+        const pathMap: Map<string, Static<typeof MissionLayer>> = new Map();
+
+        for (const layer of layers) {
+            this.#listAsPathMapRecurse(pathMap, '', layer);
+        }
+
+        return pathMap;
+    }
+
+    #listAsPathMapRecurse(
+        pathMap: Map<string, Static<typeof MissionLayer>>,
+        pathCurrent: string,
+        layer: Static<typeof MissionLayer>
+    ) {
+        pathCurrent = `${pathCurrent}/${encodeURIComponent(layer.name)}`;
+        pathMap.set(`${pathCurrent}/`, layer);
+
+        for (const l of (layer.mission_layers || []) as Array<Static<typeof MissionLayer>>) {
+            this.#listAsPathMapRecurse(pathMap, pathCurrent, l);
+        }
+    }
+
     async list(
         name: string,
         opts?: Static<typeof MissionOptions>
@@ -125,10 +161,10 @@ export default class {
         layerUid: string, // Layer UID
         opts?: Static<typeof MissionOptions>
     ): Promise<Static<typeof Feature.Feature>[]> {
-        const layer = await this.get(name, layerUid, opts);
+        const layer = (await this.get(name, layerUid, opts)).data;
         const feats = await this.api.Mission.latestFeats(name, opts);
 
-        const layerUids = new Set(layer.uids.map((u) => {
+        const layerUids = new Set((layer.uids || []).map((u) => {
             return u.data
         }));
 
@@ -143,23 +179,29 @@ export default class {
         name: string,
         layerUid: string, // Layer UID
         opts?: Static<typeof MissionOptions>
-    ): Promise<Static<typeof MissionLayer>> {
+    ): Promise<TAKItem<Static<typeof MissionLayer>>> {
         const layers = await this.list(name, opts);
 
+        // TODO this will only return top level layers - need to recurse to lower level layers
         for (const layer of layers.data) {
             if (layer.uid === layerUid) {
-                return layer;
+                return {
+                    version: layers.version,
+                    type: layers.type,
+                    data: layer,
+                    nodeId: layers.nodeId
+                }
             }
         }
 
-        throw new Err(404, null, `Layer ${layerUid} not found`);
+        throw new Err(404, null, `Layer ${layerUid} not found - only top level layers will be returned`);
     }
 
     async create(
         name: string,
         query: Static<typeof CreateInput>,
         opts?: Static<typeof MissionOptions>
-    ): Promise<TAKList<Static<typeof MissionLayer>>> {
+    ): Promise<TAKItem<Static<typeof MissionLayer>>> {
         if (this.#isGUID(name)) {
             const url = new URL(`/Marti/api/missions/guid/${this.#encodeName(name)}/layers`, this.api.url);
 

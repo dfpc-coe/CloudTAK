@@ -15,19 +15,19 @@
                         v-if='sub.role.type === "MISSION_OWNER"'
                         v-tooltip='sub.role.type'
                         :size='32'
-                        :stroke='1'
+                        stroke='1'
                     />
                     <IconUserEdit
                         v-else-if='sub.role.type === "MISSION_SUBSCRIBER"'
                         v-tooltip='sub.role.type'
                         :size='32'
-                        :stroke='1'
+                        stroke='1'
                     />
                     <IconUser
                         v-else-if='sub.role.type === "MISSION_READONLY_SUBSCRIBER"'
                         v-tooltip='sub.role.type'
                         :size='32'
-                        :stroke='1'
+                        stroke='1'
                     />
                     <div class='col-auto mx-2'>
                         <div v-text='sub.username' />
@@ -43,10 +43,10 @@
     </MenuTemplate>
 </template>
 
-<script>
-import { std, stdurl } from '/src/std.ts';
-import {
-} from '@tak-ps/vue-tabler';
+<script setup lang='ts'>
+import { ref, onMounted } from 'vue';
+import type { Mission, MissionRole, MissionSubscriptions } from '../../../../../src/types.ts';
+import Subscription from '../../../../../src/stores/base/mission.ts';
 import {
     IconUserBolt,
     IconUserEdit,
@@ -54,41 +54,22 @@ import {
 } from '@tabler/icons-vue';
 import MenuTemplate from '../../util/MenuTemplate.vue';
 
-export default {
-    name: 'MissionUsers',
-    components: {
-        MenuTemplate,
-        IconUserBolt,
-        IconUserEdit,
-        IconUser
-    },
-    props: {
-        mission: Object,
-        token: String,
-        role: Object
-    },
-    data: function() {
-        return {
-            loading: false,
-            subscriptions: []
-        }
-    },
-    mounted: async function() {
-        await this.fetchSubscriptions();
-    },
-    methods: {
-        fetchSubscriptions: async function() {
-            this.loading = true;
+const props = defineProps<{
+    mission: Mission,
+    token?: string,
+    role?: MissionRole
+}>();
 
-            const url = await stdurl(`/api/marti/missions/${this.mission.name}/subscriptions/roles`);
-            this.subscriptions = (await std(url, {
-                headers: {
-                    MissionAuthorization: this.token
-                },
-            })).data;
+const loading = ref(false);
+const subscriptions = ref<MissionSubscriptions>([])
 
-            this.loading = false;
-        },
-    }
+onMounted(async () => {
+    await fetchSubscriptions();
+});
+
+async function fetchSubscriptions() {
+    loading.value = true;
+    subscriptions.value = await Subscription.subscriptions(props.mission.guid, props.token);
+    loading.value = false;
 }
 </script>
