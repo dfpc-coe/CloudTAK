@@ -1,5 +1,7 @@
 <template>
+    <TablerLoading v-if='loading'/>
     <div
+        v-else
         v-for='layer in layers'
         :key='layer.uid'
     >
@@ -7,14 +9,14 @@
             <IconChevronRight
                 v-if='layer.type === "UID" && !opened.has(layer.uid)'
                 :size='32'
-                :stroke='1'
+                stroke='1'
                 class='cursor-pointer'
                 @click='opened.add(layer.uid)'
             />
             <IconChevronDown
                 v-else-if='layer.type === "UID" && opened.has(layer.uid)'
                 :size='32'
-                :stroke='1'
+                stroke='1'
                 class='cursor-pointer'
                 @click='opened.delete(layer.uid)'
             />
@@ -22,27 +24,27 @@
             <IconFiles
                 v-if='layer.type === "CONTENTS"'
                 :size='32'
-                :stroke='1'
+                stroke='1'
             />
             <IconMapPins
                 v-else-if='layer.type === "UID"'
                 :size='32'
-                :stroke='1'
+                stroke='1'
             />
             <IconFolder
                 v-else-if='layer.type === "GROUP"'
                 :size='32'
-                :stroke='1'
+                stroke='1'
             />
             <IconMap
                 v-else-if='layer.type === "MAPLAYER"'
                 :size='32'
-                :stroke='1'
+                stroke='1'
             />
             <IconPin
                 v-else-if='layer.type === "ITEM"'
                 :size='32'
-                :stroke='1'
+                stroke='1'
             />
 
             <span
@@ -62,15 +64,16 @@
                 />
 
                 <TablerIconButton
-                    v-if='role.permissions.includes("MISSION_WRITE")'
+                    v-if='role && role.permissions.includes("MISSION_WRITE")'
                     title='Edit Name'
-                    icon='IconPencil'
                     :size='24'
                     @click='edit.add(layer.uid)'
-                />
+                >
+                    <IconPencil stroke='1' />
+                </TablerIconButton>
 
                 <TablerDelete
-                    v-if='role.permissions.includes("MISSION_WRITE")'
+                    v-if='role && role.permissions.includes("MISSION_WRITE")'
                     displaytype='icon'
                     :size='24'
                     @delete='deleteLayer(layer)'
@@ -84,28 +87,28 @@
             :layer='layer'
             :role='role'
             @cancel='edit.delete(layer.uid)'
-            @layer='refresh'
+            @layer='emit("refresh")'
         />
         <div
             v-else-if='opened.has(layer.uid) && layer.type === "UID"'
             class='mx-2'
         >
-            <Feature
+            <SingleFeature
                 v-for='cot of layer.uids'
                 :key='cot.data'
                 :delete-button='false'
                 :feature='feats.get(cot.data)'
                 :mission='mission'
             />
-            <MissionLayer
+            <MissionLayerTree
                 v-if='layer.mission_layers && layer.mission_layers.length'
-                :layers='layer.mission_layers'
+                @refresh='emit("refresh")'
+                :layers='layer.mission_layers as Array<MissionLayer>'
                 :feats='feats'
                 :mission='mission'
                 :token='token'
                 :role='role'
             />
-
             <TablerNone
                 v-if='!layer.uids || !layer.uids.length'
                 :create='false'
@@ -118,48 +121,51 @@
 
 <script setup lang='ts'>
 import { ref } from 'vue';
-import { std, stdurl } from '../../../../../src/std.ts';
-import MissionLayer from './MissionLayer.vue';
+import type { Mission, MissionLayer, MissionRole, Feature } from '../../../../../src/types.ts';
+import Subscription from '../../../../../src/stores/base/mission.ts';
+import MissionLayerTree from './MissionLayerTree.vue';
 import {
     IconChevronRight,
     IconChevronDown,
     IconFiles,
     IconMapPins,
     IconFolder,
+    IconPencil,
     IconMap,
     IconPin,
 } from '@tabler/icons-vue';
 import {
     TablerNone,
     TablerDelete,
+    TablerLoading,
     TablerIconButton,
 } from '@tak-ps/vue-tabler';
-import Feature from '../../util/Feature.vue';
+import SingleFeature from '../../util/Feature.vue';
 import MissionLayerEdit from './MissionLayerEdit.vue';
 
-defineProps({
-    layers: Array,
-    feats: Map,
-    mission: Object,
-    token: String,
-    role: Object,
-});
+const emit = defineEmits([
+    'refresh'
+])
+
+const props = defineProps<{
+    layers: Array<MissionLayer>,
+    feats: Map<string, Feature>,
+    mission: Mission,
+    token?: string,
+    role?: MissionRole
+}>();
 
 const opened = ref<Set<string>>(new Set());
 const edit = ref<Set<string>>(new Set());
-const loading = ref<Set<string>>(new Set());
+const loading = ref(false);
 
 async function deleteLayer(layer: MissionLayer) {
-    loading.value.set(layer.uid)
-    const url = stdurl(`/api/marti/missions/${this.mission.name}/layer/${layer.uid}`);
+    loading.value = true;
 
-    await std(url, {
-        method: 'DELETE',
-        headers: {
-            MissionAuthorization: this.token
-        },
-    })
+    await Subscription.layerDelete(props.mission.guid, layer.uid, props.token);
 
-    loading.value.delete(layer.uid);
+    emit('refresh')
+
+    loading.value = false;
 }
 </script>
