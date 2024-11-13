@@ -1,11 +1,11 @@
 import { Static, Type } from '@sinclair/typebox'
-import { StandardResponse, GenericMartiResponse } from '../lib/types.js';
+import { StandardResponse } from '../lib/types.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import { MissionOptions } from '../lib/api/mission.js';
-import { MissionLayerType } from '../lib/api/mission-layer.js';
+import { MissionLayer, MissionLayerType } from '../lib/api/mission-layer.js';
 import TAKAPI, {
     APIAuthCertificate,
 } from '../lib/tak-api.js';
@@ -18,7 +18,13 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.String()
         }),
         description: 'Helper API list mission layers',
-        res: GenericMartiResponse
+        res: Type.Object({
+            version: Type.String(),
+            type: Type.String(),
+            data: Type.Array(MissionLayer),
+            messages: Type.Optional(Type.Array(Type.String())),
+            nodeId: Type.Optional(Type.String())
+        })
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -41,6 +47,44 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
+    await schema.get('/marti/missions/:name/layer/:layerid', {
+        name: 'Get Layer',
+        group: 'MartiMissionLayer',
+        params: Type.Object({
+            name: Type.String(),
+            layerid: Type.String()
+        }),
+        description: 'Helper API to get mission layer',
+        res: Type.Object({
+            version: Type.String(),
+            type: Type.String(),
+            data: MissionLayer,
+            messages: Type.Optional(Type.Array(Type.String())),
+            nodeId: Type.Optional(Type.String())
+        })
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            const auth = (await config.models.Profile.from(user.email)).auth;
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+
+            const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
+                ? { token: String(req.headers['missionauthorization']) }
+                : await config.conns.subscription(user.email, req.params.name)
+
+            const layer = await api.MissionLayer.get(
+                req.params.name,
+                req.params.layerid,
+                opts
+            );
+
+            res.json(layer);
+        } catch (err) {
+             Err.respond(err, res);
+        }
+    });
+
     await schema.post('/marti/missions/:name/layer', {
         name: 'Create Layer',
         group: 'MartiMissionLayer',
@@ -55,7 +99,13 @@ export default async function router(schema: Schema, config: Config) {
             afterUid: Type.Optional(Type.String()),
         }),
         description: 'Helper API to create mission layers',
-        res: GenericMartiResponse
+        res: Type.Object({
+            version: Type.String(),
+            type: Type.String(),
+            data: MissionLayer,
+            messages: Type.Optional(Type.Array(Type.String())),
+            nodeId: Type.Optional(Type.String())
+        })
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
