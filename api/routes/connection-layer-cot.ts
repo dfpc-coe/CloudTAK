@@ -2,11 +2,9 @@ import { Static, Type } from '@sinclair/typebox'
 import Schema from '@openaddresses/batch-schema';
 import crypto from 'node:crypto';
 import Err from '@openaddresses/batch-error';
-import { Item as QueueItem } from '../lib/queue.js'
 import Cacher from '../lib/cacher.js';
 import Auth, { AuthResourceAccess } from '../lib/auth.js';
 import Style from '../lib/style.js';
-import DDBQueue from '../lib/queue.js';
 import Config from '../lib/config.js';
 import CoT, { Feature } from '@tak-ps/node-cot';
 import { MissionLayerType } from '../lib/api/mission-layer.js';
@@ -14,9 +12,6 @@ import { StandardLayerResponse, LayerError } from '../lib/types.js';
 import TAKAPI, { APIAuthCertificate, } from '../lib/tak-api.js';
 
 export default async function router(schema: Schema, config: Config) {
-    const ddb = new DDBQueue(config.StackName);
-    ddb.on('error', (err) => { console.error(err); });
-
     await schema.post('/layer/:layerid/cot', {
         name: 'Post COT',
         group: 'Internal',
@@ -175,6 +170,10 @@ export default async function router(schema: Schema, config: Config) {
                         cot.addDest({ mission: data.name, path: pathMapEntryLast.uid, after: '' });
                     }
 
+                    for (const pathLayer of pathMap.keys()) {
+
+                    }
+
                     cots = cots.filter((cot) => {
                         const exist = existMap.get(cot.uid());
                         if (exist && data.mission_diff) {
@@ -199,21 +198,6 @@ export default async function router(schema: Schema, config: Config) {
             pooledClient.tak.write(cots);
 
             config.conns.cots(pooledClient.config, cots);
-
-            // TODO Only GeoJSON Features go to Dynamo, this should also store CoT XML
-            if (layer.logging && req.query.logging !== false) {
-                ddb.queue(req.body.features.map((feat) => {
-                    const item: QueueItem = {
-                        id: String(feat.id),
-                        layer: layer.id,
-                        type: feat.type,
-                        properties: feat.properties,
-                        geometry: feat.geometry
-                    }
-
-                    return item;
-                }));
-            }
 
             res.status(errors.length ? 400 : 200).json({
                 status: errors.length ? 400 : 200,

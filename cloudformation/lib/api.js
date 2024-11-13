@@ -179,15 +179,6 @@ export default {
                         },{
                             Effect: 'Allow',
                             Action: [
-                                'dynamodb:*'
-                            ],
-                            Resource: [
-                                cf.getAtt('DDBTable', 'Arn'),
-                                cf.join([cf.getAtt('DDBTable', 'Arn'), '/*'])
-                            ]
-                        },{
-                            Effect: 'Allow',
-                            Action: [
                                 'secretsmanager:Describe*',
                                 'secretsmanager:Get*',
                                 'secretsmanager:List*'
