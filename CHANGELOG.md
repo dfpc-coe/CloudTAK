@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v5.0.2 - 2024-11-13
+
+- :bug: Don't delete container layer if empty
+
 ### v5.0.1 - 2024-11-13
 
 - :rocket: More granular check for Notification variable
