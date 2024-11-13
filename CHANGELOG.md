@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v5.0.1 - 2024-11-13
+
+- :rocket: More granular check for Notification variable
+
 ### v5.0.0 - 2024-11-13
 
 - :rocket: `API` Remove DynamoDB backend for feature store as it is no longer used and suffered from a massive memory leak & assoc. layer features APIs

@@ -591,7 +591,7 @@ export default {
 
         this.loading.main = false;
 
-        if (Notification && Notification.permission !== 'granted') {
+        if ('Notification' in window && Notification && Notification.permission !== 'granted') {
             Notification.requestPermission()
         }
 

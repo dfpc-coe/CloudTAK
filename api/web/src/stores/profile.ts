@@ -42,7 +42,7 @@ export const useProfileStore = defineStore('profile', {
         pushNotification: function(notification: TAKNotification): void {
             this.notifications.push(notification);
 
-            if (Notification && Notification.permission !== 'denied') {
+            if ('Notification' in window && Notification && Notification.permission !== 'denied') {
                 const n = new Notification(notification.name, {
                     body: notification.body
                 });
