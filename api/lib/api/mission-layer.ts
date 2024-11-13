@@ -85,6 +85,14 @@ export default class {
         }
     }
 
+    isEmpty(layer: Static<typeof MissionLayer>): boolean {
+        if (!layer.mission_layers || !layer.mission_layers.length) return false;
+        if (!layer.uids || !layer.uids.length) return false;
+        if (!layer.contents || !layer.contents.length) return false;
+        if (!layer.maplayers || !layer.maplayers.length) return false;
+        return true;
+    }
+
     async listAsPathMap(
         name: string,
         opts?: Static<typeof MissionOptions>
@@ -153,7 +161,7 @@ export default class {
         layerUid: string, // Layer UID
         opts?: Static<typeof MissionOptions>
     ): Promise<Static<typeof Feature.Feature>[]> {
-        const layer = await this.get(name, layerUid, opts);
+        const layer = (await this.get(name, layerUid, opts)).data;
         const feats = await this.api.Mission.latestFeats(name, opts);
 
         const layerUids = new Set((layer.uids || []).map((u) => {
@@ -171,13 +179,18 @@ export default class {
         name: string,
         layerUid: string, // Layer UID
         opts?: Static<typeof MissionOptions>
-    ): Promise<Static<typeof MissionLayer>> {
+    ): Promise<TAKItem<Static<typeof MissionLayer>>> {
         const layers = await this.list(name, opts);
 
         // TODO this will only return top level layers - need to recurse to lower level layers
         for (const layer of layers.data) {
             if (layer.uid === layerUid) {
-                return layer;
+                return {
+                    version: layers.version,
+                    type: layers.type,
+                    data: layer,
+                    nodeId: layers.nodeId
+                }
             }
         }
 
