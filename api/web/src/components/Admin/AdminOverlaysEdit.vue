@@ -70,13 +70,14 @@
                     />
                 </div>
                 <div class='col-12 d-flex py-2'>
+                    <TablerDelete v-if='overlay.id' @delete='deleteOverlay'/>
                     <div class='ms-auto'>
-                        <button
-                            class='btn btn-primary'
+                        <TablerButton
+                            class='btn-primary'
                             @click='saveOverlay'
                         >
                             Submit
-                        </button>
+                        </TablerButton>
                     </div>
                 </div>
             </div>
@@ -90,13 +91,17 @@ import StyleContainer from '../Styling/Style.vue';
 import {
     TablerEnum,
     TablerInput,
-    TablerLoading
+    TablerLoading,
+    TablerButton,
+    TablerDelete,
 } from '@tak-ps/vue-tabler';
 
 export default {
     name: 'OverlayAdmin',
     components: {
         TablerEnum,
+        TablerDelete,
+        TablerButton,
         TablerInput,
         TablerLoading,
         StyleContainer,
@@ -126,6 +131,20 @@ export default {
     },
     methods: {
         stdclick,
+        deleteOverlay: async function() {
+            try {
+                this.loading = true;
+
+                await std(`/api/basemap/${this.overlay.id}`, {
+                    method: 'DELETE'
+                });
+
+                this.$router.push('/admin/overlay');
+            } catch (err) {
+                this.loading = false;
+                throw err;
+            }
+        },
         saveOverlay: async function() {
             let overlay = JSON.parse(JSON.stringify(this.overlay));
 
@@ -138,22 +157,28 @@ export default {
             })
 
             this.loading = true;
-            if (this.$route.params.overlay === 'new') {
-                overlay = await std(`/api/basemap`, {
-                    method: 'POST',
-                    body: overlay
-                });
-            } else {
-                overlay = await std(`/api/basemap/${this.overlay.id}`, {
-                    method: 'PATCH',
-                    body: overlay
-                });
+
+            try {
+                if (this.$route.params.overlay === 'new') {
+                    overlay = await std(`/api/basemap`, {
+                        method: 'POST',
+                        body: overlay
+                    });
+                } else {
+                    overlay = await std(`/api/basemap/${this.overlay.id}`, {
+                        method: 'PATCH',
+                        body: overlay
+                    });
+                }
+
+                overlay.bounds = overlay.bounds.join(',');
+                overlay.center = overlay.center.join(',');
+
+                this.loading = false;
+            } catch (err) {
+                this.loading = false;
+                throw err;
             }
-
-            overlay.bounds = overlay.bounds.join(',');
-            overlay.center = overlay.center.join(',');
-
-            this.loading = false;
         },
         fetchOverlay: async function() {
             this.loading = true;

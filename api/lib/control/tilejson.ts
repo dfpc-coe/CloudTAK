@@ -71,8 +71,9 @@ export default class TileJSON {
         if (
             !(pathname.includes('{z}') && pathname.includes('{x}') && pathname.includes('{y}'))
             && !pathname.includes('{q}')
+            && !pathname.includes('/FeatureServer/')
         ) {
-            throw new Err(400, null, 'Either ZXY or Quadkey variables must be used');
+            throw new Err(400, null, 'Either ZXY, Quadkey variables OR ESRI FeatureServer must be used');
         }
     }
 
@@ -91,6 +92,52 @@ export default class TileJSON {
             tiles: [ String(config.url) ],
             layers: []
         }
+    }
+
+    static extent(z: number, x: number, y: number): Array<number> {
+        return tileBounds = tilebelt.tileToBBOX(tile);
+    }
+
+    static esri(layer: string, z: number, x: number, y: number): URL {
+        const url = new URL(layer);
+
+        url.searchParams.set('f', 'pbf');
+        url.searchParams.set('inSR', '4326');
+        url.searchParams.set('outSR', '4326');
+        url.searchParams.set('returnZ', 'false');
+        url.searchParams.set('returnM', 'false');
+
+        url.searchParams.set('useStaticZoomLevel', 'false');
+        url.searchParams.set('simplifyFactor', 0.3);
+        url.searchParams.set('setAttributionFromService', 'true');
+        url.searchParams.set('useSeviceBounds', 'true')
+        url.searchParams.set('resultType', 'tile')
+        url.searchParams.set('spatialRel', 'esriSpatialRelIntersects');
+        url.searchParams.set('geometryType', 'esriGeometryEnvelope');
+
+        if (!url.searchParams.has('precision')) url.searchParams.set('precision', '8');
+        if (!url.searchParams.has('where')) url.searchParams.append('where', '1=1');
+        if (!url.searchParams.has('outFields')) url.searchParams.append('outFields', '*');
+
+        const bbox = this.extent(z, x, y);
+
+        const extent = {
+            spatialReference: { latestWkid: 4326, wkid: 4326 },
+            xmin: bbox[0],
+            ymin: bbox[1],
+            xmax: bbox[2],
+            ymax: bbox[3]
+        }
+
+        url.searchParams.set('quantizationParameters', JSON.stringify({
+            extent,
+            tolerance: 0.001,
+            mode: 'view'
+        }))
+
+        url.searchParams.set('geometry', JSON.stringify(extent));
+
+        return url;
     }
 
     /**
@@ -121,6 +168,9 @@ export default class TileJSON {
             headers?: Record<string, string | undefined>
         }
     ): Promise<void> {
+        if (config.url.includes("/FeatureServer/")) {
+        }
+
         const url = new URL(config.url
             .replace(/\{\$?z\}/, String(z))
             .replace(/\{\$?x\}/, String(x))
