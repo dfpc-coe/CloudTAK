@@ -1,7 +1,7 @@
 {
     "name": "@tak-ps/CloudTAK.api",
     "type": "module",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "Facilitate ETL operations to bring non-TAK sources into a TAK Server",
     "main": "index.js",
     "scripts": {
@@ -15,7 +15,6 @@
         "migratedb-custom": "npm run migratedb-pre && drizzle-kit generate --custom && npm run migratedb-commit",
         "migratedb-pre": "npm run lint && git stash && tsc --outDir .",
         "migratedb-commit": "git add migrations/* && git commit -m 'Custom DB Migration' && git clean -f && git stash",
-
         "dev": "tsx watch --ignore web/ index.ts --noevents --nometrics --nosinks --unsafe",
         "prod": "NODE_OPTIONS='--max-old-space-size=6144' node dist/index.js"
     },
