@@ -187,4 +187,12 @@ export default class Subscription {
 
         return list;
     }
+
+    static async layerDelete(guid: string, layeruid: string, token?: string): Promise<void> {
+        const url = stdurl(`/api/marti/missions/${guid}/layer/${layeruid}`);
+        await std(url, {
+            method: 'DELETE',
+            headers: Subscription.headers(token)
+        })
+    }
 }

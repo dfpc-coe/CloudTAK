@@ -55,12 +55,13 @@
                     :feature='feats.get(uid)'
                     :mission='mission'
                 />
-                <MissionLayer
+                <MissionLayerTree
                     :layers='layers'
                     :feats='feats'
                     :mission='mission'
                     :role='role'
                     :token='token'
+                    @refresh='refresh'
                 />
             </template>
         </div>
@@ -80,7 +81,7 @@ import {
 } from '@tak-ps/vue-tabler';
 import Feature from '../../util/Feature.vue';
 import MenuTemplate from '../../util/MenuTemplate.vue';
-import MissionLayer from './MissionLayer.vue';
+import MissionLayerTree from './MissionLayerTree.vue';
 import MissionLayerCreate from './MissionLayerCreate.vue';
 
 export default {
@@ -90,7 +91,7 @@ export default {
         IconRefresh,
         Feature,
         MenuTemplate,
-        MissionLayer,
+        MissionLayerTree,
         MissionLayerCreate,
         TablerNone,
         TablerLoading,
