@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v5.0.0 - 2024-11-13
+
+- :rocket: `API` Remove DynamoDB backend for feature store as it is no longer used and suffered from a massive memory leak & assoc. layer features APIs
+- :rocket: Migrate MissionLayerTree & MissionUsers to TS
+- :rocket: Add support for recursive/nested folders in Mission Sync layers UI
+- :rocket: Add support for automatically creating/deleting folders via `path` attributes from ETLs when using Data Sync
+
 ### v4.37.0 - 2024-11-12
 
 - :bug: Fix issue where if the WebTAK API wasn't hosted on `443` then CloudTAK Could not be configured
