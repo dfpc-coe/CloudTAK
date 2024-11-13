@@ -1,5 +1,5 @@
 import { Static, Type } from '@sinclair/typebox'
-import { StandardResponse, GenericMartiResponse } from '../lib/types.js';
+import { StandardResponse } from '../lib/types.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';

@@ -168,10 +168,23 @@ export default async function router(schema: Schema, config: Config) {
                         }
 
                         cot.addDest({ mission: data.name, path: pathMapEntryLast.uid, after: '' });
+                        if (!pathMapEntryLast.uids) pathMapEntryLast.uids = [];
+                        pathMapEntryLast.uids.push({ data: cot.uid(), timestamp: new Date().toISOString(), creatorUid: `connection-${data.connection}-data-${data.id}` });
                     }
 
-                    for (const pathLayer of pathMap.keys()) {
-
+                    for (const pathLayer of pathMap.values()) {
+                        // TODO: This currently doesn't handle that if a leaf is deleted, the parent node, now a leaf
+                        // might be empty now
+                        if (api.MissionLayer.isEmpty(pathLayer)) {
+                                await api.MissionLayer.delete(
+                                    data.name,
+                                    {
+                                        uid: [ pathLayer.uid ],
+                                        creatorUid: `connection-${data.connection}-data-${data.id}`
+                                    },
+                                    { token: data.mission_token || undefined }
+                                );
+                        }
                     }
 
                     cots = cots.filter((cot) => {
