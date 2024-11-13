@@ -176,7 +176,10 @@ export default async function router(schema: Schema, config: Config) {
                         // TODO: This currently doesn't handle that if a leaf is deleted, the parent node, now a leaf
                         // might be empty now
 
-                        if (!key.startsWith(`/${encodeURIComponent(layer.name)}/`)) {
+                        if (
+                            !key.startsWith(`/${encodeURIComponent(layer.name)}/`)
+                            || key === `/${encodeURIComponent(layer.name)}/`
+                        ) {
                             continue;
                         }
 
