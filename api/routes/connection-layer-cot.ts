@@ -172,9 +172,14 @@ export default async function router(schema: Schema, config: Config) {
                         pathMapEntryLast.uids.push({ data: cot.uid(), timestamp: new Date().toISOString(), creatorUid: `connection-${data.connection}-data-${data.id}` });
                     }
 
-                    for (const pathLayer of pathMap.values()) {
+                    for (const [key, pathLayer] of pathMap.entries()) {
                         // TODO: This currently doesn't handle that if a leaf is deleted, the parent node, now a leaf
                         // might be empty now
+
+                        if (!key.startsWith(`/${encodeURIComponent(layer.name)}/`)) {
+                            continue;
+                        }
+
                         if (api.MissionLayer.isEmpty(pathLayer)) {
                                 await api.MissionLayer.delete(
                                     data.name,

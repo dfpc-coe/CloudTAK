@@ -86,10 +86,10 @@ export default class {
     }
 
     isEmpty(layer: Static<typeof MissionLayer>): boolean {
-        if (!layer.mission_layers || !layer.mission_layers.length) return false;
-        if (!layer.uids || !layer.uids.length) return false;
-        if (!layer.contents || !layer.contents.length) return false;
-        if (!layer.maplayers || !layer.maplayers.length) return false;
+        if (layer.mission_layers && layer.mission_layers.length) return false;
+        if (layer.uids && layer.uids.length) return false;
+        if (layer.contents && layer.contents.length) return false;
+        if (layer.maplayers && layer.maplayers.length) return false;
         return true;
     }
 
