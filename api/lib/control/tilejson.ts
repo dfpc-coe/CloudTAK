@@ -188,10 +188,12 @@ export default class TileJSON {
                 const fc = await tileRes.json();
 
                 if (!fc.features.length) {
-                    return res.status(404).json({
+                    res.status(404).json({
                         status: 404,
                         message: 'No Features Found'
                     });
+
+                    return;
                 }
 
                 const tiles = geojsonvt(fc, {
