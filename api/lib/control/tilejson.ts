@@ -1,6 +1,7 @@
 import undici from 'undici';
 import geojsonvt from 'geojson-vt';
 import tilebelt from '@mapbox/tilebelt';
+import vtpbf from 'vt-pbf';
 import type { BBox } from 'geojson';
 import type { Response } from 'express';
 import { pointOnFeature } from '@turf/point-on-feature';
@@ -189,9 +190,15 @@ export default class TileJSON {
                     buffer: 64,
                 });
 
-                const tile = tiles.getTile(z, x, y);
+                const tile = vtpbf.fromGeojsonVt({ 'out': tiles.getTile(z, x, y) });
 
-                console.error('TILE', tile);
+                res.writeHead(200, {
+                    'Content-Type': 'application/vnd.mapbox-vector-tile',
+                    'Content-Length': Buffer.byteLength(tile)
+                });
+
+                res.write(tile)
+                res.end();
             } catch (err) {
                 console.error(err);
                 throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Failed to fetch ESRI tile')
