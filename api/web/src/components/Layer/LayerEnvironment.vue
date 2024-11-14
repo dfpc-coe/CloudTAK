@@ -35,6 +35,11 @@
             </div>
         </div>
 
+        <div v-if='softAlert' class='bg-red-lt mx-2 px-2 py-2 my-2 rounded border border-red justify-content-center'>
+            <div>Output Schema could not be loaded from upstream source:</div>
+            <div v-text='softAlert.message'/>
+        </div>
+
         <TablerLoading
             v-if='loading.schema'
             desc='Loading Environment'
@@ -154,6 +159,7 @@ export default {
         return {
             raw: false,
             alert: false,
+            softAlert: false,
             esriView: false,
             disabled: this.editing ? false : true,
             config: {},
@@ -217,7 +223,7 @@ export default {
                 const output = (await std(`/api/connection/${this.layer.connection}/layer/${this.layer.id}/task/schema?type=schema:output`)).schema;
                 if (output.properties) this.schemaOutput = output;
             } catch (err) {
-                this.alert = err;
+                this.softAlert = err;
             }
         },
         saveLayer: async function() {
