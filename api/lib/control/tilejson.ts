@@ -1,6 +1,7 @@
 import undici from 'undici';
 import geojsonvt from 'geojson-vt';
 import tilebelt from '@mapbox/tilebelt';
+// @ts-expect-error No Type Defs
 import vtpbf from 'vt-pbf';
 import type { BBox } from 'geojson';
 import type { Response } from 'express';
@@ -115,7 +116,7 @@ export default class TileJSON {
         url.searchParams.set('returnM', 'false');
 
         url.searchParams.set('useStaticZoomLevel', 'false');
-        url.searchParams.set('simplifyFactor', 0.3);
+        url.searchParams.set('simplifyFactor', '0.3');
         url.searchParams.set('setAttributionFromService', 'true');
         url.searchParams.set('useSeviceBounds', 'true')
         url.searchParams.set('resultType', 'tile')
@@ -179,9 +180,9 @@ export default class TileJSON {
             try {
                 const url = this.esri(config.url, z, x, y)
 
-                const res = await fetch(url);
+                const tileRes = await fetch(url);
 
-                const fc = await res.json();
+                const fc = await tileRes.json();
 
                 const tiles = geojsonvt(fc, {
                     maxZoom: 24,
