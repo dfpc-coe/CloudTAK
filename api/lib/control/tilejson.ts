@@ -1,6 +1,6 @@
 import undici from 'undici';
 import geojsonvt from 'geojson-vt';
-import tilebelt from '@mapbox/tilebelt';
+import { tileToBBOX } from '../tilebelt.js';
 // @ts-expect-error No Type Defs
 import vtpbf from 'vt-pbf';
 import type { BBox } from 'geojson';
@@ -99,7 +99,7 @@ export default class TileJSON {
     }
 
     static extent(z: number, x: number, y: number): Array<number> {
-        return tilebelt.tileToBBOX([x, y, z]);
+        return tileToBBOX([x, y, z]);
     }
 
     static esri(layer: string, z: number, x: number, y: number): URL {
