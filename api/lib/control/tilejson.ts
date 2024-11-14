@@ -176,6 +176,9 @@ export default class TileJSON {
             headers?: Record<string, string | undefined>
         }
     ): Promise<void> {
+        if (!opts) opts = {};
+        if (!opts.headers) opts.headers = {};
+
         if (config.url.includes("/FeatureServer/")) {
             try {
                 const url = this.esri(config.url, z, x, y)
@@ -183,6 +186,13 @@ export default class TileJSON {
                 const tileRes = await fetch(url);
 
                 const fc = await tileRes.json();
+
+                if (!fc.features.length) {
+                    return res.status(404).json({
+                        status: 404,
+                        message: 'No Features Found'
+                    });
+                }
 
                 const tiles = geojsonvt(fc, {
                     maxZoom: 24,
@@ -194,6 +204,7 @@ export default class TileJSON {
                 const tile = vtpbf.fromGeojsonVt({ 'out': tiles.getTile(z, x, y) });
 
                 res.writeHead(200, {
+                    ...opts.headers,
                     'Content-Type': 'application/vnd.mapbox-vector-tile',
                     'Content-Length': Buffer.byteLength(tile)
                 });
@@ -211,9 +222,6 @@ export default class TileJSON {
                 .replace(/\{\$?y\}/, String(y))
                 .replace(/\{\$?q\}/, String(this.quadkey(z, x, y)))
             );
-
-            if (!opts) opts = {};
-            if (!opts.headers) opts.headers = {};
 
             try {
                 const stream = await undici.pipeline(url, {
