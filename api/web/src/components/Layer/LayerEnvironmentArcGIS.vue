@@ -257,7 +257,6 @@ export default {
     ],
     data: function() {
         let type = 'agol';
-        console.error(JSON.stringify(this.modelValue))
         if (!this.modelValue.ARCGIS_PORTAL && !this.modelValue.ARCGIS_USERNAME) {
             type = 'server';
         } else if (this.modelValue.ARCGIS_PORTAL && this.modelValue.ARCGIS_PORTAL.includes('arcgis.com') && this.modelValue.ARCGIS_USERNAME) {
