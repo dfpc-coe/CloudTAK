@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v5.1.0 - 2024-11-14
+
+- :rocket: Show soft error if output schema could not be determined in LayerEnvironment component
+
 ### v5.0.2 - 2024-11-13
 
 - :bug: Don't delete container layer if empty
