@@ -228,7 +228,8 @@ export default async function router(schema: Schema, config: Config) {
             style: Type.Optional(Type.Enum(Basemap_Style)),
             type: Type.Optional(Type.Enum(Basemap_Type)),
             bounds: Type.Optional(Type.Array(Type.Number(), { minItems: 4, maxItems: 4 })),
-            center: Type.Optional(Type.Array(Type.Number()))
+            center: Type.Optional(Type.Array(Type.Number())),
+            styles: Type.Optional(Type.Array(Type.Unknown()))
         }),
         res: AugmentedBasemapResponse
     }, async (req, res) => {
@@ -289,7 +290,8 @@ export default async function router(schema: Schema, config: Config) {
             style: Type.Optional(Type.Enum(Basemap_Style)),
             type: Type.Optional(Type.Enum(Basemap_Type)),
             bounds: Type.Optional(Type.Array(Type.Number(), { minItems: 4, maxItems: 4 })),
-            center: Type.Optional(Type.Array(Type.Number()))
+            center: Type.Optional(Type.Array(Type.Number())),
+            styles: Type.Optional(Type.Array(Type.Unknown()))
         }),
         res: AugmentedBasemapResponse
     }, async (req, res) => {
