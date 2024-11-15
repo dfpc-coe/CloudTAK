@@ -4,7 +4,7 @@
             v-for='l of overlay.styles'
             :key='l.id'
         >
-            <template v-if='["fill", "line", "circle"].includes(l.type)'>
+            <template v-if='["fill", "line", "circle", "symbol"].includes(l.type)'>
                 <div class='me-2'>
                     <div class='px-3 py-2 d-flex align-items-center hover-button'>
                         <IconChevronRight
@@ -33,6 +33,11 @@
                         />
                         <IconCircle
                             v-else-if='l.type === "circle"'
+                            :size='24'
+                            stroke='1'
+                        />
+                        <IconAbc
+                            v-else-if='l.type === "symbol"'
                             :size='24'
                             stroke='1'
                         />
@@ -84,6 +89,7 @@ import {
     IconChevronDown,
     IconChevronRight,
     IconCode,
+    IconAbc,
     IconPaint,
     IconLine,
     IconCircle,
