@@ -82,7 +82,7 @@ export default async function router(schema: Schema, config: Config) {
                         feature: feat
                     })
 
-                    console.error(`Failed to decode ${String(err)}: feature: ${JSON.stringify(feat)}`);
+                    console.error(`Failed to decode ${String(err)}: feature: ${feat.id}`);
                 }
             }
 

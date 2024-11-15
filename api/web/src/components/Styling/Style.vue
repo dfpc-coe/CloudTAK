@@ -37,8 +37,13 @@
         />
     </template>
     <template v-else>
+        <TablerNone
+            v-if='!styles.length'
+            :create='false'
+        />
         <div
             v-for='(l, l_it) of styles'
+            v-else
             :key='l.id'
         >
             <div
@@ -149,6 +154,7 @@
 <script>
 import {
     TablerDelete,
+    TablerNone,
 } from '@tak-ps/vue-tabler';
 import ObjectInput from './ObjectInput.vue';
 import {
@@ -186,6 +192,7 @@ export default {
         IconQuestionMark,
         StyleLayer,
         TablerDelete,
+        TablerNone,
         ObjectInput,
     },
     props: {

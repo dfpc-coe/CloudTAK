@@ -2,7 +2,7 @@ import Err from '@openaddresses/batch-error';
 import STS from '@aws-sdk/client-sts';
 import External from './external.js';
 import SecretsManager from '@aws-sdk/client-secrets-manager';
-import type EventsPool from './events-pool.js';
+import EventsPool from './events-pool.js';
 import { Pool } from '@openaddresses/batch-generic';
 import ConnectionPool from './connection-pool.js';
 import { ConnectionWebSocket } from './connection-web.js';
@@ -46,7 +46,7 @@ export default class Config {
     cacher: Cacher;
     conns: ConnectionPool;
     server: InferSelectModel<typeof Server>;
-    events?: EventsPool;
+    events: EventsPool;
     VpcId?: string;
     SubnetPublicA?: string;
     SubnetPublicB?: string;
@@ -95,6 +95,8 @@ export default class Config {
         this.conns = new ConnectionPool(this);
         this.cacher = new Cacher(this.nocache, this.silent);
         this.external = new External(this)
+
+        this.events = new EventsPool(this.StackName);
     }
 
     serverCert(): {

@@ -35,9 +35,12 @@
             </div>
         </div>
 
-        <div v-if='softAlert' class='bg-red-lt mx-2 px-2 py-2 my-2 rounded border border-red justify-content-center'>
+        <div
+            v-if='softAlert'
+            class='bg-red-lt mx-2 px-2 py-2 my-2 rounded border border-red justify-content-center'
+        >
             <div>Output Schema could not be loaded from upstream source:</div>
-            <div v-text='softAlert.message'/>
+            <div v-text='softAlert.message' />
         </div>
 
         <TablerLoading
