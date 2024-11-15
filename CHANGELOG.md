@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v5.2.0 - 2024-11-15
+
+- :bug: Fix Media CSP in Chrome which uses `blob:` for display
+- :rocket: Add support for showing Text styles in Overlay Vector Pane
+- :rocket: Add support for serving tiles directly from an ESRI Feature Server
+
 ### v5.1.0 - 2024-11-14
 
 - :rocket: Show soft error if output schema could not be determined in LayerEnvironment component
