@@ -9,7 +9,6 @@ import { ProfileConnConfig } from './lib/connection-config.js';
 import minimist from 'minimist';
 import { ConnectionWebSocket } from './lib/connection-web.js';
 import sleep from './lib/sleep.js';
-import EventsPool from './lib/events-pool.js';
 import type WebSocket from 'ws';
 import * as ws from 'ws';
 import Config from './lib/config.js';
@@ -47,8 +46,8 @@ try {
 
 const pkg = JSON.parse(String(fs.readFileSync(new URL('./package.json', import.meta.url))));
 
-process.on('uncaughtException', (exception) => {
-  console.error('Error', exception);
+process.on('uncaughtExceptionMonitor', (exception, origin) => {
+    console.trace('FATAL', exception, origin);
 });
 
 if (import.meta.url === `file://${process.argv[1]}`) {
@@ -73,7 +72,6 @@ export default async function server(config: Config) {
 
     await config.conns.init();
 
-    config.events = new EventsPool(config.StackName);
     if (!config.noevents) await config.events.init(config.pg);
 
     const app = express();

@@ -11,4 +11,9 @@ memcached -d -u root
 
 nginx
 
-npm run prod
+while :
+do
+    npm run prod
+    echo "FATAL ERROR: Code: $?"
+done
+

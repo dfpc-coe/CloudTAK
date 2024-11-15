@@ -465,7 +465,7 @@ export default async function router(schema: Schema, config: Config) {
 
             await CloudFormation.delete(config, layer.id);
 
-            if (config.events) config.events.delete(layer.id);
+            config.events.delete(layer.id);
 
             await config.models.Layer.delete(req.params.layerid);
 

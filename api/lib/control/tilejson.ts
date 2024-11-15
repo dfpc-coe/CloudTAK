@@ -1,4 +1,8 @@
 import undici from 'undici';
+import geojsonvt from 'geojson-vt';
+import { tileToBBOX } from '../tilebelt.js';
+// @ts-expect-error No Type Defs
+import vtpbf from 'vt-pbf';
 import type { BBox } from 'geojson';
 import type { Response } from 'express';
 import { pointOnFeature } from '@turf/point-on-feature';
@@ -71,8 +75,9 @@ export default class TileJSON {
         if (
             !(pathname.includes('{z}') && pathname.includes('{x}') && pathname.includes('{y}'))
             && !pathname.includes('{q}')
+            && !pathname.includes('/FeatureServer/')
         ) {
-            throw new Err(400, null, 'Either ZXY or Quadkey variables must be used');
+            throw new Err(400, null, 'Either ZXY, Quadkey variables OR ESRI FeatureServer must be used');
         }
     }
 
@@ -91,6 +96,56 @@ export default class TileJSON {
             tiles: [ String(config.url) ],
             layers: []
         }
+    }
+
+    static extent(z: number, x: number, y: number): Array<number> {
+        return tileToBBOX([x, y, z]);
+    }
+
+    static esri(layer: string, z: number, x: number, y: number): URL {
+        const url = new URL(layer);
+
+        if (!url.pathname.endsWith('/query')) {
+            url.pathname = url.pathname + '/query'
+        }
+
+        url.searchParams.set('f', 'geojson');
+        url.searchParams.set('inSR', '4326');
+        url.searchParams.set('outSR', '4326');
+        url.searchParams.set('returnZ', 'false');
+        url.searchParams.set('returnM', 'false');
+
+        url.searchParams.set('useStaticZoomLevel', 'false');
+        url.searchParams.set('simplifyFactor', '0.3');
+        url.searchParams.set('setAttributionFromService', 'true');
+        url.searchParams.set('useSeviceBounds', 'true')
+        url.searchParams.set('resultType', 'tile')
+        url.searchParams.set('spatialRel', 'esriSpatialRelIntersects');
+        url.searchParams.set('geometryType', 'esriGeometryEnvelope');
+
+        if (!url.searchParams.has('precision')) url.searchParams.set('precision', '8');
+        if (!url.searchParams.has('where')) url.searchParams.append('where', '1=1');
+        if (!url.searchParams.has('outFields')) url.searchParams.append('outFields', '*');
+
+        const bbox = this.extent(z, x, y);
+
+        const extent = {
+            spatialReference: { latestWkid: 4326, wkid: 4326 },
+            xmin: bbox[0],
+            ymin: bbox[1],
+            xmax: bbox[2],
+            ymax: bbox[3]
+        }
+
+        url.searchParams.set('quantizationParameters', JSON.stringify({
+            extent,
+            tolerance: 0.001,
+            mode: 'view'
+        }))
+
+        url.searchParams.set('geometry', JSON.stringify(extent));
+
+        return url;
     }
 
     /**
@@ -121,65 +176,106 @@ export default class TileJSON {
             headers?: Record<string, string | undefined>
         }
     ): Promise<void> {
-        const url = new URL(config.url
-            .replace(/\{\$?z\}/, String(z))
-            .replace(/\{\$?x\}/, String(x))
-            .replace(/\{\$?y\}/, String(y))
-            .replace(/\{\$?q\}/, String(this.quadkey(z, x, y)))
-        );
-
         if (!opts) opts = {};
         if (!opts.headers) opts.headers = {};
 
-        try {
-            const stream = await undici.pipeline(url, {
-                method: 'GET',
-                maxRedirections: 3,
-                headers: opts.headers
-            }, ({ statusCode, headers, body }) => {
-                if (headers) {
-                    for (const key in headers) {
-                        if (
-                            ![
-                                'content-type',
-                                'content-length',
-                                'content-encoding',
-                                'last-modified',
-                            ].includes(key)
-                        ) {
-                            delete headers[key];
-                        }
-                    }
+        if (config.url.includes("/FeatureServer/")) {
+            try {
+                const url = this.esri(config.url, z, x, y)
+
+                const tileRes = await fetch(url);
+
+                if (!tileRes.ok) throw new Err(400, null, `Upstream Error: ${await res.text()}`);
+
+                const fc = await tileRes.json();
+
+                if (!fc.features.length) {
+                    res.status(404).json({
+                        status: 404,
+                        message: 'No Features Found'
+                    });
+
+                    return;
                 }
 
-                res.writeHead(statusCode, headers);
+                const tiles = geojsonvt(fc, {
+                    maxZoom: 24,
+                    tolerance: 3,
+                    extent: 4096,
+                    buffer: 64,
+                });
 
-                return body;
-            });
+                const tile = vtpbf.fromGeojsonVt({ 'out': tiles.getTile(z, x, y) });
 
-            await new Promise((resolve, reject) => {
-                stream
-                    .on('data', (buf) => {
-                        res.write(buf)
-                    })
-                    .on('error', (err) => {
-                        return reject(err);
-                    })
-                    .on('end', () => {
-                        res.end()
-                        // @ts-expect-error Type empty resolve
-                        return resolve();
-                    })
-                    .on('close', () => {
-                        res.end()
-                        // @ts-expect-error Type empty resolve
-                        return resolve();
-                    })
-                    .end()
-            });
-        } catch (err) {
-            console.error(err);
-            throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Failed to fetch tile')
+                res.writeHead(200, {
+                    ...opts.headers,
+                    'Content-Type': 'application/vnd.mapbox-vector-tile',
+                    'Content-Length': Buffer.byteLength(tile)
+                });
+
+                res.write(tile)
+                res.end();
+            } catch (err) {
+                throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Failed to fetch ESRI tile')
+            }
+        } else {
+            const url = new URL(config.url
+                .replace(/\{\$?z\}/, String(z))
+                .replace(/\{\$?x\}/, String(x))
+                .replace(/\{\$?y\}/, String(y))
+                .replace(/\{\$?q\}/, String(this.quadkey(z, x, y)))
+            );
+
+            try {
+                const stream = await undici.pipeline(url, {
+                    method: 'GET',
+                    maxRedirections: 3,
+                    headers: opts.headers
+                }, ({ statusCode, headers, body }) => {
+                    if (headers) {
+                        for (const key in headers) {
+                            if (
+                                ![
+                                    'content-type',
+                                    'content-length',
+                                    'content-encoding',
+                                    'last-modified',
+                                ].includes(key)
+                            ) {
+                                delete headers[key];
+                            }
+                        }
+                    }
+
+                    res.writeHead(statusCode, headers);
+
+                    return body;
+                });
+
+                await new Promise((resolve, reject) => {
+                    stream
+                        .on('data', (buf) => {
+                            res.write(buf)
+                        })
+                        .on('error', (err) => {
+                            return reject(err);
+                        })
+                        .on('end', () => {
+                            res.end()
+                            // @ts-expect-error Type empty resolve
+                            return resolve();
+                        })
+                        .on('close', () => {
+                            res.end()
+                            // @ts-expect-error Type empty resolve
+                            return resolve();
+                        })
+                        .end()
+                });
+            } catch (err) {
+                console.error(err);
+                throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Failed to fetch tile')
+            }
         }
     }
 }
