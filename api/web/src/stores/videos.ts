@@ -21,12 +21,13 @@ export const useVideoStore = defineStore('video', {
         }
     },
     actions: {
+        delete(uid) {
+            this.videos.delete(uid);
+        },
         add(uid: string) {
             const cot = cotStore.get(uid, {
                 mission: true
             });
-
-            console.error('Video COT', cot)
 
             this.videos.set(uid, {
                 uid,
