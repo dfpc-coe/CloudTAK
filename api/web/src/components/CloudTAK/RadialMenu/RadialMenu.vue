@@ -149,10 +149,15 @@ export default {
                 this.menuItems.push({ id: 'view', icon: '#radial-view' })
                 this.menuItems.push({ id: 'delete', icon: '#radial-trash' })
 
-                const cot = cotStore.get(this.radial.cot.properties.id, {
-                    mission: true
-                });
-                console.error('COT', cot);
+                if (this.radial.cot && this.radial.cot.properties) {
+                    const cot = cotStore.get(this.radial.cot.properties.id, {
+                        mission: true
+                    });
+
+                    if (cot.properties.video) {
+                        this.menuItems.push({ id: 'play', icon: '#radial-play' })
+                    }
+                }
             } else if (this.radial.mode === 'feat') {
                 this.menuItems.push({ id: 'view', icon: '#radial-view' })
             } else if (this.radial.mode === 'context') {
