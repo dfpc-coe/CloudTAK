@@ -185,6 +185,8 @@ export default class TileJSON {
 
                 const tileRes = await fetch(url);
 
+                if (!tileRes.ok) throw new Err(400, null, `Upstream Error: ${await res.text()}`);
+
                 const fc = await tileRes.json();
 
                 if (!fc.features.length) {
@@ -214,7 +216,6 @@ export default class TileJSON {
                 res.write(tile)
                 res.end();
             } catch (err) {
-                console.error(err);
                 throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Failed to fetch ESRI tile')
             }
         } else {
