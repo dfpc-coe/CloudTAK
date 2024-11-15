@@ -6,7 +6,7 @@
         >
             <template v-if='["fill", "line", "circle"].includes(l.type)'>
                 <div class='me-2'>
-                    <div class='px-3 py-2 align-items-center hover-button'>
+                    <div class='px-3 py-2 d-flex align-items-center hover-button'>
                         <IconChevronRight
                             v-if='!treeState[l.id]'
                             :size='20'
@@ -41,6 +41,13 @@
                             class='user-select-none mx-2'
                             v-text='l.id || l.name'
                         />
+
+                        <div class='ms-auto btn-list'>
+                            <TablerIconButton
+                                title='View Raw Style'
+                                @click='layerModal = l'
+                            ><IconCode :size='24' stroke='1'/></TablerIconButton>
+                        </div>
                     </div>
 
                     <StyleLayer
@@ -51,44 +58,40 @@
             </template>
         </div>
     </div>
+
+    <JSONModal v-if='layerModal' :object='layerModal' :pre='true'/>
 </template>
 
-<script>
+<script setup lang='ts'>
+import { ref, onMounted } from 'vue';
 import StyleLayer from '../../../Styling/Layer.vue';
+import {
+    TablerIconButton,
+} from '@tak-ps/vue-tabler'
+import JSONModal from '../../util/JSONModal.vue';
 import {
     IconChevronDown,
     IconChevronRight,
+    IconCode,
     IconPaint,
     IconLine,
     IconCircle,
 } from '@tabler/icons-vue';
 
-export default {
-    name: 'OverlayLayers',
-    components: {
-        StyleLayer,
-        IconChevronDown,
-        IconChevronRight,
-        IconPaint,
-        IconLine,
-        IconCircle,
-    },
-    props: {
-        overlay: {
-            type: Object,
-            required: true
-        }
-    },
-    data: function() {
-        return {
-            err: false,
-            treeState: {},
-        }
-    },
-    mounted: function() {
-        for (const layer of this.overlay.styles) {
-            this.treeState[layer.id] = false;
-        }
+const props = defineProps({
+    overlay: {
+        type: Object,
+        required: true
     }
-}
+});
+
+const treeState = ref<Record<number, boolean>>({});
+
+const layerModal = ref<object | undefined>(undefined);
+
+onMounted(() => {
+    for (const layer of props.overlay.styles) {
+        treeState.value[layer.id] = false;
+    }
+})
 </script>
