@@ -12,7 +12,11 @@
                 ><IconX :size='24' stroke='1'/></TablerIconButton>
             </div>
         </div>
-        <div class='modal-body'>
+        <div
+            ref='container'
+            class='modal-body'
+            :style='`height: calc(100% - 40px)`'
+        >
             <TablerLoading v-if='loading' />
             <template v-else-if='err'>
                 <TablerAlert
@@ -24,7 +28,7 @@
                     <TablerButton @click='$emit("close")'>Close Player</TablerButton>
                 </div>
             </template>
-            <template v-else-if='!protocols || !protocols.hls'>
+            <template v-else-if='!videoProtocols || !videoProtocols.hls'>
                 <TablerNone
                     label='HLS Streaming Protocol'
                     :create='false'
@@ -34,14 +38,12 @@
                 <video
                     id='cot-player'
                     class='video-js vjs-default-skin'
-                    width='400'
-                    height='300'
                     controls='true'
                     autoplay='true'
                 >
                     <source
                         type='application/x-mpegURL'
-                        :src='protocols.hls.url'
+                        :src='videoProtocols.hls.url'
                     >
                 </video>
             </template>
@@ -51,15 +53,15 @@
 
 <style>
 .resizable-content {
-    min-height: 400px;
-    min-width: 300px;
+    min-height: 300px;
+    min-width: 400px;
     resize: both;
     overflow: auto;
 }
 </style>
 
 <script setup lang='ts'>
-import { ref, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick, useTemplateRef } from 'vue'
 import { std } from '../../../../src/std.ts';
 import type { VideoLeaseResponse } from '../../../types.ts';
 import type Player from 'video.js/dist/types/player.d.ts';
@@ -88,13 +90,15 @@ const props = defineProps({
     }
 });
 
+const container = useTemplateRef('container');
+
 const emit = defineEmits(['close']);
 
 const loading = ref(true);
 const err = ref<Error | undefined>();
-const lease = ref<VideoLeaseResponse["lease"] | undefined>();
 const player = ref<Player | undefined>()
-const protocols = ref<VideoLeaseResponse["protocols"] | undefined>();
+const videoLease = ref<VideoLeaseResponse["lease"] | undefined>();
+const videoProtocols = ref<VideoLeaseResponse["protocols"] | undefined>();
 
 onUnmounted(async () => {
     if (player.value) {
@@ -107,19 +111,20 @@ onUnmounted(async () => {
 onMounted(async () => {
     await requestLease();
 
-    if (!err.value && protocols.value && protocols.value.hls) {
-        console.error('NEXT TICK')
+    if (!err.value && videoProtocols.value && videoProtocols.value.hls) {
         nextTick(() => {
-            player.value = videojs('cot-player');
+            player.value = videojs('cot-player', {
+                fluid: true
+            });
         });
     }
 });
 
 async function deleteLease(): Promise<void> {
-    if (!lease.value) return;
+    if (!videoLease.value) return;
 
     try {
-        await std(`/api/video/lease/${lease.value.id}`, {
+        await std(`/api/video/lease/${videoLease.value.id}`, {
             method: 'DELETE',
         });
 
@@ -142,9 +147,8 @@ async function requestLease(): Promise<void> {
             }
         }) as VideoLeaseResponse
 
-        console.error(lease, protocols);
-        lease.value = lease;
-        protocols.value = protocols;
+        videoLease.value = lease;
+        videoProtocols.value = protocols;
 
         loading.value = false;
     } catch (err) {
