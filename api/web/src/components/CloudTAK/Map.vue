@@ -440,6 +440,23 @@
                 :feat='feat'
             />
 
+            <template v-for='video in videos'>
+                <div
+                    class='position-absolute'
+                    :style='`
+                        left: ${video.x}px;
+                        top: ${video.y}px;
+                    `'>
+
+                    <CoTVideo
+                        v-if='viewer'
+                        class='my-2 mx-2'
+                        :video='feat.properties.video.url'
+                        @close='viewer = false'
+                    />
+                </div>
+            </template>
+
             <template v-if='upload.shown'>
                 <TablerModal>
                     <div class='modal-status bg-red' />
@@ -464,6 +481,7 @@
 </template>
 
 <script>
+import CoTVideo from './util/Video.vue';
 import WarnChannels from './util/WarnChannels.vue';
 import WarnConfiguration from './util/WarnConfiguration.vue';
 import Status from '../util/Status.vue';
@@ -508,6 +526,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import RadialMenu from './RadialMenu/RadialMenu.vue';
 import { mapState, mapActions } from 'pinia'
 import { useMapStore } from '/src/stores/map.ts';
+import { useVideoStore } from '/src/stores/videos.ts';
 import { useProfileStore } from '/src/stores/profile.ts';
 import { useCOTStore } from '/src/stores/cots.ts';
 import { useConnectionStore } from '/src/stores/connection.ts';
@@ -528,6 +547,7 @@ export default {
     computed: {
         ...mapState(useMapStore, ['bearing', 'select', 'radial', 'isLoaded', 'selected', 'hasTerrain', 'isTerrainEnabled']),
         ...mapState(useProfileStore, ['profile', 'notifications']),
+        ...mapState(useVideoStore, ['videos']),
         mobileDetected: function() {
           //TODO: This needs to follow something like:
           // https://stackoverflow.com/questions/47219272/how-can-i-monitor-changing-window-sizes-in-vue
@@ -1022,6 +1042,7 @@ export default {
     },
     components: {
         Status,
+        CoTVideo,
         CoordInput,
         WarnChannels,
         WarnConfiguration,
