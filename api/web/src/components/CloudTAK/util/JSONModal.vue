@@ -8,13 +8,21 @@
             @click='emit("close")'
         />
         <div class='modal-header text-white'>
-            <div class='modal-title' v-text='title'/>
+            <div
+                class='modal-title'
+                v-text='title'
+            />
         </div>
         <div class='modal-body overflow-auto'>
-            <CopyField :text='JSON.stringify(object, null, 4)' :pre='true'/>
+            <CopyField
+                :text='JSON.stringify(object, null, 4)'
+                :pre='true'
+            />
         </div>
         <div class='modal-footer'>
-            <TablerButton @click='emit("close")'>Done</TablerButton>
+            <TablerButton @click='emit("close")'>
+                Done
+            </TablerButton>
         </div>
     </TablerModal>
 </template>

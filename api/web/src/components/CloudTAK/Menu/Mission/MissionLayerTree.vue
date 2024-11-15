@@ -1,8 +1,8 @@
 <template>
-    <TablerLoading v-if='loading'/>
+    <TablerLoading v-if='loading' />
     <div
-        v-else
         v-for='layer in layers'
+        v-else
         :key='layer.uid'
     >
         <div class='col-12 hover-dark d-flex align-items-center px-2 py-1'>
@@ -102,12 +102,12 @@
             />
             <MissionLayerTree
                 v-if='layer.mission_layers && layer.mission_layers.length'
-                @refresh='emit("refresh")'
                 :layers='layer.mission_layers as Array<MissionLayer>'
                 :feats='feats'
                 :mission='mission'
                 :token='token'
                 :role='role'
+                @refresh='emit("refresh")'
             />
             <TablerNone
                 v-if='!layer.uids || !layer.uids.length'
