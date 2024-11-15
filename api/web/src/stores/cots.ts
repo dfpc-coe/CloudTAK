@@ -319,14 +319,31 @@ export const useCOTStore = defineStore('cots', {
         /**
          * Return a CoT by ID if it exists
          */
-        get: function(id: string, opts?: {
-            clone: boolean
+        get: function(id: string, opts: {
+            mission?: boolean,
+            clone?: boolean
+        } = {
+            clone: false,
+            mission: false
         }): COT | undefined {
-            if (opts && opts.clone) {
-                return JSON.parse(JSON.stringify(this.cots.get(id)));
-            } else {
-                return this.cots.get(id);
+            if (!opts) opts = {};
+
+            const cot = this.cots.get(id);
+
+            if (cot && opts.close) {
+                return JSON.parse(JSON.stringify(cot));
+            } else if (cot) {
+                return cot;
+            } else if (opts.mission) {
+                for (const sub of this.subscriptions.keys()) {
+                    const store = this.subscriptions.get(sub);
+                    if (!store) continue;
+                    cot = store.cots.get(id);
+                    if (cot) return cot;
+                }
             }
+
+            return;
         },
 
         /**

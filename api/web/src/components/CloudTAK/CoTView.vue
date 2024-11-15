@@ -415,12 +415,6 @@
                     <label class='subheader'>Video</label>
                 </div>
 
-                <CoTVideo
-                    v-if='viewer'
-                    class='my-2 mx-2'
-                    :video='feat.properties.video.url'
-                    @close='viewer = false'
-                />
 
                 <div class='table-responsive rounded mx-2 py-2 px-2'>
                     <table class='table card-table table-hover table-vcenter datatable'>
@@ -442,7 +436,7 @@
                                         class='cursor-pointer'
                                         size='32'
                                         stroke='1'
-                                        @click='viewer = true'
+                                        @click='playVideo'
                                     />
                                     <span
                                         v-else
@@ -541,7 +535,6 @@ import Share from './util/Share.vue';
 import CoTStyle from './util/CoTStyle.vue';
 import Coordinate from './util/Coordinate.vue';
 import Course from './util/Course.vue';
-import CoTVideo from './util/Video.vue';
 import CoTSensor from './util/Sensor.vue';
 import Phone from './util/Phone.vue';
 import Speed from './util/Speed.vue';
@@ -571,6 +564,8 @@ import { std } from '/src/std.ts';
 import { useCOTStore } from '/src/stores/cots.ts';
 const cotStore = useCOTStore();
 import { useProfileStore } from '/src/stores/profile.ts';
+import { useVideoStore } from '/src/stores/videos.ts';
+const videoStore = useVideoStore();
 
 export default {
     name: 'CloudTAKCoTView',
@@ -580,7 +575,6 @@ export default {
             mission: false,
             type: null,
             mode: 'default',
-            viewer: false,
             icon: null,
 
             interval: false,
@@ -601,8 +595,6 @@ export default {
             const { feat, mission } = this.findCOT();
             this.feat = feat;
             this.mission = mission;
-
-            this.viewer = false;
         },
         feat: {
             deep: true,
@@ -650,6 +642,9 @@ export default {
         }
     },
     methods: {
+        playVideo: function() {
+            videoStore.add(this.$route.params.uid);
+        },
         timediff: function(date) {
             if (this.time === 'relative') {
                 return timediff(date);
@@ -741,7 +736,6 @@ export default {
         IconBattery3,
         IconBattery4,
         CoTStyle,
-        CoTVideo,
         CoTSensor,
         Elevation,
         Attachments,
