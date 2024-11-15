@@ -232,7 +232,6 @@ export default {
     name: 'CloudTAKOverlays',
     data: function() {
         return {
-            err: false,
             isDraggable: false,
             loading: false,
             opened: [],
