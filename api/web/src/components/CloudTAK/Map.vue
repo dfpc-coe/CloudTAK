@@ -440,7 +440,7 @@
                 :feat='feat'
             />
 
-            <template v-for='video in videos'>
+            <template v-for='video in videos.values()'>
                 <div
                     class='position-absolute'
                     :style='`
@@ -449,10 +449,8 @@
                     `'>
 
                     <CoTVideo
-                        v-if='viewer'
                         class='my-2 mx-2'
-                        :video='feat.properties.video.url'
-                        @close='viewer = false'
+                        :video='video.url'
                     />
                 </div>
             </template>

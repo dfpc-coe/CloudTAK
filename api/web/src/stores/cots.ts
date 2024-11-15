@@ -328,7 +328,7 @@ export const useCOTStore = defineStore('cots', {
         }): COT | undefined {
             if (!opts) opts = {};
 
-            const cot = this.cots.get(id);
+            let cot = this.cots.get(id);
 
             if (cot && opts.close) {
                 return JSON.parse(JSON.stringify(cot));
