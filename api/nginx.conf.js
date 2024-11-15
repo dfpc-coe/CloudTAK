@@ -41,7 +41,7 @@ http {
         add_header 'Permissions-Policy' 'fullscreen=(self), geolocation=(self), clipboard-read=(self), clipboard-write=(self)' always;
 
         set $IMG "img-src 'self' data: *.${process.env.API_URL} ${ROOT_URL}";
-        set $MEDIA "media-src 'self' *.${process.env.API_URL}:* ${ROOT_URL}";
+        set $MEDIA "media-src 'self' blob: *.${process.env.API_URL}:* ${ROOT_URL}";
         set $FONT "font-src 'self' data:";
         set $WORKER "worker-src 'self' blob:";
         set $STYLE_SRC_ELEM "style-src-elem 'self' 'unsafe-inline'";
