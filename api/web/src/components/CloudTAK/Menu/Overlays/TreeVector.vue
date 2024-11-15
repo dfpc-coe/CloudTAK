@@ -10,31 +10,31 @@
                         <IconChevronRight
                             v-if='!treeState[l.id]'
                             :size='20'
-                            :stroke='1'
+                            stroke='1'
                             class='cursor-pointer'
                             @click='treeState[l.id] = true'
                         />
                         <IconChevronDown
                             v-else-if='treeState[l.id]'
                             :size='20'
-                            :stroke='1'
+                            stroke='1'
                             class='cursor-pointer'
                             @click='treeState[l.id] = false'
                         />
                         <IconPaint
                             v-if='l.type === "fill"'
                             :size='24'
-                            :stroke='1'
+                            stroke='1'
                         />
                         <IconLine
                             v-else-if='l.type === "line"'
                             :size='24'
-                            :stroke='1'
+                            stroke='1'
                         />
                         <IconCircle
                             v-else-if='l.type === "circle"'
                             :size='24'
-                            :stroke='1'
+                            stroke='1'
                         />
 
                         <span
@@ -46,7 +46,12 @@
                             <TablerIconButton
                                 title='View Raw Style'
                                 @click='layerModal = l'
-                            ><IconCode :size='24' stroke='1'/></TablerIconButton>
+                            >
+                                <IconCode
+                                    :size='24'
+                                    stroke='1'
+                                />
+                            </TablerIconButton>
                         </div>
                     </div>
 
@@ -59,7 +64,13 @@
         </div>
     </div>
 
-    <JSONModal v-if='layerModal' :object='layerModal' :pre='true'/>
+    <JSONModal
+        v-if='layerModal'
+        title='Layer Style'
+        :object='layerModal'
+        :pre='true'
+        @close='layerModal = undefined'
+    />
 </template>
 
 <script setup lang='ts'>

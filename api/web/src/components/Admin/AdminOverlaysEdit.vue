@@ -70,7 +70,10 @@
                     />
                 </div>
                 <div class='col-12 d-flex py-2'>
-                    <TablerDelete v-if='overlay.id' @delete='deleteOverlay'/>
+                    <TablerDelete
+                        v-if='overlay.id'
+                        @delete='deleteOverlay'
+                    />
                     <div class='ms-auto'>
                         <TablerButton
                             class='btn-primary'

@@ -37,10 +37,13 @@
         />
     </template>
     <template v-else>
-        <TablerNone v-if='!styles.length' :create='false'/>
+        <TablerNone
+            v-if='!styles.length'
+            :create='false'
+        />
         <div
-            v-else
             v-for='(l, l_it) of styles'
+            v-else
             :key='l.id'
         >
             <div

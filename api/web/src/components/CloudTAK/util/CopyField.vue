@@ -8,7 +8,7 @@
         <slot />
 
         <template v-if='pre'>
-            <pre v-text='text'/>
+            <pre v-text='text' />
 
             <CopyButton
                 :text='text'
