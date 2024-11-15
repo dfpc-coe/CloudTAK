@@ -15,7 +15,7 @@
             class='col-12 row g-0'
         >
             <label class='subheader'>Zoom Limits</label>
-            
+
             <div class='col-12 col-md-6 pe-md-1'>
                 <pre
                     class='col-12 py-1'
@@ -153,13 +153,13 @@
                         <pre v-text='l.paint[p]' />
                     </template>
                 </template>
-                <template v-else-if='["fill-color", "line-color", "circle-color"].includes(p)'>
+                <template v-else-if='["fill-color", "line-color", "circle-color", "text-color", "text-halo-color"].includes(p)'>
                     <template v-if='Array.isArray(l.paint[p]) && l.paint[p][0] === "string"'>
                         <TablerInput
                             v-model='l.paint[p][l.paint[p].length -1]'
                             class='w-100'
                             type='color'
-                            label='Colour'
+                            :label='p'
                         >
                             <span
                                 class='float-right'
@@ -172,7 +172,7 @@
                             v-model='l.paint[p]'
                             class='w-100'
                             type='color'
-                            label='Colour'
+                            :label='p'
                         >
                             <span
                                 class='float-right'
@@ -186,8 +186,8 @@
                     </template>
                 </template>
                 <template v-else>
-                    <span v-text='p' />
-                    <span
+                    <div v-text='p' />
+                    <div
                         class='ms-auto'
                         v-text='l.paint[p]'
                     />
@@ -236,7 +236,7 @@ export default {
             handler: function() {
                 if (!this.updateMap) return;
 
-                for (const paint of ['fill-opacity', 'fill-color', 'line-opacity', 'line-color', 'line-width']) {
+                for (const paint of ['fill-opacity', 'fill-color', 'line-opacity', 'line-color', 'line-width', 'text-halo-width', 'text-halo-blur']) {
                     if (this.l.paint[paint]) {
                         mapStore.map.setPaintProperty(String(this.l.id), paint, this.l.paint[paint]);
                     }
