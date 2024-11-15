@@ -451,6 +451,7 @@
                     <CoTVideo
                         class='my-2 mx-2'
                         :video='video.url'
+                        @close='videos.delete(video.uid)'
                     />
                 </div>
             </template>
@@ -533,6 +534,7 @@ const profileStore = useProfileStore();
 const cotStore = useCOTStore();
 const mapStore = useMapStore();
 const connectionStore = useConnectionStore();
+const videoStore = useVideoStore();
 
 export default {
     name: 'CloudTAK',
@@ -829,6 +831,9 @@ export default {
         handleRadial: async function(event) {
             if (event === 'cot:view') {
                 this.$router.push(`/cot/${this.radial.cot.properties.id}`);
+                this.closeRadial()
+            } else if (event === 'cot:play') {
+                videoStore.add(this.radial.cot.properties.id);
                 this.closeRadial()
             } else if (event === 'cot:delete') {
                 const cot = mapStore.radial.cot;
