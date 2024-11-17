@@ -1,7 +1,17 @@
 <template>
-    <div class='bg-dark rounded border resizable-content text-white'>
+    <div
+        class='position-absolute bg-dark rounded border resizable-content text-white'
+        :style='`left: ${video.x}px; top: ${video.y}px`'
+        :draggable='true'
+        @dragstart='dragStart'
+    >
         <div class='d-flex align-items-center px-2 py-2'>
-            <IconGripVertical :size='24' stroke='1'/>
+            <IconGripVertical
+                ref='drag-handle'
+                :size='24'
+                stroke='1'
+                class='cursor-pointer'
+            />
 
             <div class='subheader' v-text='title'></div>
 
@@ -13,7 +23,6 @@
             </div>
         </div>
         <div
-            ref='container'
             class='modal-body'
             :style='`height: calc(100% - 40px)`'
         >
@@ -36,7 +45,7 @@
             </template>
             <template v-else>
                 <video
-                    id='cot-player'
+                    :id='id'
                     class='video-js vjs-default-skin'
                     controls='true'
                     autoplay='true'
@@ -66,6 +75,7 @@ import { std } from '../../../../src/std.ts';
 import type { VideoLeaseResponse } from '../../../types.ts';
 import type Player from 'video.js/dist/types/player.d.ts';
 import videojs from 'video.js';
+import { useVideoStore } from '../../../../src/stores/videos.ts';
 import 'video.js/dist/video-js.css';
 import {
     IconX,
@@ -78,27 +88,38 @@ import {
     TablerButton,
     TablerIconButton,
 } from '@tak-ps/vue-tabler';
+const videoStore = useVideoStore();
+
+const id = `video-${(Math.random() + 1).toString(36).substring(7)}`;
 
 const props = defineProps({
     title: {
         type: String,
         default: 'Video Stream'
     },
-    video: {
+    uid: {
         type: String,
         required: true
     }
 });
 
-const container = useTemplateRef('container');
+const dragHandle = useTemplateRef('drag-handle');
 
 const emit = defineEmits(['close']);
 
 const loading = ref(true);
 const err = ref<Error | undefined>();
 const player = ref<Player | undefined>()
+
+const video = ref(videoStore.videos.get(props.uid));
 const videoLease = ref<VideoLeaseResponse["lease"] | undefined>();
 const videoProtocols = ref<VideoLeaseResponse["protocols"] | undefined>();
+
+const pos = ref({
+    x: video.x,
+    y: video.y
+});
+
 
 onUnmounted(async () => {
     if (player.value) {
@@ -111,14 +132,31 @@ onUnmounted(async () => {
 onMounted(async () => {
     await requestLease();
 
+    document.body.addEventListener('dragover', (event) => {
+        video.value.x = event.clientX;
+        video.value.y = event.clientY;
+
+        console.error('DRAGOVER', event.clientX, event.clientY);
+
+        event.preventDefault(); 
+        return false; 
+    },false); 
+
     if (!err.value && videoProtocols.value && videoProtocols.value.hls) {
         nextTick(() => {
-            player.value = videojs('cot-player', {
+            player.value = videojs(id, {
                 fluid: true
             });
         });
     }
 });
+
+function dragStart(event) {
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData("text/plain", id);
+    event.dataTransfer.setDragImage(new Image(), 0, 0)
+}
+
 
 async function deleteLease(): Promise<void> {
     if (!videoLease.value) return;
@@ -143,7 +181,7 @@ async function requestLease(): Promise<void> {
                 name: 'Temporary Lease',
                 ephemeral: true,
                 duration: 1 * 60 * 60,
-                proxy: props.video
+                proxy: video.url
             }
         }) as VideoLeaseResponse
 

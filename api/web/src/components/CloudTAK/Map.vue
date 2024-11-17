@@ -441,19 +441,10 @@
             />
 
             <template v-for='video in videos.values()'>
-                <div
-                    class='position-absolute'
-                    :style='`
-                        left: ${video.x}px;
-                        top: ${video.y}px;
-                    `'>
-
-                    <CoTVideo
-                        class='my-2 mx-2'
-                        :video='video.url'
-                        @close='videos.delete(video.uid)'
-                    />
-                </div>
+                <CoTVideo
+                    :uid='video.uid'
+                    @close='videos.delete(video.uid)'
+                />
             </template>
 
             <template v-if='upload.shown'>
