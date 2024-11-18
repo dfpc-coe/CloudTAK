@@ -633,134 +633,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/connection/{:connectionid}/data/{:dataid}/job": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Data Jobs */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            total: number;
-                            items: {
-                                id: string;
-                                asset: string;
-                                status: string;
-                                created: number;
-                                updated?: number;
-                            }[];
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/connection/{:connectionid}/data/{:dataid}/job/{:jobid}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Data Jobs */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: string;
-                            asset: string;
-                            status: string;
-                            created: number;
-                            updated?: number;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/connection/{:connectionid}/data/{:dataid}/job/{:jobid}/logs": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Data Job Logs */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            logs: {
-                                message: string;
-                                timestamp: number;
-                            }[];
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/basemap": {
         parameters: {
             query?: never;
@@ -888,6 +760,7 @@ export interface paths {
                         type?: "raster" | "raster-dem" | "vector";
                         bounds?: number[];
                         center?: number[];
+                        styles?: unknown[];
                     };
                 };
             };
@@ -1026,6 +899,7 @@ export interface paths {
                         type?: "raster" | "raster-dem" | "vector";
                         bounds?: number[];
                         center?: number[];
+                        styles?: unknown[];
                     };
                 };
             };
@@ -1136,6 +1010,134 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connection/{:connectionid}/data/{:dataid}/job": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Data Jobs */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: string;
+                                asset: string;
+                                status: string;
+                                created: number;
+                                updated?: number;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connection/{:connectionid}/data/{:dataid}/job/{:jobid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Data Jobs */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            asset: string;
+                            status: string;
+                            created: number;
+                            updated?: number;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connection/{:connectionid}/data/{:dataid}/job/{:jobid}/logs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Data Job Logs */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            logs: {
+                                message: string;
+                                timestamp: number;
+                            }[];
+                        };
+                    };
                 };
             };
         };
@@ -2069,89 +2071,6 @@ export interface paths {
                 };
             };
         };
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/connection/{:connectionid}/layer/{:layerid}/query": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get the latest feature from a layer */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description Filter by Id prefix */
-                    filter?: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            type: string;
-                            features: unknown[];
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/connection/{:connectionid}/layer/{:layerid}/query/{:featid}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get the latest feature from a layer */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: string;
-                            type: string;
-                            properties: unknown;
-                            geometry: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -6494,7 +6413,7 @@ export interface paths {
                                     timestamp: string;
                                     creatorUid: string;
                                     keywords?: string[];
-                                    detail?: {
+                                    details?: {
                                         type: string;
                                         callsign: string;
                                         color: string;
@@ -6556,7 +6475,7 @@ export interface paths {
                                     timestamp: string;
                                     creatorUid: string;
                                     keywords?: string[];
-                                    detail?: {
+                                    details?: {
                                         type: string;
                                         callsign: string;
                                         color: string;
@@ -6620,7 +6539,7 @@ export interface paths {
                                     timestamp: string;
                                     creatorUid: string;
                                     keywords?: string[];
-                                    detail?: {
+                                    details?: {
                                         type: string;
                                         callsign: string;
                                         color: string;
@@ -9852,118 +9771,6 @@ export interface paths {
         };
         trace?: never;
     };
-    "/server": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Server */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: number;
-                            status: string;
-                            created: string;
-                            updated: string;
-                            provider_client?: string;
-                            provider_secret?: string;
-                            provider_url?: string;
-                            name: string;
-                            url: string;
-                            api: string;
-                            webtak: string;
-                            /** @description Once an admin certificate is configured it is not retrivable. This boolean refers to if a certificate is currently loaded */
-                            auth: boolean;
-                            certificate?: {
-                                subject: string;
-                                validFrom: string;
-                                validTo: string;
-                            };
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Patch Server */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        url: string;
-                        api: string;
-                        webtak: string;
-                        name?: string;
-                        provider_url?: string;
-                        provider_secret?: string;
-                        provider_client?: string;
-                        username?: string;
-                        password?: string;
-                        auth?: {
-                            cert: string;
-                            key: string;
-                        };
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: number;
-                            status: string;
-                            created: string;
-                            updated: string;
-                            provider_client?: string;
-                            provider_secret?: string;
-                            provider_url?: string;
-                            name: string;
-                            url: string;
-                            api: string;
-                            webtak: string;
-                            /** @description Once an admin certificate is configured it is not retrivable. This boolean refers to if a certificate is currently loaded */
-                            auth: boolean;
-                            certificate?: {
-                                subject: string;
-                                validFrom: string;
-                                validTo: string;
-                            };
-                        };
-                    };
-                };
-            };
-        };
-        trace?: never;
-    };
     "/search/reverse/{:longitude}/{:latitude}": {
         parameters: {
             query?: never;
@@ -10154,6 +9961,118 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/server": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Server */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            status: string;
+                            created: string;
+                            updated: string;
+                            provider_client?: string;
+                            provider_secret?: string;
+                            provider_url?: string;
+                            name: string;
+                            url: string;
+                            api: string;
+                            webtak: string;
+                            /** @description Once an admin certificate is configured it is not retrivable. This boolean refers to if a certificate is currently loaded */
+                            auth: boolean;
+                            certificate?: {
+                                subject: string;
+                                validFrom: string;
+                                validTo: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Patch Server */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        url: string;
+                        api: string;
+                        webtak: string;
+                        name?: string;
+                        provider_url?: string;
+                        provider_secret?: string;
+                        provider_client?: string;
+                        username?: string;
+                        password?: string;
+                        auth?: {
+                            cert: string;
+                            key: string;
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            status: string;
+                            created: string;
+                            updated: string;
+                            provider_client?: string;
+                            provider_secret?: string;
+                            provider_url?: string;
+                            name: string;
+                            url: string;
+                            api: string;
+                            webtak: string;
+                            /** @description Once an admin certificate is configured it is not retrivable. This boolean refers to if a certificate is currently loaded */
+                            auth: boolean;
+                            certificate?: {
+                                subject: string;
+                                validFrom: string;
+                                validTo: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
         trace?: never;
     };
     "/swagger": {
@@ -10910,7 +10829,7 @@ export interface paths {
                                 updated: string;
                                 username: string;
                                 ephemeral: boolean;
-                                expiration: string;
+                                expiration: (string | null) | null;
                                 path: string;
                                 stream_user: string | null;
                                 stream_pass: string | null;
@@ -10940,8 +10859,16 @@ export interface paths {
                          * @default false
                          */
                         ephemeral: boolean;
-                        /** @description Duration in Seconds */
+                        /**
+                         * @description Duration in Seconds
+                         * @default 3600
+                         */
                         duration: number;
+                        /**
+                         * @description System Admins can create non-expiring leases
+                         * @default false
+                         */
+                        permanent: boolean;
                         path?: string;
                         stream_user?: string;
                         stream_pass?: string;
@@ -10964,7 +10891,7 @@ export interface paths {
                                 updated: string;
                                 username: string;
                                 ephemeral: boolean;
-                                expiration: string;
+                                expiration: (string | null) | null;
                                 path: string;
                                 stream_user: string | null;
                                 stream_pass: string | null;
@@ -11034,7 +10961,7 @@ export interface paths {
                                 updated: string;
                                 username: string;
                                 ephemeral: boolean;
-                                expiration: string;
+                                expiration: (string | null) | null;
                                 path: string;
                                 stream_user: string | null;
                                 stream_pass: string | null;
@@ -11107,8 +11034,16 @@ export interface paths {
                 content: {
                     "application/json": {
                         name?: string;
-                        /** @description Duration in Seconds */
-                        duration?: number;
+                        /**
+                         * @description Duration in Seconds
+                         * @default 3600
+                         */
+                        duration: number;
+                        /**
+                         * @description System Admins can create non-expiring leases
+                         * @default false
+                         */
+                        permanent: boolean;
                     };
                 };
             };
@@ -11127,7 +11062,7 @@ export interface paths {
                                 updated: string;
                                 username: string;
                                 ephemeral: boolean;
-                                expiration: string;
+                                expiration: (string | null) | null;
                                 path: string;
                                 stream_user: string | null;
                                 stream_pass: string | null;

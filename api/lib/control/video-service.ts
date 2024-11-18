@@ -2,7 +2,6 @@ import Err from '@openaddresses/batch-error';
 import Config from '../config.js';
 import { Type, Static } from '@sinclair/typebox';
 import { VideoLeaseResponse } from '../types.js';
-import moment from 'moment';
 import fetch from '../fetch.js';
 
 export const Protocols = Type.Object({
@@ -274,7 +273,7 @@ export default class VideoServiceControl {
     async generate(opts: {
         name: string;
         ephemeral: boolean;
-        expiration: string;
+        expiration: string | null;
         path: string;
         username: string;
         proxy?: string;
@@ -349,7 +348,7 @@ export default class VideoServiceControl {
         return lease;
     }
 
-    async commit(leaseid: string, body: { name?: string, duration?: number }, opts: {
+    async commit(leaseid: string, body: { name?: string, expiration: string | null }, opts: {
         username: string;
         admin: boolean;
     }): Promise<Static<typeof VideoLeaseResponse>> {
@@ -359,15 +358,9 @@ export default class VideoServiceControl {
         let lease = await this.config.models.VideoLease.from(leaseid);
 
         if (opts.admin) {
-            lease = await this.config.models.VideoLease.commit(leaseid, {
-                ...body,
-                expiration: body.duration ? moment().add(body.duration, 'seconds').toISOString() : lease.expiration,
-            });
+            lease = await this.config.models.VideoLease.commit(leaseid, body);
         } else if (lease.username === opts.username) {
-            lease = await this.config.models.VideoLease.commit(leaseid, {
-                ...body,
-                expiration: body.duration ? moment().add(body.duration, 'seconds').toISOString() : lease.expiration,
-            });
+            lease = await this.config.models.VideoLease.commit(leaseid, body);
         } else {
             throw new Err(400, null, 'You can only update a lease you created');
         }

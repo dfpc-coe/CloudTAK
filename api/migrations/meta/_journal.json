@@ -484,6 +484,13 @@
       "when": 1731434691066,
       "tag": "0068_panoramic_sugar_man",
       "breakpoints": true
+    },
+    {
+      "idx": 69,
+      "version": "7",
+      "when": 1731969306208,
+      "tag": "0069_tiny_triathlon",
+      "breakpoints": true
     }
   ]
 }
