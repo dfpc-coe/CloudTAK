@@ -262,7 +262,7 @@ const profileStore = useProfileStore();
 
 const durations = ref<Array<string>>(["16 Hours", "12 Hours", "6 Hours", "1 Hour"]);
 
-if (profileStore.profile.system_admin) {
+if (profileStore.profile && profileStore.profile.system_admin) {
     durations.value.push('Permanent');
 }
 
@@ -270,7 +270,7 @@ const editLease = ref<{
     id?: number
     name: string
     duration: string
-    expiration?: string
+    expiration?: string | null
     stream_user: string | null
     stream_pass: string | null
 }>({
@@ -292,7 +292,7 @@ onMounted(async () => {
     loading.value = false
 });
 
-function expired(expiration?: string) {
+function expired(expiration?: string | null) {
     if (!expiration) return false;
     return +new Date(expiration) < +new Date();
 }
