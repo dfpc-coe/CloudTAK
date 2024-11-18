@@ -3,8 +3,8 @@
         ref='container'
         class='position-absolute bg-dark rounded border resizable-content text-white'
         :style='`
-            left: ${video.x}px;
-            top: ${video.y}px;
+            left: ${video ? video.x : 60}px;
+            top: ${video ? video.y : 0}px;
         `'
     >
         <div class='d-flex align-items-center px-2 py-2'>
@@ -20,30 +20,43 @@
                 />
             </div>
 
-            <div class='subheader' v-text='title'></div>
+            <div
+                class='subheader'
+                v-text='title'
+            />
 
             <div class='btn-list ms-auto'>
                 <TablerIconButton
                     title='Close Video Player'
                     @click='emit("close")'
-                ><IconX :size='24' stroke='1'/></TablerIconButton>
+                >
+                    <IconX
+                        :size='24'
+                        stroke='1'
+                    />
+                </TablerIconButton>
             </div>
         </div>
         <div
             class='modal-body'
             :style='`height: calc(100% - 40px)`'
         >
-            <div v-if='loading' class='col-12 d-flex align-items-center justify-content-center'>
+            <div
+                v-if='loading'
+                class='col-12 d-flex align-items-center justify-content-center'
+            >
                 <TablerLoading label='Loading Stream' />
             </div>
-            <template v-else-if='err'>
+            <template v-else-if='error'>
                 <TablerAlert
                     title='Video Error'
-                    :err='err'
+                    :err='error'
                 />
 
                 <div class='d-flex justify-content-center'>
-                    <TablerButton @click='$emit("close")'>Close Player</TablerButton>
+                    <TablerButton @click='$emit("close")'>
+                        Close Player
+                    </TablerButton>
                 </div>
             </template>
             <template v-else-if='!videoProtocols || !videoProtocols.hls'>
@@ -68,15 +81,6 @@
         </div>
     </div>
 </template>
-
-<style>
-.resizable-content {
-    min-height: 300px;
-    min-width: 400px;
-    resize: both;
-    overflow: auto;
-}
-</style>
 
 <script setup lang='ts'>
 import { ref, onMounted, onUnmounted, nextTick, useTemplateRef } from 'vue'
@@ -117,20 +121,19 @@ const container = useTemplateRef('container');
 const emit = defineEmits(['close']);
 
 const loading = ref(true);
-const err = ref<Error | undefined>();
+const error = ref<Error | undefined>();
 const player = ref<Player | undefined>()
 
 const video = ref(videoStore.videos.get(props.uid));
 const videoLease = ref<VideoLeaseResponse["lease"] | undefined>();
 const videoProtocols = ref<VideoLeaseResponse["protocols"] | undefined>();
-
-const pos = ref({
-    x: video.x,
-    y: video.y
-});
-
+const observer = ref<ResizeObserver | undefined>();
 
 onUnmounted(async () => {
+    if (observer.value) {
+        observer.value.disconnect();
+    }
+
     if (player.value) {
         player.value.dispose();
     }
@@ -142,20 +145,27 @@ onMounted(async () => {
     await requestLease();
 
     document.body.addEventListener('dragover', (event) => {
-        video.value.x = event.clientX;
-        video.value.y = event.clientY;
+        if (video.value && video.value) {
+            video.value.x = event.clientX;
+            video.value.y = event.clientY;
+        }
 
         event.preventDefault();
         return false;
     }, false);
 
-    new ResizeObserver(() => {
-        console.error(container.value.clientHeight);
-        video.value.height = container.value.clientHeight;
-        video.value.width = container.value.clientWidth;
-    }).observe(container.value);
+    observer.value = new ResizeObserver(() => {
+        if (video.value && video.value &&  container.value) {
+            video.value.height = container.value.clientHeight;
+            video.value.width = container.value.clientWidth;
+        }
+    })
 
-    if (!err.value && videoProtocols.value && videoProtocols.value.hls) {
+    if (container.value) {
+        observer.value.observe(container.value);
+    }
+
+    if (!error.value && videoProtocols.value && videoProtocols.value.hls) {
         nextTick(() => {
             player.value = videojs(id, {
                 fluid: true
@@ -164,7 +174,8 @@ onMounted(async () => {
     }
 });
 
-function dragStart(event) {
+function dragStart(event: DragEvent) {
+    if (!event.dataTransfer) return;
     event.dataTransfer.effectAllowed = 'move';
     event.dataTransfer.setData("text/plain", id);
     event.dataTransfer.setDragImage(new Image(), 0, 0)
@@ -181,7 +192,7 @@ async function deleteLease(): Promise<void> {
         loading.value = false;
     } catch (err) {
         loading.value = false;
-        err.value = err instanceof Error ? err : new Error(String(err));
+        error.value = err instanceof Error ? err : new Error(String(err));
     }
 }
 
@@ -193,7 +204,7 @@ async function requestLease(): Promise<void> {
                 name: 'Temporary Lease',
                 ephemeral: true,
                 duration: 1 * 60 * 60,
-                proxy: video.value.url
+                proxy: video.value ? video.value.url : undefined
             }
         }) as VideoLeaseResponse
 
@@ -203,7 +214,16 @@ async function requestLease(): Promise<void> {
         loading.value = false;
     } catch (err) {
         loading.value = false;
-        err.value = err instanceof Error ? err : new Error(String(err));
+        error.value = err instanceof Error ? err : new Error(String(err));
     }
 }
 </script>
+
+<style>
+.resizable-content {
+    min-height: 300px;
+    min-width: 400px;
+    resize: both;
+    overflow: auto;
+}
+</style>

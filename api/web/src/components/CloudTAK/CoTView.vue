@@ -66,11 +66,21 @@
                             v-if='feat.properties.video && feat.properties.video.url'
                             title='View Video Stream'
                             @click='playVideo'
-                        ><IconPlayerPlay size='32' stroke='1' /></TablerIconButton>
+                        >
+                            <IconPlayerPlay
+                                size='32'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
                         <TablerIconButton
                             title='Share'
                             @click='mode === "share" ? mode = "default" : mode = "share"'
-                        ><IconShare2 :size='32' stroke='1'/></TablerIconButton>
+                        >
+                            <IconShare2
+                                :size='32'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
                     </div>
                     <div class='ms-auto btn-list mx-2'>
                         <TablerDelete
@@ -81,18 +91,33 @@
                         <TablerIconButton
                             title='Zoom To'
                             @click='zoomTo'
-                        ><IconZoomPan :size='32' stroke='1'/></TablerIconButton>
+                        >
+                            <IconZoomPan
+                                :size='32'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
 
                         <TablerIconButton
                             v-if='feat.properties.group'
                             title='Chat'
                             @click='$router.push(`/menu/chats/new?callsign=${feat.properties.callsign}&uid=${feat.id}`)'
-                        ><IconMessage :size='32' stroke='1'/></TablerIconButton>
+                        >
+                            <IconMessage
+                                :size='32'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
 
                         <TablerDropdown>
                             <TablerIconButton
                                 title='Add Properties'
-                            ><IconDotsVertical :size='32' stroke='1'/></TablerIconButton>
+                            >
+                                <IconDotsVertical
+                                    :size='32'
+                                    stroke='1'
+                                />
+                            </TablerIconButton>
 
                             <template #dropdown>
                                 <div class='px-1 py-1'>
