@@ -62,44 +62,62 @@
                 </div>
                 <div class='col-12 d-flex my-2'>
                     <div class='btn-list'>
-                        <IconShare2
-                            v-tooltip='"Share"'
-                            :size='32'
-                            :stroke='1'
-                            class='cursor-pointer'
+                        <TablerIconButton
+                            v-if='feat.properties.video && feat.properties.video.url'
+                            title='View Video Stream'
+                            @click='playVideo'
+                        >
+                            <IconPlayerPlay
+                                size='32'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
+                        <TablerIconButton
+                            title='Share'
                             @click='mode === "share" ? mode = "default" : mode = "share"'
-                        />
+                        >
+                            <IconShare2
+                                :size='32'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
                     </div>
                     <div class='ms-auto btn-list mx-2'>
                         <TablerDelete
                             displaytype='icon'
                             @delete='deleteCOT'
                         />
-                        <IconZoomPan
-                            v-tooltip='"Zoom To"'
-                            :size='32'
-                            :stroke='1'
-                            class='cursor-pointer'
-                            @click='zoomTo'
-                        />
 
-                        <IconMessage
+                        <TablerIconButton
+                            title='Zoom To'
+                            @click='zoomTo'
+                        >
+                            <IconZoomPan
+                                :size='32'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
+
+                        <TablerIconButton
                             v-if='feat.properties.group'
-                            v-tooltip='"Chat"'
-                            :size='32'
-                            :stroke='1'
-                            class='cursor-pointer'
+                            title='Chat'
                             @click='$router.push(`/menu/chats/new?callsign=${feat.properties.callsign}&uid=${feat.id}`)'
-                        />
+                        >
+                            <IconMessage
+                                :size='32'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
 
                         <TablerDropdown>
-                            <IconDotsVertical
-                                v-tooltip='"Add Properties"'
-                                :size='32'
-                                :stroke='1'
-                                class='cursor-pointer'
-                                @click='zoomTo'
-                            />
+                            <TablerIconButton
+                                title='Add Properties'
+                            >
+                                <IconDotsVertical
+                                    :size='32'
+                                    stroke='1'
+                                />
+                            </TablerIconButton>
 
                             <template #dropdown>
                                 <div class='px-1 py-1'>
@@ -403,60 +421,9 @@
             <TablerToggle
                 v-if='isArchivable'
                 v-model='feat.properties.archived'
-                label='Archived'
+                label='Saved Feature'
                 class='mx-2'
             />
-
-            <div
-                v-if='feat.properties.video'
-                class='col-12 px-1 pb-2'
-            >
-                <div class='d-flex mx-3'>
-                    <label class='subheader'>Video</label>
-                </div>
-
-                <CoTVideo
-                    v-if='viewer'
-                    class='my-2 mx-2'
-                    :video='feat.properties.video.url'
-                    @close='viewer = false'
-                />
-
-                <div class='table-responsive rounded mx-2 py-2 px-2'>
-                    <table class='table card-table table-hover table-vcenter datatable'>
-                        <thead>
-                            <tr>
-                                <th>Key</th>
-                                <th>Value</th>
-                            </tr>
-                        </thead>
-                        <tbody class='bg-gray-500'>
-                            <tr
-                                v-for='prop of Object.keys(feat.properties.video)'
-                                :key='prop'
-                            >
-                                <td>
-                                    <IconPlayerPlay
-                                        v-if='prop === "url" && feat.properties.video.url.length'
-                                        v-tooltip='"View Video Stream"'
-                                        class='cursor-pointer'
-                                        size='32'
-                                        stroke='1'
-                                        @click='viewer = true'
-                                    />
-                                    <span
-                                        v-else
-                                        v-text='prop'
-                                    />
-                                </td>
-                                <td>
-                                    <TablerInput v-model='feat.properties.video[prop]' />
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
 
             <CoTSensor
                 v-if='feat.properties.sensor !== undefined'
@@ -535,13 +502,13 @@ import {
     TablerToggle,
     TablerDelete,
     TablerMarkdown,
-    TablerDropdown
+    TablerDropdown,
+    TablerIconButton,
 } from '@tak-ps/vue-tabler';
 import Share from './util/Share.vue';
 import CoTStyle from './util/CoTStyle.vue';
 import Coordinate from './util/Coordinate.vue';
 import Course from './util/Course.vue';
-import CoTVideo from './util/Video.vue';
 import CoTSensor from './util/Sensor.vue';
 import Phone from './util/Phone.vue';
 import Speed from './util/Speed.vue';
@@ -571,6 +538,8 @@ import { std } from '/src/std.ts';
 import { useCOTStore } from '/src/stores/cots.ts';
 const cotStore = useCOTStore();
 import { useProfileStore } from '/src/stores/profile.ts';
+import { useVideoStore } from '/src/stores/videos.ts';
+const videoStore = useVideoStore();
 
 export default {
     name: 'CloudTAKCoTView',
@@ -580,7 +549,6 @@ export default {
             mission: false,
             type: null,
             mode: 'default',
-            viewer: false,
             icon: null,
 
             interval: false,
@@ -601,8 +569,6 @@ export default {
             const { feat, mission } = this.findCOT();
             this.feat = feat;
             this.mission = mission;
-
-            this.viewer = false;
         },
         feat: {
             deep: true,
@@ -650,6 +616,9 @@ export default {
         }
     },
     methods: {
+        playVideo: function() {
+            videoStore.add(this.$route.params.uid);
+        },
         timediff: function(date) {
             if (this.time === 'relative') {
                 return timediff(date);
@@ -741,7 +710,6 @@ export default {
         IconBattery3,
         IconBattery4,
         CoTStyle,
-        CoTVideo,
         CoTSensor,
         Elevation,
         Attachments,
@@ -756,7 +724,8 @@ export default {
         TablerToggle,
         TablerDropdown,
         TablerDelete,
-        Subscriptions
+        Subscriptions,
+        TablerIconButton,
     }
 }
 </script>
