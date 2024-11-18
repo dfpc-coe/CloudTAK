@@ -2,7 +2,6 @@ import Err from '@openaddresses/batch-error';
 import Config from '../config.js';
 import { Type, Static } from '@sinclair/typebox';
 import { VideoLeaseResponse } from '../types.js';
-import moment from 'moment';
 import fetch from '../fetch.js';
 
 export const Protocols = Type.Object({
