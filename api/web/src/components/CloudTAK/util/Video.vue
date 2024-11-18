@@ -184,7 +184,7 @@ async function requestLease(): Promise<void> {
                 name: 'Temporary Lease',
                 ephemeral: true,
                 duration: 1 * 60 * 60,
-                proxy: video.url
+                proxy: video.value.url
             }
         }) as VideoLeaseResponse
 
