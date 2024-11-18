@@ -185,7 +185,7 @@ export default class TileJSON {
 
                 const tileRes = await fetch(url);
 
-                if (!tileRes.ok) throw new Err(400, null, `Upstream Error: ${await res.text()}`);
+                if (!tileRes.ok) throw new Err(400, null, `Upstream Error: ${await tileRes.text()}`);
 
                 const fc = await tileRes.json();
 
