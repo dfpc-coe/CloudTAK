@@ -170,7 +170,7 @@
                             <div class='col-12 d-flex justify-content-center pb-3'>
                                 <TablerEnum
                                     v-model='editLease.duration'
-                                    :options='["16 Hours", "12 Hours", "6 Hours", "1 Hour"]'
+                                    :options='durations'
                                     style='width: 300px;'
                                 />
                             </div>
@@ -226,6 +226,7 @@ import { std } from '../../../../std.ts';
 import CopyField from '../../util/CopyField.vue';
 import { ref, onMounted } from 'vue';
 import type { VideoLease, VideoLeaseResponse, VideoLeaseProtocols } from '../../../../types.ts';
+import { useProfileStore } from '../../../../src/stores/profile.ts';
 import {
     IconRefresh,
     IconWand,
@@ -254,6 +255,15 @@ const loading = ref(true);
 const wizard = ref(0);
 const advanced = ref(false);
 const protocols = ref<VideoLeaseProtocols>({});
+
+const profileStore = useProfileStore();
+
+const durations = ref<Array<string>>(["16 Hours", "12 Hours", "6 Hours", "1 Hour"]);
+
+if (profileStore.profile.system_admin) {
+    durations.value.push('Permanent');
+}
+
 const editLease = ref<{
     id?: number
     name: string
@@ -317,7 +327,8 @@ async function saveLease(close: boolean) {
             method: 'PATCH',
             body: {
                 ...editLease.value,
-                duration: parseInt(editLease.value.duration.split(' ')[0]) * 60 * 60
+                duration: editLease.value.duration === 'Permanent' ? undefined : parseInt(editLease.value.duration.split(' ')[0]) * 60 * 60,
+                permanent: editLease.value.duration === 'Permanent' ? true : false
             }
         }) as VideoLeaseResponse;
 
@@ -338,7 +349,8 @@ async function saveLease(close: boolean) {
             method: 'POST',
             body: {
                 name: editLease.value.name,
-                duration: parseInt(editLease.value.duration.split(' ')[0]) * 60 * 60
+                duration: editLease.value.duration === 'Permanent' ? undefined : parseInt(editLease.value.duration.split(' ')[0]) * 60 * 60,
+                permanent: editLease.value.duration === 'Permanent' ? true : false
             }
         }) as VideoLeaseResponse;
 

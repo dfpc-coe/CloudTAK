@@ -101,12 +101,16 @@ export default async function router(schema: Schema, config: Config) {
             }),
             duration: Type.Integer({
                 minimum: 0,
+                default: 60 * 60,
                 description: 'Duration in Seconds'
+            }),
+            permanent: Type.Boolean({
+                default: false,
+                description: 'System Admins can create non-expiring leases'
             }),
             path: Type.Optional(Type.String()),
             stream_user: Type.Optional(Type.String()),
             stream_pass: Type.Optional(Type.String()),
-
             proxy: Type.Optional(Type.String())
         }),
         res: Type.Object({
@@ -119,12 +123,16 @@ export default async function router(schema: Schema, config: Config) {
 
             if (user.access !== AuthUserAccess.ADMIN && req.body.duration > 60 * 60 * 24) {
                 throw new Err(400, null, 'Only Administrators can request a lease > 24 hours')
+            } else if (user.access !== AuthUserAccess.ADMIN && req.body.permanent) {
+                throw new Err(400, null, 'Only Administrators can request permanent leases')
+            } else if (user.access !== AuthUserAccess.ADMIN && req.body.path) {
+                throw new Err(400, null, 'Only Administrators can request custom paths in leases')
             }
 
             const lease = await videoControl.generate({
                 name: req.body.name,
                 ephemeral: req.body.ephemeral,
-                expiration: moment().add(req.body.duration, 'seconds').toISOString(),
+                expiration: req.body.permanent ? null : moment().add(req.body.duration, 'seconds').toISOString(),
                 path: req.body.path || randomUUID(),
                 username: user.email,
                 proxy: req.body.proxy
@@ -148,10 +156,15 @@ export default async function router(schema: Schema, config: Config) {
         }),
         body: Type.Object({
             name: Type.Optional(Type.String()),
-            duration: Type.Optional(Type.Integer({
+            duration: Type.Integer({
                 minimum: 0,
+                default: 60 * 60,
                 description: 'Duration in Seconds'
-            })),
+            }),
+            permanent: Type.Boolean({
+                default: false,
+                description: 'System Admins can create non-expiring leases'
+            })
         }),
         res: Type.Object({
             lease: VideoLeaseResponse,
@@ -163,9 +176,14 @@ export default async function router(schema: Schema, config: Config) {
 
             if (user.access !== AuthUserAccess.ADMIN && req.body.duration && req.body.duration > 60 * 60 * 24) {
                 throw new Err(400, null, 'Only Administrators can request a lease > 24 hours')
+            } else if (user.access !== AuthUserAccess.ADMIN && req.body.permanent) {
+                throw new Err(400, null, 'Only Administrators can request permanent leases')
             }
 
-            const lease = await videoControl.commit(req.params.lease, req.body, {
+            const lease = await videoControl.commit(req.params.lease, {
+                name: req.body.name,
+                expiration: req.body.permanent ? null : moment().add(req.body.duration, 'seconds').toISOString(),
+            }, {
                 username: user.email,
                 admin: user.access === AuthUserAccess.ADMIN
             });
