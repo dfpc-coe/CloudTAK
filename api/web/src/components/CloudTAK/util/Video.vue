@@ -18,7 +18,7 @@
 
             <div class='subheader' v-text='title'></div>
 
-            <div class='ms-auto'>
+            <div class='btn-list ms-auto'>
                 <TablerIconButton
                     title='Close Video Player'
                     @click='emit("close")'
@@ -29,7 +29,9 @@
             class='modal-body'
             :style='`height: calc(100% - 40px)`'
         >
-            <TablerLoading v-if='loading' />
+            <div v-if='loading' class='col-12 d-flex align-items-center justify-content-center'>
+                <TablerLoading label='Loading Stream' />
+            </div>
             <template v-else-if='err'>
                 <TablerAlert
                     title='Video Error'
@@ -139,9 +141,9 @@ onMounted(async () => {
         video.value.x = event.clientX;
         video.value.y = event.clientY;
 
-        event.preventDefault(); 
-        return false; 
-    },false); 
+        event.preventDefault();
+        return false;
+    },false);
 
     if (!err.value && videoProtocols.value && videoProtocols.value.hls) {
         nextTick(() => {
