@@ -273,7 +273,7 @@ export default class VideoServiceControl {
     async generate(opts: {
         name: string;
         ephemeral: boolean;
-        expiration: string;
+        expiration: string | null;
         path: string;
         username: string;
         proxy?: string;
