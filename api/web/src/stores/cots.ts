@@ -330,7 +330,7 @@ export const useCOTStore = defineStore('cots', {
 
             let cot = this.cots.get(id);
 
-            if (cot && opts.close) {
+            if (cot && opts.clone) {
                 return JSON.parse(JSON.stringify(cot));
             } else if (cot) {
                 return cot;
@@ -339,7 +339,12 @@ export const useCOTStore = defineStore('cots', {
                     const store = this.subscriptions.get(sub);
                     if (!store) continue;
                     cot = store.cots.get(id);
-                    if (cot) return cot;
+
+                    if (cot && opts.clone) {
+                        return JSON.parse(JSON.stringify(cot));
+                    } else if (cot) {
+                        return cot;
+                    }
                 }
             }
 

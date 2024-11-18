@@ -440,7 +440,10 @@
                 :feat='feat'
             />
 
-            <template v-for='video in videos.values()'>
+            <template
+                v-for='video in videos.values()'
+                :key='video.uid'
+            >
                 <CoTVideo
                     :uid='video.uid'
                     @close='videos.delete(video.uid)'
