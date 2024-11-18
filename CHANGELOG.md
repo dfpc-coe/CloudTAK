@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v5.4.0 - 2024-11-18
+
+- :tada: `UI/API` Add support for permanent leases
+
 ### v5.3.0 - 2024-11-18
 
 - :rocket: `UI` Show play button in Radial
