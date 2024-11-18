@@ -2,16 +2,19 @@
     <div
         class='position-absolute bg-dark rounded border resizable-content text-white'
         :style='`left: ${video.x}px; top: ${video.y}px`'
-        :draggable='true'
-        @dragstart='dragStart'
     >
         <div class='d-flex align-items-center px-2 py-2'>
-            <IconGripVertical
-                ref='drag-handle'
-                :size='24'
-                stroke='1'
-                class='cursor-pointer'
-            />
+            <div
+                :draggable='true'
+                @dragstart='dragStart'
+            >
+                <IconGripVertical
+                    ref='drag-handle'
+                    :size='24'
+                    stroke='1'
+                    class='cursor-pointer'
+                />
+            </div>
 
             <div class='subheader' v-text='title'></div>
 
@@ -135,8 +138,6 @@ onMounted(async () => {
     document.body.addEventListener('dragover', (event) => {
         video.value.x = event.clientX;
         video.value.y = event.clientY;
-
-        console.error('DRAGOVER', event.clientX, event.clientY);
 
         event.preventDefault(); 
         return false; 
