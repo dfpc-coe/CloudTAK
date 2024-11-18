@@ -20,6 +20,7 @@
 
             <div class='ms-auto btn-list'>
                 <TablerIconButton
+                    title='Refresh'
                     v-if='editLease.id'
                     @click='fetchLease'
                 >
@@ -118,7 +119,7 @@
                     <TablerEnum
                         v-if='!editLease.id'
                         v-model='editLease.duration'
-                        :options='["24 Hours", "16 Hours", "12 Hours"]'
+                        :options='durations'
                         label='Lease Duration'
                     />
 
@@ -143,15 +144,16 @@
                         v-if='advanced'
                         class='col-12'
                     >
+                        <!-- NOT SUPPORTED IN iTAK-->
                         <TablerInput
                             v-model='editLease.stream_user'
-                            :disabled='editLease.id'
+                            :disabled='true'
                             label='Stream Username'
                         />
 
                         <TablerInput
                             v-model='editLease.stream_pass'
-                            :disabled='editLease.id'
+                            :disabled='true'
                             label='Stream Password'
                         />
                     </div>
@@ -226,7 +228,7 @@ import { std } from '../../../../std.ts';
 import CopyField from '../../util/CopyField.vue';
 import { ref, onMounted } from 'vue';
 import type { VideoLease, VideoLeaseResponse, VideoLeaseProtocols } from '../../../../types.ts';
-import { useProfileStore } from '../../../../src/stores/profile.ts';
+import { useProfileStore } from '../../../../stores/profile.ts';
 import {
     IconRefresh,
     IconWand,
