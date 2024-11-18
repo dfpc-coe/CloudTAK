@@ -1,1 +1,1 @@
-ALTER TABLE "video_lease" ALTER COLUMN "ephemeral" DROP NOT NULL;
+ALTER TABLE "video_lease" ALTER COLUMN "expiration" DROP NOT NULL;
