@@ -314,60 +314,74 @@ async function fetchLease() {
 }
 
 async function deleteLease() {
-    await std(`/api/video/lease/${props.lease.id}`, {
-        method: 'DELETE',
-    });
+    try {
+        loading.value = true;
 
-    emit('refresh');
+        await std(`/api/video/lease/${props.lease.id}`, {
+            method: 'DELETE',
+        });
+
+        loading.value = false;
+
+         emit('refresh');
+    } catch (err) {
+        loading.value = false;
+        throw err;
+    }
 }
 
 async function saveLease(close: boolean) {
-    loading.value = true;
+    try {
+        loading.value = true;
 
-    if (editLease.value.id) {
-        const res = await std(`/api/video/lease/${editLease.value.id}`, {
-            method: 'PATCH',
-            body: {
-                ...editLease.value,
-                duration: editLease.value.duration === 'Permanent' ? undefined : parseInt(editLease.value.duration.split(' ')[0]) * 60 * 60,
-                permanent: editLease.value.duration === 'Permanent' ? true : false
+        if (editLease.value.id) {
+            const res = await std(`/api/video/lease/${editLease.value.id}`, {
+                method: 'PATCH',
+                body: {
+                    ...editLease.value,
+                    duration: editLease.value.duration === 'Permanent' ? undefined : parseInt(editLease.value.duration.split(' ')[0]) * 60 * 60,
+                    permanent: editLease.value.duration === 'Permanent' ? true : false
+                }
+            }) as VideoLeaseResponse;
+
+            if (close) {
+                emit('refresh');
+            } else {
+                editLease.value = {
+                    ...res.lease,
+                    duration: '16 Hours'
+                }
+
+                protocols.value = res.protocols;
             }
-        }) as VideoLeaseResponse;
 
-        if (close) {
-            emit('refresh');
+            loading.value = false;
         } else {
-            editLease.value = {
-                ...res.lease,
-                duration: '16 Hours'
+            const res = await std('/api/video/lease', {
+                method: 'POST',
+                body: {
+                    name: editLease.value.name,
+                    duration: editLease.value.duration === 'Permanent' ? undefined : parseInt(editLease.value.duration.split(' ')[0]) * 60 * 60,
+                    permanent: editLease.value.duration === 'Permanent' ? true : false
+                }
+            }) as VideoLeaseResponse;
+
+            if (editLease.value.id && close) {
+                emit('refresh');
+            } else {
+                editLease.value = {
+                    ...res.lease,
+                    duration: '16 Hours'
+                }
+
+                protocols.value = res.protocols;
             }
 
-            protocols.value = res.protocols;
+            loading.value = false;
         }
-
+    } catch (err) {
         loading.value = false;
-    } else {
-        const res = await std('/api/video/lease', {
-            method: 'POST',
-            body: {
-                name: editLease.value.name,
-                duration: editLease.value.duration === 'Permanent' ? undefined : parseInt(editLease.value.duration.split(' ')[0]) * 60 * 60,
-                permanent: editLease.value.duration === 'Permanent' ? true : false
-            }
-        }) as VideoLeaseResponse;
-
-        if (editLease.value.id && close) {
-            emit('refresh');
-        } else {
-            editLease.value = {
-                ...res.lease,
-                duration: '16 Hours'
-            }
-
-            protocols.value = res.protocols;
-        }
-
-        loading.value = false;
+        throw err;
     }
 }
 </script>
