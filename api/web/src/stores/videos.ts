@@ -12,6 +12,8 @@ export const useVideoStore = defineStore('video', {
         videos: Map<string, {
             uid: string,
             url: string,
+            height: number,
+            width: number,
             x: number,
             y: number,
         }>
@@ -32,6 +34,8 @@ export const useVideoStore = defineStore('video', {
             this.videos.set(uid, {
                 uid,
                 url: cot.properties.video.url,
+                height: 300,
+                width: 400,
                 x: 60, // The width of the Nav Toolbar
                 y: 0
             })

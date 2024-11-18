@@ -1,7 +1,11 @@
 <template>
     <div
+        ref='container'
         class='position-absolute bg-dark rounded border resizable-content text-white'
-        :style='`left: ${video.x}px; top: ${video.y}px`'
+        :style='`
+            left: ${video.x}px;
+            top: ${video.y}px;
+        `'
     >
         <div class='d-flex align-items-center px-2 py-2'>
             <div
@@ -108,7 +112,7 @@ const props = defineProps({
     }
 });
 
-const dragHandle = useTemplateRef('drag-handle');
+const container = useTemplateRef('container');
 
 const emit = defineEmits(['close']);
 
@@ -143,7 +147,13 @@ onMounted(async () => {
 
         event.preventDefault();
         return false;
-    },false);
+    }, false);
+
+    new ResizeObserver(() => {
+        console.error(container.value.clientHeight);
+        video.value.height = container.value.clientHeight;
+        video.value.width = container.value.clientWidth;
+    }).observe(container.value);
 
     if (!err.value && videoProtocols.value && videoProtocols.value.hls) {
         nextTick(() => {
@@ -159,7 +169,6 @@ function dragStart(event) {
     event.dataTransfer.setData("text/plain", id);
     event.dataTransfer.setDragImage(new Image(), 0, 0)
 }
-
 
 async function deleteLease(): Promise<void> {
     if (!videoLease.value) return;
