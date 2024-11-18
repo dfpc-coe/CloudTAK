@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v5.3.0 - 2024-11-18
+
+- :rocket: `UI` Show play button in Radial
+- :tada: `UI` Show video in popout player
+- :rocket: `UI` Allow resizing of Video
+- :rocket: `UI` Allow dragging of video
+
 ### v5.2.0 - 2024-11-15
 
 - :bug: Fix Media CSP in Chrome which uses `blob:` for display
