@@ -20,6 +20,7 @@
 
             <div class='ms-auto btn-list'>
                 <TablerIconButton
+                    title='Refresh'
                     v-if='editLease.id'
                     @click='fetchLease'
                 >
@@ -118,7 +119,7 @@
                     <TablerEnum
                         v-if='!editLease.id'
                         v-model='editLease.duration'
-                        :options='["24 Hours", "16 Hours", "12 Hours"]'
+                        :options='durations'
                         label='Lease Duration'
                     />
 
@@ -143,15 +144,16 @@
                         v-if='advanced'
                         class='col-12'
                     >
+                        <!-- NOT SUPPORTED IN iTAK-->
                         <TablerInput
                             v-model='editLease.stream_user'
-                            :disabled='editLease.id'
+                            :disabled='true'
                             label='Stream Username'
                         />
 
                         <TablerInput
                             v-model='editLease.stream_pass'
-                            :disabled='editLease.id'
+                            :disabled='true'
                             label='Stream Password'
                         />
                     </div>
@@ -170,7 +172,7 @@
                             <div class='col-12 d-flex justify-content-center pb-3'>
                                 <TablerEnum
                                     v-model='editLease.duration'
-                                    :options='["16 Hours", "12 Hours", "6 Hours", "1 Hour"]'
+                                    :options='durations'
                                     style='width: 300px;'
                                 />
                             </div>
@@ -226,6 +228,7 @@ import { std } from '../../../../std.ts';
 import CopyField from '../../util/CopyField.vue';
 import { ref, onMounted } from 'vue';
 import type { VideoLease, VideoLeaseResponse, VideoLeaseProtocols } from '../../../../types.ts';
+import { useProfileStore } from '../../../../stores/profile.ts';
 import {
     IconRefresh,
     IconWand,
@@ -254,11 +257,20 @@ const loading = ref(true);
 const wizard = ref(0);
 const advanced = ref(false);
 const protocols = ref<VideoLeaseProtocols>({});
+
+const profileStore = useProfileStore();
+
+const durations = ref<Array<string>>(["16 Hours", "12 Hours", "6 Hours", "1 Hour"]);
+
+if (profileStore.profile && profileStore.profile.system_admin) {
+    durations.value.push('Permanent');
+}
+
 const editLease = ref<{
     id?: number
     name: string
     duration: string
-    expiration?: string
+    expiration?: string | null
     stream_user: string | null
     stream_pass: string | null
 }>({
@@ -280,7 +292,7 @@ onMounted(async () => {
     loading.value = false
 });
 
-function expired(expiration?: string) {
+function expired(expiration?: string | null) {
     if (!expiration) return false;
     return +new Date(expiration) < +new Date();
 }
@@ -302,58 +314,74 @@ async function fetchLease() {
 }
 
 async function deleteLease() {
-    await std(`/api/video/lease/${props.lease.id}`, {
-        method: 'DELETE',
-    });
+    try {
+        loading.value = true;
 
-    emit('refresh');
+        await std(`/api/video/lease/${props.lease.id}`, {
+            method: 'DELETE',
+        });
+
+        loading.value = false;
+
+         emit('refresh');
+    } catch (err) {
+        loading.value = false;
+        throw err;
+    }
 }
 
 async function saveLease(close: boolean) {
-    loading.value = true;
+    try {
+        loading.value = true;
 
-    if (editLease.value.id) {
-        const res = await std(`/api/video/lease/${editLease.value.id}`, {
-            method: 'PATCH',
-            body: {
-                ...editLease.value,
-                duration: parseInt(editLease.value.duration.split(' ')[0]) * 60 * 60
+        if (editLease.value.id) {
+            const res = await std(`/api/video/lease/${editLease.value.id}`, {
+                method: 'PATCH',
+                body: {
+                    ...editLease.value,
+                    duration: editLease.value.duration === 'Permanent' ? undefined : parseInt(editLease.value.duration.split(' ')[0]) * 60 * 60,
+                    permanent: editLease.value.duration === 'Permanent' ? true : false
+                }
+            }) as VideoLeaseResponse;
+
+            if (close) {
+                emit('refresh');
+            } else {
+                editLease.value = {
+                    ...res.lease,
+                    duration: '16 Hours'
+                }
+
+                protocols.value = res.protocols;
             }
-        }) as VideoLeaseResponse;
 
-        if (close) {
-            emit('refresh');
+            loading.value = false;
         } else {
-            editLease.value = {
-                ...res.lease,
-                duration: '16 Hours'
+            const res = await std('/api/video/lease', {
+                method: 'POST',
+                body: {
+                    name: editLease.value.name,
+                    duration: editLease.value.duration === 'Permanent' ? undefined : parseInt(editLease.value.duration.split(' ')[0]) * 60 * 60,
+                    permanent: editLease.value.duration === 'Permanent' ? true : false
+                }
+            }) as VideoLeaseResponse;
+
+            if (editLease.value.id && close) {
+                emit('refresh');
+            } else {
+                editLease.value = {
+                    ...res.lease,
+                    duration: '16 Hours'
+                }
+
+                protocols.value = res.protocols;
             }
 
-            protocols.value = res.protocols;
+            loading.value = false;
         }
-
+    } catch (err) {
         loading.value = false;
-    } else {
-        const res = await std('/api/video/lease', {
-            method: 'POST',
-            body: {
-                name: editLease.value.name,
-                duration: parseInt(editLease.value.duration.split(' ')[0]) * 60 * 60
-            }
-        }) as VideoLeaseResponse;
-
-        if (editLease.value.id && close) {
-            emit('refresh');
-        } else {
-            editLease.value = {
-                ...res.lease,
-                duration: '16 Hours'
-            }
-
-            protocols.value = res.protocols;
-        }
-
-        loading.value = false;
+        throw err;
     }
 }
 </script>

@@ -183,7 +183,8 @@ onMounted(async () => {
     await fetchLeases();
 });
 
-function expired(expiration: string): boolean {
+function expired(expiration: string | null): boolean {
+    if (!expiration) return false;
     return +new Date(expiration) < +new Date();
 }
 
