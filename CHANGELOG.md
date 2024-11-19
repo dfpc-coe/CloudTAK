@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v5.5.0 - 2024-11-19
+
+- :bug: `API` Fix issue with on-server scheduling resulting in massive rate limiting
+- :rocket: `DevOps` Start to sketch out S3 Bucket for UI hosting
+
 ### v5.4.0 - 2024-11-18
 
 - :tada: `UI/API` Add support for permanent leases
