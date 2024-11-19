@@ -89,7 +89,7 @@ export default class EventsPool {
             const interval = this.jobs.get(layerid);
             if (interval) clearInterval(interval);
         } catch (err) {
-            console.log(`CloudTAK EventPool: ${name} does not yet exist and cannot be removed`, err);
+            console.log(`CloudTAK EventPool: ${layerid} does not yet exist and cannot be removed`, err);
             throw err;
         }
     }
