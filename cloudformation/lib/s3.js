@@ -21,17 +21,17 @@ export default {
                 },
                 OwnershipControls: {
                     Rules: [{
-                        ObjectOwnership: "BucketOwnerEnforced"
+                        ObjectOwnership: 'BucketOwnerEnforced'
                     }]
                 }
             }
         },
         PublicBucketPolicy: {
-            Type: "AWS::S3::BucketPolicy",
+            Type: 'AWS::S3::BucketPolicy',
             Properties: {
                 Bucket: cf.ref('PublicBucket'),
                 PolicyDocument: {
-                    Version: "2012-10-17",
+                    Version: '2012-10-17',
                     Statement: [{
                         Sid: 'Statement1',
                         Effect: 'Allow',
