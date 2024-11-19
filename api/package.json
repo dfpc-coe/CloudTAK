@@ -7,7 +7,7 @@
     "scripts": {
         "test": "tape test/*.test.js",
         "tstest": "test/test",
-        "build": "tsc && cp .env* dist/ || true && cp ./lib/jobs dist/lib/jobs -r && cp ./icons dist/icons -r && cp package.json dist/ && cp migrations/ dist/ -r",
+        "build": "tsc && cp .env* dist/ || true && cp ./icons dist/icons -r && cp package.json dist/ && cp migrations/ dist/ -r",
         "lint": "eslint index.ts lib/ routes/ test/",
         "emptydb": "echo 'DROP DATABASE tak_ps_etl' | psql && echo 'CREATE DATABASE tak_ps_etl' | psql",
         "loaddb": "npm run emptydb && psql tak_ps_etl < ",
@@ -58,7 +58,6 @@
         "ajv-formats": "^3.0.0",
         "archiver": "^7.0.0",
         "array-includes-with-glob": "^5.0.9",
-        "bree": "^9.1.3",
         "busboy": "^1.6.0",
         "connect-history-api-fallback": "^2.0.0",
         "cors": "^2.8.5",

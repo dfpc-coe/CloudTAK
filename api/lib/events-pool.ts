@@ -1,10 +1,12 @@
+import AWSLambda from '@aws-sdk/client-lambda';
 import Schedule from './schedule.js';
-import Bree from 'bree';
 import { Layer } from './schema.js';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { type InferSelectModel } from 'drizzle-orm';
 import Modeler from '@openaddresses/batch-generic';
 import type * as pgtypes from './schema.js'
+
+const lambda = new AWSLambda.LambdaClient({ region: process.env.AWS_REGION });
 
 /**
  * Maintain a pool of Events - this pool handles second level
@@ -13,23 +15,13 @@ import type * as pgtypes from './schema.js'
  * @class
  */
 export default class EventsPool {
+    jobs: Map<number, ReturnType<typeof setInterval>>;
     stackName: string;
-    bree: Bree;
 
     constructor(stackName: string) {
         this.stackName = stackName;
 
-        this.bree = new Bree({
-            root: false,
-            jobs: [],
-            errorHandler: (error, workerMetadata) => {
-                if (workerMetadata.threadId) {
-                    console.error(`ERROR: There was an error while running a worker ${workerMetadata.name} with thread ID: ${workerMetadata.threadId}`, error)
-                } else {
-                    console.error(`ERROR: There was an error while running a worker ${workerMetadata.name}`, error)
-                }
-            }
-        })
+        this.jobs = new Map();
     }
 
     /**
@@ -42,8 +34,6 @@ export default class EventsPool {
         const layers: Map<number, InferSelectModel<typeof Layer>> = new Map();
 
         const stream = await LayerModel.stream();
-
-        await this.bree.start();
 
         await new Promise((resolve) => {
             stream.on('data', (layer: InferSelectModel<typeof Layer>) => {
@@ -60,45 +50,48 @@ export default class EventsPool {
             try {
                 this.add(layer.id, layer.cron);
             } catch (err) {
-                console.error(`CloudTAK Bree: Init Error on Layer ${layer.id}`, err);
+                console.error(`CloudTAK Cron: Init Error on Layer ${layer.id}`, err);
             }
         }
     }
 
     async add(layerid: number, cron: string) {
-        const name = `layer-${layerid}`;
         console.error(`ok - adding layer ${layerid} @ ${cron}`);
 
         try {
-            const parsed = Schedule.parse_rate(cron);
             await this.delete(layerid);
-
-            await this.bree.add({
-                name,
-                path: (new URL('./jobs/lambda.js', import.meta.url)).pathname,
-                interval: `${parsed.freq} ${parsed.unit}`,
-                worker: {
-                    workerData: {
-                        LayerID: layerid,
-                        StackName: this.stackName
-                    }
-                }
-            });
-
-            await this.bree.start(name);
         } catch (err) {
-            console.error(`CloudTAK Bree: Add Error on Layer ${layerid}`, err);
+            console.error('CloudTAK EventPool: Failed to remove existing job', err);
+        }
+
+        try {
+            // All Units should be seconds here
+            const parsed = Schedule.parse_rate(cron);
+
+            this.jobs.set(layerid, setInterval(async () => {
+                console.log(`Invoking Layer ${layerid}: ${this.stackName}-layer-${layerid}`);
+                await lambda.send(new AWSLambda.InvokeCommand({
+                    FunctionName: `${this.stackName}-layer-${layerid}`,
+                    InvocationType: 'Event',
+                    Payload: Buffer.from(JSON.stringify({
+                        type: 'default'
+                    }))
+                }));
+            }, parsed.freq * 1000));
+        } catch (err) {
+            console.error(`CloudTAK EventPool: Add Error on Layer ${layerid}`, err);
             throw err;
         }
     }
 
     async delete(layerid: number) {
-        const name = `layer-${layerid}`;
-
         try {
-            await this.bree.remove(name);
+            const interval = this.jobs.get(layerid);
+            if (interval) clearInterval(interval);
         } catch (err) {
-            console.log(`CloudTAK Bree: ${name} does not yet exist and cannot be removed`, err);
+            console.log(`CloudTAK EventPool: ${layerid} does not yet exist and cannot be removed`, err);
+            throw err;
         }
     }
 }
+
