@@ -3,7 +3,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 import vue from '@vitejs/plugin-vue'
 import icons from './public/logos/icons.ts';
 
-export default defineConfig((configEnv, mode) => {
+export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, process.cwd(), '');
 
     return {
