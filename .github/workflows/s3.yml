@@ -21,11 +21,11 @@ jobs:
     if: github.event.pull_request.draft == false
     strategy:
       matrix:
-        envs: [COTAK, WFTAK]
+        target: [COTAK, WFTAK]
         include:
-          - org: COTAK
+          - target: COTAK
             s3_prod: COTAK_PRODUCTION
-          - org: WFTAK
+          - target: WFTAK
             s3_prod: WFTAK_PRODUCTION
     steps:
       - uses: actions/checkout@v4
