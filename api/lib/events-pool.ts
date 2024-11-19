@@ -1,5 +1,6 @@
 import Schedule from './schedule.js';
 import Bree from 'bree';
+import { randomUUID } from 'node:crypto';
 import { Layer } from './schema.js';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { type InferSelectModel } from 'drizzle-orm';
@@ -13,11 +14,14 @@ import type * as pgtypes from './schema.js'
  * @class
  */
 export default class EventsPool {
+    jobs: Map<number, string>;
     stackName: string;
     bree: Bree;
 
     constructor(stackName: string) {
         this.stackName = stackName;
+
+        this.jobs = new Map();
 
         this.bree = new Bree({
             root: false,
@@ -66,12 +70,23 @@ export default class EventsPool {
     }
 
     async add(layerid: number, cron: string) {
-        const name = `layer-${layerid}`;
+        const name = `layer-${layerid}-${randomUUID()}`;
         console.error(`ok - adding layer ${layerid} @ ${cron}`);
 
         try {
+            const exist = this.map.get(layerid);
+
+            if (exist) {
+                await this.delete(exist);
+            }
+        } catch (err) {
+            console.error('CloudTAK Bree: Failed to remove existing job', err);
+        }
+
+        this.map.set(layerid, name);
+
+        try {
             const parsed = Schedule.parse_rate(cron);
-            await this.delete(layerid);
 
             await this.bree.add({
                 name,
@@ -96,6 +111,7 @@ export default class EventsPool {
         const name = `layer-${layerid}`;
 
         try {
+            bree.stop(name);
             await this.bree.remove(name);
         } catch (err) {
             console.log(`CloudTAK Bree: ${name} does not yet exist and cannot be removed`, err);
