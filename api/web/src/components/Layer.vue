@@ -294,7 +294,9 @@ export default {
             }
         },
         fetch: async function() {
-            this.layer = await std(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}`);
+            const url = stdurl(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}`);
+            url.searchParams.append('alarms', 'true');
+            this.layer = await std(url);
         },
         cancelUpdate: async function() {
             await std(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}/task`, {

@@ -197,6 +197,7 @@ export default {
         fetchList: async function() {
             this.loading = true;
             const url = stdurl('/api/layer');
+            url.searchParams.append('alarms', 'true');
             url.searchParams.append('filter', this.paging.filter);
             url.searchParams.append('limit', this.paging.limit);
             url.searchParams.append('sort', this.paging.sort);
