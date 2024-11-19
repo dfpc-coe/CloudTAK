@@ -74,7 +74,7 @@ export default class EventsPool {
         console.error(`ok - adding layer ${layerid} @ ${cron}`);
 
         try {
-            const exist = this.map.get(layerid);
+            const exist = this.jobs.get(layerid);
 
             if (exist) {
                 await this.delete(exist);
@@ -83,7 +83,7 @@ export default class EventsPool {
             console.error('CloudTAK Bree: Failed to remove existing job', err);
         }
 
-        this.map.set(layerid, name);
+        this.jobs.set(layerid, name);
 
         try {
             const parsed = Schedule.parse_rate(cron);
@@ -107,12 +107,16 @@ export default class EventsPool {
         }
     }
 
-    async delete(layerid: number) {
-        const name = `layer-${layerid}`;
+    async delete(name: string | number) {
+        if (typeof name === 'number') {
+            name = this.jobs.get(name) || '';
+        }
 
         try {
-            bree.stop(name);
-            await this.bree.remove(name);
+            if (name) {
+                this.bree.stop(name);
+                await this.bree.remove(name);
+            }
         } catch (err) {
             console.log(`CloudTAK Bree: ${name} does not yet exist and cannot be removed`, err);
         }
