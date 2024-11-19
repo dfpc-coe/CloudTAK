@@ -14,8 +14,8 @@ export default {
                 },
                 WebsiteConfiguration: {
                     IndexDocument: cf.join([cf.ref('GitSha'), "/index.html"]),
-                    ErrorDocument: "error.html"
-                }
+                    ErrorDocument: cf.join([cf.ref('GitSha'), '/index.html'])
+                },
                 CorsConfiguration: {
                     CorsRules: [{
                         AllowedHeaders: ['Content-Type', 'Content-Length'],
