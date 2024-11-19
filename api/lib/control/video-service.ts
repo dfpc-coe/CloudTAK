@@ -249,11 +249,10 @@ export default class VideoServiceControl {
             // Format: srt://localhost:8890?streamid=write:mystream
             const url = new URL(`/${lease.path}`, c.url.replace(/^http(s)?:/, 'srt:'))
             url.port = c.config.srtAddress.replace(':', '');
-            url.searchParams.append('streamid', `write:${lease.path}`);
 
-            protocols.hls = {
+            protocols.srt = {
                 name: 'Secure Reliable Transport (SRT)',
-                url: String(url)
+                url: String(url) + `streamid=write:${lease.path}`
             }
         }
 
