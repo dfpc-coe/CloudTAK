@@ -19,6 +19,15 @@ jobs:
   build:
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
+    strategy:
+      matrix:
+        envs: [COTAK, WFTAK] #Array of org mnemonics to use below
+        include:
+          - org: COTAK
+            s3_prod: COTAK_PRODUCTION
+          - org: WFTAK
+            s3_prod: WFTAK_PRODUCTION
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
@@ -46,7 +55,7 @@ jobs:
 
       - name: AWS S3 CP
         working-directory: ./api/web/
-        run: aws s3 
+        run: aws s3 cp --recursive dist/ s3://${{ secrets[matrix.s3_prod] }}/${{github.event.pull_request.head.sha || github.sha}}/
         env:
           AWS_ACCOUNT_ID: ${{secrets.AWS_ACCOUNT_ID}}
           AWS_REGION: ${{secrets.AWS_REGION}}
