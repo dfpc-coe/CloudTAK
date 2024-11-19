@@ -6,7 +6,7 @@ export function stdurl(url: string | URL): URL {
         url = new URL(url);
     } catch (err) {
         if (err instanceof TypeError) {
-            url = new URL((process.env.APU_URL || window.location.origin) + url);
+            url = new URL((process.env.API_URL || window.location.origin) + url);
         } else {
             throw err;
         }
