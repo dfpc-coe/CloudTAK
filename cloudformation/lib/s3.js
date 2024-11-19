@@ -13,8 +13,16 @@ export default {
                     BlockPublicAcls: false
                 },
                 WebsiteConfiguration: {
-                    IndexDocument: cf.join([cf.ref('GitSha'), "/index.html"]),
-                    ErrorDocument: cf.join([cf.ref('GitSha'), '/index.html'])
+                    IndexDocument: 'index.html',
+                    ErrorDocument: 'index.html',
+                    RoutingRules: [{
+                        RoutingRuleCondition: {
+                            HttpErrorCodeReturnedEquals: 404
+                        },
+                        RedirectRule: {
+                            ReplaceKeyPrefixWith: cf.join([cf.ref('GitSha'), '/'])
+                        }
+                    }]
                 },
                 CorsConfiguration: {
                     CorsRules: [{
