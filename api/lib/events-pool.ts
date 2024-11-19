@@ -1,6 +1,5 @@
 import AWSLambda from '@aws-sdk/client-lambda';
 import Schedule from './schedule.js';
-import { randomUUID } from 'node:crypto';
 import { Layer } from './schema.js';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { type InferSelectModel } from 'drizzle-orm';
@@ -66,6 +65,7 @@ export default class EventsPool {
         }
 
         try {
+            // All Units should be seconds here
             const parsed = Schedule.parse_rate(cron);
 
             this.jobs.set(layerid, setInterval(async () => {
@@ -95,9 +95,3 @@ export default class EventsPool {
     }
 }
 
-async function LambdaJob(layerid: number, stackName: string) {
-    try {
-    } catch (err) {
-        console.error(err);
-    }
-}
