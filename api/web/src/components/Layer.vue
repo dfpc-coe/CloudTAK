@@ -199,7 +199,7 @@
 </template>
 
 <script>
-import { std } from '/src/std.ts';
+import { std, stdurl } from '/src/std.ts';
 import PageFooter from './PageFooter.vue';
 import LayerStatus from './Layer/utils/Status.vue';
 import cronstrue from 'cronstrue';
