@@ -12,6 +12,10 @@ export default {
                     BlockPublicPolicy: false,
                     BlockPublicAcls: false
                 },
+                WebsiteConfiguration: {
+                    IndexDocument: cf.join([cf.ref('GitSha'), "/index.html"]),
+                    ErrorDocument: "error.html"
+                }
                 CorsConfiguration: {
                     CorsRules: [{
                         AllowedHeaders: ['Content-Type', 'Content-Length'],
