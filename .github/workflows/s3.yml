@@ -38,11 +38,11 @@ jobs:
 
       - name: NPM Install
         working-directory: ./api/web/
-        run: npm run install
+        run: npm install
 
       - name: NPM Build
         working-directory: ./api/web/
-        run: npm run install
+        run: npm run build
 
       - name: AWS S3 CP
         working-directory: ./api/web/
