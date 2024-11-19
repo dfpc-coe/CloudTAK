@@ -72,6 +72,10 @@ export default async function router(schema: Schema, config: Config) {
             connectionid: Type.Integer({ minimum: 1 })
         }),
         query: Type.Object({
+            alarms: Type.Boolean({
+                default: false,
+                description: 'Get Live Alarm state from CloudWatch'
+            }),
             limit: Default.Limit,
             page: Default.Page,
             order: Default.Order,
@@ -106,7 +110,7 @@ export default async function router(schema: Schema, config: Config) {
                 `
             });
 
-            const alarms = config.StackName !== 'test' ? await alarm.list() : new Map();
+            const alarms = (config.StackName !== 'test' && req.query.alarms) ? await alarm.list() : new Map();
 
             const status = { healthy: 0, alarm: 0, unknown: 0 };
             for (const state of alarms.values()) {
@@ -119,7 +123,10 @@ export default async function router(schema: Schema, config: Config) {
                 status,
                 total: list.total,
                 items: list.items.map((layer) => {
-                    return { status: alarms.get(layer.id) || 'unknown', ...layer }
+                    return {
+                        status: (config.StackName !== 'test' && req.query.alarms) ? alarms.get(layer.id) : 'unknown',
+                        ...layer
+                    }
                 })
             });
         } catch (err) {
@@ -131,6 +138,12 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Create Layer',
         group: 'Layer',
         description: 'Register a new layer',
+        query: Type.Object({
+            alarms: Type.Boolean({
+                default: false,
+                description: 'Get Live Alarm state from CloudWatch'
+            }),
+        }),
         params: Type.Object({
             connectionid: Type.Integer({ minimum: 1 })
         }),
@@ -214,7 +227,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             res.json({
-                status: config.StackName !== 'test' ? await alarm.get(layer.id) : 'unknown',
+                status: (config.StackName !== 'test' && req.query.alarms) ? await alarm.get(layer.id) : 'unknown',
                 ...layer
             });
         } catch (err) {
@@ -226,6 +239,12 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Update Layer',
         group: 'Layer',
         description: 'Update a layer',
+        query: Type.Object({
+            alarms: Type.Boolean({
+                default: false,
+                description: 'Get Live Alarm state from CloudWatch'
+            }),
+        }),
         params: Type.Object({
             connectionid: Type.Integer({ minimum: 1 }),
             layerid: Type.Integer({ minimum: 1 }),
@@ -351,7 +370,7 @@ export default async function router(schema: Schema, config: Config) {
             await config.cacher.del(`layer-${req.params.layerid}`);
 
             res.json({
-                status: config.StackName !== 'test' ? await alarm.get(layer.id) : 'unknown',
+                status: (config.StackName !== 'test' && req.query.alarms) ? await alarm.get(layer.id) : 'unknown',
                 ...layer
             });
         } catch (err) {
@@ -363,6 +382,12 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Get Layer',
         group: 'Layer',
         description: 'Get a layer',
+        query: Type.Object({
+            alarms: Type.Boolean({
+                default: false,
+                description: 'Get Live Alarm state from CloudWatch'
+            }),
+        }),
         params: Type.Object({
             connectionid: Type.Integer({ minimum: 1 }),
             layerid: Type.Integer({ minimum: 1 }),
@@ -386,7 +411,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             res.json({
-                status: config.StackName !== 'test' ? await alarm.get(layer.id) : 'unknown',
+                status: (config.StackName !== 'test' && req.query.alarms) ? await alarm.get(layer.id) : 'unknown',
                 ...layer
             });
         } catch (err) {
