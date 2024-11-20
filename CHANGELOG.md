@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v5.6.0 - 2024-11-20
+
+- :rocket: `API` Move Font Serving to API for faster website builds
+- :bug: `API` Add SRT URL building support
+- :rocket` `API` Don't sent expired CoTs to connection if stale < now
+
 ### v5.5.0 - 2024-11-19
 
 - :bug: `API` Fix issue with on-server scheduling resulting in massive rate limiting
