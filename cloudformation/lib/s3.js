@@ -14,15 +14,7 @@ export default {
                 },
                 WebsiteConfiguration: {
                     IndexDocument: 'index.html',
-                    ErrorDocument: 'index.html',
-                    RoutingRules: [{
-                        RoutingRuleCondition: {
-                            HttpErrorCodeReturnedEquals: 404
-                        },
-                        RedirectRule: {
-                            ReplaceKeyPrefixWith: cf.join([cf.ref('GitSha'), '/'])
-                        }
-                    }]
+                    ErrorDocument: 'index.html'
                 },
                 CorsConfiguration: {
                     CorsRules: [{
