@@ -14,7 +14,7 @@ export default {
                 },
                 WebsiteConfiguration: {
                     IndexDocument: 'index.html',
-                    ErrorDocument: 'index.html',
+                    ErrorDocument: 'index.html'
                 },
                 CorsConfiguration: {
                     CorsRules: [{
