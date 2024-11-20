@@ -210,6 +210,12 @@ export default async function router(schema: Schema, config: Config) {
                         cot.addDest({ mission: data.name });
                     }
                 }
+            } else {
+                const now = new Date();
+                cots = cots.filter((cot) => {
+                    // Don't push already stale data as they will instantly disappear on the device
+                    return new Date(cot.raw.event._attributes.stale) > now;
+                });
             }
 
             if (cots.length === 0) {
