@@ -11,6 +11,9 @@
         "Client"
     ],
     "artifacts": {
+        "s3": [
+            "{{stackName}}-{{accountId}}-{{region}}-public/{{gitsha}}/index.html"
+        ],
         "docker": [
             "coe-ecr-etl:{{gitsha}}",
             "coe-ecr-etl:data-{{gitsha}}",
