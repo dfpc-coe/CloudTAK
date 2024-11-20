@@ -85,6 +85,11 @@ http {
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         }
 
+        location /fonts/ {
+            alias /home/etl/api/fonts/;
+            autoindex on;
+        }
+
         location /icons/ {
             alias /home/etl/api/icons/;
             autoindex on;

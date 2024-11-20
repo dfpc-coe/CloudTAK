@@ -245,6 +245,17 @@ export default class VideoServiceControl {
             }
         }
 
+        if (c.config && c.config.srt) {
+            // Format: srt://localhost:8890?streamid=publish:mystream
+            const url = new URL(c.url.replace(/^http(s)?:/, 'srt:'))
+            url.port = c.config.srtAddress.replace(':', '');
+
+            protocols.srt = {
+                name: 'Secure Reliable Transport (SRT)',
+                url: String(url) + `?streamid=publish:${lease.path}`
+            }
+        }
+
         if (c.config && c.config.hls) {
             // Format: http://localhost:8888/mystream/index.m3u8
             const url = new URL(`/${lease.path}/index.m3u8`, c.url);

@@ -125,6 +125,8 @@ export default async function server(config: Config) {
         }
     );
 
+
+    app.use('/fonts', express.static('fonts/'));
     app.use('/docs', SwaggerUI.serve, SwaggerUI.setup(schema.docs.base));
 
     app.use(history({
