@@ -45,15 +45,37 @@ export const useCOTStore = defineStore('cots', {
          * Iterate over cot messages and return list of CoTs
          * with Video Streams
          */
-        videos: function(): Set<COT> {
-            const videos: Set<COT> = new Set();
+        filter: function(
+            filter: (el: COT) => boolean,
+            opts: {
+                mission?: boolean,
+                clone?: boolean
+            } = {}
+        ): Set<COT> {
+            const cots: Set<COT> = new Set();
+
             for (const cot of this.cots.values()) {
-                if (cot.properties && cot.properties.video) {
-                    videos.add(cot);
+                if (filter(cot)) {
+                    cots.add(cot);
                 }
             }
 
-            return videos;
+            for (const sub of this.subscriptions.keys()) {
+                const store = this.subscriptions.get(sub);
+                if (!store) continue;
+
+                for (const cot of store.cots.values()) {
+                    if (filter(cot)) {
+                        cots.add(cot);
+                    }
+                }
+            }
+
+            if (!opts.clone) return cots;
+
+            return new Set(Array.from(cots).map((cot) => {
+                return JSON.parse(JSON.stringify(cot));
+            }))
         },
 
         subChange: async function(task: Feature): Promise<void> {

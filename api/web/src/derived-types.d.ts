@@ -278,361 +278,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/config": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Config */
-        get: {
-            parameters: {
-                query: {
-                    /** @description No Description */
-                    keys: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": unknown;
-                    };
-                };
-            };
-        };
-        /** Update Config Key/Values */
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        "agol::enabled"?: boolean;
-                        "agol::token"?: string;
-                        "media::url"?: string;
-                        "media::username"?: string;
-                        "media::password"?: string;
-                        "group::Yellow"?: string;
-                        "group::Cyan"?: string;
-                        "group::Green"?: string;
-                        "group::Red"?: string;
-                        "group::Purple"?: string;
-                        "group::Orange"?: string;
-                        "group::Blue"?: string;
-                        "group::Magenta"?: string;
-                        "group::White"?: string;
-                        "group::Maroon"?: string;
-                        "group::Dark Blue"?: string;
-                        "group::Teal"?: string;
-                        "group::Dark Green"?: string;
-                        "group::Brown"?: string;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": unknown;
-                    };
-                };
-            };
-        };
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/config/group": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Return Group Config */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            roles: string[];
-                            groups: Record<string, never>;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/connection/{:connectionid}/channel": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List channels that a given connection is broadcasting to */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            version: string;
-                            type: string;
-                            data: unknown;
-                            messages?: string[];
-                            nodeId?: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/connection/{:connectionid}/data/{:dataid}/asset": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Assets */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            total: number;
-                            tiles: {
-                                url: string;
-                            };
-                            assets: {
-                                /** @description The filename of the asset */
-                                name: string;
-                                visualized?: string;
-                                vectorized?: string;
-                                updated: number;
-                                /** @description Does this file meet the glob rules to sync with the server */
-                                sync: boolean;
-                                /** @description AWS S3 generated ETag of the asset */
-                                etag: string;
-                                /** @description Size in bytes of the asset */
-                                size: number;
-                            }[];
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        /** Create a new asset */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/connection/{:connectionid}/data/{:dataid}/asset/{:asset}.{:ext}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get single raw asset */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        put?: never;
-        /** Convert Asset into a cloud native or TAK Native format automatically */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        /** Delete Asset */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/connection/{:connectionid}/data/{:dataid}/asset/{:asset}.pmtiles/tile": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get TileJSON  */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/basemap": {
         parameters: {
             query?: never;
@@ -998,6 +643,361 @@ export interface paths {
                     /** @description No Description */
                     token?: string;
                 };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Config */
+        get: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    keys: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": unknown;
+                    };
+                };
+            };
+        };
+        /** Update Config Key/Values */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        "agol::enabled"?: boolean;
+                        "agol::token"?: string;
+                        "media::url"?: string;
+                        "media::username"?: string;
+                        "media::password"?: string;
+                        "group::Yellow"?: string;
+                        "group::Cyan"?: string;
+                        "group::Green"?: string;
+                        "group::Red"?: string;
+                        "group::Purple"?: string;
+                        "group::Orange"?: string;
+                        "group::Blue"?: string;
+                        "group::Magenta"?: string;
+                        "group::White"?: string;
+                        "group::Maroon"?: string;
+                        "group::Dark Blue"?: string;
+                        "group::Teal"?: string;
+                        "group::Dark Green"?: string;
+                        "group::Brown"?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": unknown;
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/config/group": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return Group Config */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            roles: string[];
+                            groups: Record<string, never>;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connection/{:connectionid}/channel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List channels that a given connection is broadcasting to */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            version: string;
+                            type: string;
+                            data: unknown;
+                            messages?: string[];
+                            nodeId?: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connection/{:connectionid}/data/{:dataid}/asset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Assets */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            tiles: {
+                                url: string;
+                            };
+                            assets: {
+                                /** @description The filename of the asset */
+                                name: string;
+                                visualized?: string;
+                                vectorized?: string;
+                                updated: number;
+                                /** @description Does this file meet the glob rules to sync with the server */
+                                sync: boolean;
+                                /** @description AWS S3 generated ETag of the asset */
+                                etag: string;
+                                /** @description Size in bytes of the asset */
+                                size: number;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create a new asset */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connection/{:connectionid}/data/{:dataid}/asset/{:asset}.{:ext}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get single raw asset */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        /** Convert Asset into a cloud native or TAK Native format automatically */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        /** Delete Asset */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connection/{:connectionid}/data/{:dataid}/asset/{:asset}.pmtiles/tile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get TileJSON  */
+        get: {
+            parameters: {
+                query?: never;
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -2128,6 +2128,8 @@ export interface paths {
         get: {
             parameters: {
                 query: {
+                    /** @description Get Live Alarm state from CloudWatch */
+                    alarms: boolean;
                     /** @description Limit the number of responses returned */
                     limit: number;
                     /** @description Iterate through "pages" of items based on the "limit" query param */
@@ -2310,7 +2312,10 @@ export interface paths {
         /** Register a new layer */
         post: {
             parameters: {
-                query?: never;
+                query: {
+                    /** @description Get Live Alarm state from CloudWatch */
+                    alarms: boolean;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -2623,7 +2628,10 @@ export interface paths {
         /** Get a layer */
         get: {
             parameters: {
-                query?: never;
+                query: {
+                    /** @description Get Live Alarm state from CloudWatch */
+                    alarms: boolean;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -2812,7 +2820,10 @@ export interface paths {
         /** Update a layer */
         patch: {
             parameters: {
-                query?: never;
+                query: {
+                    /** @description Get Live Alarm state from CloudWatch */
+                    alarms: boolean;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -7955,6 +7966,95 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/marti/video/{:uid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Helper API to get video stream */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            uuid: string;
+                            active: boolean;
+                            alias: string;
+                            thumbnail: string | null;
+                            classification: string | null;
+                            feeds: {
+                                uuid: string;
+                                active: boolean;
+                                alias: string;
+                                url: string;
+                                order: number | null;
+                                macAddress: string;
+                                roverPort: string;
+                                ignoreEmbeddedKLV: string;
+                                source: string | null;
+                                networkTimeout: string;
+                                bufferTime: string;
+                                rtspReliable: string;
+                                thumbnail: string | null;
+                                classification: string | null;
+                                latitude: string | null;
+                                longitude: string | null;
+                                fov: string | null;
+                                heading: string | null;
+                                range: string | null;
+                                width: number | null;
+                                height: number | null;
+                                bitrate: number | null;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /** Helper API to delete video stream */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/marti/group": {
         parameters: {
             query?: never;
@@ -10829,7 +10929,7 @@ export interface paths {
                                 updated: string;
                                 username: string;
                                 ephemeral: boolean;
-                                expiration: (string | null) | null;
+                                expiration: string | null;
                                 path: string;
                                 stream_user: string | null;
                                 stream_pass: string | null;
@@ -10891,7 +10991,7 @@ export interface paths {
                                 updated: string;
                                 username: string;
                                 ephemeral: boolean;
-                                expiration: (string | null) | null;
+                                expiration: string | null;
                                 path: string;
                                 stream_user: string | null;
                                 stream_pass: string | null;
@@ -10961,7 +11061,7 @@ export interface paths {
                                 updated: string;
                                 username: string;
                                 ephemeral: boolean;
-                                expiration: (string | null) | null;
+                                expiration: string | null;
                                 path: string;
                                 stream_user: string | null;
                                 stream_pass: string | null;
@@ -11062,7 +11162,7 @@ export interface paths {
                                 updated: string;
                                 username: string;
                                 ephemeral: boolean;
-                                expiration: (string | null) | null;
+                                expiration: string | null;
                                 path: string;
                                 stream_user: string | null;
                                 stream_pass: string | null;

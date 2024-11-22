@@ -27,7 +27,7 @@ export const Feed = Type.Object({
     bitrate: Type.Union([Type.Integer(), Type.Null()]),
 });
 
-export const Video = Type.Object({
+export const VideoConnection = Type.Object({
     uuid: Type.String(),
     active: Type.Boolean(),
     alias: Type.String(),
@@ -36,11 +36,11 @@ export const Video = Type.Object({
     feeds: Type.Array(Feed)
 })
 
-export const VideoList = Type.Object({
-    videoConnections: Type.Array(Video)
+export const VideoConnectionList = Type.Object({
+    videoConnections: Type.Array(VideoConnection)
 });
 
-export const VideoListInput = Type.Object({
+export const VideoConnectionListInput = Type.Object({
     protocol: Type.Optional(Type.String())
 })
 
@@ -52,21 +52,39 @@ export default class {
     }
 
     async list(
-        query: Static<typeof VideoListInput> = {}
-    ): Promise<Static<typeof VideoList>> {
+        query: Static<typeof VideoConnectionListInput> = {}
+    ): Promise<Static<typeof VideoConnectionList>> {
         const url = new URL(`/Marti/api/video`, this.api.url);
 
-        let q: keyof Static<typeof VideoListInput>;
+        let q: keyof Static<typeof VideoConnectionListInput>;
         for (q in query) {
             if (query[q] !== undefined) {
                 url.searchParams.append(q, String(query[q]));
             }
         }
 
-        const res = await this.api.fetch(url, {
+        return await this.api.fetch(url, {
             method: 'GET'
         });
+    }
 
-        return await res.typed(VideoList);
+    async get(
+        uid: string
+    ): Promise<Static<typeof VideoConnection>> {
+        const url = new URL(`/Marti/api/video/${encodeURIComponent(uid)}`, this.api.url);
+
+        return await this.api.fetch(url, {
+            method: 'GET'
+        });
+    }
+
+    async delete(
+        uid: string
+    ): Promise<void> {
+        const url = new URL(`/Marti/api/video/${encodeURIComponent(uid)}`, this.api.url);
+
+        await this.api.fetch(url, {
+            method: 'DELETE'
+        });
     }
 }

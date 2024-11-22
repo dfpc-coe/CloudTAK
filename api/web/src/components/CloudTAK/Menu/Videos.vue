@@ -14,9 +14,21 @@
                     stroke='1'
                 />
             </TablerIconButton>
+
             <TablerIconButton
-                title='Refresh'
-                @click='refresh'
+                v-if='mode === "lease"'
+                title='Refresh Leases'
+                @click='fetchLeases'
+            >
+                <IconRefresh
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
+            <TablerIconButton
+                v-else
+                title='Refresh Connections'
+                @click='fetchConnections'
             >
                 <IconRefresh
                     :size='32'
@@ -30,19 +42,19 @@
                 role='group'
             >
                 <input
-                    id='streams'
+                    id='connections'
                     type='radio'
                     class='btn-check'
                     autocomplete='off'
-                    :checked='mode === "streams"'
-                    @click='mode = "streams"'
+                    :checked='mode === "connections"'
+                    @click='mode = "connections"'
                 >
                 <label
-                    for='streams'
+                    for='connections'
                     type='button'
                     class='btn btn-sm'
                 ><IconVideo
-                    v-tooltip='"Video Streams"'
+                    v-tooltip='"Video Connections"'
                     :size='32'
                     stroke='1'
                 /></label>
@@ -67,29 +79,48 @@
                 /></label>
             </div>
 
-            <template v-if='mode === "streams"'>
+            <template v-if='mode === "connections"'>
                 <div class='col-12'>
                     <TablerNone
-                        v-if='!cotStore.videos().size'
-                        label='Video Streams'
+                        v-if='videos.size && !connections.videoConnections.length'
+                        label='Video Connections'
                         :create='false'
                     />
                     <template v-else>
                         <div
-                            v-for='video in cotStore.videos()'
-                            :key='video.id'
+                            v-for='connection in connections.videoConnections'
+                            :key='connection.uuid'
                             class='col-12 py-2 px-3 d-flex align-items-center hover-dark cursor-pointer'
-                            @click='$router.push(`/cot/${video.id}`)'
                         >
                             <IconVideo
                                 :size='32'
                                 stroke='1'
                             />
+
                             <span
-                                class='mx-2'
-                                style='font-size: 18px;'
-                                v-text='video.properties.callsign'
+                                class='mx-2 text-truncate'
+                                style='
+                                    width: 280px;
+                                    font-size: 18px;
+                                '
+                                v-text='connection.alias'
                             />
+
+                            <div class='ms-auto'>
+                                <TablerDelete
+                                    v-if='false'
+                                    displaytype='icon'
+                                    @delete='deleteConnection(connection)'
+                                />
+                            </div>
+                        </div>
+                        <div
+                            v-for='video in videos'
+                            :key='video.id'
+                            class='col-12 py-2 px-3 d-flex align-items-center hover-dark cursor-pointer'
+                            @click='$router.push(`/cot/${video.id}`)'
+                        >
+                            <Feature :feature='video'/>
                         </div>
                     </template>
                 </div>
@@ -155,8 +186,10 @@
 <script setup lang='ts'>
 import MenuTemplate from '../util/MenuTemplate.vue';
 import VideoLeaseModal from './Videos/VideoLeaseModal.vue';
+import Feature from '../util/Feature.vue';
 import { std } from '../../../std.ts';
-import type { VideoLease, VideoLeaseList } from '../../../types.ts';
+import COT from '../../../../src/stores/base/cot.ts'
+import type { VideoLease, VideoLeaseList, VideoConnectionList, VideoConnection } from '../../../types.ts';
 import { useCOTStore } from '../../../stores/cots.ts';
 import {
     TablerNone,
@@ -170,17 +203,27 @@ import {
     IconServer2,
 } from '@tabler/icons-vue';
 
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
 const cotStore = useCOTStore();
 
-const mode = ref('streams');
+const mode = ref('connections');
 const loading = ref(true);
 const lease = ref();
 const leases = ref<VideoLeaseList>({ total: 0, items: [] });
+const connections = ref<VideoConnectionList>({ videoConnections: [] });
 
 onMounted(async () => {
+    await fetchConnections();
     await fetchLeases();
+});
+
+const videos = computed(() => {
+    return cotStore.filter((cot: COT) => {
+        return !!(cot.properties && cot.properties.video);
+    }, {
+        mission: true
+    })
 });
 
 function expired(expiration: string | null): boolean {
@@ -188,14 +231,17 @@ function expired(expiration: string | null): boolean {
     return +new Date(expiration) < +new Date();
 }
 
-async function refresh(): Promise<void> {
-    await fetchLeases();
-}
-
 async function fetchLeases(): Promise<void> {
     lease.value = undefined;
     loading.value = true;
     leases.value = await std('/api/video/lease') as VideoLeaseList
+    loading.value = false;
+}
+
+async function fetchConnections(): Promise<void> {
+    lease.value = undefined;
+    loading.value = true;
+    connections.value = await std('/api/marti/video') as VideoConnectionList;
     loading.value = false;
 }
 
@@ -208,6 +254,22 @@ async function deleteLease(lease: VideoLease): Promise<void> {
         });
 
         await fetchLeases();
+    } catch (err) {
+        loading.value = false;
+
+        throw err;
+    }
+}
+
+async function deleteConnection(connection: VideoConnection): Promise<void> {
+    loading.value = true;
+
+    try {
+        await std(`/api/marti/video/${connection.uuid}`, {
+            method: 'DELETE'
+        });
+
+        await fetchConnections();
     } catch (err) {
         loading.value = false;
 
