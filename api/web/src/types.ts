@@ -27,6 +27,9 @@ export type UserList = paths["/user"]["get"]["responses"]["200"]["content"]["app
 
 export type Content = paths["/marti/package"]["put"]["responses"]["200"]["content"]["application/json"];
 
+export type VideoConnection = paths["/marti/video/{:uid}"]["get"]["responses"]["200"]["content"]["application/json"];
+export type VideoConnectionList = paths["/marti/video"]["get"]["responses"]["200"]["content"]["application/json"];
+
 export type Mission = paths["/marti/missions/{:name}"]["get"]["responses"]["200"]["content"]["application/json"];
 export type Mission_Create = paths["/marti/missions/{:name}"]["post"]["requestBody"]["content"]["application/json"]
 export type MissionRole = paths["/marti/missions/{:name}/role"]["get"]["responses"]["200"]["content"]["application/json"];

@@ -80,6 +80,7 @@ import {
     TablerDelete
 } from '@tak-ps/vue-tabler';
 import {
+    IconVideo,
     IconMapPin,
     IconTrash,
     IconLine,

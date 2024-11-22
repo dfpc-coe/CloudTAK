@@ -857,11 +857,14 @@ export default {
             }
         },
         editGeometry: function(cot) {
+            const feat = cotStore.get(cot.id, { clone: true });
+
+            if (!feat) return;
+
             mapStore.edit = cot;
             mapStore.draw.start();
             mapStore.draw.setMode('select');
             this.drawMode = 'select';
-            const feat = cotStore.get(cot.id, { clone: true });
 
             if (feat.geometry.type === 'Polygon') {
                 feat.properties.mode = 'polygon';
