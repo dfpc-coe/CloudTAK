@@ -32,7 +32,7 @@
                 class='px-3 py-4'
             >
                 <Upload
-                    :url='uploadURL()'
+                    :url='stdurl("/api/marti/package")'
                     :headers='uploadHeaders()'
                     @cancel='upload = false'
                     @done='fetchList'
@@ -51,9 +51,9 @@
                 <EmptyInfo v-if='hasNoChannels' />
 
                 <TablerAlert
-                    v-if='err'
+                    v-if='error'
                     title='Packages Error'
-                    :err='err'
+                    :err='error'
                 />
                 <TablerNone
                     v-else-if='!list.items.length'
@@ -88,9 +88,11 @@
     </MenuTemplate>
 </template>
 
-<script>
+<script setup lang='ts'>
+import type { PackageList } from '../../../../src/types.ts';
+import { ref, computed, onMounted } from 'vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
-import { std, stdurl } from '/src/std.ts';
+import { std, stdurl } from '../../../../src/std.ts';
 
 import {
     TablerNone,
@@ -106,72 +108,51 @@ import timeDiff from '../../../timediff.ts';
 import ChannelInfo from '../util/ChannelInfo.vue';
 import EmptyInfo from '../util/EmptyInfo.vue';
 import Upload from '../../util/Upload.vue';
-import { useProfileStore } from '/src/stores/profile.ts';
-import { mapGetters } from 'pinia'
+import { useProfileStore } from '../../../../src/stores/profile.ts';
+const profileStore = useProfileStore();
 
-export default {
-    name: 'CloudTAKPackages',
-    components: {
-        Upload,
-        IconPlus,
-        IconRefresh,
-        EmptyInfo,
-        ChannelInfo,
-        TablerInput,
-        TablerAlert,
-        TablerIconButton,
-        TablerNone,
-        MenuTemplate
-    },
-    data: function() {
-        return {
-            err: false,
-            loading: true,
-            upload: false,
-            paging: {
-                filter: ''
-            },
-            list: {
-                items: []
-            }
-        }
-    },
-    mounted: async function() {
-        await this.fetchList();
-    },
-    computed: {
-        ...mapGetters(useProfileStore, ['hasNoChannels']),
-        filteredList: function() {
-            return this.list.items.filter((pkg) => {
-                return pkg.Name.toLowerCase()
-                    .includes(this.paging.filter.toLowerCase());
-            })
-        }
-    },
-    methods: {
-        uploadHeaders: function() {
-            return {
-                Authorization: `Bearer ${localStorage.token}`
-            };
-        },
-        uploadURL: function() {
-            return stdurl(`/api/marti/package`);
-        },
-        timeDiff(update) {
-            return timeDiff(update)
-        },
-        fetchList: async function() {
-            try {
-                this.upload = false;
-                this.loading = true;
-                const url = stdurl('/api/marti/package');
-                this.list = await std(url);
-            } catch (err) {
-                this.err = err;
-            }
+const error = ref<Error | undefined>();
+const loading = ref(true);
+const upload = ref(false)
 
-            this.loading = false;
-        },
+const paging = ref({
+    filter: ''
+});
+
+const list = ref<PackageList>({
+    total: 0,
+    items: []
+})
+
+onMounted(async () => {
+    await fetchList();
+});
+
+const hasNoChannels = profileStore.hasNoChannels;
+
+const filteredList = computed(() => {
+    return list.value.items.filter((pkg) => {
+        return pkg.Name.toLowerCase()
+            .includes(paging.value.filter.toLowerCase());
+    })
+});
+
+function uploadHeaders() {
+    return {
+        Authorization: `Bearer ${localStorage.token}`
+    };
+}
+
+async function fetchList() {
+    try {
+        upload.value = false;
+        loading.value = true;
+        const url = stdurl('/api/marti/package');
+        list.value = await std(url) as PackageList;
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
     }
+
+    loading.value = false;
 }
 </script>
