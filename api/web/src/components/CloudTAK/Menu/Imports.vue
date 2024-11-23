@@ -1,22 +1,16 @@
 <template>
     <MenuTemplate name='Data Imports'>
         <template #buttons>
-            <IconPlus
+            <TablerIconButton
                 v-if='!loading && !upload'
-                v-tooltip='"New Import"'
-                :size='32'
-                :stroke='1'
-                class='cursor-pointer'
+                title='New Import'
                 @click='upload = true'
-            />
-            <IconRefresh
+            ><IconPlus :size='32' stroke='1' /></TablerIconButton>
+            <TablerIconButton
                 v-if='!loading'
-                v-tooltip='"Refresh"'
-                :size='32'
-                :stroke='1'
-                class='cursor-pointer'
+                title='Refresh'
                 @click='fetchList'
-            />
+            ><IconRefresh :size='32' stroke='1'/></TablerIconButton>
         </template>
         <template #default>
             <div
@@ -24,7 +18,7 @@
                 class='py-2 px-4'
             >
                 <Upload
-                    :url='uploadURL()'
+                    :url='stdurl(`/api/import`)'
                     :headers='uploadHeaders()'
                     method='PUT'
                     @cancel='upload = false'
@@ -32,7 +26,20 @@
                 />
             </div>
 
+            <div class='col-12 px-2 py-2'>
+                <TablerInput
+                    v-model='paging.filter'
+                    icon='search'
+                    placeholder='Filter'
+                />
+            </div>
+
             <TablerLoading v-if='loading' />
+            <TablerAlert
+                v-if='error'
+                title='Imports Error'
+                :err='error'
+            />
             <TablerNone
                 v-else-if='!list.items.length'
                 label='Imports'
@@ -58,17 +65,17 @@
                             <IconAmbulance
                                 v-if='imported.mode === "Mission"'
                                 :size='32'
-                                :stroke='0.5'
+                                stroke='0.5'
                             />
                             <IconFile
                                 v-else-if='imported.mode === "Unknown"'
                                 :size='32'
-                                :stroke='0.5'
+                                stroke='0.5'
                             />
                             <IconPackages
                                 v-else-if='imported.mode === "Package"'
                                 :size='32'
-                                :stroke='0.5'
+                                stroke='0.5'
                             />
                         </div>
                         <div
@@ -101,10 +108,16 @@
     </MenuTemplate>
 </template>
 
-<script>
-import { std, stdurl } from '/src/std.ts';
+<script setup lang='ts'>
+import { ref, watch, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import type { ImportList } from '../../../../src/types.ts';
+import { std, stdurl } from '../../../../src/std.ts';
 import {
     TablerNone,
+    TablerInput,
+    TablerAlert,
+    TablerIconButton,
     TablerPager,
     TablerLoading
 } from '@tak-ps/vue-tabler';
@@ -120,71 +133,59 @@ import Status from '../../util/Status.vue';
 import timeDiff from '../../../timediff.ts';
 import Upload from '../../util/Upload.vue';
 
-export default {
-    name: 'CloudTAKImports',
-    components: {
-        Status,
-        Upload,
-        TablerNone,
-        TablerPager,
-        TablerLoading,
-        IconPlus,
-        IconFile,
-        IconAmbulance,
-        IconPackages,
-        IconRefresh,
-        MenuTemplate,
-    },
-    data: function() {
-        return {
-            upload: false,
-            err: false,
-            loading: true,
-            paging: {
-                limit: 20,
-                page: 0
-            },
-            list: []
-        }
-    },
-    watch: {
-        paging: {
-            deep: true,
-            handler: async function() {
-                await this.fetchList()
-            }
-        }
-    },
-    mounted: async function() {
-        await this.fetchList();
-    },
-    methods: {
-        timeDiff(update) {
-            return timeDiff(update)
-        },
-        uploadHeaders: function() {
-            return {
-                Authorization: `Bearer ${localStorage.token}`
-            };
-        },
-        uploadComplete: function(event) {
-            this.upload = false;
-            const imp = JSON.parse(event);
-            this.$router.push(`/menu/imports/${imp.imports[0].uid}`)
-        },
-        uploadURL: function() {
-            return stdurl(`/api/import`);
-        },
-        fetchList: async function() {
-            this.loading = true;
-            const url = stdurl('/api/import');
-            url.searchParams.append('order', 'desc');
-            url.searchParams.append('page', this.paging.page);
-            url.searchParams.append('limit', this.paging.limit);
-            url.searchParams.append('sort', 'created');
-            this.list = await std(url);
-            this.loading = false;
-        },
+const router = useRouter();
+const upload = ref(false)
+const error = ref<Error | undefined>();
+const loading = ref(true);
+
+const paging = ref({
+    filter: '',
+    limit: 20,
+    page: 0
+});
+
+const list = ref<ImportList>({
+    total: 0,
+    items: []
+});
+
+watch(paging, async function() {
+    await fetchList()
+});
+
+onMounted(async () => {
+    await fetchList();
+});
+
+function uploadHeaders() {
+    return {
+        Authorization: `Bearer ${localStorage.token}`
+    };
+}
+
+function uploadComplete(event: {
+    imports: Array<{ uid: string }>
+}) {
+    upload.value = false;
+    const imp = JSON.parse(event);
+    router.push(`/menu/imports/${imp.imports[0].uid}`)
+}
+
+async function fetchList() {
+    loading.value = true;
+
+    try {
+        const url = stdurl('/api/import');
+        url.searchParams.append('order', 'desc');
+        url.searchParams.append('page', String(paging.value.page));
+        url.searchParams.append('limit', String(paging.value.limit));
+        url.searchParams.append('filter', paging.value.filter);
+        url.searchParams.append('sort', 'created');
+        list.value = await std(url) as ImportList;
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err))
     }
+
+    loading.value = false;
 }
 </script>

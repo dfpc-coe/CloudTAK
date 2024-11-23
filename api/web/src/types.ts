@@ -44,6 +44,8 @@ export type Server = paths["/server"]["get"]["responses"]["200"]["content"]["app
 
 export type Login = paths["/login"]["get"]["responses"]["200"]["content"]["application/json"]
 
+export type ImportList = paths["/import"]["get"]["responses"]["200"]["content"]["application/json"]
+
 export type Profile = paths["/profile"]["get"]["responses"]["200"]["content"]["application/json"]
 export type Profile_Update = paths["/profile"]["patch"]["requestBody"]["content"]["application/json"]
 

@@ -270,6 +270,7 @@ export default async function router(schema: Schema, config: Config) {
         query: Type.Object({
             limit: Default.Limit,
             page: Default.Page,
+            filter: Default.Filter,
             order: Default.Order,
             sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(Import) })),
             mode: Type.Optional(Type.Enum(ImportModeEnum)),
@@ -291,6 +292,7 @@ export default async function router(schema: Schema, config: Config) {
                 where: sql`
                     (${Param(req.query.mode)}::TEXT IS NULL OR ${Param(req.query.mode)}::TEXT = mode)
                     AND (${Param(req.query.mode_id)}::TEXT IS NULL OR ${Param(req.query.mode_id)}::TEXT = mode_id)
+                    AND (${Param(req.query.filter)}::TEXT IS NULL OR ${Param(req.query.filter)}::TEXT ~* name)
                     AND username = ${user.email}
                 `
             });
