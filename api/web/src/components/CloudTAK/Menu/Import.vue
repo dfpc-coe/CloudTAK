@@ -9,7 +9,12 @@
             <TablerIconButton
                 title='Refresh'
                 @click='fetch(true)'
-            ><IconRefresh :size='32' stroke='1'/></TablerIconButton>
+            >
+                <IconRefresh
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
         </template>
         <template #default>
             <TablerLoading v-if='!imported || loading.initial' />

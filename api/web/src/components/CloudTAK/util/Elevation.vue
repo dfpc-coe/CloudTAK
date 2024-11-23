@@ -28,39 +28,30 @@
     </div>
 </template>
 
-<script>
+<script setup lang='ts'>
+import { ref, computed } from 'vue';
 import CopyField from './CopyField.vue';
 
-export default {
-    name: 'COTElevation',
-    components: {
-        CopyField
+const props = defineProps({
+    elevation: {
+        type: Number,
+        required: true
     },
-    props: {
-        elevation: {
-            type: Number,
-            required: true
-        },
-        unit: {
-            type: String,
-            default: 'feet'
-        }
-    },
-    data: function() {
-        return {
-            mode: this.unit,
-        }
-    },
-    computed: {
-        inMode: function() {
-            if (this.mode === 'feet') {
-                return Math.round(this.elevation * 3.28084 * 1000) / 1000;
-            } else if (this.mode === 'meter') {
-                return Math.round(this.elevation * 100) / 100;
-            } else {
-                return 'UNKNOWN';
-            }
-        }
+    unit: {
+        type: String,
+        default: 'feet'
     }
-}
+})
+
+const mode = ref(props.unit);
+
+const inMode = computed(() => {
+    if (mode.value === 'feet') {
+        return Math.round(props.elevation * 3.28084 * 1000) / 1000;
+    } else if (mode.value === 'meter') {
+        return Math.round(props.elevation * 100) / 100;
+    } else {
+        return 'UNKNOWN';
+    }
+})
 </script>

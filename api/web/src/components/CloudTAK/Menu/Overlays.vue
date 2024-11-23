@@ -92,11 +92,17 @@
                                         :size='20'
                                         :stroke='1'
                                     />
+                                    <IconAmbulance
+                                        v-else-if='overlay.type === "geojson" && overlay.mode === "mission"'
+                                        v-tooltip='"Data Sync"'
+                                        :size='20'
+                                        stroke='1'
+                                    />
                                     <IconVector
                                         v-else
                                         v-tooltip='"Vector"'
                                         :size='20'
-                                        :stroke='1'
+                                        stroke='1'
                                     />
                                 </span>
 
@@ -212,6 +218,7 @@ import {
     IconAlertTriangle,
     IconChevronRight,
     IconChevronDown,
+    IconAmbulance,
     IconMaximize,
     IconVector,
     IconEyeOff,
@@ -312,6 +319,7 @@ export default {
         TablerIconButton,
         TablerLoading,
         TablerDelete,
+        IconAmbulance,
         IconGripVertical,
         IconAlertTriangle,
         IconChevronRight,
