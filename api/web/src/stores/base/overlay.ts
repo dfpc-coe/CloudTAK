@@ -4,11 +4,10 @@ import type {
 } from '../../types.ts';
 import type { FeatureCollection } from 'geojson';
 import mapgl from 'maplibre-gl'
-import type { LayerSpecification } from 'maplibre-gl'
+import type { LayerSpecification, VectorTileSource, RasterTileSource } from 'maplibre-gl'
 import cotStyles from '../utils/styles.ts'
 import { std, stdurl } from '../../std.js';
 import { useProfileStore } from '../profile.js';
-
 
 /**
  * @class
@@ -136,6 +135,30 @@ export default class Overlay {
 
     healthy(): boolean {
         return !this._error;
+    }
+
+    hasBounds(): boolean {
+        const source = this._map.getSource(String(this.id))
+        if (!source) return false;
+
+        if (source.type === 'vector') {
+            return !!(source as VectorTileSource).bounds;
+        } else if (source.type === 'raster') {
+            return !!(source as RasterTileSource).bounds;
+        } else {
+            return false
+        }
+    }
+
+    zoomTo(): void {
+        const source = this._map.getSource(String(this.id))
+        if (!source) return;
+
+        if (source.type === 'vector') {
+            this._map.fitBounds((source as VectorTileSource).bounds);
+        } else if (source.type === 'raster') {
+            this._map.fitBounds((source as RasterTileSource).bounds);
+        }
     }
 
     init(opts: {
