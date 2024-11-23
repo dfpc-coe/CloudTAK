@@ -58,21 +58,15 @@
                                     displaytype='icon'
                                     @delete='deleteAsset(asset)'
                                 />
-                                <IconTransform
+                                <TablerIconButton
                                     v-if='!asset.visualized'
-                                    v-tooltip='"Convert Asset"'
-                                    :size='32'
-                                    :stroke='1'
-                                    class='cursor-pointer'
+                                    title='Convert Asset'
                                     @click='initTransform(asset)'
-                                />
-                                <IconDownload
-                                    v-tooltip='"Download Asset"'
-                                    :size='32'
-                                    :stroke='1'
-                                    class='cursor-pointer'
+                                ><IconTransform :size='32' stroke='1' /></TablerIconButton>
+                                <TablerIconButton
+                                    title='Download Asset'
                                     @click='downloadAsset(asset)'
-                                />
+                                ><IconDownload :size='32' stroke='1'/></TablerIconButton>
                             </div>
                         </div>
                     </div>
@@ -96,6 +90,7 @@
 import { std, stdurl } from '/src/std.ts';
 import {
     TablerDelete,
+    TablerIconButton,
     TablerNone,
     TablerPager,
     TablerLoading,
@@ -124,6 +119,7 @@ export default {
         TablerBytes,
         TablerEpoch,
         TablerDelete,
+        TablerIconButton,
         IconMapPlus,
         IconMapOff,
         IconTransform,
