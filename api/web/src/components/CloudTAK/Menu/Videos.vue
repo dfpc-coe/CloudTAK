@@ -114,14 +114,12 @@
                                 />
                             </div>
                         </div>
-                        <div
+                        <Feature
                             v-for='video in videos'
                             :key='video.id'
-                            class='col-12 py-2 px-3 d-flex align-items-center hover-dark cursor-pointer'
+                            :feature='video'
                             @click='$router.push(`/cot/${video.id}`)'
-                        >
-                            <Feature :feature='video'/>
-                        </div>
+                        />
                     </template>
                 </div>
             </template>
