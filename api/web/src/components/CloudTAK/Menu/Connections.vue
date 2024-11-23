@@ -1,5 +1,5 @@
 m<template>
-    <MenuTemplate name='Integrations'>
+    <MenuTemplate name='Connections'>
         <template #buttons>
             <IconRefresh
                 v-if='!loading'
