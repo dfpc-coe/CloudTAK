@@ -12,6 +12,16 @@
 
 ### Pending Release
 
+### v5.7.0 - 2024-11-23
+
+- :rocket: `UI` Migrate `Feature.vue` to TS
+- :bug: `UI` Remove need for `mission` prop of `Feature.vue` in favour of unified `cotStore.get(uid)`
+- :rocket: `UI` Add Video Icon support in `Feature.vue`
+- :rocket `API` Add Vide Connection Manager V2 APIs
+- :rocket `UI` List Video Connection Manager Connections in Video List
+- :rocket: `UI` Use `Feature.vue` in Video List Menu
+- :rocket:` `UI` Allow opening Video Connection Manager Videos in Video Player
+
 ### v5.6.0 - 2024-11-20
 
 - :rocket: `API` Move Font Serving to API for faster website builds
