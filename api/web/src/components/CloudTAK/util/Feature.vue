@@ -23,8 +23,15 @@
         @click='flyTo'
     >
         <span class='me-2'>
+            <!-- Icons are in order of most preferred display => Least-->
+            <IconVideo
+                v-if='feature.properties && feature.properties.type === "b-m-p-s-p-loc"'
+                :size='20'
+                :color='feature.properties.stroke || "white"'
+                stroke='1'
+            />
             <IconLine
-                v-if='feature.geometry && feature.geometry.type === "LineString"'
+                v-else-if='feature.geometry && feature.geometry.type === "LineString"'
                 :size='20'
                 :color='feature.properties.stroke || "white"'
                 stroke='1'
