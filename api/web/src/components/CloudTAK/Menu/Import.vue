@@ -2,24 +2,21 @@
     <MenuTemplate name='Import'>
         <template #buttons>
             <TablerDelete
-                v-if='imported.status === "Fail" || imported.status === "Success"'
+                v-if='imported && (imported.status === "Fail" || imported.status === "Success")'
                 displaytype='icon'
                 @delete='deleteImport'
             />
-            <IconRefresh
-                v-tooltip='"Refresh"'
-                :size='32'
-                :stroke='1'
-                class='cursor-pointer'
+            <TablerIconButton
+                title='Refresh'
                 @click='fetch(true)'
-            />
+            ><IconRefresh :size='32' stroke='1'/></TablerIconButton>
         </template>
         <template #default>
-            <TablerLoading v-if='loading.initial' />
+            <TablerLoading v-if='!imported || loading.initial' />
             <TablerAlert
-                v-else-if='err'
+                v-else-if='error'
                 title='Import Error'
-                :err='err'
+                :err='error'
             />
             <div
                 v-else
@@ -60,7 +57,7 @@
                             v-if='loading.run'
                             desc='Running Import'
                         />
-                        <template v-if='batch.logs.length'>
+                        <template v-if='batch && batch.logs.length'>
                             <label
                                 for='logs'
                                 class='subheader'
@@ -108,103 +105,90 @@
     </MenuTemplate>
 </template>
 
-<script>
-import { std, stdurl } from '/src/std.ts';
+<script setup lang='ts'>
+import { ref, onMounted, onUnmounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { std, stdurl } from '../../../../src/std.ts';
+import type { Import, ImportBatch } from '../../../../src/types.ts';
 import Status from '../../util/Status.vue';
 import timeDiff from '../../../timediff.ts';
 import {
     TablerNone,
     TablerAlert,
     TablerDelete,
-    TablerLoading
+    TablerLoading,
+    TablerIconButton
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import {
     IconRefresh,
 } from '@tabler/icons-vue';
 
-export default {
-    name: 'CloudTAKImport',
-    components: {
-        Status,
-        IconRefresh,
-        TablerNone,
-        TablerDelete,
-        TablerAlert,
-        TablerLoading,
-        MenuTemplate,
-    },
-    data: function() {
-        return {
-            err: false,
-            loading: {
-                main: true,
-                initial: true,
-                run: true
-            },
-            interval: false,
-            batch: {
-                logs: []
-            },
-            imported: {
-                id: ''
-            }
-        }
-    },
-    mounted: async function() {
-        await this.fetch();
+const route = useRoute();
+const router = useRouter();
 
-        this.interval = setInterval(() => {
-            this.fetch()
-        }, 2000);
-    },
-    unmounted: function() {
-        if (this.interval) {
-            clearInterval(this.interval);
-        }
-    },
-    methods: {
-        timeDiff(update) {
-            return timeDiff(update);
-        },
-        deleteImport: async function() {
-            this.loading.initial = true;
+const error = ref<Error | undefined>()
+const loading = ref({
+    main: true,
+    initial: true,
+    run: true
+});
+const interval = ref<ReturnType<typeof setInterval>>();
+const batch = ref<ImportBatch | undefined>();
+const imported = ref<Import | undefined>();
 
-            try {
-                const url = stdurl(`/api/import/${this.$route.params.import}`);
+onMounted(async () => {
+    await fetch(true);
 
-                await std(url, {
-                    method: 'DELETE'
-                });
+    interval.value = setInterval(async () => {
+        await fetch()
+    }, 2000);
+});
 
-                this.$router.push('/menu/imports');
-            } catch (err) {
-                this.err = err;
-            }
-
-            this.loading.initial = false;
-        },
-        fetch: async function(init) {
-            if (init) this.loading.initial = true;
-
-            try {
-                const url = stdurl(`/api/import/${this.$route.params.import}`);
-                this.imported = await std(url);
-                if (this.imported.status === 'Fail' || this.imported.status === 'Success') {
-                    if (this.interval) clearInterval(this.interval);
-                    this.loading.run = false;
-                }
-
-                if (this.imported.batch) {
-                    const urlBatch = stdurl(`/api/import/${this.$route.params.import}/batch`);
-                    this.batch = await std(urlBatch);
-                }
-            } catch (err) {
-                this.err = err;
-            }
-
-            this.loading.initial = false;
-        },
+onUnmounted(() => {
+    if (interval.value) {
+        clearInterval(interval.value);
     }
+});
+
+async function deleteImport() {
+    loading.value.initial = true;
+
+    try {
+        const url = stdurl(`/api/import/${route.params.import}`);
+
+        await std(url, {
+            method: 'DELETE'
+        });
+
+        router.push('/menu/imports');
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    }
+
+    loading.value.initial = false;
+}
+
+async function fetch(init = false) {
+    if (init) loading.value.initial = true;
+
+    try {
+        const url = stdurl(`/api/import/${route.params.import}`);
+        imported.value = await std(url) as Import;
+
+        if (imported.value && (imported.value.status === 'Fail' || imported.value.status === 'Success')) {
+            if (interval.value) clearInterval(interval.value);
+            loading.value.run = false;
+        }
+
+        if (imported.value.batch) {
+            const urlBatch = stdurl(`/api/import/${route.params.import}/batch`);
+            batch.value = await std(urlBatch) as ImportBatch;
+        }
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    }
+
+    loading.value.initial = false;
 }
 </script>
