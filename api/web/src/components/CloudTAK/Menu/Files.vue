@@ -62,11 +62,21 @@
                                     v-if='!asset.visualized'
                                     title='Convert Asset'
                                     @click='initTransform(asset)'
-                                ><IconTransform :size='32' stroke='1' /></TablerIconButton>
+                                >
+                                    <IconTransform
+                                        :size='32'
+                                        stroke='1'
+                                    />
+                                </TablerIconButton>
                                 <TablerIconButton
                                     title='Download Asset'
                                     @click='downloadAsset(asset)'
-                                ><IconDownload :size='32' stroke='1'/></TablerIconButton>
+                                >
+                                    <IconDownload
+                                        :size='32'
+                                        stroke='1'
+                                    />
+                                </TablerIconButton>
                             </div>
                         </div>
                     </div>

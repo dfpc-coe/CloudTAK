@@ -97,7 +97,7 @@
 </template>
 
 <script>
-import { std, stdurl } from '/src/std.ts';
+import { std, stdurl } from '../../../../src/std.ts';
 import Share from '../util/Share.vue';
 import timeDiff from '../../../timediff.ts';
 import {
@@ -112,7 +112,7 @@ import {
     IconFileImport
 } from '@tabler/icons-vue';
 import { mapState } from 'pinia'
-import { useProfileStore } from '/src/stores/profile.ts';
+import { useProfileStore } from '../../../../src/stores/profile.ts';
 
 export default {
     name: 'CloudTAKPackage',
