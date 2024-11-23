@@ -117,16 +117,12 @@
                                 />
 
                                 <div class='ms-auto btn-list'>
-                                    <IconMaximize
+                                    <TablerIconButton
                                         v-if='getSource(overlay).bounds'
-                                        v-tooltip='"Zoom To Overlay"'
-                                        :size='20'
-                                        :stroke='1'
-                                        role='button'
-                                        tabindex='0'
-                                        class='cursor-pointer'
+                                        title='Zoom To Overlay'
                                         @click.stop.prevent='zoomTo(overlay)'
-                                    />
+                                    ><IconMaximize :size='20' stroke='1'/></TablerIconButton>
+
                                     <TablerDelete
                                         v-if='
                                             opened.includes(overlay.id)
@@ -141,26 +137,16 @@
                                         @delete='removeOverlay(overlay)'
                                     />
 
-                                    <IconEye
+                                    <TablerIconButton
                                         v-if='overlay.visible'
-                                        v-tooltip='"Hide Layer"'
-                                        :size='20'
-                                        :stroke='1'
-                                        role='button'
-                                        tabindex='0'
-                                        class='cursor-pointer'
+                                        title='Hide Layer'
                                         @click.stop.prevent='overlay.update({ visible: !overlay.visible })'
-                                    />
-                                    <IconEyeOff
+                                    ><IconEye :size='20' stroke='1'/></TablerIconButton>
+                                    <TablerIconButton
                                         v-else
-                                        v-tooltip='"Show Layer"'
-                                        role='button'
-                                        tabindex='0'
-                                        :size='20'
-                                        :stroke='1'
-                                        class='cursor-pointer'
+                                        title='Show Layer'
                                         @click.stop.prevent='overlay.update({ visible: !overlay.visible })'
-                                    />
+                                    ><IconEyeOff :size='20' stroke='1' /></TablerIconButton>
                                 </div>
                             </div>
                         </div>
