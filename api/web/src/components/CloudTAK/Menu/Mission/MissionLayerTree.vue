@@ -94,8 +94,8 @@
             class='mx-2'
         >
             <SingleFeature
-                :key='cot.id'
                 v-for='cot of cots(layer)'
+                :key='cot.id'
                 :delete-button='false'
                 :feature='cot'
                 :mission='mission'
@@ -121,7 +121,6 @@
 
 <script setup lang='ts'>
 import { ref } from 'vue';
-import COT from '../../../../../src/stores/base/cot.ts';
 import type { Mission, MissionLayer, MissionRole, Feature } from '../../../../../src/types.ts';
 import Subscription from '../../../../../src/stores/base/mission.ts';
 import MissionLayerTree from './MissionLayerTree.vue';

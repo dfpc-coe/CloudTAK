@@ -134,6 +134,7 @@ const isZoomable = computed(() => {
     })
 
     if (cot) return true;
+    return false;
 });
 
 async function deleteCOT() {
@@ -145,7 +146,7 @@ async function deleteCOT() {
 }
 
 async function flyTo() {
-    if (!isZoomable) return;
+    if (!isZoomable.value) return;
     if (!mapStore.map) throw new Error('Map has not been loaded');
 
     const cot = cotStore.get(props.feature.id, {

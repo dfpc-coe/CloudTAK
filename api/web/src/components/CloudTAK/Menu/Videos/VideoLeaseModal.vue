@@ -20,8 +20,8 @@
 
             <div class='ms-auto btn-list'>
                 <TablerIconButton
-                    title='Refresh'
                     v-if='editLease.id'
+                    title='Refresh'
                     @click='fetchLease'
                 >
                     <IconRefresh
