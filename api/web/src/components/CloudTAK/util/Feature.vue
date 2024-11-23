@@ -56,7 +56,9 @@
         </span>
         <div
             class='text-truncate user-select-none'
-            style='width: 180px;'
+            style='
+                width: calc(100% - 60px);
+            '
             v-text='feature.properties.callsign || feature.properties.name || "Unnamed"'
         />
 
