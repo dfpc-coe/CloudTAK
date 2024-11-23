@@ -90,18 +90,20 @@
                         <div
                             v-for='connection in connections.videoConnections'
                             :key='connection.uuid'
-                            class='col-12 py-2 px-3 d-flex align-items-center hover-dark cursor-pointer'
+                            class='d-flex align-items-center px-3 py-2 hover-dark cursor-pointer'
+                            @click='addVideo(connection)'
                         >
-                            <IconVideo
-                                :size='32'
-                                stroke='1'
-                            />
+                            <span class='me-1'>
+                                <IconVideo
+                                    :size='20'
+                                    stroke='1'
+                                />
+                            </span>
 
                             <span
-                                class='mx-2 text-truncate'
+                                class='text-truncate'
                                 style='
-                                    width: 280px;
-                                    font-size: 18px;
+                                    width: calc(100% - 60px);
                                 '
                                 v-text='connection.alias'
                             />
@@ -189,6 +191,7 @@ import { std } from '../../../std.ts';
 import COT from '../../../../src/stores/base/cot.ts'
 import type { VideoLease, VideoLeaseList, VideoConnectionList, VideoConnection } from '../../../types.ts';
 import { useCOTStore } from '../../../stores/cots.ts';
+import { useVideoStore } from '../../../stores/videos.ts';
 import {
     TablerNone,
     TablerDelete,
@@ -204,6 +207,7 @@ import {
 import { ref, computed, onMounted } from 'vue'
 
 const cotStore = useCOTStore();
+const videoStore = useVideoStore();
 
 const mode = ref('connections');
 const loading = ref(true);
@@ -223,6 +227,8 @@ const videos = computed(() => {
         mission: true
     })
 });
+
+const addVideo = videoStore.addConnection;
 
 function expired(expiration: string | null): boolean {
     if (!expiration) return false;

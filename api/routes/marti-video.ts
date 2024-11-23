@@ -72,7 +72,7 @@ export default async function router(schema: Schema, config: Config) {
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
-            const conn = await api.Video.delete(req.params.uid);
+            await api.Video.delete(req.params.uid);
 
             res.json({
                 status: 200,
