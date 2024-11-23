@@ -67,15 +67,17 @@
                 v-else
                 :size='20'
                 class='cursor-pointer'
-                :stroke='1'
+                stroke='1'
                 @click='deleteCOT'
             />
         </div>
     </div>
 </template>
 
-<script>
+<script setup lang='ts'>
+import { computed } from 'vue';
 import Contact from './Contact.vue';
+import type { LngLatLike, LngLatBoundsLike } from 'maplibre-gl'
 import {
     TablerDelete
 } from '@tak-ps/vue-tabler';
@@ -87,101 +89,82 @@ import {
     IconCone,
     IconPolygon,
 } from '@tabler/icons-vue';
-import { useCOTStore } from '/src/stores/cots.ts';
+import { useCOTStore } from '../../../../src/stores/cots.ts';
 const cotStore = useCOTStore();
-import { useMapStore } from '/src/stores/map.ts';
+import { useMapStore } from '../../../../src/stores/map.ts';
 const mapStore = useMapStore();
 
-export default {
-    name: 'TAKFeature',
-    components: {
-        Contact,
-        TablerDelete,
-        IconMapPin,
-        IconTrash,
-        IconLine,
-        IconCone,
-        IconPolygon,
+const props = defineProps({
+    feature: {
+        type: Object,
+        required: true
     },
-    props: {
-        feature: {
-            type: Object,
-            required: true
-        },
-        mission: {
-            type: String,
-        },
-        deleteButton: {
-            type: Boolean,
-            default: true
-        },
-        deleteAction: {
-            type: String,
-            default: 'delete' //emit or delete
-        },
-        hover: {
-            type: Boolean,
-            default: true
-        },
-        compact: {
-            type: Boolean,
-            default: true
-        }
+    deleteButton: {
+        type: Boolean,
+        default: true
     },
-    emits: ['delete'],
-    computed: {
-        isZoomable: function() {
-            if (this.mission) {
-                const sub = cotStore.subscriptions.get(this.mission)
-                if (!sub) return false;
-                return sub.cots.has(this.feature.id);
-            } else {
-                return cotStore.cots.has(this.feature.id);
-            }
-        },
+    deleteAction: {
+        type: String,
+        default: 'delete' //emit or delete
     },
-    methods: {
-        deleteCOT: async function() {
-            if (this.deleteAction === 'delete') {
-                await cotStore.delete(this.feature.id);
-            } else {
-                this.$emit('delete');
-            }
-        },
-        flyTo: function() {
-            if (!this.isZoomable) return;
+    hover: {
+        type: Boolean,
+        default: true
+    },
+    compact: {
+        type: Boolean,
+        default: true
+    }
+});
 
-            let cot;
-            if (this.mission) {
-                const sub = cotStore.subscriptions.get(this.mission)
-                if (!sub) return false;
-                cot = sub.cots.get(this.feature.id);
-            } else {
-                cot = cotStore.cots.get(this.feature.id);
-            }
+const emit = defineEmits(['delete']);
 
-            if (cot.geometry.type === "Point") {
-                const flyTo = {
-                    speed: Infinity,
-                    center: cot.properties.center,
-                    zoom: 14
-                };
+const isZoomable = computed(() => {
+    const cot = cotStore.get(props.feature.id, {
+        mission: true
+    })
 
-                if (mapStore.map.getZoom() < 3) flyTo.zoom = 4;
-                mapStore.map.flyTo(flyTo)
-            } else {
-                mapStore.map.fitBounds(cot.bounds(), {
-                    maxZoom: 14,
-                    padding: {
-                        top: 20,
-                        bottom: 20,
-                        left: 20,
-                        right: 20
-                    },
-                    speed: Infinity,
-                })
-            }
-        },
+    if (cot) return true;
+});
+
+async function deleteCOT() {
+    if (props.deleteAction === 'delete') {
+        await cotStore.delete(props.feature.id);
+    } else {
+        emit('delete');
+    }
+}
+
+async function flyTo() {
+    if (!isZoomable) return;
+    if (!mapStore.map) throw new Error('Map has not been loaded');
+
+    const cot = cotStore.get(props.feature.id, {
+        mission: true
+    });
+
+    if (!cot) throw new Error('Could not find marker');
+
+    if (cot.geometry.type === "Point") {
+        const flyTo = {
+            speed: Infinity,
+            center: cot.properties.center as LngLatLike,
+            zoom: 14
+        };
+
+        if (mapStore.map.getZoom() < 3) flyTo.zoom = 4;
+        mapStore.map.flyTo(flyTo)
+    } else {
+        mapStore.map.fitBounds(cot.bounds() as LngLatBoundsLike, {
+            maxZoom: 14,
+            padding: {
+                top: 20,
+                bottom: 20,
+                left: 20,
+                right: 20
+            },
+            speed: Infinity,
+        })
     }
 }
 </script>

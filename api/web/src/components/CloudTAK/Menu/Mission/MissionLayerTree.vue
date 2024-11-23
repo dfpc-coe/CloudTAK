@@ -94,10 +94,10 @@
             class='mx-2'
         >
             <SingleFeature
-                v-for='cot of layer.uids'
-                :key='cot.data'
+                :key='cot.id'
+                v-for='cot of cots(layer)'
                 :delete-button='false'
-                :feature='feats.get(cot.data)'
+                :feature='cot'
                 :mission='mission'
             />
             <MissionLayerTree
@@ -121,6 +121,7 @@
 
 <script setup lang='ts'>
 import { ref } from 'vue';
+import COT from '../../../../../src/stores/base/cot.ts';
 import type { Mission, MissionLayer, MissionRole, Feature } from '../../../../../src/types.ts';
 import Subscription from '../../../../../src/stores/base/mission.ts';
 import MissionLayerTree from './MissionLayerTree.vue';
@@ -158,6 +159,15 @@ const props = defineProps<{
 const opened = ref<Set<string>>(new Set());
 const edit = ref<Set<string>>(new Set());
 const loading = ref(false);
+
+function cots(layer: MissionLayer): Array<Feature> {
+    const cots = [];
+    for (const cot of (layer.uids || [])) {
+        const feat = props.feats.get(cot.data)
+        if (feat) cots.push(feat);
+    }
+    return cots;
+}
 
 async function deleteLayer(layer: MissionLayer) {
     loading.value = true;
