@@ -262,7 +262,7 @@ watch(isDraggable, () => {
 
 async function saveOrder(sortableEv: SortableEvent) {
     if (!mapStore.map) throw new Error('Map has not initialized');
-    if (isNaN(parseInt(sortableEv.newIndex))) return;
+    if (sortableEv.newIndex === undefined || isNaN(parseInt(String(sortableEv.newIndex)))) return;
 
     const id = sortableEv.item.getAttribute('id');
     if (!id) return;
