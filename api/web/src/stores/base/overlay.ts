@@ -3,8 +3,9 @@ import type {
     ProfileOverlay_Create
 } from '../../types.ts';
 import type { FeatureCollection } from 'geojson';
+import { bbox } from '@turf/bbox'
 import mapgl from 'maplibre-gl'
-import type { LayerSpecification, VectorTileSource, RasterTileSource } from 'maplibre-gl'
+import type { LayerSpecification, VectorTileSource, RasterTileSource, GeoJSONSource } from 'maplibre-gl'
 import cotStyles from '../utils/styles.ts'
 import { std, stdurl } from '../../std.js';
 import { useProfileStore } from '../profile.js';
@@ -145,12 +146,14 @@ export default class Overlay {
             return !!(source as VectorTileSource).bounds;
         } else if (source.type === 'raster') {
             return !!(source as RasterTileSource).bounds;
+        } else if (source.type === 'geojson') {
+            return true;
         } else {
             return false
         }
     }
 
-    zoomTo(): void {
+    async zoomTo(): void {
         const source = this._map.getSource(String(this.id))
         if (!source) return;
 
@@ -158,6 +161,9 @@ export default class Overlay {
             this._map.fitBounds((source as VectorTileSource).bounds);
         } else if (source.type === 'raster') {
             this._map.fitBounds((source as RasterTileSource).bounds);
+        } else if (source.type === 'geojson') {
+            const geojson = await (source as GeoJSONSource).getData();
+            this._map.fitBounds(bbox(geojson));
         }
     }
 
