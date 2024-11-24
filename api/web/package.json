@@ -28,7 +28,7 @@
         "dropzone": "^6.0.0-beta.2",
         "floating-vue": "^2.0.0-beta.17",
         "jsonata": "^2.0.4",
-        "maplibre-gl": "^5.0.0-pre7",
+        "maplibre-gl": "^5.0.0-pre.7",
         "moment": "^2.29.3",
         "p12-pem": "^1.0.5",
         "phone": "^3.1.42",
@@ -42,7 +42,7 @@
         "vue": "^3.2.31",
         "vue-mention": "^2.0.0-alpha.3",
         "vue-router": "^4.0.14",
-        "vue3-apexcharts": "^1.4.1",
+        "vue3-apexcharts": "1.7.0",
         "ws": "^8.11.0"
     },
     "devDependencies": {

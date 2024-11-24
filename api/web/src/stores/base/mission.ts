@@ -1,8 +1,10 @@
 import COT from './cot.ts'
 import { std, stdurl } from '../../std.ts';
 import { useCOTStore } from '../cots.ts';
+import { bbox } from '@turf/bbox';
 import type { Feature } from '../../types.ts';
 import type {
+    BBox,
     FeatureCollection
 } from 'geojson'
 import type {
@@ -50,6 +52,10 @@ export default class Subscription {
                 }
             })
         }
+    }
+
+    bounds(): BBox {
+        return bbox(this.collection());
     }
 
     async delete(): Promise<void> {
