@@ -37,7 +37,7 @@
         <template #default>
             <TablerLoading v-if='loading || !isLoaded' />
             <template v-else>
-                <div ref='sortable'>
+                <div ref='sortableRef'>
                     <div
                         v-for='overlay in overlays'
                         :id='String(overlay.id)'
@@ -245,7 +245,7 @@ const opened = ref<Set<number>>(new Set());
 const isLoaded = mapStore.isLoaded;
 const overlays = mapStore.overlays;
 
-const sortableRef = useTemplateRef('sortable');
+const sortableRef = useTemplateRef('sortableRef');
 
 watch(isDraggable, () => {
     if (isDraggable.value && sortableRef.value) {
@@ -262,7 +262,8 @@ watch(isDraggable, () => {
 
 async function saveOrder(sortableEv: SortableEvent) {
     if (!mapStore.map) throw new Error('Map has not initialized');
-    if (!sortableEv.newIndex) return;
+    if (isNaN(parseInt(sortableEv.newIndex))) return;
+
     const id = sortableEv.item.getAttribute('id');
     if (!id) return;
 
@@ -277,7 +278,6 @@ async function saveOrder(sortableEv: SortableEvent) {
     if (!overlay) throw new Error(`Could not find Overlay`);
 
     const post = mapStore.getOverlayById(overlay_ids[sortableEv.newIndex + 1]);
-    if (!post) throw new Error(`Could not find Overlay`);
 
     for (const l of overlay.styles) {
         if (post) {
