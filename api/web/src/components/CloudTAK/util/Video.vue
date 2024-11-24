@@ -116,7 +116,7 @@ const props = defineProps({
     }
 });
 
-const container = useTemplateRef('container');
+const container = useTemplateRef<HTMLElement>('container');
 
 const emit = defineEmits(['close']);
 

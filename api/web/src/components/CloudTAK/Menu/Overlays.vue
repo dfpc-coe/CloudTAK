@@ -245,7 +245,7 @@ const opened = ref<Set<number>>(new Set());
 const isLoaded = mapStore.isLoaded;
 const overlays = mapStore.overlays;
 
-const sortableRef = useTemplateRef('sortableRef');
+const sortableRef = useTemplateRef<HTMLElement>('sortableRef');
 
 watch(isDraggable, () => {
     if (isDraggable.value && sortableRef.value) {
