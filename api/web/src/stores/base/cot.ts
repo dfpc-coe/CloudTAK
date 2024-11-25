@@ -1,10 +1,12 @@
 import { std } from '../../std.ts';
 import { bbox } from '@turf/bbox'
+import { useCOTStore } from '../cots.ts'
 import { useMapStore } from '../map.ts';
 import pointOnFeature from '@turf/point-on-feature';
 import type { Feature } from './../../types.ts'
 import type {
     BBox as GeoJSONBBox,
+    Position as GeoJSONPosition,
     Feature as GeoJSONFeature,
     Geometry as GeoJSONGeometry,
 } from 'geojson'
@@ -44,6 +46,7 @@ export default class COT implements Feature {
     properties: Feature["properties"];
     geometry: Feature["geometry"];
 
+    store: ReturnType<typeof useCOTStore>;
     origin: Origin
 
     constructor(feat: Feature, origin?: Origin) {
@@ -55,17 +58,20 @@ export default class COT implements Feature {
         this.properties = feat["properties"] || {};
         this.geometry = feat["geometry"];
 
+        this.store = useCOTStore();
         this.origin = origin || { mode: OriginMode.CONNECTION };
 
         if (!this.properties.archived) {
             this.properties.archived = false
         }
+
+        this.store.pending.set(this.id, this);
     }
 
     /**
      * Update the COT and return a boolean as to whether the COT needs to be re-rendered
      */
-    update(feat: Feature): boolean {
+    async update(feat: Feature): Promise<boolean> {
         feat = COT.style(feat);
 
         let changed = false;
@@ -80,6 +86,12 @@ export default class COT implements Feature {
 
         //TODO Detect Geometry changes, use centroid?!
         this.geometry = feat["geometry"];
+
+        if (changed) {
+            this.store.pending.set(this.id, this);
+        }
+
+        await this.save();
 
         return changed;
     }
@@ -133,7 +145,7 @@ export default class COT implements Feature {
     }
 
     bounds(): GeoJSONBBox {
-        return bbox(this.geometry)
+        return bbox(this.geometry);
     }
 
     /**

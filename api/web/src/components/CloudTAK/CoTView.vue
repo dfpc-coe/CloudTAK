@@ -12,7 +12,7 @@
             <div class='col-12 card-header row mx-1 my-2 d-flex'>
                 <div class='card-title d-flex'>
                     <Battery
-                        v-if='feat.properties.status && !isNaN(parseInt(feat.properties.status.battery))'
+                        v-if='feat.properties.status && feat.properties.status.battery && !isNaN(parseInt(feat.properties.status.battery))'
                         :battery='Number(feat.properties.status.battery)'
                     />
                     <div class='col-auto'>
@@ -237,7 +237,7 @@
         >
             <div class='row g-0'>
                 <div
-                    v-if='feat.origin.source === OriginMode.MISSION'
+                    v-if='feat.origin.mode === OriginMode.MISSION'
                     class='col-12'
                 >
                     <div class='d-flex align-items-center py-2 px-2 my-2 mx-2 rounded bg-gray-500'>
@@ -271,7 +271,7 @@
                 </div>
 
                 <div
-                    v-if='profile && !isNaN(feat.properties.speed)'
+                    v-if='profile && feat.properties.speed !== undefined && !isNaN(feat.properties.speed)'
                     class='pt-2'
                     :class='{
                         "col-md-6": feat.properties.course,
@@ -286,7 +286,7 @@
                 </div>
 
                 <div
-                    v-if='!isNaN(feat.properties.speed)'
+                    v-if='feat.properties.speed !== undefined && !isNaN(feat.properties.speed)'
                     class='pt-2'
                     :class='{
                         "col-md-6": feat.properties.course,
@@ -472,7 +472,8 @@
 <script setup lang='ts'>
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
-import type COT from '../../../src/types.ts';
+import type { LngLatBoundsLike, FlyToOptions, LngLatLike } from 'maplibre-gl'
+import type COT from '../../../src/stores/base/cot.ts';
 import type { COTType } from '../../../src/types.ts';
 import { useMapStore } from '../../../src/stores/map.ts';
 import { OriginMode } from '../../../src/stores/base/cot.ts'
@@ -540,12 +541,6 @@ watch(route, () => {
     })
 });
 
-watch(feat.value, async () => {
-    console.error('UPDATE');
-    await updateStyle();
-    await fetchType();
-})
-
 onMounted(async () => {
     if (feat.value) {
         await fetchType();
@@ -565,6 +560,7 @@ onMounted(async () => {
 const profile = profileStore.profile;
 
 const isArchivable = computed(() => {
+    if (!feat.value) return false;
     return !feat.value.properties.group;
 })
 
@@ -580,7 +576,7 @@ const center = computed(() => {
 const remarks = computed(() => {
     if (!feat.value) return '';
 
-    return feat.value.properties.remarks
+    return (feat.value.properties.remarks || '')
         .replace(/\n/g, '</br>')
         .replace(/(http(s)?:\/\/.*?(\s|$))/g, '[$1]($1) ')
         .trim()
@@ -600,6 +596,8 @@ async function fetchType() {
 }
 
 function addAttachment(hash: string) {
+    if (!feat.value) return;
+
     if (!feat.value.properties.attachments) {
         feat.value.properties.attachments = [];
     }
@@ -607,13 +605,8 @@ function addAttachment(hash: string) {
     feat.value.properties.attachments.push(hash)
 }
 
-async function updateStyle() {
-    if (feat.value.properties.archived) {
-        await cotStore.add(feat.value);
-    }
-}
-
 async function deleteCOT() {
+    if (!feat.value) return;
     await cotStore.delete(feat.value.id);
     router.push('/');
 }
@@ -623,16 +616,19 @@ function zoomTo() {
     if (!mapStore.map) throw new Error('Map not initialized');
 
     if (feat.value.geometry.type === "Point") {
-        const flyTo = {
+        const flyTo: FlyToOptions = {
             speed: Infinity,
-            center: feat.value.properties.center,
+            center: feat.value.properties.center as LngLatLike,
             zoom: 14
         };
 
-        if (mapStore.map.getZoom() < 3) flyTo.zoom = 4;
+        if (mapStore.map.getZoom() < 3) {
+            flyTo.zoom = 4;
+        }
+
         mapStore.map.flyTo(flyTo)
     } else {
-        mapStore.map.fitBounds(feat.value.bounds(), {
+        mapStore.map.fitBounds(feat.value.bounds() as LngLatBoundsLike, {
             maxZoom: 14,
             padding: {
                 top: 20,
