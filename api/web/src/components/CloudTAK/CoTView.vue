@@ -15,9 +15,11 @@
                         v-if='cot.properties.status && cot.properties.status.battery && !isNaN(parseInt(cot.properties.status.battery))'
                         :battery='Number(cot.properties.status.battery)'
                     />
-                    <div class='col-auto'>
+
+                    <div class='col-auto mx-2'>
                         <TablerInput
                             v-if='isEditable'
+                            label=''
                             v-model='cot.properties.callsign'
                         />
                         <div
@@ -36,9 +38,24 @@
                             />
                         </div>
                     </div>
+
                 </div>
                 <div class='col-12 d-flex my-2'>
                     <div class='btn-list'>
+                        <template v-if='isArchivable' class='col-auto my-1'>
+                            <TablerIconButton
+                                v-if='!feat.properties.archived'
+                                title='Save Feature'
+                                @click='feat.properties.archived = true'
+                            ><IconStar :size='32' stroke='1'/></TablerIconButton>
+                            <IconStarFilled
+                                v-else
+                                title='Saved Feature'
+                                :size='32'
+                                stroke='1'
+                            />
+                        </template>
+
                         <TablerIconButton
                             v-if='cot.properties.video && cot.properties.video.url'
                             title='View Video Stream'
@@ -399,13 +416,6 @@
                 </div>
             </div>
 
-            <TablerToggle
-                v-if='isArchivable && isEditable'
-                v-model='feat.properties.archived'
-                label='Saved Feature'
-                class='mx-2'
-            />
-
             <CoTSensor
                 v-if='cot.properties.sensor !== undefined'
                 v-model='feat.properties.sensor'
@@ -431,6 +441,7 @@
                             <div class='col-12'>
                                 <label class='subheader'>Point Colour</label>
                                 <TablerInput
+                                    label=''
                                     v-model='feat.properties["marker-color"]'
                                     default='#00FF00'
                                     type='color'
@@ -440,6 +451,7 @@
                             <div class='col-12'>
                                 <label class='subheader'>Point Opacity</label>
                                 <TablerRange
+                                    label=''
                                     v-model='feat.properties["marker-opacity"]'
                                     :default='1'
                                     :min='0'
@@ -605,6 +617,8 @@ import Attachments from './util/Attachments.vue';
 import {
     IconMovie,
     IconCone,
+    IconStar,
+    IconStarFilled,
     IconMessage,
     IconDotsVertical,
     IconAmbulance,
