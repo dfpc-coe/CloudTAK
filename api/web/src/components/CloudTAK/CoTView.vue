@@ -17,7 +17,7 @@
                     />
                     <div class='col-auto'>
                         <TablerInput
-                            v-if='cot.properties.archived'
+                            v-if='isEditable'
                             v-model='cot.properties.callsign'
                         />
                         <div
@@ -86,7 +86,9 @@
                             />
                         </TablerIconButton>
 
-                        <TablerDropdown>
+                        <TablerDropdown
+                            v-if='isEditable'
+                        >
                             <TablerIconButton
                                 title='Add Properties'
                             >
@@ -398,7 +400,7 @@
             </div>
 
             <TablerToggle
-                v-if='isArchivable'
+                v-if='isArchivable && isEditable'
                 v-model='feat.properties.archived'
                 label='Saved Feature'
                 class='mx-2'
@@ -411,7 +413,7 @@
             />
 
             <div
-                v-if='cot.properties.archived'
+                v-if='isEditable'
                 class='px-1 pb-2 col-12'
             >
                 <label class='mx-1 subheader'>COT Style</label>
@@ -656,6 +658,8 @@ watch(cot, () => {
 
         if (cot.value.origin.mode === OriginMode.MISSION && cot.value.origin.mode_id) {
             mission.value = cotStore.subscriptions.get(cot.value.origin.mode_id);
+        } else {
+            mission.value = undefined;
         }
     }
 });
@@ -685,6 +689,11 @@ onMounted(async () => {
 });
 
 const profile = profileStore.profile;
+
+const isEditable = computed(() => {
+    if (!cot.value) return false;
+    return (cot.value.properties.archived && !mission.value);
+})
 
 const isArchivable = computed(() => {
     if (!cot.value) return false;
