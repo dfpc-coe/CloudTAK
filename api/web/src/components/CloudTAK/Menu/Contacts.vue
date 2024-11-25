@@ -28,6 +28,11 @@
             <EmptyInfo v-if='hasNoChannels' />
 
             <TablerLoading v-if='loading' />
+            <TablerAlert
+                v-else-if='error'
+                title='Contacts Error'
+                :err='error'
+            />
             <TablerNone
                 v-else-if='!visibleActiveContacts.length && !visibleOfflineContacts'
                 :create='false'
@@ -35,7 +40,7 @@
             <template v-else>
                 <div
                     v-for='a of visibleActiveContacts'
-                    :key='a.id'
+                    :key='a.uid'
                     class='col-lg-12'
                 >
                     <Contact
@@ -47,7 +52,7 @@
                 <label class='subheader mx-2'>Recently Offline</label>
                 <div
                     v-for='a of visibleOfflineContacts'
-                    :key='a.id'
+                    :key='a.uid'
                     class='col-lg-12'
                 >
                     <Contact
@@ -60,18 +65,20 @@
     </MenuTemplate>
 </template>
 
-<script>
-import { mapGetters } from 'pinia'
-import { useProfileStore } from '/src/stores/profile.ts';
-import { useCOTStore } from '/src/stores/cots.ts';
+<script setup lang='ts'>
+import { ref, computed, onMounted } from 'vue';
+import { std, stdurl } from '../../../../src/std.ts';
+import type { ContactList } from '../../../../src/types.ts';
+import { useProfileStore } from '../../../..//src/stores/profile.ts';
+import { useCOTStore } from '../../../../src/stores/cots.ts';
 const cotStore = useCOTStore();
-import { std, stdurl } from '/src/std.ts';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import {
     IconRefresh
 } from '@tabler/icons-vue';
 import {
     TablerNone,
+    TablerAlert,
     TablerInput,
     TablerLoading,
     TablerIconButton
@@ -79,59 +86,51 @@ import {
 import Contact from '../util/Contact.vue';
 import EmptyInfo from '../util/EmptyInfo.vue';
 
-export default {
-    name: 'CloudTAKContacts',
-    components: {
-        Contact,
-        TablerNone,
-        EmptyInfo,
-        TablerInput,
-        TablerLoading,
-        TablerIconButton,
-        IconRefresh,
-        MenuTemplate
-    },
-    data: function() {
-        return {
-            err: false,
-            loading: true,
-            contacts: [],
-            paging: {
-                filter: ''
-            }
-        }
-    },
-    computed: {
-        ...mapGetters(useProfileStore, ['hasNoChannels']),
-        visibleActiveContacts: function() {
-            return this.contacts.filter((contact) => {
-                return contact.callsign;
-            }).filter((contact) => {
-                return cotStore.cots.has(contact.uid);
-            }).filter((contact) => {
-                return contact.callsign.toLowerCase().includes(this.paging.filter.toLowerCase());
-            })
-        },
-        visibleOfflineContacts: function() {
-            return this.contacts.filter((contact) => {
-                return contact.callsign;
-            }).filter((contact) => {
-                return !cotStore.cots.has(contact.uid);
-            }).filter((contact) => {
-                return contact.callsign.toLowerCase().includes(this.paging.filter.toLowerCase());
-            })
-        }
-    },
-    mounted: async function() {
-        await this.fetchList();
-    },
-    methods: {
-        fetchList: async function() {
-            this.loading = true;
-            const url = stdurl('/api/marti/api/contacts/all');
-            this.contacts = await std(url);
-            this.loading = false;
-        },
+const profileStore = useProfileStore();
+const error = ref<Error | undefined>();
+const loading = ref(true);
+const contacts = ref<ContactList>([])
+const paging = ref({
+    filter: ''
+});
+
+const hasNoChannels = profileStore.hasNoChannels;
+
+const visibleActiveContacts = computed(() => {
+    return contacts.value.filter((contact) => {
+        return contact.callsign;
+    }).filter((contact) => {
+        return cotStore.cots.has(contact.uid);
+    }).filter((contact) => {
+        return contact.callsign.toLowerCase().includes(paging.value.filter.toLowerCase());
+    })
+});
+
+const visibleOfflineContacts = computed(() => {
+    return contacts.value.filter((contact) => {
+        return contact.callsign;
+    }).filter((contact) => {
+        return !cotStore.cots.has(contact.uid);
+    }).filter((contact) => {
+        return contact.callsign.toLowerCase().includes(paging.value.filter.toLowerCase());
+    })
+})
+
+onMounted(async () => {
+    await fetchList();
+});
+
+
+async function fetchList() {
+    loading.value = true;
+
+    try {
+        const url = stdurl('/api/marti/api/contacts/all');
+        contacts.value = await std(url) as ContactList;
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err))
     }
+
+    loading.value = false;
 }
 </script>
