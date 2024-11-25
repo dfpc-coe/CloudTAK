@@ -631,6 +631,7 @@ const mode = ref('default');
 const interval = ref<ReturnType<typeof setInterval> | undefined>();
 const time = ref('relative');
 
+// @ts-expect-error Need to investigate this
 watch(feat.value, () => {
     if (!cot.value || !feat.value) return;
     cot.value.update(feat.value);

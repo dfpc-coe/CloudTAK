@@ -2,7 +2,7 @@
 * CotStore - Store & perform updates on all underlying CoT Features
 */
 
-import COT from './base/cot.ts'
+import COT, { OriginMode } from './base/cot.ts'
 import { defineStore } from 'pinia'
 import type { GeoJSONSourceDiff } from 'maplibre-gl';
 import { std, stdurl } from '../std.ts';
@@ -428,7 +428,10 @@ export const useCOTStore = defineStore('cots', {
                     return;
                 }
 
-                const cot = new COT(feat);
+                const cot = new COT(feat, {
+                    mode: OriginMode.MISSION,
+                    mode_id: mission_guid
+                });
                 sub.cots.set(String(cot.id), cot);
 
                 const mapStore = useMapStore();
