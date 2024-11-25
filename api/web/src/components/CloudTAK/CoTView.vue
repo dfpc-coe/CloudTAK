@@ -540,7 +540,8 @@ watch(route, () => {
     })
 });
 
-watch(feat, async () => {
+watch(feat.value, async () => {
+    console.error('UPDATE');
     await updateStyle();
     await fetchType();
 })
