@@ -12,6 +12,19 @@
 
 ### Pending Release
 
+### v5.8.0 - 2024-11-25
+
+- :rocket: `UI` Migrate `Package.vue` to TS
+- :rocket: `UI` Migrate `Packages.vue` to TS
+- :rocket: `UI` Migrate `Imports.vue` to TS
+- :rocket: `UI` Migrate `Import.vue` to TS
+- :rocket: `UI` Show Data Sync icon next to Syncs in Overlay Pane
+- :rocket: `UI` Allow zooming to bounds of Data Sync in Overlay Panel
+- :rocket: `UI` Migrate `Overlays.vue` to TS
+- :rocket: `UI` Migrate `CoTView.vue` to TS
+- :rocket: `UI` Share origin of CoT in COT type
+- :rocket: `UI` Show Data Sync origin in CoTView
+
 ### v5.7.0 - 2024-11-23
 
 - :rocket: `UI` Migrate `Feature.vue` to TS
