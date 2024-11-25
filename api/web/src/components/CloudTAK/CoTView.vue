@@ -411,7 +411,7 @@
             <CoTStyle
                 v-if='feat.properties.archived'
                 :key='feat.id'
-                v-model='feat'
+                :feature='feat'
             />
 
             <div

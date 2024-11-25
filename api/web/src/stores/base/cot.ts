@@ -87,9 +87,8 @@ export default class COT implements Feature {
         //TODO Detect Geometry changes, use centroid?!
         this.geometry = feat["geometry"];
 
-        if (changed) {
-            this.store.pending.set(this.id, this);
-        }
+        // TODO only update if Geometry or Rendered Prop changes
+        this.store.pending.set(this.id, this);
 
         await this.save();
 
