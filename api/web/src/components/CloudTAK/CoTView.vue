@@ -433,6 +433,7 @@
                                 :key='prop'
                             >
                                 <td v-text='prop' />
+                                <!-- @vue-expect-error Not a KeyOf -->
                                 <td v-text='feat.properties.takv[prop]' />
                             </tr>
                         </tbody>

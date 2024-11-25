@@ -6,7 +6,6 @@ import pointOnFeature from '@turf/point-on-feature';
 import type { Feature } from './../../types.ts'
 import type {
     BBox as GeoJSONBBox,
-    Position as GeoJSONPosition,
     Feature as GeoJSONFeature,
     Geometry as GeoJSONGeometry,
 } from 'geojson'

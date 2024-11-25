@@ -32,7 +32,7 @@
                         />
                     </div>
                 </template>
-                <template v-else-if='feat.geometry.type !== "Point"'>
+                <template v-else>
                     <div class='col-12'>
                         <label class='subheader'>Line Colour</label>
                         <TablerInput
@@ -96,6 +96,7 @@
 
 <script setup lang='ts'>
 import { watch, ref } from 'vue';
+import COT from '../../../../src/stores/base/cot.ts';
 import IconSelect from '../../util/IconSelect.vue';
 import {
     TablerRange,
