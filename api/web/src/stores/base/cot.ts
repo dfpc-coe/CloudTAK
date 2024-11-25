@@ -9,6 +9,16 @@ import type {
     Geometry as GeoJSONGeometry,
 } from 'geojson'
 
+export interface Origin {
+    mode: OriginMode,
+    mode_id?: string
+}
+
+export enum OriginMode {
+    CONNECTION = 'Connection',
+    MISSION = 'Mission'
+}
+
 export const RENDERED_PROPERTIES = [
     'callsign',
     'fill',
@@ -34,7 +44,9 @@ export default class COT implements Feature {
     properties: Feature["properties"];
     geometry: Feature["geometry"];
 
-    constructor(feat: Feature) {
+    origin: Origin
+
+    constructor(feat: Feature, origin?: Origin) {
         feat = COT.style(feat);
 
         this.id = feat.id || crypto.randomUUID();
@@ -42,6 +54,8 @@ export default class COT implements Feature {
         this.path = feat.path || '/';
         this.properties = feat["properties"] || {};
         this.geometry = feat["geometry"];
+
+        this.origin = origin || { mode: OriginMode.CONNECTION };
 
         if (!this.properties.archived) {
             this.properties.archived = false
