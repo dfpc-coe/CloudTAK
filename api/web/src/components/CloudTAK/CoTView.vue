@@ -1,6 +1,6 @@
 <template>
     <TablerNone
-        v-if='!feat'
+        v-if='!cot || !feat'
         :create='false'
         label='CoT Marker'
     />
@@ -12,27 +12,27 @@
             <div class='col-12 card-header row mx-1 my-2 d-flex'>
                 <div class='card-title d-flex'>
                     <Battery
-                        v-if='feat.properties.status && feat.properties.status.battery && !isNaN(parseInt(feat.properties.status.battery))'
-                        :battery='Number(feat.properties.status.battery)'
+                        v-if='cot.properties.status && cot.properties.status.battery && !isNaN(parseInt(cot.properties.status.battery))'
+                        :battery='Number(cot.properties.status.battery)'
                     />
                     <div class='col-auto'>
                         <TablerInput
-                            v-if='feat.properties.archived'
-                            v-model='feat.properties.callsign'
+                            v-if='cot.properties.archived'
+                            v-model='cot.properties.callsign'
                         />
                         <div
                             v-else
-                            v-text='feat.properties.callsign'
+                            v-text='cot.properties.callsign'
                         />
 
                         <div>
                             <span
                                 class='subheader'
-                                v-text='type ? type.full : feat.properties.type'
+                                v-text='type ? type.full : cot.properties.type'
                             />
                             <span
                                 class='subheader ms-auto'
-                                v-text='" (" + (feat.properties.how || "Unknown") + ")"'
+                                v-text='" (" + (cot.properties.how || "Unknown") + ")"'
                             />
                         </div>
                     </div>
@@ -40,7 +40,7 @@
                 <div class='col-12 d-flex my-2'>
                     <div class='btn-list'>
                         <TablerIconButton
-                            v-if='feat.properties.video && feat.properties.video.url'
+                            v-if='cot.properties.video && cot.properties.video.url'
                             title='View Video Stream'
                             @click='videoStore.add(String(route.params.uid))'
                         >
@@ -76,9 +76,9 @@
                         </TablerIconButton>
 
                         <TablerIconButton
-                            v-if='feat.properties.group'
+                            v-if='cot.properties.group'
                             title='Chat'
-                            @click='router.push(`/menu/chats/new?callsign=${feat.properties.callsign}&uid=${feat.id}`)'
+                            @click='router.push(`/menu/chats/new?callsign=${cot.properties.callsign}&uid=${cot.id}`)'
                         >
                             <IconMessage
                                 :size='32'
@@ -100,19 +100,19 @@
                                 <div class='px-1 py-1'>
                                     <div
                                         v-if='
-                                            feat.properties.attachments !== undefined
-                                                && feat.properties.attachments !== undefined
-                                                && feat.properties.sensor !== undefined
+                                            cot.properties.attachments !== undefined
+                                                && cot.properties.attachments !== undefined
+                                                && cot.properties.sensor !== undefined
                                         '
                                     >
                                         No Properties to add
                                     </div>
                                     <template v-else>
                                         <div
-                                            v-if='feat.properties.attachments === undefined'
+                                            v-if='cot.properties.attachments === undefined'
                                             role='button'
                                             class='hover-dark px-2 py-2 d-flex align-items-center'
-                                            @click='feat.properties.attachments = []'
+                                            @click='cot.properties.attachments = []'
                                         >
                                             <IconPaperclip
                                                 stroke='1'
@@ -122,10 +122,10 @@
                                             </div>
                                         </div>
                                         <div
-                                            v-if='feat.properties.video === undefined'
+                                            v-if='cot.properties.video === undefined'
                                             role='button'
                                             class='hover-dark px-2 py-2 d-flex align-items-center'
-                                            @click='feat.properties.video = { url: "" }'
+                                            @click='cot.properties.video = { url: "" }'
                                         >
                                             <IconMovie
                                                 stroke='1'
@@ -135,10 +135,10 @@
                                             </div>
                                         </div>
                                         <div
-                                            v-if='feat.properties.sensor === undefined'
+                                            v-if='cot.properties.sensor === undefined'
                                             role='button'
                                             class='hover-dark px-2 py-2 d-flex align-items-center'
-                                            @click='feat.properties.sensor = {}'
+                                            @click='cot.properties.sensor = {}'
                                         >
                                             <IconCone
                                                 stroke='1'
@@ -183,7 +183,7 @@
                     />
                     <span class='mx-2'>Info</span>
                 </label>
-                <template v-if='feat.properties.group'>
+                <template v-if='cot.properties.group'>
                     <input
                         id='btn-mode-channels'
                         type='radio'
@@ -237,7 +237,7 @@
         >
             <div class='row g-0'>
                 <div
-                    v-if='feat.origin.mode === OriginMode.MISSION'
+                    v-if='cot.origin.mode === OriginMode.MISSION'
                     class='col-12'
                 >
                     <div class='d-flex align-items-center py-2 px-2 my-2 mx-2 rounded bg-gray-500'>
@@ -266,52 +266,52 @@
                 >
                     <Elevation
                         :unit='profile.display_elevation'
-                        :elevation='feat.properties.center[2]'
+                        :elevation='cot.properties.center[2]'
                     />
                 </div>
 
                 <div
-                    v-if='profile && feat.properties.speed !== undefined && !isNaN(feat.properties.speed)'
+                    v-if='profile && cot.properties.speed !== undefined && !isNaN(cot.properties.speed)'
                     class='pt-2'
                     :class='{
-                        "col-md-6": feat.properties.course,
-                        "col-12": !feat.properties.course,
+                        "col-md-6": cot.properties.course,
+                        "col-12": !cot.properties.course,
                     }'
                 >
                     <Speed
                         :unit='profile.display_speed'
-                        :speed='feat.properties.speed'
+                        :speed='cot.properties.speed'
                         class='py-2'
                     />
                 </div>
 
                 <div
-                    v-if='feat.properties.speed !== undefined && !isNaN(feat.properties.speed)'
+                    v-if='cot.properties.speed !== undefined && !isNaN(cot.properties.speed)'
                     class='pt-2'
                     :class='{
-                        "col-md-6": feat.properties.course,
-                        "col-12": !feat.properties.course,
+                        "col-md-6": cot.properties.course,
+                        "col-12": !cot.properties.course,
                     }'
                 >
                     <Course
-                        :course='feat.properties.course'
+                        :course='cot.properties.course'
                         class='py-2'
                     />
                 </div>
 
                 <div
-                    v-if='feat.properties.contact && feat.properties.contact.phone'
+                    v-if='cot.properties.contact && cot.properties.contact.phone'
                     class='pt-2'
                 >
                     <Phone
-                        :phone='feat.properties.contact.phone'
+                        :phone='cot.properties.contact.phone'
                     />
                 </div>
             </div>
 
             <Attachments
-                v-if='!feat.properties.contact && feat.properties.attachments !== undefined'
-                :attachments='feat.properties.attachments || []'
+                v-if='!cot.properties.contact && cot.properties.attachments !== undefined'
+                :attachments='cot.properties.attachments || []'
                 @attachment='addAttachment($event)'
             />
 
@@ -326,7 +326,7 @@
             </div>
 
             <div
-                v-if='feat.properties.links'
+                v-if='cot.properties.links'
                 class='col-12 py-2'
             >
                 <div class='table-responsive rounded mx-2 py-2 px-2'>
@@ -339,7 +339,7 @@
                         </thead>
                         <tbody class='bg-gray-500'>
                             <tr
-                                v-for='(link, link_it) of feat.properties.links'
+                                v-for='(link, link_it) of cot.properties.links'
                                 :key='link_it'
                             >
                                 <td v-text='link.remarks' />
@@ -357,7 +357,7 @@
 
 
             <div
-                v-if='!feat.properties.archived'
+                v-if='!cot.properties.archived'
                 class='col-12 pb-2'
             >
                 <div class='d-flex mx-3'>
@@ -383,18 +383,19 @@
                         </thead>
                         <tbody class='bg-gray-500'>
                             <tr>
-                                <td>Time</td><td v-text='timediffFormat(feat.properties.time)' />
+                                <td>Time</td><td v-text='timediffFormat(cot.properties.time)' />
                             </tr>
                             <tr>
-                                <td>Start</td><td v-text='timediffFormat(feat.properties.start)' />
+                                <td>Start</td><td v-text='timediffFormat(cot.properties.start)' />
                             </tr>
                             <tr>
-                                <td>Stale</td><td v-text='timediffFormat(feat.properties.stale)' />
+                                <td>Stale</td><td v-text='timediffFormat(cot.properties.stale)' />
                             </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
+
             <TablerToggle
                 v-if='isArchivable'
                 v-model='feat.properties.archived'
@@ -403,19 +404,110 @@
             />
 
             <CoTSensor
-                v-if='feat.properties.sensor !== undefined'
+                v-if='cot.properties.sensor !== undefined'
                 v-model='feat.properties.sensor'
                 class='my-2 mx-2'
             />
 
-            <CoTStyle
-                v-if='feat.properties.archived'
-                :key='feat.id'
-                :feature='feat'
-            />
+            <div
+                v-if='cot.properties.archived'
+                class='px-1 pb-2 col-12'
+            >
+                <label class='mx-1 subheader'>COT Style</label>
+                <div class='mx-2 py-3'>
+                    <div class='row g-2 rounded px-2 bg-gray-500 pb-2'>
+                        <template v-if='feat.geometry.type === "Point"'>
+                            <div class='col-12'>
+                                <IconSelect
+                                    v-model='feat.properties.icon'
+                                    label='Point Icon'
+                                    :size='32'
+                                    :stroke='1'
+                                />
+                            </div>
+                            <div class='col-12'>
+                                <label class='subheader'>Point Colour</label>
+                                <TablerInput
+                                    v-model='feat.properties["marker-color"]'
+                                    default='#00FF00'
+                                    type='color'
+                                    class='pb-2'
+                                />
+                            </div>
+                            <div class='col-12'>
+                                <label class='subheader'>Point Opacity</label>
+                                <TablerRange
+                                    v-model='feat.properties["marker-opacity"]'
+                                    :default='1'
+                                    :min='0'
+                                    :max='1'
+                                    :step='0.01'
+                                />
+                            </div>
+                        </template>
+                        <template v-else>
+                            <div class='col-12'>
+                                <label class='subheader'>Line Colour</label>
+                                <TablerInput
+                                    v-model='feat.properties.stroke'
+                                    type='color'
+                                />
+                            </div>
+
+                            <div class='col-12'>
+                                <label class='subheader'>Line Style</label>
+                                <TablerEnum
+                                    v-model='feat.properties["stroke-style"]'
+                                    :options='["solid", "dashed", "dotted", "outlined"]'
+                                    default='solid'
+                                />
+                            </div>
+                            <div class='col-12'>
+                                <label class='subheader'>Line Thickness</label>
+                                <TablerRange
+                                    v-model='feat.properties["stroke-width"]'
+                                    :default='1'
+                                    :min='1'
+                                    :max='6'
+                                    :step='1'
+                                />
+                            </div>
+                            <div class='col-12'>
+                                <label class='subheader'>Line Opacity</label>
+                                <TablerRange
+                                    v-model='feat.properties["stroke-opacity"]'
+                                    :default='1'
+                                    :min='0'
+                                    :max='1'
+                                    :step='0.01'
+                                />
+                            </div>
+                        </template>
+                        <template v-if='feat.geometry.type === "Polygon"'>
+                            <div class='col-12'>
+                                <label class='subheader'>Fill Colour</label>
+                                <TablerInput
+                                    v-model='feat.properties.fill'
+                                    type='color'
+                                />
+                            </div>
+                            <div class='col-12 round'>
+                                <label class='subheader'>Fill Opacity</label>
+                                <TablerRange
+                                    v-model='feat.properties["fill-opacity"]'
+                                    :default='1'
+                                    :min='0'
+                                    :max='1'
+                                    :step='0.01'
+                                />
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
 
             <div
-                v-if='feat.properties.takv && feat.properties.takv && Object.keys(feat.properties.takv).length'
+                v-if='cot.properties.takv && cot.properties.takv && Object.keys(cot.properties.takv).length'
                 class='col-12 px-1 pb-2'
             >
                 <label class='subheader px-2'>Metadata</label>
@@ -429,12 +521,12 @@
                         </thead>
                         <tbody class='bg-gray-500'>
                             <tr
-                                v-for='prop of Object.keys(feat.properties.takv)'
+                                v-for='prop of Object.keys(cot.properties.takv)'
                                 :key='prop'
                             >
                                 <td v-text='prop' />
                                 <!-- @vue-expect-error Not a KeyOf -->
-                                <td v-text='feat.properties.takv[prop]' />
+                                <td v-text='cot.properties.takv[prop]' />
                             </tr>
                         </tbody>
                     </table>
@@ -445,7 +537,7 @@
             <div class='overflow-auto'>
                 <Share
                     style='height: 70vh'
-                    :feats='[feat]'
+                    :feats='[cot]'
                     @done='mode = "default"'
                     @cancel='mode = "default"'
                 />
@@ -456,7 +548,7 @@
                 style='height: calc(100vh - 225px)'
                 class='overflow-auto'
             >
-                <Subscriptions :uid='feat.id' />
+                <Subscriptions :uid='cot.id' />
             </div>
         </template>
         <template v-else-if='mode === "raw"'>
@@ -464,7 +556,7 @@
                 style='height: calc(100vh - 225px)'
                 class='overflow-auto'
             >
-                <pre v-text='feat' />
+                <pre v-text='cot' />
             </div>
         </template>
     </template>
@@ -475,7 +567,7 @@ import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
 import type { LngLatBoundsLike, FlyToOptions, LngLatLike } from 'maplibre-gl'
 import type COT from '../../../src/stores/base/cot.ts';
-import type { COTType } from '../../../src/types.ts';
+import type { COTType, Feature } from '../../../src/types.ts';
 import { useMapStore } from '../../../src/stores/map.ts';
 import { OriginMode } from '../../../src/stores/base/cot.ts'
 import {
@@ -483,13 +575,16 @@ import {
     TablerInput,
     TablerToggle,
     TablerDelete,
+    TablerEnum,
+    TablerRange,
     TablerMarkdown,
     TablerDropdown,
     TablerIconButton,
 } from '@tak-ps/vue-tabler';
+
+import IconSelect from '../util/IconSelect.vue';
 import Battery from './util/Battery.vue';
 import Share from './util/Share.vue';
-import CoTStyle from './util/CoTStyle.vue';
 import Coordinate from './util/Coordinate.vue';
 import Course from './util/Course.vue';
 import CoTSensor from './util/Sensor.vue';
@@ -525,19 +620,32 @@ const videoStore = useVideoStore();
 const route = useRoute();
 const router = useRouter();
 
-const feat = ref<COT | undefined>(cotStore.get(String(route.params.uid), {
+const cot = ref<COT | undefined>(cotStore.get(String(route.params.uid), {
     mission: true
 }))
+
+const feat = ref<Feature | undefined>(cot.value ? cot.value.as_feature() : undefined);
 
 const type = ref<COTType | undefined>();
 const mode = ref('default');
 const interval = ref<ReturnType<typeof setInterval> | undefined>();
 const time = ref('relative');
 
+watch(feat.value, () => {
+    if (!cot.value || !feat.value) return;
+    cot.value.update(feat.value);
+});
+
+watch(cot, () => {
+    if (cot.value) {
+        feat.value = cot.value.as_feature()
+    }
+});
+
 watch(route, () => {
     mode.value = 'default'
 
-    feat.value = cotStore.get(String(route.params.uid), {
+    cot.value = cotStore.get(String(route.params.uid), {
         mission: true
     })
 });
@@ -547,7 +655,7 @@ onMounted(async () => {
         await fetchType();
     } else {
         interval.value = setInterval(() => {
-            feat.value = cotStore.get(String(route.params.uid), {
+            cot.value = cotStore.get(String(route.params.uid), {
                 mission: true
             })
 
@@ -561,23 +669,23 @@ onMounted(async () => {
 const profile = profileStore.profile;
 
 const isArchivable = computed(() => {
-    if (!feat.value) return false;
-    return !feat.value.properties.group;
+    if (!cot.value) return false;
+    return !cot.value.properties.group;
 })
 
 const center = computed(() => {
-    if (!feat.value) return [0,0];
+    if (!cot.value) return [0,0];
 
     return [
-        Math.round(feat.value.properties.center[0] * 1000000) / 1000000,
-        Math.round(feat.value.properties.center[1] * 1000000) / 1000000,
+        Math.round(cot.value.properties.center[0] * 1000000) / 1000000,
+        Math.round(cot.value.properties.center[1] * 1000000) / 1000000,
     ]
 })
 
 const remarks = computed(() => {
-    if (!feat.value) return '';
+    if (!cot.value) return '';
 
-    return (feat.value.properties.remarks || '')
+    return (cot.value.properties.remarks || '')
         .replace(/\n/g, '</br>')
         .replace(/(http(s)?:\/\/.*?(\s|$))/g, '[$1]($1) ')
         .trim()
@@ -592,34 +700,34 @@ function timediffFormat(date: string) {
 }
 
 async function fetchType() {
-    if (!feat.value) return;
-    type.value = await std(`/api/type/cot/${feat.value.properties.type}`) as COTType
+    if (!cot.value) return;
+    type.value = await std(`/api/type/cot/${cot.value.properties.type}`) as COTType
 }
 
 function addAttachment(hash: string) {
-    if (!feat.value) return;
+    if (!cot.value) return;
 
-    if (!feat.value.properties.attachments) {
-        feat.value.properties.attachments = [];
+    if (!cot.value.properties.attachments) {
+        cot.value.properties.attachments = [];
     }
 
-    feat.value.properties.attachments.push(hash)
+    cot.value.properties.attachments.push(hash)
 }
 
 async function deleteCOT() {
-    if (!feat.value) return;
-    await cotStore.delete(feat.value.id);
+    if (!cot.value) return;
+    await cotStore.delete(cot.value.id);
     router.push('/');
 }
 
 function zoomTo() {
-    if (!feat.value) return;
+    if (!cot.value) return;
     if (!mapStore.map) throw new Error('Map not initialized');
 
-    if (feat.value.geometry.type === "Point") {
+    if (cot.value.geometry.type === "Point") {
         const flyTo: FlyToOptions = {
             speed: Infinity,
-            center: feat.value.properties.center as LngLatLike,
+            center: cot.value.properties.center as LngLatLike,
             zoom: 14
         };
 
@@ -629,7 +737,7 @@ function zoomTo() {
 
         mapStore.map.flyTo(flyTo)
     } else {
-        mapStore.map.fitBounds(feat.value.bounds() as LngLatBoundsLike, {
+        mapStore.map.fitBounds(cot.value.bounds() as LngLatBoundsLike, {
             maxZoom: 14,
             padding: {
                 top: 20,
