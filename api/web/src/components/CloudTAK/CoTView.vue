@@ -237,7 +237,7 @@
         >
             <div class='row g-0'>
                 <div
-                    v-if='cot.origin.mode === OriginMode.MISSION'
+                    v-if='mission'
                     class='col-12'
                 >
                     <div class='d-flex align-items-center py-2 px-2 my-2 mx-2 rounded bg-gray-500'>
@@ -245,7 +245,8 @@
                             :size='32'
                             stroke='1'
                         />
-                        <span class='mx-2'>This Feature is part of a Data Sync</span>
+                        <span class='ms-2'>From:</span>
+                        <a class='mx-2 cursor-pointer' @click='router.push(`/menu/missions/${mission.meta.guid}`)' v-text='mission.meta.name'></a>
                     </div>
                 </div>
 
@@ -449,6 +450,7 @@
                             <div class='col-12'>
                                 <label class='subheader'>Line Colour</label>
                                 <TablerInput
+                                    label=''
                                     v-model='feat.properties.stroke'
                                     type='color'
                                 />
@@ -457,6 +459,7 @@
                             <div class='col-12'>
                                 <label class='subheader'>Line Style</label>
                                 <TablerEnum
+                                    label=''
                                     v-model='feat.properties["stroke-style"]'
                                     :options='["solid", "dashed", "dotted", "outlined"]'
                                     default='solid'
@@ -465,6 +468,7 @@
                             <div class='col-12'>
                                 <label class='subheader'>Line Thickness</label>
                                 <TablerRange
+                                    label=''
                                     v-model='feat.properties["stroke-width"]'
                                     :default='1'
                                     :min='1'
@@ -475,6 +479,7 @@
                             <div class='col-12'>
                                 <label class='subheader'>Line Opacity</label>
                                 <TablerRange
+                                    label=''
                                     v-model='feat.properties["stroke-opacity"]'
                                     :default='1'
                                     :min='0'
@@ -487,6 +492,7 @@
                             <div class='col-12'>
                                 <label class='subheader'>Fill Colour</label>
                                 <TablerInput
+                                    label=''
                                     v-model='feat.properties.fill'
                                     type='color'
                                 />
@@ -494,6 +500,7 @@
                             <div class='col-12 round'>
                                 <label class='subheader'>Fill Opacity</label>
                                 <TablerRange
+                                    label=''
                                     v-model='feat.properties["fill-opacity"]'
                                     :default='1'
                                     :min='0'
@@ -570,6 +577,7 @@ import type COT from '../../../src/stores/base/cot.ts';
 import type { COTType, Feature } from '../../../src/types.ts';
 import { useMapStore } from '../../../src/stores/map.ts';
 import { OriginMode } from '../../../src/stores/base/cot.ts'
+import Mission from '../../../src/stores/base/mission.ts'
 import {
     TablerNone,
     TablerInput,
@@ -625,6 +633,11 @@ const cot = ref<COT | undefined>(cotStore.get(String(route.params.uid), {
 }))
 
 const feat = ref<Feature | undefined>(cot.value ? cot.value.as_feature() : undefined);
+const mission = ref<Mission | undefined>();
+
+if (cot.value && cot.value.origin.mode === OriginMode.MISSION && cot.value.origin.mode_id) {
+    mission.value = cotStore.subscriptions.get(cot.value.origin.mode_id);
+}
 
 const type = ref<COTType | undefined>();
 const mode = ref('default');
@@ -640,6 +653,10 @@ watch(feat.value, () => {
 watch(cot, () => {
     if (cot.value) {
         feat.value = cot.value.as_feature()
+
+        if (cot.value.origin.mode === OriginMode.MISSION && cot.value.origin.mode_id) {
+            mission.value = cotStore.subscriptions.get(cot.value.origin.mode_id);
+        }
     }
 });
 
