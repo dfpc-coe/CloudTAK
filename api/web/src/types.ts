@@ -15,6 +15,8 @@ export type APIList<T> = {
     items: Array<T>;
 }
 
+export type COTType = paths["/type/cot/{:type}"]["get"]["responses"]["200"]["content"]["application/json"];
+
 export type VideoLease = paths["/video/lease/{:lease}"]["get"]["responses"]["200"]["content"]["application/json"]["lease"];
 export type VideoLeaseList = paths["/video/lease"]["get"]["responses"]["200"]["content"]["application/json"];
 export type VideoLeaseProtocols = paths["/video/lease/{:lease}"]["get"]["responses"]["200"]["content"]["application/json"]["protocols"];
@@ -24,6 +26,8 @@ export type Group = paths["/marti/group"]["get"]["responses"]["200"]["content"][
 
 export type User = paths["/user/{:username}"]["get"]["responses"]["200"]["content"]["application/json"];
 export type UserList = paths["/user"]["get"]["responses"]["200"]["content"]["application/json"];
+
+export type ContactList = paths["/marti/api/contacts/all"]["get"]["responses"]["200"]["content"]["application/json"];
 
 export type Content = paths["/marti/package"]["put"]["responses"]["200"]["content"]["application/json"];
 
@@ -44,10 +48,15 @@ export type Server = paths["/server"]["get"]["responses"]["200"]["content"]["app
 
 export type Login = paths["/login"]["get"]["responses"]["200"]["content"]["application/json"]
 
+export type Import = paths["/import/{:import}"]["get"]["responses"]["200"]["content"]["application/json"]
+export type ImportBatch = paths["/import/{:import}/batch"]["get"]["responses"]["200"]["content"]["application/json"]
+export type ImportList = paths["/import"]["get"]["responses"]["200"]["content"]["application/json"]
+
 export type Profile = paths["/profile"]["get"]["responses"]["200"]["content"]["application/json"]
 export type Profile_Update = paths["/profile"]["patch"]["requestBody"]["content"]["application/json"]
 
 export type Package = paths["/marti/package"]["put"]["responses"]["200"]["content"]["application/json"]
+export type PackageList = paths["/marti/package"]["get"]["responses"]["200"]["content"]["application/json"]
 
 export type Basemap = paths["/basemap/{:basemapid}"]["patch"]["responses"]["200"]["content"]["application/json"]
 export type BasemapList = paths["/basemap"]["get"]["responses"]["200"]["content"]["application/json"]

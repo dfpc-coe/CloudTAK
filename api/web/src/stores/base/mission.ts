@@ -1,8 +1,10 @@
-import COT from './cot.ts'
+import COT, { OriginMode } from './cot.ts'
 import { std, stdurl } from '../../std.ts';
 import { useCOTStore } from '../cots.ts';
+import { bbox } from '@turf/bbox';
 import type { Feature } from '../../types.ts';
 import type {
+    BBox,
     FeatureCollection
 } from 'geojson'
 import type {
@@ -52,6 +54,10 @@ export default class Subscription {
         }
     }
 
+    bounds(): BBox {
+        return bbox(this.collection());
+    }
+
     async delete(): Promise<void> {
         const cotStore = useCOTStore();
 
@@ -88,7 +94,10 @@ export default class Subscription {
         }) as FeatureCollection;
 
         for (const feat of fc.features) {
-            const cot = new COT(feat as Feature);
+            const cot = new COT(feat as Feature, {
+                mode: OriginMode.MISSION,
+                mode_id: guid
+            });
             sub.cots.set(String(cot.id), cot);
         }
 

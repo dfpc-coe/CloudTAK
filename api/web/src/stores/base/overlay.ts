@@ -3,18 +3,17 @@ import type {
     ProfileOverlay_Create
 } from '../../types.ts';
 import type { FeatureCollection } from 'geojson';
-import mapgl from 'maplibre-gl'
-import type { LayerSpecification } from 'maplibre-gl'
+import { bbox } from '@turf/bbox'
+import type { Map, LngLatBoundsLike, LayerSpecification, VectorTileSource, RasterTileSource, GeoJSONSource } from 'maplibre-gl'
 import cotStyles from '../utils/styles.ts'
 import { std, stdurl } from '../../std.js';
 import { useProfileStore } from '../profile.js';
-
 
 /**
  * @class
  */
 export default class Overlay {
-    _map: mapgl.Map;
+    _map: Map;
     _destroyed: boolean;
     _internal: boolean;
 
@@ -39,7 +38,7 @@ export default class Overlay {
     token: string | null;
 
     static async create(
-        map: mapgl.Map,
+        map: Map,
         body: ProfileOverlay_Create,
         opts: {
             clickable?: Array<{ id: string; type: string }>;
@@ -69,7 +68,7 @@ export default class Overlay {
     }
 
     static internal(
-        map: mapgl.Map,
+        map: Map,
         body: {
             id: number;
             type: string;
@@ -99,12 +98,12 @@ export default class Overlay {
         return overlay;
     }
 
-    static async load(map: mapgl.Map, id: number): Promise<Overlay> {
+    static async load(map: Map, id: number): Promise<Overlay> {
         const overlay = await std(`/api/profile/overlay/${id}`);
         return new Overlay(map, overlay as ProfileOverlay);
     }
 
-    constructor(map: mapgl.Map, overlay: ProfileOverlay, opts: {
+    constructor(map: Map, overlay: ProfileOverlay, opts: {
         clickable?: Array<{ id: string; type: string }>;
         internal?: boolean;
         before?: string;
@@ -136,6 +135,35 @@ export default class Overlay {
 
     healthy(): boolean {
         return !this._error;
+    }
+
+    hasBounds(): boolean {
+        const source = this._map.getSource(String(this.id))
+        if (!source) return false;
+
+        if (source.type === 'vector') {
+            return !!(source as VectorTileSource).bounds;
+        } else if (source.type === 'raster') {
+            return !!(source as RasterTileSource).bounds;
+        } else if (source.type === 'geojson') {
+            return true;
+        } else {
+            return false
+        }
+    }
+
+    async zoomTo(): Promise<void> {
+        const source = this._map.getSource(String(this.id))
+        if (!source) return;
+
+        if (source.type === 'vector') {
+            this._map.fitBounds((source as VectorTileSource).bounds);
+        } else if (source.type === 'raster') {
+            this._map.fitBounds((source as RasterTileSource).bounds);
+        } else if (source.type === 'geojson') {
+            const geojson = await (source as GeoJSONSource).getData();
+            this._map.fitBounds(bbox(geojson) as LngLatBoundsLike);
+        }
     }
 
     init(opts: {

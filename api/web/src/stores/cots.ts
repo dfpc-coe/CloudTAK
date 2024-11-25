@@ -2,7 +2,7 @@
 * CotStore - Store & perform updates on all underlying CoT Features
 */
 
-import COT from './base/cot.ts'
+import COT, { OriginMode } from './base/cot.ts'
 import { defineStore } from 'pinia'
 import type { GeoJSONSourceDiff } from 'maplibre-gl';
 import { std, stdurl } from '../std.ts';
@@ -428,7 +428,10 @@ export const useCOTStore = defineStore('cots', {
                     return;
                 }
 
-                const cot = new COT(feat);
+                const cot = new COT(feat, {
+                    mode: OriginMode.MISSION,
+                    mode_id: mission_guid
+                });
                 sub.cots.set(String(cot.id), cot);
 
                 const mapStore = useMapStore();
@@ -438,7 +441,7 @@ export const useCOTStore = defineStore('cots', {
                 for (const value of this.subscriptions.values()) {
                     const mission_cot = value.cots.get(feat.id);
                     if (mission_cot) {
-                        mission_cot.update(feat);
+                        await mission_cot.update(feat);
                         is_mission_cot = true;
                     }
                 }
@@ -446,16 +449,12 @@ export const useCOTStore = defineStore('cots', {
                 if (is_mission_cot) return;
 
                 const exists = this.cots.get(feat.id);
-                if (exists) {
-                    exists.update(feat)
 
-                    // TODO condition update depending on diff results
-                    this.pending.set(String(feat.id), exists);
-                    await exists.save();
+                if (exists) {
+                    await exists.update(feat)
                 } else {
                     const cot = new COT(feat);
-                    this.pending.set(String(feat.id), cot);
-                    if (opts.skipSave !== true) await cot.save();
+                    await cot.save();
                 }
             }
         }

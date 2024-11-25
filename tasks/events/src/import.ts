@@ -88,7 +88,17 @@ export default async function(md: Event) {
                 });
             }
 
-            
+            const files = await pkg.files();
+            for (const file of files) {
+                const name = path.parse(file).base;
+
+                console.log(`ok - uploading: s3://${md.Bucket}/profile/${imported.username}/${name}`);
+                await s3.send(new S3.PutObjectCommand({
+                    Bucket: md.Bucket,
+                    Key: `profile/${imported.username}/${name}`,
+                    Body: await pkg.getFile(file)
+                }))
+            }
 
             await API.updateImport(md, {
                 status: 'Success',
