@@ -11,33 +11,10 @@
         >
             <div class='col-12 card-header row mx-1 my-2 d-flex'>
                 <div class='card-title d-flex'>
-                    <span
+                    <Battery
                         v-if='feat.properties.status && !isNaN(parseInt(feat.properties.status.battery))'
-                        v-tooltip='feat.properties.status.battery + "% Battery"'
-                        class='d-flex'
-                        style='margin-right: 10px;'
-                    >
-                        <IconBattery1
-                            v-if='parseInt(feat.properties.status.battery) <= 25'
-                            :size='32'
-                            :stroke='1'
-                        />
-                        <IconBattery2
-                            v-else-if='parseInt(feat.properties.status.battery) <= 50'
-                            :size='32'
-                            :stroke='1'
-                        />
-                        <IconBattery3
-                            v-else-if='parseInt(feat.properties.status.battery) <= 75'
-                            :size='32'
-                            :stroke='1'
-                        />
-                        <IconBattery4
-                            v-else-if='parseInt(feat.properties.status.battery) <= 100'
-                            :size='32'
-                            :stroke='1'
-                        />
-                    </span>
+                        :battery='Number(feat.properties.status.battery)'
+                    />
                     <div class='col-auto'>
                         <TablerInput
                             v-if='feat.properties.archived'
@@ -65,7 +42,7 @@
                         <TablerIconButton
                             v-if='feat.properties.video && feat.properties.video.url'
                             title='View Video Stream'
-                            @click='playVideo'
+                            @click='videoStore.add(String(route.params.uid))'
                         >
                             <IconPlayerPlay
                                 size='32'
@@ -101,7 +78,7 @@
                         <TablerIconButton
                             v-if='feat.properties.group'
                             title='Chat'
-                            @click='$router.push(`/menu/chats/new?callsign=${feat.properties.callsign}&uid=${feat.id}`)'
+                            @click='router.push(`/menu/chats/new?callsign=${feat.properties.callsign}&uid=${feat.id}`)'
                         >
                             <IconMessage
                                 :size='32'
@@ -138,7 +115,7 @@
                                             @click='feat.properties.attachments = []'
                                         >
                                             <IconPaperclip
-                                                :stroke='1'
+                                                stroke='1'
                                                 :size='32'
                                             /><div class='mx-2'>
                                                 Add Attachment
@@ -151,7 +128,7 @@
                                             @click='feat.properties.video = { url: "" }'
                                         >
                                             <IconMovie
-                                                :stroke='1'
+                                                stroke='1'
                                                 :size='32'
                                             /><div class='mx-2'>
                                                 Add Video
@@ -164,7 +141,7 @@
                                             @click='feat.properties.sensor = {}'
                                         >
                                             <IconCone
-                                                :stroke='1'
+                                                stroke='1'
                                                 :size='32'
                                             /><div class='mx-2'>
                                                 Add Sensor
@@ -200,7 +177,7 @@
                 >
                     <IconInfoCircle
                         :size='20'
-                        :stroke='1'
+                        stroke='1'
                         class='cursor-pointer'
                         @click='mode = "raw"'
                     />
@@ -223,7 +200,7 @@
                     >
                         <IconAffiliate
                             :size='20'
-                            :stroke='1'
+                            stroke='1'
                             class='cursor-pointer'
                         />
                         <span class='mx-2'>Channels</span>
@@ -245,7 +222,7 @@
                 >
                     <IconCode
                         :size='20'
-                        :stroke='1'
+                        stroke='1'
                         class='cursor-pointer'
                     />
                     <span class='mx-2'>Raw</span>
@@ -260,13 +237,13 @@
         >
             <div class='row g-0'>
                 <div
-                    v-if='mission'
+                    v-if='feat.origin.source === OriginMode.MISSION'
                     class='col-12'
                 >
                     <div class='d-flex align-items-center py-2 px-2 my-2 mx-2 rounded bg-gray-500'>
                         <IconAmbulance
                             :size='32'
-                            :stroke='1'
+                            stroke='1'
                         />
                         <span class='mx-2'>This Feature is part of a Data Sync</span>
                     </div>
@@ -284,7 +261,7 @@
                     />
                 </div>
                 <div
-                    v-if='center.length > 2'
+                    v-if='profile && center.length > 2'
                     class='col-md-4 pt-2'
                 >
                     <Elevation
@@ -294,7 +271,7 @@
                 </div>
 
                 <div
-                    v-if='!isNaN(feat.properties.speed)'
+                    v-if='profile && !isNaN(feat.properties.speed)'
                     class='pt-2'
                     :class='{
                         "col-md-6": feat.properties.course,
@@ -406,13 +383,13 @@
                         </thead>
                         <tbody class='bg-gray-500'>
                             <tr>
-                                <td>Time</td><td v-text='timediff(feat.properties.time)' />
+                                <td>Time</td><td v-text='timediffFormat(feat.properties.time)' />
                             </tr>
                             <tr>
-                                <td>Start</td><td v-text='timediff(feat.properties.start)' />
+                                <td>Start</td><td v-text='timediffFormat(feat.properties.start)' />
                             </tr>
                             <tr>
-                                <td>Stale</td><td v-text='timediff(feat.properties.stale)' />
+                                <td>Stale</td><td v-text='timediffFormat(feat.properties.stale)' />
                             </tr>
                         </tbody>
                     </table>
@@ -492,10 +469,14 @@
     </template>
 </template>
 
-<script>
+<script setup lang='ts'>
+import { ref, computed, watch, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router'
 import { mapState } from 'pinia'
-import { useMapStore } from '/src/stores/map.ts';
-const mapStore = useMapStore();
+import type COT from '../../../src/types.ts';
+import type { COTType } from '../../../src/types.ts';
+import { useMapStore } from '../../../src/stores/map.ts';
+import { OriginMode } from '../../../src/stores/base/cot.ts'
 import {
     TablerNone,
     TablerInput,
@@ -505,6 +486,7 @@ import {
     TablerDropdown,
     TablerIconButton,
 } from '@tak-ps/vue-tabler';
+import Battery from './util/Battery.vue';
 import Share from './util/Share.vue';
 import CoTStyle from './util/CoTStyle.vue';
 import Coordinate from './util/Coordinate.vue';
@@ -525,207 +507,141 @@ import {
     IconZoomPan,
     IconCode,
     IconAffiliate,
-    IconBattery1,
-    IconBattery2,
-    IconBattery3,
-    IconBattery4,
     IconInfoCircle,
     IconPaperclip,
 } from '@tabler/icons-vue';
 import Subscriptions from './util/Subscriptions.vue';
-import timediff from '/src/timediff.ts';
-import { std } from '/src/std.ts';
-import { useCOTStore } from '/src/stores/cots.ts';
+import timediff from '../../../src/timediff.ts';
+import { std } from '../../../src/std.ts';
+import { useCOTStore } from '../../../src/stores/cots.ts';
 const cotStore = useCOTStore();
-import { useProfileStore } from '/src/stores/profile.ts';
-import { useVideoStore } from '/src/stores/videos.ts';
+import { useProfileStore } from '../../../src/stores/profile.ts';
+import { useVideoStore } from '../../../src/stores/videos.ts';
+
+const mapStore = useMapStore();
+const profileStore = useProfileStore();
 const videoStore = useVideoStore();
+const route = useRoute();
+const router = useRouter();
 
-export default {
-    name: 'CloudTAKCoTView',
-    data: function() {
-        const base = {
-            feat: null,
-            mission: false,
-            type: null,
-            mode: 'default',
-            icon: null,
+const feat = ref<COT | undefined>(cotStore.get(String(route.params.uid), {
+    mission: true
+}))
 
-            interval: false,
+const type = ref<COTType | undefined>();
+const mode = ref('default');
+const interval = ref<ReturnType<typeof setInterval> | undefined>();
+const time = ref('relative');
 
-            time: 'relative',
-        }
+watch(route, () => {
+    mode.value = 'default'
 
-        const { feat, mission } = this.findCOT();
+    feat.value = cotStore.get(String(route.params.uid), {
+        mission: true
+    })
+});
 
-        if (feat) base.feat = feat;
-        if (mission) base.mission = mission;
+watch(feat, async () => {
+    await updateStyle();
+    await fetchType();
+})
 
-        return base;
-    },
-    watch: {
-        '$route.params.uid': function() {
-            this.mode = 'default'
-            const { feat, mission } = this.findCOT();
-            this.feat = feat;
-            this.mission = mission;
-        },
-        feat: {
-            deep: true,
-            handler: async function() {
-                await this.updateStyle();
-                await this.fetchType();
+onMounted(async () => {
+    if (feat.value) {
+        await fetchType();
+    } else {
+        interval.value = setInterval(() => {
+            feat.value = cotStore.get(String(route.params.uid), {
+                mission: true
+            })
+
+            if (feat.value) {
+                clearInterval(interval.value);
             }
-        }
-    },
-    mounted: async function() {
-        if (this.feat) {
-            await this.fetchType();
-        } else {
-            this.interval = setInterval(() => {
-                const { feat, mission } = this.findCOT();
+        }, 1000)
+    }
+});
 
-                if (feat) {
-                    this.feat = feat;
-                    if (mission) this.mission = mission;
-                    clearInterval(this.interval);
-                }
-            }, 1000)
-        }
-    },
-    computed: {
-        ...mapState(useProfileStore, ['profile']),
-        isArchivable: function() {
-            return !this.feat.properties.group;
-        },
-        center: function() {
-            if (!this.feat) return [0,0];
+const profile = profileStore.profile;
 
-            return [
-                Math.round(this.feat.properties.center[0] * 1000000) / 1000000,
-                Math.round(this.feat.properties.center[1] * 1000000) / 1000000,
-            ]
-        },
-        remarks: function() {
-            if (!this.feat) return '';
+const isArchivable = computed(() => {
+    return !feat.value.properties.group;
+})
 
-            return this.feat.properties.remarks
-                .replace(/\n/g, '</br>')
-                .replace(/(http(s)?:\/\/.*?(\s|$))/g, '[$1]($1) ')
-                .trim()
-        }
-    },
-    methods: {
-        playVideo: function() {
-            videoStore.add(this.$route.params.uid);
-        },
-        timediff: function(date) {
-            if (this.time === 'relative') {
-                return timediff(date);
-            } else {
-                return date;
-            }
-        },
-        findCOT: function() {
-            const base = {
-                mission: null,
-                feat: null
-            }
+const center = computed(() => {
+    if (!feat.value) return [0,0];
 
-            base.feat = cotStore.get(this.$route.params.uid)
+    return [
+        Math.round(feat.value.properties.center[0] * 1000000) / 1000000,
+        Math.round(feat.value.properties.center[1] * 1000000) / 1000000,
+    ]
+})
 
-            if (!base.feat) {
-                for (const sub of cotStore.subscriptions.keys()) {
-                    const store = cotStore.subscriptions.get(sub);
-                    if (!store) continue;
+const remarks = computed(() => {
+    if (!feat.value) return '';
 
-                    base.feat = store.cots.get(this.$route.params.uid);
-                    if (base.feat) {
-                        base.mission = sub;
-                        break;
-                    }
-                }
-            }
+    return feat.value.properties.remarks
+        .replace(/\n/g, '</br>')
+        .replace(/(http(s)?:\/\/.*?(\s|$))/g, '[$1]($1) ')
+        .trim()
+})
 
-            return base;
-        },
-        fetchType: async function() {
-            this.type = await std(`/api/type/cot/${this.feat.properties.type}`)
-        },
-        addAttachment: function(hash) {
-            if (!this.feat.properties.attachments) {
-                this.feat.properties.attachments = [];
-            }
+function timediffFormat(date: string) {
+    if (time.value === 'relative') {
+        return timediff(date);
+    } else {
+        return date;
+    }
+}
 
-            this.feat.properties.attachments.push(hash)
-        },
-        updateStyle: async function() {
-            if (this.feat.properties.archived) {
-                await cotStore.add(this.feat);
-            }
-        },
-        deleteCOT: async function() {
-            await cotStore.delete(this.feat.id);
-            this.$router.push('/');
-        },
-        zoomTo: function() {
-            if (this.feat.geometry.type === "Point") {
-                const flyTo = {
-                    speed: Infinity,
-                    center: this.feat.properties.center,
-                    zoom: 14
-                };
+async function fetchType() {
+    if (!feat.value) return;
+    type.value = await std(`/api/type/cot/${feat.value.properties.type}`) as COTType
+}
 
-                if (mapStore.map.getZoom() < 3) flyTo.zoom = 4;
-                mapStore.map.flyTo(flyTo)
-            } else {
-                mapStore.map.fitBounds(this.feat.bounds(), {
-                    maxZoom: 14,
-                    padding: {
-                        top: 20,
-                        bottom: 20,
-                        left: 20,
-                        right: 20
-                    },
-                    speed: Infinity,
-                })
-            }
-        }
-    },
-    components: {
-        IconCode,
-        IconMovie,
-        IconCone,
-        IconMessage,
-        IconPaperclip,
-        IconDotsVertical,
-        IconAffiliate,
-        IconShare2,
-        IconInfoCircle,
-        IconZoomPan,
-        IconAmbulance,
-        IconPlayerPlay,
-        IconBattery1,
-        IconBattery2,
-        IconBattery3,
-        IconBattery4,
-        CoTStyle,
-        CoTSensor,
-        Elevation,
-        Attachments,
-        Speed,
-        Phone,
-        Course,
-        Share,
-        Coordinate,
-        TablerNone,
-        TablerInput,
-        TablerMarkdown,
-        TablerToggle,
-        TablerDropdown,
-        TablerDelete,
-        Subscriptions,
-        TablerIconButton,
+function addAttachment(hash: string) {
+    if (!feat.value.properties.attachments) {
+        feat.value.properties.attachments = [];
+    }
+
+    feat.value.properties.attachments.push(hash)
+}
+
+async function updateStyle() {
+    if (feat.value.properties.archived) {
+        await cotStore.add(feat.value);
+    }
+}
+
+async function deleteCOT() {
+    await cotStore.delete(feat.value.id);
+    router.push('/');
+}
+
+function zoomTo() {
+    if (!feat.value) return;
+    if (!mapStore.map) throw new Error('Map not initialized');
+
+    if (feat.value.geometry.type === "Point") {
+        const flyTo = {
+            speed: Infinity,
+            center: feat.value.properties.center,
+            zoom: 14
+        };
+
+        if (mapStore.map.getZoom() < 3) flyTo.zoom = 4;
+        mapStore.map.flyTo(flyTo)
+    } else {
+        mapStore.map.fitBounds(feat.value.bounds(), {
+            maxZoom: 14,
+            padding: {
+                top: 20,
+                bottom: 20,
+                left: 20,
+                right: 20
+            },
+            speed: Infinity,
+        })
     }
 }
 </script>

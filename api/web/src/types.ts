@@ -15,6 +15,8 @@ export type APIList<T> = {
     items: Array<T>;
 }
 
+export type COTType = paths["/type/cot/{:type}"]["get"]["responses"]["200"]["content"]["application/json"];
+
 export type VideoLease = paths["/video/lease/{:lease}"]["get"]["responses"]["200"]["content"]["application/json"]["lease"];
 export type VideoLeaseList = paths["/video/lease"]["get"]["responses"]["200"]["content"]["application/json"];
 export type VideoLeaseProtocols = paths["/video/lease/{:lease}"]["get"]["responses"]["200"]["content"]["application/json"]["protocols"];
