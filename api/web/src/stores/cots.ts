@@ -450,7 +450,8 @@ export const useCOTStore = defineStore('cots', {
                 if (exists) {
                     await exists.update(feat)
                 } else {
-                    new COT(feat);
+                    const cot = new COT(feat);
+                    await cot.save();
                 }
             }
         }

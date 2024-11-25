@@ -94,7 +94,8 @@
     </div>
 </template>
 
-<script>
+<script setup lang='ts'>
+import { watch, ref } from 'vue';
 import IconSelect from '../../util/IconSelect.vue';
 import {
     TablerRange,
@@ -102,24 +103,14 @@ import {
     TablerEnum
 } from '@tak-ps/vue-tabler';
 
-export default {
-    name: 'CoTStyle',
-    components: {
-        TablerRange,
-        TablerEnum,
-        TablerInput,
-        IconSelect,
-    },
-    props: {
-        modelValue: {
-            type: Object,
-            required: true
-        },
-    },
-    data: function() {
-        return {
-            feat: this.modelValue,
-        };
-    }
-}
+const props = defineProps<{
+    feature: COT
+}>();
+
+const feat = ref(props.feature.as_feature());
+
+watch(feat.value, () => {
+    props.feature.update(feat.value);
+});
+
 </script>
