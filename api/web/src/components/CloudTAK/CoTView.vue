@@ -472,7 +472,6 @@
 <script setup lang='ts'>
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
-import { mapState } from 'pinia'
 import type COT from '../../../src/types.ts';
 import type { COTType } from '../../../src/types.ts';
 import { useMapStore } from '../../../src/stores/map.ts';
