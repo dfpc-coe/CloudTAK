@@ -1,14 +1,13 @@
 <template>
-    <template v-if='editing'>
-        <TablerInput
-            ref='editor-input'
-            v-model='text'
-            :autofocus='true'
-            @blur='editing = false'
-            @submit='editing = false'
-            label=''
-        />
-    </template>
+    <TablerInput
+        v-if='editing'
+        ref='editor-input'
+        v-model='text'
+        :autofocus='true'
+        @blur='editing = false'
+        @submit='editing = false'
+        label=''
+    />
     <div
         v-else
         class='position-relative'
