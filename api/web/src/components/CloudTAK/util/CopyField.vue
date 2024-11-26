@@ -4,6 +4,7 @@
         ref='editor-input'
         v-model='text'
         :autofocus='true'
+        @change='emit("update:modelValue")'
         @blur='editing = false'
         @submit='editing = false'
         label=''
@@ -11,6 +12,7 @@
     <div
         v-else
         class='position-relative'
+        style='height: 44px;'
         :class='{
             "bg-gray-500 rounded-top py-2 px-2 text-truncate": !pre,
             "hover-button hover-border cursor-pointer": hover,
@@ -77,6 +79,10 @@ import {
 import {
     IconPencil
 } from '@tabler/icons-vue';
+
+const emit = defineEmits([
+    'update:modelValue'
+]);
 
 const props = defineProps({
     modelValue: {
