@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v5.9.0 - 2024-11-26
+
+- :rocket: `UI` Allow CoT Marker to update itself via Proxy implementation
+- :rocket: `UI` Introduce new click to edit functionality & use for callsign to start
+
 ### v5.8.0 - 2024-11-25
 
 - :rocket: `UI` Migrate `Package.vue` to TS
