@@ -4,7 +4,7 @@
         ref='editor-input'
         v-model='text'
         :autofocus='true'
-        @change='emit("update:modelValue")'
+        @change='emit("update:modelValue", text)'
         @blur='editing = false'
         @submit='editing = false'
         label=''
