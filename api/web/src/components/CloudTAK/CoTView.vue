@@ -12,8 +12,8 @@
             <div class='col-12 card-header row my-2 d-flex'>
                 <div class='card-title d-flex'>
                     <div
-                        class='col-auto ms-2 my-1'
                         v-if='hasBattery'
+                        class='col-auto ms-2 my-1'
                     >
                         <Battery
                             :battery='Number(cot.properties.status.battery)'
@@ -27,9 +27,9 @@
                         `'
                     >
                         <CopyField
+                            v-model='cot.properties.callsign'
                             :edit='true'
                             :hover='true'
-                            v-model='cot.properties.callsign'
                         />
 
                         <div>
@@ -43,16 +43,20 @@
                             />
                         </div>
                     </div>
-
                 </div>
                 <div class='col-12 d-flex my-2 mx-2'>
                     <div class='btn-list'>
-                        <template v-if='isArchivable' class='col-auto my-1'>
+                        <template v-if='isArchivable'>
                             <TablerIconButton
                                 v-if='!feat.properties.archived'
                                 title='Save Feature'
                                 @click='feat.properties.archived = true'
-                            ><IconStar :size='32' stroke='1'/></TablerIconButton>
+                            >
+                                <IconStar
+                                    :size='32'
+                                    stroke='1'
+                                />
+                            </TablerIconButton>
                             <IconStarFilled
                                 v-else
                                 title='Saved Feature'
@@ -270,7 +274,11 @@
                             stroke='1'
                         />
                         <span class='ms-2'>From:</span>
-                        <a class='mx-2 cursor-pointer' @click='router.push(`/menu/missions/${mission.meta.guid}`)' v-text='mission.meta.name'></a>
+                        <a
+                            class='mx-2 cursor-pointer'
+                            @click='router.push(`/menu/missions/${mission.meta.guid}`)'
+                            v-text='mission.meta.name'
+                        />
                     </div>
                 </div>
 
@@ -446,8 +454,8 @@
                             <div class='col-12'>
                                 <label class='subheader'>Point Colour</label>
                                 <TablerInput
-                                    label=''
                                     v-model='feat.properties["marker-color"]'
+                                    label=''
                                     default='#00FF00'
                                     type='color'
                                     class='pb-2'
@@ -456,8 +464,8 @@
                             <div class='col-12'>
                                 <label class='subheader'>Point Opacity</label>
                                 <TablerRange
-                                    label=''
                                     v-model='feat.properties["marker-opacity"]'
+                                    label=''
                                     :default='1'
                                     :min='0'
                                     :max='1'
@@ -469,8 +477,8 @@
                             <div class='col-12'>
                                 <label class='subheader'>Line Colour</label>
                                 <TablerInput
-                                    label=''
                                     v-model='feat.properties.stroke'
+                                    label=''
                                     type='color'
                                 />
                             </div>
@@ -478,8 +486,8 @@
                             <div class='col-12'>
                                 <label class='subheader'>Line Style</label>
                                 <TablerEnum
-                                    label=''
                                     v-model='feat.properties["stroke-style"]'
+                                    label=''
                                     :options='["solid", "dashed", "dotted", "outlined"]'
                                     default='solid'
                                 />
@@ -487,8 +495,8 @@
                             <div class='col-12'>
                                 <label class='subheader'>Line Thickness</label>
                                 <TablerRange
-                                    label=''
                                     v-model='feat.properties["stroke-width"]'
+                                    label=''
                                     :default='1'
                                     :min='1'
                                     :max='6'
@@ -498,8 +506,8 @@
                             <div class='col-12'>
                                 <label class='subheader'>Line Opacity</label>
                                 <TablerRange
-                                    label=''
                                     v-model='feat.properties["stroke-opacity"]'
+                                    label=''
                                     :default='1'
                                     :min='0'
                                     :max='1'
@@ -511,16 +519,16 @@
                             <div class='col-12'>
                                 <label class='subheader'>Fill Colour</label>
                                 <TablerInput
-                                    label=''
                                     v-model='feat.properties.fill'
+                                    label=''
                                     type='color'
                                 />
                             </div>
                             <div class='col-12 round'>
                                 <label class='subheader'>Fill Opacity</label>
                                 <TablerRange
-                                    label=''
                                     v-model='feat.properties["fill-opacity"]'
+                                    label=''
                                     :default='1'
                                     :min='0'
                                     :max='1'
@@ -600,7 +608,6 @@ import Mission from '../../../src/stores/base/mission.ts'
 import {
     TablerNone,
     TablerInput,
-    TablerToggle,
     TablerDelete,
     TablerEnum,
     TablerRange,

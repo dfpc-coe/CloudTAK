@@ -3,12 +3,22 @@
         v-if='!copied'
         title='Copy'
         @click='copy'
-    > <IconCopy :size='size' stroke='stroke' /></TablerIconButton>
+    >
+        <IconCopy
+            :size='size'
+            stroke='stroke'
+        />
+    </TablerIconButton>
     <TablerIconButton
         v-else
         title='Copied'
         @click='copy'
-    ><IconCopyCheck :size='size' stroke='stroke + 1'/></TablerIconButton>
+    >
+        <IconCopyCheck
+            :size='size'
+            stroke='stroke + 1'
+        />
+    </TablerIconButton>
 </template>
 
 <script setup lang='ts'>
