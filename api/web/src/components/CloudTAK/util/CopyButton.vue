@@ -2,7 +2,7 @@
     <TablerIconButton
         v-if='!copied'
         title='Copy'
-        @click='copy'
+        @click.stop.prevent='copy'
     >
         <IconCopy
             :size='size'
@@ -12,7 +12,7 @@
     <TablerIconButton
         v-else
         title='Copied'
-        @click='copy'
+        @click.stop.prevent='copy'
     >
         <IconCopyCheck
             :size='size'
