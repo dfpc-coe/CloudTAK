@@ -4,6 +4,8 @@
             ref='editor-input'
             v-model='text'
             :autofocus='true'
+            @blur='editing = false'
+            @submit='editing = false'
             label=''
         />
     </template>
