@@ -9,22 +9,27 @@
             class='col-12 border-light border-bottom d-flex'
             style='border-radius: 0px;'
         >
-            <div class='col-12 card-header row mx-1 my-2 d-flex'>
+            <div class='col-12 card-header row my-2 d-flex'>
                 <div class='card-title d-flex'>
-                    <Battery
-                        v-if='cot.properties.status && cot.properties.status.battery && !isNaN(parseInt(cot.properties.status.battery))'
-                        :battery='Number(cot.properties.status.battery)'
-                    />
-
-                    <div class='col-auto mx-2'>
-                        <TablerInput
-                            v-if='isEditable'
-                            label=''
-                            v-model='cot.properties.callsign'
+                    <div
+                        class='col-auto ms-2 my-1'
+                        v-if='hasBattery'
+                    >
+                        <Battery
+                            :battery='Number(cot.properties.status.battery)'
                         />
-                        <div
-                            v-else
-                            v-text='cot.properties.callsign'
+                    </div>
+
+                    <div
+                        class='col-auto mx-2'
+                        :style='`
+                            width: calc(100% - ${hasBattery ? "40px" : "0px"});
+                        `'
+                    >
+                        <CopyField
+                            :edit='true'
+                            :hover='true'
+                            v-model='cot.properties.callsign'
                         />
 
                         <div>
@@ -40,7 +45,7 @@
                     </div>
 
                 </div>
-                <div class='col-12 d-flex my-2'>
+                <div class='col-12 d-flex my-2 mx-2'>
                     <div class='btn-list'>
                         <template v-if='isArchivable' class='col-auto my-1'>
                             <TablerIconButton
@@ -604,6 +609,7 @@ import {
     TablerIconButton,
 } from '@tak-ps/vue-tabler';
 
+import CopyField from './util/CopyField.vue';
 import IconSelect from '../util/IconSelect.vue';
 import Battery from './util/Battery.vue';
 import Share from './util/Share.vue';
@@ -712,6 +718,10 @@ const isEditable = computed(() => {
 const isArchivable = computed(() => {
     if (!cot.value) return false;
     return !cot.value.properties.group;
+})
+
+const hasBattery = computed(() => {
+    return cot.value.properties.status && cot.value.properties.status.battery && !isNaN(parseInt(cot.value.properties.status.battery))
 })
 
 const center = computed(() => {

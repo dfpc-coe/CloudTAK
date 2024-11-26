@@ -1,14 +1,35 @@
 <template>
+    <template v-if='editing'>
+        <TablerInput
+            ref='editor-input'
+            :focus='true'
+            label=''
+            v-model='text'
+        />
+    </template>
     <div
+        v-else
         class='position-relative'
         :class='{
-            "bg-gray-500 rounded-top py-2 px-2 text-truncate": !pre
+            "bg-gray-500 rounded-top py-2 px-2 text-truncate": !pre,
+            "hover-button hover-border cursor-pointer": hover,
         }'
+        @click='editing = true'
     >
         <slot />
 
         <template v-if='pre'>
             <pre v-text='text' />
+
+            <TablerIconButton
+                v-if='edit'
+                class='position-absolute'
+                :class='{
+                    "hover-button-hidden": hover,
+                }'
+                style='right: 36px; top: 8px;'
+            >
+            <IconPencil :size='24' stroke='1' /></TablerIconButton>
 
             <CopyButton
                 :text='text'
@@ -20,27 +41,64 @@
         <template v-else>
             <span v-text='text' />
 
+            <IconPencil
+                v-if='edit'
+                class='position-absolute'
+                :class='{
+                    "hover-button-hidden": hover,
+                }'
+                style='right: 36px'
+                :size='24'
+                stroke='1'
+            />
+
             <CopyButton
                 :text='text'
                 class='position-absolute'
                 :size='24'
-                style='right: 8px'
+                style='right: 8px; top: 6px;'
             />
         </template>
     </div>
 </template>
 
-<script setup lang='ts'>
-import CopyButton from './CopyButton.vue';
+<style lang='scss'>
+.hover-border {
+    border: 2px solid rgba(0, 0, 0, 0);
+}
 
-defineProps({
+.hover-border:hover {
+    border: 2px solid #83b7e8;
+}
+</style>
+
+<script setup lang='ts'>
+import { ref, watch, useTemplateRef, nextTick } from 'vue';
+import CopyButton from './CopyButton.vue';
+import {
+    TablerInput,
+    TablerIconButton
+} from '@tak-ps/vue-tabler'
+import {
+    IconPencil
+} from '@tabler/icons-vue';
+
+const props = defineProps({
+    modelValue: {
+        type: [String, Number],
+        required: true
+    },
     pre: {
         type: Boolean,
         default: false
     },
-    text: {
-        type: [String, Number],
-        required: true
+    hover: {
+        type: Boolean,
+        default: false
+    },
+    edit: {
+        type: Boolean,
+        default: false
     },
     size: {
         type: Number,
@@ -51,4 +109,13 @@ defineProps({
         default: 1
     }
 })
+
+const editing = ref(false);
+const text = ref(props.modelValue);
+const editor = useTemplateRef('editor-input');
+
+watch(props.modelValue, () => {
+    text.value = props.modelValue;
+})
+
 </script>
