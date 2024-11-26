@@ -28,8 +28,8 @@
                     >
                         <CopyField
                             v-model='cot.properties.callsign'
-                            :edit='true'
-                            :hover='true'
+                            :edit='isEditable'
+                            :hover='isEditable'
                         />
 
                         <div>
