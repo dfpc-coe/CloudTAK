@@ -7,7 +7,7 @@
         <div class='mx-2'>
             <CopyField
                 v-if='!edit'
-                :text='inMode'
+                v-model='inMode'
                 :size='24'
             />
             <template v-else>
