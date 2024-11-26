@@ -1,6 +1,6 @@
 <template>
     <TablerNone
-        v-if='!cot || !feat'
+        v-if='!cot'
         :create='false'
         label='CoT Marker'
     />
@@ -48,9 +48,9 @@
                     <div class='btn-list'>
                         <template v-if='isArchivable'>
                             <TablerIconButton
-                                v-if='!feat.properties.archived'
+                                v-if='!cot.properties.archived'
                                 title='Save Feature'
-                                @click='feat.properties.archived = true'
+                                @click='cot.properties.archived = true'
                             >
                                 <IconStar
                                     :size='32'
@@ -431,7 +431,7 @@
 
             <CoTSensor
                 v-if='cot.properties.sensor !== undefined'
-                v-model='feat.properties.sensor'
+                v-model='cot.properties.sensor'
                 class='my-2 mx-2'
             />
 
@@ -442,10 +442,10 @@
                 <label class='mx-1 subheader'>COT Style</label>
                 <div class='mx-2 py-3'>
                     <div class='row g-2 rounded px-2 bg-gray-500 pb-2'>
-                        <template v-if='feat.geometry.type === "Point"'>
+                        <template v-if='cot.geometry.type === "Point"'>
                             <div class='col-12'>
                                 <IconSelect
-                                    v-model='feat.properties.icon'
+                                    v-model='cot.properties.icon'
                                     label='Point Icon'
                                     :size='32'
                                     :stroke='1'
@@ -454,7 +454,7 @@
                             <div class='col-12'>
                                 <label class='subheader'>Point Colour</label>
                                 <TablerInput
-                                    v-model='feat.properties["marker-color"]'
+                                    v-model='cot.properties["marker-color"]'
                                     label=''
                                     default='#00FF00'
                                     type='color'
@@ -464,7 +464,7 @@
                             <div class='col-12'>
                                 <label class='subheader'>Point Opacity</label>
                                 <TablerRange
-                                    v-model='feat.properties["marker-opacity"]'
+                                    v-model='cot.properties["marker-opacity"]'
                                     label=''
                                     :default='1'
                                     :min='0'
@@ -477,7 +477,7 @@
                             <div class='col-12'>
                                 <label class='subheader'>Line Colour</label>
                                 <TablerInput
-                                    v-model='feat.properties.stroke'
+                                    v-model='cot.properties.stroke'
                                     label=''
                                     type='color'
                                 />
@@ -486,7 +486,7 @@
                             <div class='col-12'>
                                 <label class='subheader'>Line Style</label>
                                 <TablerEnum
-                                    v-model='feat.properties["stroke-style"]'
+                                    v-model='cot.properties["stroke-style"]'
                                     label=''
                                     :options='["solid", "dashed", "dotted", "outlined"]'
                                     default='solid'
@@ -495,7 +495,7 @@
                             <div class='col-12'>
                                 <label class='subheader'>Line Thickness</label>
                                 <TablerRange
-                                    v-model='feat.properties["stroke-width"]'
+                                    v-model='cot.properties["stroke-width"]'
                                     label=''
                                     :default='1'
                                     :min='1'
@@ -506,7 +506,7 @@
                             <div class='col-12'>
                                 <label class='subheader'>Line Opacity</label>
                                 <TablerRange
-                                    v-model='feat.properties["stroke-opacity"]'
+                                    v-model='cot.properties["stroke-opacity"]'
                                     label=''
                                     :default='1'
                                     :min='0'
@@ -515,11 +515,11 @@
                                 />
                             </div>
                         </template>
-                        <template v-if='feat.geometry.type === "Polygon"'>
+                        <template v-if='cot.geometry.type === "Polygon"'>
                             <div class='col-12'>
                                 <label class='subheader'>Fill Colour</label>
                                 <TablerInput
-                                    v-model='feat.properties.fill'
+                                    v-model='cot.properties.fill'
                                     label=''
                                     type='color'
                                 />
@@ -527,7 +527,7 @@
                             <div class='col-12 round'>
                                 <label class='subheader'>Fill Opacity</label>
                                 <TablerRange
-                                    v-model='feat.properties["fill-opacity"]'
+                                    v-model='cot.properties["fill-opacity"]'
                                     label=''
                                     :default='1'
                                     :min='0'
@@ -601,7 +601,7 @@ import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
 import type { LngLatBoundsLike, FlyToOptions, LngLatLike } from 'maplibre-gl'
 import type COT from '../../../src/stores/base/cot.ts';
-import type { COTType, Feature } from '../../../src/types.ts';
+import type { COTType } from '../../../src/types.ts';
 import { useMapStore } from '../../../src/stores/map.ts';
 import { OriginMode } from '../../../src/stores/base/cot.ts'
 import Mission from '../../../src/stores/base/mission.ts'
@@ -661,7 +661,6 @@ const cot = ref<COT | undefined>(cotStore.get(String(route.params.uid), {
     mission: true
 }))
 
-const feat = ref<Feature | undefined>(cot.value ? cot.value.as_feature() : undefined);
 const mission = ref<Mission | undefined>();
 
 if (cot.value && cot.value.origin.mode === OriginMode.MISSION && cot.value.origin.mode_id) {
@@ -673,17 +672,8 @@ const mode = ref('default');
 const interval = ref<ReturnType<typeof setInterval> | undefined>();
 const time = ref('relative');
 
-// @ts-expect-error Need to investigate this
-watch(feat.value, () => {
-    if (!cot.value || !feat.value) return;
-
-    cot.value.update(feat.value);
-});
-
 watch(cot, () => {
     if (cot.value) {
-        feat.value = cot.value.as_feature()
-
         if (cot.value.origin.mode === OriginMode.MISSION && cot.value.origin.mode_id) {
             mission.value = cotStore.subscriptions.get(cot.value.origin.mode_id);
         } else {
@@ -701,7 +691,7 @@ watch(route, () => {
 });
 
 onMounted(async () => {
-    if (feat.value) {
+    if (cot.value) {
         await fetchType();
     } else {
         interval.value = setInterval(() => {
@@ -709,7 +699,7 @@ onMounted(async () => {
                 mission: true
             })
 
-            if (feat.value) {
+            if (cot.value) {
                 clearInterval(interval.value);
             }
         }, 1000)

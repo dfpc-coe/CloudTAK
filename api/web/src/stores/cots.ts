@@ -122,12 +122,12 @@ export const useCOTStore = defineStore('cots', {
         /**
          * Return CoTs touching a given polygon
          */
-        touching: function(poly: Polygon): Feature[] {
-            const within: Feature[] = [];
+        touching: function(poly: Polygon): COT[] {
+            const within: COT[] = [];
 
-            for (const feat of this.cots.values()) {
-                if (booleanWithin(feat.geometry, poly)) {
-                    within.push(feat)
+            for (const cot of this.cots.values()) {
+                if (booleanWithin(cot.as_feature(), poly)) {
+                    within.push(cot)
                 }
             }
 
