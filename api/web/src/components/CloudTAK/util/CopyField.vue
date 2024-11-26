@@ -115,7 +115,9 @@ const editing = ref(false);
 const text = ref(props.modelValue);
 
 watch(props, () => {
-    text.value = props.modelValue;
+    if (text.value !== props.modelValue) {
+        text.value = props.modelValue;
+    }
 })
 
 </script>
