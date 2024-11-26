@@ -110,6 +110,7 @@ import {
     IconShare2
 } from '@tabler/icons-vue';
 import type { Feature } from '../../../../src/types.ts';
+import COT from '../../../../src/stores/base/cot.ts'
 import { useCOTStore } from '../../../../src/stores/cots.ts';
 import { useConnectionStore } from '../../../../src/stores/connection.ts';
 import Subscription from '../../../../src/stores/base/mission.ts'
@@ -155,7 +156,13 @@ function currentFeats(): Array<Feature> {
         }
     }).filter((f) => {
         return !!f;
-    });
+    }).map((f) => {
+        if (f instanceof COT) {
+            return f.as_feature();
+        } else {
+            return f;
+        }
+    })
 }
 
 async function share() {

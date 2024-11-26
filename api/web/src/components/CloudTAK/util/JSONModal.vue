@@ -15,7 +15,7 @@
         </div>
         <div class='modal-body overflow-auto'>
             <CopyField
-                :text='JSON.stringify(object, null, 4)'
+                v-model='json'
                 :pre='true'
             />
         </div>
@@ -28,13 +28,14 @@
 </template>
 
 <script setup lang='ts'>
+import { ref, watch } from 'vue';
 import CopyField from './CopyField.vue';
 import {
     TablerModal,
     TablerButton
 } from '@tak-ps/vue-tabler';
 
-defineProps({
+const props = defineProps({
     title: {
         type: String,
         default: 'JSON Object'
@@ -44,6 +45,12 @@ defineProps({
         required: true
     }
 });
+
+const json = ref(JSON.stringify(props.object, null, 4));
+
+watch(props.object, () => {
+    json.value =  JSON.stringify(props.object, null, 4)
+})
 
 const emit = defineEmits(['close']);
 </script>

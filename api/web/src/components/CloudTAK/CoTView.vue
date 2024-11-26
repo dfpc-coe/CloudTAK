@@ -1,6 +1,6 @@
 <template>
     <TablerNone
-        v-if='!cot || !feat'
+        v-if='!cot'
         :create='false'
         label='CoT Marker'
     />
@@ -9,20 +9,27 @@
             class='col-12 border-light border-bottom d-flex'
             style='border-radius: 0px;'
         >
-            <div class='col-12 card-header row mx-1 my-2 d-flex'>
+            <div class='col-12 card-header row my-2 d-flex'>
                 <div class='card-title d-flex'>
-                    <Battery
+                    <div
                         v-if='cot.properties.status && cot.properties.status.battery && !isNaN(parseInt(cot.properties.status.battery))'
-                        :battery='Number(cot.properties.status.battery)'
-                    />
-                    <div class='col-auto'>
-                        <TablerInput
-                            v-if='isEditable'
-                            v-model='cot.properties.callsign'
+                        class='col-auto ms-2 my-1'
+                    >
+                        <Battery
+                            :battery='Number(cot.properties.status.battery)'
                         />
-                        <div
-                            v-else
-                            v-text='cot.properties.callsign'
+                    </div>
+
+                    <div
+                        class='col-auto mx-2'
+                        :style='`
+                            width: calc(100% - ${hasBattery ? "40px" : "0px"});
+                        `'
+                    >
+                        <CopyField
+                            v-model='cot.properties.callsign'
+                            :edit='isEditable'
+                            :hover='isEditable'
                         />
 
                         <div>
@@ -37,8 +44,27 @@
                         </div>
                     </div>
                 </div>
-                <div class='col-12 d-flex my-2'>
+                <div class='col-12 d-flex my-2 mx-2'>
                     <div class='btn-list'>
+                        <template v-if='isArchivable'>
+                            <TablerIconButton
+                                v-if='!cot.properties.archived'
+                                title='Save Feature'
+                                @click='cot.properties.archived = true'
+                            >
+                                <IconStar
+                                    :size='32'
+                                    stroke='1'
+                                />
+                            </TablerIconButton>
+                            <IconStarFilled
+                                v-else
+                                title='Saved Feature'
+                                :size='32'
+                                stroke='1'
+                            />
+                        </template>
+
                         <TablerIconButton
                             v-if='cot.properties.video && cot.properties.video.url'
                             title='View Video Stream'
@@ -248,7 +274,11 @@
                             stroke='1'
                         />
                         <span class='ms-2'>From:</span>
-                        <a class='mx-2 cursor-pointer' @click='router.push(`/menu/missions/${mission.meta.guid}`)' v-text='mission.meta.name'></a>
+                        <a
+                            class='mx-2 cursor-pointer'
+                            @click='router.push(`/menu/missions/${mission.meta.guid}`)'
+                            v-text='mission.meta.name'
+                        />
                     </div>
                 </div>
 
@@ -289,7 +319,7 @@
                 </div>
 
                 <div
-                    v-if='cot.properties.speed !== undefined && !isNaN(cot.properties.speed)'
+                    v-if='cot.properties.course !== undefined && !isNaN(cot.properties.course)'
                     class='pt-2'
                     :class='{
                         "col-md-6": cot.properties.course,
@@ -399,16 +429,9 @@
                 </div>
             </div>
 
-            <TablerToggle
-                v-if='isArchivable && isEditable'
-                v-model='feat.properties.archived'
-                label='Saved Feature'
-                class='mx-2'
-            />
-
             <CoTSensor
                 v-if='cot.properties.sensor !== undefined'
-                v-model='feat.properties.sensor'
+                v-model='cot.properties.sensor'
                 class='my-2 mx-2'
             />
 
@@ -419,10 +442,10 @@
                 <label class='mx-1 subheader'>COT Style</label>
                 <div class='mx-2 py-3'>
                     <div class='row g-2 rounded px-2 bg-gray-500 pb-2'>
-                        <template v-if='feat.geometry.type === "Point"'>
+                        <template v-if='cot.geometry.type === "Point"'>
                             <div class='col-12'>
                                 <IconSelect
-                                    v-model='feat.properties.icon'
+                                    v-model='cot.properties.icon'
                                     label='Point Icon'
                                     :size='32'
                                     :stroke='1'
@@ -431,7 +454,8 @@
                             <div class='col-12'>
                                 <label class='subheader'>Point Colour</label>
                                 <TablerInput
-                                    v-model='feat.properties["marker-color"]'
+                                    v-model='cot.properties["marker-color"]'
+                                    label=''
                                     default='#00FF00'
                                     type='color'
                                     class='pb-2'
@@ -440,7 +464,8 @@
                             <div class='col-12'>
                                 <label class='subheader'>Point Opacity</label>
                                 <TablerRange
-                                    v-model='feat.properties["marker-opacity"]'
+                                    v-model='cot.properties["marker-opacity"]'
+                                    label=''
                                     :default='1'
                                     :min='0'
                                     :max='1'
@@ -452,8 +477,8 @@
                             <div class='col-12'>
                                 <label class='subheader'>Line Colour</label>
                                 <TablerInput
+                                    v-model='cot.properties.stroke'
                                     label=''
-                                    v-model='feat.properties.stroke'
                                     type='color'
                                 />
                             </div>
@@ -461,8 +486,8 @@
                             <div class='col-12'>
                                 <label class='subheader'>Line Style</label>
                                 <TablerEnum
+                                    v-model='cot.properties["stroke-style"]'
                                     label=''
-                                    v-model='feat.properties["stroke-style"]'
                                     :options='["solid", "dashed", "dotted", "outlined"]'
                                     default='solid'
                                 />
@@ -470,8 +495,8 @@
                             <div class='col-12'>
                                 <label class='subheader'>Line Thickness</label>
                                 <TablerRange
+                                    v-model='cot.properties["stroke-width"]'
                                     label=''
-                                    v-model='feat.properties["stroke-width"]'
                                     :default='1'
                                     :min='1'
                                     :max='6'
@@ -481,8 +506,8 @@
                             <div class='col-12'>
                                 <label class='subheader'>Line Opacity</label>
                                 <TablerRange
+                                    v-model='cot.properties["stroke-opacity"]'
                                     label=''
-                                    v-model='feat.properties["stroke-opacity"]'
                                     :default='1'
                                     :min='0'
                                     :max='1'
@@ -490,20 +515,20 @@
                                 />
                             </div>
                         </template>
-                        <template v-if='feat.geometry.type === "Polygon"'>
+                        <template v-if='cot.geometry.type === "Polygon"'>
                             <div class='col-12'>
                                 <label class='subheader'>Fill Colour</label>
                                 <TablerInput
+                                    v-model='cot.properties.fill'
                                     label=''
-                                    v-model='feat.properties.fill'
                                     type='color'
                                 />
                             </div>
                             <div class='col-12 round'>
                                 <label class='subheader'>Fill Opacity</label>
                                 <TablerRange
+                                    v-model='cot.properties["fill-opacity"]'
                                     label=''
-                                    v-model='feat.properties["fill-opacity"]'
                                     :default='1'
                                     :min='0'
                                     :max='1'
@@ -565,7 +590,10 @@
                 style='height: calc(100vh - 225px)'
                 class='overflow-auto'
             >
-                <pre v-text='cot' />
+                <CopyField
+                    :pre='true'
+                    :modelValue='JSON.stringify(cot.as_feature(), null, 4)'
+                />
             </div>
         </template>
     </template>
@@ -576,14 +604,13 @@ import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
 import type { LngLatBoundsLike, FlyToOptions, LngLatLike } from 'maplibre-gl'
 import type COT from '../../../src/stores/base/cot.ts';
-import type { COTType, Feature } from '../../../src/types.ts';
+import type { COTType } from '../../../src/types.ts';
 import { useMapStore } from '../../../src/stores/map.ts';
 import { OriginMode } from '../../../src/stores/base/cot.ts'
 import Mission from '../../../src/stores/base/mission.ts'
 import {
     TablerNone,
     TablerInput,
-    TablerToggle,
     TablerDelete,
     TablerEnum,
     TablerRange,
@@ -592,6 +619,7 @@ import {
     TablerIconButton,
 } from '@tak-ps/vue-tabler';
 
+import CopyField from './util/CopyField.vue';
 import IconSelect from '../util/IconSelect.vue';
 import Battery from './util/Battery.vue';
 import Share from './util/Share.vue';
@@ -605,6 +633,8 @@ import Attachments from './util/Attachments.vue';
 import {
     IconMovie,
     IconCone,
+    IconStar,
+    IconStarFilled,
     IconMessage,
     IconDotsVertical,
     IconAmbulance,
@@ -634,7 +664,6 @@ const cot = ref<COT | undefined>(cotStore.get(String(route.params.uid), {
     mission: true
 }))
 
-const feat = ref<Feature | undefined>(cot.value ? cot.value.as_feature() : undefined);
 const mission = ref<Mission | undefined>();
 
 if (cot.value && cot.value.origin.mode === OriginMode.MISSION && cot.value.origin.mode_id) {
@@ -646,16 +675,8 @@ const mode = ref('default');
 const interval = ref<ReturnType<typeof setInterval> | undefined>();
 const time = ref('relative');
 
-// @ts-expect-error Need to investigate this
-watch(feat.value, () => {
-    if (!cot.value || !feat.value) return;
-    cot.value.update(feat.value);
-});
-
 watch(cot, () => {
     if (cot.value) {
-        feat.value = cot.value.as_feature()
-
         if (cot.value.origin.mode === OriginMode.MISSION && cot.value.origin.mode_id) {
             mission.value = cotStore.subscriptions.get(cot.value.origin.mode_id);
         } else {
@@ -673,7 +694,7 @@ watch(route, () => {
 });
 
 onMounted(async () => {
-    if (feat.value) {
+    if (cot.value) {
         await fetchType();
     } else {
         interval.value = setInterval(() => {
@@ -681,7 +702,7 @@ onMounted(async () => {
                 mission: true
             })
 
-            if (feat.value) {
+            if (cot.value) {
                 clearInterval(interval.value);
             }
         }, 1000)
@@ -698,6 +719,10 @@ const isEditable = computed(() => {
 const isArchivable = computed(() => {
     if (!cot.value) return false;
     return !cot.value.properties.group;
+})
+
+const hasBattery = computed(() => {
+    return cot.value && cot.value.properties.status && cot.value.properties.status.battery && !isNaN(parseInt(cot.value.properties.status.battery))
 })
 
 const center = computed(() => {

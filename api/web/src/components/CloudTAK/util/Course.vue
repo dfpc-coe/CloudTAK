@@ -3,7 +3,7 @@
         <label class='subheader mx-2'>Course</label>
         <div class='mx-2'>
             <CopyField
-                :text='inMode'
+                v-model='inMode'
                 :size='24'
             />
             <span
@@ -19,34 +19,25 @@
     </div>
 </template>
 
-<script>
+<script setup lang='ts'>
+import { ref, computed } from 'vue';
 import CopyField from './CopyField.vue';
 
-export default {
-    name: 'COTCourse',
-    components: {
-        CopyField
+const props = defineProps({
+    course: {
+        type: Number,
+        required: true
     },
-    props: {
-        course: {
-            type: Number,
-            required: true
-        },
-        unit: {
-            type: String,
-            default: 'deg'
-        }
-    },
-    data: function() {
-        return {
-            mode: this.unit,
-        }
-    },
-    computed: {
-        inMode: function() {
-            if (this.mode === 'deg') return Math.round((this.course) * 1000) / 1000;
-            return 'UNKNOWN';
-        }
+    unit: {
+        type: String,
+        default: 'deg'
     }
-}
+});
+
+const mode = ref(props.unit);
+
+const inMode = computed(() => {
+    if (mode.value === 'deg') return Math.round((props.course) * 1000) / 1000;
+    return 'UNKNOWN';
+});
 </script>

@@ -1,66 +1,67 @@
 <template>
-    <IconCopy
+    <TablerIconButton
         v-if='!copied'
-        :size='size'
-        :stroke='stroke'
-        class='cursor-pointer'
-        @click='copy'
-    />
-    <IconCopyCheck
+        title='Copy'
+        @click.stop.prevent='copy'
+    >
+        <IconCopy
+            :size='size'
+            stroke='stroke'
+        />
+    </TablerIconButton>
+    <TablerIconButton
         v-else
-        :size='size'
-        :stroke='stroke + 1'
-        class='cursor-pointer'
-        @click='copy'
-    />
+        title='Copied'
+        @click.stop.prevent='copy'
+    >
+        <IconCopyCheck
+            :size='size'
+            :stroke='String(stroke + 1)'
+        />
+    </TablerIconButton>
 </template>
 
-<script>
+<script setup lang='ts'>
+import { ref, onUnmounted } from 'vue';
 import {
     IconCopy,
     IconCopyCheck
 } from '@tabler/icons-vue';
 
-export default {
-    name: 'CopyButton',
-    components: {
-        IconCopy,
-        IconCopyCheck
-    },
-    props: {
-        text: {
-            type: [String, Number],
-            required: true
-        },
-        size: {
-            type: Number,
-            default: 32
-        },
-        stroke: {
-            type: Number,
-            default: 1
-        }
-    },
-    data: function() {
-        return {
-            copied: false,
-            timeout: false,
-        }
-    },
-    unmounted: function() {
-        if (this.timeout) {
-            clearTimeout(this.timeout);
-        }
-    },
-    methods: {
-        copy: async function() {
-            await navigator.clipboard.writeText(String(this.text))
-            this.copied = true;
+import {
+    TablerIconButton
+} from '@tak-ps/vue-tabler'
 
-            setTimeout(() => {
-                this.copied = false;
-            }, 1000);
-        }
+const props = defineProps({
+    text: {
+        type: [String, Number],
+        required: true
+    },
+    size: {
+        type: Number,
+        default: 32
+    },
+    stroke: {
+        type: Number,
+        default: 1
     }
+})
+
+const copied = ref(false);
+const timeout = ref<ReturnType<typeof setTimeout> | undefined>();
+
+onUnmounted(() => {
+    if (timeout.value) {
+        clearTimeout(timeout.value);
+    }
+});
+
+async function copy() {
+    await navigator.clipboard.writeText(String(props.text))
+    copied.value = true;
+
+    timeout.value = setTimeout(() => {
+        copied.value = false;
+    }, 1000);
 }
 </script>
