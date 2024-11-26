@@ -53,6 +53,7 @@ import {
     TablerIconButton
 } from '@tak-ps/vue-tabler';
 import { std } from '../../../../src/std.ts';
+import COT from '../../../../src/stores/base/cot.ts';
 import { useCOTStore } from '../../../../src/stores/cots.ts';
 import {
     IconX,
@@ -97,7 +98,13 @@ function currentFeats(): Array<Feature> {
         }
     }).filter((f) => {
         return !!f;
-    });
+    }).map((f) => {
+        if (f instanceof COT) {
+            return f.as_feature();
+        } else {
+            return f;
+        }
+    })
 }
 
 async function share() {
