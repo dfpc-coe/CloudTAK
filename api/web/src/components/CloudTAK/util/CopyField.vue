@@ -14,7 +14,7 @@
             "bg-gray-500 rounded-top py-2 px-2 text-truncate": !pre,
             "hover-button hover-border cursor-pointer": hover,
         }'
-        @click='editing = true'
+        @click='edit ? editing = true : undefined'
     >
         <slot />
 
