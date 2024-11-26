@@ -12,7 +12,7 @@
             <div class='col-12 card-header row my-2 d-flex'>
                 <div class='card-title d-flex'>
                     <div
-                        v-if='hasBattery'
+                        v-if='cot.properties.status && cot.properties.status.battery && !isNaN(parseInt(cot.properties.status.battery))'
                         class='col-auto ms-2 my-1'
                     >
                         <Battery
@@ -319,7 +319,7 @@
                 </div>
 
                 <div
-                    v-if='cot.properties.speed !== undefined && !isNaN(cot.properties.speed)'
+                    v-if='cot.properties.course !== undefined && !isNaN(cot.properties.course)'
                     class='pt-2'
                     :class='{
                         "col-md-6": cot.properties.course,
@@ -728,7 +728,7 @@ const isArchivable = computed(() => {
 })
 
 const hasBattery = computed(() => {
-    return cot.value.properties.status && cot.value.properties.status.battery && !isNaN(parseInt(cot.value.properties.status.battery))
+    return cot.value && cot.value.properties.status && cot.value.properties.status.battery && !isNaN(parseInt(cot.value.properties.status.battery))
 })
 
 const center = computed(() => {

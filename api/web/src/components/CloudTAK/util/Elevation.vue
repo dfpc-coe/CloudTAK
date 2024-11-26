@@ -3,7 +3,7 @@
         <label class='subheader mx-2'>Elevation</label>
         <div class='mx-2'>
             <CopyField
-                :text='inMode'
+                v-model='inMode'
                 :size='24'
             />
             <span

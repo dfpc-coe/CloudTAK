@@ -107,7 +107,7 @@ const props = defineProps({
 const editing = ref(false);
 const text = ref(props.modelValue);
 
-watch(props.modelValue, () => {
+watch(props, () => {
     text.value = props.modelValue;
 })
 
