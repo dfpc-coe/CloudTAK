@@ -38,62 +38,88 @@ export const RENDERED_PROPERTIES = [
     'circle-opacity'
 ]
 
-export default class COT implements Feature {
+export default class COT {
     id: string;
     path: string;
-    type: 'Feature';
-    properties: Feature["properties"];
-    geometry: Feature["geometry"];
+    _properties: Feature["properties"];
+    _geometry: Feature["geometry"];
 
-    store: ReturnType<typeof useCOTStore>;
+    _store: ReturnType<typeof useCOTStore>;
     origin: Origin
 
     constructor(feat: Feature, origin?: Origin) {
-        feat = COT.style(feat);
+        feat.properties = COT.style(feat.geometry.type, feat.properties);
 
         this.id = feat.id || crypto.randomUUID();
-        this.type = feat.type || 'Feature';
         this.path = feat.path || '/';
-        this.properties = feat["properties"] || {};
-        this.geometry = feat["geometry"];
+        this._properties = feat["properties"] || {};
+        this._geometry = feat["geometry"];
 
-        this.store = useCOTStore();
+        this._store = useCOTStore();
         this.origin = origin || { mode: OriginMode.CONNECTION };
 
-        if (!this.properties.archived) {
-            this.properties.archived = false
+        if (!this._properties.archived) {
+            this._properties.archived = false
+        }
+
+        if (!this._properties.center) {
+            this._properties.center = pointOnFeature(this._geometry).geometry.coordinates;
         }
 
         if (this.origin.mode === OriginMode.CONNECTION) {
-            this.store.pending.set(this.id, this);
+            this._store.pending.set(this.id, this);
         }
+    }
+
+    set properties(properties: Feature["properties"]) {
+        this.update({ properties });
+    }
+
+    get properties() {
+        return this._properties;
+    }
+
+    set geometry(geometry: Feature["geometry"]) {
+        this.update({ geometry })
+    }
+
+    get geometry() {
+        return this._geometry;
     }
 
     /**
      * Update the COT and return a boolean as to whether the COT needs to be re-rendered
      */
-    async update(feat: Feature): Promise<boolean> {
-        feat = COT.style(feat);
-
+    async update(update: {
+        properties?: Feature["properties"],
+        geometry?: Feature["geometry"]
+    }): Promise<boolean> {
         let changed = false;
-        for (const prop of RENDERED_PROPERTIES) {
-            if (this.properties[prop] !== feat.properties[prop]) {
-                changed = true;
-                break;
+        if (update.geometry) {
+            //TODO Detect Geometry changes, use centroid?!
+            this._geometry = update.geometry;
+            changed = true;
+        }
+
+        if (update.properties) {
+            update.properties = COT.style(this._geometry.type, update.properties);
+
+            for (const prop of RENDERED_PROPERTIES) {
+                if (this._properties[prop] !== update.properties[prop]) {
+                    changed = true;
+                    break;
+                }
             }
         }
 
-        this.properties = feat["properties"];
-
-        //TODO Detect Geometry changes, use centroid?!
-        this.geometry = feat["geometry"];
+        if (!this._properties.center) {
+            this._properties.center = pointOnFeature(this._geometry).geometry.coordinates;
+        }
 
         // TODO only update if Geometry or Rendered Prop changes
         if (this.origin.mode === OriginMode.CONNECTION) {
-            this.store.pending.set(this.id, this);
+            this._store.pending.set(this.id, this);
         }
-
-        await this.save();
 
         return changed;
     }
@@ -110,13 +136,42 @@ export default class COT implements Feature {
         }
     }
 
+    as_proxy(): COT {
+        return new Proxy(this, {
+            set(target, prop, val) {
+                return Reflect.set(target, prop, val);
+            },
+            get(target, prop) {
+                if (prop === 'properties') {
+                    return new Proxy(target.properties, {
+                        set(subtarget, prop, val) {
+                            const res = Reflect.set(subtarget, prop, val);
+                            target.update({ properties: subtarget })
+                            return res;
+                        }
+                    })
+                } else if (prop === 'geometry') {
+                    return new Proxy(target.geometry, {
+                        set(subtarget, prop, val) {
+                            const res = Reflect.set(subtarget, prop, val);
+                            target.update({ geometry: subtarget })
+                            return res;
+                        }
+                    })
+                } else {
+                    return Reflect.get(target, prop);
+                }
+            }
+        })
+    }
+
     as_feature(): Feature {
         return {
             id: this.id,
-            type: this.type,
+            type: 'Feature',
             path: this.path,
-            properties: this.properties,
-            geometry: this.geometry
+            properties: this._properties,
+            geometry: this._geometry
         }
     }
 
@@ -127,19 +182,19 @@ export default class COT implements Feature {
     as_rendered(): GeoJSONFeature<GeoJSONGeometry, Record<string, unknown>> {
         const feat: GeoJSONFeature<GeoJSONGeometry, Record<string, unknown>> = {
             id: this.id,
-            type: this.type,
+            type: 'Feature',
             properties: {
                 id: this.id,        //Vector Tiles only support integer IDs so store in props
-                callsign: this.properties.callsign,
+                callsign: this._properties.callsign,
             },
-            geometry: this.geometry
+            geometry: this._geometry
         };
 
         if (!feat.properties) feat.properties = {};
 
         for (const prop of RENDERED_PROPERTIES) {
-            if (this.properties[prop] !== undefined) {
-                feat.properties[prop] = this.properties[prop];
+            if (this._properties[prop] !== undefined) {
+                feat.properties[prop] = this._properties[prop];
             }
         }
 
@@ -147,108 +202,107 @@ export default class COT implements Feature {
     }
 
     bounds(): GeoJSONBBox {
-        return bbox(this.geometry);
+        return bbox(this._geometry);
     }
 
     /**
      * Consistent feature manipulation between add & update
      */
-    static style(feat: Feature): Feature {
-        if (!feat.properties.center) {
-            feat.properties.center = pointOnFeature(feat.geometry).geometry.coordinates;
-        }
-
-        if (!feat.properties.time) feat.properties.time = new Date().toISOString();
-        if (!feat.properties.start) feat.properties.start = new Date().toISOString();
-        if (!feat.properties.stale) {
+    static style(
+        type: string,
+        properties: Feature["properties"]
+    ): Feature["properties"] {
+        if (!properties.time) properties.time = new Date().toISOString();
+        if (!properties.start) properties.start = new Date().toISOString();
+        if (!properties.stale) {
             const currentTime = new Date();
             currentTime.setMinutes(currentTime.getMinutes() + 10);
-            feat.properties.stale = currentTime.toISOString();
+            properties.stale = currentTime.toISOString();
         }
 
-        if (!feat.properties.remarks) {
-            feat.properties.remarks = 'None';
+        if (!properties.remarks) {
+            properties.remarks = 'None';
         }
 
-        if (!feat.properties.how && feat.properties.type.startsWith('u-')) {
-            feat.properties.how = 'h-g-i-g-o';
-        } else if (!feat.properties.how) {
-            feat.properties.how = 'm-p';
+        if (!properties.how && properties.type.startsWith('u-')) {
+            properties.how = 'h-g-i-g-o';
+        } else if (!properties.how) {
+            properties.how = 'm-p';
         }
 
-        if (feat.geometry.type.includes('Point')) {
-            if (feat.properties.group) {
-                feat.properties['icon-opacity'] = 0;
+        if (type.includes('Point')) {
+            if (properties.group) {
+                properties['icon-opacity'] = 0;
 
-                if (feat.properties.group.name === 'Yellow') {
-                    feat.properties["marker-color"] = '#f59f00';
-                } else if (feat.properties.group.name === 'Orange') {
-                    feat.properties["marker-color"] = '#f76707';
-                } else if (feat.properties.group.name === 'Magenta') {
-                    feat.properties["marker-color"] = '#ea4c89';
-                } else if (feat.properties.group.name === 'Red') {
-                    feat.properties["marker-color"] = '#d63939';
-                } else if (feat.properties.group.name === 'Maroon') {
-                    feat.properties["marker-color"] = '#bd081c';
-                } else if (feat.properties.group.name === 'Purple') {
-                    feat.properties["marker-color"] = '#ae3ec9';
-                } else if (feat.properties.group.name === 'Dark Blue') {
-                    feat.properties["marker-color"] = '#0054a6';
-                } else if (feat.properties.group.name === 'Blue') {
-                    feat.properties["marker-color"] = '#4299e1';
-                } else if (feat.properties.group.name === 'Cyan') {
-                    feat.properties["marker-color"] = '#17a2b8';
-                } else if (feat.properties.group.name === 'Teal') {
-                    feat.properties["marker-color"] = '#0ca678';
-                } else if (feat.properties.group.name === 'Green') {
-                    feat.properties["marker-color"] = '#74b816';
-                } else if (feat.properties.group.name === 'Dark Green') {
-                    feat.properties["marker-color"] = '#2fb344';
-                } else if (feat.properties.group.name === 'Brown') {
-                    feat.properties["marker-color"] = '#dc4e41';
+                if (properties.group.name === 'Yellow') {
+                    properties["marker-color"] = '#f59f00';
+                } else if (properties.group.name === 'Orange') {
+                    properties["marker-color"] = '#f76707';
+                } else if (properties.group.name === 'Magenta') {
+                    properties["marker-color"] = '#ea4c89';
+                } else if (properties.group.name === 'Red') {
+                    properties["marker-color"] = '#d63939';
+                } else if (properties.group.name === 'Maroon') {
+                    properties["marker-color"] = '#bd081c';
+                } else if (properties.group.name === 'Purple') {
+                    properties["marker-color"] = '#ae3ec9';
+                } else if (properties.group.name === 'Dark Blue') {
+                    properties["marker-color"] = '#0054a6';
+                } else if (properties.group.name === 'Blue') {
+                    properties["marker-color"] = '#4299e1';
+                } else if (properties.group.name === 'Cyan') {
+                    properties["marker-color"] = '#17a2b8';
+                } else if (properties.group.name === 'Teal') {
+                    properties["marker-color"] = '#0ca678';
+                } else if (properties.group.name === 'Green') {
+                    properties["marker-color"] = '#74b816';
+                } else if (properties.group.name === 'Dark Green') {
+                    properties["marker-color"] = '#2fb344';
+                } else if (properties.group.name === 'Brown') {
+                    properties["marker-color"] = '#dc4e41';
                 } else {
-                    feat.properties["marker-color"] = '#ffffff';
+                    properties["marker-color"] = '#ffffff';
                 }
 
-            } else if (feat.properties.icon) {
+            } else if (properties.icon) {
                 // Format of icon needs to change for spritesheet
-                if (!feat.properties.icon.includes(':')) {
-                    feat.properties.icon = feat.properties.icon.replace('/', ':')
+                if (!properties.icon.includes(':')) {
+                    properties.icon = properties.icon.replace('/', ':')
                 }
 
-                if (feat.properties.icon.endsWith('.png')) {
-                    feat.properties.icon = feat.properties.icon.replace(/.png$/, '');
+                if (properties.icon.endsWith('.png')) {
+                    properties.icon = properties.icon.replace(/.png$/, '');
                 }
 
                 const mapStore = useMapStore();
-                if (mapStore.map && !mapStore.map.hasImage(feat.properties.icon)) {
-                    console.warn(`No Icon for: ${feat.id}::${feat.properties.icon} fallback to ${feat.properties.type}`);
-                    feat.properties.icon = `${feat.properties.type}`;
+                if (mapStore.map && !mapStore.map.hasImage(properties.icon)) {
+                    console.warn(`No Icon for: ${properties.icon} fallback to ${properties.type}`);
+                    properties.icon = `${properties.type}`;
                 }
             } else {
                 // TODO Only add icon if one actually exists in the spritejson
-                if (!['u-d-p'].includes(feat.properties.type)) {
-                    feat.properties.icon = `${feat.properties.type}`;
+                if (!['u-d-p'].includes(properties.type)) {
+                    properties.icon = `${properties.type}`;
                 }
             }
-        } else if (feat.geometry.type.includes('Line') || feat.geometry.type.includes('Polygon')) {
-            if (!feat.properties['stroke']) feat.properties.stroke = '#d63939';
-            if (!feat.properties['stroke-style']) feat.properties['stroke-style'] = 'solid';
-            if (!feat.properties['stroke-width']) feat.properties['stroke-width'] = 3;
+        } else if (type.includes('Line') || type.includes('Polygon')) {
+            if (!properties['stroke']) properties.stroke = '#d63939';
+            if (!properties['stroke-style']) properties['stroke-style'] = 'solid';
+            if (!properties['stroke-width']) properties['stroke-width'] = 3;
 
-            if (feat.properties['stroke-opacity'] === undefined) {
-                feat.properties['stroke-opacity'] = 1;
+            if (properties['stroke-opacity'] === undefined) {
+                properties['stroke-opacity'] = 1;
             }
 
-            if (feat.geometry.type.includes('Polygon')) {
-                if (!feat.properties['fill']) feat.properties.fill = '#d63939';
+            if (type.includes('Polygon')) {
+                if (!properties['fill']) properties.fill = '#d63939';
 
-                if (feat.properties['fill-opacity'] === undefined) {
-                    feat.properties['fill-opacity'] = 0.5;
+                if (properties['fill-opacity'] === undefined) {
+                    properties['fill-opacity'] = 0.5;
                 }
             }
         }
 
-        return feat;
+        return properties;
     }
 }
