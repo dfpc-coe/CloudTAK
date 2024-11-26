@@ -72,7 +72,7 @@ export default class COT {
     }
 
     set properties(properties: Feature["properties"]) {
-        this._properties = properties;
+        this.update({ properties });
     }
 
     get properties() {
@@ -80,7 +80,7 @@ export default class COT {
     }
 
     set geometry(geometry: Feature["geometry"]) {
-        this._geometry = geometry;
+        this.update({ geometry })
     }
 
     get geometry() {
@@ -134,6 +134,35 @@ export default class COT {
                 body: this.as_feature()
             })
         }
+    }
+
+    as_proxy(): COT {
+        return new Proxy(this, {
+            set(target, prop, val) {
+                return Reflect.set(target, prop, val);
+            },
+            get(target, prop) {
+                if (prop === 'properties') {
+                    return new Proxy(target.properties, {
+                        set(subtarget, prop, val) {
+                            const res = Reflect.set(subtarget, prop, val);
+                            target.update({ properties: subtarget })
+                            return res;
+                        }
+                    })
+                } else if (prop === 'geometry') {
+                    return new Proxy(target.geometry, {
+                        set(subtarget, prop, val) {
+                            const res = Reflect.set(subtarget, prop, val);
+                            target.update({ geometry: subtarget })
+                            return res;
+                        }
+                    })
+                } else {
+                    return Reflect.get(target, prop);
+                }
+            }
+        })
     }
 
     as_feature(): Feature {
