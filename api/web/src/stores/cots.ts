@@ -49,7 +49,6 @@ export const useCOTStore = defineStore('cots', {
             filter: (el: COT) => boolean,
             opts: {
                 mission?: boolean,
-                clone?: boolean
             } = {}
         ): Set<COT> {
             const cots: Set<COT> = new Set();
@@ -60,22 +59,20 @@ export const useCOTStore = defineStore('cots', {
                 }
             }
 
-            for (const sub of this.subscriptions.keys()) {
-                const store = this.subscriptions.get(sub);
-                if (!store) continue;
+            if (opts.mission) {
+                for (const sub of this.subscriptions.keys()) {
+                    const store = this.subscriptions.get(sub);
+                    if (!store) continue;
 
-                for (const cot of store.cots.values()) {
-                    if (filter(cot)) {
-                        cots.add(cot);
+                    for (const cot of store.cots.values()) {
+                        if (filter(cot)) {
+                            cots.add(cot);
+                        }
                     }
                 }
             }
 
-            if (!opts.clone) return cots;
-
-            return new Set(Array.from(cots).map((cot) => {
-                return JSON.parse(JSON.stringify(cot));
-            }))
+            return cots;
         },
 
         subChange: async function(task: Feature): Promise<void> {
@@ -343,29 +340,23 @@ export const useCOTStore = defineStore('cots', {
          */
         get: function(id: string, opts: {
             mission?: boolean,
-            clone?: boolean
         } = {
-            clone: false,
             mission: false
         }): COT | undefined {
             if (!opts) opts = {};
 
             let cot = this.cots.get(id);
 
-            if (cot && opts.clone) {
-                return JSON.parse(JSON.stringify(cot));
-            } else if (cot) {
-                return cot;
+            if (cot) {
+                return cot.as_proxy();
             } else if (opts.mission) {
                 for (const sub of this.subscriptions.keys()) {
                     const store = this.subscriptions.get(sub);
                     if (!store) continue;
                     cot = store.cots.get(id);
 
-                    if (cot && opts.clone) {
-                        return JSON.parse(JSON.stringify(cot));
-                    } else if (cot) {
-                        return cot;
+                    if (cot) {
+                        return cot.as_proxy();
                     }
                 }
             }
