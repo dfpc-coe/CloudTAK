@@ -2,9 +2,9 @@
     <template v-if='editing'>
         <TablerInput
             ref='editor-input'
-            :focus='true'
-            label=''
             v-model='text'
+            :autofocus='true'
+            label=''
         />
     </template>
     <div
@@ -29,7 +29,11 @@
                 }'
                 style='right: 36px; top: 8px;'
             >
-            <IconPencil :size='24' stroke='1' /></TablerIconButton>
+                <IconPencil
+                    :size='24'
+                    stroke='1'
+                />
+            </TablerIconButton>
 
             <CopyButton
                 :text='text'
@@ -62,18 +66,8 @@
     </div>
 </template>
 
-<style lang='scss'>
-.hover-border {
-    border: 2px solid rgba(0, 0, 0, 0);
-}
-
-.hover-border:hover {
-    border: 2px solid #83b7e8;
-}
-</style>
-
 <script setup lang='ts'>
-import { ref, watch, useTemplateRef, nextTick } from 'vue';
+import { ref, watch } from 'vue';
 import CopyButton from './CopyButton.vue';
 import {
     TablerInput,
@@ -112,10 +106,19 @@ const props = defineProps({
 
 const editing = ref(false);
 const text = ref(props.modelValue);
-const editor = useTemplateRef('editor-input');
 
 watch(props.modelValue, () => {
     text.value = props.modelValue;
 })
 
 </script>
+
+<style lang='scss'>
+.hover-border {
+    border: 2px solid rgba(0, 0, 0, 0);
+}
+
+.hover-border:hover {
+    border: 2px solid #83b7e8;
+}
+</style>
