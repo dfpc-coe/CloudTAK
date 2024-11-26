@@ -590,7 +590,10 @@
                 style='height: calc(100vh - 225px)'
                 class='overflow-auto'
             >
-                <pre v-text='cot' />
+                <CopyField
+                    :pre='true'
+                    :modelValue='JSON.stringify(cot.as_feature(), null, 4)'
+                />
             </div>
         </template>
     </template>
