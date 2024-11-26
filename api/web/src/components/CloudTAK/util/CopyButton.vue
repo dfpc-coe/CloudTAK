@@ -16,7 +16,7 @@
     >
         <IconCopyCheck
             :size='size'
-            stroke='stroke + 1'
+            :stroke='String(stroke + 1)'
         />
     </TablerIconButton>
 </template>
