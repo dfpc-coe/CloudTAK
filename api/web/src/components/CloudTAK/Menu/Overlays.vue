@@ -109,12 +109,18 @@
                                 <span
                                     class='mx-2 user-select-none text-truncate'
                                     style='width: 200px;'
-                                    :class='{
-                                        "cursor-pointer": ["data", "profile"].includes(overlay.mode)
-                                            && overlay.type === "vector"
-                                    }'
-                                    v-text='overlay.name'
-                                />
+                                >
+                                    <a
+                                        v-if='overlay.mode === "mission"'
+                                        class='cursor-pointer text-underline'
+                                        @click='router.push(`/menu/missions/${overlay.mode_id}`)'
+                                        v-text='overlay.name'
+                                    />
+                                    <span
+                                        v-else
+                                        v-text='overlay.name'
+                                    />
+                                </span>
 
                                 <div class='ms-auto btn-list'>
                                     <TablerIconButton
@@ -205,6 +211,7 @@
 
 <script setup lang='ts'>
 import { ref, watch, useTemplateRef } from 'vue';
+import { useRouter } from 'vue-router';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import {
     TablerDelete,
@@ -235,6 +242,7 @@ import type { SortableEvent } from 'sortablejs'
 import { useMapStore } from '../../../../src/stores/map.ts';
 
 const mapStore = useMapStore();
+const router = useRouter();
 
 let sortable: Sortable;
 
