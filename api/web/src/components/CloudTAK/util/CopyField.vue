@@ -13,7 +13,7 @@
     <div
         v-else
         class='position-relative bg-gray-500 rounded-top py-2 px-2 text-truncate'
-        style='height: 44px;'
+        :style='rows === 1 ? `height: 44px;` : ``'
         :class='{
             "hover-button hover-border cursor-pointer": hover,
         }'
@@ -21,7 +21,7 @@
     >
         <slot />
 
-        <template v-if='multiline'>
+        <template v-if='rows > 1'>
             <TablerMarkdown
                 :markdown='markdown'
             />
