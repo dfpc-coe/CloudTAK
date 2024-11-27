@@ -446,11 +446,9 @@ export const useCOTStore = defineStore('cots', {
                 const exists = this.cots.get(feat.id);
 
                 if (exists) {
-                    exists.update(feat)
-                    if (!opts.skipSave) await exists.save();
+                    exists.update(feat, { skipSave: opts.skipSave })
                 } else {
-                    const cot = new COT(feat);
-                    if (!opts.skipSave) await cot.save();
+                    new COT(feat);
                 }
             }
         }
