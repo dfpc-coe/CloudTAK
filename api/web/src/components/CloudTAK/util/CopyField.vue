@@ -1,38 +1,60 @@
 <template>
-    <TablerInput
+    <div
         v-if='editing'
-        ref='editor-input'
-        :rows='rows'
-        v-model='text'
-        :autofocus='true'
-        @change='emit("update:modelValue", text)'
-        @blur='editing = false'
-        @submit='rows > 1 ? undefined : editing = false'
-        label=''
-    />
+        class='position-relative rounded-top'
+    >
+        <TablerInput
+            :rows='rows'
+            v-model='text'
+            :autofocus='true'
+            @change='emit("update:modelValue", text)'
+            @blur='editing = false'
+            @submit='rows > 1 ? undefined : editing = false'
+            label=''
+        />
+
+        <TablerIconButton
+            title='Done Editing'
+            class='position-absolute'
+            style='right: 8px; top: 8px;'
+            @click.stop.prevent='editing = false'
+        >
+            <IconCheck
+                :size='24'
+                stroke='1'
+            />
+        </TablerIconButton>
+    </div>
     <div
         v-else
+        ref='infobox'
         class='position-relative bg-gray-500 rounded-top py-2 px-2 text-truncate'
         :style='rows === 1 ? `height: 44px;` : ``'
         :class='{
             "hover-button hover-border cursor-pointer": hover,
         }'
-        @click='edit ? editing = true : undefined'
     >
         <slot />
 
-        <template v-if='rows > 1'>
+        <template v-if='rows > 1 || mode === "pre"'>
             <TablerMarkdown
+                v-if='mode === "text"'
                 :markdown='markdown'
+            />
+            <pre
+                v-else
+                v-text='text'
             />
 
             <TablerIconButton
                 v-if='edit'
+                title='Edit Field'
                 class='position-absolute'
                 :class='{
                     "hover-button-hidden": hover,
                 }'
                 style='right: 36px; top: 8px;'
+                @click='editing = true'
             >
                 <IconPencil
                     :size='24'
@@ -59,6 +81,7 @@
                 style='right: 36px'
                 :size='24'
                 stroke='1'
+                @click='editing = true'
             />
 
             <CopyButton
@@ -72,7 +95,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, watch, computed } from 'vue';
+import { ref, watch, computed, useTemplateRef, onMounted } from 'vue';
 import CopyButton from './CopyButton.vue';
 import {
     TablerInput,
@@ -80,6 +103,7 @@ import {
     TablerIconButton
 } from '@tak-ps/vue-tabler'
 import {
+    IconCheck,
     IconPencil
 } from '@tabler/icons-vue';
 
@@ -88,6 +112,10 @@ const emit = defineEmits([
 ]);
 
 const props = defineProps({
+    mode: {
+        type: String,
+        default: 'text' // text or pre
+    },
     modelValue: {
         type: [String, Number],
         required: true
@@ -117,12 +145,24 @@ const props = defineProps({
 const editing = ref(false);
 const text = ref(props.modelValue);
 
+const infoboxRef = useTemplateRef('infobox');
+
 const markdown = computed(() => {
     return (props.modelValue || '')
         .replace(/\n/g, '</br>')
         .replace(/(http(s)?:\/\/.*?(\s|$))/g, '[$1]($1) ')
         .trim()
 });
+
+watch(infoboxRef, () => {
+    if (infoboxRef.value) {
+        infoboxRef.value.addEventListener('click', (event: MouseEvent) => {
+            if (!props.edit) return;
+            if (['A'].includes(event.target.tagName)) return;
+            editing.value = true;
+        });
+    }
+})
 
 watch(props, () => {
     if (text.value !== props.modelValue) {
