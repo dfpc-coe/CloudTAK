@@ -93,6 +93,8 @@ export default class COT {
     async update(update: {
         properties?: Feature["properties"],
         geometry?: Feature["geometry"]
+    }, opts?: {
+        skipSave?: boolean;
     }): Promise<boolean> {
         let changed = false;
         if (update.geometry) {
@@ -120,6 +122,8 @@ export default class COT {
         if (this.origin.mode === OriginMode.CONNECTION) {
             this._store.pending.set(this.id, this);
         }
+
+        if (!opts || (opts && !opts.skipSave)) await this.save();
 
         return changed;
     }
