@@ -22,7 +22,7 @@
     },
     "homepage": "https://github.com/dfpc-coe/CloudTAK#readme",
     "dependencies": {
-        "@openaddresses/batch-alarms": "^4.4.0",
+        "@openaddresses/batch-alarms": "^4.4.2",
         "@openaddresses/cloudfriend": "^7.0.0",
         "@openaddresses/deploy": "^9.0.0"
     },
