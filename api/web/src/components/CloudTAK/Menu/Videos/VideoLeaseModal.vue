@@ -56,7 +56,7 @@
                         </div>
                         <CopyField
                             v-if='protocols.rtsp'
-                            :modelValue='protocols.rtsp.url.replace(/.*\//, "")'
+                            :model-value='protocols.rtsp.url.replace(/.*\//, "")'
                         />
                     </div>
                 </div>
