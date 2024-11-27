@@ -2,27 +2,29 @@
     <TablerInput
         v-if='editing'
         ref='editor-input'
+        :rows='rows'
         v-model='text'
         :autofocus='true'
         @change='emit("update:modelValue", text)'
         @blur='editing = false'
-        @submit='editing = false'
+        @submit='rows > 1 ? undefined : editing = false'
         label=''
     />
     <div
         v-else
-        class='position-relative'
+        class='position-relative bg-gray-500 rounded-top py-2 px-2 text-truncate'
         style='height: 44px;'
         :class='{
-            "bg-gray-500 rounded-top py-2 px-2 text-truncate": !pre,
             "hover-button hover-border cursor-pointer": hover,
         }'
         @click='edit ? editing = true : undefined'
     >
         <slot />
 
-        <template v-if='pre'>
-            <pre v-text='text' />
+        <template v-if='multiline'>
+            <TablerMarkdown
+                :markdown='markdown'
+            />
 
             <TablerIconButton
                 v-if='edit'
@@ -70,10 +72,11 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import CopyButton from './CopyButton.vue';
 import {
     TablerInput,
+    TablerMarkdown,
     TablerIconButton
 } from '@tak-ps/vue-tabler'
 import {
@@ -89,9 +92,9 @@ const props = defineProps({
         type: [String, Number],
         required: true
     },
-    pre: {
-        type: Boolean,
-        default: false
+    rows: {
+        type: Number,
+        default: 1
     },
     hover: {
         type: Boolean,
@@ -113,6 +116,13 @@ const props = defineProps({
 
 const editing = ref(false);
 const text = ref(props.modelValue);
+
+const markdown = computed(() => {
+    return (props.modelValue || '')
+        .replace(/\n/g, '</br>')
+        .replace(/(http(s)?:\/\/.*?(\s|$))/g, '[$1]($1) ')
+        .trim()
+});
 
 watch(props, () => {
     if (text.value !== props.modelValue) {
