@@ -592,7 +592,8 @@
                 class='overflow-auto'
             >
                 <CopyField
-                    :pre='true'
+                    mode='pre'
+                    style='height: calc(100vh - 225px)'
                     :modelValue='JSON.stringify(cot.as_feature(), null, 4)'
                 />
             </div>
