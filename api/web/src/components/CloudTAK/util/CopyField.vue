@@ -4,13 +4,13 @@
         class='position-relative rounded-top'
     >
         <TablerInput
-            :rows='rows'
             v-model='text'
+            :rows='rows'
             :autofocus='true'
+            label=''
             @change='emit("update:modelValue", text)'
             @blur='editing = false'
             @submit='rows > 1 ? undefined : editing = false'
-            label=''
         />
 
         <TablerIconButton
@@ -95,7 +95,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, watch, computed, useTemplateRef, onMounted } from 'vue';
+import { ref, watch, computed, useTemplateRef } from 'vue';
 import CopyButton from './CopyButton.vue';
 import {
     TablerInput,
@@ -145,10 +145,10 @@ const props = defineProps({
 const editing = ref(false);
 const text = ref(props.modelValue);
 
-const infoboxRef = useTemplateRef('infobox');
+const infoboxRef = useTemplateRef<HTMLElement>('infobox');
 
 const markdown = computed(() => {
-    return (props.modelValue || '')
+    return String(props.modelValue || '')
         .replace(/\n/g, '</br>')
         .replace(/(http(s)?:\/\/.*?(\s|$))/g, '[$1]($1) ')
         .trim()
@@ -158,7 +158,10 @@ watch(infoboxRef, () => {
     if (infoboxRef.value) {
         infoboxRef.value.addEventListener('click', (event: MouseEvent) => {
             if (!props.edit) return;
-            if (['A'].includes(event.target.tagName)) return;
+            if (event.target) {
+                const target = event.target as HTMLElement;     
+                if (['A'].includes(target.tagName)) return;
+            }
             editing.value = true;
         });
     }

@@ -348,13 +348,16 @@
                 @attachment='addAttachment($event)'
             />
 
-            <div class='col-12 py-2'>
+            <div
+                v-if='cot.properties.remarks'
+                class='col-12 py-2'
+            >
                 <label class='subheader mx-2'>Remarks</label>
                 <CopyField
+                    v-model='cot.properties.remarks'
                     :rows='10'
                     :edit='isEditable'
                     :hover='isEditable'
-                    v-model='cot.properties.remarks'
                     class='mx-1'
                 />
             </div>
@@ -594,7 +597,7 @@
                 <CopyField
                     mode='pre'
                     style='height: calc(100vh - 225px)'
-                    :modelValue='JSON.stringify(cot.as_feature(), null, 4)'
+                    :model-value='JSON.stringify(cot.as_feature(), null, 4)'
                 />
             </div>
         </template>
