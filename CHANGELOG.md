@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v5.11.0 - 2024-11-27
+
+- :rocket: `UI` Fully migrate Data Package Menu to TypeScript
+- :bug: `UI` Fix 404 when Data Package Hash differed from Data Package UID
+- :bug: `UI` Fix Package type definition to use Package instead of similiar (and current) Content
+
 ### v5.10.0 - 2024-11-27
 
 - :rocket: `UI` Consistent CoT saving for archived CoTs
