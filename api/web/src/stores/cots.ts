@@ -406,9 +406,13 @@ export const useCOTStore = defineStore('cots', {
         /**
          * Add a CoT GeoJSON to the store and modify props to meet MapLibre style requirements
          */
-        add: async function(feat: Feature, mission_guid?: string, opts?: {
-            skipSave?: boolean;
-        }) {
+        add: async function(
+            feat: Feature,
+            mission_guid?: string,
+            opts?: {
+                skipSave?: boolean;
+            }
+        ) {
             if (!opts) opts = {};
             mission_guid = mission_guid || this.subscriptionPending.get(feat.id);
 
@@ -442,10 +446,11 @@ export const useCOTStore = defineStore('cots', {
                 const exists = this.cots.get(feat.id);
 
                 if (exists) {
-                    await exists.update(feat)
+                    exists.update(feat)
+                    if (!opts.skipSave) await exists.save();
                 } else {
                     const cot = new COT(feat);
-                    await cot.save();
+                    if (!opts.skipSave) await cot.save();
                 }
             }
         }
