@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v5.10.0 - 2024-11-27
+
+- :rocket: `UI` Consistent CoT saving for archived CoTs
+
 ### v5.9.0 - 2024-11-26
 
 - :rocket: `UI` Allow CoT Marker to update itself via Proxy implementation
