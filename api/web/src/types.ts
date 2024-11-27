@@ -55,7 +55,7 @@ export type ImportList = paths["/import"]["get"]["responses"]["200"]["content"][
 export type Profile = paths["/profile"]["get"]["responses"]["200"]["content"]["application/json"]
 export type Profile_Update = paths["/profile"]["patch"]["requestBody"]["content"]["application/json"]
 
-export type Package = paths["/marti/package"]["put"]["responses"]["200"]["content"]["application/json"]
+export type Package = paths["/marti/package/{:uid}"]["get"]["responses"]["200"]["content"]["application/json"]
 export type PackageList = paths["/marti/package"]["get"]["responses"]["200"]["content"]["application/json"]
 
 export type Basemap = paths["/basemap/{:basemapid}"]["patch"]["responses"]["200"]["content"]["application/json"]
