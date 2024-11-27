@@ -67,7 +67,7 @@
                     >
                         <div
                             class='col-12 py-2 px-3 align-items-center hover-dark cursor-pointer'
-                            @click='$router.push(`/menu/packages/${pkg.Hash}`)'
+                            @click='$router.push(`/menu/packages/${pkg.UID}`)'
                         >
                             <div
                                 class='col-12'

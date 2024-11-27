@@ -2,25 +2,25 @@
     <MenuTemplate name='Package'>
         <template #buttons>
             <TablerDelete
-                v-if='profile.username === pkg.SubmissionUser'
+                v-if='profile && pkg && profile.username === pkg.SubmissionUser'
                 displaytype='icon'
                 @delete='deleteFile(pkg.Hash)'
             />
             <a
-                v-if='!loading && !err'
+                v-if='!loading && !error'
                 v-tooltip='"Download Asset"'
                 :href='downloadFile()'
             ><IconDownload
                 :size='32'
-                :stroke='1'
+                stroke='1'
                 class='cursor-pointer'
             /></a>
         </template>
         <template #default>
-            <TablerLoading v-if='loading' />
+            <TablerLoading v-if='loading || !pkg' />
             <TablerAlert
-                v-else-if='err'
-                :err='err'
+                v-else-if='error'
+                :err='error'
             />
             <template v-else-if='mode === "share"'>
                 <div class='overflow-auto'>
@@ -72,7 +72,7 @@
                         >
                             <IconFileImport
                                 :size='20'
-                                :stroke='1'
+                                stroke='1'
                                 class='me-2'
                             />Import
                         </button>
@@ -85,7 +85,7 @@
                             <IconShare2
                                 v-tooltip='"Share"'
                                 :size='20'
-                                :stroke='1'
+                                stroke='1'
                                 class='me-2'
                             /> Share
                         </button>
@@ -96,7 +96,10 @@
     </MenuTemplate>
 </template>
 
-<script>
+<script setup lang='ts'>
+import { ref, computed, watch, onMounted } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import type { Server, Package, Import } from '../../../../src/types.ts';
 import { std, stdurl } from '../../../../src/std.ts';
 import Share from '../util/Share.vue';
 import timeDiff from '../../../timediff.ts';
@@ -111,115 +114,112 @@ import {
     IconDownload,
     IconFileImport
 } from '@tabler/icons-vue';
-import { mapState } from 'pinia'
 import { useProfileStore } from '../../../../src/stores/profile.ts';
 
-export default {
-    name: 'CloudTAKPackage',
-    components: {
-        Share,
-        IconShare2,
-        IconDownload,
-        IconFileImport,
-        TablerAlert,
-        TablerDelete,
-        TablerLoading,
-        MenuTemplate,
-    },
-    data: function() {
-        return {
-            loading: true,
-            err: null,
-            mode: 'default',
-            server: null,
-            pkg: {
-                Name: 'Package'
+const route = useRoute();
+const router = useRouter();
+const profileStore = useProfileStore();
+
+const loading = ref(true);
+const error = ref<Error | undefined>()
+const mode = ref('default');
+const server = ref<Server | undefined>();
+const pkg = ref<Package | undefined>();
+
+watch(route, async () => {
+    await fetch();
+});
+
+const profile = profileStore.profile;
+
+const shareFeat = computed(() => {
+    if (!profile || !pkg.value || !server.value) return
+
+    return {
+        type: 'Feature',
+        properties: {
+            type: 'b-f-t-r',
+            how: 'h-e',
+            fileshare: {
+                filename: pkg.value.Name + '.zip',
+                senderUrl: `${server.value.api}/Marti/sync/content?hash=${pkg.value.Hash}`,
+                sizeInBytes: parseInt(pkg.value.Size),
+                sha256: pkg.value.Hash,
+                senderUid: `ANDROID-CloudTAK-${profile.username}`,
+                senderCallsign: profile.tak_callsign,
+                name: pkg.value.Name
             },
+            metadata: {},
+        },
+        geometry: {
+            type: 'Point',
+            coordinates: [0, 0, 0]
         }
-    },
-    watch: {
-        $route: async function() {
-            await this.fetch();
+    }
+});
+
+
+onMounted(async () => {
+    await getServer();
+    await fetch();
+});
+
+async function getServer() {
+    server.value = await std('/api/server') as Server;
+}
+
+function downloadFile(): string {
+    if (!pkg.value) return '';
+
+    const url = stdurl(`/api/marti/api/files/${pkg.value.Hash}`)
+    url.searchParams.append('token', localStorage.token);
+    url.searchParams.append('name', pkg.value.Name + '.zip');
+    return String(url);
+}
+
+async function fetch() {
+    try {
+        loading.value = true;
+        const url = stdurl(`/api/marti/package/${route.params.package}`);
+        pkg.value = await std(url) as Package;
+        loading.value = false;
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+        loading.value = false;
+    }
+
+    loading.value = false;
+}
+
+async function deleteFile(uid: string) {
+    loading.value = true;
+
+    try {
+        await std(`/api/marti/package/${uid}`, {
+            method: 'DELETE',
+        });
+
+        router.push(`/menu/packages`)
+    } catch (err) {
+        loading.value = false;
+        throw err;
+    }
+
+}
+
+async function createImport() {
+    if (!pkg.value) return;
+
+    loading.value = true;
+    const imp = await std('/api/import', {
+        method: 'POST',
+        body: {
+            name: pkg.value.Name,
+            mode: 'Package',
+            mode_id: pkg.value.UID
         }
-    },
-    computed: {
-        ...mapState(useProfileStore, ['profile']),
-        shareFeat: function() {
-            return {
-                type: 'Feature',
-                properties: {
-                    type: 'b-f-t-r',
-                    how: 'h-e',
-                    fileshare: {
-                        "filename": this.pkg.Name + '.zip',
-                        "senderUrl": `${this.server.api}/Marti/sync/content?hash=${this.pkg.Hash}`,
-                        "sizeInBytes": parseInt(this.pkg.Size),
-                        "sha256": this.pkg.Hash,
-                        "senderUid": `ANDROID-CloudTAK-${this.profile.username}`,
-                        "senderCallsign": this.profile.tak_callsign,
-                        "name": this.pkg.Name
-                    },
-                    metadata: {},
-                },
-                geometry: {
-                    type: 'Point',
-                    coordinates: [0, 0, 0]
-                }
-            }
-        }
-    },
-    mounted: async function() {
-        await this.getServer();
-        await this.fetch();
-    },
-    methods: {
-        timeDiff(update) {
-            return timeDiff(update);
-        },
-        getServer: async function() {
-            this.server = await std('/api/server');
-        },
-        downloadFile: function() {
-            const url = stdurl(`/api/marti/api/files/${this.pkg.Hash}`)
-            url.searchParams.append('token', localStorage.token);
-            url.searchParams.append('name', this.pkg.Name + '.zip');
-            return url;
-        },
-        fetch: async function() {
-            try {
-                this.loading = true;
-                const url = stdurl(`/api/marti/package/${this.$route.params.package}`);
-                this.pkg = await std(url);
-                this.loading = false;
-            } catch (err) {
-                this.err = err;
-                this.loading = false;
-            }
+    }) as Import;
 
-            this.loading = false;
-        },
-        deleteFile: async function(hash) {
-            this.loading = true;
-            await std(`/api/marti/package/${hash}`, {
-                method: 'DELETE',
-            });
-
-            this.$router.push(`/menu/packages`)
-
-        },
-        createImport: async function() {
-            this.loading = true;
-            const imp = await std('/api/import', {
-                method: 'POST',
-                body: {
-                    name: this.pkg.Name,
-                    mode: 'Package',
-                    mode_id: this.pkg.Hash
-                }
-            });
-
-            this.$router.push(`/menu/imports/${imp.id}`)
-        },
-    },
+    router.push(`/menu/imports/${imp.id}`)
 }
 </script>

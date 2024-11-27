@@ -267,12 +267,12 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.get('/marti/package/:hash', {
+    await schema.get('/marti/package/:uid', {
         name: 'Get Package',
         group: 'MartiPackages',
         description: 'Helper API to get a single package',
         params: Type.Object({
-            hash: Type.String()
+            uid: Type.String()
         }),
         res: Package
     }, async (req, res) => {
@@ -282,7 +282,7 @@ export default async function router(schema: Schema, config: Config) {
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
             const pkg = await api.Package.list({
-                uid: req.params.hash
+                uid: req.params.uid
             });
 
             if (!pkg.results.length) throw new Err(404, null, 'Package not found');
@@ -293,12 +293,12 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.delete('/marti/package/:hash', {
+    await schema.delete('/marti/package/:uid', {
         name: 'Delete Package',
         group: 'MartiPackages',
         description: 'Helper API to delete a single package',
         params: Type.Object({
-            hash: Type.String()
+            uid: Type.String()
         }),
         res: StandardResponse
     }, async (req, res) => {
@@ -313,7 +313,7 @@ export default async function router(schema: Schema, config: Config) {
             );
 
             const pkgs = await api.Package.list({
-                uid: req.params.hash
+                uid: req.params.uid
             });
 
             if (!pkgs.results.length) {
