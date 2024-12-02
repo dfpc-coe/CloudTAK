@@ -188,26 +188,6 @@ async function flyTo() {
 
     if (!cot) throw new Error('Could not find marker');
 
-    if (cot.geometry.type === "Point") {
-        const flyTo = {
-            speed: Infinity,
-            center: cot.properties.center as LngLatLike,
-            zoom: 14
-        };
-
-        if (mapStore.map.getZoom() < 3) flyTo.zoom = 4;
-        mapStore.map.flyTo(flyTo)
-    } else {
-        mapStore.map.fitBounds(cot.bounds() as LngLatBoundsLike, {
-            maxZoom: 14,
-            padding: {
-                top: 20,
-                bottom: 20,
-                left: 20,
-                right: 20
-            },
-            speed: Infinity,
-        })
-    }
+    cot.flyTo();
 }
 </script>

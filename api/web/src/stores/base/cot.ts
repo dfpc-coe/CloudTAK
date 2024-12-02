@@ -209,6 +209,22 @@ export default class COT {
         return bbox(this._geometry);
     }
 
+    flyTo() {
+        const mapStore = useMapStore();
+        if (!mapStore.map) return;
+
+        mapStore.map.fitBounds(this.bounds() as LngLatBoundsLike, {
+            maxZoom: 20, 
+            padding: {
+                top: 20, 
+                bottom: 20, 
+                left: 20, 
+                right: 20
+            },
+            speed: Infinity,
+        })
+    }
+
     /**
      * Consistent feature manipulation between add & update
      */
