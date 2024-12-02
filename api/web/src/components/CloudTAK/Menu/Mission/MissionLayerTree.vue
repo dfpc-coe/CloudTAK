@@ -1,126 +1,134 @@
 <template>
     <TablerLoading v-if='loading' />
-    <div
-        v-for='layer in layers'
-        v-else
-        :key='layer.uid'
-    >
-        <div class='col-12 hover-dark d-flex align-items-center px-2 py-1'>
-            <IconChevronRight
-                v-if='layer.type === "UID" && !opened.has(layer.uid)'
-                :size='32'
-                stroke='1'
-                class='cursor-pointer'
-                @click='opened.add(layer.uid)'
-            />
-            <IconChevronDown
-                v-else-if='layer.type === "UID" && opened.has(layer.uid)'
-                :size='32'
-                stroke='1'
-                class='cursor-pointer'
-                @click='opened.delete(layer.uid)'
-            />
-
-            <IconFiles
-                v-if='layer.type === "CONTENTS"'
-                :size='32'
-                stroke='1'
-            />
-            <IconMapPins
-                v-else-if='layer.type === "UID"'
-                :size='32'
-                stroke='1'
-            />
-            <IconFolder
-                v-else-if='layer.type === "GROUP"'
-                :size='32'
-                stroke='1'
-            />
-            <IconMap
-                v-else-if='layer.type === "MAPLAYER"'
-                :size='32'
-                stroke='1'
-            />
-            <IconPin
-                v-else-if='layer.type === "ITEM"'
-                :size='32'
-                stroke='1'
-            />
-
-            <span
-                class='mx-2'
-                v-text='layer.name'
-            />
-
-            <div class='ms-auto btn-list d-flex align-items-center'>
-                <span
-                    v-if='layer.type === "UID"'
-                    class='mx-3 ms-auto badge border text-white'
-                    :class='{
-                        "bg-blue": layer.uids && layer.uids.length > 0,
-                        "bg-gray": !layer.uids || layer.uids.length === 0
-                    }'
-                    v-text='`${layer.uids ? layer.uids.length : 0} Features`'
+    <template v-else>
+        <SingleFeature
+            v-for='feat of orphanedFeats'
+            :key='feat.id'
+            :delete-button='false'
+            :feature='orphanedFeats'
+            :mission='mission'
+        />
+        <div
+            v-for='layer in layers'
+            :key='layer.uid'
+        >
+            <div class='col-12 hover-dark d-flex align-items-center px-3 py-2'>
+                <IconChevronRight
+                    v-if='layer.type === "UID" && !opened.has(layer.uid)'
+                    :size='20'
+                    stroke='1'
+                    class='cursor-pointer'
+                    @click='opened.add(layer.uid)'
+                />
+                <IconChevronDown
+                    v-else-if='layer.type === "UID" && opened.has(layer.uid)'
+                    :size='20'
+                    stroke='1'
+                    class='cursor-pointer'
+                    @click='opened.delete(layer.uid)'
                 />
 
-                <TablerIconButton
-                    v-if='role && role.permissions.includes("MISSION_WRITE")'
-                    title='Edit Name'
-                    :size='24'
-                    @click='edit.add(layer.uid)'
-                >
-                    <IconPencil stroke='1' />
-                </TablerIconButton>
+                <IconFiles
+                    v-if='layer.type === "CONTENTS"'
+                    :size='20'
+                    stroke='1'
+                />
+                <IconMapPins
+                    v-else-if='layer.type === "UID"'
+                    :size='20'
+                    stroke='1'
+                />
+                <IconFolder
+                    v-else-if='layer.type === "GROUP"'
+                    :size='20'
+                    stroke='1'
+                />
+                <IconMap
+                    v-else-if='layer.type === "MAPLAYER"'
+                    :size='20'
+                    stroke='1'
+                />
+                <IconPin
+                    v-else-if='layer.type === "ITEM"'
+                    :size='20'
+                    stroke='1'
+                />
 
-                <TablerDelete
-                    v-if='role && role.permissions.includes("MISSION_WRITE")'
-                    displaytype='icon'
-                    :size='24'
-                    @delete='deleteLayer(layer)'
+                <span
+                    class='mx-2'
+                    v-text='layer.name'
+                />
+
+                <div class='ms-auto btn-list d-flex align-items-center'>
+                    <span
+                        v-if='layer.type === "UID"'
+                        class='mx-3 ms-auto badge border text-white'
+                        :class='{
+                            "bg-blue": layer.uids && layer.uids.length > 0,
+                            "bg-gray": !layer.uids || layer.uids.length === 0
+                        }'
+                        v-text='`${layer.uids ? layer.uids.length : 0} Features`'
+                    />
+
+                    <TablerIconButton
+                        v-if='role && role.permissions.includes("MISSION_WRITE")'
+                        title='Edit Name'
+                        :size='24'
+                        @click='edit.add(layer.uid)'
+                    >
+                        <IconPencil stroke='1' />
+                    </TablerIconButton>
+
+                    <TablerDelete
+                        v-if='role && role.permissions.includes("MISSION_WRITE")'
+                        displaytype='icon'
+                        :size='24'
+                        @delete='deleteLayer(layer)'
+                    />
+                </div>
+            </div>
+
+            <MissionLayerEdit
+                v-if='edit.has(layer.uid)'
+                :mission='mission'
+                :layer='layer'
+                :role='role'
+                @cancel='edit.delete(layer.uid)'
+                @layer='emit("refresh")'
+            />
+            <div
+                v-else-if='opened.has(layer.uid) && layer.type === "UID"'
+                class='mx-2'
+            >
+                <SingleFeature
+                    v-for='cot of cots(layer)'
+                    :key='cot.id'
+                    :delete-button='false'
+                    :feature='cot'
+                    :mission='mission'
+                />
+                <MissionLayerTree
+                    v-if='layer.mission_layers && layer.mission_layers.length'
+                    :layers='layer.mission_layers as Array<MissionLayer>'
+                    :feats='feats'
+                    :mission='mission'
+                    :token='token'
+                    :role='role'
+                    @refresh='emit("refresh")'
+                />
+                <TablerNone
+                    v-if='!layer.uids || !layer.uids.length'
+                    :create='false'
+                    :compact='true'
+                    class='py-2'
                 />
             </div>
         </div>
-
-        <MissionLayerEdit
-            v-if='edit.has(layer.uid)'
-            :mission='mission'
-            :layer='layer'
-            :role='role'
-            @cancel='edit.delete(layer.uid)'
-            @layer='emit("refresh")'
-        />
-        <div
-            v-else-if='opened.has(layer.uid) && layer.type === "UID"'
-            class='mx-2'
-        >
-            <SingleFeature
-                v-for='cot of cots(layer)'
-                :key='cot.id'
-                :delete-button='false'
-                :feature='cot'
-                :mission='mission'
-            />
-            <MissionLayerTree
-                v-if='layer.mission_layers && layer.mission_layers.length'
-                :layers='layer.mission_layers as Array<MissionLayer>'
-                :feats='feats'
-                :mission='mission'
-                :token='token'
-                :role='role'
-                @refresh='emit("refresh")'
-            />
-            <TablerNone
-                v-if='!layer.uids || !layer.uids.length'
-                :create='false'
-                :compact='true'
-                class='py-2'
-            />
-        </div>
-    </div>
+    </template>
 </template>
 
 <script setup lang='ts'>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import type { Mission, MissionLayer, MissionRole, Feature } from '../../../../../src/types.ts';
 import Subscription from '../../../../../src/stores/base/mission.ts';
 import MissionLayerTree from './MissionLayerTree.vue';
@@ -151,6 +159,7 @@ const props = defineProps<{
     layers: Array<MissionLayer>,
     feats: Map<string, Feature>,
     mission: Mission,
+    orphaned?: Set<string>,
     token?: string,
     role?: MissionRole
 }>();
@@ -158,6 +167,15 @@ const props = defineProps<{
 const opened = ref<Set<string>>(new Set());
 const edit = ref<Set<string>>(new Set());
 const loading = ref(false);
+
+const orphanedFeats = computed<Feature[]>(() => {
+    const feats = [];
+    for (const uid of props.orphaned || []) {
+        const feat = props.feats.get(uid);
+        if (feat) feats.push(feat);
+    }
+    return feats;
+})
 
 function cots(layer: MissionLayer): Array<Feature> {
     const cots = [];

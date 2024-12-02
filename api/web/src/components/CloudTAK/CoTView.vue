@@ -93,7 +93,7 @@
 
                         <TablerIconButton
                             title='Zoom To'
-                            @click='zoomTo'
+                            @click='cot.flyTo()'
                         >
                             <IconZoomPan
                                 :size='32'
@@ -607,10 +607,8 @@
 <script setup lang='ts'>
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
-import type { LngLatBoundsLike, FlyToOptions, LngLatLike } from 'maplibre-gl'
 import type COT from '../../../src/stores/base/cot.ts';
 import type { COTType } from '../../../src/types.ts';
-import { useMapStore } from '../../../src/stores/map.ts';
 import { OriginMode } from '../../../src/stores/base/cot.ts'
 import Mission from '../../../src/stores/base/mission.ts'
 import {
@@ -658,7 +656,6 @@ const cotStore = useCOTStore();
 import { useProfileStore } from '../../../src/stores/profile.ts';
 import { useVideoStore } from '../../../src/stores/videos.ts';
 
-const mapStore = useMapStore();
 const profileStore = useProfileStore();
 const videoStore = useVideoStore();
 const route = useRoute();
@@ -765,35 +762,5 @@ async function deleteCOT() {
     if (!cot.value) return;
     await cotStore.delete(cot.value.id);
     router.push('/');
-}
-
-function zoomTo() {
-    if (!cot.value) return;
-    if (!mapStore.map) throw new Error('Map not initialized');
-
-    if (cot.value.geometry.type === "Point") {
-        const flyTo: FlyToOptions = {
-            speed: Infinity,
-            center: cot.value.properties.center as LngLatLike,
-            zoom: 14
-        };
-
-        if (mapStore.map.getZoom() < 3) {
-            flyTo.zoom = 4;
-        }
-
-        mapStore.map.flyTo(flyTo)
-    } else {
-        mapStore.map.fitBounds(cot.value.bounds() as LngLatBoundsLike, {
-            maxZoom: 14,
-            padding: {
-                top: 20,
-                bottom: 20,
-                left: 20,
-                right: 20
-            },
-            speed: Infinity,
-        })
-    }
 }
 </script>
