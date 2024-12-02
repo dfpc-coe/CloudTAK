@@ -1,13 +1,15 @@
 <template>
     <TablerLoading v-if='!subscription' />
-    <MissionLayers
+    <div 
         v-else
-        :feats='feats'
-        :layers='[]'
-        :mission='subscription.meta'
-        :token='subscription.token'
-        :role='subscription.role'
-    />
+        class='ms-3'
+    >
+        <MissionLayers
+            :mission='subscription.meta'
+            :token='subscription.token'
+            :role='subscription.role'
+        />
+    </div>
 </template>
 
 <script setup lang='ts'>
@@ -16,7 +18,7 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import Overlay from '../../../../../src/stores/base/overlay.ts'
-import MissionLayers from '../Mission/MissionLayerTree.vue';
+import MissionLayers from '../Mission/MissionLayers.vue';
 import type { Feature } from '../../../../../src/types.ts';
 import { useCOTStore } from '../../../../../src/stores/cots.ts';
 const cotStore = useCOTStore();

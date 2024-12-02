@@ -172,6 +172,7 @@
                 </div>
 
                 <router-view
+                    :menu='true'
                     :mission='mission'
                     :token='token'
                     :role='role'

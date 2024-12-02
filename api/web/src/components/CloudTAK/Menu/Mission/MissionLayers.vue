@@ -1,5 +1,6 @@
 <template>
     <MenuTemplate
+        v-if='menu'
         name='Mission Layers'
         :back='false'
         :border='false'
@@ -48,14 +49,8 @@
                 label='Layers'
             />
             <template v-else>
-                <Feature
-                    v-for='uid of Array.from(orphaned)'
-                    :key='uid'
-                    :delete-button='false'
-                    :feature='feats.get(uid)'
-                    :mission='mission'
-                />
                 <MissionLayerTree
+                    :orphaned='orphaned'
                     :layers='layers'
                     :feats='feats'
                     :mission='mission'
@@ -66,6 +61,16 @@
             </template>
         </div>
     </MenuTemplate>
+    <MissionLayerTree
+        v-else
+        :orphaned='orphaned'
+        :layers='layers'
+        :feats='feats'
+        :mission='mission'
+        :role='role'
+        :token='token'
+        @refresh='refresh'
+    />
 </template>
 
 <script setup lang='ts'>
@@ -91,6 +96,7 @@ import MissionLayerTree from './MissionLayerTree.vue';
 import MissionLayerCreate from './MissionLayerCreate.vue';
 
 const props = defineProps<{
+    menu: boolean,
     mission: Mission,
     token?: string,
     role?: MissionRole
@@ -124,8 +130,8 @@ async function fetchFeats() {
     }
 }
 
-async function removeFeatures(layers: MissionLayer[]) {
-    for (const layer of layers) {
+async function removeFeatures(mlayers: MissionLayer[]) {
+    for (const layer of mlayers) {
         if (layer.type === 'UID' && layer.uids && layer.uids.length) {
             for (const cot of layer.uids) {
                 orphaned.value.delete(cot.data);
@@ -142,6 +148,8 @@ async function removeFeatures(layers: MissionLayer[]) {
 async function fetchLayers() {
     layers.value = (await Subscription.layerList(props.mission.name, props.token)).data;
     // @ts-expect-error Mission Layers is currently untyped due to recursive type limits
-    removeFeatures(layers.value.mission_layers);
+    if (layers.value.mission_layers) {
+        removeFeatures(layers.value.mission_layers);
+    }
 }
 </script>
