@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v5.12.0 - 2024-12-01
+
+- :tada: `UI` Show Icon if available in `Feature.vue`
+
 ### v5.11.0 - 2024-11-27
 
 - :rocket: `UI` Fully migrate Data Package Menu to TypeScript
