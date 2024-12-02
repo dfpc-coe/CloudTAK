@@ -24,10 +24,10 @@
     >
         <span class='me-2'>
             <canvas
+                v-if='feature.properties.icon'
                 ref='imgCanvas'
                 width='20'
                 height='20'
-                v-if='feature.properties.icon'
             />
             <!-- Icons are in order of most preferred display => Least-->
             <IconVideo
