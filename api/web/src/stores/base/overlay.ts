@@ -8,12 +8,12 @@ import type { Map, LngLatBoundsLike, LayerSpecification, VectorTileSource, Raste
 import cotStyles from '../utils/styles.ts'
 import { std, stdurl } from '../../std.js';
 import { useProfileStore } from '../profile.js';
+import { useMapStore } from '../map.js';
 
 /**
  * @class
  */
 export default class Overlay {
-    _map: Map;
     _destroyed: boolean;
     _internal: boolean;
 
@@ -108,8 +108,6 @@ export default class Overlay {
         internal?: boolean;
         before?: string;
     } = {}) {
-        this._map = map;
-
         this._destroyed = false;
         this._internal = opts.internal || false;
         this._clickable = [];
@@ -138,7 +136,9 @@ export default class Overlay {
     }
 
     hasBounds(): boolean {
-        const source = this._map.getSource(String(this.id))
+        const mapStore = useMapStore();
+        if (!mapStore.map) return false;
+        const source = mapStore.map.getSource(String(this.id))
         if (!source) return false;
 
         if (source.type === 'vector') {
@@ -153,16 +153,18 @@ export default class Overlay {
     }
 
     async zoomTo(): Promise<void> {
-        const source = this._map.getSource(String(this.id))
+        const mapStore = useMapStore();
+        if (!mapStore.map) return;
+        const source = mapStore.map.getSource(String(this.id))
         if (!source) return;
 
         if (source.type === 'vector') {
-            this._map.fitBounds((source as VectorTileSource).bounds);
+            mapStore.map.fitBounds((source as VectorTileSource).bounds);
         } else if (source.type === 'raster') {
-            this._map.fitBounds((source as RasterTileSource).bounds);
+            mapStore.map.fitBounds((source as RasterTileSource).bounds);
         } else if (source.type === 'geojson') {
             const geojson = await (source as GeoJSONSource).getData();
-            this._map.fitBounds(bbox(geojson) as LngLatBoundsLike);
+            mapStore.map.fitBounds(bbox(geojson) as LngLatBoundsLike);
         }
     }
 
@@ -170,11 +172,14 @@ export default class Overlay {
         clickable?: Array<{ id: string; type: string }>;
         before?: string;
     } = {}) {
+        const mapStore = useMapStore();
+        if (!mapStore.map) throw new Error('Map has not yet initialized');
+
         if (this.type ==='raster' && this.url) {
             const url = stdurl(this.url);
             url.searchParams.append('token', localStorage.token);
 
-            this._map.addSource(String(this.id), {
+            mapStore.map.addSource(String(this.id), {
                 type: 'raster',
                 url: String(url)
             });
@@ -182,15 +187,15 @@ export default class Overlay {
             const url = stdurl(this.url);
             url.searchParams.append('token', localStorage.token);
 
-            this._map.addSource(String(this.id), {
+            mapStore.map.addSource(String(this.id), {
                 type: 'vector',
                 url: String(url)
             });
         } else if (this.type === 'geojson') {
-            if (!this._map.getSource(String(this.id))) {
+            if (!mapStore.map.getSource(String(this.id))) {
                 const data: FeatureCollection = { type: 'FeatureCollection', features: [] };
 
-                this._map.addSource(String(this.id), {
+                mapStore.map.addSource(String(this.id), {
                     type: 'geojson',
                     cluster: false,
                     data
@@ -245,9 +250,9 @@ export default class Overlay {
 
         for (const l of this.styles) {
             if (opts.before) {
-                this._map.addLayer(l, opts.before);
+                mapStore.map.addLayer(l, opts.before);
             } else {
-                this._map.addLayer(l)
+                mapStore.map.addLayer(l)
             }
         }
 
@@ -262,11 +267,13 @@ export default class Overlay {
         }
 
         for (const click of opts.clickable) {
-            this._map.on('mouseenter', click.id, () => {
-                this._map.getCanvas().style.cursor = 'pointer';
+            mapStore.map.on('mouseenter', click.id, () => {
+                if (!mapStore.map) throw new Error('Map has not yet initialized');
+                mapStore.map.getCanvas().style.cursor = 'pointer';
             })
-            this._map.on('mouseleave', click.id, () => {
-                this._map.getCanvas().style.cursor = '';
+            mapStore.map.on('mouseleave', click.id, () => {
+                if (!mapStore.map) throw new Error('Map has not yet initialized');
+                mapStore.map.getCanvas().style.cursor = '';
             })
         }
 
@@ -275,11 +282,14 @@ export default class Overlay {
     }
 
     remove() {
+        const mapStore = useMapStore();
+        if (!mapStore.map) throw new Error('Map has not yet initialized');
+
         for (const l of this.styles) {
-            this._map.removeLayer(String(l.id));
+            mapStore.map.removeLayer(String(l.id));
         }
 
-        this._map.removeSource(String(this.id));
+        mapStore.map.removeSource(String(this.id));
     }
 
     async replace(body: {
@@ -321,11 +331,14 @@ export default class Overlay {
         visible?: boolean;
         opacity?: number;
     }): Promise<void> {
+        const mapStore = useMapStore();
+        if (!mapStore.map) throw new Error('Map has not yet initialized');
+
         if (body.opacity !== undefined) {
             this.opacity = body.opacity;
             for (const l of this.styles) {
                 if (this.type === 'raster') {
-                    this._map.setPaintProperty(l.id, 'raster-opacity', Number(this.opacity))
+                    mapStore.map.setPaintProperty(l.id, 'raster-opacity', Number(this.opacity))
                 }
             }
         }
@@ -333,7 +346,7 @@ export default class Overlay {
         if (body.visible !== undefined) {
             this.visible = body.visible;
             for (const l of this.styles) {
-                this._map.setLayoutProperty(l.id, 'visibility', this.visible ? 'visible' : 'none');
+                mapStore.map.setLayoutProperty(l.id, 'visibility', this.visible ? 'visible' : 'none');
             }
         }
 
