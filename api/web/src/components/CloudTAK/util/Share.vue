@@ -13,10 +13,18 @@
                 >
                     <IconX
                         :size='20'
-                        :stroke='1'
+                        stroke='1'
                     />
                 </TablerIconButton>
             </div>
+        </div>
+
+        <div class='mx-2'>
+            <TablerInput
+                label=''
+                placeholder='Filter...'
+                v-model='filter'
+            />
         </div>
 
         <TablerLoading v-if='loading' />
@@ -33,9 +41,9 @@
                     width: 100%;
                 `'
             >
-                <Contact
+                <COTContact
                     v-for='a of visibleContacts'
-                    :key='a.id'
+                    :key='a.uid'
                     :compact='compact'
                     :contact='a'
                     :button-chat='false'
@@ -61,7 +69,7 @@
                         <IconShare2
                             v-if='compact'
                             :size='20'
-                            :stroke='1'
+                            stroke='1'
                         />
                         <span v-else>Share to Selected</span>
                     </TablerButton>
@@ -81,7 +89,7 @@
                         <IconBroadcast
                             v-if='compact'
                             :size='20'
-                            :stroke='1'
+                            stroke='1'
                         />
                         <span v-else>Broadcast to All</span>
                     </TablerButton>
@@ -104,10 +112,12 @@
     </div>
 </template>
 
-<script>
-import { std, stdurl } from '/src/std.ts';
+<script setup lang='ts'>
+import { ref, computed, onMounted } from 'vue';
+import { std, stdurl } from '../../../../src/std.ts';
 import {
     TablerNone,
+    TablerInput,
     TablerLoading,
     TablerButton,
     TablerIconButton
@@ -117,134 +127,123 @@ import {
     IconBroadcast,
     IconShare2
 } from '@tabler/icons-vue';
-import Contact from '../util/Contact.vue';
-import { useConnectionStore } from '/src/stores/connection.ts';
-import { useCOTStore } from '/src/stores/cots.ts';
+import COT from '../../../../src/stores/base/cot.ts'
+import type { Contact, ContactList, Feature } from '../../../../src/types.ts'
+import COTContact from '../util/Contact.vue';
+import { useConnectionStore } from '../../../../src/stores/connection.ts';
+import { useCOTStore } from '../../../../src/stores/cots.ts';
 
 const cotStore = useCOTStore();
 const connectionStore = useConnectionStore();
 
-export default {
-    name: 'COTShare',
-    components: {
-        Contact,
-        IconX,
-        IconBroadcast,
-        IconShare2,
-        TablerNone,
-        TablerLoading,
-        TablerButton,
-        TablerIconButton,
-    },
-    props: {
-        feats: { type: Array },
-        basemaps: { type: Array },
-        compact: {
-            type: Boolean,
-            default: false
-        },
-        maxheight: {
-            type: String,
-            default: '100%'
-        }
-    },
-    emits: [
-        'cancel',
-        'done'
-    ],
-    data: function() {
-        return {
-            err: false,
-            loading: true,
-            selected: new Set(),
-            contacts: [],
-        }
-    },
-    computed: {
-        visibleContacts: function() {
-            return this.contacts.filter((contact) => {
-                return contact.callsign;
-            })
-        }
-    },
-    mounted: async function() {
-        await this.fetchList();
-    },
-    methods: {
-        /** Feats often come from Vector Tiles which don't contain the full feature */
-        currentFeats: function() {
-            return (this.feats || []).map((f) => {
-                if (f.properties.type === 'b-f-t-r') {
-                    // FileShare is manually generated and won't exist in CoT Store
-                    return f;
-                } else {
-                    return cotStore.get(f.id);
-                }
-            }).filter((f) => {
-                return !!f;
-            });
-        },
-        share: async function() {
-            const feats = this.currentFeats();
+const props = defineProps<{
+    feats?: Feature[] | COT[],
+    basemaps?: number[],
+    compact?: boolean
+}>();
 
-            // CoTs with Attachments must always be send via a DataPackage
-            if (
-                feats.length === 1
-                && !this.basemaps
-                && (!feats[0].properties.attachments || feats[0].properties.attachments.length === 0)
-            ) {
-                for (const contact of this.selected) {
-                    const feat = JSON.parse(JSON.stringify(feats[0]));
-                    feat.properties.dest = [{ uid: contact.uid }];
-                    connectionStore.sendCOT(feat);
-                }
+const emit = defineEmits([
+    'cancel',
+    'done'
+]);
+
+const loading = ref(true);
+const filter = ref('');
+const selected = ref<Set<Contact>>(new Set())
+const contacts = ref<ContactList>([]);
+
+const visibleContacts = computed<ContactList>(() => {
+    return contacts.value.filter((contact) => {
+        return contact.callsign;
+    }).filter((contact) => {
+        return contact.callsign.toLowerCase().includes(filter.value.toLowerCase());
+    })
+});
+
+onMounted(async () => {
+    await fetchList();
+});
+
+/** Feats often come from Vector Tiles which don't contain the full feature */
+function currentFeats(): Feature[] {
+    return (props.feats || []).map((f) => {
+        if (f.properties.type === 'b-f-t-r') {
+            // FileShare is manually generated and won't exist in CoT Store
+            return f;
+        } else {
+            const cot = cotStore.get(f.id)
+            if (cot) {
+                return cot.as_feature();
             } else {
-                await std('/api/marti/package', {
-                    method: 'PUT',
-                    body: {
-                        type: 'FeatureCollection',
-                        uids: Array.from(this.selected).map((contact) => { return contact.uid }),
-                        basemaps: this.basemaps || [],
-                        features: feats.map((f) => {
-                            f = JSON.parse(JSON.stringify(f));
-                            return { id: f.id || f.properties.id, type: f.type, properties: f.properties, geometry: f.geometry }
-                        })
-                    }
-                });
+                return;
             }
+        }
+    }).filter((f) => {
+        return !!f;
+    }) as Feature[];
+}
 
-            this.$emit('done');
-        },
-        broadcast: async function() {
-            const feats = this.currentFeats();
+async function share() {
+    const feats = currentFeats();
 
-            if (
-                feats.length === 1
-                && !this.basemaps
-                && (!feats[0].properties.attachments || feats[0].properties.attachments.length === 0)
-            ) {
-                connectionStore.sendCOT(JSON.parse(JSON.stringify(feats[0])));
-                this.$emit('done');
-            } else {
-                await std('/api/marti/package', {
-                    method: 'PUT',
-                    body: {
-                        type: 'FeatureCollection',
-                        basemaps: this.basemaps || [],
-                        features: feats.map((f) => {
-                            f = JSON.parse(JSON.stringify(f));
-                            return { id: f.id || f.properties.id, type: f.type, properties: f.properties, geometry: f.geometry }
-                        })
-                    }
-                });
+    // CoTs with Attachments must always be send via a DataPackage
+    if (
+        feats.length === 1
+        && !props.basemaps
+        && (!feats[0].properties.attachments || feats[0].properties.attachments.length === 0)
+    ) {
+        for (const contact of selected.value) {
+            const feat = JSON.parse(JSON.stringify(feats[0]));
+            feat.properties.dest = [{ uid: contact.uid }];
+            connectionStore.sendCOT(feat);
+        }
+    } else {
+        await std('/api/marti/package', {
+            method: 'PUT',
+            body: {
+                type: 'FeatureCollection',
+                uids: Array.from(selected.value).map((contact) => { return contact.uid }),
+                basemaps: props.basemaps || [],
+                features: feats.map((f) => {
+                    f = JSON.parse(JSON.stringify(f));
+                    return { id: f.id || f.properties.id, type: f.type, properties: f.properties, geometry: f.geometry }
+                })
             }
-        },
-        fetchList: async function() {
-            this.loading = true;
-            const url = stdurl('/api/marti/api/contacts/all');
-            this.contacts = await std(url);
-            this.loading = false;
-        },
+        });
     }
+
+    emit('done');
+}
+
+async function broadcast() {
+    const feats = currentFeats();
+
+    if (
+        feats.length === 1
+        && !props.basemaps
+        && (!feats[0].properties.attachments || feats[0].properties.attachments.length === 0)
+    ) {
+        connectionStore.sendCOT(JSON.parse(JSON.stringify(feats[0])));
+        emit('done');
+    } else {
+        await std('/api/marti/package', {
+            method: 'PUT',
+            body: {
+                type: 'FeatureCollection',
+                basemaps: props.basemaps || [],
+                features: feats.map((f) => {
+                    f = JSON.parse(JSON.stringify(f));
+                    return { id: f.id || f.properties.id, type: f.type, properties: f.properties, geometry: f.geometry }
+                })
+            }
+        });
+    }
+}
+
+async function fetchList() {
+    loading.value = true;
+    const url = stdurl('/api/marti/api/contacts/all');
+    contacts.value = await std(url) as ContactList;
+    loading.value = false;
 }
 </script>
