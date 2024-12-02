@@ -33,6 +33,7 @@ export default defineConfig(({ mode }) => {
         optimizeDeps: {
             include: ["showdown", "@tak-ps/vue-tabler"],
         },
+        build: {},
         server: {
             port: 8080,
         },
