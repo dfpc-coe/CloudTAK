@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v5.15.0 - 2024-12-02
+
+- :tada: Update Overlay to use MissionLayerTree for displaying CoTs
+- :rocket: Update CoT Class to expose `flyTo` fn
+- :rocket: Update MissionLayer to TS
+
 ### v5.14.0 - 2024-12-01
 
 - :rocket: Editing Fields for CoTView
