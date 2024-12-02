@@ -13,7 +13,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
@@ -26,18 +26,6 @@ const cotStore = useCOTStore();
 const props = defineProps<{
     overlay: Overlay
 }>()
-
-const feats = computed<Map<string, Feature>>(() => {
-    const map = new Map();
-    if (!subscription.value) return map;
-
-    Array.from(subscription.value.cots.values()).forEach((cot) => {
-        const feat = cot.as_feature();
-        map.set(feat.id, feat);
-    })
-
-    return map;
-})
 
 const subscription = ref(cotStore.subscriptions.get(props.overlay.mode_id || ''));
 </script>

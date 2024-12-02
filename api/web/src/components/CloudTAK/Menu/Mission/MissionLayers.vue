@@ -61,16 +61,29 @@
             </template>
         </div>
     </MenuTemplate>
-    <MissionLayerTree
-        v-else
-        :orphaned='orphaned'
-        :layers='layers'
-        :feats='feats'
-        :mission='mission'
-        :role='role'
-        :token='token'
-        @refresh='refresh'
-    />
+    <template v-else>
+        <TablerLoading
+            v-if='loading'
+            class='mx-2'
+            desc='Loading Layers...'
+        />
+        <TablerNone
+            v-else-if='!layers.length && !orphaned.size'
+            :create='false'
+            :compact='true'
+            label='Layers'
+        />
+        <MissionLayerTree
+            v-else
+            :orphaned='orphaned'
+            :layers='layers'
+            :feats='feats'
+            :mission='mission'
+            :role='role'
+            :token='token'
+            @refresh='refresh'
+        />
+    </template>
 </template>
 
 <script setup lang='ts'>
@@ -117,7 +130,6 @@ async function refresh() {
     loading.value = true;
     await fetchFeats();
     await fetchLayers();
-
     loading.value = false;
 }
 
@@ -130,7 +142,7 @@ async function fetchFeats() {
     }
 }
 
-async function removeFeatures(mlayers: MissionLayer[]) {
+function removeFeatures(mlayers: MissionLayer[]): void {
     for (const layer of mlayers) {
         if (layer.type === 'UID' && layer.uids && layer.uids.length) {
             for (const cot of layer.uids) {
@@ -145,11 +157,12 @@ async function removeFeatures(mlayers: MissionLayer[]) {
     }
 }
 
-async function fetchLayers() {
+async function fetchLayers(): Promise<void> {
     layers.value = (await Subscription.layerList(props.mission.name, props.token)).data;
     // @ts-expect-error Mission Layers is currently untyped due to recursive type limits
-    if (layers.value.mission_layers) {
-        removeFeatures(layers.value.mission_layers);
+
+    if (layers.value) {
+        removeFeatures(layers.value);
     }
 }
 </script>
