@@ -27,6 +27,7 @@ export type Group = paths["/marti/group"]["get"]["responses"]["200"]["content"][
 export type User = paths["/user/{:username}"]["get"]["responses"]["200"]["content"]["application/json"];
 export type UserList = paths["/user"]["get"]["responses"]["200"]["content"]["application/json"];
 
+export type Contact = paths["/marti/api/contacts/all"]["get"]["responses"]["200"]["content"]["application/json"][0];
 export type ContactList = paths["/marti/api/contacts/all"]["get"]["responses"]["200"]["content"]["application/json"];
 
 export type Content = paths["/marti/package"]["put"]["responses"]["200"]["content"]["application/json"];

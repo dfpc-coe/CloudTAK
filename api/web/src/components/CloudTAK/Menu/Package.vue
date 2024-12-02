@@ -22,7 +22,7 @@
                 v-else-if='error'
                 :err='error'
             />
-            <template v-else-if='mode === "share"'>
+            <template v-else-if='mode === "share" && shareFeat'>
                 <div class='overflow-auto'>
                     <Share
                         :feats='[shareFeat]'
@@ -99,7 +99,7 @@
 <script setup lang='ts'>
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import type { Server, Package, Import } from '../../../../src/types.ts';
+import type { Server, Package, Import, Feature } from '../../../../src/types.ts';
 import { std, stdurl } from '../../../../src/std.ts';
 import Share from '../util/Share.vue';
 import timeDiff from '../../../timediff.ts';
@@ -132,8 +132,8 @@ watch(route, async () => {
 
 const profile = profileStore.profile;
 
-const shareFeat = computed(() => {
-    if (!profile || !pkg.value || !server.value) return
+const shareFeat = computed<Feature | undefined>(() => {
+    if (!profile || !pkg.value || !server.value) return;
 
     return {
         type: 'Feature',
@@ -155,7 +155,7 @@ const shareFeat = computed(() => {
             type: 'Point',
             coordinates: [0, 0, 0]
         }
-    }
+    } as Feature;
 });
 
 

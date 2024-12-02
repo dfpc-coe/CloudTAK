@@ -32,7 +32,7 @@
                     v-for='select in selected.values()'
                     class='col-12'
                 >
-                    <Feature
+                    <DisplayFeature
                         :feature='select'
                         delete-action='emit'
                         @delete='selected.delete(select.properties.id)'
@@ -136,7 +136,8 @@
 
 <script setup lang='ts'>
 import { ref } from 'vue';
-import Feature from './Feature.vue';
+import DisplayFeature from './Feature.vue';
+import type { Feature } from '../../../../src/types.ts';
 import { useCOTStore } from '../../../../src/stores/cots.ts';
 import {
     IconPackageExport,
@@ -158,12 +159,9 @@ import ShareToPackage from './ShareToPackage.vue';
 
 const cotStore = useCOTStore();
 
-const props = defineProps({
-    selected: {
-        type: Object,
-        required: true
-    }
-});
+const props = defineProps<{
+    selected: Map<string, Feature>
+}>();
 
 enum ShareType {
     NONE = 'none',
