@@ -103,7 +103,6 @@ import type {
     MissionLayer
 } from '../../../../../src/types.ts';
 import Subscription from '../../../../../src/stores/base/mission.ts';
-import Feature from '../../util/Feature.vue';
 import MenuTemplate from '../../util/MenuTemplate.vue';
 import MissionLayerTree from './MissionLayerTree.vue';
 import MissionLayerCreate from './MissionLayerCreate.vue';
@@ -151,7 +150,7 @@ function removeFeatures(mlayers: MissionLayer[]): void {
         }
 
         if (layer.mission_layers) {
-            // @ts-expect-error Mission Layers is currently untyped due to recursive type limits
+            // @ts-expect-error Due to recursive type limits this is unknown
             removeFeatures(layer.mission_layers);
         }
     }
@@ -159,7 +158,6 @@ function removeFeatures(mlayers: MissionLayer[]): void {
 
 async function fetchLayers(): Promise<void> {
     layers.value = (await Subscription.layerList(props.mission.name, props.token)).data;
-    // @ts-expect-error Mission Layers is currently untyped due to recursive type limits
 
     if (layers.value) {
         removeFeatures(layers.value);

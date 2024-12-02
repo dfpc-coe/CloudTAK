@@ -1,5 +1,6 @@
 import { std } from '../../std.ts';
 import { bbox } from '@turf/bbox'
+import type { LngLatBoundsLike } from 'maplibre-gl';
 import { useCOTStore } from '../cots.ts'
 import { useMapStore } from '../map.ts';
 import pointOnFeature from '@turf/point-on-feature';
@@ -214,7 +215,7 @@ export default class COT {
         if (!mapStore.map) return;
 
         mapStore.map.fitBounds(this.bounds() as LngLatBoundsLike, {
-            maxZoom: 20, 
+            maxZoom: 18, 
             padding: {
                 top: 20, 
                 bottom: 20, 

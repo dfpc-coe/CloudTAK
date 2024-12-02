@@ -607,10 +607,8 @@
 <script setup lang='ts'>
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
-import type { LngLatBoundsLike, FlyToOptions, LngLatLike } from 'maplibre-gl'
 import type COT from '../../../src/stores/base/cot.ts';
 import type { COTType } from '../../../src/types.ts';
-import { useMapStore } from '../../../src/stores/map.ts';
 import { OriginMode } from '../../../src/stores/base/cot.ts'
 import Mission from '../../../src/stores/base/mission.ts'
 import {
@@ -658,7 +656,6 @@ const cotStore = useCOTStore();
 import { useProfileStore } from '../../../src/stores/profile.ts';
 import { useVideoStore } from '../../../src/stores/videos.ts';
 
-const mapStore = useMapStore();
 const profileStore = useProfileStore();
 const videoStore = useVideoStore();
 const route = useRoute();

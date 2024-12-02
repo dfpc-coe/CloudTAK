@@ -92,7 +92,6 @@
 <script setup lang='ts'>
 import { computed, useTemplateRef, watch } from 'vue';
 import Contact from './Contact.vue';
-import type { LngLatLike, LngLatBoundsLike } from 'maplibre-gl'
 import {
     TablerDelete
 } from '@tak-ps/vue-tabler';

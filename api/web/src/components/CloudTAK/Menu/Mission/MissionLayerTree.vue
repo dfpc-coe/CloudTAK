@@ -2,10 +2,10 @@
     <TablerLoading v-if='loading' />
     <template v-else>
         <SingleFeature
-            v-for='orphaned of orphaned'
-            :key='orphaned'
+            v-for='feat of orphanedFeats'
+            :key='feat.id'
             :delete-button='false'
-            :feature='feats.get(orphaned)'
+            :feature='orphanedFeats'
             :mission='mission'
         />
         <div
@@ -128,7 +128,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import type { Mission, MissionLayer, MissionRole, Feature } from '../../../../../src/types.ts';
 import Subscription from '../../../../../src/stores/base/mission.ts';
 import MissionLayerTree from './MissionLayerTree.vue';
@@ -167,6 +167,15 @@ const props = defineProps<{
 const opened = ref<Set<string>>(new Set());
 const edit = ref<Set<string>>(new Set());
 const loading = ref(false);
+
+const orphanedFeats = computed<Feature[]>(() => {
+    const feats = [];
+    for (const uid of props.orphaned || []) {
+        const feat = props.feats.get(uid);
+        if (feat) feats.push(feat);
+    }
+    return feats;
+})
 
 function cots(layer: MissionLayer): Array<Feature> {
     const cots = [];

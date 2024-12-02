@@ -5,6 +5,7 @@
         class='ms-3'
     >
         <MissionLayers
+            :menu='false'
             :mission='subscription.meta'
             :token='subscription.token'
             :role='subscription.role'
@@ -19,7 +20,6 @@ import {
 } from '@tak-ps/vue-tabler';
 import Overlay from '../../../../../src/stores/base/overlay.ts'
 import MissionLayers from '../Mission/MissionLayers.vue';
-import type { Feature } from '../../../../../src/types.ts';
 import { useCOTStore } from '../../../../../src/stores/cots.ts';
 const cotStore = useCOTStore();
 
