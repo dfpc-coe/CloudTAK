@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v5.16.0 - 2024-12-02
+
+- :tada: `UI` Add filter support for Share Component
+
 ### v5.15.0 - 2024-12-02
 
 - :tada: Update Overlay to use MissionLayerTree for displaying CoTs
