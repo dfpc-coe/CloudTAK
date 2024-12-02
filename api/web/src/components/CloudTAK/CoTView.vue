@@ -348,14 +348,18 @@
                 @attachment='addAttachment($event)'
             />
 
-            <div class='col-12 py-2'>
+            <div
+                v-if='cot.properties.remarks'
+                class='col-12 py-2'
+            >
                 <label class='subheader mx-2'>Remarks</label>
-                <div class='bg-gray-500 rounded mx-2 py-2 px-2'>
-                    <TablerMarkdown
-                        :markdown='remarks'
-                        class='mx-1'
-                    />
-                </div>
+                <CopyField
+                    v-model='cot.properties.remarks'
+                    :rows='10'
+                    :edit='isEditable'
+                    :hover='isEditable'
+                    class='mx-1'
+                />
             </div>
 
             <div
@@ -591,7 +595,8 @@
                 class='overflow-auto'
             >
                 <CopyField
-                    :pre='true'
+                    mode='pre'
+                    style='height: calc(100vh - 225px)'
                     :model-value='JSON.stringify(cot.as_feature(), null, 4)'
                 />
             </div>
@@ -614,7 +619,6 @@ import {
     TablerDelete,
     TablerEnum,
     TablerRange,
-    TablerMarkdown,
     TablerDropdown,
     TablerIconButton,
 } from '@tak-ps/vue-tabler';
@@ -732,15 +736,6 @@ const center = computed(() => {
         Math.round(cot.value.properties.center[0] * 1000000) / 1000000,
         Math.round(cot.value.properties.center[1] * 1000000) / 1000000,
     ]
-})
-
-const remarks = computed(() => {
-    if (!cot.value) return '';
-
-    return (cot.value.properties.remarks || '')
-        .replace(/\n/g, '</br>')
-        .replace(/(http(s)?:\/\/.*?(\s|$))/g, '[$1]($1) ')
-        .trim()
 })
 
 function timediffFormat(date: string) {
