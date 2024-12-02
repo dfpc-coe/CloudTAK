@@ -66,6 +66,7 @@ export const VideoLease = pgTable('video_lease', {
     username: text().notNull().references(() => Profile.username),
 
     ephemeral: boolean().notNull().default(false),
+    channel: text(),
 
     expiration: timestamp({ withTimezone: true, mode: 'string' }).default(sql`Now() + INTERVAL 1 HOUR;`),
     path: text().notNull(),
