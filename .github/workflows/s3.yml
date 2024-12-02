@@ -56,7 +56,7 @@ jobs:
 
       - name: NPM Build
         working-directory: ./api/web/
-        run: API_URL='${{ secrets[matrix.api_url] }}' npm run build
+        run: API_URL='${{ secrets[matrix.api_url] }}' npm run builds3
 
       - name: AWS S3 CP
         working-directory: ./api/web/
@@ -75,7 +75,7 @@ jobs:
 
       - name: NPM Build
         working-directory: ./api/web/
-        run: API_URL='${{ secrets[matrix.staging_api_url] }}' npm run build
+        run: API_URL='${{ secrets[matrix.staging_api_url] }}' npm run builds3
 
       - name: AWS S3 CP
         working-directory: ./api/web/
