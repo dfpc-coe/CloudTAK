@@ -116,7 +116,7 @@ async function refresh() {
 }
 
 async function fetchFeats() {
-    const fc = await Subscription.featList(props.mission.guid, props.token)
+    const fc = await Subscription.featList(props.mission.name, props.token)
 
     for (const feat of fc.features) {
         feats.value.set(feat.id, feat);
@@ -140,7 +140,7 @@ async function removeFeatures(layers: MissionLayer[]) {
 }
 
 async function fetchLayers() {
-    layers.value = (await Subscription.layerList(props.mission.guid, props.token)).data;
+    layers.value = (await Subscription.layerList(props.mission.name, props.token)).data;
     // @ts-expect-error Mission Layers is currently untyped due to recursive type limits
     removeFeatures(layers.value.mission_layers);
 }
