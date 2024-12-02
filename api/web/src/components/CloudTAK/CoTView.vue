@@ -93,7 +93,7 @@
 
                         <TablerIconButton
                             title='Zoom To'
-                            @click='zoomTo'
+                            @click='cot.flyTo()'
                         >
                             <IconZoomPan
                                 :size='32'
@@ -765,35 +765,5 @@ async function deleteCOT() {
     if (!cot.value) return;
     await cotStore.delete(cot.value.id);
     router.push('/');
-}
-
-function zoomTo() {
-    if (!cot.value) return;
-    if (!mapStore.map) throw new Error('Map not initialized');
-
-    if (cot.value.geometry.type === "Point") {
-        const flyTo: FlyToOptions = {
-            speed: Infinity,
-            center: cot.value.properties.center as LngLatLike,
-            zoom: 14
-        };
-
-        if (mapStore.map.getZoom() < 3) {
-            flyTo.zoom = 4;
-        }
-
-        mapStore.map.flyTo(flyTo)
-    } else {
-        mapStore.map.fitBounds(cot.value.bounds() as LngLatBoundsLike, {
-            maxZoom: 14,
-            padding: {
-                top: 20,
-                bottom: 20,
-                left: 20,
-                right: 20
-            },
-            speed: Infinity,
-        })
-    }
 }
 </script>
