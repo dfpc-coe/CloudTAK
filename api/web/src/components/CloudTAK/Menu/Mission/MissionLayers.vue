@@ -124,8 +124,8 @@ async function fetchFeats() {
     }
 }
 
-async function removeFeatures() {
-    for (const layer of layers.value.mission_layers) {
+async function removeFeatures(layers: MissionLayer[]) {
+    for (const layer of layers) {
         if (layer.type === 'UID' && layer.uids && layer.uids.length) {
             for (const cot of layer.uids) {
                 orphaned.value.delete(cot.data);
@@ -133,6 +133,7 @@ async function removeFeatures() {
         }
 
         if (layer.mission_layers) {
+            // @ts-expect-error Mission Layers is currently untyped due to recursive type limits
             removeFeatures(layer.mission_layers);
         }
     }
@@ -140,6 +141,7 @@ async function removeFeatures() {
 
 async function fetchLayers() {
     layers.value = (await Subscription.layerList(props.mission.guid, props.token)).data;
-    removeFeatures();
+    // @ts-expect-error Mission Layers is currently untyped due to recursive type limits
+    removeFeatures(layers.value.mission_layers);
 }
 </script>

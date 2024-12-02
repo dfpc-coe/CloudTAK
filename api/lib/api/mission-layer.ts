@@ -126,6 +126,7 @@ export default class {
         opts?: Static<typeof MissionOptions>
     ): Promise<TAKList<Static<typeof MissionLayer>>> {
         let res;
+
         if (this.#isGUID(name)) {
             const url = new URL(`/Marti/api/missions/guid/${this.#encodeName(name)}/layers`, this.api.url);
 
