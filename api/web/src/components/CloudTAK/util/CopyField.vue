@@ -39,6 +39,7 @@
         <template v-if='rows > 1 || mode === "pre"'>
             <TablerMarkdown
                 v-if='mode === "text"'
+                style='min-height: 32px'
                 :markdown='markdown'
             />
             <pre
