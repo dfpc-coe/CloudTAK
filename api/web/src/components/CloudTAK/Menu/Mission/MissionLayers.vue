@@ -6,7 +6,7 @@
     >
         <template #buttons>
             <TablerIconButton
-                v-if='!createLayer && role.permissions.includes("MISSION_WRITE")'
+                v-if='!createLayer && role && role.permissions.includes("MISSION_WRITE")'
                 title='New Mission Layer'
                 :size='24'
                 @click='createLayer = true'
@@ -37,7 +37,7 @@
                 @cancel='createLayer = false'
             />
             <TablerLoading
-                v-else-if='loading.layers'
+                v-else-if='loading'
                 class='mx-2'
                 desc='Loading Layers...'
             />
@@ -68,8 +68,8 @@
     </MenuTemplate>
 </template>
 
-<script>
-import { std, stdurl } from '/src/std.ts';
+<script setup lang='ts'>
+import { ref, onMounted } from 'vue';
 import {
     IconPlus,
     IconRefresh,
@@ -79,105 +79,67 @@ import {
     TablerLoading,
     TablerIconButton,
 } from '@tak-ps/vue-tabler';
+import type {
+    Mission,
+    MissionRole,
+    MissionLayer
+} from '../../../../../src/types.ts';
+import Subscription from '../../../../../src/stores/base/mission.ts';
 import Feature from '../../util/Feature.vue';
 import MenuTemplate from '../../util/MenuTemplate.vue';
 import MissionLayerTree from './MissionLayerTree.vue';
 import MissionLayerCreate from './MissionLayerCreate.vue';
 
-export default {
-    name: 'MissionLayers',
-    components: {
-        IconPlus,
-        IconRefresh,
-        Feature,
-        MenuTemplate,
-        MissionLayerTree,
-        MissionLayerCreate,
-        TablerNone,
-        TablerLoading,
-        TablerIconButton,
-    },
-    props: {
-        mission: Object,
-        token: String,
-        role: Object,
-    },
-    data: function() {
-        return {
-            createLayer: false,
-            loading: {
-                layers: true,
-            },
-            feats: new Map(),
-            orphaned: new Set(),
-            layers: [],
-        }
-    },
-    mounted: async function() {
-        await this.refresh();
-    },
-    methods: {
-        refresh: async function() {
-            this.createLayer = false;
-            this.loading.layers = true;
-            await this.fetchFeats();
-            await this.fetchLayers();
+const props = defineProps<{
+    mission: Mission,
+    token?: string,
+    role?: MissionRole
+}>()
 
-            this.loading.layers = false;
-        },
-        deleteLayer: async function(layer) {
-            this.loading.layers = true;
-            const url = stdurl(`/api/marti/missions/${this.mission.name}/layer/${layer.uid}`);
+const createLayer = ref(false)
+const loading = ref(true);
+const feats = ref(new Map());
+const orphaned = ref<Set<string>>(new Set());
+const layers = ref<Array<MissionLayer>>([]);
 
-            await std(url, {
-                method: 'DELETE',
-                headers: {
-                    MissionAuthorization: this.token
-                },
-            })
+onMounted(async () => {
+    await refresh();
+});
 
-            await this.refresh();
-        },
-        fetchFeats: async function() {
-            const url = stdurl(`/api/marti/missions/${this.mission.name}/cot`);
-            const fc = await std(url, {
-                headers: {
-                    MissionAuthorization: this.token
-                },
-            });
+async function refresh() {
+    createLayer.value = false;
+    loading.value = true;
+    await fetchFeats();
+    await fetchLayers();
 
-            for (const feat of fc.features) {
-                this.feats.set(feat.id, feat);
-                this.orphaned.add(feat.id);
-            }
-        },
-        removeFeatures: async function(layers) {
-            for (const layer of layers) {
-                if (layer.type === 'UID' && layer.uids && layer.uids.length) {
-                    for (const cot of layer.uids) {
-                        this.orphaned.delete(cot.data);
-                    }
-                }
+    loading.value = false;
+}
 
-                if (layer.mission_layers) {
-                    this.removeFeatures(layer.mission_layers);
-                }
-            }
-        },
-        fetchLayers: async function() {
-            const url = stdurl(`/api/marti/missions/${this.mission.name}/layer`);
-            this.layers = (await std(url, {
-                headers: {
-                    MissionAuthorization: this.token
-                },
-            })).data.map((l) => {
-                l._edit = false;
-                l._open = false;
-                return l;
-            });
+async function fetchFeats() {
+    const fc = await Subscription.featList(props.mission.guid, props.token)
 
-            this.removeFeatures(this.layers);
-        },
+    for (const feat of fc.features) {
+        feats.value.set(feat.id, feat);
+        orphaned.value.add(String(feat.id));
     }
+}
+
+async function removeFeatures() {
+    for (const layer of layers.value.mission_layers) {
+        if (layer.type === 'UID' && layer.uids && layer.uids.length) {
+            for (const cot of layer.uids) {
+                orphaned.value.delete(cot.data);
+            }
+        }
+
+        if (layer.mission_layers) {
+            removeFeatures(layer.mission_layers);
+        }
+    }
+}
+
+async function fetchLayers() {
+    layers.value = (await Subscription.layerList(props.mission.guid, props.token)).data;
+    removeFeatures();
 }
 </script>
