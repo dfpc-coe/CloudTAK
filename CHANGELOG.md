@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v5.13.0 - 2024-12-01
+
+- :bug: Accidently versioned twice
+
 ### v5.12.0 - 2024-12-01
 
 - :tada: `UI` Show Icon if available in `Feature.vue`
