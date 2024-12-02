@@ -143,16 +143,18 @@ const isZoomable = computed(() => {
     return false;
 });
 
-const canvas = useTemplateRef('imgCanvas');
+const canvas = useTemplateRef<HTMLCanvasElement>('imgCanvas');
 
 watch(canvas, async () => {
-    if (!canvas.value) return;
+    if (!canvas.value || !mapStore.map) return;
 
     const icon = mapStore.map.getImage(props.feature.properties.icon)
     const context = canvas.value.getContext('2d');
 
     canvas.value.height = 20;
     canvas.value.width = 20;
+
+    if (!context) return;
 
     context.drawImage(
         await createImageBitmap(new ImageData(
