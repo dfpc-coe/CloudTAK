@@ -8,6 +8,7 @@
         "typegen": "openapi-typescript http://localhost:5001/api/swagger --output src/derived-types.d.ts",
         "check": "vue-tsc",
         "build": "vite build",
+        "builds3": "VITE_MODE=s3 vite build",
         "lint": "eslint ./src/"
     },
     "dependencies": {

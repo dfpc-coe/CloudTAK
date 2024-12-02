@@ -6,7 +6,7 @@ import icons from './public/logos/icons.ts';
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, process.cwd(), '');
 
-    return {
+    const res = {
         define: {
             'process.env.API_URL': env.API_URL
         },
@@ -33,10 +33,14 @@ export default defineConfig(({ mode }) => {
         optimizeDeps: {
             include: ["showdown", "@tak-ps/vue-tabler"],
         },
+        build: {},
         server: {
             port: 8080,
         },
-        build: {
+    }
+
+    if (process.env.VITE_MODE !== 's3') {
+        res.build = {
             rollupOptions: {
                 output: {
                     entryFileNames: `assets/[name].js`,
@@ -46,5 +50,7 @@ export default defineConfig(({ mode }) => {
             }
         }
     }
+
+    return res;
 })
 
