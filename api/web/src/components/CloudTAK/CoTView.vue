@@ -592,7 +592,7 @@
             >
                 <CopyField
                     :pre='true'
-                    :modelValue='JSON.stringify(cot.as_feature(), null, 4)'
+                    :model-value='JSON.stringify(cot.as_feature(), null, 4)'
                 />
             </div>
         </template>

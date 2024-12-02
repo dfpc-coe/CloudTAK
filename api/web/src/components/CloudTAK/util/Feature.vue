@@ -23,9 +23,15 @@
         @click='flyTo'
     >
         <span class='me-2'>
+            <canvas
+                v-if='feature.properties.icon'
+                ref='imgCanvas'
+                width='20'
+                height='20'
+            />
             <!-- Icons are in order of most preferred display => Least-->
             <IconVideo
-                v-if='feature.properties && feature.properties.type === "b-m-p-s-p-loc"'
+                v-else-if='feature.properties && feature.properties.type === "b-m-p-s-p-loc"'
                 :size='20'
                 :color='feature.properties.stroke || "white"'
                 stroke='1'
@@ -84,7 +90,7 @@
 </template>
 
 <script setup lang='ts'>
-import { computed } from 'vue';
+import { computed, useTemplateRef, watch } from 'vue';
 import Contact from './Contact.vue';
 import type { LngLatLike, LngLatBoundsLike } from 'maplibre-gl'
 import {
@@ -136,6 +142,33 @@ const isZoomable = computed(() => {
     if (cot) return true;
     return false;
 });
+
+const canvas = useTemplateRef<HTMLCanvasElement>('imgCanvas');
+
+watch(canvas, async () => {
+    if (!canvas.value || !mapStore.map) return;
+
+    const icon = mapStore.map.getImage(props.feature.properties.icon)
+    const context = canvas.value.getContext('2d');
+
+    canvas.value.height = 20;
+    canvas.value.width = 20;
+
+    if (!context) return;
+
+    context.drawImage(
+        await createImageBitmap(new ImageData(
+            new Uint8ClampedArray(icon.data.data, icon.data.width, icon.data.height),
+            icon.data.width,
+            icon.data.height,
+        )),
+        0, 0,
+        icon.data.width,
+        icon.data.height,
+        0,0,
+        20,20
+    );
+})
 
 async function deleteCOT() {
     if (props.deleteAction === 'delete') {
