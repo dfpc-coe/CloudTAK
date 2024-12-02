@@ -306,7 +306,6 @@ async function removeOverlay(id: number) {
     loading.value = true;
     for (const overlay of overlays) {
         if (overlay.id === id) {
-            // @ts-expect-error Type Error around map style
             await mapStore.removeOverlay(overlay);
         }
     }
