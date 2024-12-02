@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v5.14.0 - 2024-12-01
+
+- :rocket: Editing Fields for CoTView
+
 ### v5.13.0 - 2024-12-01
 
 - :bug: Accidently versioned twice
