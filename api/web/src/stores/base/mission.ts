@@ -203,7 +203,7 @@ export default class Subscription {
     }
 
     static async layerList(guid: string, token?: string): Promise<MissionLayerList> {
-        const url = stdurl(`/api/marti/missions/${guid}/layer`);
+        const url = stdurl(`/api/marti/missions/${encodeURIComponent(guid)}/layer`);
 
         return await std(url, {
             method: 'GET',
