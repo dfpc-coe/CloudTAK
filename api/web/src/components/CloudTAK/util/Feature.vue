@@ -25,6 +25,8 @@
         <span class='me-2'>
             <canvas
                 ref='imgCanvas'
+                width='20'
+                height='20'
                 v-if='feature.properties.icon'
             />
             <!-- Icons are in order of most preferred display => Least-->
@@ -143,20 +145,26 @@ const isZoomable = computed(() => {
 
 const canvas = useTemplateRef('imgCanvas');
 
-watch(canvas, () => {
+watch(canvas, async () => {
     if (!canvas.value) return;
 
     const icon = mapStore.map.getImage(props.feature.properties.icon)
     const context = canvas.value.getContext('2d');
-    canvas.value.height = icon.data.height;
-    canvas.value.width = icon.data.width;
-    context.putImageData(
-        new ImageData(
+
+    canvas.value.height = 20;
+    canvas.value.width = 20;
+
+    context.drawImage(
+        await createImageBitmap(new ImageData(
             new Uint8ClampedArray(icon.data.data, icon.data.width, icon.data.height),
             icon.data.width,
-            icon.data.height
-        ),
-        0, 0
+            icon.data.height,
+        )),
+        0, 0,
+        icon.data.width,
+        icon.data.height,
+        0,0,
+        20,20
     );
 })
 
