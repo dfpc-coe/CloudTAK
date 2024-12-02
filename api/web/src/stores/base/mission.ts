@@ -13,6 +13,7 @@ import type {
     MissionRole,
     MissionList,
     MissionLogList,
+    MissionLayerList,
     MissionSubscriptions
 } from '../../types.ts';
 
@@ -89,9 +90,7 @@ export default class Subscription {
 
         const sub = new Subscription(mission, role, logs, token);
 
-        const fc = await std('/api/marti/missions/' + encodeURIComponent(guid) + '/cot', {
-            headers: Subscription.headers(token)
-        }) as FeatureCollection;
+        const fc = await this.featList(guid, token);
 
         for (const feat of fc.features) {
             const cot = new COT(feat as Feature, {
@@ -156,6 +155,12 @@ export default class Subscription {
         return res.data
     }
 
+    static async featList(guid: string, token?: string): Promise<FeatureCollection> {
+        return await std('/api/marti/missions/' + encodeURIComponent(guid) + '/cot', {
+            headers: Subscription.headers(token)
+        }) as FeatureCollection;
+    }
+
     static async logCreate(guid: string, token: string | undefined, body: object): Promise<MissionLog> {
         const url = stdurl('/api/marti/missions/' + encodeURIComponent(guid) + '/log');
 
@@ -195,6 +200,15 @@ export default class Subscription {
         });
 
         return list;
+    }
+
+    static async layerList(guid: string, token?: string): Promise<MissionLayerList> {
+        const url = stdurl(`/api/marti/missions/${encodeURIComponent(guid)}/layer`);
+
+        return await std(url, {
+            method: 'GET',
+            headers: Subscription.headers(token)
+        }) as MissionLayerList;
     }
 
     static async layerDelete(guid: string, layeruid: string, token?: string): Promise<void> {

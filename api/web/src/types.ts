@@ -36,11 +36,16 @@ export type VideoConnectionList = paths["/marti/video"]["get"]["responses"]["200
 
 export type Mission = paths["/marti/missions/{:name}"]["get"]["responses"]["200"]["content"]["application/json"];
 export type Mission_Create = paths["/marti/missions/{:name}"]["post"]["requestBody"]["content"]["application/json"]
-export type MissionRole = paths["/marti/missions/{:name}/role"]["get"]["responses"]["200"]["content"]["application/json"];
 export type MissionList = paths["/marti/mission"]["get"]["responses"]["200"]["content"]["application/json"];
+
+export type MissionRole = paths["/marti/missions/{:name}/role"]["get"]["responses"]["200"]["content"]["application/json"];
+
 export type MissionLog = paths["/marti/missions/{:name}/log/{:logid}"]["patch"]["responses"]["200"]["content"]["application/json"]["data"];
-export type MissionLayer = paths["/marti/missions/{:name}/layer/{:layerid}"]["get"]["responses"]["200"]["content"]["application/json"]["data"];
 export type MissionLogList = paths["/marti/missions/{:name}/log"]["get"]["responses"]["200"]["content"]["application/json"];
+
+export type MissionLayer = paths["/marti/missions/{:name}/layer/{:layerid}"]["get"]["responses"]["200"]["content"]["application/json"]["data"];
+export type MissionLayerList = paths["/marti/missions/{:name}/layer"]["get"]["responses"]["200"]["content"]["application/json"];
+
 export type MissionSubscriptions = paths["/marti/missions/{:name}/subscriptions/roles"]["get"]["responses"]["200"]["content"]["application/json"]["data"];
 
 export type Server_Update = paths["/server"]["patch"]["requestBody"]["content"]["application/json"]
