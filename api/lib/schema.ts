@@ -207,7 +207,7 @@ export const Data = pgTable('data', {
 
 export const Layer = pgTable('layers', {
     id: serial().primaryKey(),
-    uuid: uuid().notNull(),
+    uuid: uuid().notNull().default(sql`gen_random_uuid()`),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     name: text().notNull(),
