@@ -168,6 +168,7 @@ export default {
                     name: this.connection.name,
                     description: this.connection.description,
                     agency_id: this.connection.agency,
+                    connection_id: this.connection.id,
                     channels: this.selected.map((s) => { return s.id })
                 }
             })

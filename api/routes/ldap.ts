@@ -48,6 +48,7 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.String(),
             description: Type.String(),
             agency_id: Type.Union([Type.Integer(), Type.Null()]),
+            connection_id: Type.Integer(),
             channels: Type.Array(Type.Integer(), {
                 minItems: 1
             })
@@ -74,7 +75,7 @@ export default async function router(schema: Schema, config: Config) {
                 integration: {
                     name: req.body.name,
                     description: req.body.description,
-                    management_url: config.API_URL
+                    management_url: config.API_URL + `/connection/${req.body.connection_id}`
                 }
             });
 
