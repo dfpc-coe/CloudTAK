@@ -73,7 +73,7 @@ export default cf.merge(
                     RestApiId: cf.ref('CloudTAKWebhooksLambdaAPI'),
                     StageName: 'tiles'
                 }
-            },
+            }
         }
-    },
+    }
 );
