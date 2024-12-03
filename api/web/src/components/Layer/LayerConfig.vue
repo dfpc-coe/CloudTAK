@@ -165,12 +165,13 @@
                 </div>
                 <div class='col-md-12'>
                     <TablerToggle
-                        v-model='config.webhook'
+                        v-model='config.webhooks'
                         label='Enable Webhooks'
                     />
 
                     <CopyField
-                        v-if='config.uuid'
+                        v-if='config.webhooks && config.uuid'
+                        v-model='config.uuid'
                     />
                 </div>
                 <div class='col-md-4'>
@@ -330,8 +331,10 @@ import { std } from '/src/std.ts';
 import DataSelect from '../util/DataSelect.vue';
 import cronstrue from 'cronstrue';
 import TaskModal from './utils/TaskModal.vue';
+import CopyField from '../CloudTAK/util/CopyField.vue';
 import {
     TablerInput,
+    TablerToggle,
     TablerEnum,
     TablerLoading
 } from '@tak-ps/vue-tabler';
@@ -347,6 +350,8 @@ export default {
     name: 'LayerConfig',
     components: {
         TablerLoading,
+        TablerToggle,
+        CopyField,
         IconSquareChevronRight,
         IconChevronDown,
         IconRefresh,
@@ -385,7 +390,9 @@ export default {
                 save: false
             },
             config: {
+                uuid: '',
                 connection: null,
+                webhooks: false,
                 priority: 'off',
                 data: null,
                 task: '',
@@ -429,6 +436,7 @@ export default {
     },
     methods: {
         reload: function() {
+            this.config.webhooks = this.layer.webhooks;
             this.config.connection = this.layer.connection;
             this.config.data = this.layer.data;
             this.config.task = this.layer.task;
@@ -441,6 +449,7 @@ export default {
             this.config.alarm_evals = this.layer.alarm_evals;
             this.config.alarm_points = this.layer.alarm_points;
             this.config.alarm_threshold = this.layer.alarm_threshold;
+            this.config.uuid = this.layer.uuid;
 
             this.disabled = true;
         },

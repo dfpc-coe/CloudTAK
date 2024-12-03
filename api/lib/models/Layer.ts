@@ -17,7 +17,9 @@ export const AugmentedLayer = Type.Object({
     status: Type.Optional(Type.String()),
     created: Type.String(),
     updated: Type.String(),
+    uuid: Type.String(),
     name: Type.String(),
+    webhooks: Type.Boolean(),
     description: Type.String(),
     enabled: Type.Boolean(),
     enabled_styles: Type.Boolean(),
@@ -75,6 +77,8 @@ export default class LayerModel extends Modeler<typeof Layer> {
             .select({
                 count: sql<string>`count(*) OVER()`.as('count'),
                 id: Layer.id,
+                uuid: Layer.uuid,
+                webhooks: Layer.webhooks,
                 priority: Layer.priority,
                 created: Layer.created,
                 updated: Layer.updated,

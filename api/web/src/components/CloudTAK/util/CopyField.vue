@@ -29,7 +29,7 @@
         v-else
         ref='infobox'
         class='position-relative bg-gray-500 rounded-top py-2 px-2 text-truncate'
-        :style='rows === 1 ? `height: 44px;` : ``'
+        :style='rows === 1 ? `height: 36px;` : ``'
         :class='{
             "hover-button hover-border cursor-pointer": hover,
         }'
