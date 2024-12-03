@@ -11,7 +11,7 @@ import {
     Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Text,
     Basemap_Type, Basemap_Format, Basemap_Style,
 } from  './enums.js';
-import { json, boolean, numeric, integer, timestamp, pgTable, serial, varchar, text, unique, index } from 'drizzle-orm/pg-core';
+import { json, boolean, uuid, numeric, integer, timestamp, pgTable, serial, varchar, text, unique, index } from 'drizzle-orm/pg-core';
 
 /** Internal Tables for Postgis for use with drizzle-kit push:pg */
 export const SpatialRefSys = pgTable('spatial_ref_sys', {
@@ -207,10 +207,12 @@ export const Data = pgTable('data', {
 
 export const Layer = pgTable('layers', {
     id: serial().primaryKey(),
+    uuid: uuuid().notNull(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     name: text().notNull(),
     priority: text().$type<Layer_Priority>().notNull().default(Layer_Priority.OFF),
+    webhooks: boolean().notNull().default(false),
     alarm_period: integer().notNull().default(30),
     alarm_evals: integer().notNull().default(5),
     alarm_points: integer().notNull().default(4),
