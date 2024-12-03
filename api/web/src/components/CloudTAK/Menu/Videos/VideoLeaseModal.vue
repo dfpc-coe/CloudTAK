@@ -318,7 +318,7 @@ async function fetchLease() {
         duration: '16 Hours'
     }
 
-    if (res.channel) {
+    if (res.lease.channel) {
         shared.value = true;
     } else {
         shared.value = false;
