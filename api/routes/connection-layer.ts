@@ -150,6 +150,7 @@ export default async function router(schema: Schema, config: Config) {
         body: Type.Object({
             name: Default.NameField,
             priority: Type.Optional(Type.Enum(Layer_Priority)),
+            webhooks: Type.Optional(Type.Boolean()),
             description: Default.DescriptionField,
             enabled: Type.Optional(Type.Boolean()),
             task: Type.String(),
@@ -253,6 +254,7 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.Optional(Default.NameField),
             priority: Type.Optional(Type.Enum(Layer_Priority)),
             description: Type.Optional(Default.DescriptionField),
+            webhooks: Type.Optional(Type.Boolean()),
             cron: Type.Optional(Type.String()),
             memory: Type.Optional(Type.Integer()),
             timeout: Type.Optional(Type.Integer()),
@@ -320,7 +322,7 @@ export default async function router(schema: Schema, config: Config) {
             let changed = false;
             // Avoid Updating CF unless necessary as it blocks further updates until deployed
             for (const prop of [
-                'cron', 'task', 'memory', 'timeout', 'enabled', 'priority',
+                'cron', 'task', 'memory', 'timeout', 'enabled', 'priority', 'webhooks',
                 'alarm_period', 'alarm_evals', 'alarm_points', 'alarm_threshold'
             ]) {
                 // @ts-expect-error Doesn't like indexed values
