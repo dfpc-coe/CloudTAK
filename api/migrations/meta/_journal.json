@@ -498,6 +498,13 @@
       "when": 1733181888609,
       "tag": "0070_abnormal_nightmare",
       "breakpoints": true
+    },
+    {
+      "idx": 71,
+      "version": "7",
+      "when": 1733255272208,
+      "tag": "0071_glamorous_wild_pack",
+      "breakpoints": true
     }
   ]
 }
