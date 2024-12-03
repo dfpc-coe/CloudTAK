@@ -163,6 +163,16 @@
                         v-text='errors.task'
                     />
                 </div>
+                <div class='col-md-12'>
+                    <TablerToggle
+                        v-model='config.webhook'
+                        label='Enable Webhooks'
+                    />
+
+                    <CopyField
+                        v-if='config.uuid'
+                    />
+                </div>
                 <div class='col-md-4'>
                     <TablerInput
                         v-model='config.stale'
