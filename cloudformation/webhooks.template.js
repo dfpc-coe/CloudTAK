@@ -26,7 +26,7 @@ export default cf.merge(
             CloudTAKWebhooksApiDomain: {
                 Type: 'AWS::ApiGateway::DomainName',
                 Properties: {
-                    DomainName: cf.join(['tiles.', cf.ref('HostedURL')]),
+                    DomainName: cf.ref('HostedURL'),
                     RegionalCertificateArn: cf.join(['arn:', cf.partition, ':acm:', cf.region, ':', cf.accountId, ':certificate/', cf.ref('SSLCertificateIdentifier')]),
                     EndpointConfiguration: {
                         Types: ['REGIONAL']
@@ -40,10 +40,28 @@ export default cf.merge(
                     RestApiId: cf.ref('CloudTAKWebhooksLambdaAPI')
                 }
             },
+            CloudTAKWebhooksLambdaAPIResourceGET: {
+                Type: 'AWS::ApiGateway::Method',
+                Properties: {
+                    AuthorizationType: 'NONE',
+                    HttpMethod: 'GET',
+                    Integration: {
+                        IntegrationResponses: [{
+                            StatusCode: '200'
+                        }],
+                        RequestTemplates: {
+                            'application/json': '{ statusCode: 200 }'
+                        },
+                        Type: 'MOCK'
+                    },
+                    ResourceId: cf.ref('CloudTAKWebhooksLambdaAPIResource'),
+                    RestApiId: cf.ref('CloudTAKWebhooksLambdaAPI')
+                }
+            },
             CloudTAKWebhooksLambdaAPI: {
                 Type: 'AWS::ApiGateway::RestApi',
                 Properties: {
-                    Name: 'CloudTAK Webhooks Rest API',
+                    Name: cf.stackName,
                     DisableExecuteApiEndpoint: true,
                     EndpointConfiguration: {
                         Types: ['REGIONAL']
@@ -60,7 +78,7 @@ export default cf.merge(
             },
             CloudTAKWebhooksAPIDeployment: {
                 Type: 'AWS::ApiGateway::Deployment',
-                DependsOn: ['CloudTAKWebhooksLambdaAPIResourceGET'],
+                DependsOn: 'CloudTAKWebhooksLambdaAPIResourceGET',
                 Properties: {
                     Description: cf.stackName,
                     RestApiId: cf.ref('CloudTAKWebhooksLambdaAPI')
@@ -71,7 +89,7 @@ export default cf.merge(
                 Properties: {
                     DeploymentId: cf.ref('CloudTAKWebhooksAPIDeployment'),
                     RestApiId: cf.ref('CloudTAKWebhooksLambdaAPI'),
-                    StageName: 'tiles'
+                    StageName: 'webhooks'
                 }
             }
         }
