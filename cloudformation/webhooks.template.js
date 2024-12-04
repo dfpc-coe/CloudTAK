@@ -36,6 +36,7 @@ export default cf.merge(
             CloudTAKWebhooksApiMap: {
                 Type: 'AWS::ApiGateway::BasePathMapping',
                 Properties: {
+                    Stage: cf.ref('CloudTAKWebhooksLambdaAPIStage'),
                     DomainName: cf.ref('CloudTAKWebhooksApiDomain'),
                     RestApiId: cf.ref('CloudTAKWebhooksLambdaAPI')
                 }
@@ -47,13 +48,16 @@ export default cf.merge(
                     HttpMethod: 'GET',
                     Integration: {
                         IntegrationResponses: [{
-                            StatusCode: '200'
+                            StatusCode: 200
                         }],
                         RequestTemplates: {
                             'application/json': '{ statusCode: 200 }'
                         },
                         Type: 'MOCK'
                     },
+                    MethodResponses: [{
+                        StatusCode: 200
+                    }],
                     ResourceId: cf.ref('CloudTAKWebhooksLambdaAPIResource'),
                     RestApiId: cf.ref('CloudTAKWebhooksLambdaAPI')
                 }
@@ -71,8 +75,8 @@ export default cf.merge(
             CloudTAKWebhooksLambdaAPIResource: {
                 Type: 'AWS::ApiGateway::Resource',
                 Properties: {
+                    PathPart: 'health',
                     ParentId: cf.getAtt('CloudTAKWebhooksLambdaAPI', 'RootResourceId'),
-                    PathPart: '{proxy+}',
                     RestApiId: cf.ref('CloudTAKWebhooksLambdaAPI')
                 }
             },
@@ -91,6 +95,15 @@ export default cf.merge(
                     RestApiId: cf.ref('CloudTAKWebhooksLambdaAPI'),
                     StageName: 'webhooks'
                 }
+            }
+        },
+        Outputs: {
+            HostedURL: {
+                Description: 'Hosted API Base',
+                Export: {
+                    Name: cf.stackName
+                },
+                Value: cf.join(['https://', cf.ref('HostedURL')])
             }
         }
     }
