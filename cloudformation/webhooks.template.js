@@ -104,6 +104,20 @@ export default cf.merge(
                     Name: cf.stackName
                 },
                 Value: cf.join(['https://', cf.ref('HostedURL')])
+            },
+            ParentId: {
+                Description: 'Base ID of API Gateway',
+                Export: {
+                    Name: cf.join([cf.stackName, '-rest-base'])
+                },
+                Value: cf.getAtt('CloudTAKWebhooksLambdaAPI', 'RootResourceId'),
+            },
+            RestApiId: {
+                Description: 'Base ID of API Gateway',
+                Export: {
+                    Name: cf.join([cf.stackName, '-rest'])
+                },
+                Value: cf.ref('CloudTAKWebhooksLambdaAPI')
             }
         }
     }
