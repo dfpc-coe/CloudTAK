@@ -1,14 +1,22 @@
 <template>
     <MenuTemplate name='Channels'>
         <template #buttons>
-            <IconRefresh
+            <TablerIconButton
+                v-if='!loading && hasChannelsOn'
+                title='All Channels On'
+                @click='setAllStatus(true)'
+            ><IconEyePlus :size='32' stroke='1'/></TablerIconButton>
+            <TablerIconButton
+                v-if='!loading && !hasChannelsOn'
+                title='All Channels Off'
+                @click='setAllStatus(false)'
+            ><IconEyeX :size='32' stroke='1'/></TablerIconButton>
+
+            <TablerIconButton
                 v-if='!loading'
-                v-tooltip='"Refresh"'
-                :size='32'
-                :stroke='1'
-                class='cursor-pointer'
-                @click='loadChannels'
-            />
+                title='Refresh'
+                @click='profileStore.loadChannels'
+            ><IconRefresh :size='32' stroke='1'/></TablerIconButton>
         </template>
         <template #default>
             <div
@@ -22,9 +30,13 @@
                 />
             </div>
 
-            <EmptyInfo v-if='hasNoChannels' />
+            <EmptyInfo v-if='profileStore.hasNoChannels' />
 
             <TablerLoading v-if='loading' />
+            <TablerAlert
+                v-if='error'
+                :err='error'
+            />
             <TablerNone
                 v-else-if='!Object.keys(processChannels).length'
                 :create='false'
@@ -42,7 +54,7 @@
                                     v-if='ch.active'
                                     v-tooltip='"Disable"'
                                     :size='32'
-                                    :stroke='1'
+                                    stroke='1'
                                     class='cursor-pointer'
                                     @click='setStatus(ch, false)'
                                 />
@@ -50,14 +62,14 @@
                                     v-else
                                     v-tooltip='"Enable"'
                                     :size='32'
-                                    :stroke='1'
+                                    stroke='1'
                                     class='cursor-pointer'
                                     @click='setStatus(ch, true)'
                                 />
                                 <span
                                     v-tooltip='"Show Details"'
                                     class='mx-2 cursor-pointer'
-                                    @click='shown[ch.name] = !shown[ch.name]'
+                                    @click='shown.has(ch.name) ? shown.delete(ch.name) : shown.add(ch.name)'
                                     v-text='ch.name'
                                 />
 
@@ -66,24 +78,24 @@
                                         v-if='ch.direction.length === 2'
                                         v-tooltip='"Bi-Directional"'
                                         :size='32'
-                                        :stroke='1'
+                                        stroke='1'
                                     />
                                     <IconLocation
                                         v-else-if='ch.direction.includes("IN")'
                                         v-tooltip='"Location Sharing"'
                                         :size='32'
-                                        :stroke='1'
+                                        stroke='1'
                                     />
                                     <IconLocationOff
                                         v-else-if='ch.direction.includes("OUT")'
                                         v-tooltip='"No Location Sharing"'
                                         :size='32'
-                                        :stroke='1'
+                                        stroke='1'
                                     />
                                 </div>
                             </div>
                             <div
-                                v-if='shown[ch.name]'
+                                v-if='shown.has(ch.name)'
                                 class='col-12 pb-2 user-select-none'
                                 style='margin-left: 40px;'
                             >
@@ -97,11 +109,15 @@
     </MenuTemplate>
 </template>
 
-<script>
-import { std, stdurl } from '/src/std.ts';
+<script setup lang='ts'>
+import { ref, computed, onMounted } from 'vue';
+import { std, stdurl } from '../../../../src/std.ts';
+import type { Group } from '../../../../src/types.ts';
 import {
     TablerNone,
+    TablerIconButton,
     TablerInput,
+    TablerAlert,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
@@ -111,92 +127,103 @@ import {
     IconLocationOff,
     IconRefresh,
     IconEye,
+    IconEyeX,
+    IconEyePlus,
     IconEyeOff,
 } from '@tabler/icons-vue';
-import { mapState, mapActions, mapGetters } from 'pinia'
-import { useProfileStore } from '/src/stores/profile.ts';
-const profileStore = useProfileStore();
-import { useCOTStore } from '/src/stores/cots.ts';
+import { useProfileStore } from '../../../../src/stores/profile.ts';
+import { useCOTStore } from '../../../../src/stores/cots.ts';
 const cotStore = useCOTStore();
+const profileStore = useProfileStore();
 
-export default {
-    name: 'CloudTAKChannels',
-    data: function() {
-        return {
-            err: false,
-            loading: true,
-            shown: {},
-            paging: {
-                filter: ''
-            },
-        }
-    },
-    mounted: async function() {
-        await this.refresh();
-    },
-    computed: {
-        ...mapState(useProfileStore, ['channels']),
-        ...mapGetters(useProfileStore, ['hasNoChannels']),
-        processChannels: function() {
-            const channels = {};
+const error = ref<Error | undefined>();
+const loading = ref(true);
+const shown = ref<Set<string>>(new Set());
+const paging = ref({
+    filter: ''
+});
 
-            JSON.parse(JSON.stringify(profileStore.channels))
-                .sort((a, b) => {
-                    return (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0);
-                }).forEach((channel) => {
-                    if (channels[channel.name]) {
-                        channels[channel.name].direction.push(channel.direction);
-                    } else {
-                        channel.direction = [channel.direction];
-                        channels[channel.name] = channel;
-                    }
-                })
+onMounted(async () => {
+    await refresh();
+});
 
-            for (const key of Object.keys(channels)) {
-                if (!key.toLowerCase().includes(this.paging.filter.toLowerCase())) {
-                    delete channels[key];
-                }
+const hasChannelsOn = computed<boolean>(() => {
+    return profileStore.channels.some((ch) => {
+        return !ch.active;
+    })
+});
+
+const processChannels = computed<Record<string, Group>>(() => {
+    const channels: Record<string, Group> = {};
+
+    JSON.parse(JSON.stringify(profileStore.channels))
+        .sort((a: Group, b: Group) => {
+            return (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0);
+        }).forEach((channel: Group) => {
+            if (channels[channel.name]) {
+                // @ts-expect-error Type as an array eventually
+                channels[channel.name].direction.push(channel.direction);
+            } else {
+                // @ts-expect-error Type as an array eventually
+                channel.direction = [channel.direction];
+                channels[channel.name] = channel;
             }
+        })
 
-            return channels;
+    for (const key of Object.keys(channels)) {
+        if (!key.toLowerCase().includes(paging.value.filter.toLowerCase())) {
+            delete channels[key];
         }
-    },
-    methods: {
-        ...mapActions(useProfileStore, ['loadChannels']),
-        refresh: async function() {
-            this.loading = true;
-            await this.loadChannels()
-            this.loading = false;
-        },
-        setStatus: async function(channel, active=false) {
-            profileStore.channels = profileStore.channels.map((ch) => {
-                if (ch.name === channel.name) ch.active = active;
-                return ch;
-            });
-
-            await cotStore.clear({
-                ignoreArchived: true,
-                skipNetwork: false
-            })
-
-            const url = stdurl('/api/marti/group');
-            await std(url, {
-                method: 'PUT',
-                body: profileStore.channels
-            });
-        },
-    },
-    components: {
-        IconEye,
-        IconEyeOff,
-        IconLocation,
-        IconLocationOff,
-        EmptyInfo,
-        IconRefresh,
-        TablerNone,
-        TablerInput,
-        TablerLoading,
-        MenuTemplate
     }
+
+    return channels;
+});
+
+async function refresh() {
+    loading.value = true;
+
+    try {
+        await profileStore.loadChannels();
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    }
+
+    loading.value = false;
+}
+
+async function setAllStatus(active=true) {
+    profileStore.channels = profileStore.channels.map((ch) => {
+        ch.active = active;
+        return ch;
+    });
+
+    await cotStore.clear({
+        ignoreArchived: true,
+        skipNetwork: false
+    })
+
+    const url = stdurl('/api/marti/group');
+    await std(url, {
+        method: 'PUT',
+        body: profileStore.channels
+    });
+}
+
+async function setStatus(channel: Group, active=false) {
+    profileStore.channels = profileStore.channels.map((ch) => {
+        if (ch.name === channel.name) ch.active = active;
+        return ch;
+    });
+
+    await cotStore.clear({
+        ignoreArchived: true,
+        skipNetwork: false
+    })
+
+    const url = stdurl('/api/marti/group');
+    await std(url, {
+        method: 'PUT',
+        body: profileStore.channels
+    });
 }
 </script>
