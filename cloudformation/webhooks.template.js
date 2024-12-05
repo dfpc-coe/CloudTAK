@@ -158,22 +158,13 @@ export default cf.merge(
                 },
                 Value: cf.getAtt('CloudTAKWebhooksApiGatewayRole', 'Arn'),
             },
-            /*
-            ParentId: {
+            ApiId: {
                 Description: 'Base ID of API Gateway',
                 Export: {
-                    Name: cf.join([cf.stackName, '-rest-base'])
-                },
-                Value: cf.getAtt('CloudTAKWebhooksLambdaAPI', 'RootResourceId'),
-            },
-            RestApiId: {
-                Description: 'Base ID of API Gateway',
-                Export: {
-                    Name: cf.join([cf.stackName, '-rest'])
+                    Name: cf.join([cf.stackName, '-api'])
                 },
                 Value: cf.ref('CloudTAKWebhooksLambdaAPI')
             }
-            */
         }
     }
 );
