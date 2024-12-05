@@ -1,4 +1,4 @@
-import { Type } from '@sinclair/typebox'
+import { Static, Type } from '@sinclair/typebox'
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import { Feature } from '@tak-ps/node-cot'
@@ -52,7 +52,7 @@ export default async function router(schema: Schema, config: Config) {
                     default: true
                 })
             }),
-            Type.HistoryOptions
+            HistoryOptions
         ]),
         res: Type.Object({
             type: Type.String(),
@@ -64,40 +64,43 @@ export default async function router(schema: Schema, config: Config) {
             const profile = await config.models.Profile.from(user.email);
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
-            const features = await api.Query.historyFeats(req.params.uid, {
+            const feats = await api.Query.historyFeats(req.params.uid, {
                 start: req.query.start,
                 end: req.query.end,
                 secago: req.query.secago,
             });
 
-            const fc = { type: 'FeatureCollection', features: [] };
+            let features: Array<Static<typeof Feature.Feature>> = [];
 
             if (req.query.track) {
-                let composite: Static<typeof Feature.Feature>;
+                let composite: Static<typeof Feature.Feature> | undefined = undefined;
 
-                for (const feat of features) {
+                for (const feat of feats) {
                     if (feat.geometry.type !== 'Point') {
-                        fc.features.push(feat);
-                    } if (!composite) {
+                        features.push(feat);
+                    } else if (composite === undefined) {
                         composite = feat;
                         composite.id = `${composite.id}-track`;
                         composite.geometry = {
                             type: 'LineString',
+                            // @ts-expect-error Need to be more explicit with Geometry Defs to lock point to number[]
                             coordinates: [ composite.geometry.coordinates ]
                         }
-                    } else {
-                        if (feat.geometry.coordinates[0] !== 0 && feat.geometry.coordinates[1]) {
-                            composite.geometry.coordinates.push(feat.geometry.coordinates);
-                        }
+                    } else if (feat.geometry.coordinates[0] !== 0 && feat.geometry.coordinates[1]) {
+                        // @ts-expect-error Need to be more explicit with Geometry Defs to lock point to number[]
+                        composite.geometry.coordinates.push(feat.geometry.coordinates);
                     }
                 }
 
-                fc.features.push(composite);
+                if (composite) features.push(composite);
             } else {
-                fc.features = features;
+                features = feats;
             }
 
-            res.json(fc);
+            res.json({
+                type: 'FeatureCollection',
+                features
+            });
         } catch (err) {
              Err.respond(err, res);
         }
