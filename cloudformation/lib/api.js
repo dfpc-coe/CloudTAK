@@ -244,7 +244,9 @@ export default {
                                 'apigateway:PUT',
                             ],
                             Resource: [
+                                cf.join(['arn:', cf.partition, ':apigateway:', cf.region, '::/apis/', cf.importValue(cf.join(['coe-etl-webhooks-', cf.ref('Environment'), '-api'])), '/routes' ]),
                                 cf.join(['arn:', cf.partition, ':apigateway:', cf.region, '::/apis/', cf.importValue(cf.join(['coe-etl-webhooks-', cf.ref('Environment'), '-api'])), '/routes/*' ]),
+                                cf.join(['arn:', cf.partition, ':apigateway:', cf.region, '::/apis/', cf.importValue(cf.join(['coe-etl-webhooks-', cf.ref('Environment'), '-api'])), '/integrations' ]),
                                 cf.join(['arn:', cf.partition, ':apigateway:', cf.region, '::/apis/', cf.importValue(cf.join(['coe-etl-webhooks-', cf.ref('Environment'), '-api'])), '/integrations/*' ]),
                             ]
                         },{
