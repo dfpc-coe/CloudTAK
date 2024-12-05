@@ -36,7 +36,7 @@
                                         v-if='!newTaskVersion && !loading.version'
                                         v-tooltip='"Check for new version"'
                                         :size='16'
-                                        :stroke='1'
+                                        stroke='1'
                                         class='cursor-pointer'
                                         @click='latestVersion'
                                     />
@@ -66,7 +66,7 @@
                                 <div v-if='!disabled'>
                                     <IconSettings
                                         :size='16'
-                                        :stroke='1'
+                                        stroke='1'
                                         class='cursor-pointer'
                                         @click='taskmodal = true'
                                     />
@@ -122,7 +122,7 @@
                                     >
                                         <IconSettings
                                             :size='16'
-                                            :stroke='1'
+                                            stroke='1'
                                             class='cursor-pointer dropdown-toggle'
                                         />
                                     </div>
@@ -242,7 +242,7 @@
                         <div class='col-12 d-flex align-items-center my-1'>
                             <IconDatabase
                                 :size='32'
-                                :stroke='1'
+                                stroke='1'
                             />
                             <DataSelect
                                 v-model='config.data'
@@ -266,18 +266,17 @@
                 <label
                     v-if='config.priority !== "off"'
                     class='subheader mt-3 cursor-pointer'
-                    @click='advanced = !advanced'
                 >
-                    <IconSquareChevronRight
+                    <TablerIconButton
                         v-if='!advanced'
-                        :size='32'
-                        :stroke='1'
-                    />
-                    <IconChevronDown
+                        title='Open Advanced Settings'
+                        @click='advanced = true'
+                    ><IconSquareChevronRight :size='32' stroke='1' /></TablerIconButton>
+                    <TablerIconButton
                         v-else
-                        :size='32'
-                        :stroke='1'
-                    />
+                        title='Close Advanced Settings'
+                        @click='advanced = false'
+                    ><IconChevronDown :size='32' stroke='1'/></TablerIconButton>
                     Advanced Alarm Options
                 </label>
 
@@ -352,10 +351,11 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { std, humanSeconds } from '../../../src/std.ts';
+import type { ETLTaskVersions } from '../../../src/types.ts';
 import DataSelect from '../util/DataSelect.vue';
 import cronstrue from 'cronstrue';
 import TaskModal from './utils/TaskModal.vue';
@@ -400,7 +400,7 @@ const emit = defineEmits([
 const disabled = ref(true);
 const cronEnabled = ref(true);
 const taskmodal = ref(false);
-const newTaskVersion = ref(false);
+const newTaskVersion = ref<string | undefined>();
 const advanced = ref(false);
 const loading = ref({
     init: true,
@@ -466,10 +466,10 @@ async function saveLayer() {
 
 function updateTask() {
     config.value.task = config.value.task.replace(/-v[0-9]+\.[0-9]+\.[0-9]+$/, `-v${newTaskVersion.value}`);
-    newTaskVersion.value = null;
+    newTaskVersion.value = undefined;
 }
 
-function cronstr(cron) {
+function cronstr(cron?: string) {
     if (!cron) return;
 
     if (cron.includes('cron(')) {
@@ -487,11 +487,12 @@ async function latestVersion() {
     const task = match[1];
     const version = match[2];
 
-    const list = await std(`/api/task/raw/${task}`);
+    const list = await std(`/api/task/raw/${task}`) as ETLTaskVersions;
 
     if (list.versions.indexOf(version) !== 0) {
         newTaskVersion.value = list.versions[0];
     }
+
     loading.value.version = false;
 }
 </script>
