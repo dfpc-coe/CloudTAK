@@ -69,7 +69,7 @@ export default cf.merge(
                 Properties: {
                     Name: cf.stackName,
                     DisableExecuteApiEndpoint: true,
-                    CredentialsArn: cf.getAtt('CloudTAKWebhooksApiGatewayRole', 'Arn'),
+                    //CredentialsArn: cf.getAtt('CloudTAKWebhooksApiGatewayRole', 'Arn'),
                     ProtocolType: 'HTTP',
                 }
             },
