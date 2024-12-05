@@ -34,7 +34,7 @@
 
             <TablerLoading v-if='loading' />
             <TablerAlert
-                v-if='error'
+                v-else-if='error'
                 :err='error'
             />
             <TablerNone
