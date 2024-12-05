@@ -21,9 +21,9 @@
 
         <div class='mx-2'>
             <TablerInput
+                v-model='filter'
                 label=''
                 placeholder='Filter...'
-                v-model='filter'
             />
         </div>
 

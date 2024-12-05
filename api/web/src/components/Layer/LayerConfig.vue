@@ -9,7 +9,12 @@
                     v-if='disabled'
                     title='Edit Layer Config'
                     @click='disabled = false'
-                ><IconPencil :size='32' stroke='1'/></TablerIconButton>
+                >
+                    <IconPencil
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
             </div>
         </div>
 
@@ -92,7 +97,10 @@
 
                 <div class='col-md-12'>
                     <div class='d-flex'>
-                        <IconCalendarClock :size='20' stroke='1'/>
+                        <IconCalendarClock
+                            :size='20'
+                            stroke='1'
+                        />
                         <div style='width: calc(100% - 20px);'>
                             <TablerToggle
                                 v-model='cronEnabled'
@@ -180,7 +188,10 @@
                 </div>
                 <div class='col-md-12'>
                     <div class='d-flex'>
-                        <IconWebhook :size='20' stroke='1'/>
+                        <IconWebhook
+                            :size='20'
+                            stroke='1'
+                        />
                         <div style='width: calc(100% - 20px);'>
                             <TablerToggle
                                 v-model='config.webhooks'
@@ -271,12 +282,18 @@
                         v-if='!advanced'
                         title='Open Advanced Settings'
                         @click='advanced = true'
-                    ><IconSquareChevronRight :size='32' stroke='1' /></TablerIconButton>
+                    ><IconSquareChevronRight
+                        :size='32'
+                        stroke='1'
+                    /></TablerIconButton>
                     <TablerIconButton
                         v-else
                         title='Close Advanced Settings'
                         @click='advanced = false'
-                    ><IconChevronDown :size='32' stroke='1'/></TablerIconButton>
+                    ><IconChevronDown
+                        :size='32'
+                        stroke='1'
+                    /></TablerIconButton>
                     Advanced Alarm Options
                 </label>
 

@@ -278,7 +278,10 @@
                     v-if='loadingBreadcrumb'
                     class='col-12'
                 >
-                    <TablerLoading :compact='true' desc='Loading Breadcrumb...'/>
+                    <TablerLoading
+                        :compact='true'
+                        desc='Loading Breadcrumb...'
+                    />
                 </div>
                 <div
                     v-if='mission'

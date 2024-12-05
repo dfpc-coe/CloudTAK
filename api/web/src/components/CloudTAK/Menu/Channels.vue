@@ -5,18 +5,33 @@
                 v-if='!loading && hasChannelsOn'
                 title='All Channels On'
                 @click='setAllStatus(true)'
-            ><IconEyePlus :size='32' stroke='1'/></TablerIconButton>
+            >
+                <IconEyePlus
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
             <TablerIconButton
                 v-if='!loading && !hasChannelsOn'
                 title='All Channels Off'
                 @click='setAllStatus(false)'
-            ><IconEyeX :size='32' stroke='1'/></TablerIconButton>
+            >
+                <IconEyeX
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
 
             <TablerIconButton
                 v-if='!loading'
                 title='Refresh'
                 @click='profileStore.loadChannels'
-            ><IconRefresh :size='32' stroke='1'/></TablerIconButton>
+            >
+                <IconRefresh
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
         </template>
         <template #default>
             <div
