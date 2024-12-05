@@ -1,5 +1,6 @@
 import Config from '../config.js';
 import AWSCloudFormation from '@aws-sdk/client-cloudformation';
+import AWSAG from '@aws-sdk/client-api-gateway';
 import AWSCWL from '@aws-sdk/client-cloudwatch-logs';
 import process from 'node:process';
 
