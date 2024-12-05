@@ -69,7 +69,6 @@ export default cf.merge(
                 Properties: {
                     Name: cf.stackName,
                     DisableExecuteApiEndpoint: true,
-                    //CredentialsArn: cf.getAtt('CloudTAKWebhooksApiGatewayRole', 'Arn'),
                     ProtocolType: 'HTTP',
                 }
             },
@@ -139,6 +138,7 @@ export default cf.merge(
                     ApiId: cf.ref('CloudTAKWebhooksLambdaAPI'),
                     IntegrationType: 'AWS_PROXY',
                     IntegrationUri: cf.getAtt('CloudTAKWebhooksHealthCheckFunction', 'Arn'),
+                    CredentialsArn: cf.getAtt('CloudTAKWebhooksApiGatewayRole', 'Arn'),
                     PayloadFormatVersion: "2.0"
                 }
             }
