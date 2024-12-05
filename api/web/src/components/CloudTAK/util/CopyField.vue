@@ -160,7 +160,7 @@ watch(infoboxRef, () => {
         infoboxRef.value.addEventListener('click', (event: MouseEvent) => {
             if (!props.edit) return;
             if (event.target) {
-                const target = event.target as HTMLElement;     
+                const target = event.target as HTMLElement;
                 if (['A'].includes(target.tagName)) return;
             }
             editing.value = true;
