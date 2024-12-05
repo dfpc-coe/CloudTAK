@@ -212,6 +212,8 @@ export const Layer = pgTable('layers', {
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     name: text().notNull(),
     priority: text().$type<Layer_Priority>().notNull().default(Layer_Priority.OFF),
+
+    cron: text(),
     webhooks: boolean().notNull().default(false),
     alarm_period: integer().notNull().default(30),
     alarm_evals: integer().notNull().default(5),
@@ -225,7 +227,6 @@ export const Layer = pgTable('layers', {
     stale: integer().notNull().default(20),
     task: text().notNull(),
     connection: integer().notNull().references(() => Connection.id),
-    cron: text().notNull(),
     environment: json().notNull().default({}),
     ephemeral: json().$type<Record<string, string>>().notNull().default({}),
     config: json().$type<Static<typeof Layer_Config>>().notNull().default({}),
