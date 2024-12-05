@@ -237,6 +237,19 @@ export default {
                         },{
                             Effect: 'Allow',
                             Action: [
+                                'apigateway:GET',
+                                'apigateway:PATCH',
+                                'apigateway:DELETE',
+                                'apigateway:POST',
+                                'apigateway:PUT',
+                            ],
+                            Resource: [
+                                cf.join(['arn:', cf.partition, ':apigateway:', cf.region, '::/apis/', cf.importValue(cf.join(['coe-etl-webhooks-', cf.ref('Environment'), '-api'])), '/routes/*' ]),
+                                cf.join(['arn:', cf.partition, ':apigateway:', cf.region, '::/apis/', cf.importValue(cf.join(['coe-etl-webhooks-', cf.ref('Environment'), '-api'])), '/integrations/*' ]),
+                            ]
+                        },{
+                            Effect: 'Allow',
+                            Action: [
                                 'iam:PassRole'
                             ],
                             Resource: [

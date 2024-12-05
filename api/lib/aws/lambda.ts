@@ -128,28 +128,32 @@ export default class Lambda {
         }
 
         if (layer.webhooks) {
-            stack.Resources.WebHookResource = {
-                Type: 'AWS::ApiGateway::Resource',
+            stack.Resources.WebHookResourceBase = {
+                Type: 'AWS::ApiGatewayV2::Route',
                 Properties: {
-                    PathPart: cf.ref('UniqueID'),
-                    ParentId: cf.importValue(config.StackName.replace(/^coe-etl-/, 'coe-etl-webhooks-') + '-rest-base'),
-                    RestApiId: cf.importValue(config.StackName.replace(/^coe-etl-/, 'coe-etl-webhooks-') + '-rest'),
+                    RouteKey: cf.join(['ANY /', cf.ref('UniqueID') ]),
+                    ApiId: cf.importValue(config.StackName.replace(/^coe-etl-/, 'coe-etl-webhooks-') + '-api'),
+                    Target: cf.join(['integrations/', cf.ref('WebHookResourceIntegration')])
                 }
             };
 
-            stack.Resources.WebHookResourceHTTP = {
-                Type: 'AWS::ApiGateway::Method',
+            stack.Resources.WebHookResource = {
+                Type: 'AWS::ApiGatewayV2::Route',
                 Properties: {
-                    AuthorizationType: 'NONE',
-                    HttpMethod: 'ANY',
-                    Integration: {
-                        Credentials:  cf.importValue(config.StackName.replace(/^coe-etl-/, 'coe-etl-webhooks-') + '-role'),
-                        IntegrationHttpMethod: 'POST',
-                        Type: 'AWS_PROXY',
-                        Uri: cf.join(['arn:', cf.partition, ':apigateway:', cf.region, ':lambda:path/2015-03-31/functions/', cf.getAtt('ETLFunction', 'Arn'), '/invocations'])
-                    },
-                    ResourceId: cf.ref('WebHookResource'),
-                    RestApiId: cf.importValue(config.StackName.replace(/^coe-etl-/, 'coe-etl-webhooks-') + '-rest'),
+                    RouteKey: cf.join(['ANY /', cf.ref('UniqueID'), '/{proxy+}']),
+                    ApiId: cf.importValue(config.StackName.replace(/^coe-etl-/, 'coe-etl-webhooks-') + '-api'),
+                    Target: cf.join(['integrations/', cf.ref('WebHookResourceIntegration')])
+                }
+            };
+
+            stack.Resources.WebHookResourceIntegration = {
+                Type: 'AWS::ApiGatewayV2::Integration',
+                Properties: {
+                    ApiId: cf.importValue(config.StackName.replace(/^coe-etl-/, 'coe-etl-webhooks-') + '-api'),
+                    IntegrationType: 'AWS_PROXY',
+                    IntegrationUri: cf.getAtt('ETLFunction', 'Arn'),
+                    CredentialsArn: cf.importValue(config.StackName.replace(/^coe-etl-/, 'coe-etl-webhooks-') + '-role'),
+                    PayloadFormatVersion: '2.0'
                 }
             }
         }
