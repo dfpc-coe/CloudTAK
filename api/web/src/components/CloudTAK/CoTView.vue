@@ -86,6 +86,16 @@
                         </TablerIconButton>
                     </div>
                     <div class='ms-auto btn-list mx-2'>
+                        <TablerIconButton
+                            v-if='!isArchivable && !loadingBreadcrumb'
+                            title='Load Breadcrumb'
+                            @click='loadBreadcrumb'
+                        >
+                            <IconRoute
+                                size='32'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
                         <TablerDelete
                             displaytype='icon'
                             @delete='deleteCOT'
@@ -264,6 +274,12 @@
             style='height: calc(100vh - 225px)'
         >
             <div class='row g-0'>
+                <div
+                    v-if='loadingBreadcrumb'
+                    class='col-12'
+                >
+                    <TablerLoading :compact='true' desc='Loading Breadcrumb...'/>
+                </div>
                 <div
                     v-if='mission'
                     class='col-12'
@@ -618,6 +634,7 @@ import {
     TablerEnum,
     TablerRange,
     TablerDropdown,
+    TablerLoading,
     TablerIconButton,
 } from '@tak-ps/vue-tabler';
 
@@ -634,6 +651,7 @@ import Elevation from './util/Elevation.vue';
 import Attachments from './util/Attachments.vue';
 import {
     IconMovie,
+    IconRoute,
     IconCone,
     IconStar,
     IconStarFilled,
@@ -650,7 +668,7 @@ import {
 } from '@tabler/icons-vue';
 import Subscriptions from './util/Subscriptions.vue';
 import timediff from '../../../src/timediff.ts';
-import { std } from '../../../src/std.ts';
+import { std, stdurl } from '../../../src/std.ts';
 import { useCOTStore } from '../../../src/stores/cots.ts';
 const cotStore = useCOTStore();
 import { useProfileStore } from '../../../src/stores/profile.ts';
@@ -666,6 +684,7 @@ const cot = ref<COT | undefined>(cotStore.get(String(route.params.uid), {
 }))
 
 const mission = ref<Mission | undefined>();
+const loadingBreadcrumb = ref(false);
 
 if (cot.value && cot.value.origin.mode === OriginMode.MISSION && cot.value.origin.mode_id) {
     mission.value = cotStore.subscriptions.get(cot.value.origin.mode_id);
@@ -740,6 +759,28 @@ function timediffFormat(date: string) {
         return timediff(date);
     } else {
         return date;
+    }
+}
+
+async function loadBreadcrumb() {
+    if (!cot.value) return;
+
+    loadingBreadcrumb.value = true;
+
+    try {
+        const url = stdurl(`/api/marti/cot/${cot.value.id}/all`)
+        url.searchParams.append('secago', String(60 * 60))
+        url.searchParams.append('track', String(true))
+        const crumb = await std(url);
+
+        for (const feat of crumb.features) {
+            cotStore.add(feat)
+        }
+
+        loadingBreadcrumb.value = false;
+    } catch (err) {
+        loadingBreadcrumb.value = false;
+        throw err;
     }
 }
 
