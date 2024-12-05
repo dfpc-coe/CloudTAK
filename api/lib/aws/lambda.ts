@@ -48,6 +48,10 @@ export default class Lambda {
                     Type: 'String',
                     Default: layer.task
                 },
+                UniqueID: {
+                    Type: 'String',
+                    Default: layer.uuid
+                }
             },
             Resources: {
                 ETLFunctionLogs: {
@@ -123,6 +127,33 @@ export default class Lambda {
             }
         }
 
+        if (layer.webhooks) {
+            stack.Resources.WebHookResource = {
+                Type: 'AWS::ApiGateway::Resource',
+                Properties: {
+                    PathPart: cf.ref('UniqueID'),
+                    ParentId: cf.importValue(config.StackName.replace(/^coe-etl-/, 'coe-etl-webhooks-') + '-rest-base'),
+                    RestApiId: cf.importValue(config.StackName.replace(/^coe-etl-/, 'coe-etl-webhooks-') + '-rest'),
+                }
+            };
+
+            stack.Resources.WebHookResourceHTTP = {
+                Type: 'AWS::ApiGateway::Method',
+                Properties: {
+                    AuthorizationType: 'NONE',
+                    HttpMethod: 'ANY',
+                    Integration: {
+                        Credentials:  cf.importValue(config.StackName.replace(/^coe-etl-/, 'coe-etl-webhooks-') + '-role'),
+                        IntegrationHttpMethod: 'POST',
+                        Type: 'AWS_PROXY',
+                        Uri: cf.join(['arn:', cf.partition, ':apigateway:', cf.region, ':lambda:path/2015-03-31/functions/', cf.getAtt('ETLFunction', 'Arn'), '/invocations'])
+                    },
+                    ResourceId: cf.ref('WebHookResource'),
+                    RestApiId: cf.importValue(config.StackName.replace(/^coe-etl-/, 'coe-etl-webhooks-') + '-rest'),
+                }
+            }
+        }
+
         if (layer.priority !== 'off') {
             stack.Resources.LambdaAlarm.Properties.AlarmActions.push(
                 cf.join(['arn:', cf.partition, ':sns:', cf.region, `:`, cf.accountId, `:${config.StackName}-${layer.priority}-urgency`])
@@ -133,7 +164,7 @@ export default class Lambda {
             )
         }
 
-        if (Schedule.is_aws(layer.cron)) {
+        if (layer.cron && Schedule.is_aws(layer.cron)) {
             stack.Parameters.ScheduleExpression = {
                 Type: 'String',
                 Default: layer.cron

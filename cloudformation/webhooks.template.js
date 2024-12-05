@@ -33,67 +33,113 @@ export default cf.merge(
                     }
                 }
             },
-            CloudTAKWebhooksApiMap: {
-                Type: 'AWS::ApiGateway::BasePathMapping',
+            CloudTAKWebhooksApiGatewayRole: {
+                Type: 'AWS::IAM::Role',
                 Properties: {
-                    Stage: cf.ref('CloudTAKWebhooksLambdaAPIStage'),
-                    DomainName: cf.ref('CloudTAKWebhooksApiDomain'),
-                    RestApiId: cf.ref('CloudTAKWebhooksLambdaAPI')
-                }
-            },
-            CloudTAKWebhooksLambdaAPIResourceGET: {
-                Type: 'AWS::ApiGateway::Method',
-                Properties: {
-                    AuthorizationType: 'NONE',
-                    HttpMethod: 'GET',
-                    Integration: {
-                        IntegrationResponses: [{
-                            StatusCode: 200
-                        }],
-                        RequestTemplates: {
-                            'application/json': '{ statusCode: 200 }'
-                        },
-                        Type: 'MOCK'
+                    AssumeRolePolicyDocument: {
+                        Version: '2012-10-17',
+                        Statement: [{
+                            Effect: 'Allow',
+                            Action: 'sts:AssumeRole',
+                            Principal: {
+                                Service: ['apigateway.amazonaws.com']
+                            }
+                        }]
                     },
-                    MethodResponses: [{
-                        StatusCode: 200
-                    }],
-                    ResourceId: cf.ref('CloudTAKWebhooksLambdaAPIResource'),
-                    RestApiId: cf.ref('CloudTAKWebhooksLambdaAPI')
+                    Policies: [{
+                        PolicyName: cf.join([cf.stackName, '-pmtiles-api-gateway']),
+                        PolicyDocument: {
+                            Version: '2012-10-17',
+                            Statement: [{
+                                Effect: 'Allow',
+                                Action: [
+                                    'lambda:InvokeFunction'
+                                ],
+                                Resource: [
+                                    cf.join(['arn:', cf.partition, ':lambda:', cf.region, ':', cf.accountId, ':function:coe-etl-', cf.ref('Environment'), '-layer-*']),
+                                    cf.getAtt('CloudTAKWebhooksHealthCheckFunction', 'Arn')
+                                ]
+                            }]
+                        }
+                    }]
                 }
             },
             CloudTAKWebhooksLambdaAPI: {
-                Type: 'AWS::ApiGateway::RestApi',
+                Type: 'AWS::ApiGatewayV2::Api',
                 Properties: {
                     Name: cf.stackName,
                     DisableExecuteApiEndpoint: true,
-                    EndpointConfiguration: {
-                        Types: ['REGIONAL']
-                    }
-                }
-            },
-            CloudTAKWebhooksLambdaAPIResource: {
-                Type: 'AWS::ApiGateway::Resource',
-                Properties: {
-                    PathPart: 'health',
-                    ParentId: cf.getAtt('CloudTAKWebhooksLambdaAPI', 'RootResourceId'),
-                    RestApiId: cf.ref('CloudTAKWebhooksLambdaAPI')
+                    CredentialsArn: cf.getAtt('CloudTAKWebhooksApiGatewayRole', 'Arn'),
+                    ProtocolType: 'HTTP',
                 }
             },
             CloudTAKWebhooksAPIDeployment: {
-                Type: 'AWS::ApiGateway::Deployment',
-                DependsOn: 'CloudTAKWebhooksLambdaAPIResourceGET',
+                Type: 'AWS::ApiGatewayV2::Deployment',
+                DependsOn: ['CloudTAKWebhooksApiGatewayResource'],
                 Properties: {
                     Description: cf.stackName,
-                    RestApiId: cf.ref('CloudTAKWebhooksLambdaAPI')
+                    ApiId: cf.ref('CloudTAKWebhooksLambdaAPI')
                 }
             },
             CloudTAKWebhooksLambdaAPIStage: {
-                Type: 'AWS::ApiGateway::Stage',
+                Type: 'AWS::ApiGatewayV2::Stage',
                 Properties: {
                     DeploymentId: cf.ref('CloudTAKWebhooksAPIDeployment'),
-                    RestApiId: cf.ref('CloudTAKWebhooksLambdaAPI'),
-                    StageName: 'webhooks'
+                    ApiId: cf.ref('CloudTAKWebhooksLambdaAPI'),
+                    AutoDeploy: true,
+                    StageName: '$default'
+                }
+            },
+            CloudTAKWebhooksApiMap: {
+                Type: 'AWS::ApiGatewayV2::ApiMapping',
+                Properties: {
+                    Stage: cf.ref('CloudTAKWebhooksLambdaAPIStage'),
+                    DomainName: cf.ref('CloudTAKWebhooksApiDomain'),
+                    ApiId: cf.ref('CloudTAKWebhooksLambdaAPI')
+                }
+            },
+            CloudTAKWebhooksApiGatewayResource: {
+                Type: 'AWS::ApiGatewayV2::Route',
+                Properties: {
+                    ApiId: cf.ref('CloudTAKWebhooksLambdaAPI'),
+                    RouteKey: 'GET /health',
+                    Target: cf.join(['integrations/', cf.ref('CloudTAKWebhooksApiGatewayResourceMethod')])
+                }
+            },
+            CloudTAKWebhooksHealthCheckFunction: {
+                Type: "AWS::Lambda::Function",
+                Properties: {
+                    Handler: "index.handler",
+                    Role: cf.getAtt('CloudTAKWebhooksHealthCheckFunctionRole', 'Arn'),
+                    Code: {
+                        ZipFile: "def handler(event, context):\n    return {\n        'statusCode': 200,\n        'body': 'Hello from Lambda!'\n    }"
+                    },
+                    Runtime: "python3.8"
+                }
+            },
+            CloudTAKWebhooksHealthCheckFunctionRole: {
+                Type: "AWS::IAM::Role",
+                Properties: {
+                    AssumeRolePolicyDocument: {
+                        Version: "2012-10-17",
+                        Statement: [{
+                            Effect: "Allow",
+                            Principal: {
+                                Service: ["lambda.amazonaws.com"]
+                            },
+                            Action: ["sts:AssumeRole"]
+                        }]
+                    },
+                    ManagedPolicyArns: [cf.join(['arn:', cf.partition, ':iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'])]
+                }
+            },
+            CloudTAKWebhooksApiGatewayResourceMethod: {
+                Type: 'AWS::ApiGatewayV2::Integration',
+                Properties: {
+                    ApiId: cf.ref('CloudTAKWebhooksLambdaAPI'),
+                    IntegrationType: 'AWS_PROXY',
+                    IntegrationUri: cf.getAtt('CloudTAKWebhooksHealthCheckFunction', 'Arn'),
+                    PayloadFormatVersion: "2.0"
                 }
             }
         },
@@ -105,6 +151,14 @@ export default cf.merge(
                 },
                 Value: cf.join(['https://', cf.ref('HostedURL')])
             },
+            RoleArn: {
+                Description: 'Invocation Role ARN',
+                Export: {
+                    Name: cf.join([cf.stackName, '-role'])
+                },
+                Value: cf.getAtt('CloudTAKWebhooksApiGatewayRole', 'Arn'),
+            },
+            /*
             ParentId: {
                 Description: 'Base ID of API Gateway',
                 Export: {
@@ -119,6 +173,7 @@ export default cf.merge(
                 },
                 Value: cf.ref('CloudTAKWebhooksLambdaAPI')
             }
+            */
         }
     }
 );

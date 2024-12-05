@@ -166,6 +166,7 @@
                 <div class='col-md-12'>
                     <TablerToggle
                         v-model='config.webhooks'
+                        :disabled='disabled'
                         label='Enable Webhooks'
                     />
 
