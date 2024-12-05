@@ -505,6 +505,13 @@
       "when": 1733255272208,
       "tag": "0071_glamorous_wild_pack",
       "breakpoints": true
+    },
+    {
+      "idx": 72,
+      "version": "7",
+      "when": 1733424131456,
+      "tag": "0072_rainy_zaladane",
+      "breakpoints": true
     }
   ]
 }
