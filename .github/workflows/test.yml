@@ -28,7 +28,7 @@ jobs:
         run: docker run cloudtak-data:latest npm run lint
 
       - name: Docker Data Task Test
-        run: docker run cloudtak-data:latest npm run tstest
+        run: docker run cloudtak-data:latest npm run test
 
   hooks:
     runs-on: ubuntu-latest
@@ -99,7 +99,7 @@ jobs:
       - name: Docker API Test
         run: docker run --network cloudtak_default
           -e "POSTGRES=postgres://docker:docker@postgis:5432/gis"
-          cloudtak-api:latest npm test
+          cloudtak-api:latest tsnpm test
 
       - name: Docker Cleanup
         run: docker compose kill
