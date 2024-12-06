@@ -7,6 +7,7 @@
     "main": "task.js",
     "scripts": {
         "test": "tape test/*.test.js",
+        "tstest": "tape test/*.test.js",
         "lint": "eslint task.js lib/*.js",
         "start": "node task.js"
     },
@@ -20,7 +21,7 @@
         "geojson-precision": "^1.0.0",
         "jsonwebtoken": "^9.0.0",
         "node-stream-zip": "^1.15.0",
-        "undici": "^6.19.8"
+        "undici": "^7.1.0"
     },
     "devDependencies": {
         "eslint": "^9.0.0",
