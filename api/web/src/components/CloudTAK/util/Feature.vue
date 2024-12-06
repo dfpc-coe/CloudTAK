@@ -148,6 +148,9 @@ watch(canvas, async () => {
     if (!canvas.value || !mapStore.map) return;
 
     const icon = mapStore.map.getImage(props.feature.properties.icon)
+
+    if (!icon) return;
+
     const context = canvas.value.getContext('2d');
 
     canvas.value.height = 20;
