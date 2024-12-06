@@ -78,8 +78,6 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
-            if (lease.channel === '') lease.channel = null;
-
             res.json({
                 lease,
                 protocols: await videoControl.protocols(lease)
@@ -141,8 +139,6 @@ export default async function router(schema: Schema, config: Config) {
                 proxy: req.body.proxy
             })
 
-            if (lease.channel === '') lease.channel = null;
-
             res.json({
                 lease,
                 protocols: await videoControl.protocols(lease)
@@ -194,8 +190,6 @@ export default async function router(schema: Schema, config: Config) {
                 username: user.email,
                 admin: user.access === AuthUserAccess.ADMIN
             });
-
-            if (lease.channel === '') lease.channel = null;
 
             res.json({
                 lease,

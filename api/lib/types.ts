@@ -81,7 +81,9 @@ export const ProfileResponse = Type.Object({
 
 export const VideoLeaseResponse = createSelectSchema(schemas.VideoLease, {
     id: Type.Integer(),
-    ephemeral: Type.Boolean()
+    ephemeral: Type.Boolean(),
+    channel: Type.Union([Type.Null(), Type.String()]),
+    proxy: Type.Union([Type.Null(), Type.String()]),
 });
 
 export const ProfileOverlayResponse = createSelectSchema(schemas.ProfileOverlay, {
