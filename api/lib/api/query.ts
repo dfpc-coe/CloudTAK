@@ -17,6 +17,23 @@ export default class COTQuery {
         this.api = api;
     }
 
+    async singleFeat(uid: string): Promise<Static<typeof Feature.Feature>> {
+        const cotstr = await this.single(uid);
+        return new CoT(cotstr).to_geojson();
+    }
+
+    async single(uid: string): Promise<string> {
+        const url = new URL(`/Marti/api/cot/xml/${encodeURIComponent(uid)}`, this.api.url);
+
+        const res = await this.api.fetch(url, {
+            method: 'GET'
+        }, true);
+
+        const body = await res.text();
+
+        return body;
+    }
+
     async historyFeats(uid: string, opts?: Static<typeof HistoryOptions>): Promise<Array<Static<typeof Feature.Feature>>> {
         const feats: Static<typeof Feature.Feature>[] = [];
 
@@ -27,7 +44,7 @@ export default class COTQuery {
 
         for (const event of Array.isArray(res.events.event) ? res.events.event : [res.events.event] ) {
             feats.push((new CoT({ event })).to_geojson());
-        } 
+        }
 
         return feats;
     }
