@@ -203,7 +203,7 @@ export default async function router(schema: Schema, config: Config) {
             if (config.events) {
                 if (layer.cron && !Schedule.is_aws(layer.cron) && layer.enabled) {
                     config.events.add(layer.id, layer.cron);
-                } else if (!layer.cron || (layer.cron &&  Schedule.is_aws(layer.cron) || !layer.enabled) {
+                } else if (!layer.cron || (layer.cron && Schedule.is_aws(layer.cron)) || !layer.enabled) {
                     await config.events.delete(layer.id);
                 }
             }
@@ -354,7 +354,7 @@ export default async function router(schema: Schema, config: Config) {
             if (config.events) {
                 if (layer.cron && !Schedule.is_aws(layer.cron) && layer.enabled) {
                     config.events.add(layer.id, layer.cron);
-                } else if (!layer.cron || (layer.cron &&  Schedule.is_aws(layer.cron) || !layer.enabled) {
+                } else if (!layer.cron || (layer.cron && Schedule.is_aws(layer.cron)) || !layer.enabled) {
                     await config.events.delete(layer.id);
                 }
             }
