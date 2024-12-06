@@ -512,6 +512,13 @@
       "when": 1733424131456,
       "tag": "0072_rainy_zaladane",
       "breakpoints": true
+    },
+    {
+      "idx": 73,
+      "version": "7",
+      "when": 1733527002274,
+      "tag": "0073_rare_korvac",
+      "breakpoints": true
     }
   ]
 }
