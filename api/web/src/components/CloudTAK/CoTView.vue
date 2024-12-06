@@ -627,7 +627,7 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
 import type COT from '../../../src/stores/base/cot.ts';
-import type { COTType } from '../../../src/types.ts';
+import type { COTType, FeatureCollection } from '../../../src/types.ts';
 import { OriginMode } from '../../../src/stores/base/cot.ts'
 import Mission from '../../../src/stores/base/mission.ts'
 import {
@@ -774,7 +774,7 @@ async function loadBreadcrumb() {
         const url = stdurl(`/api/marti/cot/${cot.value.id}/all`)
         url.searchParams.append('secago', String(60 * 60))
         url.searchParams.append('track', String(true))
-        const crumb = await std(url);
+        const crumb = await std(url) as FeatureCollection;
 
         for (const feat of crumb.features) {
             cotStore.add(feat)
