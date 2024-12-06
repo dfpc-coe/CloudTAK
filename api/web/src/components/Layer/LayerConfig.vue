@@ -369,7 +369,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { std, humanSeconds } from '../../../src/std.ts';
 import type { ETLTaskVersions } from '../../../src/types.ts';
@@ -434,7 +434,7 @@ const config = ref<{
     task: string,
     timeout: number,
     memory: number,
-    cron: string | number,
+    cron: string | null,
     stale: number,
     alarm_period: number,
     alarm_evals: number,
@@ -455,6 +455,14 @@ const config = ref<{
     alarm_evals: 5,
     alarm_points: 4,
     alarm_threshold: 0
+});
+
+watch(config, () => {
+    if (cronEnabled.value) {
+        config.value.cron = '0/15 * * * ? *';
+    } else {
+        config.value.cron = null;
+    }
 });
 
 onMounted(() => {
