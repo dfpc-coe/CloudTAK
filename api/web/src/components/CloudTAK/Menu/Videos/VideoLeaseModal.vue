@@ -111,6 +111,7 @@
                 <div class='col-12'>
                     <TablerInput
                         v-model='editLease.name'
+                        description='The human readable name of the Lease'
                         label='Lease Name'
                     />
                 </div>
@@ -125,9 +126,20 @@
                 <div class='col-12'>
                     <TablerToggle
                         v-model='shared'
+                        description='By Default only the user that created a Lease can manage it. If you are operating as part of an agency, turn on Lease sharing to allow all users in your Channel to manage the lease'
                         label='Shared Lease'
                     />
                 </div>
+                <div
+                    v-if='shared'
+                    class='col-12'
+                >
+                    <GroupSelect
+                        v-model='channels'
+                        :limit='1'
+                    />
+                </div>
+
                 <div class='col-12'>
                     <label
                         class='subheader mt-3 cursor-pointer'
@@ -234,6 +246,7 @@ import { std } from '../../../../std.ts';
 import CopyField from '../../util/CopyField.vue';
 import { ref, onMounted } from 'vue';
 import type { VideoLease, VideoLeaseResponse, VideoLeaseProtocols } from '../../../../types.ts';
+import GroupSelect from '../../../util/GroupSelect.vue';
 import { useProfileStore } from '../../../../stores/profile.ts';
 import {
     IconRefresh,
@@ -264,6 +277,8 @@ const loading = ref(true);
 const wizard = ref(0);
 const advanced = ref(false);
 const protocols = ref<VideoLeaseProtocols>({});
+
+const channels = ref<string[]>([]);
 
 const profileStore = useProfileStore();
 
@@ -316,6 +331,12 @@ async function fetchLease() {
     editLease.value = {
         ...res.lease,
         duration: '16 Hours'
+    }
+
+    if (editLease.value.channel) {
+        channels.value = [ editLease.value.channel ];
+    } else {
+        channels.value = [];
     }
 
     if (res.lease.channel) {
