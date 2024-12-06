@@ -139,7 +139,7 @@
                 <div class='col-12'>
                     <TablerToggle
                         v-model='shared'
-                        description='By Default only the user that created a Lease can manage it. If you are operating as part of an agency, turn on Lease sharing to allow all users in your Channel to manage the lease'
+                        description='By default only the user that created a Lease can manage it. If you are operating as part of an agency, turn on Lease Sharing to allow all users in your Channel to manage the lease'
                         :disabled='disabled'
                         label='Shared Lease'
                     />
@@ -270,7 +270,7 @@
 <script setup lang='ts'>
 import { std } from '../../../../std.ts';
 import CopyField from '../../util/CopyField.vue';
-import { ref, onMounted } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import type { VideoLease, VideoLeaseResponse, VideoLeaseProtocols } from '../../../../types.ts';
 import GroupSelect from '../../../util/GroupSelect.vue';
 import { useProfileStore } from '../../../../stores/profile.ts';
@@ -347,6 +347,12 @@ onMounted(async () => {
     loading.value = false
 });
 
+watch(shared, () => {
+    if (!shared.value) {
+        channels.value = [];
+    }
+});
+
 function expired(expiration?: string | null) {
     if (!expiration) return false;
     return +new Date(expiration) < +new Date();
@@ -419,7 +425,7 @@ async function saveLease() {
             }
 
             protocols.value = res.protocols;
-
+            disabled.value = true;
             loading.value = false;
         } else {
             const res = await std('/api/video/lease', {
@@ -438,11 +444,9 @@ async function saveLease() {
             }
 
             protocols.value = res.protocols;
-
+            disabled.value = true;
             loading.value = false;
         }
-
-        disabled.value = false;
     } catch (err) {
         loading.value = false;
         throw err;

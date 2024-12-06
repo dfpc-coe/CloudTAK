@@ -66,7 +66,7 @@ export const VideoLease = pgTable('video_lease', {
     username: text().notNull().references(() => Profile.username),
 
     ephemeral: boolean().notNull().default(false),
-    channel: text(),
+    channel: text().default(sql`null`),
 
     expiration: timestamp({ withTimezone: true, mode: 'string' }).default(sql`Now() + INTERVAL 1 HOUR;`),
     path: text().notNull(),
@@ -74,7 +74,7 @@ export const VideoLease = pgTable('video_lease', {
     stream_pass: text(),
 
     // Optional Proxy Mode
-    proxy: text(),
+    proxy: text().default(sql`null`),
 });
 
 export const ProfileFeature = pgTable('profile_features', {
