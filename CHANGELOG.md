@@ -12,6 +12,21 @@
 
 ### Pending Release
 
+### v5.17.0 - 2024-12-06
+
+- :tada: `UI` Add ability to query BreadCrumb for last hour for a given active user
+- :tada: `UI` Only show Edit fns on Radial for CoTs from Mission with edit role
+- :tada: `UI/API` Update Layer to support Webhooks & Cron style of deploys
+- :rocket: `UI` Migrate LayerConfig to TS
+- :rocket: `API` Add `VideoLease.channel` column for future use for channel management of leases
+- :rocket: `UI` Migrate Channel Menu to TS
+- :rocket: `UI` Add ability to turn all channels on/off from single button
+- :rocket: `API` Add `webhooks` field to Layer Template
+- :bug: `UI` Remove UI for Layer Query as the backend was removed
+- :bug: `API` Fix broken tests
+- :tada: `API` Add CoT history endpoints to profile & layer API base paths
+- :arrow_up: Update Drizzle to latest versions
+
 ### v5.16.0 - 2024-12-02
 
 - :tada: `UI` Add filter support for Share Component
