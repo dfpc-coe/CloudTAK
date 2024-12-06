@@ -294,12 +294,14 @@ const editLease = ref<{
     id?: number
     name: string
     duration: string
+    channel: string | null
     expiration?: string | null
     stream_user: string | null
     stream_pass: string | null
 }>({
     name: '',
     duration: '16 Hours',
+    channel: null,
     stream_user: '',
     stream_pass: ''
 });
