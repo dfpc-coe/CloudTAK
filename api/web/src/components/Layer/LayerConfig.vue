@@ -469,6 +469,10 @@ function reload() {
 async function saveLayer() {
     loading.value.save = true;
 
+    if (!cronEnabled.value) {
+        config.value.cron = null;
+    }
+
     const layer = await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}`, {
         method: 'PATCH',
         body: config.value
