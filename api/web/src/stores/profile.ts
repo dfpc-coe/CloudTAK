@@ -57,12 +57,14 @@ export const useProfileStore = defineStore('profile', {
         load: async function(): Promise<void> {
             this.profile = await std('/api/profile') as Profile;
         },
-        loadChannels: async function(): Promise<void> {
+        loadChannels: async function(): Promise<Array<Group>> {
             const url = stdurl('/api/marti/group');
             url.searchParams.append('useCache', 'true');
             this.channels = ((await std(url)) as {
                 data: Group[]
             }).data
+
+            return this.channels
         },
         update: async function(body: Profile_Update): Promise<void> {
             this.profile = await std('/api/profile', {
