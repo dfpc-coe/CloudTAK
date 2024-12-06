@@ -369,7 +369,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { std, humanSeconds } from '../../../src/std.ts';
 import type { ETLTaskVersions } from '../../../src/types.ts';
@@ -425,7 +425,22 @@ const loading = ref({
     save: false
 });
 
-const config = ref({
+const config = ref<{
+    uuid: string,
+    connection: number | null,
+    webhooks: boolean,
+    priority: string,
+    data: number | null,
+    task: string,
+    timeout: number,
+    memory: number,
+    cron: string | null,
+    stale: number,
+    alarm_period: number,
+    alarm_evals: number,
+    alarm_points: number,
+    alarm_threshold: number
+}>({
     uuid: '',
     connection: null,
     webhooks: false,
@@ -436,10 +451,18 @@ const config = ref({
     memory: 512,
     cron: '0/15 * * * ? *',
     stale: 60 * 1000,
-    alarm_period: '30',
-    alarm_evals: '5',
-    alarm_points: '4',
-    alarm_threshold: '0'
+    alarm_period: 30,
+    alarm_evals: 5,
+    alarm_points: 4,
+    alarm_threshold: 0
+});
+
+watch(config, () => {
+    if (cronEnabled.value) {
+        config.value.cron = '0/15 * * * ? *';
+    } else {
+        config.value.cron = null;
+    }
 });
 
 onMounted(() => {
@@ -468,6 +491,10 @@ function reload() {
 
 async function saveLayer() {
     loading.value.save = true;
+
+    if (!cronEnabled.value) {
+        config.value.cron = null;
+    }
 
     const layer = await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}`, {
         method: 'PATCH',
