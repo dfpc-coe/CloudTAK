@@ -156,7 +156,6 @@ export default class Flight {
             return res;
         }
 
-
         if (!req.method) req.method = 'GET';
 
         let match: string;
