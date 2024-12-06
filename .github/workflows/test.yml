@@ -28,7 +28,7 @@ jobs:
         run: docker run cloudtak-data:latest npm run lint
 
       - name: Docker Data Task Test
-        run: docker run cloudtak-data:latest npm test
+        run: docker run cloudtak-data:latest npm run tstest
 
   hooks:
     runs-on: ubuntu-latest
