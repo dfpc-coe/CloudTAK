@@ -180,7 +180,9 @@ export default async function router(schema: Schema, config: Config) {
                 await Style.validate(req.body.styles);
             }
 
-            Schedule.is_valid(req.body.cron);
+            if (req.body.cron) {
+                Schedule.is_valid(req.body.cron);
+            }
 
             if (req.body.data) {
                 const data = await config.models.Data.from(req.body.data);

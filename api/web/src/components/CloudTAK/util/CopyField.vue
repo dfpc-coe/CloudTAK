@@ -29,7 +29,7 @@
         v-else
         ref='infobox'
         class='position-relative bg-gray-500 rounded-top py-2 px-2 text-truncate'
-        :style='rows === 1 ? `height: 44px;` : ``'
+        :style='rows === 1 ? `min-height: ${minheight}px;` : ``'
         :class='{
             "hover-button hover-border cursor-pointer": hover,
         }'
@@ -124,6 +124,10 @@ const props = defineProps({
     rows: {
         type: Number,
         default: 1
+    },
+    minheight: {
+        type: Number,
+        default: 32
     },
     hover: {
         type: Boolean,

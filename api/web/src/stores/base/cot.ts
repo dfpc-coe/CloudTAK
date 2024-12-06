@@ -4,7 +4,7 @@ import type { LngLatBoundsLike } from 'maplibre-gl';
 import { useCOTStore } from '../cots.ts'
 import { useMapStore } from '../map.ts';
 import pointOnFeature from '@turf/point-on-feature';
-import type { Feature } from './../../types.ts'
+import type { Feature, Subscription } from './../../types.ts'
 import type {
     BBox as GeoJSONBBox,
     Feature as GeoJSONFeature,
@@ -46,6 +46,8 @@ export default class COT {
     _geometry: Feature["geometry"];
 
     _store: ReturnType<typeof useCOTStore>;
+    _username?: string;
+
     origin: Origin
 
     constructor(feat: Feature, origin?: Origin) {
@@ -141,6 +143,48 @@ export default class COT {
         }
     }
 
+    get is_skittle(): boolean {
+        return !!this.properties.group;
+    }
+
+    get is_archivable(): boolean {
+        return !this.is_skittle;
+    }
+
+    get is_editable(): boolean {
+        if (this.origin.mode === OriginMode.MISSION) {
+            // TODO Check role and allow editing if role allows & also auto update mission with edited CoT
+            return false;
+        } else {
+            return this.properties.archived || false;
+        }
+    }
+
+    async subscription(): Promise<Subscription> {
+        if (!this.is_skittle) throw new Error('Username can only be obtained for Users');
+
+        return (await std(`/api/marti/subscription/${this.id}`, {
+            method: 'GET'
+        }) as Subscription);
+    }
+
+    async username(): Promise<string> {
+        if (!this.is_skittle) throw new Error('Username can only be obtained for Users');
+
+        if (this._username) {
+            return this._username;
+        } else {
+            try {
+                this._username = (await this.subscription()).username;
+            } catch (err) {
+                console.error(err);
+                this._username = '';
+            }
+
+            return this._username;
+        }
+    }
+
     as_proxy(): COT {
         return new Proxy(this, {
             set(target, prop, val) {
@@ -215,11 +259,11 @@ export default class COT {
         if (!mapStore.map) return;
 
         mapStore.map.fitBounds(this.bounds() as LngLatBoundsLike, {
-            maxZoom: 18, 
+            maxZoom: 18,
             padding: {
-                top: 20, 
-                bottom: 20, 
-                left: 20, 
+                top: 20,
+                bottom: 20,
+                left: 20,
                 right: 20
             },
             speed: Infinity,
