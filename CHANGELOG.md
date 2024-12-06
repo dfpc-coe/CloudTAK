@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v5.17.1 - 2024-12-06
+
+- :bug: Fix disablement of cron job from web UI
+
 ### v5.17.0 - 2024-12-06
 
 - :tada: `UI` Add ability to query BreadCrumb for last hour for a given active user
