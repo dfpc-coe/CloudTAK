@@ -359,10 +359,18 @@ export default class VideoServiceControl {
         return lease;
     }
 
-    async commit(leaseid: string, body: { name?: string, expiration: string | null }, opts: {
-        username: string;
-        admin: boolean;
-    }): Promise<Static<typeof VideoLeaseResponse>> {
+    async commit(
+        leaseid: string,
+        body: {
+            name?: string,
+            channel?: string,
+            expiration: string | null
+        },
+        opts: {
+            username: string;
+            admin: boolean;
+        }
+    ): Promise<Static<typeof VideoLeaseResponse>> {
         const video = await this.settings();
         if (!video.configured) throw new Err(400, null, 'Media Integration is not configured');
 
