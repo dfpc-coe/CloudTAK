@@ -199,6 +199,16 @@
         "query": true,
         "res": true
     },
+    "GET /connection/:connectionid/layer/:layerid/cot/:uid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /connection/:connectionid/layer/:layerid/cot/:uid/all": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
     "PUT /connection/:connectionid/layer/:layerid/ephemeral": {
         "body": true,
         "query": false,
