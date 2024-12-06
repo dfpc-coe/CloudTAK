@@ -425,7 +425,22 @@ const loading = ref({
     save: false
 });
 
-const config = ref({
+const config = ref<{
+    uuid: string,
+    connection: number | null,
+    webhooks: boolean,
+    priority: string,
+    data: number | null,
+    task: string,
+    timeout: number,
+    memory: number,
+    cron: string | number,
+    stale: number,
+    alarm_period: number,
+    alarm_evals: number,
+    alarm_points: number,
+    alarm_threshold: number
+}>({
     uuid: '',
     connection: null,
     webhooks: false,
@@ -436,10 +451,10 @@ const config = ref({
     memory: 512,
     cron: '0/15 * * * ? *',
     stale: 60 * 1000,
-    alarm_period: '30',
-    alarm_evals: '5',
-    alarm_points: '4',
-    alarm_threshold: '0'
+    alarm_period: 30,
+    alarm_evals: 5,
+    alarm_points: 4,
+    alarm_threshold: 0
 });
 
 onMounted(() => {
