@@ -26,6 +26,7 @@ test('GET: api/server - Admin', async (t) => {
             name: 'Default Server',
             url: '',
             api: '',
+            webtak: '',
             auth: false
         });
     } catch (err) {
@@ -53,6 +54,7 @@ test('GET: api/server - User', async (t) => {
             name: 'Default Server',
             url: '',
             api: '',
+            webtak: '',
             auth: false
         });
     } catch (err) {
