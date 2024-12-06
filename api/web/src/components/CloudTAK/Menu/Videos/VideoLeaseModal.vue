@@ -106,23 +106,29 @@
         </template>
         <template v-else>
             <div
-                class='modal-body row'
+                class='modal-body row g-2'
             >
-                <div
-                    class='col-12'
-                >
+                <div class='col-12'>
                     <TablerInput
                         v-model='editLease.name'
                         label='Lease Name'
                     />
-
+                </div>
+                <div class='col-12'>
                     <TablerEnum
                         v-if='!editLease.id'
                         v-model='editLease.duration'
                         :options='durations'
                         label='Lease Duration'
                     />
-
+                </div>
+                <div class='col-12'>
+                    <TablerToggle
+                        v-model='shared'
+                        label='Shared Lease'
+                    />
+                </div>
+                <div class='col-12'>
                     <label
                         class='subheader mt-3 cursor-pointer'
                         @click='advanced = !advanced'
@@ -240,6 +246,7 @@ import {
 import {
     TablerIconButton,
     TablerLoading,
+    TablerToggle,
     TablerAlert,
     TablerModal,
     TablerInput,
@@ -265,6 +272,8 @@ const durations = ref<Array<string>>(["16 Hours", "12 Hours", "6 Hours", "1 Hour
 if (profileStore.profile && profileStore.profile.system_admin) {
     durations.value.push('Permanent');
 }
+
+const shared = ref(false);
 
 const editLease = ref<{
     id?: number
@@ -308,6 +317,13 @@ async function fetchLease() {
         ...res.lease,
         duration: '16 Hours'
     }
+
+    if (res.lease.channel) {
+        shared.value = true;
+    } else {
+        shared.value = false;
+    }
+
     protocols.value = res.protocols;
 
     loading.value = false;

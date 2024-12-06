@@ -48,6 +48,10 @@ export default class Lambda {
                     Type: 'String',
                     Default: layer.task
                 },
+                UniqueID: {
+                    Type: 'String',
+                    Default: layer.uuid
+                }
             },
             Resources: {
                 ETLFunctionLogs: {
@@ -123,6 +127,37 @@ export default class Lambda {
             }
         }
 
+        if (layer.webhooks) {
+            stack.Resources.WebHookResourceBase = {
+                Type: 'AWS::ApiGatewayV2::Route',
+                Properties: {
+                    RouteKey: cf.join(['ANY /', cf.ref('UniqueID') ]),
+                    ApiId: cf.importValue(config.StackName.replace(/^coe-etl-/, 'coe-etl-webhooks-') + '-api'),
+                    Target: cf.join(['integrations/', cf.ref('WebHookResourceIntegration')])
+                }
+            };
+
+            stack.Resources.WebHookResource = {
+                Type: 'AWS::ApiGatewayV2::Route',
+                Properties: {
+                    RouteKey: cf.join(['ANY /', cf.ref('UniqueID'), '/{proxy+}']),
+                    ApiId: cf.importValue(config.StackName.replace(/^coe-etl-/, 'coe-etl-webhooks-') + '-api'),
+                    Target: cf.join(['integrations/', cf.ref('WebHookResourceIntegration')])
+                }
+            };
+
+            stack.Resources.WebHookResourceIntegration = {
+                Type: 'AWS::ApiGatewayV2::Integration',
+                Properties: {
+                    ApiId: cf.importValue(config.StackName.replace(/^coe-etl-/, 'coe-etl-webhooks-') + '-api'),
+                    IntegrationType: 'AWS_PROXY',
+                    IntegrationUri: cf.getAtt('ETLFunction', 'Arn'),
+                    CredentialsArn: cf.importValue(config.StackName.replace(/^coe-etl-/, 'coe-etl-webhooks-') + '-role'),
+                    PayloadFormatVersion: '2.0'
+                }
+            }
+        }
+
         if (layer.priority !== 'off') {
             stack.Resources.LambdaAlarm.Properties.AlarmActions.push(
                 cf.join(['arn:', cf.partition, ':sns:', cf.region, `:`, cf.accountId, `:${config.StackName}-${layer.priority}-urgency`])
@@ -133,7 +168,7 @@ export default class Lambda {
             )
         }
 
-        if (Schedule.is_aws(layer.cron)) {
+        if (layer.cron && Schedule.is_aws(layer.cron)) {
             stack.Parameters.ScheduleExpression = {
                 Type: 'String',
                 Default: layer.cron

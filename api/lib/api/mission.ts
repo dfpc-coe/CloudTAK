@@ -242,8 +242,8 @@ export default class {
 
         const res: any = xmljs.xml2js(await this.latestCots(name, opts), { compact: true });
 
-        if (!Object.keys(res.events).length) return [];
-        if (!res.events.event || (Array.isArray(res.events.event) && !res.events.event.length)) return [];
+        if (!Object.keys(res.events).length) return feats;
+        if (!res.events.event || (Array.isArray(res.events.event) && !res.events.event.length)) return feats;
 
         for (const event of Array.isArray(res.events.event) ? res.events.event : [res.events.event] ) {
             feats.push((new CoT({ event })).to_geojson());

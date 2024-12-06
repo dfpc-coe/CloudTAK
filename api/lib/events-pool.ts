@@ -48,7 +48,9 @@ export default class EventsPool {
 
         for (const layer of layers.values()) {
             try {
-                this.add(layer.id, layer.cron);
+                if (layer.cron) {
+                    this.add(layer.id, layer.cron);
+                }
             } catch (err) {
                 console.error(`CloudTAK Cron: Init Error on Layer ${layer.id}`, err);
             }

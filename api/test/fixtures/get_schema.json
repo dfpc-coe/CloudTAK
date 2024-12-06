@@ -84,6 +84,11 @@
         "query": false,
         "res": true
     },
+    "GET /config/group": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /connection/:connectionid/channel": {
         "body": false,
         "query": false,
@@ -194,18 +199,18 @@
         "query": true,
         "res": true
     },
-    "PUT /connection/:connectionid/layer/:layerid/ephemeral": {
-        "body": true,
+    "GET /connection/:connectionid/layer/:layerid/cot/:uid": {
+        "body": false,
         "query": false,
         "res": true
     },
-    "GET /connection/:connectionid/layer/:layerid/query": {
+    "GET /connection/:connectionid/layer/:layerid/cot/:uid/all": {
         "body": false,
         "query": true,
         "res": true
     },
-    "GET /connection/:connectionid/layer/:layerid/query/:featid": {
-        "body": false,
+    "PUT /connection/:connectionid/layer/:layerid/ephemeral": {
+        "body": true,
         "query": false,
         "res": true
     },
@@ -221,17 +226,17 @@
     },
     "POST /connection/:connectionid/layer": {
         "body": true,
-        "query": false,
+        "query": true,
         "res": true
     },
     "PATCH /connection/:connectionid/layer/:layerid": {
         "body": true,
-        "query": false,
+        "query": true,
         "res": true
     },
     "GET /connection/:connectionid/layer/:layerid": {
         "body": false,
-        "query": false,
+        "query": true,
         "res": true
     },
     "POST /connection/:connectionid/layer/:layerid/redeploy": {
@@ -579,6 +584,16 @@
         "query": true,
         "res": false
     },
+    "GET /marti/cot/:uid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /marti/cot/:uid/all": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
     "DELETE /marti/api/files/:hash": {
         "body": false,
         "query": true,
@@ -594,6 +609,11 @@
         "query": false,
         "res": true
     },
+    "GET /marti/missions/:name/layer/:layerid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "POST /marti/missions/:name/layer": {
         "body": true,
         "query": false,
@@ -605,6 +625,11 @@
         "res": true
     },
     "DELETE /marti/missions/:name/layer/:uid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /marti/missions/:name/log": {
         "body": false,
         "query": false,
         "res": true
@@ -699,12 +724,12 @@
         "query": false,
         "res": true
     },
-    "GET /marti/package/:hash": {
+    "GET /marti/package/:uid": {
         "body": false,
         "query": false,
         "res": true
     },
-    "DELETE /marti/package/:hash": {
+    "DELETE /marti/package/:uid": {
         "body": false,
         "query": false,
         "res": true
@@ -722,6 +747,16 @@
     "GET /marti/video": {
         "body": false,
         "query": true,
+        "res": true
+    },
+    "GET /marti/video/:uid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /marti/video/:uid": {
+        "body": false,
+        "query": false,
         "res": true
     },
     "GET /marti/group": {
@@ -927,6 +962,11 @@
     "GET /user": {
         "body": false,
         "query": true,
+        "res": true
+    },
+    "PATCH /user/:username": {
+        "body": true,
+        "query": false,
         "res": true
     },
     "GET /user/:username": {
