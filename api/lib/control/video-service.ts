@@ -287,7 +287,8 @@ export default class VideoServiceControl {
         expiration: string | null;
         path: string;
         username: string;
-        proxy?: string;
+        channel?: string | null;
+        proxy?: string | null;
     }): Promise<Static<typeof VideoLeaseResponse>> {
         const video = await this.settings();
         if (!video.configured) throw new Err(400, null, 'Media Integration is not configured');
@@ -300,6 +301,7 @@ export default class VideoServiceControl {
             ephemeral: opts.ephemeral,
             path: opts.path,
             username: opts.username,
+            channel: opts.channel,
             proxy: opts.proxy
         });
 
@@ -363,7 +365,7 @@ export default class VideoServiceControl {
         leaseid: string,
         body: {
             name?: string,
-            channel?: string,
+            channel?: string | null,
             expiration: string | null
         },
         opts: {
