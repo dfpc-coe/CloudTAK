@@ -69,7 +69,7 @@ export default cf.merge(
                 Properties: {
                     Name: cf.stackName,
                     DisableExecuteApiEndpoint: true,
-                    ProtocolType: 'HTTP',
+                    ProtocolType: 'HTTP'
                 }
             },
             CloudTAKWebhooksAPIDeployment: {
@@ -106,27 +106,27 @@ export default cf.merge(
                 }
             },
             CloudTAKWebhooksHealthCheckFunction: {
-                Type: "AWS::Lambda::Function",
+                Type: 'AWS::Lambda::Function',
                 Properties: {
-                    Handler: "index.handler",
+                    Handler: 'index.handler',
                     Role: cf.getAtt('CloudTAKWebhooksHealthCheckFunctionRole', 'Arn'),
                     Code: {
                         ZipFile: "def handler(event, context):\n    return {\n        'statusCode': 200,\n        'body': 'Hello from Lambda!'\n    }"
                     },
-                    Runtime: "python3.8"
+                    Runtime: 'python3.8'
                 }
             },
             CloudTAKWebhooksHealthCheckFunctionRole: {
-                Type: "AWS::IAM::Role",
+                Type: 'AWS::IAM::Role',
                 Properties: {
                     AssumeRolePolicyDocument: {
-                        Version: "2012-10-17",
+                        Version: '2012-10-17',
                         Statement: [{
-                            Effect: "Allow",
+                            Effect: 'Allow',
                             Principal: {
-                                Service: ["lambda.amazonaws.com"]
+                                Service: ['lambda.amazonaws.com']
                             },
-                            Action: ["sts:AssumeRole"]
+                            Action: ['sts:AssumeRole']
                         }]
                     },
                     ManagedPolicyArns: [cf.join(['arn:', cf.partition, ':iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'])]
@@ -139,7 +139,7 @@ export default cf.merge(
                     IntegrationType: 'AWS_PROXY',
                     IntegrationUri: cf.getAtt('CloudTAKWebhooksHealthCheckFunction', 'Arn'),
                     CredentialsArn: cf.getAtt('CloudTAKWebhooksApiGatewayRole', 'Arn'),
-                    PayloadFormatVersion: "2.0"
+                    PayloadFormatVersion: '2.0'
                 }
             }
         },
@@ -156,7 +156,7 @@ export default cf.merge(
                 Export: {
                     Name: cf.join([cf.stackName, '-role'])
                 },
-                Value: cf.getAtt('CloudTAKWebhooksApiGatewayRole', 'Arn'),
+                Value: cf.getAtt('CloudTAKWebhooksApiGatewayRole', 'Arn')
             },
             ApiId: {
                 Description: 'Base ID of API Gateway',

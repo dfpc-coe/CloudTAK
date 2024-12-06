@@ -10,7 +10,7 @@ import { pathToRegexp } from 'path-to-regexp';
 import test from 'tape';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
-import * as pgschema from '../lib/schema.js';
+import * as pgtypes from '../lib/schema.js';
 import { Pool } from '@openaddresses/batch-generic';
 const ajv = addFormats(new Ajv({ allErrors: true }));
 
@@ -62,9 +62,9 @@ export default class Flight {
                 if (dropdb) {
                     const connstr = process.env.POSTGRES || 'postgres://postgres@localhost:5432/tak_ps_etl_test';
                     await drop(connstr);
-                    const pool = await Pool.connect(connstr, {
+
+                    const pool = await Pool.connect(connstr, pgtypes, {
                         migrationsFolder: (new URL('../migrations', import.meta.url)).pathname,
-                        schema: pgschema
                     });
                     // @ts-expect-error Not present in type def
                     pool.session.client.end();
