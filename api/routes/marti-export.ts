@@ -38,10 +38,32 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
+    await schema.get('/marti/cot/:uid', {
+        name: 'COT Latest',
+        group: 'MartiCOTQuery',
+        description: 'Helper API to get latest COT by UID',
+        params: Type.Object({
+            uid: Type.String()
+        }),
+        res: Feature.Feature
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+            const profile = await config.models.Profile.from(user.email);
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
+
+            const feat = await api.Query.singleFeat(req.params.uid);
+
+            res.json(feat)
+        } catch (err) {
+             Err.respond(err, res);
+        }
+    });
+
     await schema.get('/marti/cot/:uid/all', {
         name: 'COT History',
         group: 'MartiCOTQuery',
-        description: 'Helper API to list COT Queries',
+        description: 'Helper API to list COT history',
         params: Type.Object({
             uid: Type.String()
         }),
