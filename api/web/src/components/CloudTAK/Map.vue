@@ -881,7 +881,7 @@ export default {
 
             cotStore.hidden.add(feat.id);
             this.updateCOT();
-            mapStore.draw.addFeatures([feat]);
+            mapStore.draw.addFeatures([feat.as_feature()]);
             mapStore.draw.selectFeature(feat.id);
         },
         deleteCOT: async function(cot) {

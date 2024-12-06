@@ -12,7 +12,7 @@
     ],
     "artifacts": {
         "s3": [
-            "{{stackName}}-{{accountId}}-{{region}}-public/{{gitsha}}/index.html"
+            "{{rootStackName}}-{{accountId}}-{{region}}-public/{{gitsha}}/index.html"
         ],
         "docker": [
             "coe-ecr-etl:{{gitsha}}",

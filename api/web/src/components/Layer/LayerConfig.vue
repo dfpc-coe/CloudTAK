@@ -5,13 +5,16 @@
                 Layer Config
             </h3>
             <div class='ms-auto btn-list'>
-                <IconSettings
+                <TablerIconButton
                     v-if='disabled'
-                    :size='32'
-                    :stroke='1'
-                    class='cursor-pointer'
+                    title='Edit Layer Config'
                     @click='disabled = false'
-                />
+                >
+                    <IconPencil
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
             </div>
         </div>
 
@@ -27,80 +30,8 @@
             v-else
             class='card-body'
         >
-            <div class='row g-4'>
-                <div class='col-md-6'>
-                    <div class='d-flex'>
-                        <label class='form-label'>Cron Expression</label>
-                        <div
-                            v-if='!disabled'
-                            class='ms-auto'
-                        >
-                            <div class='dropdown'>
-                                <div
-                                    id='dropdownCron'
-                                    class='dropdown-toggle'
-                                    type='button'
-                                    data-bs-toggle='dropdown'
-                                    aria-expanded='false'
-                                >
-                                    <IconSettings
-                                        :size='16'
-                                        :stroke='1'
-                                        class='cursor-pointer dropdown-toggle'
-                                    />
-                                </div>
-                                <ul
-                                    class='dropdown-menu px-1 py-1'
-                                    aria-labelledby='dropdownCron'
-                                >
-                                    <li
-                                        class='py-1'
-                                        @click='config.cron = "rate(1 minute)"'
-                                    >
-                                        rate(1 minute)
-                                    </li>
-                                    <li
-                                        class='py-1'
-                                        @click='config.cron = "rate(5 minutes)"'
-                                    >
-                                        rate(5 minutes)
-                                    </li>
-                                    <li
-                                        class='py-1'
-                                        @click='config.cron = "cron(15 10 * * ? *)"'
-                                    >
-                                        cron(15 10 * * ? *)
-                                    </li>
-                                    <li
-                                        class='py-1'
-                                        @click='config.cron = "cron(0/5 8-17 ? * MON-FRI *)"'
-                                    >
-                                        cron(0/5 8-17 ? * MON-FRI *)
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    <input
-                        v-model='config.cron'
-                        :disabled='disabled'
-                        :class='{
-                            "is-invalid": errors.cron
-                        }'
-                        class='form-control'
-                        placeholder='Cron Expression'
-                    >
-                    <div
-                        v-if='errors.cron'
-                        class='invalid-feedback'
-                        v-text='errors.cron'
-                    />
-                    <label
-                        v-if='config.cron'
-                        v-text='cronstr(config.cron)'
-                    />
-                </div>
-                <div class='col-md-6'>
+            <div class='row g-2'>
+                <div class='col-md-12'>
                     <div class='d-flex'>
                         <label class='form-label'>Schedule Task</label>
                         <div class='ms-auto'>
@@ -110,7 +41,7 @@
                                         v-if='!newTaskVersion && !loading.version'
                                         v-tooltip='"Check for new version"'
                                         :size='16'
-                                        :stroke='1'
+                                        stroke='1'
                                         class='cursor-pointer'
                                         @click='latestVersion'
                                     />
@@ -140,7 +71,7 @@
                                 <div v-if='!disabled'>
                                     <IconSettings
                                         :size='16'
-                                        :stroke='1'
+                                        stroke='1'
                                         class='cursor-pointer'
                                         @click='taskmodal = true'
                                     />
@@ -163,6 +94,123 @@
                         v-text='errors.task'
                     />
                 </div>
+
+                <div class='col-md-12'>
+                    <div class='d-flex'>
+                        <IconCalendarClock
+                            :size='20'
+                            stroke='1'
+                        />
+                        <div style='width: calc(100% - 20px);'>
+                            <TablerToggle
+                                v-model='cronEnabled'
+                                :disabled='disabled'
+                                label='Scheduled Runs'
+                            />
+                        </div>
+                    </div>
+
+                    <div
+                        v-if='cronEnabled'
+                        class='col-12 border rounded px-2 py-2'
+                    >
+                        <div class='d-flex'>
+                            <label>Cron Expression</label>
+                            <div
+                                v-if='!disabled'
+                                class='ms-auto'
+                            >
+                                <div class='dropdown'>
+                                    <div
+                                        id='dropdownCron'
+                                        class='dropdown-toggle'
+                                        type='button'
+                                        data-bs-toggle='dropdown'
+                                        aria-expanded='false'
+                                    >
+                                        <IconSettings
+                                            :size='16'
+                                            stroke='1'
+                                            class='cursor-pointer dropdown-toggle'
+                                        />
+                                    </div>
+                                    <ul
+                                        class='dropdown-menu px-1 py-1'
+                                        aria-labelledby='dropdownCron'
+                                    >
+                                        <li
+                                            class='py-1'
+                                            @click='config.cron = "rate(1 minute)"'
+                                        >
+                                            rate(1 minute)
+                                        </li>
+                                        <li
+                                            class='py-1'
+                                            @click='config.cron = "rate(5 minutes)"'
+                                        >
+                                            rate(5 minutes)
+                                        </li>
+                                        <li
+                                            class='py-1'
+                                            @click='config.cron = "cron(15 10 * * ? *)"'
+                                        >
+                                            cron(15 10 * * ? *)
+                                        </li>
+                                        <li
+                                            class='py-1'
+                                            @click='config.cron = "cron(0/5 8-17 ? * MON-FRI *)"'
+                                        >
+                                            cron(0/5 8-17 ? * MON-FRI *)
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <input
+                            v-model='config.cron'
+                            :disabled='disabled'
+                            :class='{
+                                "is-invalid": errors.cron
+                            }'
+                            class='form-control'
+                            placeholder='Cron Expression'
+                        >
+                        <div
+                            v-if='errors.cron'
+                            class='invalid-feedback'
+                            v-text='errors.cron'
+                        />
+                        <label
+                            v-if='config.cron'
+                            v-text='cronstr(config.cron)'
+                        />
+                    </div>
+                </div>
+                <div class='col-md-12'>
+                    <div class='d-flex'>
+                        <IconWebhook
+                            :size='20'
+                            stroke='1'
+                        />
+                        <div style='width: calc(100% - 20px);'>
+                            <TablerToggle
+                                v-model='config.webhooks'
+                                :disabled='disabled'
+                                label='Webhooks Delivery'
+                            />
+                        </div>
+                    </div>
+
+                    <div
+                        v-if='config.webhooks'
+                        class='col-12 border rounded px-2 py-2'
+                    >
+                        <label>Webhook URL</label>
+                        <CopyField
+                            v-model='config.uuid'
+                        />
+                    </div>
+                </div>
                 <div class='col-md-4'>
                     <TablerInput
                         v-model='config.stale'
@@ -174,7 +222,7 @@
                     />
                     <label
                         v-if='config.stale'
-                        v-text='humanstr'
+                        v-text='humanSeconds(config.stale)'
                     />
                 </div>
                 <div class='col-md-4'>
@@ -205,7 +253,7 @@
                         <div class='col-12 d-flex align-items-center my-1'>
                             <IconDatabase
                                 :size='32'
-                                :stroke='1'
+                                stroke='1'
                             />
                             <DataSelect
                                 v-model='config.data'
@@ -229,18 +277,23 @@
                 <label
                     v-if='config.priority !== "off"'
                     class='subheader mt-3 cursor-pointer'
-                    @click='advanced = !advanced'
                 >
-                    <IconSquareChevronRight
+                    <TablerIconButton
                         v-if='!advanced'
+                        title='Open Advanced Settings'
+                        @click='advanced = true'
+                    ><IconSquareChevronRight
                         :size='32'
-                        :stroke='1'
-                    />
-                    <IconChevronDown
+                        stroke='1'
+                    /></TablerIconButton>
+                    <TablerIconButton
                         v-else
+                        title='Close Advanced Settings'
+                        @click='advanced = false'
+                    ><IconChevronDown
                         :size='32'
-                        :stroke='1'
-                    />
+                        stroke='1'
+                    /></TablerIconButton>
                     Advanced Alarm Options
                 </label>
 
@@ -315,167 +368,148 @@
     </div>
 </template>
 
-<script>
-import { std } from '/src/std.ts';
+<script setup lang='ts'>
+import { ref, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
+import { std, humanSeconds } from '../../../src/std.ts';
+import type { ETLTaskVersions } from '../../../src/types.ts';
 import DataSelect from '../util/DataSelect.vue';
 import cronstrue from 'cronstrue';
 import TaskModal from './utils/TaskModal.vue';
+import CopyField from '../CloudTAK/util/CopyField.vue';
 import {
+    TablerIconButton,
     TablerInput,
+    TablerToggle,
     TablerEnum,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
     IconSquareChevronRight,
+    IconCalendarClock,
     IconChevronDown,
+    IconWebhook,
     IconRefresh,
+    IconPencil,
     IconSettings,
     IconDatabase,
 } from '@tabler/icons-vue'
 
-export default {
-    name: 'LayerConfig',
-    components: {
-        TablerLoading,
-        IconSquareChevronRight,
-        IconChevronDown,
-        IconRefresh,
-        IconSettings,
-        DataSelect,
-        IconDatabase,
-        TaskModal,
-        TablerInput,
-        TablerEnum,
+const props = defineProps({
+    layer: {
+        type: Object,
+        required: true
     },
-    props: {
-        layer: {
-            type: Object,
-            required: true
-        },
-        errors: {
-            type: Object,
-            default: function () {
-                return {}
-            }
-        },
-    },
-    emits: [
-        'layer',
-        'stack'
-    ],
-    data: function() {
-        return {
-            disabled: true,
-            taskmodal: false,
-            newTaskVersion: false,
-            advanced: false,
-            loading: {
-                init: true,
-                version: false,
-                save: false
-            },
-            config: {
-                connection: null,
-                priority: 'off',
-                data: null,
-                task: '',
-                timeout: 60,
-                memory: 512,
-                cron: '0/15 * * * ? *',
-                stale: 60 * 1000,
-                alarm_period: '30',
-                alarm_evals: '5',
-                alarm_points: '4',
-                alarm_threshold: '0'
-            }
-        };
-    },
-    computed: {
-        humanstr: function() {
-            if (!this.config.stale) return '';
-            var date = new Date(this.config.stale * 1000);
-            var str = [];
-            if (date.getUTCDate()-1 !== 0) str.push(date.getUTCDate()-1 + " days");
-            if (date.getUTCHours() !== 0 ) str.push(date.getUTCHours() + " hrs");
-            if (date.getUTCMinutes() !== 0) str.push(date.getUTCMinutes() + " mins");
-            if (date.getUTCSeconds() !== 0) str.push(date.getUTCSeconds() + " secs");
-            if (date.getUTCMilliseconds() !== 0) str.push(date.getUTCMilliseconds() + " ms");
-            return str.join(', ');
-        }
-    },
-    watch: {
-        config: {
-            deep: true,
-            handler: function() {
-                if (this.destination === 'connection') {
-                    this.config.data = undefined;
-                }
-            }
-        }
-    },
-    mounted: function() {
-        this.reload();
-        this.loading.init = false;
-    },
-    methods: {
-        reload: function() {
-            this.config.connection = this.layer.connection;
-            this.config.data = this.layer.data;
-            this.config.task = this.layer.task;
-            this.config.timeout = this.layer.timeout;
-            this.config.memory = this.layer.memory;
-            this.config.cron = this.layer.cron;
-            this.config.stale = this.layer.stale;
-            this.config.priority = this.layer.priority;
-            this.config.alarm_period = this.layer.alarm_period;
-            this.config.alarm_evals = this.layer.alarm_evals;
-            this.config.alarm_points = this.layer.alarm_points;
-            this.config.alarm_threshold = this.layer.alarm_threshold;
-
-            this.disabled = true;
-        },
-        saveLayer: async function() {
-            this.loading.save = true;
-
-            const layer = await std(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}`, {
-                method: 'PATCH',
-                body: this.config
-            });
-
-            this.disabled = true;
-            this.loading.save = false;
-
-            this.$emit('layer', layer);
-            this.$emit('stack');
-        },
-        updateTask: function() {
-            this.config.task = this.config.task.replace(/-v[0-9]+\.[0-9]+\.[0-9]+$/, `-v${this.newTaskVersion}`);
-            this.newTaskVersion = null;
-        },
-        cronstr: function(cron) {
-            if (!cron) return;
-
-            if (cron.includes('cron(')) {
-                return cronstrue.toString(cron.replace('cron(', '').replace(')', ''));
-            } else {
-                const rate = cron.replace('rate(', '').replace(')', '');
-                return `Once every ${rate}`;
-            }
-        },
-        latestVersion: async function() {
-            this.loading.version = true;
-            const match = this.config.task.match(/^(.*)-v([0-9]+\.[0-9]+\.[0-9]+)$/)
-            if (!match) return;
-            const task = match[1];
-            const version = match[2];
-
-            const list = await std(`/api/task/raw/${task}`);
-
-            if (list.versions.indexOf(version) !== 0) {
-                this.newTaskVersion = list.versions[0];
-            }
-            this.loading.version = false;
+    errors: {
+        type: Object,
+        default: function () {
+            return {}
         }
     }
+})
+
+const route = useRoute();
+const emit = defineEmits([
+    'layer',
+    'stack'
+]);
+
+const disabled = ref(true);
+const cronEnabled = ref(true);
+const taskmodal = ref(false);
+const newTaskVersion = ref<string | undefined>();
+const advanced = ref(false);
+const loading = ref({
+    init: true,
+    version: false,
+    save: false
+});
+
+const config = ref({
+    uuid: '',
+    connection: null,
+    webhooks: false,
+    priority: 'off',
+    data: null,
+    task: '',
+    timeout: 60,
+    memory: 512,
+    cron: '0/15 * * * ? *',
+    stale: 60 * 1000,
+    alarm_period: '30',
+    alarm_evals: '5',
+    alarm_points: '4',
+    alarm_threshold: '0'
+});
+
+onMounted(() => {
+    reload();
+    loading.value.init = false;
+})
+
+function reload() {
+    config.value.webhooks = props.layer.webhooks;
+    config.value.connection = props.layer.connection;
+    config.value.data = props.layer.data;
+    config.value.task = props.layer.task;
+    config.value.timeout = props.layer.timeout;
+    config.value.memory = props.layer.memory;
+    config.value.cron = props.layer.cron;
+    config.value.stale = props.layer.stale;
+    config.value.priority = props.layer.priority;
+    config.value.alarm_period = props.layer.alarm_period;
+    config.value.alarm_evals = props.layer.alarm_evals;
+    config.value.alarm_points = props.layer.alarm_points;
+    config.value.alarm_threshold = props.layer.alarm_threshold;
+    config.value.uuid = props.layer.uuid;
+
+    disabled.value = true;
+}
+
+async function saveLayer() {
+    loading.value.save = true;
+
+    const layer = await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}`, {
+        method: 'PATCH',
+        body: config.value
+    });
+
+    disabled.value = true;
+    loading.value.save = false;
+
+    emit('layer', layer);
+    emit('stack');
+}
+
+function updateTask() {
+    config.value.task = config.value.task.replace(/-v[0-9]+\.[0-9]+\.[0-9]+$/, `-v${newTaskVersion.value}`);
+    newTaskVersion.value = undefined;
+}
+
+function cronstr(cron?: string) {
+    if (!cron) return;
+
+    if (cron.includes('cron(')) {
+        return cronstrue.toString(cron.replace('cron(', '').replace(')', ''));
+    } else {
+        const rate = cron.replace('rate(', '').replace(')', '');
+        return `Once every ${rate}`;
+    }
+}
+
+async function latestVersion() {
+    loading.value.version = true;
+    const match = config.value.task.match(/^(.*)-v([0-9]+\.[0-9]+\.[0-9]+)$/)
+    if (!match) return;
+    const task = match[1];
+    const version = match[2];
+
+    const list = await std(`/api/task/raw/${task}`) as ETLTaskVersions;
+
+    if (list.versions.indexOf(version) !== 0) {
+        newTaskVersion.value = list.versions[0];
+    }
+
+    loading.value.version = false;
 }
 </script>

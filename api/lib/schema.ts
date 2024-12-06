@@ -11,7 +11,7 @@ import {
     Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Text,
     Basemap_Type, Basemap_Format, Basemap_Style,
 } from  './enums.js';
-import { json, boolean, numeric, integer, timestamp, pgTable, serial, varchar, text, unique, index } from 'drizzle-orm/pg-core';
+import { json, boolean, uuid, numeric, integer, timestamp, pgTable, serial, varchar, text, unique, index } from 'drizzle-orm/pg-core';
 
 /** Internal Tables for Postgis for use with drizzle-kit push:pg */
 export const SpatialRefSys = pgTable('spatial_ref_sys', {
@@ -66,6 +66,7 @@ export const VideoLease = pgTable('video_lease', {
     username: text().notNull().references(() => Profile.username),
 
     ephemeral: boolean().notNull().default(false),
+    channel: text(),
 
     expiration: timestamp({ withTimezone: true, mode: 'string' }).default(sql`Now() + INTERVAL 1 HOUR;`),
     path: text().notNull(),
@@ -206,10 +207,14 @@ export const Data = pgTable('data', {
 
 export const Layer = pgTable('layers', {
     id: serial().primaryKey(),
+    uuid: uuid().notNull().default(sql`gen_random_uuid()`),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     name: text().notNull(),
     priority: text().$type<Layer_Priority>().notNull().default(Layer_Priority.OFF),
+
+    cron: text(),
+    webhooks: boolean().notNull().default(false),
     alarm_period: integer().notNull().default(30),
     alarm_evals: integer().notNull().default(5),
     alarm_points: integer().notNull().default(4),
@@ -222,7 +227,6 @@ export const Layer = pgTable('layers', {
     stale: integer().notNull().default(20),
     task: text().notNull(),
     connection: integer().notNull().references(() => Connection.id),
-    cron: text().notNull(),
     environment: json().notNull().default({}),
     ephemeral: json().$type<Record<string, string>>().notNull().default({}),
     config: json().$type<Static<typeof Layer_Config>>().notNull().default({}),
@@ -253,7 +257,8 @@ export const LayerTemplate = pgTable('layers_template', {
     logging: boolean().notNull().default(true),
     stale: integer().notNull().default(20),
     task: text().notNull(),
-    cron: text().notNull(),
+    cron: text(),
+    webhooks: boolean().notNull().default(false),
     config: json().$type<Static<typeof Layer_Config>>().notNull().default({}),
     memory: integer().notNull().default(128),
     timeout: integer().notNull().default(128),

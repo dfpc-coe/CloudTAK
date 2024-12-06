@@ -1,6 +1,7 @@
 import FormData from 'form-data';
 import OAuth from './api/oauth.js';
 import Package from './api/package.js';
+import Query from './api/query.js';
 import Mission from './api/mission.js';
 import MissionLog from './api/mission-log.js';
 import MissionLayer from './api/mission-layer.js';
@@ -33,12 +34,14 @@ export default class TAKAPI {
     Group: Group;
     Video: Video;
     Export: Export;
+    Query: Query;
     Files: Files;
 
     constructor(url: URL, auth: auth.APIAuth) {
         this.url = url;
         this.auth = auth;
 
+        this.Query = new Query(this);
         this.Package = new Package(this);
         this.OAuth = new OAuth(this);
         this.Export = new Export(this);
