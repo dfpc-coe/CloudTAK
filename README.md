@@ -33,13 +33,33 @@ In the `./api`, perform the following
 ```sh
 npm install
 echo "CREATE DATABASE tak_ps_etl" | psql
-npx knex migrate:latest
 cd web/
 npm install
 npm run build
 cd ..
 npm run dev
 ```
+
+## Initial Configuration
+
+Almost all values with the exception of the initial Postgres Connection string are stored in the database and can be
+changed via the Administrative Interface in the Web UI.
+
+Alternatively, values can be configured by setting Environment Variables on launch. Note that if this is done,
+environment variables present at launch they will OVERRIDE any values that might be present in the database
+
+### CloudTAK Config Values
+
+Any of the listed config keys present in the `POST /config` API can all be set via Env Vars at startup.
+
+To do so, follow the following formatting rules:
+- Append `CLOUDTAK_Config_`
+- Replace any instance of `::` with `_`
+- All characters after `CLOUDTAK_Config_` are case SENSITIVE
+
+For example:
+- `media::url` would map to: `CLOUDTAK_Config_media_url`
+- `group::Brown` would map to: `CLOUDTAK_Config_group_Brown`
 
 ## AWS Deployment
 
@@ -161,7 +181,7 @@ npx deploy info --help
 
 | Name                  | Notes |
 | --------------------- | ----- |
-| `coe-media-<name>`   | Task Definitions for Media Server Support - [repo](ttps://github.com/dfoc-coe/media-infra)  |
+| `coe-media-<name>`   | Task Definitions for Media Server Support - [repo](ttps://github.com/dfoc-coe/media-infra) |
 
 
 ### S3 Bucket Contents

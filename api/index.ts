@@ -60,6 +60,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         nosinks: args.nosinks || false,
         nocache: args.nocache || false,
     });
+
     await server(config);
 }
 

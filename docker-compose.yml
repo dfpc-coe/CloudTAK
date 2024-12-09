@@ -10,10 +10,29 @@ services:
             - "5000:5000"
             - "5001:5001"
         environment:
+            - CLOUDTAK_Mode=docker-compose
+            - CLOUDTAK_Config_media_url=http://media
+            - CLOUDTAK_Config_media_username=management
+            - CLOUDTAK_Config_media_password=ChangeMeInProduction
             - SigningSecret=coe-wildland-fire
             - POSTGRES=postgres://docker:docker@postgis:5432/gis
             - API_URL=localhost:5000
             - ROOT_URL=localhost:5001
+
+    media:
+        build: https://github.com/dfpc-coe/media-infra.git
+        restart: 'always'
+        environment:
+            - FORCE_NEW_CONFIG=false
+            - MANAGEMENT_PASSWORD=ChangeMeInProduction
+        ports:
+            - 9997:9997
+            - 8554:8554
+            - 1935:1935
+            - 8888:8888
+            - 8890:8890
+        volumes:
+            - .docker-media:/opt/mediamtx
 
     postgis:
         platform: linux/amd64
