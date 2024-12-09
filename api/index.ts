@@ -207,7 +207,7 @@ export default async function server(config: Config) {
                     if (!conns || !conns.length) return;
 
                     const i = webClients.indexOf(connClient);
-                    if (!i) return;
+                    if (i < 0) return;
                     webClients[i].destroy();
                     webClients.splice(i, 1);
 
