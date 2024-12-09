@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v5.17.2 - 2024-12-08
+
+- :bug: Fix `color` not being required in mission layer
+
 ### v5.17.1 - 2024-12-06
 
 - :bug: Fix disablement of cron job from web UI
