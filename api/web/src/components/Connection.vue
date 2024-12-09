@@ -17,7 +17,10 @@
                 <div class='row row-deck row-cards'>
                     <div class='col-lg-12'>
                         <div class='card'>
-                            <TablerLoading v-if='loading.connection' />
+                            <TablerLoading
+                                v-if='loading.connection'
+                                class='text-white'
+                            />
                             <template v-else>
                                 <div class='card-header'>
                                     <ConnectionStatus :connection='connection' />

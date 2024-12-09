@@ -16,7 +16,7 @@
                         class='cursor-pointer'
                         @click='raw = true'
                     />
-                    <IconSettings
+                    <IconPencil
                         :size='32'
                         :stroke='1'
                         class='cursor-pointer'
@@ -130,7 +130,7 @@ import Schema from './utils/Schema.vue';
 import {
     IconX,
     IconCode,
-    IconSettings,
+    IconPencil,
 } from '@tabler/icons-vue'
 
 export default {
@@ -139,7 +139,7 @@ export default {
         Schema,
         IconCode,
         IconX,
-        IconSettings,
+        IconPencil,
         TablerTimeZone,
         TablerAlert,
         TablerLoading,
