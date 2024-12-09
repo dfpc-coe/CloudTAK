@@ -26,6 +26,29 @@ export enum IconsetFormatEnum {
 }
 
 export default async function router(schema: Schema, config: Config) {
+    const count = await config.models.Iconset.count();
+    if (count === 0) {
+        try {
+            await fs.access(new URL('../data/', import.meta.url));
+
+            for (const file of await fs.readdir(new URL('../data/iconsets/', import.meta.url))) {
+                console.error(`ok - loading iconset ${file}`);
+/*
+                const b = (await BasemapParser.parse(String(await fs.readFile(new URL(`../data/iconsets/${file}`, import.meta.url))))).to_json();
+
+                await config.models.Basemap.generate({
+                    name: b.name || 'Unknown',
+                    url: b.url,
+                    minzoom: b.minZoom || 0,
+                    maxzoom: b.maxZoom || 16
+                })
+*/
+            }
+        } catch (err) {
+            console.log('Could not automatically load iconsets', err);
+        }
+    }
+
     // Eventually look at replacing this with memcached?
     const SpriteMap: Record<string, SpriteRecord> = {
         default: {
