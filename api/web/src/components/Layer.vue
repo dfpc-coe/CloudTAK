@@ -14,6 +14,7 @@
 
         <TablerLoading
             v-if='loading.layer'
+            class='text-white'
             desc='Loading Layer'
         />
         <div
