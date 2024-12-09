@@ -1,9 +1,16 @@
 <template>
     <div>
         <div class='card-header'>
-            <h3 class='card-title'>
+            <h2 class='card-title'>
                 Data Groups
-            </h3>
+            </h2>
+
+            <div class='ms-auto btn-list'>
+                <TablerIconButton
+                    title='Refresh'
+                    @click='listLayers'
+                > <IconRefresh :size='32' stroke='1' /></TablerIconButton>
+            </div>
         </div>
         <TablerNone
             v-if='!data.mission_groups.length'
@@ -33,12 +40,19 @@
 <script>
 import {
     TablerNone,
+    TablerIconButton
 } from '@tak-ps/vue-tabler';
+
+import {
+    IconRefresh
+} from '@tabler/icons-vue'
 
 export default {
     name: 'ConnectionGroups',
     components: {
+        IconRefresh,
         TablerNone,
+        TablerIconButton
     },
     props: {
         data: {
