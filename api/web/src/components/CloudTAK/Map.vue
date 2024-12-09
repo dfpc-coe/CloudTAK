@@ -881,8 +881,13 @@ export default {
 
             cotStore.hidden.add(feat.id);
             this.updateCOT();
-            mapStore.draw.addFeatures([feat.as_feature()]);
-            mapStore.draw.selectFeature(feat.id);
+            try {
+                mapStore.draw.addFeatures([feat.as_feature()]);
+                mapStore.draw.selectFeature(feat.id);
+            } catch (err) {
+                mapStore.draw.setMode('static');
+                throw err
+            }
         },
         deleteCOT: async function(cot) {
             await cotStore.delete(cot.properties.id)

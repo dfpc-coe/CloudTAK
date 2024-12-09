@@ -11,11 +11,21 @@
                     @click='$router.push(
                         `/connection/${$route.params.connectionid}/data/${$route.params.dataid}/layer/new`
                     )'
-                ><IconPlus :size='32' stroke='1' /></TablerIconButton>
+                >
+                    <IconPlus
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
                 <TablerIconButton
                     title='Refresh'
                     @click='listLayers'
-                > <IconRefresh :size='32' stroke='1' /></TablerIconButton>
+                >
+                    <IconRefresh
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
             </div>
         </div>
 

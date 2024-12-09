@@ -19,7 +19,7 @@ many of the services it provides will initiate AWS API calls with no graceful fa
 ### Docker Compose
 
 ```
-docker-compose up --build
+docker compose up --build
 ```
 
 Once the database and API service have built, the server will start on port 5000.

@@ -9,7 +9,12 @@
                 <TablerIconButton
                     title='Refresh'
                     @click='listLayers'
-                > <IconRefresh :size='32' stroke='1' /></TablerIconButton>
+                >
+                    <IconRefresh
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
             </div>
         </div>
         <TablerNone
