@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v5.18.2 - 2024-12-09
+
+- :bug: Fix issue with Row Editor Modal in Layer Environment
+- :rocket: Make Loading text white on Connection/Layer/Data
+
 ### v5.18.1 - 2024-12-09
 
 - :bug: Fix bug where Connection wasn't cleaned up after the WebSocket was closed
