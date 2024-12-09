@@ -19,6 +19,9 @@ export type APIList<T> = {
 
 export type COTType = paths["/type/cot/{:type}"]["get"]["responses"]["200"]["content"]["application/json"];
 
+export type SearchSuggest = paths["/search/suggest"]["get"]["responses"]["200"]["content"]["application/json"];
+export type SearchForward = paths["/search/forward"]["get"]["responses"]["200"]["content"]["application/json"];
+
 export type VideoLease = paths["/video/lease/{:lease}"]["get"]["responses"]["200"]["content"]["application/json"]["lease"];
 export type VideoLeaseList = paths["/video/lease"]["get"]["responses"]["200"]["content"]["application/json"];
 export type VideoLeaseProtocols = paths["/video/lease/{:lease}"]["get"]["responses"]["200"]["content"]["application/json"]["protocols"];
@@ -67,6 +70,8 @@ export type Profile_Update = paths["/profile"]["patch"]["requestBody"]["content"
 
 export type Package = paths["/marti/package/{:uid}"]["get"]["responses"]["200"]["content"]["application/json"]
 export type PackageList = paths["/marti/package"]["get"]["responses"]["200"]["content"]["application/json"]
+
+export type IconsetList = paths["/iconset"]["get"]["responses"]["200"]["content"]["application/json"]
 
 export type Basemap = paths["/basemap/{:basemapid}"]["patch"]["responses"]["200"]["content"]["application/json"]
 export type BasemapList = paths["/basemap"]["get"]["responses"]["200"]["content"]["application/json"]

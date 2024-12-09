@@ -8,6 +8,7 @@
 */
 
 import { defineStore } from 'pinia'
+import COT from './base/cot.ts';
 import Subscription from './base/mission.ts';
 import Overlay from './base/overlay.ts';
 import { std, stdurl } from '../std.js';
@@ -25,8 +26,8 @@ import { useCOTStore } from './cots.js'
 
 export const useMapStore = defineStore('cloudtak', {
     state: (): {
-        map?: mapgl.Map;
-        draw?: terraDraw.TerraDraw;
+        _map?: mapgl.Map;
+        _draw?: terraDraw.TerraDraw;
         edit: null | MapGeoJSONFeature;
         container?: HTMLElement;
         hasTerrain: boolean;
@@ -43,7 +44,7 @@ export const useMapStore = defineStore('cloudtak', {
         },
         radial: {
             mode?: string;
-            cot?: object;
+            cot?: COT;
             x: number;
             y: number;
         },
@@ -68,12 +69,24 @@ export const useMapStore = defineStore('cloudtak', {
             selected: new Map()
         }
     },
+    getters: {
+        map: function(): mapgl.Map {
+            if (!this._map) throw new Error('Map has not yet initialized');
+            // @ts-expect-error Maplibre Type difference, need to investigate
+            return this._map;
+        },
+        draw: function(): terraDraw.TerraDraw {
+            if (!this._draw) throw new Error('Drawing Tools have not yet initialized');
+            // @ts-expect-error Maplibre Type difference, need to investigate
+            return this._draw;
+        }
+    },
     actions: {
         destroy: function() {
-            if (this.map) {
+            if (this._map) {
                 try {
-                    this.map.remove();
-                    delete this.map;
+                    this._map.remove();
+                    delete this._map;
                 } catch (err) {
                     console.error(err);
                 }
@@ -81,8 +94,6 @@ export const useMapStore = defineStore('cloudtak', {
             this.$reset();
         },
         removeOverlay: async function(overlay: Overlay) {
-            if (!this.map) throw new Error('Cannot removeOverlay before map has loaded');
-
             // @ts-expect-error Doesn't like use of object to index array
             const pos = this.overlays.indexOf(overlay)
             if (pos === -1) return;
@@ -124,7 +135,7 @@ export const useMapStore = defineStore('cloudtak', {
         // TODO: Convert to overlay
         addTerrain: async function(): Promise<void> {
             const basemaps = await this.listTerrain();
-            if (this.map && basemaps.items.length && !this.map.getSource('-2')) {
+            if (basemaps.items.length && !this.map.getSource('-2')) {
                 this.map.addSource('-2', {
                     type: 'raster-dem',
                     url: String(stdurl(`/api/basemap/${basemaps.items[0].id}/tiles?token=${localStorage.token}`)),
@@ -143,10 +154,8 @@ export const useMapStore = defineStore('cloudtak', {
         },
 
         removeTerrain: function(): void {
-            if (this.map) {
-                this.map.setTerrain(null);
-                this.map.removeSource('-2');
-            }
+            this.map.setTerrain(null);
+            this.map.removeSource('-2');
 
             this.isTerrainEnabled = false;
         },
@@ -220,7 +229,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             if (!init.style || typeof init.style === 'string') throw new Error('init.style must be an object');
 
-            this.map = new mapgl.Map(init);
+            this._map = new mapgl.Map(init);
         },
         initOverlays: async function() {
             if (!this.map) throw new Error('Cannot initLayers before map has loaded');
@@ -232,7 +241,7 @@ export const useMapStore = defineStore('cloudtak', {
             })
 
             map.on('click', (e: MapMouseEvent) => {
-                if (this.draw && this.draw.getMode() !== 'static') return;
+                if (this.draw.getMode() !== 'static') return;
 
                 if (this.radial.mode) this.radial.mode = undefined;
                 if (this.select.feats) this.select.feats = [];
@@ -413,8 +422,6 @@ export const useMapStore = defineStore('cloudtak', {
             point: Point;
             mode?: string;
         }): Promise<void> {
-            if (!this.map) throw new Error('Cannot radialClick before map has loaded');
-
             // If the call is coming from MultipleSelect, ensure this menu is closed
             this.select.feats = [];
 
@@ -440,9 +447,8 @@ export const useMapStore = defineStore('cloudtak', {
             this.radial.mode = opts.mode;
         },
         initDraw: function() {
-            this.draw = new terraDraw.TerraDraw({
+            this._draw = new terraDraw.TerraDraw({
                 adapter: new terraDraw.TerraDrawMapLibreGLAdapter({
-                    // @ts-expect-error TODO Figure out why this is failing
                     map: this.map
                 }),
                 idStrategy: {
