@@ -17,7 +17,10 @@
                 />
             </div>
         </div>
-        <div v-if='!loading' class='modal-body py-4' >
+        <div
+            v-if='!loading'
+            class='modal-body py-4'
+        >
             <TablerSchema
                 v-model='row'
                 :schema='schema'

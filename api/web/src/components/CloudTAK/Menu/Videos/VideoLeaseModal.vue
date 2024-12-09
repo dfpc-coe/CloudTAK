@@ -153,8 +153,14 @@
                         v-model='channels'
                         :limit='1'
                     />
-                    <div v-else class='border border-white rounded px-2 py-2'>
-                        <IconAffiliate :size='24' stroke='1'/> <span v-text='editLease.channel'/>
+                    <div
+                        v-else
+                        class='border border-white rounded px-2 py-2'
+                    >
+                        <IconAffiliate
+                            :size='24'
+                            stroke='1'
+                        /> <span v-text='editLease.channel' />
                     </div>
                 </div>
 
