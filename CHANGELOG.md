@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v5.18.3 - 2024-12-09
+
+- :bug: Return a 404 Response if CoT history endpoint returns nothing for a given UID
+
 ### v5.18.2 - 2024-12-09
 
 - :bug: Fix issue with Row Editor Modal in Layer Environment
