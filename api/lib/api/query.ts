@@ -1,4 +1,5 @@
 import TAKAPI from '../tak-api.js';
+import Err from '@openaddresses/batch-error';
 import xmljs from 'xml-js';
 import { CoT } from '@tak-ps/node-tak';
 import { Type, Static } from '@sinclair/typebox';
@@ -30,6 +31,10 @@ export default class COTQuery {
         }, true);
 
         const body = await res.text();
+
+        if (body.trim().length === 0) {
+            throw new Err(404, null, 'CoT by that UID Not Found');
+        }
 
         return body;
     }
