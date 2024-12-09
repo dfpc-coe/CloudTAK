@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v5.18.0 - 2024-12-08
+
+- :tada: Allow setting CloudTAK Config values via Config
+
 ### v5.17.2 - 2024-12-08
 
 - :bug: Fix `color` not being required in mission layer
