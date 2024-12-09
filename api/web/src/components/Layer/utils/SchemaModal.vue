@@ -17,7 +17,7 @@
                 />
             </div>
         </div>
-        <div class='modal-body py-4' >
+        <div v-if='!loading' class='modal-body py-4' >
             <TablerSchema
                 v-model='row'
                 :schema='schema'
@@ -64,9 +64,11 @@ const emit = defineEmits([
     'done'
 ]);
 
+const loading = ref(true);
 const row = ref({});
 
 onMounted(() => {
     row.value = Object.assign(row.value, JSON.parse(JSON.stringify(props.edit)));
+    loading.value = false;
 })
 </script>
