@@ -86,7 +86,7 @@
                     </div>
                     <div class='ms-auto btn-list mx-2'>
                         <TablerIconButton
-                            v-if='!cot.is_skittle && !loadingBreadcrumb'
+                            v-if='cot.is_skittle && !loadingBreadcrumb'
                             title='Load Breadcrumb'
                             @click='loadBreadcrumb'
                         >

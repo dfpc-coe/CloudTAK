@@ -185,14 +185,14 @@ export default async function router(schema: Schema, config: Config) {
                         }
 
                         if (api.MissionLayer.isEmpty(pathLayer)) {
-                                await api.MissionLayer.delete(
-                                    data.name,
-                                    {
-                                        uid: [ pathLayer.uid ],
-                                        creatorUid: `connection-${data.connection}-data-${data.id}`
-                                    },
-                                    { token: data.mission_token || undefined }
-                                );
+                            await api.MissionLayer.delete(
+                                data.name,
+                                {
+                                    uid: [ pathLayer.uid ],
+                                    creatorUid: `connection-${data.connection}-data-${data.id}`
+                                },
+                                { token: data.mission_token || undefined }
+                            );
                         }
                     }
 
