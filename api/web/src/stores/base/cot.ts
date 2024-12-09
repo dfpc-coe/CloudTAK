@@ -115,6 +115,8 @@ export default class COT {
                     break;
                 }
             }
+
+            Object.assign(this._properties, update.properties);
         }
 
         if (!this._properties.center) {
