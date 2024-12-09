@@ -133,8 +133,6 @@ export default async function router(schema: Schema, config: Config) {
                     );
 
                     for (const cot of cots) {
-                        if (cot.path === '/') continue;
-
                         const path = cot.path.split('/').filter((p) => !!p);
 
                         let pathMapEntryLast = pathMap.get(`/${encodeURIComponent(layer.name)}/`);
