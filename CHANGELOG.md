@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v5.18.4 - 2024-12-09
+
+- :bug: CoT property updates were being rendered but not updated in the underlying store
+
 ### v5.18.3 - 2024-12-09
 
 - :bug: Return a 404 Response if CoT history endpoint returns nothing for a given UID

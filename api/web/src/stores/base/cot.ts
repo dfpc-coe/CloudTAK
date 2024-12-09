@@ -119,7 +119,7 @@ export default class COT {
             Object.assign(this._properties, update.properties);
         }
 
-        if (!this._properties.center) {
+        if (!this._properties.center || update.geometry) {
             this._properties.center = pointOnFeature(this._geometry).geometry.coordinates;
         }
 
