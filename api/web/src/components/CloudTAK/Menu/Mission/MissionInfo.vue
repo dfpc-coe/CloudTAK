@@ -157,9 +157,6 @@ async function subscribe(subscribed: boolean) {
     const overlay = mapStore.getOverlayByMode('mission', props.mission.guid);
 
     if (subscribed === true && !overlay) {
-        if (!mapStore.map) throw new Error('Cannot subscribe before map is loaded');
-
-        // @ts-expect-error Map.Style is missing properties (probably a MapLibreGL@5 issue)
         const missionOverlay = await Overlay.create(mapStore.map, {
             name: props.mission.name,
             url: `/mission/${encodeURIComponent(props.mission.name)}`,

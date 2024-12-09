@@ -239,15 +239,13 @@ async function setBasemap(basemap: Basemap) {
     } else {
         const before = String(mapStore.overlays[0].styles[0].id);
 
-        if (!mapStore.map) throw new Error('Cannot create basemap before map is loaded');
-        // @ts-expect-error Style error in MapboxGL
         mapStore.overlays.unshift(await Overlay.create(mapStore.map, {
             name: basemap.name,
             pos: -1,
             type: 'raster',
             url: `/api/basemap/${basemap.id}/tiles`,
             mode: 'basemap',
-            mode_id: basemap.id
+            mode_id: String(basemap.id)
         }, { before }));
     }
 }

@@ -145,7 +145,7 @@ const isZoomable = computed(() => {
 const canvas = useTemplateRef<HTMLCanvasElement>('imgCanvas');
 
 watch(canvas, async () => {
-    if (!canvas.value || !mapStore.map) return;
+    if (!canvas.value) return;
 
     const icon = mapStore.map.getImage(props.feature.properties.icon)
 
@@ -182,7 +182,6 @@ async function deleteCOT() {
 
 async function flyTo() {
     if (!isZoomable.value) return;
-    if (!mapStore.map) throw new Error('Map has not been loaded');
 
     const cot = cotStore.get(props.feature.id, {
         mission: true
