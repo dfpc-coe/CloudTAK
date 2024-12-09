@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v5.18.1 - 2024-12-09
+
+- :bug: Fix bug where Connection wasn't cleaned up after the WebSocket was closed
+- :bug: Fix bug where path would result in `<dest/>` tag wasn't added
+
 ### v5.18.0 - 2024-12-08
 
 - :tada: Allow setting CloudTAK Config values via Config
