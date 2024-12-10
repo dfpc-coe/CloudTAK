@@ -65,7 +65,7 @@ export default class COT {
             this._properties.archived = false
         }
 
-        if (!this._properties.center) {
+        if (!this._properties.center || (this._properties.center[0] === 0 && this._properties.center[1] === 0)) {
             this._properties.center = pointOnFeature(this._geometry).geometry.coordinates;
         }
 
@@ -119,7 +119,7 @@ export default class COT {
             Object.assign(this._properties, update.properties);
         }
 
-        if (!this._properties.center || update.geometry) {
+        if (!this._properties.center || (this._properties.center[0] === 0 && this._properties.center[1] === 0) || update.geometry) {
             this._properties.center = pointOnFeature(this._geometry).geometry.coordinates;
         }
 

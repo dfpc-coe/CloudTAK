@@ -72,7 +72,7 @@ export const useProfileStore = defineStore('profile', {
                 body
             }) as Profile
         },
-        CoT: function(feat: Feature) {
+        CoT: function(feat?: Feature) {
             if (!this.profile) throw new Error('Profile must be loaded before CoT is called');
 
             return {

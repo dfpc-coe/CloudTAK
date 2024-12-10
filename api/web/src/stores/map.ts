@@ -28,13 +28,13 @@ export const useMapStore = defineStore('cloudtak', {
     state: (): {
         _map?: mapgl.Map;
         _draw?: terraDraw.TerraDraw;
-        edit: null | MapGeoJSONFeature;
+        edit: COT | undefined;
         container?: HTMLElement;
         hasTerrain: boolean;
         isTerrainEnabled: boolean;
         isLoaded: boolean;
         bearing: number;
-        selected: Map<string, MapGeoJSONFeature>;
+        selected: Map<string, COT>;
         select: {
             mode?: string;
             e?: MapMouseEvent;
@@ -43,8 +43,8 @@ export const useMapStore = defineStore('cloudtak', {
             y: number;
         },
         radial: {
-            mode?: string;
-            cot?: COT;
+            mode: string | undefined;
+            cot: Feature | MapGeoJSONFeature | undefined;
             x: number;
             y: number;
         },
@@ -55,13 +55,15 @@ export const useMapStore = defineStore('cloudtak', {
             isTerrainEnabled: false,
             isLoaded: false,
             bearing: 0,
-            edit: null,
+            edit: undefined,
             select: {
                 mode: undefined,
                 feats: [],
                 x: 0, y: 0,
             },
             radial: {
+                mode: undefined,
+                cot: undefined,
                 x: 0, y: 0,
             },
             overlays: [],
@@ -269,7 +271,13 @@ export const useMapStore = defineStore('cloudtak', {
 
                 // MultiSelect Mode
                 if (e.originalEvent.ctrlKey && features.length) {
-                    this.selected.set(features[0].properties.id, features[0]);
+                    const cotStore = useCOTStore();
+                    const cot = cotStore.get(features[0].properties.id, {
+                        mission: true
+                    });
+
+                    if (!cot) return;
+                    this.selected.set(cot.id, cot);
                 } else if (features.length === 1) {
                     this.radialClick(features[0], {
                         lngLat: e.lngLat,

@@ -104,7 +104,7 @@
                         stroke='1'
                         style='margin: 5px 8px'
                         class='cursor-pointer hover-button'
-                        @click='search.shown = !search.shown'
+                        @click='searchBox.shown = !searchBox.shown'
                     />
 
                     <div
@@ -198,7 +198,7 @@
             />
 
             <div
-                v-if='search.shown'
+                v-if='searchBox.shown'
                 class='position-absolute text-white bg-dark rounded'
                 style='
                     z-index: 1;
@@ -208,14 +208,14 @@
                 '
             >
                 <TablerInput
-                    v-model='search.filter'
+                    v-model='searchBox.query.filter'
                     class='mt-0'
                     placeholder='Place Search'
                     icon='search'
                 />
 
                 <div
-                    v-for='item of search.results'
+                    v-for='item of searchBox.results'
                     :key='item.magicKey'
                     class='col-12 px-2 py-2 hover-button cursor-pointer'
                     @click='fetchSearch(item.text, item.magicKey)'
@@ -483,8 +483,9 @@ import Status from '../util/Status.vue';
 import CoordInput from './CoordInput.vue';
 import CoordinateType from './util/CoordinateType.vue';
 import COT from '../../../src/stores/base/cot.ts';
-import type { MapGeoJSONFeature } from 'maplibre-gl';
+import type { MapGeoJSONFeature, GeoJSONSource, LngLatLike } from 'maplibre-gl';
 import { std, stdurl } from '../../../src/std.ts';
+import type { Feature as GeoJSONFeature } from 'geojson';
 import type { IconsetList, SearchForward, SearchSuggest, Feature } from '../../../src/types.ts';
 import CloudTAKFeatView from './FeatView.vue';
 import {
@@ -548,16 +549,20 @@ const warnChannels = ref<boolean>(false)
 // Show a popup if role/groups hasn't been set
 const warnConfiguration = ref<boolean>(false);
 
-const search = ref<{
+const searchBox = ref<{
     shown: Boolean,
-    filter: string,
+    query: {
+        filter: string,
+    },
     results: Array<{
         text: string
         magicKey: string
     }>
-}({
+}>({
     shown: false,
-    filter: '',
+    query: {
+        filter: '',
+    },
     results: []
 });
 const drawMode = ref<string>('static') // Set the terra-draw mode to avoid getMode() calls
@@ -597,19 +602,21 @@ const humanBearing = computed(() => {
     }
 })
 
-const mapRef = useTemplateRef('map');
+const mapRef = useTemplateRef<HTMLElement>('map');
 
-const noMenuShown = computed(() => {
-    return !feat.value && !pointInput.value && (route.name && !String(route.name).startsWith('home-menu'))
+const noMenuShown = computed<boolean>(() => {
+    return !feat.value
+        && !pointInput.value
+        && (!route.name || !String(route.name).startsWith('home-menu'))
 });
 
-watch(mapStore.radial.cot, () => {
+watch(mapStore.radial, () => {
     if (mapStore.radial.cot) {
         mapStore.map.scrollZoom.disable();
         mapStore.map.touchZoomRotate.disableRotation();
         mapStore.map.dragRotate.disable();
         mapStore.map.dragPan.disable();
-        locked.value.push(mapStore.radial.cot.properties.id);
+        locked.value.push(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
     } else {
         mapStore.map.scrollZoom.enable();
         mapStore.map.touchZoomRotate.enableRotation();
@@ -619,7 +626,7 @@ watch(mapStore.radial.cot, () => {
     }
 })
 
-watch(search.value.filter, async () => {
+watch(searchBox.value.query, async () => {
     await fetchSearch();
 });
 
@@ -655,9 +662,19 @@ onMounted(async () => {
         navigator.geolocation.watchPosition((position) => {
             if (position.coords.accuracy <= 50) {
                 live_loc.value = {
+                    id: 'you',
                     type: 'Feature',
+                    path: '/',
                     properties: {
-                        accuracy: position.coords.accuracy
+                        id: 'you',
+                        type: 'u-d-p',
+                        how: 'm-g',
+                        time: new Date().toISOString(),
+                        start: new Date().toISOString(),
+                        stale: new Date(new Date().getTime() + 120).toISOString(),
+                        callsign: 'Your Location',
+                        accuracy: position.coords.accuracy,
+                        center: [ position.coords.longitude, position.coords.latitude ]
                     },
                     geometry: {
                         type: 'Point',
@@ -689,7 +706,7 @@ onMounted(async () => {
         e.preventDefault();
 
         const dt = e.dataTransfer;
-        if (dt.types && (dt.types.indexOf ? dt.types.indexOf('Files') != -1 : dt.types.contains('Files'))) {
+        if (dt && dt.types && (dt.types.indexOf ? dt.types.indexOf('Files') != -1 : dt.types.includes('Files'))) {
             upload.value.shown = true;
             upload.value.dragging = true;
         }
@@ -707,6 +724,7 @@ onMounted(async () => {
         }
     });
 
+    if (!profileStore.profile) throw new Error('Profile did not load correctly');
     connectionStore.connectSocket(profileStore.profile.username);
 });
 
@@ -721,7 +739,7 @@ onBeforeUnmount(() => {
 
 function selectFeat(selectedFeat: MapGeoJSONFeature) {
     mapStore.select.feats = [];
-    const source = mapStore.featureSource(feat);
+    const source = mapStore.featureSource(selectedFeat);
 
     if (source === 'cot') {
         router.push(`/cot/${selectedFeat.properties.id}`);
@@ -737,21 +755,21 @@ function closeAllMenu() {
 }
 
 function closeRadial() {
-    mapStore.radial.mode = null;
-    mapStore.radial.cot = null;
+    mapStore.radial.mode = undefined;
+    mapStore.radial.cot = undefined;
 }
 
 function toLocation() {
     if (live_loc.value) {
         mapStore.map.flyTo({
-            center: live_loc.value.geometry.coordinates,
+            center: live_loc.value.geometry.coordinates as LngLatLike,
             zoom: 14
         });
-    } else if (!profileStore.profile.tak_loc) {
-        throw new Error('No Location Set');
-    } else {
+    } else if (!profileStore.profile || !profileStore.profile.tak_loc) {
+        throw new Error('No Location Set or Location could not be retrieved');
+    } else if (profileStore.profile && profileStore.profile.tak_loc) {
         mapStore.map.flyTo({
-            center: profileStore.profile.tak_loc.coordinates,
+            center: profileStore.profile.tak_loc.coordinates as LngLatLike,
             zoom: 14
         });
     }
@@ -774,26 +792,26 @@ function setLocation() {
     });
 }
 
-function fileUpload(event) {
+function fileUpload(event: string) {
     upload.value.shown = false;
-    const imp = JSON.parse(event);
+    const imp = JSON.parse(event) as { id: string };
     router.push(`/menu/imports/${imp.id}`)
 }
 
 async function fetchSearch(query?: string, magicKey?: string) {
     if (!magicKey || !query) {
         const url = stdurl('/api/search/suggest');
-        url.searchParams.append('query', search.value.filter);
-        search.value.results = ((await std(url)) as SearchSuggest).items;
+        url.searchParams.append('query', searchBox.value.query.filter);
+        searchBox.value.results = ((await std(url)) as SearchSuggest).items;
     } else {
         const url = stdurl('/api/search/forward');
         url.searchParams.append('query', query);
         url.searchParams.append('magicKey', magicKey);
         const items = ((await std(url)) as SearchForward).items;
 
-        search.value.shown = false;
-        search.value.filter = '';
-        search.value.results = [];
+        searchBox.value.shown = false;
+        searchBox.value.query.filter = '';
+        searchBox.value.results = [];
 
         if (items.length) {
             mapStore.map.fitBounds([
@@ -815,7 +833,7 @@ function getLocation() {
     }
 
     mapStore.map.flyTo({
-        center: live_loc.value.geometry.coordinates,
+        center: live_loc.value.geometry.coordinates as LngLatLike,
         zoom: 14
     });
 }
@@ -827,7 +845,10 @@ function startDraw(type: string) {
     drawMode.value = type;
 }
 
-async function handleRadial(event) {
+async function handleRadial(event: string): Promise<void> {
+    if (!mapStore.radial.cot) return;
+    if (!mapStore.radial.cot.properties) mapStore.radial.cot.properties = {};
+
     if (event === 'cot:view') {
         router.push(`/cot/${mapStore.radial.cot.properties.id}`);
         closeRadial()
@@ -842,9 +863,10 @@ async function handleRadial(event) {
             router.push('/');
         }
 
-        await deleteCOT(cot);
+        await cotStore.delete(String(cot.id))
+        await updateCOT();
     } else if (event === 'cot:edit') {
-        editGeometry(mapStore.radial.cot);
+        editGeometry(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
         closeRadial()
     } else if (event === 'feat:view') {
         feat.value = mapStore.radial.cot;
@@ -854,6 +876,7 @@ async function handleRadial(event) {
         updateCOT();
         closeRadial()
     } else if (event === 'context:info') {
+        // @ts-expect-error Figure out geometry.coordinates type
         router.push(`/query/${encodeURIComponent(mapStore.radial.cot.geometry.coordinates.join(','))}`);
         closeRadial()
     } else {
@@ -862,65 +885,71 @@ async function handleRadial(event) {
     }
 }
 
-function editGeometry(cot: COT) {
+function editGeometry(featid: string) {
     if (!mapStore.draw) throw new Error('Drawing Tools haven\'t loaded');
 
-    const feat = cotStore.get(cot.id, { clone: true });
-
-    if (!feat) return;
+    const cot = cotStore.get(featid, { mission: true });
+    if (!cot) return;
 
     mapStore.edit = cot;
     mapStore.draw.start();
     mapStore.draw.setMode('select');
     drawMode.value = 'select';
 
-    if (feat.geometry.type === 'Polygon') {
-        feat.properties.mode = 'polygon';
-    } else if (feat.geometry.type === 'LineString') {
-        feat.properties.mode = 'linestring';
-    } else if (feat.geometry.type === 'Point') {
-        feat.properties.mode = 'point';
+    if (cot.geometry.type === 'Polygon') {
+        cot.properties.mode = 'polygon';
+    } else if (cot.geometry.type === 'LineString') {
+        cot.properties.mode = 'linestring';
+    } else if (cot.geometry.type === 'Point') {
+        cot.properties.mode = 'point';
 
         // TODO: Eventually retain if unchanged or just drop, not sure what's best
-        if (feat.geometry.coordinates.length > 2) {
-            feat.geometry.coordinates.splice(2);
+        if (cot.geometry.coordinates.length > 2) {
+            cot.geometry.coordinates.splice(2);
         }
     }
 
-    cotStore.hidden.add(feat.id);
+    cotStore.hidden.add(cot.id);
     updateCOT();
     try {
-        mapStore.draw.addFeatures([feat.as_feature()]);
-        mapStore.draw.selectFeature(feat.id);
+        // @ts-expect-error TODO Ensure this meets "Defined" Properties
+        mapStore.draw.addFeatures([cot.as_feature()]);
+        mapStore.draw.selectFeature(cot.id);
     } catch (err) {
         mapStore.draw.setMode('static');
         throw err
     }
 }
 
-async function deleteCOT(cot) {
-    await cotStore.delete(cot.properties.id)
-    await updateCOT();
-}
-
 async function updateCOT() {
     try {
         const diff = cotStore.diff();
 
-        if (diff.add.length || diff.remove.length || diff.update.length) {
-            mapStore.map.getSource('-1').updateData(diff);
+        if (
+            (diff.add && diff.add.length)
+            || (diff.remove && diff.remove.length)
+            || (diff.update && diff.update.length)
+        ) {
+            const source = mapStore.map.getSource('-1') as GeoJSONSource
+            if (source) source.updateData(diff);
         }
 
         if (locked.value.length && cotStore.has(locked.value[locked.value.length - 1])) {
-            const flyTo = {
-                center: cotStore.get(locked.value[locked.value.length - 1]).properties.center,
-                speed: Infinity
-            };
-            mapStore.map.flyTo(flyTo);
+            let featid = locked.value[locked.value.length - 1];
+            if (featid) {
+                const feat = cotStore.get(featid);
+                if (feat) {
+                    const flyTo = {
+                        center: feat.properties.center as LngLatLike,
+                        speed: Infinity
+                    };
+                    mapStore.map.flyTo(flyTo);
 
-            if (mapStore.radial.mode) {
-                mapStore.radial.x = mapStore.container ? mapStore.container.clientWidth / 2 : 0;
-                mapStore.radial.y = mapStore.container ? mapStore.container.clientHeight / 2 : 0;
+                    if (mapStore.radial.mode) {
+                        mapStore.radial.x = mapStore.container ? mapStore.container.clientWidth / 2 : 0;
+                        mapStore.radial.y = mapStore.container ? mapStore.container.clientHeight / 2 : 0;
+                    }
+                }
             }
         }
     } catch (err) {
@@ -929,10 +958,10 @@ async function updateCOT() {
 }
 
 function setYou(feat?: Feature) {
-    if (!feat && profileStore.profile.tak_loc) {
+    if (!feat && profileStore.profile && profileStore.profile.tak_loc) {
         connectionStore.sendCOT(profileStore.CoT());
 
-        const youSource = mapStore.map.getSource('0');
+        const youSource = mapStore.map.getSource('0') as GeoJSONSource;
         if (youSource) {
             youSource.setData({
                 type: 'FeatureCollection',
@@ -948,7 +977,7 @@ function setYou(feat?: Feature) {
     } else if (feat) {
         connectionStore.sendCOT(profileStore.CoT(feat));
 
-        const youSource = mapStore.map.getSource('0');
+        const youSource = mapStore.map.getSource('0') as GeoJSONSource;
         if (youSource) {
             youSource.setData({
                 type: 'FeatureCollection',
@@ -960,7 +989,8 @@ function setYou(feat?: Feature) {
 
 function mountMap(): Promise<void> {
     return new Promise((resolve) => {
-        mapStore.init(mapRef);
+        if (!mapRef.value) throw new Error('Map Element could not be found - Please refresh the page and try again');
+        mapStore.init(mapRef.value);
 
         mapStore.map.once('idle', async () => {
             // Eventually make a sprite URL part of the overlay so KMLs can load a sprite package & add paging support
@@ -977,12 +1007,13 @@ function mountMap(): Promise<void> {
             mapStore.draw.on('deselect', async () => {
                 if (!mapStore.edit) return;
 
+                // @ts-expect-error There is currently no getFeature API
                 const feat = mapStore.draw._store.store[mapStore.edit.id];
                 delete feat.properties.center;
 
                 cotStore.hidden.delete(mapStore.edit.id);
 
-                mapStore.edit = null
+                mapStore.edit = undefined
 
                 mapStore.draw.setMode('static');
                 drawMode.value = 'static';
@@ -993,12 +1024,14 @@ function mountMap(): Promise<void> {
                 await updateCOT();
             })
 
+            // @ts-expect-error TerraDraw currently doesn't allow async here per TypeDefs
             mapStore.draw.on('finish', async (id: string) => {
                 if (mapStore.draw.getMode() === 'select' || mapStore.edit) {
                     return;
                 } else if (mapStore.draw.getMode() === 'freehand') {
+                    // @ts-expect-error There is currently no getFeature API
                     const geometry = mapStore.draw._store.store[id].geometry;
-                    mapStore.draw._store.delete([id]);
+                    mapStore.draw.removeFeatures([id]);
                     mapStore.draw.setMode('static');
                     drawMode.value = 'static';
                     mapStore.draw.stop();
@@ -1010,15 +1043,24 @@ function mountMap(): Promise<void> {
                     return;
                 }
 
+                // @ts-expect-error There is currently no getFeature API
                 const geometry = mapStore.draw._store.store[id].geometry;
 
-                const feat = {
+                const now = new Date();
+                const feat: Feature = {
                     id: id,
                     type: 'Feature',
-                    how: 'h-g-i-g-o',
+                    path: '/',
                     properties: {
+                        id: id,
+                        type: 'u-d-p',
+                        how: 'h-g-i-g-o',
                         archived: true,
-                        callsign: 'New Feature'
+                        callsign: 'New Feature',
+                        time: now.toISOString(),
+                        start: now.toISOString(),
+                        stale: new Date(now.getTime() + 3600).toISOString(),
+                        center: [0,0]
                     },
                     geometry
                 };
@@ -1037,7 +1079,7 @@ function mountMap(): Promise<void> {
                     feat.properties["marker-color"] = '#00FF00';
                 }
 
-                mapStore.draw._store.delete([id]);
+                mapStore.draw.removeFeatures([id]);
                 mapStore.draw.setMode('static');
                 drawMode.value = 'static';
                 mapStore.draw.stop();

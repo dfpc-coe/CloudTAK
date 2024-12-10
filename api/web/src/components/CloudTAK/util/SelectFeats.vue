@@ -107,7 +107,7 @@
         <template v-else-if='share === ShareType.USERS'>
             <Share
                 style='height: 400px;'
-                :feats='Array.from(selected.values())'
+                :feats='Array.from(selected.values()).map((c) => c.as_feature())'
                 :compact='true'
                 @done='selected.clear()'
                 @cancel='share = ShareType.NONE'
@@ -116,7 +116,7 @@
         <template v-else-if='share === ShareType.MISSION'>
             <ShareToMission
                 style='height: 400px;'
-                :feats='Array.from(selected.values())'
+                :feats='Array.from(selected.values()).map((c) => c.as_feature())'
                 :compact='true'
                 @done='selected.clear()'
                 @cancel='share = ShareType.NONE'
@@ -125,7 +125,7 @@
         <template v-else-if='share === ShareType.PACKAGE'>
             <ShareToPackage
                 style='height: 400px;'
-                :feats='Array.from(selected.values())'
+                :feats='Array.from(selected.values()).map((c) => c.as_feature())'
                 :compact='true'
                 @done='selected.clear()'
                 @cancel='share = ShareType.NONE'
@@ -137,7 +137,7 @@
 <script setup lang='ts'>
 import { ref } from 'vue';
 import DisplayFeature from './Feature.vue';
-import type { Feature } from '../../../../src/types.ts';
+import COT from '../../../../src/stores/base/cot.ts';
 import { useCOTStore } from '../../../../src/stores/cots.ts';
 import {
     IconPackageExport,
@@ -160,7 +160,7 @@ import ShareToPackage from './ShareToPackage.vue';
 const cotStore = useCOTStore();
 
 const props = defineProps<{
-    selected: Map<string, Feature>
+    selected: Map<string, COT>
 }>();
 
 enum ShareType {
