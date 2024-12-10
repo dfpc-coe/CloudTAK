@@ -30,7 +30,7 @@ export const MissionLayer = Type.Object({
         details: Type.Optional(Type.Object({
             type: Type.String(),
             callsign: Type.String(),
-            color: Type.String(),
+            color: Type.Optional(Type.String()),
             location: Type.Object({
                 lat: Type.Number(),
                 lon: Type.Number()

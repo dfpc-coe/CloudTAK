@@ -1,5 +1,6 @@
 import { Static, Type } from '@sinclair/typebox'
 import Schema from '@openaddresses/batch-schema';
+import { Feature } from '@tak-ps/node-cot'
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
@@ -72,7 +73,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Helper API to get latest CoTs',
         res: Type.Object({
             type: Type.String(),
-            features: Type.Array(Type.Any())
+            features: Type.Array(Feature.Feature)
         })
     }, async (req, res) => {
         try {

@@ -113,7 +113,7 @@ export default {
         PMTilesLambdaAPI: {
             Type: 'AWS::ApiGateway::RestApi',
             Properties: {
-                Name: 'PMtiles Rest API',
+                Name: cf.stackName,
                 DisableExecuteApiEndpoint: true,
                 EndpointConfiguration: {
                     Types: ['REGIONAL']

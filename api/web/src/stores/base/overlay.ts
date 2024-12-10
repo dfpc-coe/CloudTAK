@@ -137,7 +137,6 @@ export default class Overlay {
 
     hasBounds(): boolean {
         const mapStore = useMapStore();
-        if (!mapStore.map) return false;
         const source = mapStore.map.getSource(String(this.id))
         if (!source) return false;
 
@@ -154,7 +153,6 @@ export default class Overlay {
 
     async zoomTo(): Promise<void> {
         const mapStore = useMapStore();
-        if (!mapStore.map) return;
         const source = mapStore.map.getSource(String(this.id))
         if (!source) return;
 
@@ -173,7 +171,6 @@ export default class Overlay {
         before?: string;
     } = {}) {
         const mapStore = useMapStore();
-        if (!mapStore.map) throw new Error('Map has not yet initialized');
 
         if (this.type ==='raster' && this.url) {
             const url = stdurl(this.url);
@@ -268,11 +265,9 @@ export default class Overlay {
 
         for (const click of opts.clickable) {
             mapStore.map.on('mouseenter', click.id, () => {
-                if (!mapStore.map) throw new Error('Map has not yet initialized');
                 mapStore.map.getCanvas().style.cursor = 'pointer';
             })
             mapStore.map.on('mouseleave', click.id, () => {
-                if (!mapStore.map) throw new Error('Map has not yet initialized');
                 mapStore.map.getCanvas().style.cursor = '';
             })
         }
@@ -283,7 +278,6 @@ export default class Overlay {
 
     remove() {
         const mapStore = useMapStore();
-        if (!mapStore.map) throw new Error('Map has not yet initialized');
 
         for (const l of this.styles) {
             mapStore.map.removeLayer(String(l.id));
@@ -332,7 +326,6 @@ export default class Overlay {
         opacity?: number;
     }): Promise<void> {
         const mapStore = useMapStore();
-        if (!mapStore.map) throw new Error('Map has not yet initialized');
 
         if (body.opacity !== undefined) {
             this.opacity = body.opacity;

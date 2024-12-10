@@ -15,12 +15,19 @@ export type APIList<T> = {
     items: Array<T>;
 }
 
+// Below are TAK/CloudTAK Specific Data Types
+
 export type COTType = paths["/type/cot/{:type}"]["get"]["responses"]["200"]["content"]["application/json"];
+
+export type SearchSuggest = paths["/search/suggest"]["get"]["responses"]["200"]["content"]["application/json"];
+export type SearchForward = paths["/search/forward"]["get"]["responses"]["200"]["content"]["application/json"];
 
 export type VideoLease = paths["/video/lease/{:lease}"]["get"]["responses"]["200"]["content"]["application/json"]["lease"];
 export type VideoLeaseList = paths["/video/lease"]["get"]["responses"]["200"]["content"]["application/json"];
 export type VideoLeaseProtocols = paths["/video/lease/{:lease}"]["get"]["responses"]["200"]["content"]["application/json"]["protocols"];
 export type VideoLeaseResponse = paths["/video/lease/{:lease}"]["get"]["responses"]["200"]["content"]["application/json"]
+
+export type Subscription = paths["/marti/subscription/{:clientuid}"]["get"]["responses"]["200"]["content"]["application/json"];
 
 export type Group = paths["/marti/group"]["get"]["responses"]["200"]["content"]["application/json"]["data"][0]
 
@@ -64,6 +71,8 @@ export type Profile_Update = paths["/profile"]["patch"]["requestBody"]["content"
 export type Package = paths["/marti/package/{:uid}"]["get"]["responses"]["200"]["content"]["application/json"]
 export type PackageList = paths["/marti/package"]["get"]["responses"]["200"]["content"]["application/json"]
 
+export type IconsetList = paths["/iconset"]["get"]["responses"]["200"]["content"]["application/json"]
+
 export type Basemap = paths["/basemap/{:basemapid}"]["patch"]["responses"]["200"]["content"]["application/json"]
 export type BasemapList = paths["/basemap"]["get"]["responses"]["200"]["content"]["application/json"]
 
@@ -77,6 +86,19 @@ export type Feature = paths["/profile/feature/{:id}"]["get"]["responses"]["200"]
     }
 }
 
+export type FeatureCollection = {
+    type: string
+    features: Array<Feature>
+};
+
 export type ProfileOverlay = paths["/profile/overlay/{:overlay}"]["get"]["responses"]["200"]["content"]["application/json"]
 export type ProfileOverlay_Create = paths["/profile/overlay"]["post"]["requestBody"]["content"]["application/json"]
 export type ProfileOverlay_Update = paths["/profile/overlay/{:overlay}"]["patch"]["requestBody"]["content"]["application/json"]
+
+// Below are CloudTAK ETL Specific Data Types
+
+export type ETLConnection = paths["/connection/{:connectionid}"]["get"]["responses"]["200"]["content"]["application/json"]
+export type ETLLayer = paths["/connection/{:connectionid}/layer/{:layerid}"]["get"]["responses"]["200"]["content"]["application/json"]
+
+export type ETLTaskVersions = paths["/task/raw/{:task}"]["get"]["responses"]["200"]["content"]["application/json"]
+

@@ -33,10 +33,6 @@ const props = defineProps({
         type: String,
         required: true
     },
-    unit: {
-        type: String,
-        default: 'deg'
-    }
 });
 
 const phone = ref(format(props.phone));
