@@ -482,10 +482,8 @@ import WarnConfiguration from './util/WarnConfiguration.vue';
 import Status from '../util/Status.vue';
 import CoordInput from './CoordInput.vue';
 import CoordinateType from './util/CoordinateType.vue';
-import COT from '../../../src/stores/base/cot.ts';
 import type { MapGeoJSONFeature, GeoJSONSource, LngLatLike } from 'maplibre-gl';
 import { std, stdurl } from '../../../src/std.ts';
-import type { Feature as GeoJSONFeature } from 'geojson';
 import type { IconsetList, SearchForward, SearchSuggest, Feature } from '../../../src/types.ts';
 import CloudTAKFeatView from './FeatView.vue';
 import {
@@ -550,7 +548,7 @@ const warnChannels = ref<boolean>(false)
 const warnConfiguration = ref<boolean>(false);
 
 const searchBox = ref<{
-    shown: Boolean,
+    shown: boolean,
     query: {
         filter: string,
     },
