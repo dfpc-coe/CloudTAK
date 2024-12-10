@@ -616,6 +616,7 @@ watch(mapStore.radial, () => {
         mapStore.map.touchZoomRotate.disableRotation();
         mapStore.map.dragRotate.disable();
         mapStore.map.dragPan.disable();
+        // @ts-expect-error Fix Types
         locked.value.push(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
     } else {
         mapStore.map.scrollZoom.enable();
@@ -872,6 +873,7 @@ async function handleRadial(event: string): Promise<void> {
         feat.value = mapStore.radial.cot;
         closeRadial()
     } else if (event === 'context:new') {
+        // @ts-expect-error MapLibreFeature vs Feature
         await cotStore.add(mapStore.radial.cot);
         updateCOT();
         closeRadial()

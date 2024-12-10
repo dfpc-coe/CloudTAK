@@ -315,6 +315,7 @@ export const useMapStore = defineStore('cloudtak', {
                         callsign: 'New Feature',
                         archived: true,
                         type: 'u-d-p',
+                        how: 'm-g',
                         'marker-color': '#00ff00',
                         'marker-opacity': 1
                     },
