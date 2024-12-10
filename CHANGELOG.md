@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v5.19.0 - 2024-12-10
+
+- :rocket: `UI` Update Main Map to TS
+
 ### v5.18.4 - 2024-12-09
 
 - :bug: CoT property updates were being rendered but not updated in the underlying store
