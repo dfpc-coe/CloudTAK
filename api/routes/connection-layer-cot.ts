@@ -6,6 +6,7 @@ import Cacher from '../lib/cacher.js';
 import Auth, { AuthResourceAccess } from '../lib/auth.js';
 import Style from '../lib/style.js';
 import Config from '../lib/config.js';
+import { HistoryOptions } from '../lib/api/query.js';
 import CoT, { Feature } from '@tak-ps/node-cot';
 import { MissionLayerType } from '../lib/api/mission-layer.js';
 import { StandardLayerResponse, LayerError } from '../lib/types.js';
@@ -132,8 +133,6 @@ export default async function router(schema: Schema, config: Config) {
                     );
 
                     for (const cot of cots) {
-                        if (cot.path === '/') continue;
-
                         const path = cot.path.split('/').filter((p) => !!p);
 
                         let pathMapEntryLast = pathMap.get(`/${encodeURIComponent(layer.name)}/`);
@@ -184,14 +183,14 @@ export default async function router(schema: Schema, config: Config) {
                         }
 
                         if (api.MissionLayer.isEmpty(pathLayer)) {
-                                await api.MissionLayer.delete(
-                                    data.name,
-                                    {
-                                        uid: [ pathLayer.uid ],
-                                        creatorUid: `connection-${data.connection}-data-${data.id}`
-                                    },
-                                    { token: data.mission_token || undefined }
-                                );
+                            await api.MissionLayer.delete(
+                                data.name,
+                                {
+                                    uid: [ pathLayer.uid ],
+                                    creatorUid: `connection-${data.connection}-data-${data.id}`
+                                },
+                                { token: data.mission_token || undefined }
+                            );
                         }
                     }
 
@@ -241,6 +240,101 @@ export default async function router(schema: Schema, config: Config) {
             } else {
                 Err.respond(err, res);
             }
+        }
+    });
+
+    await schema.get('/connection/:connectionid/layer/:layerid/cot/:uid', {
+        name: 'COT Latest',
+        group: 'LayerCOTHistory',
+        description: 'Helper API to get latest COT by UID',
+        params: Type.Object({
+            connectionid: Type.Integer(),
+            layerid: Type.Integer(),
+            uid: Type.String()
+        }),
+        res: Feature.Feature
+    }, async (req, res) => {
+        try {
+            await Auth.is_connection(config, req, {
+                resources: [
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                    { access: AuthResourceAccess.LAYER, id: req.params.layerid }
+                ]
+            }, req.params.connectionid);
+
+            const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
+                return await config.models.Layer.from(req.params.layerid);
+            });
+
+            const pooledClient = await config.conns.get(layer.connection);
+            if (!pooledClient) throw new Err(500, null, `Pooled Client for ${layer.connection} not found in config`);
+
+            const api = await TAKAPI.init(
+                new URL(String(config.server.api)),
+                new APIAuthCertificate(
+                    pooledClient.config.auth.cert,
+                    pooledClient.config.auth.key
+                )
+            );
+
+            const feat = await api.Query.singleFeat(req.params.uid);
+
+            res.json(feat)
+        } catch (err) {
+             Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/connection/:connectionid/layer/:layerid/cot/:uid/all', {
+        name: 'COT History',
+        group: 'LayerCOTHistory',
+        description: 'Helper API to list COT history',
+        params: Type.Object({
+            connectionid: Type.Integer(),
+            layerid: Type.Integer(),
+            uid: Type.String()
+        }),
+        query: HistoryOptions,
+        res: Type.Object({
+            type: Type.String(),
+            features: Type.Array(Feature.Feature)
+        })
+    }, async (req, res) => {
+        try {
+            await Auth.is_connection(config, req, {
+                resources: [
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                    { access: AuthResourceAccess.LAYER, id: req.params.layerid }
+                ]
+            }, req.params.connectionid);
+
+            const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
+                return await config.models.Layer.from(req.params.layerid);
+            });
+
+            const pooledClient = await config.conns.get(layer.connection);
+            if (!pooledClient) throw new Err(500, null, `Pooled Client for ${layer.connection} not found in config`);
+
+            const api = await TAKAPI.init(
+                new URL(String(config.server.api)),
+                new APIAuthCertificate(
+                    pooledClient.config.auth.cert,
+                    pooledClient.config.auth.key
+                )
+            );
+
+            const features = await api.Query.historyFeats(req.params.uid, {
+                start: req.query.start,
+                end: req.query.end,
+                secago: req.query.secago,
+            });
+
+            res.json({
+                type: 'FeatureCollection',
+                features
+            });
+        } catch (err) {
+             Err.respond(err, res);
         }
     });
 }

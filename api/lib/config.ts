@@ -3,7 +3,7 @@ import STS from '@aws-sdk/client-sts';
 import External from './external.js';
 import SecretsManager from '@aws-sdk/client-secrets-manager';
 import EventsPool from './events-pool.js';
-import { Pool } from '@openaddresses/batch-generic';
+import { Pool, GenerateUpsert } from '@openaddresses/batch-generic';
 import ConnectionPool from './connection-pool.js';
 import { ConnectionWebSocket } from './connection-web.js';
 import Cacher from './cacher.js';
@@ -189,6 +189,19 @@ export default class Config {
         if (process.env.SubnetPublicA) config.SubnetPublicA = process.env.SubnetPublicA;
         if (process.env.SubnetPublicB) config.SubnetPublicB = process.env.SubnetPublicB;
         if (process.env.MediaSecurityGroup) config.MediaSecurityGroup = process.env.MediaSecurityGroup;
+
+        for (const envkey in process.env) {
+            if (!envkey.startsWith('CLOUDTAK')) continue;
+
+            if (envkey.startsWith('CLOUDTAK_Config_')) {
+                const key = envkey.replace(/^CLOUDTAK_Config_/, '').replace(/_/g, '::');
+                console.error(`ok - Updating ${key} with value from environment`);
+                await config.models.Setting.generate({
+                    key,
+                    value: process.env[envkey]
+                },{ upsert: GenerateUpsert.UPDATE })
+            }
+        }
 
         return config;
     }

@@ -108,6 +108,7 @@ export default async function router(schema: Schema, config: Config) {
                 default: false,
                 description: 'System Admins can create non-expiring leases'
             }),
+            channel: Type.Optional(Type.Union([Type.String(), Type.Null()])),
             path: Type.Optional(Type.String()),
             stream_user: Type.Optional(Type.String()),
             stream_pass: Type.Optional(Type.String()),
@@ -161,6 +162,7 @@ export default async function router(schema: Schema, config: Config) {
                 default: 60 * 60,
                 description: 'Duration in Seconds'
             }),
+            channel: Type.Optional(Type.Union([Type.String(), Type.Null()])),
             permanent: Type.Boolean({
                 default: false,
                 description: 'System Admins can create non-expiring leases'
@@ -182,6 +184,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const lease = await videoControl.commit(req.params.lease, {
                 name: req.body.name,
+                channel: req.body.channel ? req.body.channel : null,
                 expiration: req.body.permanent ? null : moment().add(req.body.duration, 'seconds').toISOString(),
             }, {
                 username: user.email,

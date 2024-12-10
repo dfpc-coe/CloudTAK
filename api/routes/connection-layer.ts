@@ -150,10 +150,11 @@ export default async function router(schema: Schema, config: Config) {
         body: Type.Object({
             name: Default.NameField,
             priority: Type.Optional(Type.Enum(Layer_Priority)),
+            webhooks: Type.Optional(Type.Boolean()),
             description: Default.DescriptionField,
             enabled: Type.Optional(Type.Boolean()),
             task: Type.String(),
-            cron: Type.String(),
+            cron: Type.Optional(Type.String()),
             logging: Type.Boolean(),
             stale: Type.Optional(Type.Integer()),
             data: Type.Optional(Type.Integer()),
@@ -179,7 +180,9 @@ export default async function router(schema: Schema, config: Config) {
                 await Style.validate(req.body.styles);
             }
 
-            Schedule.is_valid(req.body.cron);
+            if (req.body.cron) {
+                Schedule.is_valid(req.body.cron);
+            }
 
             if (req.body.data) {
                 const data = await config.models.Data.from(req.body.data);
@@ -202,7 +205,7 @@ export default async function router(schema: Schema, config: Config) {
             if (config.events) {
                 if (layer.cron && !Schedule.is_aws(layer.cron) && layer.enabled) {
                     config.events.add(layer.id, layer.cron);
-                } else if (layer.cron && Schedule.is_aws(layer.cron) || !layer.enabled) {
+                } else if (!layer.cron || (layer.cron && Schedule.is_aws(layer.cron)) || !layer.enabled) {
                     await config.events.delete(layer.id);
                 }
             }
@@ -253,7 +256,8 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.Optional(Default.NameField),
             priority: Type.Optional(Type.Enum(Layer_Priority)),
             description: Type.Optional(Default.DescriptionField),
-            cron: Type.Optional(Type.String()),
+            webhooks: Type.Optional(Type.Boolean()),
+            cron: Type.Optional(Type.Union([Type.String(), Type.Null()])),
             memory: Type.Optional(Type.Integer()),
             timeout: Type.Optional(Type.Integer()),
             enabled: Type.Optional(Type.Boolean()),
@@ -311,7 +315,9 @@ export default async function router(schema: Schema, config: Config) {
                 await Style.validate(req.body.styles);
             }
 
-            if (req.body.cron) Schedule.is_valid(req.body.cron);
+            if (req.body.cron) {
+                Schedule.is_valid(req.body.cron);
+            }
 
             if (layer.connection !== connection.id) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
@@ -320,7 +326,7 @@ export default async function router(schema: Schema, config: Config) {
             let changed = false;
             // Avoid Updating CF unless necessary as it blocks further updates until deployed
             for (const prop of [
-                'cron', 'task', 'memory', 'timeout', 'enabled', 'priority',
+                'cron', 'task', 'memory', 'timeout', 'enabled', 'priority', 'webhooks',
                 'alarm_period', 'alarm_evals', 'alarm_points', 'alarm_threshold'
             ]) {
                 // @ts-expect-error Doesn't like indexed values
@@ -350,7 +356,7 @@ export default async function router(schema: Schema, config: Config) {
             if (config.events) {
                 if (layer.cron && !Schedule.is_aws(layer.cron) && layer.enabled) {
                     config.events.add(layer.id, layer.cron);
-                } else if (layer.cron && Schedule.is_aws(layer.cron) || !layer.enabled) {
+                } else if (!layer.cron || (layer.cron && Schedule.is_aws(layer.cron)) || !layer.enabled) {
                     await config.events.delete(layer.id);
                 }
             }

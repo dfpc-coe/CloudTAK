@@ -85,6 +85,17 @@ export async function std(
     }
 }
 
+export function humanSeconds(seconds: number): string {
+        const date = new Date(seconds * 1000);
+        const str = [];
+        if (date.getUTCDate()-1 !== 0) str.push(date.getUTCDate()-1 + " days");
+        if (date.getUTCHours() !== 0 ) str.push(date.getUTCHours() + " hrs");
+        if (date.getUTCMinutes() !== 0) str.push(date.getUTCMinutes() + " mins");
+        if (date.getUTCSeconds() !== 0) str.push(date.getUTCSeconds() + " secs");
+        if (date.getUTCMilliseconds() !== 0) str.push(date.getUTCMilliseconds() + " ms");
+        return str.join(', ');
+}
+
 export function stdclick($router: Router, event: KeyboardEvent, path: string) {
     if (event.ctrlKey === true) {
         const routeData = $router.resolve(path);

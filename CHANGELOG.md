@@ -12,6 +12,55 @@
 
 ### Pending Release
 
+### v5.19.0 - 2024-12-10
+
+- :rocket: `UI` Update Main Map to TS
+
+### v5.18.4 - 2024-12-09
+
+- :bug: CoT property updates were being rendered but not updated in the underlying store
+
+### v5.18.3 - 2024-12-09
+
+- :bug: Return a 404 Response if CoT history endpoint returns nothing for a given UID
+
+### v5.18.2 - 2024-12-09
+
+- :bug: Fix issue with Row Editor Modal in Layer Environment
+- :rocket: Make Loading text white on Connection/Layer/Data
+
+### v5.18.1 - 2024-12-09
+
+- :bug: Fix bug where Connection wasn't cleaned up after the WebSocket was closed
+- :bug: Fix bug where path would result in `<dest/>` tag wasn't added
+
+### v5.18.0 - 2024-12-08
+
+- :tada: Allow setting CloudTAK Config values via Config
+
+### v5.17.2 - 2024-12-08
+
+- :bug: Fix `color` not being required in mission layer
+
+### v5.17.1 - 2024-12-06
+
+- :bug: Fix disablement of cron job from web UI
+
+### v5.17.0 - 2024-12-06
+
+- :tada: `UI` Add ability to query BreadCrumb for last hour for a given active user
+- :tada: `UI` Only show Edit fns on Radial for CoTs from Mission with edit role
+- :tada: `UI/API` Update Layer to support Webhooks & Cron style of deploys
+- :rocket: `UI` Migrate LayerConfig to TS
+- :rocket: `API` Add `VideoLease.channel` column for future use for channel management of leases
+- :rocket: `UI` Migrate Channel Menu to TS
+- :rocket: `UI` Add ability to turn all channels on/off from single button
+- :rocket: `API` Add `webhooks` field to Layer Template
+- :bug: `UI` Remove UI for Layer Query as the backend was removed
+- :bug: `API` Fix broken tests
+- :tada: `API` Add CoT history endpoints to profile & layer API base paths
+- :arrow_up: Update Drizzle to latest versions
+
 ### v5.16.0 - 2024-12-02
 
 - :tada: `UI` Add filter support for Share Component

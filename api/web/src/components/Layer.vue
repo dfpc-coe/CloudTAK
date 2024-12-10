@@ -14,6 +14,7 @@
 
         <TablerLoading
             v-if='loading.layer'
+            class='text-white'
             desc='Loading Layer'
         />
         <div
@@ -42,13 +43,6 @@
                                             class='cursor-pointer'
                                             :class='{ "text-red": alerts.total }'
                                             @click='$router.push(`/connection/${$route.params.connectionid}/layer/${layer.id}/alert`)'
-                                        />
-                                        <IconDatabase
-                                            v-tooltip='"CoT Logging"'
-                                            :size='32'
-                                            :stroke='1'
-                                            class='cursor-pointer'
-                                            @click='$router.push(`/connection/${$route.params.connectionid}/layer/${layer.id}/query`)'
                                         />
                                         <IconSettings
                                             v-tooltip='"Edit"'
@@ -212,7 +206,6 @@ import {
 import {
     IconX,
     IconSettings,
-    IconDatabase,
     IconAlertTriangle,
     IconPlaneDeparture,
     IconAdjustments,
@@ -231,7 +224,6 @@ export default {
         TablerLoading,
         IconX,
         IconSettings,
-        IconDatabase,
         IconAlertTriangle,
         IconPlaneDeparture,
         IconAdjustments,

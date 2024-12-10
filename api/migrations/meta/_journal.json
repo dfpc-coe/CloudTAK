@@ -491,6 +491,34 @@
       "when": 1731969306208,
       "tag": "0069_tiny_triathlon",
       "breakpoints": true
+    },
+    {
+      "idx": 70,
+      "version": "7",
+      "when": 1733181888609,
+      "tag": "0070_abnormal_nightmare",
+      "breakpoints": true
+    },
+    {
+      "idx": 71,
+      "version": "7",
+      "when": 1733255272208,
+      "tag": "0071_glamorous_wild_pack",
+      "breakpoints": true
+    },
+    {
+      "idx": 72,
+      "version": "7",
+      "when": 1733424131456,
+      "tag": "0072_rainy_zaladane",
+      "breakpoints": true
+    },
+    {
+      "idx": 73,
+      "version": "7",
+      "when": 1733527002274,
+      "tag": "0073_rare_korvac",
+      "breakpoints": true
     }
   ]
 }

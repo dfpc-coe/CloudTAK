@@ -5,7 +5,7 @@
             v-for='feat of orphanedFeats'
             :key='feat.id'
             :delete-button='false'
-            :feature='orphanedFeats'
+            :feature='feat'
             :mission='mission'
         />
         <div
@@ -174,6 +174,7 @@ const orphanedFeats = computed<Feature[]>(() => {
         const feat = props.feats.get(uid);
         if (feat) feats.push(feat);
     }
+
     return feats;
 })
 

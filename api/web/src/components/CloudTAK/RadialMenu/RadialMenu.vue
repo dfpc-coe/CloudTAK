@@ -95,10 +95,11 @@
 </template>
 
 <script>
+import { OriginMode } from '../../../../src/stores/base/cot.ts';
 import RadialMenu from './RadialMenu.js';
 import './RadialMenu.css';
-import { useMapStore } from '/src/stores/map.ts';
-import { useCOTStore } from '/src/stores/cots.ts';
+import { useMapStore } from '../../../../src/stores/map.ts';
+import { useCOTStore } from '../../../../src/stores/cots.ts';
 import { mapState, mapActions } from 'pinia'
 
 const cotStore = useCOTStore();
@@ -145,19 +146,29 @@ export default {
         genMenuItems: function() {
             this.menuItems.splice(0, this.menuItems.length);
             if (this.radial.mode === 'cot') {
-                this.menuItems.push({ id: 'edit', icon: '#radial-pencil' })
-                this.menuItems.push({ id: 'view', icon: '#radial-view' })
-                this.menuItems.push({ id: 'delete', icon: '#radial-trash' })
-
                 if (this.radial.cot && this.radial.cot.properties) {
                     const cot = cotStore.get(this.radial.cot.properties.id, {
                         mission: true
                     });
 
+                    if (cot.origin.mode === OriginMode.CONNECTION) {
+                        this.menuItems.push({ id: 'edit', icon: '#radial-pencil' })
+                        this.menuItems.push({ id: 'delete', icon: '#radial-trash' })
+                    } else if (cot.origin.mode === OriginMode.MISSION && cot.origin.mode_id) {
+                        const sub = cotStore.subscriptions.get(cot.origin.mode_id);
+
+                        if (sub.role && sub.role.permissions.includes("MISSION_WRITE")) {
+                            this.menuItems.push({ id: 'edit', icon: '#radial-pencil' })
+                            this.menuItems.push({ id: 'delete', icon: '#radial-trash' })
+                        }
+                    }
+
                     if (cot.properties.video) {
                         this.menuItems.push({ id: 'play', icon: '#radial-play' })
                     }
                 }
+
+                this.menuItems.push({ id: 'view', icon: '#radial-view' })
             } else if (this.radial.mode === 'feat') {
                 this.menuItems.push({ id: 'view', icon: '#radial-view' })
             } else if (this.radial.mode === 'context') {

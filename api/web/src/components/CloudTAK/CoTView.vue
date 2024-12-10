@@ -28,8 +28,9 @@
                     >
                         <CopyField
                             v-model='cot.properties.callsign'
-                            :edit='isEditable'
-                            :hover='isEditable'
+                            :edit='cot.is_editable'
+                            :minheight='44'
+                            :hover='cot.is_editable'
                         />
 
                         <div>
@@ -46,24 +47,22 @@
                 </div>
                 <div class='col-12 d-flex my-2 mx-2'>
                     <div class='btn-list'>
-                        <template v-if='isArchivable'>
-                            <TablerIconButton
-                                v-if='!cot.properties.archived'
-                                title='Save Feature'
-                                @click='cot.properties.archived = true'
-                            >
-                                <IconStar
-                                    :size='32'
-                                    stroke='1'
-                                />
-                            </TablerIconButton>
-                            <IconStarFilled
-                                v-else
-                                title='Saved Feature'
+                        <TablerIconButton
+                            v-if='cot.is_archivable'
+                            title='Save Feature'
+                            @click='cot.properties.archived = true'
+                        >
+                            <IconStar
                                 :size='32'
                                 stroke='1'
                             />
-                        </template>
+                        </TablerIconButton>
+                        <IconStarFilled
+                            v-else-if='cot.properties.archived'
+                            title='Saved Feature'
+                            :size='32'
+                            stroke='1'
+                        />
 
                         <TablerIconButton
                             v-if='cot.properties.video && cot.properties.video.url'
@@ -86,6 +85,16 @@
                         </TablerIconButton>
                     </div>
                     <div class='ms-auto btn-list mx-2'>
+                        <TablerIconButton
+                            v-if='cot.is_skittle && !loadingBreadcrumb'
+                            title='Load Breadcrumb'
+                            @click='loadBreadcrumb'
+                        >
+                            <IconRoute
+                                size='32'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
                         <TablerDelete
                             displaytype='icon'
                             @delete='deleteCOT'
@@ -113,7 +122,7 @@
                         </TablerIconButton>
 
                         <TablerDropdown
-                            v-if='isEditable'
+                            v-if='cot.is_editable'
                         >
                             <TablerIconButton
                                 title='Add Properties'
@@ -211,7 +220,7 @@
                     />
                     <span class='mx-2'>Info</span>
                 </label>
-                <template v-if='cot.properties.group'>
+                <template v-if='cot.is_skittle'>
                     <input
                         id='btn-mode-channels'
                         type='radio'
@@ -264,6 +273,15 @@
             style='height: calc(100vh - 225px)'
         >
             <div class='row g-0'>
+                <div
+                    v-if='loadingBreadcrumb'
+                    class='col-12'
+                >
+                    <TablerLoading
+                        :compact='true'
+                        desc='Loading Breadcrumb...'
+                    />
+                </div>
                 <div
                     v-if='mission'
                     class='col-12'
@@ -342,6 +360,15 @@
                 </div>
             </div>
 
+            <div
+                v-if='username'
+                class='col-12 pt-2'
+            >
+                <Email
+                    :email='username'
+                />
+            </div>
+
             <Attachments
                 v-if='!cot.properties.contact && cot.properties.attachments !== undefined'
                 :attachments='cot.properties.attachments || []'
@@ -356,8 +383,8 @@
                 <CopyField
                     v-model='cot.properties.remarks'
                     :rows='10'
-                    :edit='isEditable'
-                    :hover='isEditable'
+                    :edit='cot.is_editable'
+                    :hover='cot.is_editable'
                     class='mx-1'
                 />
             </div>
@@ -440,7 +467,7 @@
             />
 
             <div
-                v-if='isEditable'
+                v-if='cot.is_editable'
                 class='px-1 pb-2 col-12'
             >
                 <label class='mx-1 subheader'>COT Style</label>
@@ -586,7 +613,7 @@
                 style='height: calc(100vh - 225px)'
                 class='overflow-auto'
             >
-                <Subscriptions :uid='cot.id' />
+                <Subscriptions :cot='cot' />
             </div>
         </template>
         <template v-else-if='mode === "raw"'>
@@ -608,7 +635,7 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
 import type COT from '../../../src/stores/base/cot.ts';
-import type { COTType } from '../../../src/types.ts';
+import type { COTType, FeatureCollection } from '../../../src/types.ts';
 import { OriginMode } from '../../../src/stores/base/cot.ts'
 import Mission from '../../../src/stores/base/mission.ts'
 import {
@@ -618,6 +645,7 @@ import {
     TablerEnum,
     TablerRange,
     TablerDropdown,
+    TablerLoading,
     TablerIconButton,
 } from '@tak-ps/vue-tabler';
 
@@ -629,11 +657,13 @@ import Coordinate from './util/Coordinate.vue';
 import Course from './util/Course.vue';
 import CoTSensor from './util/Sensor.vue';
 import Phone from './util/Phone.vue';
+import Email from './util/Email.vue';
 import Speed from './util/Speed.vue';
 import Elevation from './util/Elevation.vue';
 import Attachments from './util/Attachments.vue';
 import {
     IconMovie,
+    IconRoute,
     IconCone,
     IconStar,
     IconStarFilled,
@@ -650,7 +680,7 @@ import {
 } from '@tabler/icons-vue';
 import Subscriptions from './util/Subscriptions.vue';
 import timediff from '../../../src/timediff.ts';
-import { std } from '../../../src/std.ts';
+import { std, stdurl } from '../../../src/std.ts';
 import { useCOTStore } from '../../../src/stores/cots.ts';
 const cotStore = useCOTStore();
 import { useProfileStore } from '../../../src/stores/profile.ts';
@@ -666,11 +696,13 @@ const cot = ref<COT | undefined>(cotStore.get(String(route.params.uid), {
 }))
 
 const mission = ref<Mission | undefined>();
+const loadingBreadcrumb = ref(false);
 
 if (cot.value && cot.value.origin.mode === OriginMode.MISSION && cot.value.origin.mode_id) {
     mission.value = cotStore.subscriptions.get(cot.value.origin.mode_id);
 }
 
+const username = ref<string | undefined>();
 const type = ref<COTType | undefined>();
 const mode = ref('default');
 const interval = ref<ReturnType<typeof setInterval> | undefined>();
@@ -686,23 +718,16 @@ watch(cot, () => {
     }
 });
 
-watch(route, () => {
+watch(route, async () => {
     mode.value = 'default'
-
-    cot.value = cotStore.get(String(route.params.uid), {
-        mission: true
-    })
+    await load_cot();
 });
 
 onMounted(async () => {
-    if (cot.value) {
-        await fetchType();
-    } else {
-        interval.value = setInterval(() => {
-            cot.value = cotStore.get(String(route.params.uid), {
-                mission: true
-            })
+    if (!cot.value) {
+        await load_cot();
 
+        interval.value = setInterval(() => {
             if (cot.value) {
                 clearInterval(interval.value);
             }
@@ -711,16 +736,6 @@ onMounted(async () => {
 });
 
 const profile = profileStore.profile;
-
-const isEditable = computed(() => {
-    if (!cot.value) return false;
-    return (cot.value.properties.archived && !mission.value);
-})
-
-const isArchivable = computed(() => {
-    if (!cot.value) return false;
-    return !cot.value.properties.group;
-})
 
 const hasBattery = computed(() => {
     return cot.value && cot.value.properties.status && cot.value.properties.status.battery && !isNaN(parseInt(cot.value.properties.status.battery))
@@ -735,11 +750,51 @@ const center = computed(() => {
     ]
 })
 
+async function load_cot() {
+    username.value = undefined;
+
+    cot.value = cotStore.get(String(route.params.uid), {
+        mission: true
+    })
+
+    if (cot.value) {
+        if (cot.value.is_skittle) {
+            username.value = await cot.value.username()
+        } else {
+            username.value = undefined;
+        }
+
+        await fetchType();
+    }
+}
+
 function timediffFormat(date: string) {
     if (time.value === 'relative') {
         return timediff(date);
     } else {
         return date;
+    }
+}
+
+async function loadBreadcrumb() {
+    if (!cot.value) return;
+
+    loadingBreadcrumb.value = true;
+
+    try {
+        const url = stdurl(`/api/marti/cot/${cot.value.id}/all`)
+        url.searchParams.append('secago', String(60 * 60))
+        url.searchParams.append('track', String(true))
+        const crumb = await std(url) as FeatureCollection;
+
+        for (const feat of crumb.features) {
+            cotStore.add(feat)
+        }
+
+        loadingBreadcrumb.value = false;
+    } catch (err) {
+        loadingBreadcrumb.value = false;
+        throw err;
     }
 }
 

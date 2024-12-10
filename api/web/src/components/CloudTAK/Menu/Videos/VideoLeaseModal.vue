@@ -20,11 +20,22 @@
 
             <div class='ms-auto btn-list'>
                 <TablerIconButton
-                    v-if='editLease.id'
+                    v-if='disabled && editLease.id'
                     title='Refresh'
                     @click='fetchLease'
                 >
                     <IconRefresh
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+
+                <TablerIconButton
+                    v-if='disabled && editLease.id'
+                    title='Edit'
+                    @click='disabled = false'
+                >
+                    <IconPencil
                         :size='32'
                         stroke='1'
                     />
@@ -106,23 +117,54 @@
         </template>
         <template v-else>
             <div
-                class='modal-body row'
+                class='modal-body row g-2'
             >
-                <div
-                    class='col-12'
-                >
+                <div class='col-12'>
                     <TablerInput
                         v-model='editLease.name'
+                        description='The human readable name of the Lease'
+                        :disabled='disabled'
                         label='Lease Name'
                     />
-
+                </div>
+                <div class='col-12'>
                     <TablerEnum
                         v-if='!editLease.id'
                         v-model='editLease.duration'
                         :options='durations'
+                        :disabled='disabled'
                         label='Lease Duration'
                     />
+                </div>
+                <div class='col-12'>
+                    <TablerToggle
+                        v-model='shared'
+                        description='By default only the user that created a Lease can manage it. If you are operating as part of an agency, turn on Lease Sharing to allow all users in your Channel to manage the lease'
+                        :disabled='disabled'
+                        label='Shared Lease'
+                    />
+                </div>
+                <div
+                    v-if='shared'
+                    class='col-12'
+                >
+                    <GroupSelect
+                        v-if='!disabled'
+                        v-model='channels'
+                        :limit='1'
+                    />
+                    <div
+                        v-else
+                        class='border border-white rounded px-2 py-2'
+                    >
+                        <IconAffiliate
+                            :size='24'
+                            stroke='1'
+                        /> <span v-text='editLease.channel' />
+                    </div>
+                </div>
 
+                <div class='col-12'>
                     <label
                         class='subheader mt-3 cursor-pointer'
                         @click='advanced = !advanced'
@@ -157,48 +199,48 @@
                             label='Stream Password'
                         />
                     </div>
-
-                    <template v-if='Object.keys(protocols).length'>
-                        <div class='subheader pt-4'>
-                            Video Streaming Protocols
-                        </div>
-                        <template v-if='expired(editLease.expiration)'>
-                            <TablerAlert
-                                title='Expired Lease'
-                                :err='new Error("Renew the lease to continue using the video stream")'
-                                :advanced='false'
-                            />
-
-                            <div class='col-12 d-flex justify-content-center pb-3'>
-                                <TablerEnum
-                                    v-model='editLease.duration'
-                                    :options='durations'
-                                    style='width: 300px;'
-                                />
-                            </div>
-                            <div class='col-12 d-flex justify-content-center'>
-                                <button
-                                    class='btn btn-primary'
-                                    style='width: 280px'
-                                    @click='saveLease(false)'
-                                >
-                                    Renew Lease
-                                </button>
-                            </div>
-                        </template>
-                        <template v-else>
-                            <div
-                                v-for='protocol in protocols'
-                                class='pt-2'
-                            >
-                                <template v-if='protocol'>
-                                    <div v-text='protocol.name' />
-                                    <CopyField v-model='protocol.url' />
-                                </template>
-                            </div>
-                        </template>
-                    </template>
                 </div>
+
+                <template v-if='disabled && Object.keys(protocols).length'>
+                    <div class='subheader pt-4'>
+                        Video Streaming Protocols
+                    </div>
+                    <template v-if='expired(editLease.expiration)'>
+                        <TablerAlert
+                            title='Expired Lease'
+                            :err='new Error("Renew the lease to continue using the video stream")'
+                            :advanced='false'
+                        />
+
+                        <div class='col-12 d-flex justify-content-center pb-3'>
+                            <TablerEnum
+                                v-model='editLease.duration'
+                                :options='durations'
+                                style='width: 300px;'
+                            />
+                        </div>
+                        <div class='col-12 d-flex justify-content-center'>
+                            <button
+                                class='btn btn-primary'
+                                style='width: 280px'
+                                @click='saveLease'
+                            >
+                                Renew Lease
+                            </button>
+                        </div>
+                    </template>
+                    <template v-else>
+                        <div
+                            v-for='protocol in protocols'
+                            class='pt-2'
+                        >
+                            <template v-if='protocol'>
+                                <div v-text='protocol.name' />
+                                <CopyField v-model='protocol.url' />
+                            </template>
+                        </div>
+                    </template>
+                </template>
             </div>
             <div class='modal-footer'>
                 <button
@@ -213,10 +255,18 @@
                     <span class='mx-2'>UAS Tool Wizard</span>
                 </button>
                 <button
+                    v-if='!disabled'
                     class='btn btn-primary'
-                    @click='saveLease(true)'
+                    @click='saveLease'
                 >
                     Save
+                </button>
+                <button
+                    v-if='disabled'
+                    class='btn btn-primary'
+                    @click='emit("close")'
+                >
+                    Done
                 </button>
             </div>
         </template>
@@ -226,12 +276,15 @@
 <script setup lang='ts'>
 import { std } from '../../../../std.ts';
 import CopyField from '../../util/CopyField.vue';
-import { ref, onMounted } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import type { VideoLease, VideoLeaseResponse, VideoLeaseProtocols } from '../../../../types.ts';
+import GroupSelect from '../../../util/GroupSelect.vue';
 import { useProfileStore } from '../../../../stores/profile.ts';
 import {
     IconRefresh,
+    IconPencil,
     IconWand,
+    IconAffiliate,
     IconSquareChevronRight,
     IconChevronRight,
     IconChevronLeft,
@@ -240,6 +293,7 @@ import {
 import {
     TablerIconButton,
     TablerLoading,
+    TablerToggle,
     TablerAlert,
     TablerModal,
     TablerInput,
@@ -254,9 +308,12 @@ const props = defineProps<{
 const emit = defineEmits([ 'close', 'refresh' ])
 
 const loading = ref(true);
+const disabled = ref(true);
 const wizard = ref(0);
 const advanced = ref(false);
 const protocols = ref<VideoLeaseProtocols>({});
+
+const channels = ref<string[]>([]);
 
 const profileStore = useProfileStore();
 
@@ -266,16 +323,20 @@ if (profileStore.profile && profileStore.profile.system_admin) {
     durations.value.push('Permanent');
 }
 
+const shared = ref(false);
+
 const editLease = ref<{
     id?: number
     name: string
     duration: string
+    channel: string | null
     expiration?: string | null
     stream_user: string | null
     stream_pass: string | null
 }>({
     name: '',
     duration: '16 Hours',
+    channel: null,
     stream_user: '',
     stream_pass: ''
 });
@@ -290,6 +351,12 @@ onMounted(async () => {
     }
 
     loading.value = false
+});
+
+watch(shared, () => {
+    if (!shared.value) {
+        channels.value = [];
+    }
 });
 
 function expired(expiration?: string | null) {
@@ -308,6 +375,19 @@ async function fetchLease() {
         ...res.lease,
         duration: '16 Hours'
     }
+
+    if (editLease.value.channel) {
+        channels.value = [ editLease.value.channel ];
+    } else {
+        channels.value = [];
+    }
+
+    if (res.lease.channel) {
+        shared.value = true;
+    } else {
+        shared.value = false;
+    }
+
     protocols.value = res.protocols;
 
     loading.value = false;
@@ -330,7 +410,7 @@ async function deleteLease() {
     }
 }
 
-async function saveLease(close: boolean) {
+async function saveLease() {
     try {
         loading.value = true;
 
@@ -339,44 +419,38 @@ async function saveLease(close: boolean) {
                 method: 'PATCH',
                 body: {
                     ...editLease.value,
+                    channel: channels.value.length ? channels.value[0] : null,
                     duration: editLease.value.duration === 'Permanent' ? undefined : parseInt(editLease.value.duration.split(' ')[0]) * 60 * 60,
                     permanent: editLease.value.duration === 'Permanent' ? true : false
                 }
             }) as VideoLeaseResponse;
 
-            if (close) {
-                emit('refresh');
-            } else {
-                editLease.value = {
-                    ...res.lease,
-                    duration: '16 Hours'
-                }
-
-                protocols.value = res.protocols;
+            editLease.value = {
+                ...res.lease,
+                duration: '16 Hours'
             }
 
+            protocols.value = res.protocols;
+            disabled.value = true;
             loading.value = false;
         } else {
             const res = await std('/api/video/lease', {
                 method: 'POST',
                 body: {
                     name: editLease.value.name,
+                    channel: channels.value.length ? channels.value[0] : null,
                     duration: editLease.value.duration === 'Permanent' ? undefined : parseInt(editLease.value.duration.split(' ')[0]) * 60 * 60,
                     permanent: editLease.value.duration === 'Permanent' ? true : false
                 }
             }) as VideoLeaseResponse;
 
-            if (editLease.value.id && close) {
-                emit('refresh');
-            } else {
-                editLease.value = {
-                    ...res.lease,
-                    duration: '16 Hours'
-                }
-
-                protocols.value = res.protocols;
+            editLease.value = {
+                ...res.lease,
+                duration: '16 Hours'
             }
 
+            protocols.value = res.protocols;
+            disabled.value = true;
             loading.value = false;
         }
     } catch (err) {

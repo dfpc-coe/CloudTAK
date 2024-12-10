@@ -6,15 +6,26 @@
             </h2>
 
             <div class='ms-auto btn-list'>
-                <IconPlus
-                    v-tooltip='"Create Layer"'
-                    :size='32'
-                    :stroke='1'
-                    class='cursor-pointer'
+                <TablerIconButton
+                    title='Create Layer'
                     @click='$router.push(
                         `/connection/${$route.params.connectionid}/data/${$route.params.dataid}/layer/new`
                     )'
-                />
+                >
+                    <IconPlus
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+                <TablerIconButton
+                    title='Refresh'
+                    @click='listLayers'
+                >
+                    <IconRefresh
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
             </div>
         </div>
 
@@ -77,11 +88,13 @@
 import { std, stdurl } from '/src/std.ts';
 import TableFooter from '../util/TableFooter.vue';
 import {
-    IconPlus
+    IconPlus,
+    IconRefresh
 } from '@tabler/icons-vue';
 import {
     TablerAlert,
     TablerNone,
+    TablerIconButton,
     TablerLoading
 } from '@tak-ps/vue-tabler'
 import LayerStatus from '../Layer/utils/Status.vue';
@@ -92,9 +105,11 @@ export default {
         TablerNone,
         TablerAlert,
         IconPlus,
+        IconRefresh,
         TablerLoading,
         TableFooter,
         LayerStatus,
+        TablerIconButton,
     },
     props: {
         connection: {
