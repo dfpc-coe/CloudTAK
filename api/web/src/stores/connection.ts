@@ -12,16 +12,24 @@ const cotStore = useCOTStore();
 
 export const useConnectionStore = defineStore('connection', {
     state: (): {
+        destroyed: boolean
         open: boolean
         ws?: WebSocket
     } => {
         return {
+            destroyed: false,
             open: false,
             ws: undefined
         }
     },
     actions: {
+        destroy: function() {
+            this.destroyed = true;
+            if (this.ws) this.ws.close();
+        },
         connectSocket: function(connection: string) {
+            this.destroyed = false;
+
             const url = stdurl('/api');
             url.searchParams.append('format', 'geojson');
             url.searchParams.append('connection', connection);
@@ -43,7 +51,7 @@ export const useConnectionStore = defineStore('connection', {
 
             this.ws.addEventListener('close', () => {
                 // Otherwise the user is probably logged out
-                if (localStorage.token) this.connectSocket(connection);
+                if (localStorage.token && !this.destroyed) this.connectSocket(connection);
 
                 this.open = false;
             });
