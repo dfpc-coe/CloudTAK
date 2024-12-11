@@ -200,7 +200,8 @@
                                                 <template v-else-if='type === "creation"'>
                                                     <CertificateMachineUser
                                                         :connection='connection'
-                                                        @certs='marti($event)'
+                                                        @certs='creation($event)'
+                                                        @integration='integration($event)'
                                                         @err='err = $event'
                                                     />
                                                 </template>
@@ -314,6 +315,7 @@ export default {
                 agency: undefined,
                 description: '',
                 enabled: true,
+                integrationId: undefined,
                 auth: { cert: '', key: '' }
             }
         }
@@ -342,17 +344,26 @@ export default {
             this.connection.auth = { cert: '', key: '' }
             this.loading = false;
         },
+        creation: function(certs) {
+            this.connection.auth.cert = certs.cert;
+            this.connection.auth.key = certs.key;
+        },
+        integration: function(integrationId) {
+            this.connection.integrationId = integrationId;
+        },
         marti: function(certs) {
+            this.connection.integrationId = null;
             this.connection.auth.cert = certs.cert;
             this.connection.auth.key = certs.key;
         },
         p12upload: function(certs) {
             this.modal.upload = false;
+            this.connection.integrationId = null;
             this.connection.auth.cert = certs.cert;
             this.connection.auth.key = certs.key;
         },
         create: async function() {
-            for (const field of ['name', 'description' ]) {
+            for (const field of ['name', 'description']) {
                 if (!this.connection[field]) this.errors[field] = 'Cannot be empty';
                 else this.errors[field] = '';
             }

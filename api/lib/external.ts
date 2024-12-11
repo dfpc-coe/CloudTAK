@@ -9,9 +9,15 @@ export const Agency = Type.Object({
     description: Type.Any()
 });
 
+export const Integration = Type.Object({
+    id: Type.Number(),
+    name: Type.String(),
+});
+
 export const MachineUser = Type.Object({
     id: Type.Number(),
     email: Type.String(),
+    integrations: Type.Array(Integration),
 });
 
 export const Channel = Type.Object({
@@ -79,6 +85,7 @@ export default class ExternalProvider {
             name: string;
             description: string;
             management_url: string;
+            active: boolean;
         }
     }): Promise<Static<typeof MachineUser>> {
         const creds = await this.auth();
@@ -95,7 +102,6 @@ export default class ExternalProvider {
             active: true,
             integration: {
                 ...body.integration,
-                active: true
             }
         }
 
@@ -140,6 +146,56 @@ export default class ExternalProvider {
         });
 
         if (!userres.ok) throw new Err(500, new Error(await userres.text()), 'External Machine User Attachment Error');
+
+        return;
+    }
+
+    async updateIntegrationConnectionId(uid: number, body: {
+        integration_id: number;
+        connection_id: number;
+    }): Promise<void> {
+        const creds = await this.auth();
+
+        const url = new URL(`api/v1/proxy/integrations/etl/${body.integration_id}`, this.config.server.provider_url);
+        url.searchParams.append('proxy_user_id', String(uid));
+
+        const req = {
+            management_url: this.config.API_URL + `/connection/${body.connection_id}`,
+            external_identifier: body.connection_id,
+            active: true,
+        }
+
+        const userres = await fetch(url, {
+            method: 'PATCH',
+            headers: {
+                Accept: 'application/json',
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${creds.token}`
+            },
+            body: JSON.stringify(req)
+        });
+
+        if (!userres.ok) throw new Err(500, new Error(await userres.text()), 'External Integration Update Error');
+
+        return;
+    }
+
+    async deleteIntegrationByConnectionId(uid: number, body: {
+        connection_id: number;
+    }): Promise<void> {
+        const creds = await this.auth();
+
+        const url = new URL(`api/v1/proxy/integrations/etl/identifier/${body.connection_id}`, this.config.server.provider_url);
+        url.searchParams.append('proxy_user_id', String(uid));
+
+        await fetch(url, {
+            method: 'DELETE',
+            headers: {
+                Accept: 'application/json',
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${creds.token}`
+            }
+        });
 
         return;
     }
