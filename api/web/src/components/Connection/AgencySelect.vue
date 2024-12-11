@@ -98,6 +98,7 @@ import {
 } from '@tak-ps/vue-tabler';
 import { useProfileStore } from '/src/stores/profile.ts';
 import { mapState } from 'pinia'
+import { debounce } from 'lodash'
 
 export default {
     name: 'Agency',
@@ -170,7 +171,7 @@ export default {
         fetch: async function() {
             this.selected = await std(`/api/agency/${this.modelValue}`);
         },
-        listData: async function() {
+        listData: debounce(async function() {
             this.loading.list = true;
             const url = stdurl('/api/agency');
             url.searchParams.append('filter', this.filter);
@@ -184,7 +185,7 @@ export default {
             this.data = data;
 
             this.loading.list = false;
-        },
+        }, 600),
     }
 };
 </script>
