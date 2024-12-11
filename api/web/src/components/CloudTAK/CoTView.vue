@@ -85,16 +85,25 @@
                         </TablerIconButton>
                     </div>
                     <div class='ms-auto btn-list mx-2'>
-                        <TablerIconButton
-                            v-if='cot.is_skittle && !loadingBreadcrumb'
-                            title='Load Breadcrumb'
-                            @click='loadBreadcrumb'
+                        <TablerDropdown
+                            v-if='cot.is_skittle'
                         >
-                            <IconRoute
-                                size='32'
-                                stroke='1'
-                            />
-                        </TablerIconButton>
+                            <TablerIconButton
+                                title='Load Breadcrumb'
+                            >
+                                <IconRoute
+                                    size='32'
+                                    stroke='1'
+                                />
+                            </TablerIconButton>
+
+                            <template #dropdown>
+                                <Breadcrumb :uid='cot.id' />
+                            </template>
+                        </TablerDropdown>
+
+
+
                         <TablerDelete
                             displaytype='icon'
                             @delete='deleteCOT'
@@ -273,15 +282,6 @@
             style='height: calc(100vh - 225px)'
         >
             <div class='row g-0'>
-                <div
-                    v-if='loadingBreadcrumb'
-                    class='col-12'
-                >
-                    <TablerLoading
-                        :compact='true'
-                        desc='Loading Breadcrumb...'
-                    />
-                </div>
                 <div
                     v-if='mission'
                     class='col-12'
@@ -635,7 +635,7 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
 import type COT from '../../../src/stores/base/cot.ts';
-import type { COTType, FeatureCollection } from '../../../src/types.ts';
+import type { COTType } from '../../../src/types.ts';
 import { OriginMode } from '../../../src/stores/base/cot.ts'
 import Mission from '../../../src/stores/base/mission.ts'
 import {
@@ -645,7 +645,6 @@ import {
     TablerEnum,
     TablerRange,
     TablerDropdown,
-    TablerLoading,
     TablerIconButton,
 } from '@tak-ps/vue-tabler';
 
@@ -659,6 +658,7 @@ import CoTSensor from './util/Sensor.vue';
 import Phone from './util/Phone.vue';
 import Email from './util/Email.vue';
 import Speed from './util/Speed.vue';
+import Breadcrumb from './util/Breadcrumb.vue';
 import Elevation from './util/Elevation.vue';
 import Attachments from './util/Attachments.vue';
 import {
@@ -680,7 +680,7 @@ import {
 } from '@tabler/icons-vue';
 import Subscriptions from './util/Subscriptions.vue';
 import timediff from '../../../src/timediff.ts';
-import { std, stdurl } from '../../../src/std.ts';
+import { std } from '../../../src/std.ts';
 import { useCOTStore } from '../../../src/stores/cots.ts';
 const cotStore = useCOTStore();
 import { useProfileStore } from '../../../src/stores/profile.ts';
@@ -696,7 +696,6 @@ const cot = ref<COT | undefined>(cotStore.get(String(route.params.uid), {
 }))
 
 const mission = ref<Mission | undefined>();
-const loadingBreadcrumb = ref(false);
 
 if (cot.value && cot.value.origin.mode === OriginMode.MISSION && cot.value.origin.mode_id) {
     mission.value = cotStore.subscriptions.get(cot.value.origin.mode_id);
@@ -724,10 +723,12 @@ watch(route, async () => {
 });
 
 onMounted(async () => {
-    if (!cot.value) {
-        await load_cot();
+    await load_cot();
 
-        interval.value = setInterval(() => {
+    if (!cot.value) {
+        interval.value = setInterval(async () => {
+            await load_cot();
+
             if (cot.value) {
                 clearInterval(interval.value);
             }
@@ -773,28 +774,6 @@ function timediffFormat(date: string) {
         return timediff(date);
     } else {
         return date;
-    }
-}
-
-async function loadBreadcrumb() {
-    if (!cot.value) return;
-
-    loadingBreadcrumb.value = true;
-
-    try {
-        const url = stdurl(`/api/marti/cot/${cot.value.id}/all`)
-        url.searchParams.append('secago', String(60 * 60))
-        url.searchParams.append('track', String(true))
-        const crumb = await std(url) as FeatureCollection;
-
-        for (const feat of crumb.features) {
-            cotStore.add(feat)
-        }
-
-        loadingBreadcrumb.value = false;
-    } catch (err) {
-        loadingBreadcrumb.value = false;
-        throw err;
     }
 }
 
