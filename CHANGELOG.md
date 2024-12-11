@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v5.21.0 - 2024-12-11
+
+- :bug: `UI` Allow editing Video Lease fields when creating a new lease
+- :bug: `UI` Fix duplicate locked entries being added to Locked Array
+- :tata: `UI` Add Breadcrumb Dropdown to select duration of breadcrumb to load
+
 ### v5.20.0 - 2024-12-11
 
 - :rocket: `UI` Allow locking the map view to a CoT via the Radial Menu
