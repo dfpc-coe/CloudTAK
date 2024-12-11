@@ -172,7 +172,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const mission = await api.Mission.create(req.params.name, {
                 ...req.body,
-                creatorUid: user.email
+                creatorUid: `ANDROID-CloudTAK-${user.email}`
             });
 
             res.json(mission);
