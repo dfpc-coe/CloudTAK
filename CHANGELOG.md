@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v5.19.1 - 2024-12-10
+
+- :rocket: `UI` Ensure switching to Admin Component doesn't throw an error
+
 ### v5.19.0 - 2024-12-10
 
 - :rocket: `UI` Update Main Map to TS

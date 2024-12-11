@@ -730,8 +730,8 @@ onMounted(async () => {
 onBeforeUnmount(() => {
     if (timer.value) window.clearInterval(timer.value);
     if (timerSelf.value) window.clearInterval(timerSelf.value);
-    if (connectionStore.ws) connectionStore.ws.close();
 
+    connectionStore.destroy();
     cotStore.$reset();
     mapStore.destroy();
 });
