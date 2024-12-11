@@ -14,6 +14,23 @@
         class='d-none'
     >
         <symbol
+            id='radial-lock'
+            viewBox='0 0 24 24'
+            fill='none'
+            width='24'
+            height='24'
+            stroke='#fff'
+            stroke-width='2'
+            stroke-linejoin='round'
+            stroke-linecap='round'
+        >
+            <path d='M12.5 21h-5.5a2 2 0 0 1 -2 -2v-6a2 2 0 0 1 2 -2h10c.24 0 .47 .042 .683 .12' />
+            <path d='M11 16a1 1 0 1 0 2 0a1 1 0 0 0 -2 0' />
+            <path d='M8 11v-4a4 4 0 1 1 8 0v4' />
+            <path d='M21.121 20.121a3 3 0 1 0 -4.242 0c.418 .419 1.125 1.045 2.121 1.879c1.051 -.89 1.759 -1.516 2.121 -1.879z' />
+            <path d='M19 18v.01' />
+        </symbol>
+        <symbol
             id='radial-question'
             viewBox='0 0 24 24'
             stroke-width='2'
@@ -154,6 +171,10 @@ export default {
                     if (cot.origin.mode === OriginMode.CONNECTION) {
                         this.menuItems.push({ id: 'edit', icon: '#radial-pencil' })
                         this.menuItems.push({ id: 'delete', icon: '#radial-trash' })
+
+                        if (cot.geometry.type === 'Point') {
+                            this.menuItems.push({ id: 'lock', icon: '#radial-lock' })
+                        }
                     } else if (cot.origin.mode === OriginMode.MISSION && cot.origin.mode_id) {
                         const sub = cotStore.subscriptions.get(cot.origin.mode_id);
 

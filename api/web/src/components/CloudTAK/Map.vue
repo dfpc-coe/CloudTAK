@@ -141,6 +141,7 @@
                     <IconLockAccess
                         v-else-if='!mapStore.radial.cot'
                         role='button'
+                        color='#83b7e8'
                         tabindex='0'
                         title='Map is locked to marker'
                         :size='40'
@@ -567,7 +568,7 @@ const drawMode = ref<string>('static') // Set the terra-draw mode to avoid getMo
 const drawModePoint = ref<string>('u-d-p');
 const pointInput = ref<boolean>(false);
 const feat = ref()        // Show the Feat Viewer sidebar
-const locked = ref([])         // Lock the map view to a given CoT - The last element is the currently locked value
+const locked = ref<Array<string>>([])         // Lock the map view to a given CoT - The last element is the currently locked value
                     //   this is an array so that things like the radial menu can temporarily lock state but remember the previous lock value when they are closed
 const live_loc_denied = ref(false)   // User denied live location services
 const live_loc = ref<Feature | undefined>();
@@ -614,7 +615,6 @@ watch(mapStore.radial, () => {
         mapStore.map.touchZoomRotate.disableRotation();
         mapStore.map.dragRotate.disable();
         mapStore.map.dragPan.disable();
-        // @ts-expect-error Fix Types
         locked.value.push(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
     } else {
         mapStore.map.scrollZoom.enable();
@@ -864,6 +864,9 @@ async function handleRadial(event: string): Promise<void> {
 
         await cotStore.delete(String(cot.id))
         await updateCOT();
+    } else if (event === 'cot:lock') {
+        locked.value.push(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
+        closeRadial()
     } else if (event === 'cot:edit') {
         editGeometry(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
         closeRadial()
