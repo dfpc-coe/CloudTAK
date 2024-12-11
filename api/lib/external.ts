@@ -185,6 +185,7 @@ export default class ExternalProvider {
     }): Promise<void> {
         const creds = await this.auth();
 
+        // there is a ?delete_machine_user query param you can add, if you want to delete any MU's associated with the integration
         const url = new URL(`api/v1/proxy/integrations/etl/identifier/${body.connection_id}`, this.config.server.provider_url);
         url.searchParams.append('proxy_user_id', String(uid));
 
