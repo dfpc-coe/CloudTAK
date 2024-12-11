@@ -141,6 +141,7 @@
                     <IconLockAccess
                         v-else-if='!mapStore.radial.cot'
                         role='button'
+                        color='#83b7e8'
                         tabindex='0'
                         title='Map is locked to marker'
                         :size='40'
@@ -864,6 +865,9 @@ async function handleRadial(event: string): Promise<void> {
 
         await cotStore.delete(String(cot.id))
         await updateCOT();
+    } else if (event === 'cot:lock') {
+        locked.value.push(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
+        closeRadial()
     } else if (event === 'cot:edit') {
         editGeometry(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
         closeRadial()
