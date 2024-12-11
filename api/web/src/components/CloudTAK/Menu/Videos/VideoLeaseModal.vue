@@ -1,5 +1,5 @@
 <template>
-    <TablerModal :size='editLease.id ? "xl" : undefined'>
+    <TablerModal size='xl'>
         <div class='modal-status bg-yellow' />
         <button
             type='button'
@@ -347,7 +347,10 @@ onMounted(async () => {
             ...props.lease,
             duration: '16 Hours'
         }
+
         await fetchLease();
+    } else {
+        disabled.value = false;
     }
 
     loading.value = false
