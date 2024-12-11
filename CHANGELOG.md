@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v5.20.0 - 2024-12-11
+
+- :rocket: `UI` Allow locking the map view to a CoT via the Radial Menu
+
 ### v5.19.1 - 2024-12-10
 
 - :rocket: `UI` Ensure switching to Admin Component doesn't throw an error
