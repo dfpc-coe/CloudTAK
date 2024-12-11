@@ -28,7 +28,7 @@ export default async function router(schema: Schema, config: Config) {
             const user = await Auth.as_user(config, req);
             const profile = await config.models.Profile.from(user.email);
 
-            if (!config.server.provider_url || !config.server.provider_secret || !config.server.provider_client) {
+            if (!config.externalProviderIsConfigured()) {
                 res.json({ total: 0, items: [] })
             } else if (!profile.id) {
                 throw new Err(400, null, 'External ID must be set on profile');
@@ -55,7 +55,7 @@ export default async function router(schema: Schema, config: Config) {
             const user = await Auth.as_user(config, req);
             const profile = await config.models.Profile.from(user.email);
 
-            if (!config.server.provider_url || !config.server.provider_secret || !config.server.provider_client) {
+            if (!config.externalProviderIsConfigured()) {
                 throw new Err(404, null, 'External API not configured');
             }
 

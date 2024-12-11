@@ -26,7 +26,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const profile = await Auth.as_profile(config, req);
 
-            if (!config.server.provider_url || !config.server.provider_secret || !config.server.provider_client) {
+            if (!config.externalProviderIsConfigured()) {
                 throw new Err(400, null, 'External LDAP API not configured - Contact your administrator');
             }
 
@@ -53,8 +53,8 @@ export default async function router(schema: Schema, config: Config) {
             })
         }),
         res: Type.Object({
-            integrationId: Type.Union([Type.Integer(), Type.Null()]),
-            certificate: Type.Object({
+            integrationId: Type.Optional(Type.Integer()),
+            auth: Type.Object({
                 cert: Type.String(),
                 key: Type.String()
             })
@@ -63,7 +63,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const profile = await Auth.as_profile(config, req);
 
-            if (!config.server.provider_url || !config.server.provider_secret || !config.server.provider_client) {
+            if (!config.externalProviderIsConfigured()) {
                 throw new Err(400, null, 'External LDAP API not configured - Contact your administrator');
             }
 
@@ -97,8 +97,8 @@ export default async function router(schema: Schema, config: Config) {
             const certs = await api.Credentials.generate();
 
             res.json({
-                integrationId: user.integrations.find(Boolean)?.id ?? null,
-                certificate: certs
+                integrationId: user.integrations.find(Boolean)?.id ?? undefined,
+                auth: certs
             })
         } catch (err) {
             Err.respond(err, res);

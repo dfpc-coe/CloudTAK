@@ -112,6 +112,10 @@ export default class Config {
         }
     }
 
+    externalProviderIsConfigured(): boolean {
+        return !!(this.server.provider_url && this.server.provider_secret && this.server.provider_client);
+    }
+
     static async env(args: ConfigArgs): Promise<Config> {
         if (!process.env.AWS_REGION) {
             process.env.AWS_REGION = 'us-east-1';
