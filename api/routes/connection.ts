@@ -40,14 +40,10 @@ export default async function router(schema: Schema, config: Config) {
 
             let where;
             if (profile.system_admin) {
-                where = sql`name
-                ~*
-                ${req.query.filter}`
+                where = sql`name ~* ${req.query.filter}`
             } else if (profile.agency_admin.length) {
                 where = and(
-                    sql`name
-                    ~*
-                    ${req.query.filter}`,
+                    sql`name ~* ${req.query.filter}`,
                     inArray(Connection.agency, profile.agency_admin)
                 );
             } else {
@@ -96,7 +92,7 @@ export default async function router(schema: Schema, config: Config) {
             description: Default.DescriptionField,
             enabled: Type.Optional(Type.Boolean({ default: true })),
             agency: Type.Union([Type.Null(), Type.Optional(Type.Integer({ minimum: 1 }))]),
-            integrationId: Type.Union([Type.Integer(), Type.Null()]),
+            integrationId: Type.Optional(Type.Integer()),
             auth: Type.Object({
                 key: Type.String({ minLength: 1, maxLength: 4096 }),
                 cert: Type.String({ minLength: 1, maxLength: 4096 })
@@ -173,8 +169,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             const conn = await config.models.Connection.commit(req.params.connectionid, {
-                updated: sql`Now
-                ()`,
+                updated: sql`Now()`,
                 ...req.body
             });
 
@@ -274,38 +269,36 @@ export default async function router(schema: Schema, config: Config) {
             await Auth.is_connection(config, req, {}, req.params.connectionid);
 
             if (await config.models.Layer.count({
-                where: sql`connection =
-                ${req.params.connectionid}`
+                where: sql`connection = ${req.params.connectionid}`
             }) > 0) throw new Err(400, null, 'Connection has active Layers - Delete layers before deleting Connection');
 
             if (await config.models.ConnectionSink.count({
-                where: sql`connection =
-                ${req.params.connectionid}`
+                where: sql`connection = ${req.params.connectionid}`
             }) > 0) throw new Err(400, null, 'Connection has active Sinks - Delete Sinks before deleting Connection');
 
             if (await config.models.Data.count({
-                where: sql`connection =
-                ${req.params.connectionid}`
+                where: sql`connection = ${req.params.connectionid}`
             }) > 0) throw new Err(400, null, 'Connection has active Data Syncs - Delete Syncs before deleting Connection');
 
             await config.models.Connection.delete(req.params.connectionid);
 
             await config.models.ConnectionToken.delete(sql`
-                connection =
-                ${req.params.connectionid}
+                connection = ${req.params.connectionid}
             `);
 
             config.conns.delete(req.params.connectionid);
 
-            const user = await Auth.as_user(config, req);
-            const profile = await config.models.Profile.from(user.email);
+            if (config.externalProviderIsConfigured()) {
+                const user = await Auth.as_user(config, req);
+                const profile = await config.models.Profile.from(user.email);
 
-            if (profile.id) {
-                // I don't know how to figure out if the connection was created with a machine user and hence registered
-                // with COTAK, so just firing off the delete, which won't error out if no integration found.
-                await config.external.deleteIntegrationByConnectionId(profile.id, {
-                    connection_id: req.params.connectionid,
-                })
+                if (profile.id) {
+                    // I don't know how to figure out if the connection was created with a machine user and hence registered
+                    // with COTAK, so just firing off the delete, which won't error out if no integration found.
+                    await config.external.deleteIntegrationByConnectionId(profile.id, {
+                        connection_id: req.params.connectionid,
+                    })
+                }
             }
 
 
