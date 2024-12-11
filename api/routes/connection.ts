@@ -1,13 +1,13 @@
 import Err from '@openaddresses/batch-error';
-import { sql, and, inArray } from 'drizzle-orm';
+import {sql, and, inArray} from 'drizzle-orm';
 import Config from '../lib/config.js';
 import CW from '../lib/aws/metric.js';
-import Auth, { AuthResourceAccess } from '../lib/auth.js';
-import { X509Certificate } from 'crypto';
-import { Type } from '@sinclair/typebox'
-import { StandardResponse, ConnectionResponse } from '../lib/types.js';
-import { Connection } from '../lib/schema.js';
-import { MachineConnConfig } from '../lib/connection-config.js';
+import Auth, {AuthResourceAccess} from '../lib/auth.js';
+import {X509Certificate} from 'crypto';
+import {Type} from '@sinclair/typebox'
+import {StandardResponse, ConnectionResponse} from '../lib/types.js';
+import {Connection} from '../lib/schema.js';
+import {MachineConnConfig} from '../lib/connection-config.js';
 import Schema from '@openaddresses/batch-schema';
 import * as Default from '../lib/limits.js';
 
@@ -22,15 +22,15 @@ export default async function router(schema: Schema, config: Config) {
             limit: Default.Limit,
             page: Default.Page,
             order: Default.Order,
-            sort: Type.Optional(Type.String({ default: 'created', enum: Object.keys(Connection) })),
+            sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(Connection)})),
             filter: Default.Filter
         }),
         res: Type.Object({
             total: Type.Integer(),
             status: Type.Object({
-                dead: Type.Integer({ description: 'The connection is not currently connected to a TAK server' }),
-                live: Type.Integer({ description: 'The connection is currently connected to a TAK server'}),
-                unknown: Type.Integer({ description: 'The status of the connection could not be determined'}),
+                dead: Type.Integer({description: 'The connection is not currently connected to a TAK server'}),
+                live: Type.Integer({description: 'The connection is currently connected to a TAK server'}),
+                unknown: Type.Integer({description: 'The status of the connection could not be determined'}),
             }),
             items: Type.Array(ConnectionResponse)
         })
@@ -40,10 +40,14 @@ export default async function router(schema: Schema, config: Config) {
 
             let where;
             if (profile.system_admin) {
-                where = sql`name ~* ${req.query.filter}`
+                where = sql`name
+                ~*
+                ${req.query.filter}`
             } else if (profile.agency_admin.length) {
                 where = and(
-                    sql`name ~* ${req.query.filter}`,
+                    sql`name
+                    ~*
+                    ${req.query.filter}`,
                     inArray(Connection.agency, profile.agency_admin)
                 );
             } else {
@@ -60,13 +64,13 @@ export default async function router(schema: Schema, config: Config) {
 
             const json = {
                 total: list.total,
-                status: { dead: 0, live: 0, unknown: 0 },
+                status: {dead: 0, live: 0, unknown: 0},
                 items: list.items.map((conn) => {
-                    const { validFrom, validTo, subject } = new X509Certificate(conn.auth.cert);
+                    const {validFrom, validTo, subject} = new X509Certificate(conn.auth.cert);
 
                     return {
                         status: config.conns.status(conn.id),
-                        certificate: { validFrom, validTo, subject },
+                        certificate: {validFrom, validTo, subject},
                         ...conn
                     }
                 })
@@ -90,23 +94,23 @@ export default async function router(schema: Schema, config: Config) {
         body: Type.Object({
             name: Default.NameField,
             description: Default.DescriptionField,
-            enabled: Type.Optional(Type.Boolean({ default: true })),
-            agency: Type.Union([Type.Null(), Type.Optional(Type.Integer({ minimum: 1 }))]),
+            enabled: Type.Optional(Type.Boolean({default: true})),
+            agency: Type.Union([Type.Null(), Type.Optional(Type.Integer({minimum: 1}))]),
+            integrationId: Type.Union([Type.Integer(), Type.Null()]),
             auth: Type.Object({
-                key: Type.String({ minLength: 1, maxLength: 4096 }),
-                cert: Type.String({ minLength: 1, maxLength: 4096 })
+                key: Type.String({minLength: 1, maxLength: 4096}),
+                cert: Type.String({minLength: 1, maxLength: 4096})
             })
         }),
         res: ConnectionResponse
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
+            const profile = await config.models.Profile.from(user.email);
 
             if (!req.body.agency && user.access !== 'admin') {
                 throw new Err(400, null, 'Only System Admins can create a server without an Agency Configured');
             } else if (req.body.agency && user.access !== 'admin') {
-                const profile = await config.models.Profile.from(user.email);
-
                 if (!profile.agency_admin || !profile.agency_admin.includes(req.body.agency)) {
                     throw new Err(400, null, 'Cannot create a connection for an Agency you are not an admin of');
                 }
@@ -118,11 +122,20 @@ export default async function router(schema: Schema, config: Config) {
 
             if (conn.enabled) await config.conns.add(new MachineConnConfig(config, conn));
 
-            const { validFrom, validTo, subject } = new X509Certificate(conn.auth.cert);
+            const {validFrom, validTo, subject} = new X509Certificate(conn.auth.cert);
+
+            if (req.body.integrationId) {
+                if (!profile.id) throw new Err(400, null, 'External ID must be set on profile');
+
+                await config.external.updateIntegrationConnectionId(profile.id, {
+                    connection_id: conn.id,
+                    integration_id: req.body.integrationId
+                })
+            }
 
             res.json({
                 status: config.conns.status(conn.id),
-                certificate: { validFrom, validTo, subject },
+                certificate: {validFrom, validTo, subject},
                 ...conn
             });
         } catch (err) {
@@ -135,32 +148,33 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Connection',
         description: 'Update a connection',
         params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 })
+            connectionid: Type.Integer({minimum: 1})
         }),
         body: Type.Object({
             name: Type.Optional(Default.NameField),
             description: Type.Optional(Default.DescriptionField),
             enabled: Type.Optional(Type.Boolean()),
-            agency: Type.Union([Type.Null(), Type.Optional(Type.Integer({ minimum: 1 }))]),
+            agency: Type.Union([Type.Null(), Type.Optional(Type.Integer({minimum: 1}))]),
             auth: Type.Optional(Type.Object({
-                key: Type.String({ minLength: 1, maxLength: 4096 }),
-                cert: Type.String({ minLength: 1, maxLength: 4096 })
+                key: Type.String({minLength: 1, maxLength: 4096}),
+                cert: Type.String({minLength: 1, maxLength: 4096})
             }))
         }),
         res: ConnectionResponse
     }, async (req, res) => {
         try {
             await Auth.is_connection(config, req, {
-                resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
+                resources: [{access: AuthResourceAccess.CONNECTION, id: req.params.connectionid}]
             }, req.params.connectionid);
 
             if (req.body.agency && await Auth.is_user(config, req)) {
-                const user = await Auth.as_user(config, req, { admin: true });
+                const user = await Auth.as_user(config, req, {admin: true});
                 if (!user) throw new Err(400, null, 'Only System Admins can change an agency once a connection is created');
             }
 
             const conn = await config.models.Connection.commit(req.params.connectionid, {
-                updated: sql`Now()`,
+                updated: sql`Now
+                ()`,
                 ...req.body
             });
 
@@ -171,11 +185,11 @@ export default async function router(schema: Schema, config: Config) {
                 await config.conns.add(new MachineConnConfig(config, conn));
             }
 
-            const { validFrom, validTo, subject } = new X509Certificate(conn.auth.cert);
+            const {validFrom, validTo, subject} = new X509Certificate(conn.auth.cert);
 
             res.json({
                 status: config.conns.status(conn.id),
-                certificate: { validFrom, validTo, subject },
+                certificate: {validFrom, validTo, subject},
                 ...conn
             });
         } catch (err) {
@@ -188,21 +202,21 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Connection',
         description: 'Get a connection',
         params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 })
+            connectionid: Type.Integer({minimum: 1})
         }),
         res: ConnectionResponse
     }, async (req, res) => {
         try {
             await Auth.is_connection(config, req, {
-                resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
+                resources: [{access: AuthResourceAccess.CONNECTION, id: req.params.connectionid}]
             }, req.params.connectionid);
 
             const conn = await config.models.Connection.from(req.params.connectionid);
-            const { validFrom, validTo, subject } = new X509Certificate(conn.auth.cert);
+            const {validFrom, validTo, subject} = new X509Certificate(conn.auth.cert);
 
             res.json({
                 status: config.conns.status(conn.id),
-                certificate: { validFrom, validTo, subject },
+                certificate: {validFrom, validTo, subject},
                 ...conn
             });
         } catch (err) {
@@ -215,13 +229,13 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Connection',
         description: 'Refresh a connection',
         params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 })
+            connectionid: Type.Integer({minimum: 1})
         }),
         res: ConnectionResponse
     }, async (req, res) => {
         try {
             await Auth.is_connection(config, req, {
-                resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
+                resources: [{access: AuthResourceAccess.CONNECTION, id: req.params.connectionid}]
             }, req.params.connectionid);
 
             const conn = await config.models.Connection.from(req.params.connectionid);
@@ -235,11 +249,11 @@ export default async function router(schema: Schema, config: Config) {
                 await config.conns.add(new MachineConnConfig(config, conn));
             }
 
-            const { validFrom, validTo, subject } = new X509Certificate(conn.auth.cert);
+            const {validFrom, validTo, subject} = new X509Certificate(conn.auth.cert);
 
             res.json({
                 status: config.conns.status(conn.id),
-                certificate: { validFrom, validTo, subject },
+                certificate: {validFrom, validTo, subject},
                 ...conn
             });
         } catch (err) {
@@ -252,7 +266,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Connection',
         description: 'Delete a connection',
         params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 })
+            connectionid: Type.Integer({minimum: 1})
         }),
         res: StandardResponse
     }, async (req, res) => {
@@ -260,24 +274,40 @@ export default async function router(schema: Schema, config: Config) {
             await Auth.is_connection(config, req, {}, req.params.connectionid);
 
             if (await config.models.Layer.count({
-                where: sql`connection = ${req.params.connectionid}`
+                where: sql`connection =
+                ${req.params.connectionid}`
             }) > 0) throw new Err(400, null, 'Connection has active Layers - Delete layers before deleting Connection');
 
             if (await config.models.ConnectionSink.count({
-                where: sql`connection = ${req.params.connectionid}`
+                where: sql`connection =
+                ${req.params.connectionid}`
             }) > 0) throw new Err(400, null, 'Connection has active Sinks - Delete Sinks before deleting Connection');
 
             if (await config.models.Data.count({
-                where: sql`connection = ${req.params.connectionid}`
+                where: sql`connection =
+                ${req.params.connectionid}`
             }) > 0) throw new Err(400, null, 'Connection has active Data Syncs - Delete Syncs before deleting Connection');
 
             await config.models.Connection.delete(req.params.connectionid);
 
             await config.models.ConnectionToken.delete(sql`
-                connection = ${req.params.connectionid}
+                connection =
+                ${req.params.connectionid}
             `);
 
             config.conns.delete(req.params.connectionid);
+
+            const user = await Auth.as_user(config, req);
+            const profile = await config.models.Profile.from(user.email);
+
+            if (profile.id) {
+                // I don't know how to figure out if the connection was created with a machine user and hence registered
+                // with COTAK, so just firing off the delete, which won't error out if no integration found.
+                await config.external.deleteIntegrationByConnectionId(profile.id, {
+                    connection_id: req.params.connectionid,
+                })
+            }
+
 
             res.json({
                 status: 200,
@@ -293,7 +323,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Connection',
         description: 'Return Conn Success/Failure Stats',
         params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 })
+            connectionid: Type.Integer({minimum: 1})
         }),
         res: Type.Object({
             stats: Type.Array(Type.Object({
@@ -304,7 +334,7 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             await Auth.is_connection(config, req, {
-                resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
+                resources: [{access: AuthResourceAccess.CONNECTION, id: req.params.connectionid}]
             }, req.params.connectionid);
 
             const conn = await config.models.Connection.from(req.params.connectionid);
@@ -315,7 +345,7 @@ export default async function router(schema: Schema, config: Config) {
             const map: Map<string, number> = new Map();
 
             if (!stats.length) {
-                res.json({ stats: [] });
+                res.json({stats: []});
             } else {
                 const stat = stats[0];
 
@@ -338,7 +368,7 @@ export default async function router(schema: Schema, config: Config) {
                         label: string;
                         success: number;
                     }>
-                } = { stats: [] }
+                } = {stats: []}
 
                 for (const ts of ts_arr) {
                     statsres.stats.push({

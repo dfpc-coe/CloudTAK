@@ -1,10 +1,10 @@
-import { Type } from '@sinclair/typebox'
-import { randomUUID } from 'node:crypto';
+import {Type} from '@sinclair/typebox'
+import {randomUUID} from 'node:crypto';
 import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
-import { Channel }  from '../lib/external.js';
+import {Channel} from '../lib/external.js';
 import TAKAPI, {
     APIAuthPassword,
 } from '../lib/tak-api.js';
@@ -16,7 +16,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'List Channels by proxy',
         query: Type.Object({
             agency: Type.Optional(Type.Integer()),
-            filter: Type.String({ default: '' })
+            filter: Type.String({default: ''})
         }),
         res: Type.Object({
             total: Type.Integer(),
@@ -36,7 +36,7 @@ export default async function router(schema: Schema, config: Config) {
 
             res.json(list);
         } catch (err) {
-             Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -48,14 +48,16 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.String(),
             description: Type.String(),
             agency_id: Type.Union([Type.Integer(), Type.Null()]),
-            connection_id: Type.Integer(),
             channels: Type.Array(Type.Integer(), {
                 minItems: 1
             })
         }),
         res: Type.Object({
-            cert: Type.String(),
-            key: Type.String()
+            integrationId: Type.Union([Type.Integer(), Type.Null()]),
+            certificate: Type.Object({
+                cert: Type.String(),
+                key: Type.String()
+            })
         })
     }, async (req, res) => {
         try {
@@ -75,7 +77,8 @@ export default async function router(schema: Schema, config: Config) {
                 integration: {
                     name: req.body.name,
                     description: req.body.description,
-                    management_url: config.API_URL + `/connection/${req.body.connection_id}`
+                    management_url: config.API_URL,
+                    active: false,
                 }
             });
 
@@ -93,9 +96,12 @@ export default async function router(schema: Schema, config: Config) {
 
             const certs = await api.Credentials.generate();
 
-            res.json(certs)
+            res.json({
+                integrationId: user.integrations.find(Boolean)?.id ?? null,
+                certificate: certs
+            })
         } catch (err) {
-             Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 }
