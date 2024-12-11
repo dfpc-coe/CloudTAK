@@ -1,10 +1,10 @@
-import {Type} from '@sinclair/typebox'
-import {randomUUID} from 'node:crypto';
+import { Type } from '@sinclair/typebox'
+import { randomUUID } from 'node:crypto';
 import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
-import {Channel} from '../lib/external.js';
+import { Channel } from '../lib/external.js';
 import TAKAPI, {
     APIAuthPassword,
 } from '../lib/tak-api.js';
@@ -16,7 +16,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'List Channels by proxy',
         query: Type.Object({
             agency: Type.Optional(Type.Integer()),
-            filter: Type.String({default: ''})
+            filter: Type.String({ default: '' })
         }),
         res: Type.Object({
             total: Type.Integer(),
