@@ -33,7 +33,7 @@
                                             >
                                                 <IconServer
                                                     :size='32'
-                                                    :stroke='1'
+                                                    stroke='1'
                                                 /><span class='mx-3'>TAK Server Connection</span>
                                             </span>
                                             <span
@@ -45,7 +45,7 @@
                                                 @click='$router.push(`/admin/config`)'
                                             ><IconSettings
                                                 :size='32'
-                                                :stroke='1'
+                                                stroke='1'
                                             /><span class='mx-3'>CloudTAK Settings</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
@@ -56,7 +56,7 @@
                                                 @click='$router.push(`/admin/task-raw`)'
                                             ><IconBrandDocker
                                                 :size='32'
-                                                :stroke='1'
+                                                stroke='1'
                                             /><span class='mx-3'>ETL Containers</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
@@ -67,7 +67,7 @@
                                                 @click='$router.push(`/admin/overlay`)'
                                             ><IconBoxMultiple
                                                 :size='32'
-                                                :stroke='1'
+                                                stroke='1'
                                             /><span class='mx-3'>Global Overlays</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
@@ -78,7 +78,7 @@
                                                 @click='$router.push(`/admin/task`)'
                                             ><IconBrandDocker
                                                 :size='32'
-                                                :stroke='1'
+                                                stroke='1'
                                             /><span class='mx-3'>Registered Tasks</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
@@ -89,7 +89,7 @@
                                                 @click='$router.push(`/admin/connection`)'
                                             ><IconNetwork
                                                 :size='32'
-                                                :stroke='1'
+                                                stroke='1'
                                             /><span class='mx-3'>Connections</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
@@ -100,7 +100,7 @@
                                                 @click='$router.push(`/admin/layer`)'
                                             ><IconBuildingBroadcastTower
                                                 :size='32'
-                                                :stroke='1'
+                                                stroke='1'
                                             /><span class='mx-3'>Layers</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
@@ -111,7 +111,7 @@
                                                 @click='$router.push(`/admin/data`)'
                                             ><IconDatabase
                                                 :size='32'
-                                                :stroke='1'
+                                                stroke='1'
                                             /><span class='mx-3'>Data Syncs</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
@@ -122,7 +122,7 @@
                                                 @click='$router.push(`/admin/user`)'
                                             ><IconUsers
                                                 :size='32'
-                                                :stroke='1'
+                                                stroke='1'
                                             /><span class='mx-3'>Users</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
@@ -133,7 +133,7 @@
                                                 @click='$router.push(`/admin/video`)'
                                             ><IconVideo
                                                 :size='32'
-                                                :stroke='1'
+                                                stroke='1'
                                             /><span class='mx-3'>Video Services</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
@@ -144,7 +144,7 @@
                                                 @click='$router.push(`/admin/export`)'
                                             ><IconDatabaseExport
                                                 :size='32'
-                                                :stroke='1'
+                                                stroke='1'
                                             /><span class='mx-3'>Export</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
@@ -155,14 +155,14 @@
                                                 @click='$router.push(`/admin/template`)'
                                             ><IconTemplate
                                                 :size='32'
-                                                :stroke='1'
+                                                stroke='1'
                                             /><span class='mx-3'>Layer Templates</span></span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class='col-12 col-md-9 position-relative'>
                                     <Suspense>
-                                        <router-view/>
+                                        <router-view />
 
                                         <template #fallback>
                                             <TablerLoading />
