@@ -6,11 +6,11 @@
                     <div class='col-lg-12'>
                         <div class='card'>
                             <TablerLoading
-                                v-if='!profile'
+                                v-if='!profileStore.profile'
                                 desc='Loading Profile'
                             />
                             <TablerAlert
-                                v-else-if='!profile.system_admin'
+                                v-else-if='!profileStore.profile.system_admin'
                                 :err='new Error("Insufficient Access")'
                             />
                             <div
@@ -162,9 +162,7 @@
                                 </div>
                                 <div class='col-12 col-md-9 position-relative'>
                                     <Suspense>
-                                        <router-view
-                                            :data='data'
-                                        />
+                                        <router-view/>
 
                                         <template #fallback>
                                             <TablerLoading />
@@ -182,7 +180,8 @@
     </div>
 </template>
 
-<script>
+<script setup lang='ts'>
+import { onMounted } from 'vue';
 import { useProfileStore } from '/src/stores/profile.ts';
 import PageFooter from './PageFooter.vue';
 import {
@@ -202,32 +201,9 @@ import {
     IconBuildingBroadcastTower,
     IconBoxMultiple,
 } from '@tabler/icons-vue'
-import { mapState } from 'pinia'
 const profileStore = useProfileStore();
 
-export default {
-    name: 'ServerAdmin',
-    computed: {
-        ...mapState(useProfileStore, ['profile']),
-    },
-    mounted: async function() {
-        await profileStore.load();
-    },
-    components: {
-        TablerAlert,
-        IconBoxMultiple,
-        IconSettings,
-        IconTemplate,
-        IconVideo,
-        IconUsers,
-        IconServer,
-        IconBrandDocker,
-        IconDatabaseExport,
-        IconBuildingBroadcastTower,
-        IconDatabase,
-        IconNetwork,
-        PageFooter,
-        TablerLoading,
-    }
-}
+onMounted(async () => {
+    await profileStore.load();
+});
 </script>
