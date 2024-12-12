@@ -291,11 +291,26 @@ const router = new VueRouter.createRouter({
             },{
                 path: 'video',
                 name: 'admin-videos',
-                component: () => import('./components/Admin/AdminVideos.vue')
-            },{
-                path: 'video/:video',
-                name: 'admin-video',
-                component: () => import('./components/Admin/AdminVideo.vue')
+                component: () => import('./components/Admin/AdminVideos.vue'),
+                children: [{
+                    path: '',
+                    name: 'admin-video-default',
+                    redirect: () => {
+                        return { name: 'admin-video-service' };
+                    }
+                },{
+                    path: 'service',
+                    name: 'admin-video-service',
+                    component: () => import('./components/Admin/Videos/AdminVideoService.vue')
+                },{
+                    path: 'tasks',
+                    name: 'admin-video-tasks',
+                    component: () => import('./components/Admin/Videos/AdminVideoTasks.vue')
+                },{
+                    path: 'tasks/:task',
+                    name: 'admin-video',
+                    component: () => import('./components/Admin/Videos/AdminVideoTask.vue')
+                }]
             },{
                 path: 'overlay',
                 name: 'admin-overlays',
