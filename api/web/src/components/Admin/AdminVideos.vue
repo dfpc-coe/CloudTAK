@@ -63,8 +63,7 @@
         /><span class='mx-2'>Manual Video Servers</span></label>
     </div>
 
-    <router-view/>
-
+    <router-view />
 </template>
 
 <script setup lang='ts'>

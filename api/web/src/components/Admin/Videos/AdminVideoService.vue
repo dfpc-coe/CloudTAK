@@ -1,18 +1,26 @@
 <template>
     <div class='card-header'>
-        <div class='card-title'>Video Service</div>
+        <div class='card-title'>
+            Video Service
+        </div>
         <div class='ms-auto btn-list'>
             <TablerIconButton
                 title='Edit Service'
                 @click='disabled = false'
             >
-                <IconPencil :size='32' stroke='1'/>
+                <IconPencil
+                    :size='32'
+                    stroke='1'
+                />
             </TablerIconButton>
             <TablerIconButton
                 title='Refresh'
                 @click='fetchService'
             >
-                <IconRefresh :size='32' stroke='1'/>
+                <IconRefresh
+                    :size='32'
+                    stroke='1'
+                />
             </TablerIconButton>
         </div>
     </div>

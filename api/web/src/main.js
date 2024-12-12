@@ -303,6 +303,10 @@ const router = new VueRouter.createRouter({
                     name: 'admin-video-service',
                     component: () => import('./components/Admin/Videos/AdminVideoService.vue')
                 },{
+                    path: 'leases',
+                    name: 'admin-video-leases',
+                    component: () => import('./components/Admin/Videos/AdminVideoLeases.vue')
+                },{
                     path: 'tasks',
                     name: 'admin-video-tasks',
                     component: () => import('./components/Admin/Videos/AdminVideoTasks.vue')
