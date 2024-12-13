@@ -235,7 +235,13 @@ export default async function server(config: Config) {
 
     return new Promise((resolve) => {
         const srv = app.listen(5001, () => {
-            if (!config.silent) console.log('ok - http://localhost:5001');
+            if (!config.silent) {
+                if (process.env.CLOUDTAK_Mode === 'docker-compose') {
+                    console.log('ok - http://localhost:5000');
+                } else {
+                    console.log('ok - http://localhost:5001');
+                }
+            }
             return resolve(srv);
         });
 
