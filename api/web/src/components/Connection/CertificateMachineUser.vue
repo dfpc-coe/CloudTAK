@@ -94,7 +94,7 @@ export default {
         connection: Object
     },
     emits: [
-        'certs', 'integration',
+        'integration',
     ],
     data: function() {
         return {
@@ -173,8 +173,10 @@ export default {
             })
 
             this.loading.gen = true;
-            this.$emit('certs', res.certificate);
-            this.$emit('integration', res.integrationId)
+            this.$emit('integration', {
+                'certs': res.auth,
+                'integrationId': res.integrationId
+            });
         }
     }
 }
