@@ -52,15 +52,15 @@
                     />
                     <tbody>
                         <tr
-                            v-for='layer in list.items'
-                            :key='layer.id'
+                            v-for='lease in list.items'
+                            :key='lease.id'
                             class='cursor-pointer'
-                            @click='stdclick($router, $event, `/connection/${layer.connection}/layer/${layer.id}`)'
+                            @click='modal = lease'
                         >
                             <template v-for='h in header'>
                                 <template v-if='h.display'>
                                     <td>
-                                        <span v-text='layer[h.name]' />
+                                        <span v-text='lease[h.name]' />
                                     </td>
                                 </template>
                             </template>
@@ -80,13 +80,22 @@
             </div>
         </div>
     </div>
+
+    <VideoLeaseModal
+        v-if='modal'
+        :lease='modal'
+        @close='modal = undefined'
+        @refresh='modal = undefined && fetchList'
+    />
 </template>
 
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
 import { std, stdurl, stdclick } from '../../../../src/std.ts';
-import TableHeader from '../../util/TableHeader.vue'
-import TableFooter from '../../util/TableFooter.vue'
+import type { VideoLease, VideoLeaseList } from '../../../../src/types.ts';
+import TableHeader from '../../util/TableHeader.vue';
+import TableFooter from '../../util/TableFooter.vue';
+import VideoLeaseModal from '../../CloudTAK/Menu/Videos/VideoLeaseModal.vue';
 import {
     TablerNone,
     TablerInput,
@@ -101,6 +110,7 @@ import {
 const error = ref<Error | undefined>();
 const loading = ref(true);
 const header = ref([]);
+const modal = ref<VideoLease | undefined>()
 const paging = ref({
     filter: '',
     sort: 'name',
@@ -108,7 +118,7 @@ const paging = ref({
     limit: 100,
     page: 0
 });
-const list = ref({
+const list = ref<VideoLeaseList>({
     total: 0,
     items: []
 });
@@ -153,7 +163,7 @@ async function fetchList() {
         url.searchParams.append('order', paging.value.order);
         url.searchParams.append('page', paging.value.page);
 
-        list.value = await std(url);
+        list.value = await std(url) as VideoLeaseList;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }
