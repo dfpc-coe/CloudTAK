@@ -5,7 +5,10 @@
             desc='Loading Breadcrumb'
         />
         <template v-else>
-            <label class='subheader text-white'><IconRoute :size='24' stroke='1'/>Breadcrumb Loader</label>
+            <label class='subheader text-white'><IconRoute
+                :size='24'
+                stroke='1'
+            />Breadcrumb Loader</label>
 
             <div class='border border-white rounded my-2 row g-2 px-2 py-2'>
                 <div class='col-12'>

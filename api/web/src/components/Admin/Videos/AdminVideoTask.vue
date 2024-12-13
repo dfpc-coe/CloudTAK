@@ -3,12 +3,12 @@
         <div class='card-header'>
             <IconCircleArrowLeft
                 :size='32'
-                :stroke='1'
+                stroke='1'
                 class='cursor-pointer'
                 @click='$router.push("/admin/video")'
             />
             <h1 class='mx-2 card-title d-flex align-items-center'>
-                <template v-if='video.status'>
+                <template v-if='!loading && video && video.status'>
                     <Status
                         v-if='video.status === "RUNNING"'
                         status='Success'
@@ -22,6 +22,7 @@
                     Video Server
                     <span
                         class='mx-2'
+                        v-if='video'
                         v-text='video.id'
                     />
                 </div>
@@ -29,7 +30,7 @@
 
             <div class='ms-auto btn-list'>
                 <TablerDelete
-                    v-if='!loading && video.status === "RUNNING" && video.statusDesired === "RUNNING"'
+                    v-if='!loading && video && video.status === "RUNNING" && video.statusDesired === "RUNNING"'
                     v-tooltip='"Delete Server"'
                     displaytype='icon'
                     @delete='fetchDelete'
@@ -37,7 +38,7 @@
                 <IconRefresh
                     v-tooltip='"Refresh"'
                     :size='32'
-                    :stroke='1'
+                    stroke='1'
                     class='cursor-pointer'
                     @click='fetch'
                 />
@@ -45,8 +46,12 @@
         </div>
         <div>
             <TablerLoading v-if='loading' />
+            <TablerAlert
+                v-else-if='error'
+                :err='error'
+            />
             <div
-                v-else
+                v-else-if='video'
                 class='card-body'
             >
                 <div class='datagrid'>
@@ -110,58 +115,61 @@
     </div>
 </template>
 
-<script>
-import { std, stdurl } from '/src/std.ts';
+<script setup lang='ts'>
+import { ref, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import type { VideoServer } from '../../../../src/types.ts';
+import { std, stdurl } from '../../../../src/std.ts';
 import {
     TablerDelete,
+    TablerAlert,
     TablerLoading
 } from '@tak-ps/vue-tabler';
-import Status from '../util/Status.vue';
+import Status from '../../util/Status.vue';
 import {
     IconRefresh,
     IconCircleArrowLeft,
 } from '@tabler/icons-vue'
 
-export default {
-    name: 'SingleVideoAdmin',
-    components: {
-        Status,
-        TablerDelete,
-        IconRefresh,
-        IconCircleArrowLeft,
-        TablerLoading,
-    },
-    data: function() {
-        return {
-            err: false,
-            loading: true,
-            video: {}
-        }
-    },
-    mounted: async function() {
-        await this.fetch();
-    },
-    methods: {
-        fetchDelete: async function() {
-            this.loading = true;
-            const url = stdurl(`/api/video/server/${this.$route.params.video}`);
-            await std(url, {
-                method: 'DELETE'
-            });
+const router = useRouter();
+const route = useRoute();
 
-            this.$router.push("/admin/video");
-        },
-        fetch: async function() {
-            this.loading = true;
-            try {
-                const url = stdurl(`/api/video/server/${this.$route.params.video}`);
-                this.video = await std(url);
-            } catch (err) {
-                if (err.message === 'Could not find Media Server with that ID') this.$router.push('/admin/video');
-                else throw err;
-            }
-            this.loading = false;
+const error = ref<Error | undefined>();
+const loading = ref(true);
+const video = ref<VideoServer | undefined>();
+
+onMounted(async () => {
+    await fetch();
+})
+
+async function fetchDelete() {
+    loading.value = true;
+    try {
+        const url = stdurl(`/api/video/server/${route.params.task}`);
+        await std(url, {
+            method: 'DELETE'
+        });
+
+        router.push("/admin/video");
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+        loading.value = false;
+    }
+}
+
+async function fetch() {
+    loading.value = true;
+    try {
+        const url = stdurl(`/api/video/server/${route.params.task}`);
+        video.value = await std(url) as VideoServer;
+    } catch (err) {
+        if (err instanceof Error && err.message === 'Could not find Media Server with that ID') {
+            router.push('/admin/video');
+        } else {
+            error.value = err instanceof Error ? err : new Error(String(err));
         }
     }
+
+    loading.value = false;
 }
 </script>
