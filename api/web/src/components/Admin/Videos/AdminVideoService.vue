@@ -27,7 +27,7 @@
     <div class='card-body'>
         <TablerLoading v-if='loading' />
         <TablerNone
-            v-else-if='!service.configured'
+            v-else-if='!service'
             label='Video ECS Service'
             :create='false'
         />
@@ -42,6 +42,7 @@
 
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue';
+import type { VideoService } from '../../../../src/types.ts';
 import { std, stdurl } from '../../../../src/std.ts';
 import VideoConfig from './VideoConfig.vue';
 import {
@@ -57,9 +58,7 @@ import {
 const disabled = ref(true);
 const loading = ref(true);
 
-const service = ref({
-    configured: false
-});
+const service = ref<VideoService | undefined>();
 
 onMounted(async () => {
     loading.value = true;
@@ -70,7 +69,7 @@ onMounted(async () => {
 async function fetchService() {
     loading.value = true;
     const url = stdurl('/api/video/service');
-    service.value = await std(url);
+    service.value = await std(url) as VideoService;
     loading.value = false;
 }
 </script>

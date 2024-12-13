@@ -120,12 +120,11 @@ import {
     IconRefresh
 } from '@tabler/icons-vue'
 
+type Header = { name: keyof VideoLease, display: boolean };
+
 const error = ref<Error | undefined>();
 const loading = ref(true);
-const header = ref<Array<{
-    name: keyof VideoLease,
-    display: boolean
-}>>([]);
+const header = ref<Array<Header>>([]);
 const modal = ref<VideoLease | undefined>()
 const paging = ref({
     filter: '',
@@ -156,12 +155,13 @@ async function listLayerSchema() {
         return { name: h, display: true };
     });
 
+    // @ts-expect-error Worth trying to type at some point maybe but not now
     header.value.push(...schema.query.properties.sort.enum.map((h) => {
         return {
             name: h,
             display: false
-        }
-    }).filter((h) => {
+        } as Header
+    }).filter((h: Header) => {
         for (const hknown of header.value) {
             if (hknown.name === h.name) return false;
         }
