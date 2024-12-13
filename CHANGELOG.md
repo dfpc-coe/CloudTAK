@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v5.22.0 - 2024-12-11
+
+- :tada: `UI/API` Allow System Administrators to manage Video Leases
+- :rocket: `UI` Migrate Admin Video pages to TS
+
 ### v5.21.0 - 2024-12-11
 
 - :bug: `UI` Allow editing Video Lease fields when creating a new lease
