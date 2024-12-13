@@ -13,8 +13,14 @@
         "@aws-sdk/node-http-handler": "^3.212.0",
         "@mapbox/tilebelt": "^1.0.2",
         "@mapbox/vtquery": "^0.6.0",
+        "@openaddresses/batch-error": "^2.9.0",
+        "@openaddresses/batch-schema": "^10.11.0",
+        "@sinclair/typebox": "^0.34.11",
+        "cors": "^2.8.5",
+        "express": "^5.0.1",
         "jsonwebtoken": "^9.0.0",
-        "pmtiles": "^3.0.0"
+        "pmtiles": "^4.0.0",
+        "serverless-http": "^3.2.0"
     },
     "devDependencies": {
         "@types/aws-lambda": "^8.10.108",
@@ -22,8 +28,8 @@
         "@types/mapbox__tilebelt": "^1.0.0",
         "@types/node": "^22.0.0",
         "eslint": "^9.0.0",
-        "typescript-eslint": "^8.0.0",
         "tsup": "^8.0.0",
-        "typescript": "^5.0.0"
+        "typescript": "^5.0.0",
+        "typescript-eslint": "^8.0.0"
     }
 }
