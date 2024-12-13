@@ -200,8 +200,7 @@
                                                 <template v-else-if='type === "creation"'>
                                                     <CertificateMachineUser
                                                         :connection='connection'
-                                                        @certs='creation($event)'
-                                                        @integration='integration($event)'
+                                                        @integration='creation($event)'
                                                         @err='err = $event'
                                                     />
                                                 </template>
@@ -344,12 +343,10 @@ export default {
             this.connection.auth = { cert: '', key: '' }
             this.loading = false;
         },
-        creation: function(certs) {
-            this.connection.auth.cert = certs.cert;
-            this.connection.auth.key = certs.key;
-        },
-        integration: function(integrationId) {
-            this.connection.integrationId = integrationId;
+        creation: function(integration) {
+            this.connection.integrationId = integration.integrationId;
+            this.connection.auth.cert = integration.certs.cert;
+            this.connection.auth.key = integration.certs.key;
         },
         marti: function(certs) {
             this.connection.integrationId = null;
