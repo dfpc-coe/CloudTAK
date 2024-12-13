@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v5.24.0 - 2024-12-13
+
+- :tada: `DevOps` Allow DockerCompose mode to use minio configured store
+
 ### v5.23.0 - 2024-12-13
 
 - :rocket: `UI/API` Update ManagementURL in COTAK API (if configured) with Connection ID
