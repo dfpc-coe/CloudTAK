@@ -98,13 +98,13 @@
         v-if='modal'
         :lease='modal'
         @close='modal = undefined'
-        @refresh='modal = undefined && fetchList'
+        @refresh='fetchList'
     />
 </template>
 
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
-import { std, stdurl, stdclick } from '../../../../src/std.ts';
+import { std, stdurl } from '../../../../src/std.ts';
 import type { VideoLease, VideoLeaseList } from '../../../../src/types.ts';
 import TableHeader from '../../util/TableHeader.vue';
 import TableFooter from '../../util/TableFooter.vue';
@@ -122,7 +122,10 @@ import {
 
 const error = ref<Error | undefined>();
 const loading = ref(true);
-const header = ref([]);
+const header = ref<Array<{
+    name: keyof VideoLease,
+    display: boolean
+}>>([]);
 const modal = ref<VideoLease | undefined>()
 const paging = ref({
     filter: '',
@@ -147,7 +150,9 @@ onMounted(async () => {
 
 async function listLayerSchema() {
     const schema = await std('/api/schema?method=GET&url=/video/lease');
-    header.value = ['id', 'name', 'username', 'channel', 'path', 'expiration'].map((h) => {
+
+    const defaults: Array<keyof VideoLease> = ['id', 'name', 'username', 'channel', 'path', 'expiration'];
+    header.value = defaults.map((h) => {
         return { name: h, display: true };
     });
 
@@ -170,16 +175,17 @@ function expired(expiration: string | null): boolean {
 }
 
 async function fetchList() {
+    modal.value = undefined;
     loading.value = true;
 
     try {
         const url = stdurl('/api/video/lease');
         url.searchParams.append('impersonate', String(true));
         url.searchParams.append('filter', paging.value.filter);
-        url.searchParams.append('limit', paging.value.limit);
+        url.searchParams.append('limit', String(paging.value.limit));
         url.searchParams.append('sort', paging.value.sort);
         url.searchParams.append('order', paging.value.order);
-        url.searchParams.append('page', paging.value.page);
+        url.searchParams.append('page', String(paging.value.page));
 
         list.value = await std(url) as VideoLeaseList;
     } catch (err) {

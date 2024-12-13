@@ -5,22 +5,16 @@
         </h1>
 
         <div class='ms-auto btn-list'>
-            <IconPlus
+            <TablerIconButton
                 v-if='list.versions.length'
-                v-tooltip='"Create Server"'
-                :size='32'
-                :stroke='1'
-                class='cursor-pointer'
+                title='Create Server'
                 @click='createServer'
-            />
+            ><IconPlus :size='32' stroke='1' /></TablerIconButton>
 
-            <IconRefresh
-                v-tooltip='"Refresh"'
-                :size='32'
-                :stroke='1'
-                class='cursor-pointer'
+            <TablerIconButton
+                title='Refresh'
                 @click='fetchList'
-            />
+            ><IconRefresh :size='32' stroke='1' /></TablerIconButton>
         </div>
     </div>
     <div>
@@ -84,8 +78,10 @@
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { std, stdurl } from '../../../../src/std.ts';
+import type { VideoServerList, VideoServer_Post } from '../../../../src/types.ts';
 import Status from '../../util/Status.vue';
 import {
+    TablerIconButton,
     TablerNone,
     TablerAlert,
     TablerLoading
@@ -99,7 +95,7 @@ const router = useRouter();
 
 const error = ref<Error | undefined>();
 const loading = ref(true)
-const list = ref({
+const list = ref<VideoServerList>({
     total: 0,
     versions: [],
     items: []
@@ -112,7 +108,7 @@ onMounted(async () => {
 async function fetchList() {
     loading.value = true;
     const url = stdurl('/api/video/server');
-    list.value = await std(url);
+    list.value = await std(url) as VideoServerList;
     loading.value = false;
 }
 
@@ -122,7 +118,7 @@ async function createServer() {
     const server = await std(url, {
         method: 'POST',
         body: {}
-    });
+    }) as VideoServer_Post;
 
     router.push(`/admin/video/${server.id}`);
 }

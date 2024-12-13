@@ -26,8 +26,8 @@
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
-                                                    "active": $route.name === "admin-server",
-                                                    "cursor-pointer": $route.name !== "admin-server"
+                                                    "active": String($route.name) === "admin-server",
+                                                    "cursor-pointer": String($route.name) !== "admin-server"
                                                 }'
                                                 @click='$router.push(`/admin/server`)'
                                             >
@@ -39,8 +39,8 @@
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
-                                                    "active": $route.name === "admin-config",
-                                                    "cursor-pointer": $route.name !== "admin-config"
+                                                    "active": String($route.name) === "admin-config",
+                                                    "cursor-pointer": String($route.name) !== "admin-config"
                                                 }'
                                                 @click='$router.push(`/admin/config`)'
                                             ><IconSettings
@@ -50,8 +50,8 @@
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
-                                                    "active": $route.name === "admin-task-raw",
-                                                    "cursor-pointer": $route.name !== "admin-task-raw"
+                                                    "active": String($route.name) === "admin-task-raw",
+                                                    "cursor-pointer": String($route.name) !== "admin-task-raw"
                                                 }'
                                                 @click='$router.push(`/admin/task-raw`)'
                                             ><IconBrandDocker
@@ -61,8 +61,8 @@
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
-                                                    "active": $route.name.includes("admin-overlays"),
-                                                    "cursor-pointer": !$route.name.includes("admin-overlays")
+                                                    "active": String($route.name).includes("admin-overlays"),
+                                                    "cursor-pointer": !String($route.name).includes("admin-overlays")
                                                 }'
                                                 @click='$router.push(`/admin/overlay`)'
                                             ><IconBoxMultiple
@@ -72,8 +72,8 @@
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
-                                                    "active": $route.name === "admin-task",
-                                                    "cursor-pointer": $route.name !== "admin-task"
+                                                    "active": String($route.name) === "admin-task",
+                                                    "cursor-pointer": String($route.name) !== "admin-task"
                                                 }'
                                                 @click='$router.push(`/admin/task`)'
                                             ><IconBrandDocker
@@ -83,8 +83,8 @@
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
-                                                    "active": $route.name === "admin-connection",
-                                                    "cursor-pointer": $route.name !== "admin-connection"
+                                                    "active": String($route.name) === "admin-connection",
+                                                    "cursor-pointer": String($route.name) !== "admin-connection"
                                                 }'
                                                 @click='$router.push(`/admin/connection`)'
                                             ><IconNetwork
@@ -94,8 +94,8 @@
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
-                                                    "active": $route.name === "admin-layer",
-                                                    "cursor-pointer": $route.name !== "admin-layer"
+                                                    "active": String($route.name) === "admin-layer",
+                                                    "cursor-pointer": String($route.name) !== "admin-layer"
                                                 }'
                                                 @click='$router.push(`/admin/layer`)'
                                             ><IconBuildingBroadcastTower
@@ -105,8 +105,8 @@
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
-                                                    "active": $route.name === "admin-data",
-                                                    "cursor-pointer": $route.name !== "admin-data"
+                                                    "active": String($route.name) === "admin-data",
+                                                    "cursor-pointer": String($route.name) !== "admin-data"
                                                 }'
                                                 @click='$router.push(`/admin/data`)'
                                             ><IconDatabase
@@ -116,8 +116,8 @@
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
-                                                    "active": $route.name.startsWith("admin-user"),
-                                                    "cursor-pointer": !$route.name.startsWith("admin-user")
+                                                    "active": String($route.name).startsWith("admin-user"),
+                                                    "cursor-pointer": !String($route.name).startsWith("admin-user")
                                                 }'
                                                 @click='$router.push(`/admin/user`)'
                                             ><IconUsers
@@ -127,8 +127,8 @@
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
-                                                    "active": $route.name.includes("admin-video"),
-                                                    "cursor-pointer": !$route.name.includes("admin-video")
+                                                    "active": String($route.name).includes("admin-video"),
+                                                    "cursor-pointer": !String($route.name).includes("admin-video")
                                                 }'
                                                 @click='$router.push(`/admin/video`)'
                                             ><IconVideo
@@ -138,8 +138,8 @@
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
-                                                    "active": $route.name.includes("admin-export"),
-                                                    "cursor-pointer": !$route.name.includes("admin-export")
+                                                    "active": String($route.name).includes("admin-export"),
+                                                    "cursor-pointer": !String($route.name).includes("admin-export")
                                                 }'
                                                 @click='$router.push(`/admin/export`)'
                                             ><IconDatabaseExport
@@ -149,8 +149,8 @@
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
-                                                    "active": $route.name.includes("admin-templates"),
-                                                    "cursor-pointer": !$route.name.includes("admin-templates")
+                                                    "active": String($route.name).includes("admin-templates"),
+                                                    "cursor-pointer": !String($route.name).includes("admin-templates")
                                                 }'
                                                 @click='$router.push(`/admin/template`)'
                                             ><IconTemplate
@@ -182,7 +182,7 @@
 
 <script setup lang='ts'>
 import { onMounted } from 'vue';
-import { useProfileStore } from '/src/stores/profile.ts';
+import { useProfileStore } from '../../src/stores/profile.ts';
 import PageFooter from './PageFooter.vue';
 import {
     TablerAlert,
