@@ -1,3 +1,4 @@
+
 # Custom
 *.p12
 *.cert
@@ -5,6 +6,7 @@
 *.crt
 *.dump
 .env-*
+.docker-*
 api/assets/*
 
 # Logs

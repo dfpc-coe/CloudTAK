@@ -12,6 +12,21 @@
 
 ### Pending Release
 
+### v5.22.0 - 2024-12-11
+
+- :tada: `UI/API` Allow System Administrators to manage Video Leases
+- :rocket: `UI` Migrate Admin Video pages to TS
+
+### v5.21.0 - 2024-12-11
+
+- :bug: `UI` Allow editing Video Lease fields when creating a new lease
+- :bug: `UI` Fix duplicate locked entries being added to Locked Array
+- :tata: `UI` Add Breadcrumb Dropdown to select duration of breadcrumb to load
+
+### v5.20.0 - 2024-12-11
+
+- :rocket: `UI` Allow locking the map view to a CoT via the Radial Menu
+
 ### v5.19.1 - 2024-12-10
 
 - :rocket: `UI` Ensure switching to Admin Component doesn't throw an error

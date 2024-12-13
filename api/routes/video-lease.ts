@@ -19,6 +19,10 @@ export default async function router(schema: Schema, config: Config) {
         group: 'VideoLease',
         description: 'List all video leases',
         query: Type.Object({
+            impersonate: Type.Optional(Type.Union([
+                Type.Boolean({ description: 'List all of the given resource, regardless of ACL' }),
+                Type.String({ description: 'Filter the given resource by a given username' }),
+            ])),
             limit: Default.Limit,
             page: Default.Page,
             order: Default.Order,
@@ -32,21 +36,37 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req);
+            if (req.query.impersonate) {
+                await Auth.as_user(config, req, { admin: true });
 
-            const list = await config.models.VideoLease.list({
-                limit: req.query.limit,
-                page: req.query.page,
-                order: req.query.order,
-                sort: req.query.sort,
-                where: sql`
-                    name ~* ${req.query.filter}
-                    AND username = ${user.email}
-                    AND ephemeral = ${req.query.ephemeral}
-                `
-            });
+                const impersonate: string | null = req.query.impersonate === true ? null : req.query.impersonate;
 
-            res.json(list);
+                res.json(await config.models.VideoLease.list({
+                    limit: req.query.limit,
+                    page: req.query.page,
+                    order: req.query.order,
+                    sort: req.query.sort,
+                    where: sql`
+                        name ~* ${req.query.filter}
+                        AND ephemeral = ${req.query.ephemeral}
+                        AND (${impersonate}::TEXT IS NULL OR username = ${impersonate}::TEXT)
+                    `
+                }));
+            } else {
+                const user = await Auth.as_user(config, req);
+
+                res.json(await config.models.VideoLease.list({
+                    limit: req.query.limit,
+                    page: req.query.page,
+                    order: req.query.order,
+                    sort: req.query.sort,
+                    where: sql`
+                        name ~* ${req.query.filter}
+                        AND username = ${user.email}
+                        AND ephemeral = ${req.query.ephemeral}
+                    `
+                }));
+            }
         } catch (err) {
              Err.respond(err, res);
         }
