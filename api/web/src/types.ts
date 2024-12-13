@@ -100,6 +100,7 @@ export type ProfileOverlay_Update = paths["/profile/overlay/{:overlay}"]["patch"
 export type ETLConnection = paths["/connection/{:connectionid}"]["get"]["responses"]["200"]["content"]["application/json"]
 export type ETLLayer = paths["/connection/{:connectionid}/layer/{:layerid}"]["get"]["responses"]["200"]["content"]["application/json"]
 
+export type VideoService = paths["/video/service"]["get"]["responses"]["200"]["content"]["application/json"];
 export type VideoServerList = paths["/video/server"]["get"]["responses"]["200"]["content"]["application/json"];
 export type VideoServer_Post = paths["/video/server"]["post"]["responses"]["200"]["content"]["application/json"];
 
