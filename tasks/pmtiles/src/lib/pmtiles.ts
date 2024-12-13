@@ -1,12 +1,7 @@
 import express from 'express';
-import Err from '@openaddresses/batch-error';
-import Schema from '@openaddresses/batch-schema';
+import Schema from '@openaddresses/batch-schema'
 import { Type } from '@sinclair/typebox'
 import cors from 'cors';
-import S3 from './lib/s3.js';
-import * as pmtiles from 'pmtiles'
-import { nativeDecompress, CACHE } from './lib/pmtiles.js';
-import auth from './lib/auth.js';
 import Lambda from "aws-lambda";
 import jwt from 'jsonwebtoken';
 import * as pmtiles from 'pmtiles';
@@ -14,85 +9,23 @@ import zlib from "zlib";
 import vtquery from '@mapbox/vtquery';
 import TB from '@mapbox/tilebelt';
 import serverless from 'serverless-http';
+import { NodeHttpHandler } from "@aws-sdk/node-http-handler";
 
-if (!process.env.SigningSecret) throw new Error('SigningSecret env var must be provided');
-
-const app = express();
-
-const schema = new Schema(express.Router(), {
-    logging: true,
-    limit: 50
-});
-
-app.disable('x-powered-by');
-
-app.use(cors({
-    origin: '*',
-    allowedHeaders: [
-        'Content-Type',
-        'Authorization',
-        'User-Agent',
-        'MissionAuthorization',
-        'Content-Length',
-        'x-requested-with'
-    ],
-    credentials: true
-}));
-
-const s3client = S3();
-
-app.use(schema.router);
-
-schema.get('/tiles/profile/:username/:file', {
-    name: 'Get TileJSON',
-    group: 'ProfileTiles',
-    description: 'Return TileJSON for a given file',
-    params: Type.Object({
-        username: Type.String(),
-        name: Type.String()
-    }),
-    query: Type.Object({
-        token: Type.String()
-    })
-}, async (req, res) => {
-    try { 
-        const username = auth(req.params.token);
-
-        if (username !== req.params.username) {
-            throw new Err(401, null, 'Unauthorized Access');
-        }
-
-        const p = new pmtiles.PMTiles(new S3Source(req.params.name), CACHE, nativeDecompress);
-
-        const header = await p.getHeader();
-
-        console.erro(header);
-
-        res.json();
-    } catch (err) {
-        Err.response(res, err);
+export async function nativeDecompress(
+    buf: ArrayBuffer,
+    compression: pmtiles.Compression
+): Promise<ArrayBuffer> {
+    if (compression === pmtiles.Compression.None || compression === pmtiles.Compression.Unknown) {
+        return buf;
+    } else if (compression === pmtiles.Compression.Gzip) {
+        return zlib.gunzipSync(buf);
+    } else {
+        throw Error("Compression method not supported");
     }
-})
-
-schema.get('/tiles/profile/:username/:z/:x/:y.:format', {
-    name: 'Get Tile',
-    group: 'ProfileTiles',
-    description: 'Return tile for a given zxy',
-    params: Type.Object({
-        username: Type.String(),
-        file: Type.String()
-    }),
-}, (req, res) => {
-    try { 
-        res.json();
-    } catch (err) {
-        Err.response(res, err);
-    }
-})
-
+}
 
 // Lambda needs to run with 512MB, empty function takes about 70
-const CACHE = new pmtiles.ResolvedValueCache(undefined, undefined, nativeDecompress);
+export const CACHE = new pmtiles.ResolvedValueCache(undefined, undefined, nativeDecompress);
 
 class S3Source implements pmtiles.Source {
     archive_name: string;
@@ -125,76 +58,7 @@ class S3Source implements pmtiles.Source {
     }
 }
 
-interface Headers {
-    [key: string]: string;
-}
-
-const apiResp = (
-    statusCode: number,
-    body: string,
-    isBase64Encoded = false,
-    headers: Headers = {}
-): Lambda.APIGatewayProxyResult => {
-    return {
-        statusCode,
-        body,
-        headers,
-        isBase64Encoded
-    };
-};
-
-const apiError = (
-    statusCode: number,
-    message: string,
-): Lambda.APIGatewayProxyResult => {
-    return apiResp(statusCode, JSON.stringify({
-        status: statusCode, message
-    }), false, {
-        'Content-Type': 'application/json'
-    })
-}
-
-
-// Assumes event is a API Gateway V2 or Lambda Function URL formatted dict
-// and returns API Gateway V2 / Lambda Function dict responses
-export const handlerRaw = async (
-    event: Lambda.APIGatewayProxyEventV2,
-    context: Lambda.Context,
-    tilePostprocess?: (a: ArrayBuffer, t: pmtiles.TileType) => ArrayBuffer
-): Promise<Lambda.APIGatewayProxyResult> => {
-    let path;
-
-    if (event && event.pathParameters && event.pathParameters.proxy) {
-        path = "/" + event.pathParameters.proxy;
-    } else {
-        return apiError(500, "Proxy integration missing tile_path parameter");
-    }
-
-    if (!path) return apiError(500, "Invalid event configuration");
-
-    const headers: Headers = {
-        "Access-Control-Allow-Origin": '*',
-        "Access-Control-Allow-Credentials": 'true'
-    };
-
-    if (!event.queryStringParameters || !event.queryStringParameters.token) {
-        return apiError(400, 'token query param required');
-    }
-
-    try {
-        jwt.verify(event.queryStringParameters.token, process.env.SigningSecret);
-    } catch (err) {
-        console.error(err);
-        return apiError(401, 'Invalid Token')
-    }
-
-    const { ok, name, tile, ext, meta } = tile_path(path);
-
-    if (!ok) return apiError(400, "Invalid tile URL");
-
-    const source = new S3Source(name);
-    const p = new pmtiles.PMTiles(source, CACHE, nativeDecompress);
-
+/*
     try {
         const header = await p.getHeader();
         if (!meta && (tile[0] < header.minZoom || tile[0] > header.maxZoom)) {
@@ -371,14 +235,4 @@ export const handlerRaw = async (
 
     return apiError(404, "Invalid URL");
 };
-
-export const handler = serverless(app);
-
-const startServer = async () => {
-    app.listen(5002, () => {
-        console.log('ok - tile server on localhost:5002');
-    });
-};
-
-startServer();
-
+*/

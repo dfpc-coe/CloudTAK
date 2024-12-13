@@ -9,7 +9,7 @@ import process from 'node:process';
  * @class
  */
 export default class S3 {
-    static #client() {
+    static #client(): S3AWS.S3Client {
         if (!process.env.ASSET_BUCKET) throw new Err(400, null, 'ASSET_BUCKET not set');
 
         const config: S3ClientConfig = {
