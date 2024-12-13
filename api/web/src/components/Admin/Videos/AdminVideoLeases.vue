@@ -60,7 +60,20 @@
                             <template v-for='h in header'>
                                 <template v-if='h.display'>
                                     <td>
-                                        <span v-text='lease[h.name]' />
+                                        <template v-if='h.name === "expiration"'>
+                                            <span
+                                                v-if='expired(lease.expiration)'
+                                                class='badge bg-red text-white'
+                                            >Expired</span>
+                                            <span
+                                                v-else
+                                                class='subheader'
+                                                v-text='lease.expiration'
+                                            />
+                                        </template>
+                                        <template v-else>
+                                            <span v-text='lease[h.name]' />
+                                        </template>
                                     </td>
                                 </template>
                             </template>
@@ -133,8 +146,8 @@ onMounted(async () => {
 });
 
 async function listLayerSchema() {
-    const schema = await std('/api/schema?method=GET&url=/layer');
-    header.value = ['id', 'name', 'username', 'channel', 'path'].map((h) => {
+    const schema = await std('/api/schema?method=GET&url=/video/lease');
+    header.value = ['id', 'name', 'username', 'channel', 'path', 'expiration'].map((h) => {
         return { name: h, display: true };
     });
 
@@ -149,6 +162,11 @@ async function listLayerSchema() {
         }
         return true;
     }));
+}
+
+function expired(expiration: string | null): boolean {
+    if (!expiration) return false;
+    return +new Date(expiration) < +new Date();
 }
 
 async function fetchList() {
