@@ -98,7 +98,7 @@ import {
 } from '@tak-ps/vue-tabler';
 import { useProfileStore } from '/src/stores/profile.ts';
 import { mapState } from 'pinia'
-import { debounce } from 'lodash'
+import { debounce } from 'radash'
 
 export default {
     name: 'Agency',
