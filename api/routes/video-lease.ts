@@ -41,8 +41,6 @@ export default async function router(schema: Schema, config: Config) {
 
                 const impersonate: string | null = req.query.impersonate === true ? null : req.query.impersonate;
 
-                console.error(impersonate);
-
                 res.json(await config.models.VideoLease.list({
                     limit: req.query.limit,
                     page: req.query.page,
