@@ -88,7 +88,7 @@
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { std, stdurl } from '../../../../src/std.ts';
-import type { VideoServerList, VideoServer_Post } from '../../../../src/types.ts';
+import type { VideoServerList, VideoServer } from '../../../../src/types.ts';
 import Status from '../../util/Status.vue';
 import {
     TablerIconButton,
@@ -128,7 +128,7 @@ async function createServer() {
     const server = await std(url, {
         method: 'POST',
         body: {}
-    }) as VideoServer_Post;
+    }) as VideoServer;
 
     router.push(`/admin/video/tasks/${server.id}`);
 }

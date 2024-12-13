@@ -8,7 +8,7 @@
                 @click='$router.push("/admin/video")'
             />
             <h1 class='mx-2 card-title d-flex align-items-center'>
-                <template v-if='video.status'>
+                <template v-if='!loading && video && video.status'>
                     <Status
                         v-if='video.status === "RUNNING"'
                         status='Success'
@@ -22,6 +22,7 @@
                     Video Server
                     <span
                         class='mx-2'
+                        v-if='video'
                         v-text='video.id'
                     />
                 </div>
@@ -29,7 +30,7 @@
 
             <div class='ms-auto btn-list'>
                 <TablerDelete
-                    v-if='!loading && video.status === "RUNNING" && video.statusDesired === "RUNNING"'
+                    v-if='!loading && video && video.status === "RUNNING" && video.statusDesired === "RUNNING"'
                     v-tooltip='"Delete Server"'
                     displaytype='icon'
                     @delete='fetchDelete'
@@ -50,7 +51,7 @@
                 :err='error'
             />
             <div
-                v-else
+                v-else-if='video'
                 class='card-body'
             >
                 <div class='datagrid'>
@@ -117,9 +118,11 @@
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import type { VideoServer } from '../../../../src/types.ts';
 import { std, stdurl } from '../../../../src/std.ts';
 import {
     TablerDelete,
+    TablerAlert,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import Status from '../../util/Status.vue';
@@ -133,7 +136,7 @@ const route = useRoute();
 
 const error = ref<Error | undefined>();
 const loading = ref(true);
-const video = ref();
+const video = ref<VideoServer | undefined>();
 
 onMounted(async () => {
     await fetch();
@@ -158,7 +161,7 @@ async function fetch() {
     loading.value = true;
     try {
         const url = stdurl(`/api/video/server/${route.params.task}`);
-        video.value = await std(url);
+        video.value = await std(url) as VideoServer;
     } catch (err) {
         if (err instanceof Error && err.message === 'Could not find Media Server with that ID') {
             router.push('/admin/video');
