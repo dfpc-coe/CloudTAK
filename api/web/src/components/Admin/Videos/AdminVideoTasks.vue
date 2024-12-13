@@ -9,12 +9,22 @@
                 v-if='list.versions.length'
                 title='Create Server'
                 @click='createServer'
-            ><IconPlus :size='32' stroke='1' /></TablerIconButton>
+            >
+                <IconPlus
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
 
             <TablerIconButton
                 title='Refresh'
                 @click='fetchList'
-            ><IconRefresh :size='32' stroke='1' /></TablerIconButton>
+            >
+                <IconRefresh
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
         </div>
     </div>
     <div>
@@ -47,7 +57,7 @@
                         v-for='server in list.items'
                         :key='server.id'
                         class='cursor-pointer'
-                        @click='$router.push(`/admin/video/${server.id}`)'
+                        @click='router.push(`/admin/video/tasks/${server.id}`)'
                     >
                         <td class='d-flex align-items-center'>
                             <Status
@@ -120,6 +130,6 @@ async function createServer() {
         body: {}
     }) as VideoServer_Post;
 
-    router.push(`/admin/video/${server.id}`);
+    router.push(`/admin/video/tasks/${server.id}`);
 }
 </script>
