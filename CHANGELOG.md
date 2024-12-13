@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v5.23.0 - 2024-12-13
+
+- :rocket: `UI/API` Update ManagementURL in COTAK API (if configured) with Connection ID
+
 ### v5.22.0 - 2024-12-11
 
 - :tada: `UI/API` Allow System Administrators to manage Video Leases
