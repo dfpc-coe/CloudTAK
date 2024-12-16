@@ -82,6 +82,7 @@ schema.get('/tiles/profile/:username/:file', {
             [pmtiles.TileType.Png, "png"],
             [pmtiles.TileType.Jpeg, "jpg"],
             [pmtiles.TileType.Webp, "webp"],
+            [pmtiles.TileType.Avif, "avif"],
         ]) {
             if (header.tileType === pair[0]) format = pair[1];
         }
@@ -243,6 +244,7 @@ schema.get('/tiles/profile/:username/:file/tiles/:z/:x/:y.:ext', {
             [pmtiles.TileType.Png, "png"],
             [pmtiles.TileType.Jpeg, "jpg"],
             [pmtiles.TileType.Webp, "webp"],
+            [pmtiles.TileType.Avif, "avif"],
         ]) {
             if (header.tileType === pair[0] && req.params.ext !== pair[1]) {
                 if (header.tileType == pmtiles.TileType.Mvt && req.params.ext === "pbf") {
@@ -280,11 +282,11 @@ schema.get('/tiles/profile/:username/:file/tiles/:z/:x/:y.:ext', {
             // We need to force API Gateway to interpret the Lambda response as binary
             // without depending on clients sending matching Accept: headers in the request.
             if (process.env.StackName) {
-                const recompressed_data = zlib.gzipSync(data);
                 res.set("Content-Encoding", "gzip");
-                res.send(Buffer.from(recompressed_data).toString("base64"));
+                const recompressed_data = zlib.gzipSync(data);
+                res.send(Buffer.from(recompressed_data));
             } else {
-                res.send(Buffer.from(data).toString("base64"));
+                res.send(Buffer.from(data));
             }
         } else {
             return res.status(204).send('')
