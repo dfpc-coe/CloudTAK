@@ -3,17 +3,18 @@ import Err from '@openaddresses/batch-error';
 import Schema from '@openaddresses/batch-schema';
 import { Type } from '@sinclair/typebox'
 import cors from 'cors';
-import S3 from './lib/s3.js';
 import * as pmtiles from 'pmtiles'
-import { nativeDecompress, CACHE } from './lib/pmtiles.js';
+import { S3Source, nativeDecompress, CACHE } from './lib/pmtiles.js';
 import auth from './lib/auth.js';
 import * as pmtiles from 'pmtiles';
 import zlib from "zlib";
 import vtquery from '@mapbox/vtquery';
-import TB from '@mapbox/tilebelt';
+import { pointToTile } from '@mapbox/tilebelt';
 import serverless from 'serverless-http';
 
 if (!process.env.SigningSecret) throw new Error('SigningSecret env var must be provided');
+if (!process.env.ASSET_BUCKET) throw new Error('ASSET_BUCKET env var must be provided');
+if (!process.env.APIROOT) process.env.APIROOT = 'http://localhost:5002';
 
 const app = express();
 
@@ -55,23 +56,23 @@ schema.get('/tiles/profile/:username/:file', {
         name: Type.String(),
         description: Type.String(),
         version: Type.Literal('1.0.0'),
-        scheme: Type.Literal('zxy'),
+        scheme: Type.Literal('xyz'),
         tiles: Type.Array(Type.String()),
         minzoom: Type.Integer(),
         maxzoom: Type.Integer(),
         bounds: Type.Array(Type.Number()),
         meta: Type.Unknown(),
-        cetner: Type.Array(Type.Number())
+        center: Type.Array(Type.Number())
     })
 }, async (req, res) => {
     try {
-        const username = auth(req.params.token);
-
-        if (username !== req.params.username) {
+        const token = auth(req.query.token);
+        if (token.email !== req.params.username || token.access !== 'profile') {
             throw new Err(401, null, 'Unauthorized Access');
         }
 
-        const p = new pmtiles.PMTiles(new S3Source(req.params.name), CACHE, nativeDecompress);
+        const path = `profile/${req.params.username}/${req.params.file}`;
+        const p = new pmtiles.PMTiles(new S3Source(path), CACHE, nativeDecompress);
 
         const header = await p.getHeader();
 
@@ -87,11 +88,11 @@ schema.get('/tiles/profile/:username/:file', {
 
         res.json({
             "tilejson": "2.2.0",
-            "name": `${name}.pmtiles`,
+            "name": `${req.params.file}.pmtiles`,
             "description": "Hosted by TAK-ETL",
             "version": "1.0.0",
             "scheme": "xyz",
-            "tiles": [ process.env.APIROOT + `/tiles${path}/{z}/{x}/{y}.${format}?token=${event.queryStringParameters.token}`],
+            "tiles": [ process.env.APIROOT + `/tiles${path}/{z}/{x}/{y}.${format}?token=${req.query.token}`],
             "minzoom": header.minZoom,
             "maxzoom": header.maxZoom,
             "bounds": [ header.minLon, header.minLat, header.maxLon, header.maxLat ],
@@ -146,6 +147,11 @@ schema.get('/tiles/profile/:username/:file/query', {
     })
 }, async (req, res) => {
     try {
+        const token = auth(req.query.token);
+        if (token.email !== req.params.username || token.access !== 'profile') {
+            throw new Err(401, null, 'Unauthorized Access');
+        }
+
         const query: {
             lnglat: [number, number],
             zoom: number,
@@ -168,7 +174,7 @@ schema.get('/tiles/profile/:username/:file/query', {
         if (query.zoom > header.maxZoom) throw new Err(400, null, "Above Layer MaxZoom");
         if (query.zoom < header.minZoom) throw new Err(400, null, "Below Layer MinZoom");
 
-        const xyz = TB.pointToTile(query.lnglat[0], query.lnglat[1], query.zoom)
+        const xyz = pointToTile(query.lnglat[0], query.lnglat[1], query.zoom)
         const tile = await p.getZxy(xyz[2], xyz[0], xyz[1]);
 
         const meta = { x: xyz[0], y: xyz[1], z: xyz[2] };
@@ -218,9 +224,8 @@ schema.get('/tiles/profile/:username/:file/tiles/:z/:x/:y.:format', {
     }),
 }, async (req, res) => {
     try {
-        const username = auth(req.params.token);
-
-        if (username !== req.params.username) {
+        const token = auth(req.query.token);
+        if (token.email !== req.params.username || token.access !== 'profile') {
             throw new Err(401, null, 'Unauthorized Access');
         }
 
@@ -261,7 +266,7 @@ schema.get('/tiles/profile/:username/:file/tiles/:z/:x/:y.:format', {
                 break;
             }
 
-            let data = tile_result.data;
+            const data = tile_result.data;
 
             // We need to force API Gateway to interpret the Lambda response as binary
             // without depending on clients sending matching Accept: headers in the request.
