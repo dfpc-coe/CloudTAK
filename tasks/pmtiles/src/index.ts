@@ -1,4 +1,5 @@
 import express from 'express';
+import { createHash } from "crypto";
 import Err from '@openaddresses/batch-error';
 import Schema from '@openaddresses/batch-schema';
 import { Type } from '@sinclair/typebox'
@@ -73,7 +74,6 @@ schema.get('/tiles/profile/:username/:file', {
 
         const path = `profile/${req.params.username}/${req.params.file}`;
         const p = new pmtiles.PMTiles(new S3Source(path), CACHE, nativeDecompress);
-
         const header = await p.getHeader();
 
         let format = 'mvt';
@@ -92,7 +92,7 @@ schema.get('/tiles/profile/:username/:file', {
             "description": "Hosted by TAK-ETL",
             "version": "1.0.0",
             "scheme": "xyz",
-            "tiles": [ process.env.APIROOT + `/tiles${path}/{z}/{x}/{y}.${format}?token=${req.query.token}`],
+            "tiles": [ process.env.APIROOT + `/tiles/${path}/tiles/{z}/{x}/{y}.${format}?token=${req.query.token}`],
             "minzoom": header.minZoom,
             "maxzoom": header.maxZoom,
             "bounds": [ header.minLon, header.minLat, header.maxLon, header.maxLat ],
@@ -211,7 +211,7 @@ schema.get('/tiles/profile/:username/:file/query', {
     }
 })
 
-schema.get('/tiles/profile/:username/:file/tiles/:z/:x/:y.:format', {
+schema.get('/tiles/profile/:username/:file/tiles/:z/:x/:y.:ext', {
     name: 'Get Tile',
     group: 'ProfileTiles',
     description: 'Return tile for a given zxy',
@@ -220,7 +220,8 @@ schema.get('/tiles/profile/:username/:file/tiles/:z/:x/:y.:format', {
         file: Type.String(),
         z: Type.Integer(),
         x: Type.Integer(),
-        y: Type.Integer()
+        y: Type.Integer(),
+        ext: Type.String()
     }),
 }, async (req, res) => {
     try {
@@ -229,7 +230,11 @@ schema.get('/tiles/profile/:username/:file/tiles/:z/:x/:y.:format', {
             throw new Err(401, null, 'Unauthorized Access');
         }
 
-        if (!meta && (tile[0] < header.minZoom || tile[0] > header.maxZoom)) {
+        const path = `profile/${req.params.username}/${req.params.file}`;
+        const p = new pmtiles.PMTiles(new S3Source(path), CACHE, nativeDecompress);
+        const header = await p.getHeader();
+
+        if (!header && (tile[0] < header.minZoom || tile[0] > header.maxZoom)) {
             throw new Err(404, null, 'File Not Found');
         }
 
@@ -239,8 +244,8 @@ schema.get('/tiles/profile/:username/:file/tiles/:z/:x/:y.:format', {
             [pmtiles.TileType.Jpeg, "jpg"],
             [pmtiles.TileType.Webp, "webp"],
         ]) {
-            if (header.tileType === pair[0] && ext !== pair[1]) {
-                if (header.tileType == pmtiles.TileType.Mvt && ext === "pbf") {
+            if (header.tileType === pair[0] && req.params.ext !== pair[1]) {
+                if (header.tileType == pmtiles.TileType.Mvt && req.params.ext === "pbf") {
                     // allow this for now. Eventually we will delete this in favor of .mvt
                     continue;
                 }
@@ -248,37 +253,41 @@ schema.get('/tiles/profile/:username/:file/tiles/:z/:x/:y.:format', {
             }
         }
 
-        const tile_result = await p.getZxy(tile[0], tile[1], tile[2]);
+        const tile_result = await p.getZxy(req.params.z, req.params.x, req.params.y);
+
         if (tile_result) {
             switch (header.tileType) {
                 case pmtiles.TileType.Mvt:
                     // part of the list of Cloudfront compressible types.
-                    headers["Content-Type"] = "application/vnd.mapbox-vector-tile";
+                    res.set("Content-Type", "application/vnd.mapbox-vector-tile");
                 break;
                 case pmtiles.TileType.Png:
-                    headers["Content-Type"] = "image/png";
+                    res.set("Content-Type", "image/png");
                 break;
                 case pmtiles.TileType.Jpeg:
-                    headers["Content-Type"] = "image/jpeg";
+                    res.set("Content-Type", "image/jpeg");
                 break;
                 case pmtiles.TileType.Webp:
-                    headers["Content-Type"] = "image/webp";
+                    res.set("Content-Type", "image/webp");
                 break;
             }
 
             const data = tile_result.data;
 
+            res.set("Cache-Control", "private, max-age=86400");
+            res.set('ETag', `"${createHash("sha256").update(Buffer.from(data)).digest("hex")}"`);
+
             // We need to force API Gateway to interpret the Lambda response as binary
             // without depending on clients sending matching Accept: headers in the request.
-            const recompressed_data = zlib.gzipSync(data);
-            headers["Content-Encoding"] = "gzip";
-
-            /// TODO Send headers
-            headers
-
-            return res.send(Buffer.from(recompressed_data).toString("base64"));
+            if (process.env.StackName) {
+                const recompressed_data = zlib.gzipSync(data);
+                res.set("Content-Encoding", "gzip");
+                res.send(Buffer.from(recompressed_data).toString("base64"));
+            } else {
+                res.send(Buffer.from(data).toString("base64"));
+            }
         } else {
-            return apiResp(204, "", false, headers);
+            return res.status(204).send('')
         }
     } catch (err) {
         Err.respond(err, res);
