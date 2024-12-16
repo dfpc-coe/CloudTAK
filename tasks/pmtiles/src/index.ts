@@ -45,7 +45,7 @@ schema.get('/tiles/profile/:username/:file', {
     description: 'Return TileJSON for a given file',
     params: Type.Object({
         username: Type.String(),
-        name: Type.String()
+        file: Type.String()
     }),
     query: Type.Object({
         token: Type.String()
@@ -99,7 +99,7 @@ schema.get('/tiles/profile/:username/:file', {
             "center": [ header.centerLon, header.centerLat, header.centerZoom ]
         });
     } catch (err) {
-        Err.response(res, err);
+        Err.respond(err, res);
     }
 })
 
@@ -109,7 +109,7 @@ schema.get('/tiles/profile/:username/:file/query', {
     description: 'Return TileJSON for a given file',
     params: Type.Object({
         username: Type.String(),
-        name: Type.String()
+        file: Type.String()
     }),
     query: Type.Object({
         token: Type.String(),
@@ -201,7 +201,7 @@ schema.get('/tiles/profile/:username/:file/query', {
             return res.json(fc);
         }
     } catch (err) {
-        Err.response(res, err);
+        Err.respond(err, res);
     }
 })
 
@@ -211,7 +211,10 @@ schema.get('/tiles/profile/:username/:file/tiles/:z/:x/:y.:format', {
     description: 'Return tile for a given zxy',
     params: Type.Object({
         username: Type.String(),
-        file: Type.String()
+        file: Type.String(),
+        z: Type.Integer(),
+        x: Type.Integer(),
+        y: Type.Integer()
     }),
 }, async (req, res) => {
     try {
@@ -273,7 +276,7 @@ schema.get('/tiles/profile/:username/:file/tiles/:z/:x/:y.:format', {
             return apiResp(204, "", false, headers);
         }
     } catch (err) {
-        Err.response(res, err);
+        Err.respond(err, res);
     }
 })
 
