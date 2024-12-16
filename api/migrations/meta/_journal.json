@@ -519,6 +519,13 @@
       "when": 1733527002274,
       "tag": "0073_rare_korvac",
       "breakpoints": true
+    },
+    {
+      "idx": 74,
+      "version": "7",
+      "when": 1734362826779,
+      "tag": "0074_eminent_stick",
+      "breakpoints": true
     }
   ]
 }
