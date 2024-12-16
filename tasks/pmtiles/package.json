@@ -14,7 +14,7 @@
         "@mapbox/tilebelt": "^2.0.1",
         "@mapbox/vtquery": "^0.6.0",
         "@openaddresses/batch-error": "^2.9.0",
-        "@openaddresses/batch-schema": "^10.11.0",
+        "@openaddresses/batch-schema": "^10.12.1",
         "@sinclair/typebox": "^0.34.11",
         "cors": "^2.8.5",
         "express": "^4.21.0",

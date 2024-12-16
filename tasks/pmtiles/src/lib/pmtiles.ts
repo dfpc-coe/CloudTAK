@@ -67,9 +67,9 @@ export class S3Source implements pmtiles.Source {
             if (err instanceof Error && err.name === 'NoSuchKey') {
                 throw new Err(404, err, 'Key not found');
             } else if (err instanceof Error && err.name === "PreconditionFailed") {
-                throw new new Err(400, err, 'ETag Mismatch');
+                throw new Err(400, err, 'ETag Mismatch');
             } else {
-                throw new Err(500, err, 'Internal Server Error');
+                throw new Err(500, err instanceof Error ? err : new Error(String(err)), 'Internal Server Error');
             }
         }
     }

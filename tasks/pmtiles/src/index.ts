@@ -4,11 +4,11 @@ import Err from '@openaddresses/batch-error';
 import Schema from '@openaddresses/batch-schema';
 import { Type } from '@sinclair/typebox'
 import cors from 'cors';
-import * as pmtiles from 'pmtiles'
 import { S3Source, nativeDecompress, CACHE } from './lib/pmtiles.js';
 import auth from './lib/auth.js';
 import * as pmtiles from 'pmtiles';
 import zlib from "zlib";
+// @ts-expect-error No Type Defs
 import vtquery from '@mapbox/vtquery';
 import { pointToTile } from '@mapbox/tilebelt';
 import serverless from 'serverless-http';
@@ -84,7 +84,9 @@ schema.get('/tiles/profile/:username/:file', {
             [pmtiles.TileType.Webp, "webp"],
             [pmtiles.TileType.Avif, "avif"],
         ]) {
-            if (header.tileType === pair[0]) format = pair[1];
+            if (header.tileType === pair[0]) {
+                format = String(pair[1]);
+            }
         }
 
         res.json({
@@ -153,8 +155,12 @@ schema.get('/tiles/profile/:username/:file/query', {
             throw new Err(401, null, 'Unauthorized Access');
         }
 
+        const path = `profile/${req.params.username}/${req.params.file}`;
+        const p = new pmtiles.PMTiles(new S3Source(path), CACHE, nativeDecompress);
+        const header = await p.getHeader();
+
         const query: {
-            lnglat: [number, number],
+            lnglat: number[],
             zoom: number,
             limit: number
         } = {
@@ -205,7 +211,7 @@ schema.get('/tiles/profile/:username/:file/query', {
             fc.query = query;
             fc.meta = meta;
 
-            return res.json(fc);
+            res.json(fc);
         }
     } catch (err) {
         Err.respond(err, res);
@@ -216,6 +222,9 @@ schema.get('/tiles/profile/:username/:file/tiles/:z/:x/:y.:ext', {
     name: 'Get Tile',
     group: 'ProfileTiles',
     description: 'Return tile for a given zxy',
+    query: Type.Object({
+        token: Type.String()
+    }),
     params: Type.Object({
         username: Type.String(),
         file: Type.String(),
@@ -235,7 +244,7 @@ schema.get('/tiles/profile/:username/:file/tiles/:z/:x/:y.:ext', {
         const p = new pmtiles.PMTiles(new S3Source(path), CACHE, nativeDecompress);
         const header = await p.getHeader();
 
-        if (!header && (tile[0] < header.minZoom || tile[0] > header.maxZoom)) {
+        if (req.params.z < header.minZoom || req.params.z > header.maxZoom) {
             throw new Err(404, null, 'File Not Found');
         }
 
@@ -251,7 +260,8 @@ schema.get('/tiles/profile/:username/:file/tiles/:z/:x/:y.:ext', {
                     // allow this for now. Eventually we will delete this in favor of .mvt
                     continue;
                 }
-                return apiError(400, "Bad request: archive has type ." + pair[1]);
+
+                throw new Err(400, null, "Bad request: archive has type ." + pair[1]);
             }
         }
 
@@ -289,7 +299,7 @@ schema.get('/tiles/profile/:username/:file/tiles/:z/:x/:y.:ext', {
                 res.send(Buffer.from(data));
             }
         } else {
-            return res.status(204).send('')
+            res.status(204).send('')
         }
     } catch (err) {
         Err.respond(err, res);
