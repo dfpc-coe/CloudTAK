@@ -46,7 +46,7 @@
 
             <TablerLoading v-if='loading' />
             <TablerAlert
-                v-if='error'
+                v-else-if='error'
                 title='Imports Error'
                 :err='error'
             />
