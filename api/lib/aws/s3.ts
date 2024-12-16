@@ -9,7 +9,7 @@ import process from 'node:process';
  * @class
  */
 export default class S3 {
-    static #client() {
+    static #client(): S3AWS.S3Client {
         if (!process.env.ASSET_BUCKET) throw new Err(400, null, 'ASSET_BUCKET not set');
 
         const config: S3ClientConfig = {
@@ -19,7 +19,6 @@ export default class S3 {
         if (process.env.AWS_S3_Endpoint) {
             config.endpoint = process.env.AWS_S3_Endpoint;
             config.forcePathStyle = true;
-            config.sslEnabled = false;
 
             if (!process.env.AWS_S3_AccessKeyId || !process.env.AWS_S3_SecretAccessKey) {
                 throw new Error('Cannot use custom S3 Endpoint without providing AWS_S3_AccessKeyId & AWS_S3_SecretAccessKey');
