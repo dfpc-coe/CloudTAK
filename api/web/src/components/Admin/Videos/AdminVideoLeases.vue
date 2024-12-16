@@ -66,7 +66,7 @@
                                                 class='badge bg-red text-white'
                                             >Expired</span>
                                             <span
-                                                v-else-if='lease.expiration === null || lease.expiration === ""'
+                                                v-else-if='lease.expiration === null'
                                                 class='badge bg-blue text-white'
                                             >Permanent</span>
                                             <span
