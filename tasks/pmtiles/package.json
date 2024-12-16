@@ -4,8 +4,8 @@
     "type": "module",
     "private": true,
     "scripts": {
-        "check": "tsc --noEmit --watch",
-        "lint": "eslint src/index.ts",
+        "check": "tsc --noEmit",
+        "lint": "eslint src/",
         "build": "tsup --target es2022 --format esm src/index.ts"
     },
     "dependencies": {
@@ -17,7 +17,7 @@
         "@openaddresses/batch-schema": "^10.11.0",
         "@sinclair/typebox": "^0.34.11",
         "cors": "^2.8.5",
-        "express": "^5.0.1",
+        "express": "^4.21.0",
         "jsonwebtoken": "^9.0.0",
         "pmtiles": "^4.0.0",
         "serverless-http": "^3.2.0"

@@ -7,8 +7,6 @@ import S3 from './lib/s3.js';
 import * as pmtiles from 'pmtiles'
 import { nativeDecompress, CACHE } from './lib/pmtiles.js';
 import auth from './lib/auth.js';
-import Lambda from "aws-lambda";
-import jwt from 'jsonwebtoken';
 import * as pmtiles from 'pmtiles';
 import zlib from "zlib";
 import vtquery from '@mapbox/vtquery';
@@ -39,8 +37,6 @@ app.use(cors({
     credentials: true
 }));
 
-const s3client = S3();
-
 app.use(schema.router);
 
 schema.get('/tiles/profile/:username/:file', {
@@ -53,9 +49,22 @@ schema.get('/tiles/profile/:username/:file', {
     }),
     query: Type.Object({
         token: Type.String()
+    }),
+    res: Type.Object({
+        tilejson: Type.Literal('2.2.0'),
+        name: Type.String(),
+        description: Type.String(),
+        version: Type.Literal('1.0.0'),
+        scheme: Type.Literal('zxy'),
+        tiles: Type.Array(Type.String()),
+        minzoom: Type.Integer(),
+        maxzoom: Type.Integer(),
+        bounds: Type.Array(Type.Number()),
+        meta: Type.Unknown(),
+        cetner: Type.Array(Type.Number())
     })
 }, async (req, res) => {
-    try { 
+    try {
         const username = auth(req.params.token);
 
         if (username !== req.params.username) {
@@ -66,184 +75,112 @@ schema.get('/tiles/profile/:username/:file', {
 
         const header = await p.getHeader();
 
-        console.erro(header);
-
-        res.json();
-    } catch (err) {
-        Err.response(res, err);
-    }
-})
-
-schema.get('/tiles/profile/:username/:z/:x/:y.:format', {
-    name: 'Get Tile',
-    group: 'ProfileTiles',
-    description: 'Return tile for a given zxy',
-    params: Type.Object({
-        username: Type.String(),
-        file: Type.String()
-    }),
-}, (req, res) => {
-    try { 
-        res.json();
-    } catch (err) {
-        Err.response(res, err);
-    }
-})
-
-
-// Lambda needs to run with 512MB, empty function takes about 70
-const CACHE = new pmtiles.ResolvedValueCache(undefined, undefined, nativeDecompress);
-
-class S3Source implements pmtiles.Source {
-    archive_name: string;
-
-    constructor(archive_name: string) {
-        this.archive_name = archive_name;
-    }
-
-    getKey() {
-        return this.archive_name;
-    }
-
-    async getBytes(offset: number, length: number): Promise<pmtiles.RangeResponse> {
-        const resp = await s3client.send(
-            new S3.GetObjectCommand({
-                Bucket: process.env.BUCKET!,
-                Key: this.archive_name + '.pmtiles',
-                Range: "bytes=" + offset + "-" + (offset + length - 1),
-            })
-        );
-
-        const arr = await resp.Body!.transformToByteArray();
-
-        return {
-            data: arr.buffer,
-            etag: resp.ETag,
-            expires: resp.Expires?.toISOString(),
-            cacheControl: resp.CacheControl,
-        };
-    }
-}
-
-interface Headers {
-    [key: string]: string;
-}
-
-const apiResp = (
-    statusCode: number,
-    body: string,
-    isBase64Encoded = false,
-    headers: Headers = {}
-): Lambda.APIGatewayProxyResult => {
-    return {
-        statusCode,
-        body,
-        headers,
-        isBase64Encoded
-    };
-};
-
-const apiError = (
-    statusCode: number,
-    message: string,
-): Lambda.APIGatewayProxyResult => {
-    return apiResp(statusCode, JSON.stringify({
-        status: statusCode, message
-    }), false, {
-        'Content-Type': 'application/json'
-    })
-}
-
-
-// Assumes event is a API Gateway V2 or Lambda Function URL formatted dict
-// and returns API Gateway V2 / Lambda Function dict responses
-export const handlerRaw = async (
-    event: Lambda.APIGatewayProxyEventV2,
-    context: Lambda.Context,
-    tilePostprocess?: (a: ArrayBuffer, t: pmtiles.TileType) => ArrayBuffer
-): Promise<Lambda.APIGatewayProxyResult> => {
-    let path;
-
-    if (event && event.pathParameters && event.pathParameters.proxy) {
-        path = "/" + event.pathParameters.proxy;
-    } else {
-        return apiError(500, "Proxy integration missing tile_path parameter");
-    }
-
-    if (!path) return apiError(500, "Invalid event configuration");
-
-    const headers: Headers = {
-        "Access-Control-Allow-Origin": '*',
-        "Access-Control-Allow-Credentials": 'true'
-    };
-
-    if (!event.queryStringParameters || !event.queryStringParameters.token) {
-        return apiError(400, 'token query param required');
-    }
-
-    try {
-        jwt.verify(event.queryStringParameters.token, process.env.SigningSecret);
-    } catch (err) {
-        console.error(err);
-        return apiError(401, 'Invalid Token')
-    }
-
-    const { ok, name, tile, ext, meta } = tile_path(path);
-
-    if (!ok) return apiError(400, "Invalid tile URL");
-
-    const source = new S3Source(name);
-    const p = new pmtiles.PMTiles(source, CACHE, nativeDecompress);
-
-    try {
-        const header = await p.getHeader();
-        if (!meta && (tile[0] < header.minZoom || tile[0] > header.maxZoom)) {
-            return apiResp(404, "", false, headers);
+        let format = 'mvt';
+        for (const pair of [
+            [pmtiles.TileType.Mvt, "mvt"],
+            [pmtiles.TileType.Png, "png"],
+            [pmtiles.TileType.Jpeg, "jpg"],
+            [pmtiles.TileType.Webp, "webp"],
+        ]) {
+            if (header.tileType === pair[0]) format = pair[1];
         }
 
-        if (meta && event.queryStringParameters && event.queryStringParameters.query) {
-            headers["Content-Type"] = "application/json";
+        res.json({
+            "tilejson": "2.2.0",
+            "name": `${name}.pmtiles`,
+            "description": "Hosted by TAK-ETL",
+            "version": "1.0.0",
+            "scheme": "xyz",
+            "tiles": [ process.env.APIROOT + `/tiles${path}/{z}/{x}/{y}.${format}?token=${event.queryStringParameters.token}`],
+            "minzoom": header.minZoom,
+            "maxzoom": header.maxZoom,
+            "bounds": [ header.minLon, header.minLat, header.maxLon, header.maxLat ],
+            "meta": header,
+            "center": [ header.centerLon, header.centerLat, header.centerZoom ]
+        });
+    } catch (err) {
+        Err.response(res, err);
+    }
+})
 
-            const query: {
-                lnglat: number[],
-                zoom: number,
-                limit: number
-            } = {
-                lnglat: [],
-                zoom: event.queryStringParameters.zoom ? parseInt(event.queryStringParameters.zoom) : header.maxZoom,
-                limit: event.queryStringParameters.limit ? parseInt(event.queryStringParameters.limit) : 1,
-            }
+schema.get('/tiles/profile/:username/:file/query', {
+    name: 'Get TileJSON',
+    group: 'ProfileTiles',
+    description: 'Return TileJSON for a given file',
+    params: Type.Object({
+        username: Type.String(),
+        name: Type.String()
+    }),
+    query: Type.Object({
+        token: Type.String(),
+        query: Type.String(),
+        zoom: Type.Optional(Type.Integer()),
+        limit: Type.Integer({ default: 1 })
+    }),
+    res: Type.Object({
+        type: Type.Literal('FeatureCollection'),
+        query: Type.Object({
+            lnglat: Type.Array(Type.Number()),
+            zoom: Type.Number(),
+            limit: Type.Number()
+        }),
+        meta: Type.Object({
+            z: Type.Number({
+                description: 'The Zoom level the query falls in'
+            }),
+            x: Type.Number({
+                description: 'The X ZXY coordinate the query falls in'
+            }),
+            y: Type.Number({
+                description: 'The Y ZXY coordinate the query falls in'
+            })
+        }),
+        features: Type.Array(Type.Object({
+            type: Type.Literal('Feature'),
+            properties: Type.Record(Type.String(), Type.String()),
+            geometry: Type.Object({
+                type: Type.String(),
+                coordinates: Type.Array(Type.Unknown())
+            })
+        }))
+    })
+}, async (req, res) => {
+    try {
+        const query: {
+            lnglat: [number, number],
+            zoom: number,
+            limit: number
+        } = {
+            lnglat: [],
+            zoom: req.query.zoom || header.maxZoom,
+            limit: req.query.limit
+        }
 
-            const lnglat: number[] = event.queryStringParameters.query
-                .split(',')
-                .map((comp) => { return Number(comp) });
+        const lnglat: number[] = req.query.query
+            .split(',')
+            .map((comp) => { return Number(comp) });
 
-            if (lnglat.length !== 2) return apiError(400, "Invalid LngLat");
-            if (isNaN(lnglat[0]) || isNaN(lnglat[1])) return apiError(400, "Invalid LngLat (Non-Numeric)");
-            query.lnglat = lnglat;
-            if (isNaN(query.zoom)) return apiError(400, "Invalid Integer Zoom");
-            if (isNaN(query.limit)) return apiError(400, "Invalid Integer Limit");
-            if (query.zoom > header.maxZoom) return apiError(400, "Above Layer MaxZoom");
-            if (query.zoom < header.minZoom) return apiError(400, "Below Layer MinZoom");
+        if (lnglat.length !== 2) throw new Err(400, null, "Invalid LngLat");
+        if (isNaN(lnglat[0]) || isNaN(lnglat[1])) throw new Err(400, null, "Invalid LngLat (Non-Numeric)");
+        query.lnglat = lnglat;
+        if (isNaN(query.zoom)) throw new Err(400, null, "Invalid Integer Zoom");
+        if (isNaN(query.limit)) throw new Err(400, null, "Invalid Integer Limit");
+        if (query.zoom > header.maxZoom) throw new Err(400, null, "Above Layer MaxZoom");
+        if (query.zoom < header.minZoom) throw new Err(400, null, "Below Layer MinZoom");
 
-            const xyz = TB.pointToTile(query.lnglat[0], query.lnglat[1], query.zoom)
-            const tile = await p.getZxy(xyz[2], xyz[0], xyz[1]);
+        const xyz = TB.pointToTile(query.lnglat[0], query.lnglat[1], query.zoom)
+        const tile = await p.getZxy(xyz[2], xyz[0], xyz[1]);
 
-            const meta = {
-                x: xyz[0],
-                y: xyz[1],
-                z: xyz[2]
-            };
+        const meta = { x: xyz[0], y: xyz[1], z: xyz[2] };
 
-            if (!tile) {
-                return apiResp(200, JSON.stringify({
-                    type: 'FeatureCollection',
-                    query,
-                    meta,
-                    features: []
-                }), false, headers);
-            }
-
+        if (!tile) {
+            res.json({
+                type: 'FeatureCollection',
+                query,
+                meta,
+                features: []
+            });
+        } else {
             const fc: any = await new Promise((resolve, reject) => {
                 vtquery([
                     { buffer: tile.data, z: xyz[2], x: xyz[0], y: xyz[1] }
@@ -261,42 +198,31 @@ export const handlerRaw = async (
             fc.query = query;
             fc.meta = meta;
 
-            return apiResp(200, JSON.stringify(fc), false, headers);
-        } else if (meta) {
-            headers["Content-Type"] = "application/json";
+            return res.json(fc);
+        }
+    } catch (err) {
+        Err.response(res, err);
+    }
+})
 
-            let format = 'mvt';
-            for (const pair of [
-                [pmtiles.TileType.Mvt, "mvt"],
-                [pmtiles.TileType.Png, "png"],
-                [pmtiles.TileType.Jpeg, "jpg"],
-                [pmtiles.TileType.Webp, "webp"],
-            ]) {
-                if (header.tileType === pair[0]) format = pair[1];
-            }
+schema.get('/tiles/profile/:username/:file/tiles/:z/:x/:y.:format', {
+    name: 'Get Tile',
+    group: 'ProfileTiles',
+    description: 'Return tile for a given zxy',
+    params: Type.Object({
+        username: Type.String(),
+        file: Type.String()
+    }),
+}, async (req, res) => {
+    try {
+        const username = auth(req.params.token);
 
-            return apiResp(200, JSON.stringify({
-                "tilejson": "2.2.0",
-                "name": `${name}.pmtiles`,
-                "description": "Hosted by TAK-ETL",
-                "version": "1.0.0",
-                "scheme": "xyz",
-                "tiles": [ process.env.APIROOT + `/tiles${path}/{z}/{x}/{y}.${format}?token=${event.queryStringParameters.token}`],
-                "minzoom": header.minZoom,
-                "maxzoom": header.maxZoom,
-                "bounds": [
-                    header.minLon,
-                    header.minLat,
-                    header.maxLon,
-                    header.maxLat
-                ],
-                "meta": header,
-                "center": [
-                    header.centerLon,
-                    header.centerLat,
-                    header.centerZoom
-                ]
-            }), false, headers);
+        if (username !== req.params.username) {
+            throw new Err(401, null, 'Unauthorized Access');
+        }
+
+        if (!meta && (tile[0] < header.minZoom || tile[0] > header.maxZoom)) {
+            throw new Err(404, null, 'File Not Found');
         }
 
         for (const pair of [
@@ -334,43 +260,22 @@ export const handlerRaw = async (
 
             let data = tile_result.data;
 
-            if (tilePostprocess) {
-                data = tilePostprocess(data, header.tileType);
-            }
-
             // We need to force API Gateway to interpret the Lambda response as binary
             // without depending on clients sending matching Accept: headers in the request.
             const recompressed_data = zlib.gzipSync(data);
             headers["Content-Encoding"] = "gzip";
-            return apiResp(
-                200,
-                Buffer.from(recompressed_data).toString("base64"),
-                true,
-                headers
-            );
+
+            /// TODO Send headers
+            headers
+
+            return res.send(Buffer.from(recompressed_data).toString("base64"));
         } else {
             return apiResp(204, "", false, headers);
         }
-    } catch (err: any) {
-        if ((err as Error).name === "AccessDenied") {
-            return apiError(403, "Bucket access unauthorized");
-        }
-
-        console.error(err);
-
-        if ((err as Error) && err.message) {
-            headers["Content-Type"] = 'application/json';
-            return apiResp(500, JSON.stringify({
-                status: 500,
-                message: err.message
-            }), false, headers);
-        } else {
-            throw err;
-        }
+    } catch (err) {
+        Err.response(res, err);
     }
-
-    return apiError(404, "Invalid URL");
-};
+})
 
 export const handler = serverless(app);
 

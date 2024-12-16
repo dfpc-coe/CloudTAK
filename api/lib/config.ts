@@ -141,7 +141,7 @@ export default class Config {
                 API_URL = `http://${process.env.API_URL}`;
                 PMTILES_URL = process.env.PMTILES_URL || 'http://localhost:5001'
             } else {
-                PMTILES_URL = `https://tiles.${process.env.API_URL}`;
+                PMTILES_URL = process.env.PMTILES_URL || `https://tiles.${process.env.API_URL}`;
                 API_URL = String(`https://${process.env.API_URL}`);
             }
 
