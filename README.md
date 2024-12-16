@@ -155,7 +155,15 @@ aws_access_key_id = <redacted>
 aws_secret_access_key = <redacted>
 ```
 
-Deployment can then be performed via the following:
+Then deploy the webhooks sub-stack with:
+
+```
+npx deploy create <stack> --template cloudformation/webhooks.template.js
+```
+
+This will create the API Gateway resources necessary for accepting incoming ETL Data Events
+
+Deployment of the main stack can then be performed via the following:
 
 ```
 npx deploy create <stack>
