@@ -1,5 +1,12 @@
 import * as pmtiles from 'pmtiles';
 import zlib from "zlib";
+import Err from '@openaddresses/batch-error';
+import {
+    GetObjectCommand
+} from '@aws-sdk/client-s3';
+import S3Client from './s3.js';
+
+const s3client = S3Client();
 
 export async function nativeDecompress(
     buf: ArrayBuffer,
@@ -21,7 +28,7 @@ export class S3Source implements pmtiles.Source {
     archive_name: string;
 
     constructor(archive_name: string) {
-        this.archive_name = archive_name;
+        this.archive_name = archive_name + '.pmtiles';
     }
 
     getKey() {
@@ -29,22 +36,32 @@ export class S3Source implements pmtiles.Source {
     }
 
     async getBytes(offset: number, length: number): Promise<pmtiles.RangeResponse> {
-        const resp = await s3client.send(
-            new S3.GetObjectCommand({
-                Bucket: process.env.BUCKET!,
-                Key: this.archive_name + '.pmtiles',
-                Range: "bytes=" + offset + "-" + (offset + length - 1),
-            })
-        );
+        try {
+            console.error(process.env.ASSET_BUCKET, this.archive_name)
 
-        const arr = await resp.Body!.transformToByteArray();
+            const resp = await s3client.send(
+                new GetObjectCommand({
+                    Bucket: process.env.ASSET_BUCKET!,
+                    Key: this.archive_name,
+                    Range: "bytes=" + offset + "-" + (offset + length - 1),
+                })
+            );
 
-        return {
-            data: arr.buffer,
-            etag: resp.ETag,
-            expires: resp.Expires?.toISOString(),
-            cacheControl: resp.CacheControl,
-        };
+            const arr = await resp.Body!.transformToByteArray();
+
+            return {
+                data: arr.buffer,
+                etag: resp.ETag,
+                expires: resp.Expires?.toISOString(),
+                cacheControl: resp.CacheControl,
+            };
+        } catch (err) {
+            if (err instanceof Error && err.name === 'NoSuchKey') {
+                throw new Err(404, err, 'Key not found');
+            } else {
+                throw new Err(500, err, 'Internal Server Error');
+            }
+        }
     }
 }
 

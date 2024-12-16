@@ -6,12 +6,12 @@
     "scripts": {
         "check": "tsc --noEmit",
         "lint": "eslint src/",
-        "build": "tsup --target es2022 --format esm src/index.ts"
+        "build": "tsup --target es2022 --format esm src/"
     },
     "dependencies": {
         "@aws-sdk/client-s3": "^3.213.0",
         "@aws-sdk/node-http-handler": "^3.212.0",
-        "@mapbox/tilebelt": "^1.0.2",
+        "@mapbox/tilebelt": "^2.0.1",
         "@mapbox/vtquery": "^0.6.0",
         "@openaddresses/batch-error": "^2.9.0",
         "@openaddresses/batch-schema": "^10.11.0",
@@ -25,7 +25,6 @@
     "devDependencies": {
         "@types/aws-lambda": "^8.10.108",
         "@types/jsonwebtoken": "^9.0.2",
-        "@types/mapbox__tilebelt": "^1.0.0",
         "@types/node": "^22.0.0",
         "eslint": "^9.0.0",
         "tsup": "^8.0.0",
