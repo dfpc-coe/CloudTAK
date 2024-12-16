@@ -1,15 +1,5 @@
-import express from 'express';
-import Schema from '@openaddresses/batch-schema'
-import { Type } from '@sinclair/typebox'
-import cors from 'cors';
-import Lambda from "aws-lambda";
-import jwt from 'jsonwebtoken';
 import * as pmtiles from 'pmtiles';
 import zlib from "zlib";
-import vtquery from '@mapbox/vtquery';
-import TB from '@mapbox/tilebelt';
-import serverless from 'serverless-http';
-import { NodeHttpHandler } from "@aws-sdk/node-http-handler";
 
 export async function nativeDecompress(
     buf: ArrayBuffer,
@@ -27,7 +17,7 @@ export async function nativeDecompress(
 // Lambda needs to run with 512MB, empty function takes about 70
 export const CACHE = new pmtiles.ResolvedValueCache(undefined, undefined, nativeDecompress);
 
-class S3Source implements pmtiles.Source {
+export class S3Source implements pmtiles.Source {
     archive_name: string;
 
     constructor(archive_name: string) {
