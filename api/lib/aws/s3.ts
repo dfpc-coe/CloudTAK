@@ -19,7 +19,6 @@ export default class S3 {
         if (process.env.AWS_S3_Endpoint) {
             config.endpoint = process.env.AWS_S3_Endpoint;
             config.forcePathStyle = true;
-            config.sslEnabled = false;
 
             if (!process.env.AWS_S3_AccessKeyId || !process.env.AWS_S3_SecretAccessKey) {
                 throw new Error('Cannot use custom S3 Endpoint without providing AWS_S3_AccessKeyId & AWS_S3_SecretAccessKey');
