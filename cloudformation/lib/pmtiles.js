@@ -13,6 +13,7 @@ export default {
                 PackageType: 'Image',
                 Environment: {
                     Variables: {
+                        StackName: cf.stackName,
                         ASSET_BUCKET: cf.ref('AssetBucket'),
                         APIROOT: cf.join(['https://tiles.', cf.ref('HostedURL')]),
                         SigningSecret: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/secret:SecretString::AWSCURRENT}}')
