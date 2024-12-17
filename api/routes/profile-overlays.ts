@@ -159,7 +159,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (overlay.mode === 'profile' && req.body.url && req.body.url.startsWith('http')) {
                 const url = new URL(req.body.url);
-                req.body.url = url.pathname.replace(/^\/api/, '');
+                req.body.url = url.pathname;
             }
 
             overlay = await config.models.ProfileOverlay.commit(req.params.overlay, req.body)
@@ -220,7 +220,7 @@ export default async function router(schema: Schema, config: Config) {
             } else {
                 if (req.body.mode === 'profile' && req.body.url.startsWith('http')) {
                     const url = new URL(req.body.url);
-                    req.body.url = url.pathname.replace(/^\/api/, '');
+                    req.body.url = url.pathname;
                 }
 
                 overlay = await config.models.ProfileOverlay.generate({
