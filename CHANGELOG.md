@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v5.25.0 - 2024-12-17
+
+- :tada: `API` Rewrite PMTiles in `express/batch-schema` to squash bugs, massively improve readability, and open the door to the ability to run it locally
+
 ### v5.24.0 - 2024-12-13
 
 - :tada: `DevOps` Allow DockerCompose mode to use minio configured store
