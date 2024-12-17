@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v5.26.0 - 2024-12-17
+
+- :bug: `API` Ensure `channel` is retained in VideoLease POST if set
+- :bug: `UI` Show lease expiration/permanence in VideoLease List & Modal
+
 ### v5.25.0 - 2024-12-17
 
 - :tada: `API` Rewrite PMTiles in `express/batch-schema` to squash bugs, massively improve readability, and open the door to the ability to run it locally
