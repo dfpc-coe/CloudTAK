@@ -177,7 +177,7 @@
                             class='badge bg-blue text-white mt-2'
                         >Permanent</span>
                         <CopyField
-                            v-else
+                            v-else-if='editLease.expiration'
                             :model-value='editLease.expiration'
                         />
                     </div>
@@ -205,14 +205,24 @@
                         v-if='advanced'
                         class='col-12 row'
                     >
-                        <div class="alert alert-info" role="alert">
-                            <div class="d-flex">
+                        <div
+                            class='alert alert-info'
+                            role='alert'
+                        >
+                            <div class='d-flex'>
                                 <div class='me-2'>
-                                    <IconInfoCircle :size='32' stroke='1'/>
+                                    <IconInfoCircle
+                                        :size='32'
+                                        stroke='1'
+                                    />
                                 </div>
                                 <div>
-                                    <h4 class="alert-title">Stream Username & Password Disabled</h4>
-                                    <div class="text-secondary">iTAK Does not currently support in URL username/passwords so this option is currently disabled</div>
+                                    <h4 class='alert-title'>
+                                        Stream Username & Password Disabled
+                                    </h4>
+                                    <div class='text-secondary'>
+                                        iTAK Does not currently support in URL username/passwords so this option is currently disabled
+                                    </div>
                                 </div>
                             </div>
                         </div>
