@@ -165,6 +165,25 @@
                 </div>
 
                 <div class='col-12'>
+                    <label>Lease Expiration</label>
+
+                    <div class='col-12'>
+                        <span
+                            v-if='expired(editLease.expiration)'
+                            class='badge bg-red text-white mt-2'
+                        >Expired</span>
+                        <span
+                            v-else-if='editLease.expiration === null'
+                            class='badge bg-blue text-white mt-2'
+                        >Permanent</span>
+                        <CopyField
+                            v-else
+                            :model-value='editLease.expiration'
+                        />
+                    </div>
+                </div>
+
+                <div class='col-12'>
                     <label
                         class='subheader mt-3 cursor-pointer'
                         @click='advanced = !advanced'
@@ -184,20 +203,35 @@
 
                     <div
                         v-if='advanced'
-                        class='col-12'
+                        class='col-12 row'
                     >
-                        <!-- NOT SUPPORTED IN iTAK-->
-                        <TablerInput
-                            v-model='editLease.stream_user'
-                            :disabled='true'
-                            label='Stream Username'
-                        />
+                        <div class="alert alert-info" role="alert">
+                            <div class="d-flex">
+                                <div class='me-2'>
+                                    <IconInfoCircle :size='32' stroke='1'/>
+                                </div>
+                                <div>
+                                    <h4 class="alert-title">Stream Username & Password Disabled</h4>
+                                    <div class="text-secondary">iTAK Does not currently support in URL username/passwords so this option is currently disabled</div>
+                                </div>
+                            </div>
+                        </div>
 
-                        <TablerInput
-                            v-model='editLease.stream_pass'
-                            :disabled='true'
-                            label='Stream Password'
-                        />
+                        <!-- NOT SUPPORTED IN iTAK-->
+                        <div class='col-md-6'>
+                            <TablerInput
+                                v-model='editLease.stream_user'
+                                :disabled='true'
+                                label='Stream Username'
+                            />
+                        </div>
+                        <div class='col-md-6'>
+                            <TablerInput
+                                v-model='editLease.stream_pass'
+                                :disabled='true'
+                                label='Stream Password'
+                            />
+                        </div>
                     </div>
                 </div>
 
@@ -285,6 +319,7 @@ import {
     IconPencil,
     IconWand,
     IconAffiliate,
+    IconInfoCircle,
     IconSquareChevronRight,
     IconChevronRight,
     IconChevronLeft,
