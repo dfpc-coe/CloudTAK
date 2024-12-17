@@ -400,7 +400,7 @@ async function deleteLease() {
     try {
         loading.value = true;
 
-        await std(`/api/video/lease/${props.lease.id}`, {
+        await std(`/api/video/lease/${editLease.value.id}`, {
             method: 'DELETE',
         });
 
