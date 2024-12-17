@@ -153,6 +153,7 @@ export default async function router(schema: Schema, config: Config) {
             const lease = await videoControl.generate({
                 name: req.body.name,
                 ephemeral: req.body.ephemeral,
+                channel: req.body.channel,
                 expiration: req.body.permanent ? null : moment().add(req.body.duration, 'seconds').toISOString(),
                 path: req.body.path || randomUUID(),
                 username: user.email,

@@ -163,6 +163,11 @@
                                 class='subheader text-red'
                             >Expired Lease</span>
                             <span
+                                v-else-if='l.expiration === null'
+                                style='margin-left: 42px;'
+                                class='subheader text-blue'
+                            >Permanent</span>
+                            <span
                                 v-else
                                 style='margin-left: 42px;'
                                 class='subheader'

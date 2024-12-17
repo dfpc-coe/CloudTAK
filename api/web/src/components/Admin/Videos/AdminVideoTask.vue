@@ -21,8 +21,8 @@
                 <div class='mx-2'>
                     Video Server
                     <span
-                        class='mx-2'
                         v-if='video'
+                        class='mx-2'
                         v-text='video.id'
                     />
                 </div>
