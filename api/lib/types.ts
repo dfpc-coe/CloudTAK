@@ -72,6 +72,7 @@ export const ProfileResponse = Type.Object({
         type: Type.Literal('Point'),
         coordinates: Type.Array(Type.Number())
     }), Type.Null()]),
+    tak_loc_freq: Type.Integer(),
     display_stale: Type.String(),
     display_text: Type.String(),
     display_distance: Type.String(),

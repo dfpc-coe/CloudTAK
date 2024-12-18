@@ -1,5 +1,5 @@
 <template>
-    <TablerLoading v-if='loading' />
+    <TablerLoading v-if='loading || !profile' />
     <template v-else>
         <div class='col-12'>
             <TablerInput
@@ -18,7 +18,13 @@
             <TablerEnum
                 v-model='profile.tak_role'
                 label='User Role'
-                :options='tak_roles'
+                :options='config.roles'
+            />
+        </div>
+        <div v-if='mode === "router"' class='col-12'>
+            <TablerInput
+                label='Location Reporting Frequency'
+                v-model='profile.tak_loc_freq'
             />
         </div>
         <div class='col-12 d-flex py-3'>
@@ -34,94 +40,87 @@
     </template>
 </template>
 
-<script>
-import { std } from '/src/std.ts';
+<script setup lang='ts'>
+import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import type { Profile, Profile_Update, ConfigGroups } from '../../../../src/types.ts';
+import { std } from '../../../../src/std.ts';
 import {
     TablerInput,
     TablerEnum,
     TablerLoading
 } from '@tak-ps/vue-tabler';
-import { useProfileStore } from '/src/stores/profile.ts';
+import { useProfileStore } from '../../../../src/stores/profile.ts';
 const profileStore = useProfileStore();
 
-export default {
-    name: 'CloudTAKSettingsCallsign',
-    components: {
-        TablerInput,
-        TablerEnum,
-        TablerLoading,
-    },
-    props: {
-        mode: {
-            type: String,
-            default: 'router'
+const props = defineProps({
+    mode: {
+        type: String,
+        default: 'router'
+    }
+})
+
+const emit = defineEmits([ 'update' ]);
+
+const loading = ref(true);
+const profile = ref<Profile | undefined>();
+const config = ref<ConfigGroups>({
+    groups: {},
+    roles: []
+});
+
+const router = useRouter();
+
+const tak_groups = computed(() => {
+    const groups = [];
+    for (const g in config.value.groups) {
+        if (config.value.groups[g]) {
+            groups.push(`${g} - ${config.value.groups[g]}`);
+        } else {
+            groups.push(g);
         }
-    },
-    emits: [
-        'update'
-    ],
-    data: function() {
-        return {
-            loading: true,
-            profile: {},
-            config: {}
-        }
-    },
-    computed: {
-        tak_groups: function() {
-            const groups = [];
-            for (const g in this.config.groups) {
-                if (this.config.groups[g]) {
-                    groups.push(`${g} - ${this.config.groups[g]}`);
-                } else {
-                    groups.push(g);
-                }
-            }
+    }
 
-            return groups;
-        },
-        tak_roles: function() {
-            return this.config.roles;
-        }
-    },
-    mounted: async function() {
-        this.loading = true;
-        await this.fetchConfig();
-        await profileStore.load();
-        const profile = JSON.parse(JSON.stringify(profileStore.profile));
+    return groups;
+});
 
-        if (this.config.groups[profile.tak_group]) {
-            profile.tak_group = `${profile.tak_group} - ${this.config.groups[profile.tak_group]}`;
-        }
+onMounted(async () => {
+    loading.value = true;
+    await fetchConfig();
+    await profileStore.load();
+    const profile = JSON.parse(JSON.stringify(profileStore.profile));
 
-        this.profile = profile;
-        this.loading = false;
-    },
-    methods: {
-        fetchConfig: async function() {
-            const config = await std('/api/config/group');
-            const groups = {};
-            for (const key in config.groups) {
-                groups[key.replace('group::', '')] = config.groups[key];
-            }
+    if (config.value.groups[profile.tak_group]) {
+        profile.tak_group = `${profile.tak_group} - ${config.value.groups[profile.tak_group]}`;
+    }
 
-            this.config = {
-                groups,
-                roles: config.roles
-            };
-        },
-        updateProfile: async function() {
-            const profile = JSON.parse(JSON.stringify(this.profile));
+    profile.value = profile;
+    loading.value = false;
+});
 
-            profile.tak_group = profile.tak_group.replace(/\s-\s.*$/, '');
+async function fetchConfig() {
+    const c = await std('/api/config/group') as ConfigGroups;
+    const groups: Record<string, string> = {};
+    for (const key in c.groups) {
+        groups[key.replace('group::', '')] = c.groups[key];
+    }
 
-            await profileStore.update(profile);
-            if (this.mode === 'router') {
-                this.$router.push("/menu/settings");
-            } else {
-                this.$emit('update');
-            }
-        }
+    config.value = {
+        groups,
+        roles: c.roles
+    };
+}
+
+async function updateProfile() {
+    const p = JSON.parse(JSON.stringify(profile.value)) as Profile;
+
+    p.tak_group = p.tak_group.replace(/\s-\s.*$/, '');
+
+    await profileStore.update(p);
+    if (props.mode === 'router') {
+        router.push("/menu/settings");
+    } else {
+        emit('update');
     }
 }
 </script>
