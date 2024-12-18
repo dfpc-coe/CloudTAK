@@ -6,15 +6,7 @@
     </MenuTemplate>
 </template>
 
-<script>
+<script setup lang='ts'>
 import MenuTemplate from '../util/MenuTemplate.vue';
 import SettingsCallsign from '../util/SettingsCallsign.vue';
-
-export default {
-    name: 'CloudTAKSettingsCallsign',
-    components: {
-        MenuTemplate,
-        SettingsCallsign
-    },
-}
 </script>
