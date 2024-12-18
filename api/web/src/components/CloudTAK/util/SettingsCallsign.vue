@@ -21,10 +21,13 @@
                 :options='config.roles'
             />
         </div>
-        <div v-if='mode === "router"' class='col-12'>
+        <div
+            v-if='mode === "router"'
+            class='col-12'
+        >
             <TablerInput
-                label='Location Reporting Frequency (ms)'
                 v-model='profile.tak_loc_freq'
+                label='Location Reporting Frequency (ms)'
             />
         </div>
         <div class='col-12 d-flex py-3'>
@@ -113,6 +116,7 @@ async function updateProfile() {
         tak_group: p.tak_group.replace(/\s-\s.*$/, '') as Profile["tak_group"],
         tak_loc_freq: p.tak_loc_freq
     });
+
     if (props.mode === 'router') {
         router.push("/menu/settings");
     } else {
