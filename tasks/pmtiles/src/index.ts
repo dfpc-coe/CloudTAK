@@ -41,6 +41,19 @@ app.use(cors({
 
 app.use(schema.router);
 
+schema.get('/tiles', {
+    name: 'API Info',
+    group: 'Root',
+    description: 'Return API Info for the Tiles API',
+    res: Type.Object({
+        name: Type.String()
+    })
+}, (req, res) => {
+    res.json({
+       name: process.env.StackName || 'Default Tiles API'
+    });
+});
+
 schema.get('/tiles/profile/:username/:file', {
     name: 'Get TileJSON',
     group: 'ProfileTiles',
@@ -310,7 +323,7 @@ export const handler = serverless(app);
 
 const startServer = async () => {
     app.listen(5002, () => {
-        console.log('ok - tile server on localhost:5002');
+        console.log('ok - tile server on http://localhost:5002');
     });
 };
 

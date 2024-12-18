@@ -1,7 +1,9 @@
 services:
     api:
         platform: linux/amd64
-        build: ./api/
+        build:
+          context: ./api/
+          dockerfile: Dockerfile
         restart: 'always'
         links:
             - postgis
@@ -22,6 +24,21 @@ services:
             - POSTGRES=postgres://docker:docker@postgis:5432/gis
             - API_URL=localhost:5000
             - ROOT_URL=localhost:5001
+
+    tiles:
+        platform: linux/amd64
+        build:
+          context: ./tasks/pmtiles/
+          dockerfile: Dockerfile.compose
+        restart: 'always'
+        ports:
+            - "5002:5002"
+        environment:
+            - SigningSecret=coe-wildland-fire
+            - ASSET_BUCKET=cloudtak
+            - AWS_S3_Endpoint=http://store:9000
+            - AWS_S3_AccessKeyId=cloudtakminioadmin
+            - AWS_S3_SecretAccessKey=cloudtakminioadmin
 
     media:
         build: https://github.com/dfpc-coe/media-infra.git
