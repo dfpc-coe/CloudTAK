@@ -142,7 +142,7 @@ const list = ref<VideoLeaseList>({
     items: []
 });
 
-watch(paging, async () => {
+watch(paging.value, async () => {
     await fetchList();
 });
 

@@ -10,6 +10,7 @@ import { randomUUID } from 'node:crypto';
 import { StandardResponse, VideoLeaseResponse } from '../lib/types.js';
 import ECSVideoControl, { Protocols } from '../lib/control/video-service.js';
 import * as Default from '../lib/limits.js';
+import TAKAPI, { APIAuthCertificate } from '../lib/tak-api.js';
 
 export default async function router(schema: Schema, config: Config) {
     const videoControl = new ECSVideoControl(config);
@@ -55,6 +56,13 @@ export default async function router(schema: Schema, config: Config) {
             } else {
                 const user = await Auth.as_user(config, req);
 
+                const profile = await config.models.Profile.from(user.email);
+                const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
+
+                const groups = (await api.Group.list({ useCache: true })).data.map((group) => {
+                    return group.name;
+                });
+
                 res.json(await config.models.VideoLease.list({
                     limit: req.query.limit,
                     page: req.query.page,
@@ -62,7 +70,7 @@ export default async function router(schema: Schema, config: Config) {
                     sort: req.query.sort,
                     where: sql`
                         name ~* ${req.query.filter}
-                        AND username = ${user.email}
+                        AND (username = ${user.email} OR channel IN ${groups})
                         AND ephemeral = ${req.query.ephemeral}
                     `
                 }));
