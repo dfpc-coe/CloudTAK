@@ -3,6 +3,7 @@ import Config from '../config.js';
 import { Type, Static } from '@sinclair/typebox';
 import { VideoLeaseResponse } from '../types.js';
 import fetch from '../fetch.js';
+import TAKAPI, { APIAuthCertificate } from '../tak-api.js';
 
 export const Protocols = Type.Object({
     rtmp: Type.Optional(Type.Object({
@@ -361,6 +362,29 @@ export default class VideoServiceControl {
         return lease;
     }
 
+    async from(
+        leaseid: string,
+        opts: {
+            username: string
+            admin: boolean
+        }
+    ): Promise<Static<typeof VideoLeaseResponse>> {
+        const lease = await this.config.models.VideoLease.from(leaseid);
+
+        if (!opts.admin) {
+            const profile = await this.config.models.Profile.from(opts.username);
+            const api = await TAKAPI.init(new URL(String(this.config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
+            const groups = (await api.Group.list({ useCache: true }))
+                .data.map((group) => group.name);
+
+            if (lease.username !== opts.username && (!lease.channel || !groups.includes(lease.channel))) {
+                throw new Err(400, null, 'You can only access a lease you created or that is assigned to a channel you are in');
+            }
+        }
+
+        return lease;
+    }
+
     async commit(
         leaseid: string,
         body: {
@@ -376,15 +400,7 @@ export default class VideoServiceControl {
         const video = await this.settings();
         if (!video.configured) throw new Err(400, null, 'Media Integration is not configured');
 
-        let lease = await this.config.models.VideoLease.from(leaseid);
-
-        if (opts.admin) {
-            lease = await this.config.models.VideoLease.commit(leaseid, body);
-        } else if (lease.username === opts.username) {
-            lease = await this.config.models.VideoLease.commit(leaseid, body);
-        } else {
-            throw new Err(400, null, 'You can only update a lease you created');
-        }
+        const lease = await this.from(leaseid, opts);
 
         try {
             await this.path(lease.path);
@@ -435,14 +451,20 @@ export default class VideoServiceControl {
         }
     }
 
-    async delete(leaseid: string): Promise<void> {
+    async delete(
+        leaseid: string,
+        opts: {
+            username: string;
+            admin: boolean;
+        }
+    ): Promise<void> {
         const video = await this.settings();
 
         if (!video.configured) throw new Err(400, null, 'Media Integration is not configured');
 
         const headers = this.headers(video.username, video.password);
 
-        const lease = await this.config.models.VideoLease.from(leaseid);
+        const lease = await this.from(leaseid, opts);
 
         await this.config.models.VideoLease.delete(leaseid);
 
