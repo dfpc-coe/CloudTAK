@@ -7,8 +7,6 @@ import { stdurl } from '../std.ts';
 import type { Feature } from '../types.ts';
 import { useCOTStore } from './cots.ts';
 import { useProfileStore } from './profile.ts';
-const profileStore = useProfileStore();
-const cotStore = useCOTStore();
 
 export const useConnectionStore = defineStore('connection', {
     state: (): {
@@ -70,12 +68,14 @@ export const useConnectionStore = defineStore('connection', {
 
                     throw new Error(err.properties.message);
                 } else if (body.type === 'cot') {
+                    const cotStore = useCOTStore();
                     await cotStore.add(body.data as Feature);
                 } else if (body.type === 'task') {
                     const task = body.data as Feature;
 
                     if (task.properties.type.startsWith('t-x-m-c')) {
                         // Mission Change Tasking
+                        const cotStore = useCOTStore();
                         await cotStore.subChange(task);
                     } else if (task.properties.type === 't-x-d-d') {
                         // CoT Delete Tasking
@@ -86,6 +86,7 @@ export const useConnectionStore = defineStore('connection', {
                 } else if (body.type === 'chat') {
                     const chat = (body.data as Feature).properties;
                     if (chat.chat) {
+                        const profileStore = useProfileStore();
                         profileStore.pushNotification({
                             type: 'Chat',
                             name: `${chat.chat.senderCallsign} to ${chat.chat.chatroom} says:`,
