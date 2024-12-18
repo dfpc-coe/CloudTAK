@@ -6,7 +6,9 @@
     "scripts": {
         "check": "tsc --noEmit",
         "lint": "eslint src/",
-        "build": "tsup --target es2022 --format esm src/"
+        "build": "tsup --target es2022 --format esm src/",
+        "dev": "tsx watch src/index.ts --noevents --nometrics --nosinks --unsafe",
+        "prod": "NODE_OPTIONS='--max-old-space-size=6144' node dist/index.js"
     },
     "dependencies": {
         "@aws-sdk/client-s3": "^3.213.0",
