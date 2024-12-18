@@ -10,6 +10,7 @@ import { randomUUID } from 'node:crypto';
 import { StandardResponse, VideoLeaseResponse } from '../lib/types.js';
 import ECSVideoControl, { Protocols } from '../lib/control/video-service.js';
 import * as Default from '../lib/limits.js';
+import TAKAPI, { APIAuthCertificate } from '../lib/tak-api.js';
 
 export default async function router(schema: Schema, config: Config) {
     const videoControl = new ECSVideoControl(config);
@@ -55,6 +56,12 @@ export default async function router(schema: Schema, config: Config) {
             } else {
                 const user = await Auth.as_user(config, req);
 
+                const profile = await config.models.Profile.from(user.email);
+                const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
+
+                const groups = (await api.Group.list({ useCache: true }))
+                    .data.map((group) => group.name);
+
                 res.json(await config.models.VideoLease.list({
                     limit: req.query.limit,
                     page: req.query.page,
@@ -62,7 +69,7 @@ export default async function router(schema: Schema, config: Config) {
                     sort: req.query.sort,
                     where: sql`
                         name ~* ${req.query.filter}
-                        AND username = ${user.email}
+                        AND (username = ${user.email} OR channel IN ${groups})
                         AND ephemeral = ${req.query.ephemeral}
                     `
                 }));
@@ -87,16 +94,10 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req);
 
-            let lease;
-            if (user.access === AuthUserAccess.ADMIN) {
-                lease = await config.models.VideoLease.from(req.params.lease);
-            } else {
-                lease = await config.models.VideoLease.from(req.params.lease);
-
-                if (lease.username !== user.email) {
-                    throw new Err(400, null, 'You can only delete a lease you created');
-                }
-            }
+            const lease = await videoControl.from(req.params.lease, {
+                username: user.email,
+                admin: user.access === AuthUserAccess.ADMIN
+            });
 
             res.json({
                 lease,
@@ -233,17 +234,10 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req);
 
-            if (user.access === AuthUserAccess.ADMIN) {
-                await videoControl.delete(req.params.lease);
-            } else {
-                const lease = await config.models.VideoLease.from(req.params.lease);
-
-                if (lease.username === user.email) {
-                    await videoControl.delete(req.params.lease);
-                } else {
-                    throw new Err(400, null, 'You can only delete a lease you created');
-                }
-            }
+            await videoControl.delete(req.params.lease, {
+                username: user.email,
+                admin: user.access === AuthUserAccess.ADMIN
+            });
 
             res.json({
                 status: 200,

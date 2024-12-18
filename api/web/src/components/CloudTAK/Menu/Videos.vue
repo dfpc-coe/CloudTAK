@@ -86,6 +86,10 @@
                         label='Video Connections'
                         :create='false'
                     />
+                    <TablerAlert
+                        v-else-if='error'
+                        :err='error'
+                    />
                     <template v-else>
                         <div
                             v-for='connection in connections.videoConnections'
@@ -130,6 +134,10 @@
                     v-if='leases.total === 0'
                     label='Video Leases'
                     :create='false'
+                />
+                <TablerAlert
+                    v-else-if='error'
+                    :err='error'
                 />
                 <div
                     v-for='l in leases.items'
@@ -199,6 +207,7 @@ import { useCOTStore } from '../../../stores/cots.ts';
 import { useVideoStore } from '../../../stores/videos.ts';
 import {
     TablerNone,
+    TablerAlert,
     TablerDelete,
     TablerIconButton
 } from '@tak-ps/vue-tabler';
@@ -215,6 +224,7 @@ const cotStore = useCOTStore();
 const videoStore = useVideoStore();
 
 const mode = ref('connections');
+const error = ref<Error | undefined>();
 const loading = ref(true);
 const lease = ref();
 const leases = ref<VideoLeaseList>({ total: 0, items: [] });
@@ -241,16 +251,28 @@ function expired(expiration: string | null): boolean {
 }
 
 async function fetchLeases(): Promise<void> {
-    lease.value = undefined;
-    loading.value = true;
-    leases.value = await std('/api/video/lease') as VideoLeaseList
+    try {
+        lease.value = undefined;
+        loading.value = true;
+        error.value = undefined;
+        leases.value = await std('/api/video/lease') as VideoLeaseList
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    }
+
     loading.value = false;
 }
 
 async function fetchConnections(): Promise<void> {
-    lease.value = undefined;
-    loading.value = true;
-    connections.value = await std('/api/marti/video') as VideoConnectionList;
+    try {
+        lease.value = undefined;
+        loading.value = true;
+        error.value = undefined;
+        connections.value = await std('/api/marti/video') as VideoConnectionList;
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    }
+
     loading.value = false;
 }
 
