@@ -23,7 +23,7 @@
         </div>
         <div v-if='mode === "router"' class='col-12'>
             <TablerInput
-                label='Location Reporting Frequency'
+                label='Location Reporting Frequency (ms)'
                 v-model='profile.tak_loc_freq'
             />
         </div>
@@ -43,7 +43,7 @@
 <script setup lang='ts'>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import type { Profile, Profile_Update, ConfigGroups } from '../../../../src/types.ts';
+import type { Profile, ConfigGroups } from '../../../../src/types.ts';
 import { std } from '../../../../src/std.ts';
 import {
     TablerInput,
@@ -88,35 +88,31 @@ onMounted(async () => {
     loading.value = true;
     await fetchConfig();
     await profileStore.load();
-    const profile = JSON.parse(JSON.stringify(profileStore.profile));
+    const p = JSON.parse(JSON.stringify(profileStore.profile));
 
-    if (config.value.groups[profile.tak_group]) {
-        profile.tak_group = `${profile.tak_group} - ${config.value.groups[profile.tak_group]}`;
+    if (config.value.groups[p.tak_group]) {
+        p.tak_group = `${p.tak_group} - ${config.value.groups[p.tak_group]}`;
     }
 
-    profile.value = profile;
+    profile.value = p;
     loading.value = false;
 });
 
 async function fetchConfig() {
-    const c = await std('/api/config/group') as ConfigGroups;
-    const groups: Record<string, string> = {};
-    for (const key in c.groups) {
-        groups[key.replace('group::', '')] = c.groups[key];
-    }
-
-    config.value = {
-        groups,
-        roles: c.roles
-    };
+    config.value = await std('/api/config/group') as ConfigGroups;
 }
 
 async function updateProfile() {
     const p = JSON.parse(JSON.stringify(profile.value)) as Profile;
 
-    p.tak_group = p.tak_group.replace(/\s-\s.*$/, '');
+    p.tak_group = p.tak_group.replace(/\s-\s.*$/, '') as Profile["tak_group"];
 
-    await profileStore.update(p);
+    await profileStore.update({
+        tak_callsign: p.tak_callsign,
+        tak_role: p.tak_role,
+        tak_group: p.tak_group.replace(/\s-\s.*$/, '') as Profile["tak_group"],
+        tak_loc_freq: p.tak_loc_freq
+    });
     if (props.mode === 'router') {
         router.push("/menu/settings");
     } else {
