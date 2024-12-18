@@ -59,9 +59,8 @@ export default async function router(schema: Schema, config: Config) {
                 const profile = await config.models.Profile.from(user.email);
                 const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
-                const groups = (await api.Group.list({ useCache: true })).data.map((group) => {
-                    return group.name;
-                });
+                const groups = (await api.Group.list({ useCache: true }))
+                    .data.map((group) => group.name);
 
                 res.json(await config.models.VideoLease.list({
                     limit: req.query.limit,
@@ -95,16 +94,10 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req);
 
-            let lease;
-            if (user.access === AuthUserAccess.ADMIN) {
-                lease = await config.models.VideoLease.from(req.params.lease);
-            } else {
-                lease = await config.models.VideoLease.from(req.params.lease);
-
-                if (lease.username !== user.email) {
-                    throw new Err(400, null, 'You can only delete a lease you created');
-                }
-            }
+            const lease = await videoControl.from(req.params.lease, {
+                username: user.email,
+                admin: user.access === AuthUserAccess.ADMIN
+            });
 
             res.json({
                 lease,
@@ -241,17 +234,10 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req);
 
-            if (user.access === AuthUserAccess.ADMIN) {
-                await videoControl.delete(req.params.lease);
-            } else {
-                const lease = await config.models.VideoLease.from(req.params.lease);
-
-                if (lease.username === user.email) {
-                    await videoControl.delete(req.params.lease);
-                } else {
-                    throw new Err(400, null, 'You can only delete a lease you created');
-                }
-            }
+            await videoControl.delete(req.params.lease, {
+                username: user.email,
+                admin: user.access === AuthUserAccess.ADMIN
+            });
 
             res.json({
                 status: 200,
