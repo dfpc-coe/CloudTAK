@@ -526,6 +526,13 @@
       "when": 1734362826779,
       "tag": "0074_eminent_stick",
       "breakpoints": true
+    },
+    {
+      "idx": 75,
+      "version": "7",
+      "when": 1734485752848,
+      "tag": "0075_clumsy_alex_power",
+      "breakpoints": true
     }
   ]
 }
