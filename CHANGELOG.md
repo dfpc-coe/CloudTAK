@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v5.28.0 - 2024-12-18
+
+- :tada: Surface shared VideoLeases in API & UI
+
 ### v5.27.0 - 2024-12-18
 
 - :rocket: Update Callsign Settings component to TS
