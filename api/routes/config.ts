@@ -118,7 +118,7 @@ export default async function router(schema: Schema, config: Config) {
                 return config.models.Setting.from(key);
             }))).forEach((k) => {
                 if (k.status === 'rejected') return;
-                return final[k.value.key] = String(k.value.value);
+                return final[k.value.key.replace('group::', '')] = String(k.value.value);
             });
 
             for (const group of keys) {
