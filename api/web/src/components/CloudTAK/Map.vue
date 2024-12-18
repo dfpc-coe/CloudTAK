@@ -1104,7 +1104,7 @@ function mountMap(): Promise<void> {
                 } else if (profileStore.profile && profileStore.profile.tak_loc) {
                     connectionStore.sendCOT(profileStore.CoT());
                 }
-            }, 2000);
+            }, profileStore.profile ? profileStore.profile.tak_loc_freq : 2000);
 
             timer.value = setInterval(async () => {
                 if (!mapStore.map) return;
