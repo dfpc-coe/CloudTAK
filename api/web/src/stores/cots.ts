@@ -11,7 +11,6 @@ import type { Feature, APIList } from '../types.ts';
 import type { Polygon } from 'geojson';
 import { booleanWithin } from '@turf/boolean-within';
 import { useProfileStore } from './profile.ts';
-const profileStore = useProfileStore();
 import { useMapStore } from './map.ts';
 
 type NestedArray = {
@@ -153,6 +152,7 @@ export const useCOTStore = defineStore('cots', {
             diff.remove = [];
             diff.update = [];
 
+            const profileStore = useProfileStore();
             const display_stale = profileStore.profile ? profileStore.profile.display_stale : 'Immediate';
 
             for (const cot of this.cots.values()) {

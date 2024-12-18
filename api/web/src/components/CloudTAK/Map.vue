@@ -37,7 +37,7 @@
                     style='height: 40px'
                 >
                     <Status
-                        v-if='live_loc'
+                        v-if='profileStore.live_loc'
                         v-tooltip='"Using Live Location"'
                         class='mx-2 my-2'
                         status='success'
@@ -575,7 +575,6 @@ const feat = ref()        // Show the Feat Viewer sidebar
 const locked = ref<Array<string>>([])
 
 const live_loc_denied = ref(false)   // User denied live location services
-const live_loc = ref<Feature | undefined>();
 const upload = ref({
     shown: false,
     dragging: false
@@ -583,8 +582,6 @@ const upload = ref({
 
 // Interval for pushing GeoJSON Map Updates (CoT)
 const timer = ref<ReturnType<typeof setInterval> | undefined>()
-// Interval for pushing your location to the server
-const timerSelf = ref<ReturnType<typeof setInterval> | undefined>()
 
 const loading = ref(true)
 
@@ -668,7 +665,7 @@ onMounted(async () => {
     if (("geolocation" in navigator)) {
         navigator.geolocation.watchPosition((position) => {
             if (position.coords.accuracy <= 50) {
-                live_loc.value = {
+                profileStore.live_loc = {
                     id: 'you',
                     type: 'Feature',
                     path: '/',
@@ -692,7 +689,7 @@ onMounted(async () => {
                     }
                 }
 
-                setYou(live_loc.value);
+                setYou(profileStore.live_loc);
             }
         }, (err) => {
             if (err.code === 0) {
@@ -736,9 +733,11 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
-    if (timer.value) window.clearInterval(timer.value);
-    if (timerSelf.value) window.clearInterval(timerSelf.value);
+    if (timer.value) {
+        window.clearInterval(timer.value);
+    }
 
+    profileStore.destroy();
     connectionStore.destroy();
     cotStore.$reset();
     mapStore.destroy();
@@ -767,9 +766,9 @@ function closeRadial() {
 }
 
 function toLocation() {
-    if (live_loc.value) {
+    if (profileStore.live_loc) {
         mapStore.map.flyTo({
-            center: live_loc.value.geometry.coordinates as LngLatLike,
+            center: profileStore.live_loc.geometry.coordinates as LngLatLike,
             zoom: 14
         });
     } else if (!profileStore.profile || !profileStore.profile.tak_loc) {
@@ -833,14 +832,14 @@ async function fetchSearch(query?: string, magicKey?: string) {
 }
 
 function getLocation() {
-    if (!live_loc.value) {
+    if (profileStore.profile || !profileStore.live_loc) {
         throw new Error('No Location Determined');
     } else if (live_loc_denied.value) {
         throw new Error('Cannot navigate to your position as you denied location services');
     }
 
     mapStore.map.flyTo({
-        center: live_loc.value.geometry.coordinates as LngLatLike,
+        center: profileStore.live_loc.geometry.coordinates as LngLatLike,
         zoom: 14
     });
 }
@@ -1098,13 +1097,7 @@ function mountMap(): Promise<void> {
                 await updateCOT();
             });
 
-            timerSelf.value = setInterval(() => {
-                if (live_loc.value) {
-                    connectionStore.sendCOT(profileStore.CoT(live_loc.value))
-                } else if (profileStore.profile && profileStore.profile.tak_loc) {
-                    connectionStore.sendCOT(profileStore.CoT());
-                }
-            }, 2000);
+            profileStore.setupTimer();
 
             timer.value = setInterval(async () => {
                 if (!mapStore.map) return;
