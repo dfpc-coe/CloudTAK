@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v5.27.0 - 2024-12-18
+
+- :rocket: Update Callsign Settings component to TS
+- :rocket: Move interval timers and current location to profile store
+- :rocket: Add `tak_loc_freq` field to UI and API
+
 ### v5.26.0 - 2024-12-17
 
 - :bug: `API` Ensure `channel` is retained in VideoLease POST if set
