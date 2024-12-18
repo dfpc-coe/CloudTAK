@@ -93,7 +93,7 @@ export const useProfileStore = defineStore('profile', {
             return this.channels
         },
         update: async function(body: Profile_Update): Promise<void> {
-            if (profile && body.tak_loc_freq && profile.tak_loc_freq !== body.tak_loc_freq) {
+            if (this.profile && body.tak_loc_freq && this.profile.tak_loc_freq !== body.tak_loc_freq) {
                 this.setupTimer();
             }
 
