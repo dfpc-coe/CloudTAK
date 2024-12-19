@@ -68,7 +68,7 @@ export default class Alarm {
                 MetricAlarms.push(...(res.MetricAlarms || []));
             } while (res.NextToken)
 
-            if (!res.MetricAlarms.length) return 'unknown';
+            if (!MetricAlarms.length) return 'unknown';
 
             let final;
             for (const alarm of (MetricAlarms || [])) {
@@ -76,14 +76,12 @@ export default class Alarm {
                 if (alarm.StateValue === 'ALARM') value = 'alarm';
                 if (alarm.StateValue === 'INSUFFICIENT_DATA') value = 'unknown';
 
-                const layer = parseInt(String(alarm.AlarmName).replace(`${this.stack}-layer-`, ''));
-
                 if (!final || final === 'health' && value === 'alarm') {
                     final = value
                 }
             }
 
-            return final;
+            return final || 'unknown';
         } catch (err) {
             throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to describe alarm');
         }
