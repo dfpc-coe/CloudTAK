@@ -116,7 +116,7 @@
                                         </h4>
                                         <div class='list-group list-group-transparent'>
                                             <span
-                                                class='list-group-item list-group-item-action d-flex align-items-center'
+                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": $route.name === "layer-deployment",
                                                     "cursor-pointer": $route.name !== "layer-deployment"
@@ -127,7 +127,7 @@
                                                 :stroke='1'
                                             /><span class='mx-3'>Deployment</span></span>
                                             <span
-                                                class='list-group-item list-group-item-action d-flex align-items-center'
+                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": $route.name === "layer-config",
                                                     "cursor-pointer": $route.name !== "layer-config"
@@ -138,7 +138,7 @@
                                                 :stroke='1'
                                             /><span class='mx-3'>Config</span></span>
                                             <span
-                                                class='list-group-item list-group-item-action d-flex align-items-center'
+                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": $route.name === "layer-environment",
                                                     "cursor-pointer": $route.name !== "layer-environment"
@@ -149,7 +149,7 @@
                                                 :stroke='1'
                                             /><span class='mx-3'>Environment</span></span>
                                             <span
-                                                class='list-group-item list-group-item-action d-flex align-items-center'
+                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": $route.name === "layer-schema",
                                                     "cursor-pointer": $route.name !== "layer-schema"
@@ -160,7 +160,7 @@
                                                 :stroke='1'
                                             /><span class='mx-3'>Schema</span></span>
                                             <span
-                                                class='list-group-item list-group-item-action d-flex align-items-center'
+                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": $route.name === "layer-styles",
                                                     "cursor-pointer": $route.name !== "layer-styles"
