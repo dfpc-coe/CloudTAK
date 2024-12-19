@@ -153,6 +153,7 @@ export default {
             this.loading = true;
             try {
                 const url = stdurl(`/api/connection/${this.$route.params.connectionid}/layer`);
+                url.searchParams.append('alarms', String(true));
                 url.searchParams.append('limit', this.paging.limit);
                 url.searchParams.append('page', this.paging.page);
                 url.searchParams.append('filter', this.paging.filter);
