@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v5.29.0 - 2024-12-18
+
+- :rocket: Page through AWS Alarms to support layers > AWS default page size
+- :bug: Allow multiple alarms for a given layer to influcence alarm state
+
 ### v5.28.0 - 2024-12-18
 
 - :tada: Surface shared VideoLeases in API & UI
