@@ -24,7 +24,7 @@
                                         </h4>
                                         <div class='list-group list-group-transparent'>
                                             <span
-                                                class='list-group-item list-group-item-action d-flex align-items-center'
+                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": String($route.name) === "admin-server",
                                                     "cursor-pointer": String($route.name) !== "admin-server"
@@ -37,7 +37,7 @@
                                                 /><span class='mx-3'>TAK Server Connection</span>
                                             </span>
                                             <span
-                                                class='list-group-item list-group-item-action d-flex align-items-center'
+                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": String($route.name) === "admin-config",
                                                     "cursor-pointer": String($route.name) !== "admin-config"
@@ -48,7 +48,7 @@
                                                 stroke='1'
                                             /><span class='mx-3'>CloudTAK Settings</span></span>
                                             <span
-                                                class='list-group-item list-group-item-action d-flex align-items-center'
+                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": String($route.name) === "admin-task-raw",
                                                     "cursor-pointer": String($route.name) !== "admin-task-raw"
@@ -59,7 +59,7 @@
                                                 stroke='1'
                                             /><span class='mx-3'>ETL Containers</span></span>
                                             <span
-                                                class='list-group-item list-group-item-action d-flex align-items-center'
+                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": String($route.name).includes("admin-overlays"),
                                                     "cursor-pointer": !String($route.name).includes("admin-overlays")
@@ -70,7 +70,7 @@
                                                 stroke='1'
                                             /><span class='mx-3'>Global Overlays</span></span>
                                             <span
-                                                class='list-group-item list-group-item-action d-flex align-items-center'
+                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": String($route.name) === "admin-task",
                                                     "cursor-pointer": String($route.name) !== "admin-task"
@@ -81,7 +81,7 @@
                                                 stroke='1'
                                             /><span class='mx-3'>Registered Tasks</span></span>
                                             <span
-                                                class='list-group-item list-group-item-action d-flex align-items-center'
+                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": String($route.name) === "admin-connection",
                                                     "cursor-pointer": String($route.name) !== "admin-connection"
@@ -92,7 +92,7 @@
                                                 stroke='1'
                                             /><span class='mx-3'>Connections</span></span>
                                             <span
-                                                class='list-group-item list-group-item-action d-flex align-items-center'
+                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": String($route.name) === "admin-layer",
                                                     "cursor-pointer": String($route.name) !== "admin-layer"
@@ -103,7 +103,7 @@
                                                 stroke='1'
                                             /><span class='mx-3'>Layers</span></span>
                                             <span
-                                                class='list-group-item list-group-item-action d-flex align-items-center'
+                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": String($route.name) === "admin-data",
                                                     "cursor-pointer": String($route.name) !== "admin-data"
@@ -114,7 +114,7 @@
                                                 stroke='1'
                                             /><span class='mx-3'>Data Syncs</span></span>
                                             <span
-                                                class='list-group-item list-group-item-action d-flex align-items-center'
+                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": String($route.name).startsWith("admin-user"),
                                                     "cursor-pointer": !String($route.name).startsWith("admin-user")
@@ -125,7 +125,7 @@
                                                 stroke='1'
                                             /><span class='mx-3'>Users</span></span>
                                             <span
-                                                class='list-group-item list-group-item-action d-flex align-items-center'
+                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": String($route.name).includes("admin-video"),
                                                     "cursor-pointer": !String($route.name).includes("admin-video")
@@ -136,7 +136,7 @@
                                                 stroke='1'
                                             /><span class='mx-3'>Video Services</span></span>
                                             <span
-                                                class='list-group-item list-group-item-action d-flex align-items-center'
+                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": String($route.name).includes("admin-export"),
                                                     "cursor-pointer": !String($route.name).includes("admin-export")
@@ -147,7 +147,7 @@
                                                 stroke='1'
                                             /><span class='mx-3'>Export</span></span>
                                             <span
-                                                class='list-group-item list-group-item-action d-flex align-items-center'
+                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": String($route.name).includes("admin-templates"),
                                                     "cursor-pointer": !String($route.name).includes("admin-templates")
