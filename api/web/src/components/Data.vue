@@ -127,7 +127,7 @@
                                         </h4>
                                         <div class='list-group list-group-transparent'>
                                             <span
-                                                class='list-group-item list-group-item-action d-flex align-items-center'
+                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": $route.name === "data-groups",
                                                     "cursor-pointer": $route.name !== "data-groups"
@@ -138,7 +138,7 @@
                                                 :stroke='1'
                                             /><span class='mx-3'>Channels</span></span>
                                             <span
-                                                class='list-group-item list-group-item-action d-flex align-items-center'
+                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": $route.name === "data-files",
                                                     "cursor-pointer": $route.name !== "data-files"
@@ -149,7 +149,7 @@
                                                 :stroke='1'
                                             /><span class='mx-3'>Files</span></span>
                                             <span
-                                                class='list-group-item list-group-item-action d-flex align-items-center'
+                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": $route.name === "data-layer",
                                                     "cursor-pointer": $route.name !== "data-layer"
@@ -160,7 +160,7 @@
                                                 :stroke='1'
                                             /><span class='mx-3'>Layers</span></span>
                                             <span
-                                                class='list-group-item list-group-item-action d-flex align-items-center'
+                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": $route.name === "data-jobs",
                                                     "cursor-pointer": $route.name !== "data-jobs"
