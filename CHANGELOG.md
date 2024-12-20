@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v5.30.0 - 2024-12-20
+
+- :tada: Globe projection is now surfaced as default map view
+- :rocket: Allow switching to mercator projection in display settings
+
 ### v5.29.0 - 2024-12-18
 
 - :rocket: Page through AWS Alarms to support layers > AWS default page size
