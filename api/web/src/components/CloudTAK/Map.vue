@@ -1003,7 +1003,9 @@ function mountMap(): Promise<void> {
         mapStore.init(mapRef.value);
 
         mapStore.map.once('idle', async () => {
-            mapStore.map.setProjection({ type: "globe" });
+            if (profileStore.profile && profileStore.profile.display_projection === 'globe') {
+                mapStore.map.setProjection({ type: "globe" });
+            }
 
             // Eventually make a sprite URL part of the overlay so KMLs can load a sprite package & add paging support
             const iconsets = await std('/api/iconset') as IconsetList;
