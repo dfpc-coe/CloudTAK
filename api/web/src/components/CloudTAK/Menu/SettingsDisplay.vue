@@ -61,6 +61,16 @@
                     ]'
                 />
             </div>
+            <div class='col-12'>
+                <TablerEnum
+                    v-model='profile.display_projection'
+                    label='Display Projection'
+                    :options='[
+                        "globe",
+                        "mercator"
+                    ]'
+                />
+            </div>
             <div class='col-12 d-flex py-3'>
                 <div class='ms-auto'>
                     <button
