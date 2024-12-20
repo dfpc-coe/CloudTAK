@@ -2,6 +2,7 @@ import { createSelectSchema } from 'drizzle-typebox';
 import { Type } from '@sinclair/typebox'
 import * as schemas from './schema.js';
 import { TAKGroup, TAKRole } from './api/types.js';
+import { Profile_Projection } from './enums.js';
 import { AugmentedData } from './models/Data.js';
 import { AugmentedLayer } from './models/Layer.js';
 import { Feature } from '@tak-ps/node-cot';
@@ -73,6 +74,7 @@ export const ProfileResponse = Type.Object({
         coordinates: Type.Array(Type.Number())
     }), Type.Null()]),
     tak_loc_freq: Type.Integer(),
+    display_projection: Type.Enum(Profile_Projection),
     display_stale: Type.String(),
     display_text: Type.String(),
     display_distance: Type.String(),
