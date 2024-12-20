@@ -1,0 +1,1 @@
+ALTER TABLE "profile" ADD COLUMN "display_projection" text DEFAULT 'GLOBE' NOT NULL;
