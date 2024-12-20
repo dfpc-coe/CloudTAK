@@ -20,7 +20,7 @@ export class toEnum {
 
 export enum Profile_Projection {
     MERCATOR = 'mercator',
-    GLOBE = 'GLOBE',
+    GLOBE = 'globe',
 }
 
 export enum Basemap_Format {
