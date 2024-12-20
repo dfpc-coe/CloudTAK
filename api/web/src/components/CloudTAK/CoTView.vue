@@ -410,6 +410,7 @@
                                 <td>
                                     <a
                                         :href='link.url'
+                                        target="_blank"
                                         v-text='link.url'
                                     />
                                 </td>

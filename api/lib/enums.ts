@@ -18,6 +18,11 @@ export class toEnum {
     }
 }
 
+export enum Profile_Projection {
+    MERCATOR = 'mercator',
+    GLOBE = 'GLOBE',
+}
+
 export enum Basemap_Format {
     PNG = 'png',
     JPEG = 'jpeg',
