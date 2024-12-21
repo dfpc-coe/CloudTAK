@@ -31,6 +31,7 @@ export const RENDERED_PROPERTIES = [
     'course',
     'icon-opacity',
     'stroke-opacity',
+    'stroke-width',
     'marker-color',
     'marker-radius',
     'marker-opacity',
