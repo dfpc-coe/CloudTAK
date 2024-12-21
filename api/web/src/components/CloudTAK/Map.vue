@@ -948,7 +948,7 @@ async function updateCOT() {
             let featid = locked.value[locked.value.length - 1];
             if (featid) {
                 const feat = cotStore.get(featid);
-                if (feat) {
+                if (feat && feat.geometry.type === "Point") {
                     const flyTo = {
                         center: feat.properties.center as LngLatLike,
                         speed: Infinity
