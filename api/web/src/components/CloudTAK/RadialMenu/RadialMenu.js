@@ -1,7 +1,7 @@
 'use strict';
 
-var DEFAULT_SIZE = 100;
-var MIN_SECTORS  = 3;
+const DEFAULT_SIZE = 100;
+const MIN_SECTORS  = 3;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 export default function RadialMenu(params) {
