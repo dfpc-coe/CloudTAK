@@ -217,13 +217,21 @@ export default class COT {
         })
     }
 
-    as_feature(): Feature {
-        return {
+    as_feature(opts?: {
+        clone?: boolean
+    }): Feature {
+        const feat = {
             id: this.id,
             type: 'Feature',
             path: this.path,
             properties: this._properties,
             geometry: this._geometry
+        } as Feature
+
+        if (opts && opts.clone) {
+            return JSON.parse(JSON.stringify(feat)) as Feature;
+        } else {
+            return feat;
         }
     }
 
