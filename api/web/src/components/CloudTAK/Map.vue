@@ -528,6 +528,7 @@ import { useProfileStore } from '../../../src/stores/profile.ts';
 import { useCOTStore } from '../../../src/stores/cots.ts';
 import { useConnectionStore } from '../../../src/stores/connection.ts';
 import UploadImport from './util/UploadImport.vue'
+import { coordEach } from '@turf/meta';
 const profileStore = useProfileStore();
 const cotStore = useCOTStore();
 const mapStore = useMapStore();
@@ -906,28 +907,37 @@ function editGeometry(featid: string) {
     mapStore.draw.setMode('select');
     drawMode.value = 'select';
 
-    if (cot.geometry.type === 'Polygon') {
-        cot.properties.mode = 'polygon';
-    } else if (cot.geometry.type === 'LineString') {
-        cot.properties.mode = 'linestring';
-    } else if (cot.geometry.type === 'Point') {
-        cot.properties.mode = 'point';
-
-        // TODO: Eventually retain if unchanged or just drop, not sure what's best
-        if (cot.geometry.coordinates.length > 2) {
-            cot.geometry.coordinates.splice(2);
-        }
+    const feat = cot.as_feature({ clone: true });
+    if (feat.geometry.type === 'Polygon') {
+        feat.properties.mode = 'polygon';
+    } else if (feat.geometry.type === 'LineString') {
+        feat.properties.mode = 'linestring';
+    } else if (feat.geometry.type === 'Point') {
+        feat.properties.mode = 'point';
     }
+
+    coordEach(feat, (coord) => {
+        if (coord.length > 2) {
+            coord.splice(2, coord.length - 2);
+        }
+    });
 
     cotStore.hidden.add(cot.id);
     updateCOT();
     try {
-        // @ts-expect-error TODO Ensure this meets "Defined" Properties
-        mapStore.draw.addFeatures([cot.as_feature()]);
+        // @ts-expect-error Cast Feature to GeoJSONStoreFeature
+        const status = mapStore.draw.addFeatures([feat]);
+
+        // @ts-expect-error No Typing due to above
+        if (status && status.length) {
+            // @ts-expect-error No Typing due to above
+            throw new Error('Error editing this feature: ', status[0].reason)
+        }
+
         mapStore.draw.selectFeature(cot.id);
     } catch (err) {
         mapStore.draw.setMode('static');
-        throw err
+        throw err;
     }
 }
 
