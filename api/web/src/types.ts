@@ -99,12 +99,19 @@ export type ProfileOverlay_Update = paths["/profile/overlay/{:overlay}"]["patch"
 
 // Below are CloudTAK ETL Specific Data Types
 
+
 export type ETLConnection = paths["/connection/{:connectionid}"]["get"]["responses"]["200"]["content"]["application/json"]
 export type ETLLayer = paths["/connection/{:connectionid}/layer/{:layerid}"]["get"]["responses"]["200"]["content"]["application/json"]
 
 export type VideoService = paths["/video/service"]["get"]["responses"]["200"]["content"]["application/json"];
 export type VideoServer = paths["/video/server"]["post"]["responses"]["200"]["content"]["application/json"];
 export type VideoServerList = paths["/video/server"]["get"]["responses"]["200"]["content"]["application/json"];
+
+// Pattern properties are not yet supported
+export type ETLRawTaskList = {
+    total: number;
+    items: Record<string, string[]>
+}
 
 export type ETLTaskVersions = paths["/task/raw/{:task}"]["get"]["responses"]["200"]["content"]["application/json"]
 
