@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v5.31.0 - 2024-12-22
+
+- :rocket: Set groundwork for Basemap groups
+- :bug: Improved editing behavior
+
 ### v5.30.0 - 2024-12-20
 
 - :tada: Globe projection is now surfaced as default map view
