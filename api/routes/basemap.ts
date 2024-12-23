@@ -170,8 +170,8 @@ export default async function router(schema: Schema, config: Config) {
             type: Type.Optional(Type.Enum(Basemap_Type)),
             sort: Type.String({ default: 'created', enum: Object.keys(Basemap) }),
             filter: Default.Filter,
-            group: Type.Optional(Type.String({
-                description: 'Only show Basemaps belonging to a given group'
+            collection: Type.Optional(Type.Integer({
+                description: 'Only show Basemaps belonging to a given collection'
             })),
             overlay: Type.Boolean({ default: false })
         }),
@@ -197,7 +197,7 @@ export default async function router(schema: Schema, config: Config) {
                     AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
                     AND (username IS NULL OR username = ${user.email})
                     AND (${Param(req.query.type)}::TEXT IS NULL or ${Param(req.query.type)}::TEXT = type)
-                    AND (${Param(req.query.group)}::TEXT IS NULL or ${Param(req.query.group)}::TEXT = 'group')
+                    AND (${Param(req.query.collection)}::TEXT IS NULL or ${Param(req.query.collection)}::TEXT = 'collection')
                     AND ${scope}
                 `
             });
@@ -223,7 +223,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Register a new basemap',
         body: Type.Object({
             name: Default.NameField,
-            group: Type.Optional(Type.String()),
+            collection: Type.Optional(Type.Integer()),
             scope: Type.Enum(ResourceCreationScope, { default: ResourceCreationScope.USER }),
             url: Type.String(),
             overlay: Type.Boolean({ default: false }),
@@ -288,7 +288,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         body: Type.Object({
             name: Type.Optional(Default.NameField),
-            group: Type.Optional(Type.Union([Type.Null(), Type.String()])),
+            collection: Type.Optional(Type.Union([Type.Null(), Type.Integer()])),
             url: Type.Optional(Type.String()),
             minzoom: Type.Optional(Type.Integer()),
             maxzoom: Type.Optional(Type.Integer()),
