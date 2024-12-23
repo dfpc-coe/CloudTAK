@@ -928,7 +928,6 @@ function editGeometry(featid: string) {
         // @ts-expect-error Cast Feature to GeoJSONStoreFeature
         const status = mapStore.draw.addFeatures([feat]);
 
-        // @ts-expect-error No Typing due to above
         if (status && status.length) {
             // @ts-expect-error No Typing due to above
             throw new Error('Error editing this feature: ', status[0].reason)

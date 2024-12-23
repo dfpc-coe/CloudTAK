@@ -109,7 +109,7 @@ import {
     TablerDelete,
     TablerNone,
 } from '@tak-ps/vue-tabler';
-import TableFooter from '../util/TableFooter.vue'
+import TableFooter from '../../util/TableFooter.vue'
 import {
     IconCircleArrowLeft
 } from '@tabler/icons-vue';

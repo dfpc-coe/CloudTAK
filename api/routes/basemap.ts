@@ -164,6 +164,10 @@ export default async function router(schema: Schema, config: Config) {
         description: 'List BaseMaps',
         query: Type.Object({
             scope: Type.Optional(Type.Enum(ResourceCreationScope)),
+            impersonate: Type.Optional(Type.Union([
+                Type.Boolean({ description: 'List all of the given resource, regardless of ACL' }),
+                Type.String({ description: 'Filter the given resource by a given username' }),
+            ])),
             limit: Default.Limit,
             page: Default.Page,
             order: Default.Order,
@@ -181,26 +185,52 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req);
+            let list;
 
             let scope = sql`True`;
-            if (req.query.scope === ResourceCreationScope.SERVER) scope = sql`username IS NULL`;
-            else if (req.query.scope === ResourceCreationScope.USER) scope = sql`username IS NOT NULL`;
+            if (req.query.scope === ResourceCreationScope.SERVER) {
+                scope = sql`username IS NULL`;
+            } else if (req.query.scope === ResourceCreationScope.USER) {
+                scope = sql`username IS NOT NULL`;
+            }
 
-            const list = await config.models.Basemap.list({
-                limit: req.query.limit,
-                page: req.query.page,
-                order: req.query.order,
-                sort: req.query.sort,
-                where: sql`
-                    name ~* ${Param(req.query.filter)}
-                    AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
-                    AND (username IS NULL OR username = ${user.email})
-                    AND (${Param(req.query.type)}::TEXT IS NULL or ${Param(req.query.type)}::TEXT = type)
-                    AND (${Param(req.query.collection)}::TEXT IS NULL or ${Param(req.query.collection)}::TEXT = 'collection')
-                    AND ${scope}
-                `
-            });
+            if (req.query.impersonate) {
+                await Auth.as_user(config, req, { admin: true });
+
+                const impersonate: string | null = req.query.impersonate === true ? null : req.query.impersonate;
+
+                list = await config.models.Basemap.list({
+                    limit: req.query.limit,
+                    page: req.query.page,
+                    order: req.query.order,
+                    sort: req.query.sort,
+                    where: sql`
+                        name ~* ${Param(req.query.filter)}
+                        AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
+                        AND (${Param(req.query.type)}::TEXT IS NULL or ${Param(req.query.type)}::TEXT = type)
+                        AND (${Param(req.query.collection)}::TEXT IS NULL or ${Param(req.query.collection)}::TEXT = 'collection')
+                        AND ${scope}
+                        AND (${impersonate}::TEXT IS NULL OR username = ${impersonate}::TEXT)
+                    `
+                });
+            } else {
+                const user = await Auth.as_user(config, req);
+
+                list = await config.models.Basemap.list({
+                    limit: req.query.limit,
+                    page: req.query.page,
+                    order: req.query.order,
+                    sort: req.query.sort,
+                    where: sql`
+                        name ~* ${Param(req.query.filter)}
+                        AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
+                        AND (username IS NULL OR username = ${user.email})
+                        AND (${Param(req.query.type)}::TEXT IS NULL or ${Param(req.query.type)}::TEXT = type)
+                        AND (${Param(req.query.collection)}::TEXT IS NULL or ${Param(req.query.collection)}::TEXT = 'collection')
+                        AND ${scope}
+                    `
+                });
+            }
 
             res.json({
                 total: list.total,
