@@ -2,12 +2,10 @@
     <div>
         <div class='card-header'>
             <template v-if='task'>
-                <IconCircleArrowLeft
-                    :size='32'
-                    :stroke='1'
-                    class='cursor-pointer'
+                <TablerIconButton
+                    title='Back'
                     @click='task = null'
-                />
+                > <IconCircleArrowLeft :size='32' stroke='1' /></TablerIconButton>
                 <h3
                     class='mx-2 card-title'
                     v-text='task'
@@ -102,9 +100,12 @@
     </div>
 </template>
 
-<script>
-import { std } from '/src/std.ts';
+<script setup lang='ts'>
+import { ref, onMounted } from 'vue';
+import type { ETLRawTaskList } from '../../../../src/types.ts';
+import { std } from '../../../../src/std.ts';
 import {
+    TablerIconButton,
     TablerLoading,
     TablerDelete,
     TablerNone,
@@ -114,42 +115,29 @@ import {
     IconCircleArrowLeft
 } from '@tabler/icons-vue';
 
-export default {
-    name: 'AdminTask',
-    components: {
-        TablerLoading,
-        TablerDelete,
-        TablerNone,
-        TableFooter,
-        IconCircleArrowLeft,
-    },
-    data: function() {
-        return {
-            loading: true,
-            task: null,
-            tasks: {
-                total: 0,
-                items: {}
-            }
-        }
-    },
-    mounted: async function() {
-        await this.fetch();
-    },
-    methods: {
-        fetch: async function() {
-            this.loading = true;
-            this.tasks = await std(`/api/task/raw`);
-            this.loading = false;
-        },
-        deleteVersion: async function(task, version) {
-            this.loading = true;
-            this.tasks = await std(`/api/task/raw/${task}/version/${version}`, {
-                method: 'DELETE'
-            });
+const loading = ref(true);
+const task = ref();
+const tasks = ref<ETLRawTaskList>({
+    total: 0,
+    items: {}
+});
 
-            await this.fetch();
-        }
-    }
+onMounted(async () => {
+    await fetch();
+});
+
+async function fetch(): Promise<void> {
+    loading.value = true;
+    tasks.value = await std(`/api/task/raw`) as ETLRawTaskList;
+    loading.value = false;
+}
+
+async function deleteVersion(task: string, version: string): Promise<void> {
+    loading.value = true;
+    await std(`/api/task/raw/${task}/version/${version}`, {
+        method: 'DELETE'
+    });
+
+    await fetch();
 }
 </script>

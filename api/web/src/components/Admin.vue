@@ -50,8 +50,8 @@
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
-                                                    "active": String($route.name) === "admin-tasks",
-                                                    "cursor-pointer": String($route.name) !== "admin-tasks"
+                                                    "active": String($route.name).startsWith("admin-tasks"),
+                                                    "cursor-pointer": !String($route.name).startsWith("admin-tasks")
                                                 }'
                                                 @click='$router.push(`/admin/tasks`)'
                                             ><IconBrandDocker
