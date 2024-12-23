@@ -153,7 +153,7 @@ async function fetchList() {
     url.searchParams.append('filter', paging.value.filter);
     url.searchParams.append('limit', String(paging.value.limit));
     url.searchParams.append('page', String(paging.value.page));
-    list.value = await std(url);
+    list.value = await std(url) as BasemapList;
     loading.value = false;
 }
 </script>
