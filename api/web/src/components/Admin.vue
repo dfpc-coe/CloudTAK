@@ -50,14 +50,14 @@
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
-                                                    "active": String($route.name) === "admin-task-raw",
-                                                    "cursor-pointer": String($route.name) !== "admin-task-raw"
+                                                    "active": String($route.name) === "admin-tasks",
+                                                    "cursor-pointer": String($route.name) !== "admin-tasks"
                                                 }'
-                                                @click='$router.push(`/admin/task-raw`)'
+                                                @click='$router.push(`/admin/tasks`)'
                                             ><IconBrandDocker
                                                 :size='32'
                                                 stroke='1'
-                                            /><span class='mx-3'>ETL Containers</span></span>
+                                            /><span class='mx-3'>ETL Task Runners</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
@@ -69,17 +69,6 @@
                                                 :size='32'
                                                 stroke='1'
                                             /><span class='mx-3'>Global Overlays</span></span>
-                                            <span
-                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
-                                                :class='{
-                                                    "active": String($route.name) === "admin-task",
-                                                    "cursor-pointer": String($route.name) !== "admin-task"
-                                                }'
-                                                @click='$router.push(`/admin/task`)'
-                                            ><IconBrandDocker
-                                                :size='32'
-                                                stroke='1'
-                                            /><span class='mx-3'>Registered Tasks</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
