@@ -65,10 +65,10 @@
                                                     "cursor-pointer": !String($route.name).includes("admin-overlays")
                                                 }'
                                                 @click='$router.push(`/admin/overlay`)'
-                                            ><IconBoxMultiple
+                                            ><IconMap
                                                 :size='32'
                                                 stroke='1'
-                                            /><span class='mx-3'>Global Overlays</span></span>
+                                            /><span class='mx-3'>Basemaps &amp; Overlays</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
@@ -188,7 +188,7 @@ import {
     IconDatabaseExport,
     IconBrandDocker,
     IconBuildingBroadcastTower,
-    IconBoxMultiple,
+    IconMap,
 } from '@tabler/icons-vue'
 const profileStore = useProfileStore();
 
