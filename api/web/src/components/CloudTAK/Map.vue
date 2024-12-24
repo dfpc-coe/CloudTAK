@@ -102,6 +102,7 @@
                         title='Search Button'
                         :size='40'
                         stroke='1'
+                        :color='searchBoxShown ? "#1E90FF" : "#FFFFFF"'
                         style='margin: 5px 8px'
                         class='cursor-pointer hover-button'
                         @click='searchBoxShown = !searchBoxShown'
