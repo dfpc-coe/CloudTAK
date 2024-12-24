@@ -53,4 +53,32 @@ test('GET: api/connection/1', async (t) => {
     t.end();
 });
 
+test('POST: api/connection', async (t) => {
+    try {
+        const res = await flight.fetch('/api/connection', {
+            method: 'POST',
+            auth: {
+                bearer: flight.token.admin
+            },
+            body: {
+                name: 'Test Connection',
+                description: 'Create Connection',
+                agency: null,
+                auth: {
+                    cert: 'cert123',
+                    key: 'key123'
+                }
+            }
+        }, true);
+
+        t.deepEquals(res, {
+        });
+
+    } catch (err) {
+        t.error(err, 'no error');
+    }
+
+    t.end();
+});
+
 flight.landing();
