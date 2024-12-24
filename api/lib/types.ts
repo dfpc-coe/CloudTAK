@@ -102,7 +102,6 @@ export const LayerTemplateResponse = createSelectSchema(schemas.LayerTemplate, {
     id: Type.Integer(),
     stale: Type.Integer(),
     enabled_styles: Type.Boolean(),
-    styles: Type.Array(Type.Unknown()),
     memory: Type.Integer(),
     datasync: Type.Boolean(),
     timeout: Type.Integer(),
