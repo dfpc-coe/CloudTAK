@@ -7,7 +7,7 @@
                     :stroke='1'
                 /><span
                     class='px-2'
-                    v-text='asset.name'
+                    v-text='asset ? asset.name : "Unknown"'
                 />
             </div>
 
@@ -26,40 +26,28 @@
     </div>
 </template>
 
-<script>
-import { std, stdurl } from '/src/std.ts';
+<script setup lang='ts'>
+import type { Asset } from '../../types.ts'
+import { std, stdurl } from '../../std.ts';
 import {
     IconFolder,
     IconDownload
 } from '@tabler/icons-vue'
 
-export default {
-    name: 'GenericAsset',
-    components: {
-        IconFolder,
-        IconDownload
-    },
-    props: {
-        asset_id: {
-            type: Number,
-            required: true
-        }
-    },
-    data: function() {
-        return {
-            asset: {}
-        }
-    },
-    mounted: async function() {
-        await this.fetch();
-    },
-    methods: {
-        fetch: async function() {
-            this.asset = await std(`/api/asset/${this.asset_id}`);
-        },
-        download: function() {
-            window.open(stdurl(`/api/asset/${this.asset_id}/raw`), "_blank")
-        }
-    }
+const props = defineProps<{
+    asset_id: number
+}>();
+
+const asset = ref<Asset | undefined>()
+
+onMounted(async () => {
+    await fetch();
+});
+
+async function fetch() {
+    asset = await std(`/api/asset/${props.asset_id}`);
+}
+function download() {
+    window.open(stdurl(`/api/asset/${props.asset_id}/raw`), "_blank")
 }
 </script>
