@@ -11,19 +11,19 @@
             icon='search'
         />
 
-        <template v-for='item of results' >
-            <Feature
-                v-if='item instanceof COT'
-                :deleteButton='false'
-                :feature='item'
-            />
-            <div
-                v-else
-                class='col-12 px-2 py-2 hover-button cursor-pointer'
-                @click='fetchSearch(item.text, item.magicKey)'
-                v-text='item.text'
-            />
-        </template>
+        <Feature
+            v-for='cot of cots'
+            :key='cot.id'
+            :deleteButton='false'
+            :feature='cot'
+        />
+        <div
+            v-for='item of results'
+            :key='item.magicKey'
+            class='col-12 px-2 py-2 hover-button cursor-pointer'
+            @click='fetchSearch(item.text, item.magicKey)'
+            v-text='item.text'
+        />
         <TablerLoading v-if='partialLoading' :compact='true'/>
     </div>
 </template>
@@ -54,7 +54,9 @@ const query = ref<{
     filter: '',
 });
 
-const results = ref<Array<COT | {
+const cots = ref<Array<COT>>([])
+
+const results = ref<Array<{
     text: string
     magicKey?: string
 }>>([]);
@@ -64,10 +66,11 @@ watch(query.value, async () => {
 });
 
 async function fetchSearch(queryText?: string, magicKey?: string) {
-    if (!magicKey || !queryText) {
-        results.value.splice(0, results.value.length);
+    results.value = [];
+    cots.value = [];
 
-        results.value.push(...Array.from(cotStore
+    if (!magicKey || !queryText) {
+        cots.value.push(...Array.from(cotStore
             .filter((cot) => {
                 return cot.properties.callsign.toLowerCase().includes(query.value.filter.toLowerCase());
             }, { mission: true }))
@@ -77,6 +80,7 @@ async function fetchSearch(queryText?: string, magicKey?: string) {
         partialLoading.value = true;
         const url = stdurl('/api/search/suggest');
         url.searchParams.append('query', query.value.filter);
+        url.searchParams.append('limit', '5');
         results.value.push(...((await std(url)) as SearchSuggest).items)
         partialLoading.value = false;
     } else {
@@ -86,7 +90,6 @@ async function fetchSearch(queryText?: string, magicKey?: string) {
         const items = ((await std(url)) as SearchForward).items;
 
         query.value.filter = '';
-        results.value = [];
         
         if (items.length) {
             mapStore.map.fitBounds([
