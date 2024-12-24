@@ -5,19 +5,13 @@
     />
 </template>
 
-<script>
+<script setup lang='ts'>
 import CloudTAK from './CloudTAK/Map.vue';
 
-export default {
-    name: 'CloudTAKHome',
-    components: {
-        CloudTAK
-    },
-    props: {
-        user: {
-            type: Object,
-            required: true
-        }
+const props = defineProps({
+    user: {
+        type: Object,
+        required: true
     }
-}
+});
 </script>
