@@ -5,7 +5,12 @@
                 <TablerIconButton
                     title='Back'
                     @click='task = null'
-                > <IconCircleArrowLeft :size='32' stroke='1' /></TablerIconButton>
+                >
+                    <IconCircleArrowLeft
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
                 <h3
                     class='mx-2 card-title'
                     v-text='task'
