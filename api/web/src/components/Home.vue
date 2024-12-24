@@ -8,7 +8,7 @@
 <script setup lang='ts'>
 import CloudTAK from './CloudTAK/Map.vue';
 
-const props = defineProps({
+defineProps({
     user: {
         type: Object,
         required: true
