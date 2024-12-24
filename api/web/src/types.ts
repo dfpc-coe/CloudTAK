@@ -27,6 +27,8 @@ export type VideoLeaseList = paths["/video/lease"]["get"]["responses"]["200"]["c
 export type VideoLeaseProtocols = paths["/video/lease/{:lease}"]["get"]["responses"]["200"]["content"]["application/json"]["protocols"];
 export type VideoLeaseResponse = paths["/video/lease/{:lease}"]["get"]["responses"]["200"]["content"]["application/json"]
 
+export type Asset = paths["/asset/{:assetid}"]["get"]["responses"]["200"]["content"]["application/json"]
+
 export type Subscription = paths["/marti/subscription/{:clientuid}"]["get"]["responses"]["200"]["content"]["application/json"];
 
 export type Group = paths["/marti/group"]["get"]["responses"]["200"]["content"]["application/json"]["data"][0]
