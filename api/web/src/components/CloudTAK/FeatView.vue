@@ -10,34 +10,24 @@
             <div class='col-auto card-header row mx-1 my-2'>
                 <div
                     class='card-title mx-2'
-                    v-text='feat.properties.name || "No Name"'
+                    v-text='feat.properties?.name || "No Name"'
                 />
             </div>
             <div class='col-auto btn-list my-2 ms-auto d-flex align-items-center mx-2'>
-                <IconZoomPan
-                    v-tooltip='"Zoom To"'
-                    :size='32'
-                    :stroke='1'
-                    class='cursor-pointer'
+                <TablerIconButton
+                    title='Zoom To'
                     @click='zoomTo'
-                />
-
-                <IconCode
+                ><IconZoomPan :size='32' stroke='1' /></TablerIconButton>
+                <TablerIconButton
                     v-if='mode === "default"'
-                    v-tooltip='"Raw View"'
-                    :size='32'
-                    :stroke='1'
-                    class='cursor-pointer'
+                    title='Raw View'
                     @click='mode = "raw"'
-                />
-                <IconX
+                ><IconCode :size='32' stroke='1'/></TablerIconButton>
+                <TablerIconButton
                     v-if='mode === "raw"'
-                    v-tooltip='"Default View"'
-                    :size='32'
-                    :stroke='1'
-                    class='cursor-pointer'
+                    title='Default View'
                     @click='mode = "default"'
-                />
+                ><IconX :size='32' stroke='1' /></TablerIconButton>
             </div>
         </div>
 
@@ -58,13 +48,15 @@
                                 </tr>
                             </thead>
                             <tbody class='bg-gray-500'>
-                                <tr
-                                    v-for='prop of Object.keys(feat.properties)'
-                                    :key='prop'
-                                >
-                                    <td v-text='prop' />
-                                    <td v-text='feat.properties[prop]' />
-                                </tr>
+                                <template v-if='feat.properties'>
+                                    <tr
+                                        v-for='prop of Object.keys(feat.properties)'
+                                        :key='prop'
+                                    >
+                                        <td v-text='prop' />
+                                        <td v-text='feat.properties[prop]' />
+                                    </tr>
+                                </template>
                             </tbody>
                         </table>
                     </div>
@@ -77,49 +69,37 @@
     </div>
 </template>
 
-<script>
-import { useMapStore } from '/src/stores/map.ts';
+<script setup lang='ts'>
+import { ref, computed } from 'vue';
+import { useMapStore } from '../../stores/map.ts';
+import type { LngLatLike } from 'maplibre-gl';
+import type { Feature } from 'geojson';
 import pointOnFeature from '@turf/point-on-feature';
 import Coordinate from './util/Coordinate.vue';
-const mapStore = useMapStore();
+import {
+    TablerIconButton
+} from '@tak-ps/vue-tabler';
 import {
     IconX,
     IconZoomPan,
     IconCode
 } from '@tabler/icons-vue';
 
-export default {
-    name: 'CloudTAKFeatView',
-    components: {
-        IconX,
-        IconCode,
-        IconZoomPan,
-        Coordinate
-    },
-    props: {
-        feat: {
-            type: Object,
-            required: true
-        }
-    },
-    data: function() {
-        return {
-            mode: 'default',
-            icon: null
-        }
-    },
-    computed: {
-        center: function() {
-            return pointOnFeature(this.feat).geometry.coordinates;
-        }
-    },
-    methods: {
-        zoomTo: function() {
-            mapStore.map.flyTo({
-                center: this.center,
-                zoom: 14
-            })
-        }
-    }
+const mapStore = useMapStore();
+
+const props = defineProps<{
+    feat: Feature
+}>();
+
+const mode = ref('default');
+const center = computed(() => {
+    return pointOnFeature(props.feat).geometry.coordinates;
+});
+
+function zoomTo() {
+    mapStore.map.flyTo({
+        center: center.value as LngLatLike,
+        zoom: 14
+    })
 }
 </script>
