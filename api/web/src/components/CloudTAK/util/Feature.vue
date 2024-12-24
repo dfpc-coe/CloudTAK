@@ -62,8 +62,10 @@
         </span>
         <div
             class='text-truncate user-select-none'
-            style='
-                width: calc(100% - 60px);
+            :style='
+                deleteButton
+                    ? "width: calc(100% - 60px);"
+                    : "width: 100%;"
             '
             v-text='feature.properties.callsign || feature.properties.name || "Unnamed"'
         />

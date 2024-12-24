@@ -200,6 +200,7 @@
 
             <SearchBox
                 v-if='searchBoxShown'
+                @close='searchBoxShown = false'
                 style='
                     z-index: 1;
                     top: 8px;
@@ -471,7 +472,7 @@ import CoordInput from './CoordInput.vue';
 import CoordinateType from './util/CoordinateType.vue';
 import type { MapGeoJSONFeature, GeoJSONSource, LngLatLike } from 'maplibre-gl';
 import { std, stdurl } from '../../../src/std.ts';
-import type { IconsetList, SearchForward, SearchSuggest, Feature } from '../../../src/types.ts';
+import type { IconsetList, Feature } from '../../../src/types.ts';
 import CloudTAKFeatView from './FeatView.vue';
 import {
     IconSearch,
@@ -502,7 +503,6 @@ import SideMenu from './Menu.vue';
 import {
     TablerDropdown,
     TablerModal,
-    TablerInput,
     TablerNone,
 } from '@tak-ps/vue-tabler';
 import Loading from './Loading.vue';
