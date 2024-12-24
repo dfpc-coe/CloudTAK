@@ -12,7 +12,12 @@
                 <TablerIconButton
                     title='Refresh'
                     @click='fetch'
-                ><IconRefresh :size='32' stroke='1'/></TablerIconButton>
+                >
+                    <IconRefresh
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
             </div>
         </div>
     </div>

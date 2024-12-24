@@ -17,17 +17,32 @@
                 <TablerIconButton
                     title='Zoom To'
                     @click='zoomTo'
-                ><IconZoomPan :size='32' stroke='1' /></TablerIconButton>
+                >
+                    <IconZoomPan
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
                 <TablerIconButton
                     v-if='mode === "default"'
                     title='Raw View'
                     @click='mode = "raw"'
-                ><IconCode :size='32' stroke='1'/></TablerIconButton>
+                >
+                    <IconCode
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
                 <TablerIconButton
                     v-if='mode === "raw"'
                     title='Default View'
                     @click='mode = "default"'
-                ><IconX :size='32' stroke='1' /></TablerIconButton>
+                >
+                    <IconX
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
             </div>
         </div>
 
