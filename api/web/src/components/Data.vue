@@ -62,10 +62,11 @@
                                             title='Edit'
                                             @click='router.push(`/connection/${route.params.connectionid}/data/${data.id}/edit`)'
                                         >
-                                        <IconSettings
-                                            :size='32'
-                                            stroke='1'
-                                        />
+                                            <IconSettings
+                                                :size='32'
+                                                stroke='1'
+                                            />
+                                        </TablerIconButton>
                                     </div>
                                 </div>
                             </div>
