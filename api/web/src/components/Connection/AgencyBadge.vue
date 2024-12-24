@@ -51,7 +51,7 @@
                             </div>
                             <div
                                 class='datagrid-content'
-                                v-text='agency.description || "No Description"'
+                                v-text='"No Description"'
                             />
                         </div>
                     </div>
@@ -91,6 +91,6 @@ watch(info, async () => {
 });
 
 async function fetch() {
-    agency.value = await std(`/api/agency/${props.connection.agency}`);
+    agency.value = await std(`/api/agency/${props.connection.agency}`) as ETLAgency;
 }
 </script>
