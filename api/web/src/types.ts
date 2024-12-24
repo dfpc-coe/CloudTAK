@@ -27,8 +27,6 @@ export type VideoLeaseList = paths["/video/lease"]["get"]["responses"]["200"]["c
 export type VideoLeaseProtocols = paths["/video/lease/{:lease}"]["get"]["responses"]["200"]["content"]["application/json"]["protocols"];
 export type VideoLeaseResponse = paths["/video/lease/{:lease}"]["get"]["responses"]["200"]["content"]["application/json"]
 
-export type Asset = paths["/asset/{:assetid}"]["get"]["responses"]["200"]["content"]["application/json"]
-
 export type Subscription = paths["/marti/subscription/{:clientuid}"]["get"]["responses"]["200"]["content"]["application/json"];
 
 export type Group = paths["/marti/group"]["get"]["responses"]["200"]["content"]["application/json"]["data"][0]
@@ -99,8 +97,9 @@ export type ProfileOverlay = paths["/profile/overlay/{:overlay}"]["get"]["respon
 export type ProfileOverlay_Create = paths["/profile/overlay"]["post"]["requestBody"]["content"]["application/json"]
 export type ProfileOverlay_Update = paths["/profile/overlay/{:overlay}"]["patch"]["requestBody"]["content"]["application/json"]
 
-// Below are CloudTAK ETL Specific Data Types
+export type SearchReverse = paths["/search/reverse/{:longitude}/{:latitude}"]["get"]["responses"]["200"]["content"]["application/json"]
 
+// Below are CloudTAK ETL Specific Data Types
 
 export type ETLConnectionList = paths["/connection"]["get"]["responses"]["200"]["content"]["application/json"]
 export type ETLConnection = paths["/connection/{:connectionid}"]["get"]["responses"]["200"]["content"]["application/json"]
