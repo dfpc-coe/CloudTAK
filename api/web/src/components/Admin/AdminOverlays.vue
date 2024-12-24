@@ -9,19 +9,37 @@
                 <TablerIconButton
                     title='Create Overlay'
                     @click='$router.push("/admin/overlay/new")'
-                ><IconPlus :size='32' stroke='1' /></TablerIconButton>
+                >
+                    <IconPlus
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
                 <TablerIconButton
                     title='Refresh'
                     @click='fetchList'
-                ><IconRefresh :size='32' stroke='1' /></TablerIconButton>
+                >
+                    <IconRefresh
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
             </div>
         </div>
         <div style='min-height: 20vh; margin-bottom: 61px'>
-            <TablerInput
-                v-model='paging.filter'
-                placeholder='Filter...'
-                class='mx-1 my-2'
-            />
+            <div class='row col-12 mx-1 my-2'>
+                <div class='col-md-8'>
+                    <TablerInput
+                        v-model='paging.filter'
+                        placeholder='Filter...'
+                    />
+                </div>
+                <div class='col-md-4'>
+                    <TablerEnum
+                        v-model='paging.scope'
+                    />
+                </div>
+            </div>
 
             <TablerLoading
                 v-if='loading'
@@ -87,6 +105,7 @@ import TableFooter from '../util/TableFooter.vue'
 import {
     TablerNone,
     TablerInput,
+    TablerEnum,
     TablerAlert,
     TablerIconButton,
     TablerLoading
@@ -107,6 +126,7 @@ const paging = ref({
     sort: 'name',
     order: 'asc',
     limit: 100,
+    scope: '',
     page: 0
 });
 
