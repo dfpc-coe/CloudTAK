@@ -73,7 +73,7 @@ import {
 } from '@tabler/icons-vue';
 
 import { useRouter } from 'vue-router'
-import { defineProps, computed } from 'vue';
+import { computed } from 'vue';
 
 const router = useRouter()
 

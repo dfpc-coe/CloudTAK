@@ -278,6 +278,404 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/basemap": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List BaseMaps */
+        get: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    scope?: "server" | "user";
+                    /** @description No Description */
+                    impersonate?: boolean | string;
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    type?: "raster" | "raster-dem" | "vector";
+                    /** @description No Description */
+                    sort: "id" | "created" | "updated" | "name" | "url" | "overlay" | "username" | "bounds" | "center" | "minzoom" | "maxzoom" | "collection" | "format" | "style" | "styles" | "type" | "enableRLS";
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
+                    /** @description Only show Basemaps belonging to a given collection */
+                    collection?: number;
+                    /** @description No Description */
+                    overlay: boolean;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: number;
+                                created: string;
+                                updated: string;
+                                name: string;
+                                url: string;
+                                overlay: boolean;
+                                username: string | null;
+                                minzoom: number;
+                                maxzoom: number;
+                                collection: null | number;
+                                format: string;
+                                style: string;
+                                styles: unknown[];
+                                type: string;
+                                bounds?: number[];
+                                center?: number[];
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        /**
+         *                 If the Content-Type if text/plain, then assume the body contains a TileJSON URL
+         *                 Alternatively, if the Content-Type is a MultiPart upload, assume the input is a TAK XML document
+         *
+         *                 Both return as many BaseMap fields as possible to use in the creation of a new BaseMap
+         *              */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            name?: string;
+                            type?: "raster" | "raster-dem" | "vector";
+                            url?: string;
+                            bounds?: unknown;
+                            center?: unknown;
+                            minzoom?: number;
+                            maxzoom?: number;
+                            /** @constant */
+                            style?: "zxy";
+                            format?: "png" | "jpeg" | "mvt";
+                        };
+                    };
+                };
+            };
+        };
+        /** Register a new basemap */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Human readable name */
+                        name: string;
+                        collection?: number;
+                        /** @default user */
+                        scope: "server" | "user";
+                        url: string;
+                        /** @default false */
+                        overlay: boolean;
+                        minzoom?: number;
+                        maxzoom?: number;
+                        format?: "png" | "jpeg" | "mvt";
+                        /** @constant */
+                        style?: "zxy";
+                        type?: "raster" | "raster-dem" | "vector";
+                        bounds?: number[];
+                        center?: number[];
+                        styles?: unknown[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            url: string;
+                            overlay: boolean;
+                            username: string | null;
+                            minzoom: number;
+                            maxzoom: number;
+                            collection: null | number;
+                            format: string;
+                            style: string;
+                            styles: unknown[];
+                            type: string;
+                            bounds?: number[];
+                            center?: number[];
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/basemap/{:basemapid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a basemap */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description No Description */
+                    download?: boolean;
+                    /** @description No Description */
+                    format?: string;
+                    /** @description No Description */
+                    token?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            url: string;
+                            overlay: boolean;
+                            username: string | null;
+                            minzoom: number;
+                            maxzoom: number;
+                            collection: null | number;
+                            format: string;
+                            style: string;
+                            styles: unknown[];
+                            type: string;
+                            bounds?: number[];
+                            center?: number[];
+                        } | string;
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /** Delete a basemap */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update a basemap */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Human readable name */
+                        name?: string;
+                        collection?: null | number;
+                        url?: string;
+                        minzoom?: number;
+                        maxzoom?: number;
+                        format?: "png" | "jpeg" | "mvt";
+                        /** @constant */
+                        style?: "zxy";
+                        type?: "raster" | "raster-dem" | "vector";
+                        bounds?: number[];
+                        center?: number[];
+                        styles?: unknown[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            url: string;
+                            overlay: boolean;
+                            username: string | null;
+                            minzoom: number;
+                            maxzoom: number;
+                            collection: null | number;
+                            format: string;
+                            style: string;
+                            styles: unknown[];
+                            type: string;
+                            bounds?: number[];
+                            center?: number[];
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/basemap/{:basemapid}/tiles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a basemap tilejson */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description No Description */
+                    token?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            tilejson: string;
+                            version: string;
+                            name: string;
+                            minzoom: number;
+                            maxzoom: number;
+                            tiles: string[];
+                            bounds: number[];
+                            center: number[];
+                            type: string;
+                            layers: unknown[];
+                            format?: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/basemap/{:basemapid}/tiles/{:z}/{:x}/{:y}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a basemap tile */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description No Description */
+                    token?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/config": {
         parameters: {
             query?: never;
@@ -1166,394 +1564,6 @@ export interface paths {
                 };
             };
         };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/basemap": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List BaseMaps */
-        get: {
-            parameters: {
-                query: {
-                    /** @description No Description */
-                    scope?: "server" | "user";
-                    /** @description Limit the number of responses returned */
-                    limit: number;
-                    /** @description Iterate through "pages" of items based on the "limit" query param */
-                    page: number;
-                    /** @description Order in which results are returned based on the "sort" query param */
-                    order: "asc" | "desc";
-                    /** @description No Description */
-                    type?: "raster" | "raster-dem" | "vector";
-                    /** @description No Description */
-                    sort: "id" | "created" | "updated" | "name" | "url" | "overlay" | "username" | "bounds" | "center" | "minzoom" | "maxzoom" | "format" | "style" | "styles" | "type" | "enableRLS";
-                    /** @description Filter results by a human readable name field */
-                    filter: string;
-                    /** @description No Description */
-                    overlay: boolean;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            total: number;
-                            items: {
-                                id: number;
-                                created: string;
-                                updated: string;
-                                name: string;
-                                url: string;
-                                overlay: boolean;
-                                username: string | null;
-                                minzoom: number;
-                                maxzoom: number;
-                                format: string;
-                                style: string;
-                                styles: unknown[];
-                                type: string;
-                                bounds?: number[];
-                                center?: number[];
-                            }[];
-                        };
-                    };
-                };
-            };
-        };
-        /**
-         *                 If the Content-Type if text/plain, then assume the body contains a TileJSON URL
-         *                 Alternatively, if the Content-Type is a MultiPart upload, assume the input is a TAK XML document
-         *
-         *                 Both return as many BaseMap fields as possible to use in the creation of a new BaseMap
-         *              */
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            name?: string;
-                            type?: "raster" | "raster-dem" | "vector";
-                            url?: string;
-                            bounds?: unknown;
-                            center?: unknown;
-                            minzoom?: number;
-                            maxzoom?: number;
-                            /** @constant */
-                            style?: "zxy";
-                            format?: "png" | "jpeg" | "mvt";
-                        };
-                    };
-                };
-            };
-        };
-        /** Register a new basemap */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        /** @description Human readable name */
-                        name: string;
-                        /** @default user */
-                        scope: "server" | "user";
-                        url: string;
-                        /** @default false */
-                        overlay: boolean;
-                        minzoom?: number;
-                        maxzoom?: number;
-                        format?: "png" | "jpeg" | "mvt";
-                        /** @constant */
-                        style?: "zxy";
-                        type?: "raster" | "raster-dem" | "vector";
-                        bounds?: number[];
-                        center?: number[];
-                        styles?: unknown[];
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: number;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            url: string;
-                            overlay: boolean;
-                            username: string | null;
-                            minzoom: number;
-                            maxzoom: number;
-                            format: string;
-                            style: string;
-                            styles: unknown[];
-                            type: string;
-                            bounds?: number[];
-                            center?: number[];
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/basemap/{:basemapid}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get a basemap */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description No Description */
-                    download?: boolean;
-                    /** @description No Description */
-                    format?: string;
-                    /** @description No Description */
-                    token?: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: number;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            url: string;
-                            overlay: boolean;
-                            username: string | null;
-                            minzoom: number;
-                            maxzoom: number;
-                            format: string;
-                            style: string;
-                            styles: unknown[];
-                            type: string;
-                            bounds?: number[];
-                            center?: number[];
-                        } | string;
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        /** Delete a basemap */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        /** Update a basemap */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        /** @description Human readable name */
-                        name?: string;
-                        url?: string;
-                        minzoom?: number;
-                        maxzoom?: number;
-                        format?: "png" | "jpeg" | "mvt";
-                        /** @constant */
-                        style?: "zxy";
-                        type?: "raster" | "raster-dem" | "vector";
-                        bounds?: number[];
-                        center?: number[];
-                        styles?: unknown[];
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: number;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            url: string;
-                            overlay: boolean;
-                            username: string | null;
-                            minzoom: number;
-                            maxzoom: number;
-                            format: string;
-                            style: string;
-                            styles: unknown[];
-                            type: string;
-                            bounds?: number[];
-                            center?: number[];
-                        };
-                    };
-                };
-            };
-        };
-        trace?: never;
-    };
-    "/basemap/{:basemapid}/tiles": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get a basemap tilejson */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description No Description */
-                    token?: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            tilejson: string;
-                            version: string;
-                            name: string;
-                            minzoom: number;
-                            maxzoom: number;
-                            tiles: string[];
-                            bounds: number[];
-                            center: number[];
-                            type: string;
-                            layers: unknown[];
-                            format?: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/basemap/{:basemapid}/tiles/{:z}/{:x}/{:y}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get a basemap tile */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description No Description */
-                    token?: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -6412,7 +6422,7 @@ export interface paths {
                                 datasync: boolean;
                                 priority: string;
                                 enabled_styles: boolean;
-                                styles: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                                styles: unknown[];
                                 logging: boolean;
                                 stale: number;
                                 task: string;
@@ -6470,7 +6480,7 @@ export interface paths {
                             datasync: boolean;
                             priority: string;
                             enabled_styles: boolean;
-                            styles: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                            styles: unknown[];
                             logging: boolean;
                             stale: number;
                             task: string;
@@ -6527,7 +6537,7 @@ export interface paths {
                             datasync: boolean;
                             priority: string;
                             enabled_styles: boolean;
-                            styles: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                            styles: unknown[];
                             logging: boolean;
                             stale: number;
                             task: string;
@@ -6610,7 +6620,7 @@ export interface paths {
                             datasync: boolean;
                             priority: string;
                             enabled_styles: boolean;
-                            styles: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                            styles: unknown[];
                             logging: boolean;
                             stale: number;
                             task: string;
@@ -11587,7 +11597,7 @@ export interface paths {
                     content: {
                         "application/json": {
                             total: number;
-                            items: unknown;
+                            items: Record<string, never>;
                         };
                     };
                 };
@@ -12193,12 +12203,12 @@ export interface paths {
                                 updated: string;
                                 username: string;
                                 ephemeral: boolean;
-                                channel: (null | string) | null;
-                                expiration: (null | string) | null;
+                                channel: null | string;
+                                expiration: null | string;
                                 path: string;
                                 stream_user: string | null;
                                 stream_pass: string | null;
-                                proxy: (null | string) | null;
+                                proxy: null | string;
                             }[];
                         };
                     };
@@ -12257,12 +12267,12 @@ export interface paths {
                                 updated: string;
                                 username: string;
                                 ephemeral: boolean;
-                                channel: (null | string) | null;
-                                expiration: (null | string) | null;
+                                channel: null | string;
+                                expiration: null | string;
                                 path: string;
                                 stream_user: string | null;
                                 stream_pass: string | null;
-                                proxy: (null | string) | null;
+                                proxy: null | string;
                             };
                             protocols: {
                                 rtmp?: {
@@ -12328,12 +12338,12 @@ export interface paths {
                                 updated: string;
                                 username: string;
                                 ephemeral: boolean;
-                                channel: (null | string) | null;
-                                expiration: (null | string) | null;
+                                channel: null | string;
+                                expiration: null | string;
                                 path: string;
                                 stream_user: string | null;
                                 stream_pass: string | null;
-                                proxy: (null | string) | null;
+                                proxy: null | string;
                             };
                             protocols: {
                                 rtmp?: {
@@ -12431,12 +12441,12 @@ export interface paths {
                                 updated: string;
                                 username: string;
                                 ephemeral: boolean;
-                                channel: (null | string) | null;
-                                expiration: (null | string) | null;
+                                channel: null | string;
+                                expiration: null | string;
                                 path: string;
                                 stream_user: string | null;
                                 stream_pass: string | null;
-                                proxy: (null | string) | null;
+                                proxy: null | string;
                             };
                             protocols: {
                                 rtmp?: {

@@ -4,7 +4,7 @@
             <label class='subheader mx-2'>ArcGIS Reverse Geocode</label>
         </div>
         <div
-            v-if='reverse'
+            v-if='props.reverse'
             class='col-12 d-flex py-2 px-2'
         >
             <IconMapPin
@@ -15,11 +15,11 @@
             <div class='mx-2'>
                 <div
                     style='font-size: 30px;'
-                    v-text='reverse.ShortLabel'
+                    v-text='props.reverse.ShortLabel'
                 />
                 <div
                     class='mx-1 my-1'
-                    v-text='reverse.LongLabel.replace(new RegExp(`^.*${reverse.ShortLabel}, `), "")'
+                    v-text='props.reverse.LongLabel.replace(new RegExp(`^.*${props.reverse.ShortLabel}, `), "")'
                 />
             </div>
         </div>
@@ -37,20 +37,13 @@
     </div>
 </template>
 
-<script lang='ts'>
+<script setup lang='ts'>
+import type { SearchReverse } from '../../../types.ts';
 import {
     IconMapPin,
 } from '@tabler/icons-vue';
 
-export default {
-    name: 'QueryReverse',
-    components: {
-        IconMapPin
-    },
-    props: {
-        reverse: {
-            type: Object,
-        }
-    }
-}
+const props = defineProps<{
+    reverse: SearchReverse["reverse"]    
+}>()
 </script>

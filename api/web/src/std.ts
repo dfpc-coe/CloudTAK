@@ -96,7 +96,7 @@ export function humanSeconds(seconds: number): string {
         return str.join(', ');
 }
 
-export function stdclick($router: Router, event: KeyboardEvent, path: string) {
+export function stdclick($router: Router, event: MouseEvent, path: string) {
     if (event.ctrlKey === true) {
         const routeData = $router.resolve(path);
         window.open(routeData.href, '_blank');
