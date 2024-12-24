@@ -45,9 +45,7 @@ export default async function router(schema: Schema, config: Config) {
 */
             }
         } catch (err) {
-            if (!(err instanceof Error) || err.code !== 'ENOENT') {
-                console.log('Could not automatically load iconsets', err);
-            }
+            console.log('Could not automatically load iconsets', err);
         }
     }
 

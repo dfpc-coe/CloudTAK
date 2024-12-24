@@ -8,7 +8,7 @@
                 "bg-blue-lt": muted
             }'
             style='height: 20px'
-            @click='info = true'
+            @click='info.shown = true'
             v-text='`Agency`'
         />
         <span
@@ -22,17 +22,17 @@
             v-text='`Admin`'
         />
 
-        <TablerModal v-if='info'>
+        <TablerModal v-if='info.shown'>
             <div class='modal-status bg-yellow' />
             <button
                 type='button'
                 class='btn-close'
                 aria-label='Close'
-                @click='info = false'
+                @click='info.shown = false'
             />
 
             <TablerLoading
-                v-if='loading'
+                v-if='!agency'
                 desc='Loading Agency...'
             />
             <template v-else>
@@ -60,7 +60,7 @@
             <div class='modal-footer'>
                 <button
                     class='btn btn-primary'
-                    @click='info = false'
+                    @click='info.shown = false'
                 >
                     Close
                 </button>
@@ -69,47 +69,28 @@
     </div>
 </template>
 
-<script>
+<script setup lang='ts'>
+import { ref, watch } from 'vue';
 import {
     TablerModal,
     TablerLoading
 } from '@tak-ps/vue-tabler';
-import { std } from '/src/std.ts';
+import type { ETLConnection, ETLAgency } from '../../types.ts';
+import { std } from '../../std.ts';
 
-export default {
-    name: 'AgencyBadge',
-    components: {
-        TablerLoading,
-        TablerModal
-    },
-    props: {
-        connection: {
-            type: Object,
-            required: true
-        },
-        muted: {
-            type: Boolean,
-            default: false
-        }
-    },
-    data: function() {
-        return {
-            info: false,
-            loading: true,
-            agency: {}
-        }
-    },
-    watch: {
-        info: async function() {
-            await this.fetch()
-        },
-    },
-    methods: {
-        fetch: async function() {
-            this.loading = true;
-            this.agency = await std(`/api/agency/${this.connection.agency}`);
-            this.loading = false;
-        }
-    }
+const props = defineProps<{
+    connection: ETLConnection,
+    muted?: boolean
+}>()
+
+const info = ref({ shown: false });
+const agency = ref<ETLAgency | undefined>();
+
+watch(info, async () => {
+    await fetch()
+});
+
+async function fetch() {
+    agency.value = await std(`/api/agency/${props.connection.agency}`);
 }
 </script>
