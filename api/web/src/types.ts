@@ -100,6 +100,7 @@ export type ProfileOverlay_Update = paths["/profile/overlay/{:overlay}"]["patch"
 // Below are CloudTAK ETL Specific Data Types
 
 
+export type ETLConnectionList = paths["/connection"]["get"]["responses"]["200"]["content"]["application/json"]
 export type ETLConnection = paths["/connection/{:connectionid}"]["get"]["responses"]["200"]["content"]["application/json"]
 export type ETLLayer = paths["/connection/{:connectionid}/layer/{:layerid}"]["get"]["responses"]["200"]["content"]["application/json"]
 
