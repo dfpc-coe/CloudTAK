@@ -78,57 +78,52 @@
     </div>
 </template>
 
-<script>
-import { std } from '/src/std.ts';
+<script setup lang='ts'>
+import type { Login_Create, Login_CreateRes } from '../types.ts'
+import { ref } from 'vue';
+import { useRouter, useRoute } from 'vue-router'
+import { std } from '../std.ts';
 import {
     TablerLoading,
     TablerInput
 } from '@tak-ps/vue-tabler'
 
-export default {
-    name: 'UserLogin',
-    components: {
-        TablerInput,
-        TablerLoading
-    },
-    emits: [
-        'login'
-    ],
-    data: function() {
-        return {
-            loading: false,
-            body: {
-                username: '',
-                password: ''
-            }
+const emit = defineEmits([ 'login' ]);
+
+const route = useRoute();
+const router = useRouter();
+
+const loading = ref(false);
+const body = ref<Login_Create>({
+    username: '',
+    password: ''
+});
+
+function external(url: unknown) {
+    window.location = url as Location;
+}
+
+async function createLogin() {
+    loading.value = true;
+
+    try {
+        const login = await std('/api/login', {
+            method: 'POST',
+            body: body.value
+        }) as Login_CreateRes
+
+        localStorage.token = login.token;
+
+        emit('login');
+
+        if (route.query.redirect && !String(route.query.redirect).includes('/login')) {
+            router.push(String(route.query.redirect));
+        } else {
+            router.push("/");
         }
-    },
-    methods: {
-        external: function(url) {
-            window.location = new URL(url);
-        },
-        createLogin: async function() {
-            this.loading = true;
-            try {
-                const login = await std('/api/login', {
-                    method: 'POST',
-                    body: this.body
-                });
-
-                localStorage.token = login.token;
-
-                this.$emit('login');
-
-                if (this.$route.query.redirect && !this.$route.query.redirect.includes('/login')) {
-                    this.$router.push(this.$route.query.redirect);
-                } else {
-                    this.$router.push("/");
-                }
-            } catch (err) {
-                this.loading = false;
-                throw err;
-            }
-        }
+    } catch (err) {
+        loading.value = false;
+        throw err;
     }
 }
 </script>
