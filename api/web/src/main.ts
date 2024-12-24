@@ -7,7 +7,7 @@ import FloatingVue from 'floating-vue'
 
 import App from './App.vue'
 
-const router = new VueRouter.createRouter({
+const router = VueRouter.createRouter({
     history: VueRouter.createWebHistory(),
     routes: [
         {
@@ -385,11 +385,8 @@ const router = new VueRouter.createRouter({
     ]
 });
 
-window.api = window.location.origin
-
 const app = createApp(App);
 const pinia = createPinia()
-app.config.devtools = true
 app.use(router);
 app.use(pinia);
 app.use(FloatingVue);
