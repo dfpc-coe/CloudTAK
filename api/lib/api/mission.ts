@@ -14,6 +14,19 @@ export enum MissionSubscriberRole {
     MISSION_READONLY_SUBSCRIBER = 'MISSION_READONLY_SUBSCRIBER'
 }
 
+export const MissionContent = Type.Object({
+    keywords: Type.Array(Type.String()),
+    mimeType: Type.String(),
+    name: Type.String(),
+    hash: Type.String(),
+    submissionTime: Type.String(),
+    submitter: Type.String(),
+    uid: Type.String(),
+    creatorUid: Type.String(),
+    size: Type.Integer(),
+    expiration: Type.Integer()
+});
+
 export const Mission = Type.Object({
     name: Type.String(),
     description: Type.String(),
@@ -41,18 +54,7 @@ export const Mission = Type.Object({
     contents: Type.Array(Type.Object({
         timestamp: Type.String(),
         creatorUid: Type.String(),
-        data: Type.Object({
-            keywords: Type.Array(Type.String()),
-            mimeType: Type.String(),
-            name: Type.String(),
-            hash: Type.String(),
-            submissionTime: Type.String(),
-            submitter: Type.String(),
-            uid: Type.String(),
-            creatorUid: Type.String(),
-            size: Type.Integer(),
-            expiration: Type.Integer()
-        })
+        data: MissionContent
     })),
     passwordProtected: Type.Boolean(),
     token: Type.Optional(Type.String()),                        // Only present when mission created
@@ -68,8 +70,16 @@ export const MissionChange = Type.Object({
     serverTime: Type.String(),
     creatorUid: Type.String(),
     contentUid: Type.Optional(Type.String()),
-    details: Type.Optional(Type.Any()),
-    contentResource: Type.Optional(Type.Any())
+    details: Type.Optional(Type.Object({
+        type: Type.String(),
+        callsign: Type.String(),
+        color: Type.Optional(Type.String()),
+        location: Type.Object({
+            lat: Type.Number(),
+            lon: Type.Number()
+        })
+    })),
+    contentResource: Type.Optional(MissionContent)
 });
 
 export const MissionRole = Type.Object({
