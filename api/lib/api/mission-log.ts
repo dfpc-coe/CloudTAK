@@ -1,6 +1,6 @@
 import TAKAPI from '../tak-api.js';
 import { Type, Static } from '@sinclair/typebox';
-import type { TAKItem } from './types.js';
+import { TAKItem } from './types.js';
 import type { MissionOptions } from './mission.js';
 import { GUIDMatch } from './mission.js';
 
@@ -26,6 +26,8 @@ export const CreateMissionLog = Type.Object({
 export const UpdateMissionLog = Type.Composite([ CreateMissionLog, Type.Object({
     id: Type.String()
 })]);
+
+export const TAKItem_MissionLog = TAKItem(MissionLog);
 
 export default class {
     api: TAKAPI;
@@ -74,7 +76,7 @@ export default class {
      */
     async get(
         id: string,
-    ): Promise<TAKItem<Static<typeof MissionLog>>> {
+    ): Promise<Static<typeof TAKItem_MissionLog>> {
         const url = new URL(`/Marti/api/missions/logs/entries/${encodeURIComponent(id)}`, this.api.url);
 
         return await this.api.fetch(url);
@@ -89,7 +91,7 @@ export default class {
         mission: string,
         body: Static<typeof CreateMissionLog>,
         opts?: Static<typeof MissionOptions>
-    ): Promise<TAKItem<Static<typeof MissionLog>>> {
+    ): Promise<Static<typeof TAKItem_MissionLog>> {
         const url = new URL(`/Marti/api/missions/logs/entries`, this.api.url);
 
         if (this.#isGUID(mission)) {
@@ -116,7 +118,7 @@ export default class {
         mission: string,
         body: Static<typeof UpdateMissionLog>,
         opts?: Static<typeof MissionOptions>
-    ): Promise<TAKItem<Static<typeof MissionLog>>> {
+    ): Promise<Static<typeof TAKItem_MissionLog>> {
         const url = new URL(`/Marti/api/missions/logs/entries`, this.api.url);
 
         if (this.#isGUID(mission)) {

@@ -102,9 +102,10 @@
                         title='Search Button'
                         :size='40'
                         stroke='1'
+                        :color='searchBoxShown ? "#1E90FF" : "#FFFFFF"'
                         style='margin: 5px 8px'
                         class='cursor-pointer hover-button'
-                        @click='searchBox.shown = !searchBox.shown'
+                        @click='searchBoxShown = !searchBoxShown'
                     />
 
                     <div
@@ -198,31 +199,17 @@
                 @close='pointInput = false'
             />
 
-            <div
-                v-if='searchBox.shown'
-                class='position-absolute text-white bg-dark rounded'
+            <SearchBox
+                v-if='searchBoxShown'
                 style='
                     z-index: 1;
                     top: 8px;
                     left: 70px;
                     width: 200px;
                 '
-            >
-                <TablerInput
-                    v-model='searchBox.query.filter'
-                    class='mt-0'
-                    placeholder='Place Search'
-                    icon='search'
-                />
+                @close='searchBoxShown = false'
+            />
 
-                <div
-                    v-for='item of searchBox.results'
-                    :key='item.magicKey'
-                    class='col-12 px-2 py-2 hover-button cursor-pointer'
-                    @click='fetchSearch(item.text, item.magicKey)'
-                    v-text='item.text'
-                />
-            </div>
 
             <div
                 v-if='drawMode === "point"'
@@ -479,13 +466,14 @@ import {ref, watch, computed, onMounted, onBeforeUnmount, useTemplateRef } from 
 import {useRoute, useRouter } from 'vue-router';
 import CoTVideo from './util/Video.vue';
 import WarnChannels from './util/WarnChannels.vue';
+import SearchBox from './util/SearchBox.vue';
 import WarnConfiguration from './util/WarnConfiguration.vue';
 import Status from '../util/Status.vue';
 import CoordInput from './CoordInput.vue';
 import CoordinateType from './util/CoordinateType.vue';
 import type { MapGeoJSONFeature, GeoJSONSource, LngLatLike } from 'maplibre-gl';
 import { std, stdurl } from '../../../src/std.ts';
-import type { IconsetList, SearchForward, SearchSuggest, Feature } from '../../../src/types.ts';
+import type { IconsetList, Feature } from '../../../src/types.ts';
 import CloudTAKFeatView from './FeatView.vue';
 import {
     IconSearch,
@@ -516,7 +504,6 @@ import SideMenu from './Menu.vue';
 import {
     TablerDropdown,
     TablerModal,
-    TablerInput,
     TablerNone,
 } from '@tak-ps/vue-tabler';
 import Loading from './Loading.vue';
@@ -549,22 +536,7 @@ const warnChannels = ref<boolean>(false)
 // Show a popup if role/groups hasn't been set
 const warnConfiguration = ref<boolean>(false);
 
-const searchBox = ref<{
-    shown: boolean,
-    query: {
-        filter: string,
-    },
-    results: Array<{
-        text: string
-        magicKey: string
-    }>
-}>({
-    shown: false,
-    query: {
-        filter: '',
-    },
-    results: []
-});
+const searchBoxShown = ref(false);
 const drawMode = ref<string>('static') // Set the terra-draw mode to avoid getMode() calls
 const drawModePoint = ref<string>('u-d-p');
 const pointInput = ref<boolean>(false);
@@ -630,10 +602,6 @@ watch(mapStore.radial, () => {
         locked.value.pop();
     }
 })
-
-watch(searchBox.value.query, async () => {
-    await fetchSearch();
-});
 
 onMounted(async () => {
     // ensure uncaught errors in the stack are captured into vue context
@@ -805,33 +773,6 @@ function fileUpload(event: string) {
     router.push(`/menu/imports/${imp.id}`)
 }
 
-async function fetchSearch(query?: string, magicKey?: string) {
-    if (!magicKey || !query) {
-        const url = stdurl('/api/search/suggest');
-        url.searchParams.append('query', searchBox.value.query.filter);
-        searchBox.value.results = ((await std(url)) as SearchSuggest).items;
-    } else {
-        const url = stdurl('/api/search/forward');
-        url.searchParams.append('query', query);
-        url.searchParams.append('magicKey', magicKey);
-        const items = ((await std(url)) as SearchForward).items;
-
-        searchBox.value.shown = false;
-        searchBox.value.query.filter = '';
-        searchBox.value.results = [];
-
-        if (items.length) {
-            mapStore.map.fitBounds([
-                [items[0].extent.xmin, items[0].extent.ymin],
-                [items[0].extent.xmax, items[0].extent.ymax],
-            ], {
-                duration: 0,
-                padding: {top: 25, bottom:25, left: 25, right: 25}
-            });
-        }
-    }
-}
-
 function getLocation() {
     if (profileStore.profile || !profileStore.live_loc) {
         throw new Error('No Location Determined');
@@ -928,7 +869,6 @@ function editGeometry(featid: string) {
         // @ts-expect-error Cast Feature to GeoJSONStoreFeature
         const status = mapStore.draw.addFeatures([feat]);
 
-        // @ts-expect-error No Typing due to above
         if (status && status.length) {
             // @ts-expect-error No Typing due to above
             throw new Error('Error editing this feature: ', status[0].reason)

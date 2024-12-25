@@ -15,13 +15,12 @@
         <div class='page-body'>
             <div class='container-xl'>
                 <div class='row row-deck row-cards'>
-                    <div class='col-lg-12'>
-                        <TablerLoading v-if='loading' />
-                    </div>
-
-                    <div class='col-lg-12'>
+                    <TablerLoading v-if='!connection' />
+                    <div
+                        v-else
+                        class='col-lg-12'
+                    >
                         <ConnectionSinks
-                            v-if='connection.id'
                             :connection='connection'
                         />
                     </div>
@@ -32,8 +31,11 @@
     </div>
 </template>
 
-<script>
-import { std } from '/src/std.ts';
+<script setup lang='ts'>
+import { ref, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
+import { std } from '../std.ts';
+import type { ETLConnection } from '../types.ts';
 import PageFooter from './PageFooter.vue';
 import ConnectionSinks from './Connection/Sinks.vue';
 import {
@@ -41,30 +43,14 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 
-export default {
-    name: 'ConnectionSinkList',
-    components: {
-        PageFooter,
-        TablerBreadCrumb,
-        TablerLoading,
-        ConnectionSinks,
-    },
-    data: function() {
-        return {
-            loading: true,
-            connection: {}
-        }
-    },
-    mounted: async function() {
-        await this.fetch();
+const route = useRoute();
+const connection = ref<ETLConnection>();
 
-    },
-    methods: {
-        fetch: async function() {
-            this.loading = true;
-            this.connection = await std(`/api/connection/${this.$route.params.connectionid}`);
-            this.loading = false;
-        },
-    }
+onMounted(async () => {
+    await fetch();
+})
+
+async function fetch() {
+    connection.value = await std(`/api/connection/${route.params.connectionid}`) as ETLConnection;
 }
 </script>

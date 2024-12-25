@@ -11,10 +11,14 @@ import {
     Mission,
     MissionChangesInput,
     MissionListInput,
+    MissionChange,
     MissionDeleteInput,
     MissionCreateInput,
     MissionSubscriber
 } from '../lib/api/mission.js';
+import {
+    TAKList,
+} from '../lib/api/types.js';
 import TAKAPI, {
     APIAuthCertificate,
 } from '../lib/tak-api.js';
@@ -101,7 +105,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         description: 'Helper API to get mission changes',
         query: MissionChangesInput,
-        res: GenericMartiResponse
+        res: TAKList(MissionChange)
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -186,13 +190,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'MartiMissions',
         description: 'Helper API to list missions',
         query: MissionListInput,
-        res: Type.Object({
-            version: Type.String(),
-            type: Type.String(),
-            data: Type.Array(Mission),
-            messages: Type.Optional(Type.Array(Type.String())),
-            nodeId: Type.Optional(Type.String())
-        })
+        res: TAKList(Mission)
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -272,13 +270,7 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.String(),
         }),
         description: 'List subscriptions associated with a mission',
-        res: Type.Object({
-            version: Type.String(),
-            type: Type.String(),
-            data: Type.Array(MissionSubscriber),
-            messages: Type.Optional(Type.Array(Type.String())),
-            nodeId: Type.Optional(Type.String())
-        })
+        res: TAKList(MissionSubscriber)
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);

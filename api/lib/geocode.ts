@@ -70,10 +70,11 @@ export default class Geocode {
         return body.address;
     }
 
-    async forward(query: string, magicKey: string): Promise<Array<Static<typeof FetchForward>>> {
+    async forward(query: string, magicKey: string, limit?: number): Promise<Array<Static<typeof FetchForward>>> {
         const url = new URL(this.forwardApi)
         url.searchParams.append('magicKey', magicKey);
         url.searchParams.append('singleLine', query);
+        if (limit) url.searchParams.append('maxLocations', String(limit));
         if (this.token) url.searchParams.append('token', this.token);
         url.searchParams.append('f', 'json');
 
@@ -84,10 +85,11 @@ export default class Geocode {
         return body.candidates;
     }
 
-    async suggest(query: string): Promise<Array<Static<typeof FetchSuggest>>> {
+    async suggest(query: string, limit?: number): Promise<Array<Static<typeof FetchSuggest>>> {
         const url = new URL(this.suggestApi)
         url.searchParams.append('text', query);
         url.searchParams.append('f', 'json');
+        if (limit) url.searchParams.append('maxSuggestions', String(limit));
 
         const res = await fetch(url);
 

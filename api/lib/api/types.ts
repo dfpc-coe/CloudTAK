@@ -1,15 +1,17 @@
-export type TAKList<T> = {
-    version: string;
-    type: string;
-    data: Array<T>;
-    nodeId: string;
-}
+import { TSchema, Type } from '@sinclair/typebox';
 
-export type TAKItem<T> = {
-    version: string;
-    type: string;
-    data: T;
-    nodeId: string;
+export const TAKItem = <T extends TSchema>(T: T) => {
+    return Type.Object({
+        version: Type.String(),
+        type: Type.String(),
+        data: T,
+        messages: Type.Optional(Type.Array(Type.String())),
+        nodeId: Type.Optional(Type.String())
+    })
+};
+
+export const TAKList = <T extends TSchema>(T: T) => {
+    return TAKItem(Type.Array(T));
 }
 
 export enum TAKGroup {
