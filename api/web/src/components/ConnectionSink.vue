@@ -16,7 +16,7 @@
             <div class='container-xl'>
                 <div class='row row-deck row-cards'>
                     <div class='col-lg-12'>
-                        <TablerLoading v-if='loading' />
+                        <TablerLoading v-if='!sink' />
                         <div
                             v-else
                             class='card'
@@ -50,18 +50,24 @@
                                             >
                                         </label>
                                     </div>
-                                    <IconRefresh
-                                        :size='32'
-                                        :stroke='1'
-                                        class='cursor-pointer'
+                                    <TablerIconButton
+                                        title='Refresh'
                                         @click='fetch'
-                                    />
-                                    <IconSettings
-                                        :size='32'
-                                        :stroke='1'
-                                        class='cursor-pointer'
-                                        @click='$router.push(`/connection/${$route.params.connectionid}/sink/${$route.params.sinkid}/edit`)'
-                                    />
+                                    >
+                                        <IconRefresh
+                                            :size='32'
+                                            stroke='1'
+                                        />
+                                    </TablerIconButton>
+                                    <TablerIconButton
+                                        title='Edit'
+                                        @click='router.push(`/connection/${route.params.connectionid}/sink/${route.params.sinkid}/edit`)'
+                                    >
+                                        <IconPencil
+                                            :size='32'
+                                            stroke='1'
+                                        />
+                                    </TablerIconButton>
                                 </div>
                             </div>
                             <div class='card-body'>
@@ -84,7 +90,7 @@
                                             >
                                                 <IconPoint
                                                     :size='32'
-                                                    :stroke='1'
+                                                    stroke='1'
                                                 /> Points
                                             </label>
                                             <input
@@ -100,7 +106,7 @@
                                             >
                                                 <IconLine
                                                     :size='32'
-                                                    :stroke='1'
+                                                    stroke='1'
                                                 /> Lines
                                             </label>
                                             <input
@@ -116,7 +122,7 @@
                                             >
                                                 <IconPolygon
                                                     :size='32'
-                                                    :stroke='1'
+                                                    stroke='1'
                                                 /> Polygons
                                             </label>
                                         </div>
@@ -133,7 +139,7 @@
                                     :disabled='true'
                                     :pane='false'
                                     :url='sink.body.url'
-                                    :sinkid='parseInt($route.params.sinkid)'
+                                    :sinkid='parseInt(String(route.params.sinkid))'
                                     :layer='sink.body[mode]'
                                 />
                             </div>
@@ -143,7 +149,7 @@
                         </div>
                     </div>
                     <div class='col-lg-12'>
-                        <ConnectionSinkChart v-if='sink.logging' />
+                        <ConnectionSinkChart v-if='sink && sink.logging' />
                         <div
                             v-else
                             class='card'
@@ -168,8 +174,11 @@
     </div>
 </template>
 
-<script>
-import { std } from '/src/std.ts';
+<script setup lang='ts'>
+import { ref, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import type { ETLConnectionSink } from '../types.ts';
+import { std } from '../std.ts';
 import PageFooter from './PageFooter.vue';
 import timeDiff from '../timediff.ts';
 import {
@@ -177,7 +186,7 @@ import {
     IconLine,
     IconPolygon,
     IconRefresh,
-    IconSettings
+    IconPencil
 } from '@tabler/icons-vue'
 import EsriPortal from './util/EsriPortal.vue';
 import ConnectionSinkChart from './ConnectionSink/Chart.vue';
@@ -188,41 +197,17 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 
-export default {
-    name: 'ConnectionSink',
-    components: {
-        IconPoint,
-        IconLine,
-        IconPolygon,
-        IconRefresh,
-        IconSettings,
-        PageFooter,
-        TablerAlert,
-        EsriPortal,
-        ConnectionSinkChart,
-        TablerBreadCrumb,
-        TablerNone,
-        TablerLoading,
-    },
-    data: function() {
-        return {
-            mode: 'points',
-            loading: true,
-            sink: {}
-        }
-    },
-    mounted: async function() {
-        await this.fetch();
-    },
-    methods: {
-        timeDiff(update) {
-            return timeDiff(update);
-        },
-        fetch: async function() {
-            this.loading = true;
-            this.sink = await std(`/api/connection/${this.$route.params.connectionid}/sink/${this.$route.params.sinkid}`);
-            this.loading = false;
-        },
-    }
+const mode = ref('points');
+const sink = ref<ETLConnectionSink | undefined>();
+
+const route = useRoute();
+const router = useRouter();
+
+onMounted(async () => {
+    await fetch();
+});
+
+async function fetch() {
+    sink.value = await std(`/api/connection/${route.params.connectionid}/sink/${route.params.sinkid}`) as ETLConnectionSink
 }
 </script>

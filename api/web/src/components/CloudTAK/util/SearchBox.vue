@@ -14,7 +14,7 @@
         <Feature
             v-for='cot of cots'
             :key='cot.id'
-            :deleteButton='false'
+            :delete-button='false'
             :feature='cot'
         />
         <div
@@ -24,7 +24,10 @@
             @click='fetchSearch(item.text, item.magicKey)'
             v-text='item.text'
         />
-        <TablerLoading v-if='partialLoading' :compact='true'/>
+        <TablerLoading
+            v-if='partialLoading'
+            :compact='true'
+        />
     </div>
 </template>
 

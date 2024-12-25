@@ -22,7 +22,7 @@
                 <template v-if='change.type === "CREATE_MISSION"'>
                     <IconSquarePlus
                         :size='24'
-                        :stroke='1'
+                        stroke='1'
                     />
                     <span
                         class='mx-2'
@@ -32,7 +32,7 @@
                 <template v-else-if='change.type === "ADD_CONTENT" && change.contentResource'>
                     <IconFile
                         :size='24'
-                        :stroke='1'
+                        stroke='1'
                     />
                     <span
                         class='mx-2'
@@ -42,7 +42,7 @@
                 <template v-else-if='change.type === "ADD_CONTENT" && change.details'>
                     <IconPolygon
                         :size='24'
-                        :stroke='1'
+                        stroke='1'
                     />
                     <span
                         class='mx-2'
@@ -52,7 +52,7 @@
                 <template v-else-if='change.type === "ADD_CONTENT"'>
                     <IconSquarePlus
                         :size='24'
-                        :stroke='1'
+                        stroke='1'
                     />
                     <span
                         v-tooltip='change.contentUid'
@@ -62,7 +62,7 @@
                 <template v-else-if='change.type === "REMOVE_CONTENT" && change.contentResource'>
                     <IconFileX
                         :size='24'
-                        :stroke='1'
+                        stroke='1'
                     />
                     <span
                         class='mx-2'
@@ -72,7 +72,7 @@
                 <template v-else-if='change.type === "REMOVE_CONTENT"'>
                     <IconSquareX
                         :size='24'
-                        :stroke='1'
+                        stroke='1'
                     />
                     <span
                         v-tooltip='change.contentUid'
@@ -97,8 +97,10 @@
     </MenuTemplate>
 </template>
 
-<script>
-import { std, stdurl } from '/src/std.ts';
+<script setup lang='ts't>
+import { ref, onMounted } from 'vue';
+import Subscription from '../../../../stores/base/mission.ts';
+import type { Mission, MissionChanges } from '../../../../types.ts';
 import {
     IconSquarePlus,
     IconSquareX,
@@ -112,50 +114,22 @@ import {
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../../util/MenuTemplate.vue';
 
-export default {
-    name: 'MissionTimeline',
-    components: {
-        MenuTemplate,
-        TablerNone,
-        TablerAlert,
-        IconSquareX,
-        IconSquarePlus,
-        IconFile,
-        IconPolygon,
-        IconFileX,
-    },
-    props: {
-        mission: Object,
-        token: String
-    },
-    emits: [
-        'close',
-        'select'
-    ],
-    data: function() {
-        return {
-            err: null,
-            loading: true,
-            changes: [],
-        }
-    },
-    mounted: async function() {
-        await this.fetchChanges();
-    },
-    methods: {
-        genConfig: function() {
-            return { id: this.mission.name }
-        },
-        fetchChanges: async function() {
-            this.loading = true;
-            const url = await stdurl(`/api/marti/missions/${this.mission.name}/changes`);
-            this.changes = (await std(url, {
-                headers: {
-                    MissionAuthorization: this.token
-                },
-            })).data;
-            this.loading = false;
-        },
-    }
+const props = defineProps<{
+    mission: Mission,
+    token: string
+}>();
+
+const error = ref<Error | undefined>();
+const loading = ref(true);
+const changes = ref<MissionChanges["data"]>([]);
+
+onMounted(async () => {
+    await fetchChanges();
+});
+
+async function fetchChanges() {
+    loading.value = true;
+    changes.value = (await Subscription.changes(props.mission.guid, props.mission.token)).data;
+    loading.value = false;
 }
 </script>

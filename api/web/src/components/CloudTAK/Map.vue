@@ -201,13 +201,13 @@
 
             <SearchBox
                 v-if='searchBoxShown'
-                @close='searchBoxShown = false'
                 style='
                     z-index: 1;
                     top: 8px;
                     left: 70px;
                     width: 200px;
                 '
+                @close='searchBoxShown = false'
             />
 
 
