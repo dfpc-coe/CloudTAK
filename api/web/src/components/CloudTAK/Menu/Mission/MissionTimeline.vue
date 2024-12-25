@@ -5,7 +5,10 @@
         :border='false'
         :loading='loading'
     >
-        <TablerAlert v-if='err' />
+        <TablerAlert
+            v-if='error'
+            :error='error'
+        />
         <TablerNone
             v-else-if='!changes.length'
             :create='false'
@@ -97,7 +100,7 @@
     </MenuTemplate>
 </template>
 
-<script setup lang='ts't>
+<script setup lang='ts'>
 import { ref, onMounted } from 'vue';
 import Subscription from '../../../../stores/base/mission.ts';
 import type { Mission, MissionChanges } from '../../../../types.ts';
@@ -129,7 +132,11 @@ onMounted(async () => {
 
 async function fetchChanges() {
     loading.value = true;
-    changes.value = (await Subscription.changes(props.mission.guid, props.mission.token)).data;
+    try {
+        changes.value = (await Subscription.changes(props.mission.guid, props.mission.token)).data;
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    }
     loading.value = false;
 }
 </script>
