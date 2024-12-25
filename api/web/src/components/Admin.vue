@@ -19,7 +19,7 @@
                             >
                                 <div class='col-12 col-md-3 border-end'>
                                     <div class='card-body'>
-                                        <h4 class='subheader'>
+                                        <h4 class='subheader user-select-none'>
                                             CloudTAK Admin
                                         </h4>
                                         <div class='list-group list-group-transparent'>
@@ -47,17 +47,22 @@
                                                 :size='32'
                                                 stroke='1'
                                             /><span class='mx-3'>CloudTAK Settings</span></span>
+                                        </div>
+                                        <h4 class='subheader user-select-none py-2 my-0'>
+                                            Map Settings
+                                        </h4>
+                                        <div class='list-group list-group-transparent'>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
-                                                    "active": String($route.name) === "admin-task-raw",
-                                                    "cursor-pointer": String($route.name) !== "admin-task-raw"
+                                                    "active": String($route.name).startsWith("admin-user"),
+                                                    "cursor-pointer": !String($route.name).startsWith("admin-user")
                                                 }'
-                                                @click='$router.push(`/admin/task-raw`)'
-                                            ><IconBrandDocker
+                                                @click='$router.push(`/admin/user`)'
+                                            ><IconUsers
                                                 :size='32'
                                                 stroke='1'
-                                            /><span class='mx-3'>ETL Containers</span></span>
+                                            /><span class='mx-3'>Users</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
@@ -65,21 +70,15 @@
                                                     "cursor-pointer": !String($route.name).includes("admin-overlays")
                                                 }'
                                                 @click='$router.push(`/admin/overlay`)'
-                                            ><IconBoxMultiple
+                                            ><IconMap
                                                 :size='32'
                                                 stroke='1'
-                                            /><span class='mx-3'>Global Overlays</span></span>
-                                            <span
-                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
-                                                :class='{
-                                                    "active": String($route.name) === "admin-task",
-                                                    "cursor-pointer": String($route.name) !== "admin-task"
-                                                }'
-                                                @click='$router.push(`/admin/task`)'
-                                            ><IconBrandDocker
-                                                :size='32'
-                                                stroke='1'
-                                            /><span class='mx-3'>Registered Tasks</span></span>
+                                            /><span class='mx-3'>Basemaps &amp; Overlays</span></span>
+                                        </div>
+                                        <h4 class='subheader user-select-none py-2 my-0'>
+                                            ETL Settings
+                                        </h4>
+                                        <div class='list-group list-group-transparent'>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
@@ -105,6 +104,28 @@
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
+                                                    "active": String($route.name).includes("admin-templates"),
+                                                    "cursor-pointer": !String($route.name).includes("admin-templates")
+                                                }'
+                                                @click='$router.push(`/admin/template`)'
+                                            ><IconTemplate
+                                                :size='32'
+                                                stroke='1'
+                                            /><span class='mx-3'>Layer Templates</span></span>
+                                            <span
+                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
+                                                :class='{
+                                                    "active": String($route.name).startsWith("admin-tasks"),
+                                                    "cursor-pointer": !String($route.name).startsWith("admin-tasks")
+                                                }'
+                                                @click='$router.push(`/admin/tasks`)'
+                                            ><IconBrandDocker
+                                                :size='32'
+                                                stroke='1'
+                                            /><span class='mx-3'>ETL Task Runners</span></span>
+                                            <span
+                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
+                                                :class='{
                                                     "active": String($route.name) === "admin-data",
                                                     "cursor-pointer": String($route.name) !== "admin-data"
                                                 }'
@@ -113,17 +134,11 @@
                                                 :size='32'
                                                 stroke='1'
                                             /><span class='mx-3'>Data Syncs</span></span>
-                                            <span
-                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
-                                                :class='{
-                                                    "active": String($route.name).startsWith("admin-user"),
-                                                    "cursor-pointer": !String($route.name).startsWith("admin-user")
-                                                }'
-                                                @click='$router.push(`/admin/user`)'
-                                            ><IconUsers
-                                                :size='32'
-                                                stroke='1'
-                                            /><span class='mx-3'>Users</span></span>
+                                        </div>
+                                        <h4 class='subheader user-select-none py-2 my-0'>
+                                            External Services
+                                        </h4>
+                                        <div class='list-group list-group-transparent'>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
@@ -146,17 +161,6 @@
                                                 :size='32'
                                                 stroke='1'
                                             /><span class='mx-3'>Export</span></span>
-                                            <span
-                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
-                                                :class='{
-                                                    "active": String($route.name).includes("admin-templates"),
-                                                    "cursor-pointer": !String($route.name).includes("admin-templates")
-                                                }'
-                                                @click='$router.push(`/admin/template`)'
-                                            ><IconTemplate
-                                                :size='32'
-                                                stroke='1'
-                                            /><span class='mx-3'>Layer Templates</span></span>
                                         </div>
                                     </div>
                                 </div>
@@ -199,7 +203,7 @@ import {
     IconDatabaseExport,
     IconBrandDocker,
     IconBuildingBroadcastTower,
-    IconBoxMultiple,
+    IconMap,
 } from '@tabler/icons-vue'
 const profileStore = useProfileStore();
 

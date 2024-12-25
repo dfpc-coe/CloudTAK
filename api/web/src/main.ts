@@ -7,7 +7,7 @@ import FloatingVue from 'floating-vue'
 
 import App from './App.vue'
 
-const router = new VueRouter.createRouter({
+const router = VueRouter.createRouter({
     history: VueRouter.createWebHistory(),
     routes: [
         {
@@ -340,13 +340,24 @@ const router = new VueRouter.createRouter({
                 name: 'admin-user',
                 component: () => import('./components/Admin/AdminUser.vue')
             },{
-                path: 'task',
-                name: 'admin-task',
-                component: () => import('./components/Admin/AdminTasks.vue')
-            },{
-                path: 'task-raw',
-                name: 'admin-task-raw',
-                component: () => import('./components/Admin/AdminRawTasks.vue')
+                path: 'tasks',
+                name: 'admin-tasks',
+                component: () => import('./components/Admin/AdminTasks.vue'),
+                children: [{
+                    path: '',
+                    name: 'admin-tasks-default',
+                    redirect: () => {
+                        return { name: 'admin-tasks-registered' };
+                    }
+                },{
+                    path: 'registered',
+                    name: 'admin-tasks-registered',
+                    component: () => import('./components/Admin/Tasks/AdminTasks.vue')
+                },{
+                    path: 'raw',
+                    name: 'admin-tasks-raw',
+                    component: () => import('./components/Admin/Tasks/AdminRawTasks.vue')
+                }]
             },{
                 path: 'server',
                 name: 'admin-server',
@@ -374,11 +385,8 @@ const router = new VueRouter.createRouter({
     ]
 });
 
-window.api = window.location.origin
-
 const app = createApp(App);
 const pinia = createPinia()
-app.config.devtools = true
 app.use(router);
 app.use(pinia);
 app.use(FloatingVue);

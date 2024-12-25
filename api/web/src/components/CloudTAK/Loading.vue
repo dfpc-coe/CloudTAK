@@ -18,17 +18,9 @@
     </TablerModal>
 </template>
 
-<script lang='ts'>
+<script setup lang='ts'>
 import {
     TablerModal,
     TablerLoading
 } from '@tak-ps/vue-tabler'
-
-export default {
-    name: 'CloudTAKLoading',
-    components: {
-        TablerModal,
-        TablerLoading,
-    },
-}
 </script>

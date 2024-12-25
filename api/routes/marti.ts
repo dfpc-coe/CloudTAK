@@ -6,6 +6,9 @@ import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import { Contact } from '../lib/api/contacts.js'
 import { Group } from '../lib/api/groups.js'
+import {
+    TAKList,
+} from '../lib/api/types.js';
 import TAKAPI, {
     APIAuthPassword,
     APIAuthCertificate
@@ -20,13 +23,7 @@ export default async function router(schema: Schema, config: Config) {
             connection: Type.Optional(Type.Integer({ description: 'Use Connection auth' })),
             useCache: Type.Optional(Type.Boolean({ description: 'This tells TAK server to return the users cached group selection vs the groups that came directly from the auth backend.' })),
         }),
-        res: Type.Object({
-            version: Type.String(),
-            type: Type.String(),
-            data:  Type.Array(Group),
-            messages: Type.Optional(Type.Array(Type.String())),
-            nodeId: Type.Optional(Type.String())
-        })
+        res: TAKList(Group)
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req);

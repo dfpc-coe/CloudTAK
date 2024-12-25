@@ -6,6 +6,10 @@ import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import { MissionOptions } from '../lib/api/mission.js';
 import { MissionLayer, MissionLayerType } from '../lib/api/mission-layer.js';
+import {
+    TAKItem,
+    TAKList
+} from '../lib/api/types.js';
 import TAKAPI, {
     APIAuthCertificate,
 } from '../lib/tak-api.js';
@@ -18,13 +22,7 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.String()
         }),
         description: 'Helper API list mission layers',
-        res: Type.Object({
-            version: Type.String(),
-            type: Type.String(),
-            data: Type.Array(MissionLayer),
-            messages: Type.Optional(Type.Array(Type.String())),
-            nodeId: Type.Optional(Type.String())
-        })
+        res: TAKList(MissionLayer)
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -55,13 +53,7 @@ export default async function router(schema: Schema, config: Config) {
             layerid: Type.String()
         }),
         description: 'Helper API to get mission layer',
-        res: Type.Object({
-            version: Type.String(),
-            type: Type.String(),
-            data: MissionLayer,
-            messages: Type.Optional(Type.Array(Type.String())),
-            nodeId: Type.Optional(Type.String())
-        })
+        res: TAKItem(MissionLayer)
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -99,13 +91,7 @@ export default async function router(schema: Schema, config: Config) {
             afterUid: Type.Optional(Type.String()),
         }),
         description: 'Helper API to create mission layers',
-        res: Type.Object({
-            version: Type.String(),
-            type: Type.String(),
-            data: MissionLayer,
-            messages: Type.Optional(Type.Array(Type.String())),
-            nodeId: Type.Optional(Type.String())
-        })
+        res: TAKItem(MissionLayer)
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);

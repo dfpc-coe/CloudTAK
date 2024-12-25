@@ -16,6 +16,8 @@ export const GroupListInput = Type.Object({
     useCache: Type.Optional(Type.Boolean())
 })
 
+export const TAKList_Group = TAKList(Group);
+
 export default class {
     api: TAKAPI;
 
@@ -25,7 +27,7 @@ export default class {
 
     async list(
         query: Static<typeof GroupListInput> = {}
-    ): Promise<TAKList<Static<typeof Group>>> {
+    ): Promise<Static<typeof TAKList_Group>> {
         const url = new URL(`/Marti/api/groups/all`, this.api.url);
 
         let q: keyof Static<typeof GroupListInput>;
