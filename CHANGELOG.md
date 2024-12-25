@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v5.32.0 - 2024-12-25
+
+- Converting a ton of the UI To typescript
+- Renaming `Basemap.group` => `Basemap.collection` and adding new `BasemapCollection` Table
+- Merge ETL Task & Registered task Admin UI into single Admin Page
+- Separate admin tabs out by type5
+
 ### v5.31.0 - 2024-12-22
 
 - :rocket: Set groundwork for Basemap groups
