@@ -195,7 +195,7 @@ export const ConnectionSink = pgTable('connection_sinks', {
     enabled: boolean().notNull().default(true),
     connection: integer().notNull().references(() => Connection.id),
     type: text().notNull(),
-    body: json().notNull().default({}),
+    body: json().$type<Record<string, string>>().notNull().default({}),
     logging: boolean().notNull().default(false)
 });
 

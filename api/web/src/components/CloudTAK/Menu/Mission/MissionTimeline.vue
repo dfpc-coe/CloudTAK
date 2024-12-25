@@ -19,7 +19,7 @@
         >
             <div
                 v-for='change in changes'
-                :key='change'
+                :key='change.contentUid'
                 class='col-12 hover-dark px-2 py-1'
             >
                 <template v-if='change.type === "CREATE_MISSION"'>
