@@ -12,6 +12,7 @@ import type {
     MissionLog,
     MissionRole,
     MissionList,
+    MissionChanges,
     MissionLogList,
     MissionLayerList,
     MissionSubscriptions
@@ -159,6 +160,15 @@ export default class Subscription {
         return await std('/api/marti/missions/' + encodeURIComponent(guid) + '/cot', {
             headers: Subscription.headers(token)
         }) as FeatureCollection;
+    }
+
+    static async changes(guid: string, token: string | undefined): Promise<MissionChanges> {
+        const url = stdurl('/api/marti/missions/' + encodeURIComponent(guid) + '/changes');
+
+        return await std(url, {
+            method: 'GET',
+            headers: Subscription.headers(token)
+        }) as MissionChanges;
     }
 
     static async logCreate(guid: string, token: string | undefined, body: object): Promise<MissionLog> {

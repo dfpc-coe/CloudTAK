@@ -60,6 +60,9 @@ export const CreateInput = Type.Object({
     creatorUid: Type.String()
 })
 
+export const TAKList_MissionLayer = TAKList(MissionLayer);
+export const TAKItem_MissionLayer = TAKItem(MissionLayer);
+
 export default class {
     api: TAKAPI;
 
@@ -124,7 +127,7 @@ export default class {
     async list(
         name: string,
         opts?: Static<typeof MissionOptions>
-    ): Promise<TAKList<Static<typeof MissionLayer>>> {
+    ): Promise<Static<typeof TAKList_MissionLayer>> {
         let res;
 
         if (this.#isGUID(name)) {
@@ -180,7 +183,7 @@ export default class {
         name: string,
         layerUid: string, // Layer UID
         opts?: Static<typeof MissionOptions>
-    ): Promise<TAKItem<Static<typeof MissionLayer>>> {
+    ): Promise<Static<typeof TAKItem_MissionLayer>> {
         const layers = await this.list(name, opts);
 
         // TODO this will only return top level layers - need to recurse to lower level layers
@@ -202,7 +205,7 @@ export default class {
         name: string,
         query: Static<typeof CreateInput>,
         opts?: Static<typeof MissionOptions>
-    ): Promise<TAKItem<Static<typeof MissionLayer>>> {
+    ): Promise<Static<typeof TAKItem_MissionLayer>> {
         if (this.#isGUID(name)) {
             const url = new URL(`/Marti/api/missions/guid/${this.#encodeName(name)}/layers`, this.api.url);
 

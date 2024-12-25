@@ -226,7 +226,7 @@ export const ConnectionSinkResponse = createSelectSchema(schemas.ConnectionSink,
     connection: Type.Integer(),
     enabled: Type.Boolean(),
     logging: Type.Boolean(),
-    body: Type.Unknown()
+    body: Type.Any()
 });
 
 export const ConnectionResponse = Type.Object({

@@ -55,6 +55,9 @@ export const ListSubscriptionInput = Type.Object({
     })
 })
 
+export const TAKList_Subscription = TAKList(Subscription);
+
+
 export default class {
     api: TAKAPI;
 
@@ -64,7 +67,7 @@ export default class {
 
     async list(
         query: Static<typeof ListSubscriptionInput>
-    ): Promise<TAKList<Static<typeof Subscription>>> {
+    ): Promise<Static<typeof TAKList_Subscription>> {
         const url = new URL(`/Marti/api/subscriptions/all`, this.api.url);
 
         let q: keyof Static<typeof ListSubscriptionInput>;

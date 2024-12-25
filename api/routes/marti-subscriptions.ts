@@ -4,6 +4,9 @@ import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import { Subscription, ListSubscriptionInput } from '../lib/api/subscriptions.js'
+import {
+    TAKList,
+} from '../lib/api/types.js';
 import TAKAPI, {
     APIAuthCertificate
 } from '../lib/tak-api.js';
@@ -14,13 +17,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'MartiSubscription',
         description: 'Helper API to list subscriptions that the client can see',
         query: ListSubscriptionInput,
-        res: Type.Object({
-            version: Type.String(),
-            type: Type.String(),
-            data:  Type.Array(Subscription),
-            messages: Type.Optional(Type.Array(Type.String())),
-            nodeId: Type.Optional(Type.String())
-        })
+        res: TAKList(Subscription)
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req);

@@ -7,10 +7,10 @@
                 class='mx-2'
             />
             <div>
-                <span v-if='type === "Channels"'>
+                <span v-if='props.type === "Channels"'>
                     No Channels are selected
                 </span>
-                <span v-else-if='type === "Missions"'>
+                <span v-else-if='props.type === "Missions"'>
                     No Data Syncs have been subscribed to that have Write Access
                 </span>
             </div>
@@ -23,7 +23,7 @@ import {
     IconAlertCircle
 } from '@tabler/icons-vue';
 
-defineProps({
+const props = defineProps({
     type: {
         type: String,
         default: 'Channels'

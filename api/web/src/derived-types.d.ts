@@ -3829,7 +3829,7 @@ export interface paths {
                             enabled: boolean;
                             connection: number;
                             type: string;
-                            body: unknown;
+                            body: any;
                             logging: boolean;
                         };
                     };

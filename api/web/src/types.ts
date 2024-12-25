@@ -54,6 +54,8 @@ export type MissionLogList = paths["/marti/missions/{:name}/log"]["get"]["respon
 export type MissionLayer = paths["/marti/missions/{:name}/layer/{:layerid}"]["get"]["responses"]["200"]["content"]["application/json"]["data"];
 export type MissionLayerList = paths["/marti/missions/{:name}/layer"]["get"]["responses"]["200"]["content"]["application/json"];
 
+export type MissionChanges = paths["/marti/missions/{:name}/changes"]["get"]["responses"]["200"]["content"]["application/json"];
+
 export type MissionSubscriptions = paths["/marti/missions/{:name}/subscriptions/roles"]["get"]["responses"]["200"]["content"]["application/json"]["data"];
 
 export type Server_Update = paths["/server"]["patch"]["requestBody"]["content"]["application/json"]
@@ -105,6 +107,7 @@ export type SearchReverse = paths["/search/reverse/{:longitude}/{:latitude}"]["g
 
 export type ETLConnectionList = paths["/connection"]["get"]["responses"]["200"]["content"]["application/json"]
 export type ETLConnection = paths["/connection/{:connectionid}"]["get"]["responses"]["200"]["content"]["application/json"]
+export type ETLConnectionSink = paths["/connection/{:connectionid}/sink/{:sinkid}"]["get"]["responses"]["200"]["content"]["application/json"]
 export type ETLAgency = paths["/agency/{:agencyid}"]["get"]["responses"]["200"]["content"]["application/json"]
 export type ETLLayer = paths["/connection/{:connectionid}/layer/{:layerid}"]["get"]["responses"]["200"]["content"]["application/json"]
 export type ETLData = paths["/connection/{:connectionid}/data/{:dataid}"]["get"]["responses"]["200"]["content"]["application/json"]

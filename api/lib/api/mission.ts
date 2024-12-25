@@ -174,6 +174,11 @@ export const MissionCreateInput = Type.Object({
 
 export const GUIDMatch = new RegExp(/^[{]?[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}[}]?$/);
 
+export const TAKList_Mission = TAKList(Mission);
+export const TAKList_MissionChange = TAKList(MissionChange);
+export const TAKList_MissionSubscriber = TAKList(MissionSubscriber);
+export const TAKItem_MissionSubscriber = TAKItem(MissionSubscriber);
+
 /**
  * @class
  */
@@ -211,7 +216,7 @@ export default class {
         name: string,
         query: Static<typeof MissionChangesInput>,
         opts?: Static<typeof MissionOptions>
-    ): Promise<TAKList<Static<typeof MissionChange>>> {
+    ): Promise<Static<typeof TAKList_MissionChange>> {
         if (this.#isGUID(name)) name = (await this.getGuid(name, {})).name;
 
         const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/changes`, this.api.url);
@@ -365,7 +370,7 @@ export default class {
     async subscriptions(
         name: string,
         opts?: Static<typeof MissionOptions>
-    ): Promise<TAKItem<Static<typeof MissionSubscriber>>> {
+    ): Promise<Static<typeof TAKItem_MissionSubscriber>> {
         const url = this.#isGUID(name)
             ? new URL(`/Marti/api/missions/guid/${encodeURIComponent(name)}/subscriptions`, this.api.url)
             : new URL(`/Marti/api/missions/${this.#encodeName(name)}/subscriptions`, this.api.url);
@@ -384,7 +389,7 @@ export default class {
     async subscriptionRoles(
         name: string,
         opts?: Static<typeof MissionOptions>
-    ): Promise<TAKList<Static<typeof MissionSubscriber>>> {
+    ): Promise<Static<typeof TAKList_MissionSubscriber>> {
         const url = this.#isGUID(name)
             ? new URL(`/Marti/api/missions/guid/${encodeURIComponent(name)}/subscriptions/roles`, this.api.url)
             : new URL(`/Marti/api/missions/${this.#encodeName(name)}/subscriptions/roles`, this.api.url);
@@ -483,7 +488,7 @@ export default class {
         name: string,
         query: Static<typeof SubscribeInput>,
         opts?: Static<typeof MissionOptions>
-    ): Promise<TAKItem<Static<typeof MissionSubscriber>>> {
+    ): Promise<Static<typeof TAKItem_MissionSubscriber>> {
         const url = this.#isGUID(name)
             ? new URL(`/Marti/api/missions/guid/${encodeURIComponent(name)}/subscription`, this.api.url)
             : new URL(`/Marti/api/missions/${this.#encodeName(name)}/subscription`, this.api.url);
@@ -533,7 +538,7 @@ export default class {
      *
      * {@link https://docs.tak.gov/api/takserver/redoc#tag/mission-api/operation/getAllMissions_1 TAK Server Docs}.
      */
-    async list(query: Static<typeof MissionListInput>): Promise<TAKList<Static<typeof Mission>>> {
+    async list(query: Static<typeof MissionListInput>): Promise<Static<typeof TAKList_Mission>> {
         const url = new URL('/Marti/api/missions', this.api.url);
 
         let q: keyof Static<typeof MissionListInput>;
@@ -567,7 +572,7 @@ export default class {
             }
         }
 
-        const missions: TAKList<Static <typeof Mission>> = await this.api.fetch(url, {
+        const missions: Static<typeof TAKList_Mission> = await this.api.fetch(url, {
             method: 'GET',
             headers: this.#headers(opts),
         });
@@ -588,7 +593,7 @@ export default class {
                 ? new URL(`/Marti/api/missions/guid/${encodeURIComponent(name)}`, this.api.url)
                 : new URL(`/Marti/api/missions/${this.#encodeName(name)}`, this.api.url);
 
-            const missions: TAKList<Static<typeof Mission>> = await this.api.fetch(url, {
+            const missions: Static<typeof TAKList_Mission> = await this.api.fetch(url, {
                 method: 'GET',
                 headers: this.#headers(opts),
             });
@@ -622,7 +627,7 @@ export default class {
             }
         }
 
-        const missions: TAKList<Static<typeof Mission>> = await this.api.fetch(url, {
+        const missions: Static<typeof TAKList_Mission> = await this.api.fetch(url, {
             method: 'GET',
             headers: this.#headers(opts),
         });
