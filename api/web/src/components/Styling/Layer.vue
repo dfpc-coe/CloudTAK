@@ -2,13 +2,16 @@
     <div class='ps-3'>
         <div
             v-if='advanced || l.filter'
-            class='col-lg'
+            class='col-lg-12'
         >
             <label class='subheader'>Filter</label>
-            <pre
-                class='col-12 px-2 py-1'
-                v-text='JSON.stringify(l.filter) || "None"'
-            />
+            <div class='12'>
+                <CopyField
+                    :modelValue='JSON.stringify(l.filter) || "None"'
+                    :edit='!disabled'
+                    :hover='!disabled'
+                />
+        </div>
         </div>
         <div
             v-if='advanced || l["minzoom"] || l["maxzoom"]'
@@ -17,15 +20,17 @@
             <label class='subheader'>Zoom Limits</label>
 
             <div class='col-12 col-md-6 pe-md-1'>
-                <pre
-                    class='col-12 py-1'
-                    v-text='l.minzoom || "Not Set"'
+                <CopyField
+                    :modelValue='l.minzoom || "Not Set"'
+                    :edit='!disabled'
+                    :hover='!disabled'
                 />
             </div>
             <div class='col-12 col-md-6 ps-md-1'>
-                <pre
-                    class='col-12 py-1'
-                    v-text='l.maxzoom || "Not Set"'
+                <CopyField
+                    :modelValue='l.maxzoom || "Not Set"'
+                    :edit='!disabled'
+                    :hover='!disabled'
                 />
             </div>
         </div>
@@ -34,9 +39,10 @@
             class='col-12'
         >
             <label class='subheader'>Source Layer</label>
-            <pre
-                class='col-12 py-1'
-                v-text='l["source-layer"] || None'
+            <CopyField
+                :modelValue='l["source-layer"] || None'
+                :edit='!disabled'
+                :hover='!disabled'
             />
         </div>
         <div class='col-12'>
@@ -81,7 +87,7 @@
                 :key='p'
                 class='col-12'
             >
-                <template v-if='["fill-opacity", "line-opacity", "marker-opacity"].includes(p)'>
+                <template v-if='["fill-opacity", "line-opacity", "marker-opacity", "fill-outline-color"].includes(p)'>
                     <template v-if='Array.isArray(l.paint[p]) && l.paint[p][0] === "number"'>
                         <TablerRange
                             v-model='l.paint[p][l.paint[p].length -1]'
@@ -153,7 +159,7 @@
                         <pre v-text='l.paint[p]' />
                     </template>
                 </template>
-                <template v-else-if='["fill-color", "line-color", "circle-color", "text-color", "text-halo-color"].includes(p)'>
+                <template v-else-if='["fill-color", "line-color", "circle-color", "text-color", "text-halo-color", "fill-outline-color"].includes(p)'>
                     <template v-if='Array.isArray(l.paint[p]) && l.paint[p][0] === "string"'>
                         <TablerInput
                             v-model='l.paint[p][l.paint[p].length -1]'
@@ -187,9 +193,10 @@
                 </template>
                 <template v-else>
                     <div v-text='p' />
-                    <div
-                        class='ms-auto'
-                        v-text='l.paint[p]'
+                    <CopyField
+                        :modelValue='l.paint[p]'
+                        :edit='!disabled'
+                        :hover='!disabled'
                     />
                 </template>
             </div>
@@ -204,18 +211,24 @@ import {
     TablerToggle,
     TablerRange
 } from '@tak-ps/vue-tabler';
+import CopyField from '../CloudTAK/util/CopyField.vue';
 import { useMapStore } from '/src/stores/map.ts';
 const mapStore = useMapStore();
 
 export default {
     name: 'OverlayLayer',
     components: {
+        CopyField,
         TablerNone,
         TablerRange,
         TablerToggle,
         TablerInput,
     },
     props: {
+        disabled: {
+            type: Boolean,
+            default: false
+        },
         advanced: {
             type: Boolean,
             default: false
@@ -242,7 +255,15 @@ export default {
             handler: function() {
                 if (!this.updateMap) return;
 
-                for (const paint of ['fill-opacity', 'fill-color', 'line-opacity', 'line-color', 'line-width', 'text-halo-width', 'text-halo-blur']) {
+                for (const paint of [
+                    'fill-opacity',
+                    'fill-color',
+                    'line-opacity',
+                    'line-color',
+                    'line-width',
+                    'text-halo-width',
+                    'text-halo-blur'
+                ]) {
                     if (this.l.paint[paint]) {
                         mapStore.map.setPaintProperty(String(this.l.id), paint, this.l.paint[paint]);
                     }
