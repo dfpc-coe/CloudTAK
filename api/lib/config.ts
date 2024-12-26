@@ -34,7 +34,7 @@ export default class Config {
     StackName: string;
     HookURL?: string;
     SigningSecret: string;
-    external: External;
+    external?: External;
     UnsafeSigningSecret: string;
     API_URL: string;
     PMTILES_URL: string;
@@ -94,7 +94,6 @@ export default class Config {
 
         this.conns = new ConnectionPool(this);
         this.cacher = new Cacher(this.nocache, this.silent);
-        this.external = new External(this)
 
         this.events = new EventsPool(this.StackName);
     }
@@ -110,10 +109,6 @@ export default class Config {
             cert: this.server.auth.cert,
             key: this.server.auth.key
         }
-    }
-
-    externalProviderIsConfigured(): boolean {
-        return !!(this.server.provider_url && this.server.provider_secret && this.server.provider_client);
     }
 
     static async env(args: ConfigArgs): Promise<Config> {
@@ -188,6 +183,9 @@ export default class Config {
             console.log(`ok - PMTiles: ${config.PMTILES_URL}`);
             console.error(`ok - StackName: ${config.StackName}`);
         }
+
+        const external = await External.init(config);
+        config.external = external;
 
         if (process.env.VpcId) config.VpcId = process.env.VpcId;
         if (process.env.SubnetPublicA) config.SubnetPublicA = process.env.SubnetPublicA;
