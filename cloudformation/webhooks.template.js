@@ -14,7 +14,7 @@ export default cf.merge(
                 Default: 'prod'
             },
             HostedURL: {
-                Description: 'URL of domain/subdomain at which the API is hosted ie: "map.example.com"',
+                Description: 'URL of domain/subdomain at which the API is hosted ie: "webhooks.example.com"',
                 Type: 'String'
             },
             SSLCertificateIdentifier: {
