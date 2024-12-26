@@ -1,17 +1,17 @@
 <template>
     <div class='ps-3'>
         <div
-            v-if='l.filter'
+            v-if='advanced || l.filter'
             class='col-lg'
         >
             <label class='subheader'>Filter</label>
             <pre
                 class='col-12 px-2 py-1'
-                v-text='JSON.stringify(l.filter)'
+                v-text='JSON.stringify(l.filter) || "None"'
             />
         </div>
         <div
-            v-if='l["minzoom"] || l["maxzoom"]'
+            v-if='advanced || l["minzoom"] || l["maxzoom"]'
             class='col-12 row g-0'
         >
             <label class='subheader'>Zoom Limits</label>
@@ -30,13 +30,13 @@
             </div>
         </div>
         <div
-            v-if='l["source-layer"]'
+            v-if='advanced || l["source-layer"]'
             class='col-12'
         >
             <label class='subheader'>Source Layer</label>
             <pre
                 class='col-12 py-1'
-                v-text='JSON.stringify(l["source-layer"])'
+                v-text='l["source-layer"] || None'
             />
         </div>
         <div class='col-12'>
@@ -45,7 +45,7 @@
                 v-if='Object.keys(l.layout).length === 0'
                 class='col-12 d-flex py-1'
             >
-                None
+                <TablerNone :compact='true' label='Layout Properties' :create='false'/>
             </div>
             <div
                 v-for='p of Object.keys(l.layout)'
@@ -74,7 +74,7 @@
                 v-if='Object.keys(l.paint).length === 0'
                 class='col-12 px-2 py-1'
             >
-                None
+                <TablerNone :compact='true' label='Paint Properties' :create='false'/>
             </div>
             <div
                 v-for='p of Object.keys(l.paint)'
@@ -199,6 +199,7 @@
 
 <script>
 import {
+    TablerNone,
     TablerInput,
     TablerToggle,
     TablerRange
@@ -209,11 +210,16 @@ const mapStore = useMapStore();
 export default {
     name: 'OverlayLayer',
     components: {
+        TablerNone,
         TablerRange,
         TablerToggle,
         TablerInput,
     },
     props: {
+        advanced: {
+            type: Boolean,
+            default: false
+        },
         layer: {
             type: Object,
             required: true

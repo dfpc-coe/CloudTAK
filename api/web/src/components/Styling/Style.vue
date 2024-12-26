@@ -144,6 +144,7 @@
                 <StyleLayer
                     v-else
                     :layer='l'
+                    :advanced='advanced'
                     :update-map='false'
                 />
             </div>
@@ -199,6 +200,10 @@ export default {
         modelValue: {
             type: Object,
             required: true
+        },
+        advanced: {
+            type: Boolean,
+            default: false
         }
     },
     emits: [
