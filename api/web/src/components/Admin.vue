@@ -28,7 +28,7 @@
                                         >
                                             <span
                                                 tabindex='0'
-                                                role='menu-item'
+                                                role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": String($route.name) === "admin-server",
@@ -43,7 +43,7 @@
                                             </span>
                                             <span
                                                 tabindex='0'
-                                                role='menu-item'
+                                                role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": String($route.name) === "admin-config",
@@ -61,7 +61,7 @@
                                         <div class='list-group list-group-transparent'>
                                             <span
                                                 tabindex='0'
-                                                role='menu-item'
+                                                role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": String($route.name).startsWith("admin-user"),
@@ -74,7 +74,7 @@
                                             /><span class='mx-3'>Users</span></span>
                                             <span
                                                 tabindex='0'
-                                                role='menu-item'
+                                                role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": String($route.name).includes("admin-overlays"),
@@ -92,7 +92,7 @@
                                         <div class='list-group list-group-transparent'>
                                             <span
                                                 tabindex='0'
-                                                role='menu-item'
+                                                role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": String($route.name) === "admin-connection",
@@ -105,7 +105,7 @@
                                             /><span class='mx-3'>Connections</span></span>
                                             <span
                                                 tabindex='0'
-                                                role='menu-item'
+                                                role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": String($route.name) === "admin-layer",
@@ -118,7 +118,7 @@
                                             /><span class='mx-3'>Layers</span></span>
                                             <span
                                                 tabindex='0'
-                                                role='menu-item'
+                                                role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": String($route.name).includes("admin-templates"),
@@ -131,7 +131,7 @@
                                             /><span class='mx-3'>Layer Templates</span></span>
                                             <span
                                                 tabindex='0'
-                                                role='menu-item'
+                                                role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": String($route.name).startsWith("admin-tasks"),
@@ -144,7 +144,7 @@
                                             /><span class='mx-3'>ETL Task Runners</span></span>
                                             <span
                                                 tabindex='0'
-                                                role='menu-item'
+                                                role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": String($route.name) === "admin-data",
@@ -162,7 +162,7 @@
                                         <div class='list-group list-group-transparent'>
                                             <span
                                                 tabindex='0'
-                                                role='menu-item'
+                                                role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": String($route.name).includes("admin-video"),
@@ -175,7 +175,7 @@
                                             /><span class='mx-3'>Video Services</span></span>
                                             <span
                                                 tabindex='0'
-                                                role='menu-item'
+                                                role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": String($route.name).includes("admin-export"),

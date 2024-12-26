@@ -117,7 +117,7 @@
                     >
                         <div
                             tabindex='0'
-                            role='menu-item'
+                            role='menuitem'
                             class='cursor-pointer hover-light list-group-item list-group-item-action'
                             @click='openQuery(q_idx)'
                         >
