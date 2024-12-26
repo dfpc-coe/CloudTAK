@@ -120,7 +120,7 @@
                                         >
                                             <span
                                                 tabindex='0'
-                                                role='menu-item'
+                                                role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": $route.name === "layer-deployment",
@@ -133,7 +133,7 @@
                                             /><span class='mx-3'>Deployment</span></span>
                                             <span
                                                 tabindex='0'
-                                                role='menu-item'
+                                                role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": $route.name === "layer-config",
@@ -146,7 +146,7 @@
                                             /><span class='mx-3'>Config</span></span>
                                             <span
                                                 tabindex='0'
-                                                role='menu-item'
+                                                role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": $route.name === "layer-environment",
@@ -159,7 +159,7 @@
                                             /><span class='mx-3'>Environment</span></span>
                                             <span
                                                 tabindex='0'
-                                                role='menu-item'
+                                                role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": $route.name === "layer-schema",
@@ -172,7 +172,7 @@
                                             /><span class='mx-3'>Schema</span></span>
                                             <span
                                                 tabindex='0'
-                                                role='menu-item'
+                                                role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": $route.name === "layer-styles",

@@ -123,7 +123,7 @@
                                         >
                                             <span 
                                                 tabindex='0'
-                                                role='menu-item'
+                                                role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": route.name === "connection-layers",
@@ -136,7 +136,7 @@
                                             /><span class='mx-3'>Layers</span></span>
                                             <span
                                                 tabindex='0'
-                                                role='menu-item'
+                                                role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": route.name === "connection-groups",
@@ -149,7 +149,7 @@
                                             /><span class='mx-3'>Channels</span></span>
                                             <span
                                                 tabindex='0'
-                                                role='menu-item'
+                                                role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": route.name === "connection-datas",
@@ -162,7 +162,7 @@
                                             /><span class='mx-3'>Data Syncs</span></span>
                                             <span
                                                 tabindex='0'
-                                                role='menu-item'
+                                                role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": route.name === "connection-sinks",
@@ -175,7 +175,7 @@
                                             /><span class='mx-3'>Outbounds Sinks</span></span>
                                             <span
                                                 tabindex='0'
-                                                role='menu-item'
+                                                role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": route.name === "connection-healths",
@@ -188,7 +188,7 @@
                                             /><span class='mx-3'>Health &amp; Metrics</span></span>
                                             <span
                                                 tabindex='0'
-                                                role='menu-item'
+                                                role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": route.name === "connection-tokens",

@@ -133,7 +133,7 @@
                                         >
                                             <span
                                                 tabindex='0'
-                                                role='menu-item'
+                                                role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": route.name === "data-groups",
@@ -146,7 +146,7 @@
                                             /><span class='mx-3'>Channels</span></span>
                                             <span
                                                 tabindex='0'
-                                                role='menu-item'
+                                                role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": route.name === "data-files",
@@ -159,7 +159,7 @@
                                             /><span class='mx-3'>Files</span></span>
                                             <span
                                                 tabindex='0'
-                                                role='menu-item'
+                                                role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": route.name === "data-layer",
@@ -172,7 +172,7 @@
                                             /><span class='mx-3'>Layers</span></span>
                                             <span
                                                 tabindex='0'
-                                                role='menu-item'
+                                                role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": route.name === "data-jobs",
