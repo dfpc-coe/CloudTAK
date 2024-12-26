@@ -8,14 +8,11 @@
                 </h3>
                 <div class='ms-auto'>
                     <div class='btn-list'>
-                        <IconSettings
+                        <TablerIconButton
                             v-if='!edit'
-                            v-tooltip='"Configure Server"'
-                            :size='32'
-                            :stroke='1'
-                            class='cursor-pointer'
+                            title='Edit'
                             @click='edit = true'
-                        />
+                        > <IconPencil :size='32' stroke='1' /></TablerIconButton>
                     </div>
                 </div>
             </div>
@@ -123,6 +120,45 @@
                 </div>
 
                 <div
+                    class='col-lg-12 hover-light py-2 cursor-pointer'
+                    @click='opened.has("provider") ? opened.delete("provider") : opened.add("provider")'
+                >
+                    <IconChevronDown v-if='opened.has("provider")' />
+                    <IconChevronRight v-else />
+
+                    <span class='mx-2 user-select-none'>COTAK OAuth Provider</span>
+                </div>
+
+                <div
+                    v-if='opened.has("provider")'
+                    class='col-lg-12 py-2 border rounded'
+                >
+                    <div class='row'>
+                        <div class='col-lg-12'>
+                            <TablerInput
+                                v-model='config[`provider::url`]'
+                                label='Provider URL'
+                                :disabled='!edit'
+                            />
+                        </div>
+                        <div class='col-lg-12'>
+                            <TablerInput
+                                v-model='config[`provider::secret`]'
+                                label='Provider Secret'
+                                :disabled='!edit'
+                            />
+                        </div>
+                        <div class='col-lg-12'>
+                            <TablerInput
+                                v-model='config[`provider::client`]'
+                                label='Provider Client'
+                                :disabled='!edit'
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div
                     v-if='edit'
                     class='col-lg-12 d-flex py-2'
                 >
@@ -150,11 +186,12 @@
 import { std, stdurl } from '/src/std.ts';
 import {
     TablerLoading,
+    TablerIconButton,
     TablerToggle,
     TablerInput
 } from '@tak-ps/vue-tabler';
 import {
-    IconSettings,
+    IconPencil,
     IconChevronRight,
     IconChevronDown,
 } from '@tabler/icons-vue';
@@ -163,10 +200,11 @@ import timeDiff from '../../timediff.ts';
 export default {
     name: 'AdminConfig',
     components: {
-        IconSettings,
+        IconPencil,
         IconChevronRight,
         IconChevronDown,
         TablerLoading,
+        TablerIconButton,
         TablerToggle,
         TablerInput,
     },
@@ -195,6 +233,10 @@ export default {
             'media::url': '',
             'media::username': '',
             'media::password': '',
+
+            'provider::url': '',
+            'provider::secret': '',
+            'provider::client': '',
         }
 
         for (const group of groups) {

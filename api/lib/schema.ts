@@ -308,9 +308,6 @@ export const Server = pgTable('server', {
     }>().notNull().default({}),
     api: text().notNull().default(''),
     webtak: text().notNull().default(''),
-    provider_url: text().notNull().default(''),
-    provider_secret: text().notNull().default(''),
-    provider_client: text().notNull().default(''),
 });
 
 export const Token = pgTable('tokens', {
