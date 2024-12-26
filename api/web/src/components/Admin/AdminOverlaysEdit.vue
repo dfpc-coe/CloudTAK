@@ -1,8 +1,17 @@
 <template>
     <div>
         <div class='card-header'>
+            <TablerIconButton
+                title='Back'
+                @click='this.$router.push("/admin/overlay")'
+            >
+                <IconCircleArrowLeft
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
             <h1 class='card-title'>
-                Edit Overlay
+                <span class='mx-2'>Edit Overlay</span>
             </h1>
         </div>
         <div
@@ -92,11 +101,15 @@
 import { std, stdurl, stdclick } from '/src/std.ts';
 import StyleContainer from '../Styling/Style.vue';
 import {
+    IconCircleArrowLeft
+} from '@tabler/icons-vue';
+import {
     TablerEnum,
     TablerInput,
     TablerLoading,
     TablerButton,
     TablerDelete,
+    TablerIconButton
 } from '@tak-ps/vue-tabler';
 
 export default {
@@ -108,6 +121,8 @@ export default {
         TablerInput,
         TablerLoading,
         StyleContainer,
+        TablerIconButton,
+        IconCircleArrowLeft,
     },
     data: function() {
         return {
@@ -117,7 +132,7 @@ export default {
                 url: '',
                 type: 'vector',
                 overlay: true,
-                styles: '',
+                styles: [],
                 minzoom: 0,
                 maxzoom: 16,
                 bounds: '-180, -90, 180, 90',
