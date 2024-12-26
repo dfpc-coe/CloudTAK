@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v5.33.0 - 2024-12-26
+
+- Move COTAK API Integration into optional config instead of on the Server Page
+
 ### v5.32.0 - 2024-12-25
 
 - Converting a ton of the UI To typescript
