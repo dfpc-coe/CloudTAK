@@ -3,6 +3,12 @@ import Err from '@openaddresses/batch-error';
 import Config from './config.js'
 import { Static, Type } from '@sinclair/typebox';
 
+export const ExternalProviderConfig = Type.Object({
+    url: Type.String(),
+    client: Type.String(),
+    secret: Type.String()
+})
+
 export const Agency = Type.Object({
     id: Type.Number(),
     name: Type.String(),
@@ -29,13 +35,42 @@ export const Channel = Type.Object({
 
 export default class ExternalProvider {
     config: Config;
+    provider: Static<typeof ExternalProviderConfig>;
     cache?: {
         expires: Date;
         token: string;
     }
 
-    constructor(config: Config) {
+    constructor(
+        config: Config,
+        provider: Static<typeof ExternalProviderConfig>
+    ) {
         this.config = config;
+        this.provider = provider;
+    }
+
+    get configured(): boolean {
+        return !!(this.provider.url && this.provider.secret && this.provider.client);
+    }
+
+    static async init(config: Config): Promise<ExternalProvider> {
+        const final: Record<string, string> = {};
+        (await Promise.allSettled(([
+            'provider::url',
+            'provider::client',
+            'provider::secret'
+        ].map((key) => {
+            return config.models.Setting.from(key);
+        })))).forEach((k) => {
+            if (k.status === 'rejected') return;
+            return final[k.value.key] = String(k.value.value);
+        });
+
+        return new ExternalProvider(config, {
+            url: final['provider::url'] || '',
+            client: final['provider::client'] || '',
+            secret: final['provider::secret'] || '',
+        } as Static<typeof ExternalProviderConfig>)
     }
 
     async auth(): Promise<{
@@ -44,7 +79,7 @@ export default class ExternalProvider {
     }> {
         if (!this.cache || this.cache.expires < new Date()) {
             const expires = new Date();
-            const authres = await fetch(new URL(`/oauth/token`, this.config.server.provider_url), {
+            const authres = await fetch(new URL(`/oauth/token`, this.provider.url), {
                 method: 'POST',
                 headers: {
                     "Content-Type": "application/json",
@@ -53,8 +88,8 @@ export default class ExternalProvider {
                 body: JSON.stringify({
                     "scope": "admin-system",
                     "grant_type":  "client_credentials",
-                    "client_id": parseInt(this.config.server.provider_client),
-                    "client_secret": this.config.server.provider_secret,
+                    "client_id": parseInt(this.provider.client),
+                    "client_secret": this.provider.secret,
                 })
             });
 
@@ -90,7 +125,7 @@ export default class ExternalProvider {
     }): Promise<Static<typeof MachineUser>> {
         const creds = await this.auth();
 
-        const url = new URL(`api/v1/proxy/machine-users`, this.config.server.provider_url);
+        const url = new URL(`api/v1/proxy/machine-users`, this.provider.url);
         url.searchParams.append('proxy_user_id', String(uid));
         url.searchParams.append('sequential_email', 'true')
         url.searchParams.append('sync', 'true')
@@ -132,7 +167,7 @@ export default class ExternalProvider {
     }): Promise<void> {
         const creds = await this.auth();
 
-        const url = new URL(`api/v1/proxy/channels/${body.channel_id}/machine-users/attach/${body.machine_id}`, this.config.server.provider_url);
+        const url = new URL(`api/v1/proxy/channels/${body.channel_id}/machine-users/attach/${body.machine_id}`, this.provider.url);
         url.searchParams.append('proxy_user_id', String(uid));
         url.searchParams.append('sync', 'true')
 
@@ -156,7 +191,7 @@ export default class ExternalProvider {
     }): Promise<void> {
         const creds = await this.auth();
 
-        const url = new URL(`api/v1/proxy/integrations/etl/${body.integration_id}`, this.config.server.provider_url);
+        const url = new URL(`api/v1/proxy/integrations/etl/${body.integration_id}`, this.provider.url);
         url.searchParams.append('proxy_user_id', String(uid));
 
         const req = {
@@ -186,7 +221,7 @@ export default class ExternalProvider {
         const creds = await this.auth();
 
         // there is a ?delete_machine_user query param you can add, if you want to delete any MU's associated with the integration
-        const url = new URL(`api/v1/proxy/integrations/etl/identifier/${body.connection_id}`, this.config.server.provider_url);
+        const url = new URL(`api/v1/proxy/integrations/etl/identifier/${body.connection_id}`, this.provider.url);
         url.searchParams.append('proxy_user_id', String(uid));
 
         await fetch(url, {
@@ -204,7 +239,7 @@ export default class ExternalProvider {
     async agency(uid: number, agency_id: number): Promise<Static<typeof Agency>> {
         const creds = await this.auth();
 
-        const url = new URL(`/api/v1/proxy/agencies/${agency_id}`, this.config.server.provider_url);
+        const url = new URL(`/api/v1/proxy/agencies/${agency_id}`, this.provider.url);
         url.searchParams.append('proxy_user_id', String(uid));
         const agencyres = await fetch(url, {
             headers: {
@@ -232,11 +267,11 @@ export default class ExternalProvider {
 
         let url: URL;
         if (query.agency) {
-            url = new URL(`api/v1/proxy/agencies/${query.agency}/channels`, this.config.server.provider_url);
+            url = new URL(`api/v1/proxy/agencies/${query.agency}/channels`, this.provider.url);
             url.searchParams.append('proxy_user_id', String(uid));
             url.searchParams.append('filter', query.filter);
         } else {
-            url = new URL(`/api/v1/proxy/channels`, this.config.server.provider_url);
+            url = new URL(`/api/v1/proxy/channels`, this.provider.url);
             url.searchParams.append('proxy_user_id', String(uid));
             url.searchParams.append('filter', query.filter);
         }
@@ -272,7 +307,7 @@ export default class ExternalProvider {
     }> {
         const creds = await this.auth();
 
-        const url = new URL(`/api/v1/proxy/agencies`, this.config.server.provider_url);
+        const url = new URL(`/api/v1/proxy/agencies`, this.provider.url);
         url.searchParams.append('proxy_user_id', String(uid));
         url.searchParams.append('filter', filter);
 
@@ -309,7 +344,7 @@ export default class ExternalProvider {
     }> {
         const creds = await this.auth();
 
-        const userres = await fetch(new URL(`/api/v1/server/users/email/${encodeURIComponent(username)}`, this.config.server.provider_url), {
+        const userres = await fetch(new URL(`/api/v1/server/users/email/${encodeURIComponent(username)}`, this.provider.url), {
             method: 'GET',
             headers: {
                 "Accept": "application/json",
