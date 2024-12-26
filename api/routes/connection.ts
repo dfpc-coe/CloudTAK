@@ -120,7 +120,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const { validFrom, validTo, subject } = new X509Certificate(conn.auth.cert);
 
-            if (req.body.integrationId) {
+            if (req.body.integrationId && config.external && config.external.configured) {
                 if (!profile.id) throw new Err(400, null, 'External ID must be set on profile');
 
                 await config.external.updateIntegrationConnectionId(profile.id, {
@@ -288,7 +288,7 @@ export default async function router(schema: Schema, config: Config) {
 
             config.conns.delete(req.params.connectionid);
 
-            if (config.externalProviderIsConfigured()) {
+            if (config.external && config.external.configured) {
                 const user = await Auth.as_user(config, req);
                 const profile = await config.models.Profile.from(user.email);
 

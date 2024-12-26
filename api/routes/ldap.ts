@@ -26,7 +26,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const profile = await Auth.as_profile(config, req);
 
-            if (!config.externalProviderIsConfigured()) {
+            if (!config.external || !config.external.configured) {
                 throw new Err(400, null, 'External LDAP API not configured - Contact your administrator');
             }
 
@@ -63,7 +63,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const profile = await Auth.as_profile(config, req);
 
-            if (!config.externalProviderIsConfigured()) {
+            if (!config.external || !config.external.configured) {
                 throw new Err(400, null, 'External LDAP API not configured - Contact your administrator');
             }
 

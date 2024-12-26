@@ -114,8 +114,13 @@
                                         <h4 class='subheader'>
                                             Layer Settings
                                         </h4>
-                                        <div class='list-group list-group-transparent'>
+                                        <div
+                                            role='menu'
+                                            class='list-group list-group-transparent'
+                                        >
                                             <span
+                                                tabindex='0'
+                                                role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": $route.name === "layer-deployment",
@@ -127,6 +132,8 @@
                                                 :stroke='1'
                                             /><span class='mx-3'>Deployment</span></span>
                                             <span
+                                                tabindex='0'
+                                                role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": $route.name === "layer-config",
@@ -138,6 +145,8 @@
                                                 :stroke='1'
                                             /><span class='mx-3'>Config</span></span>
                                             <span
+                                                tabindex='0'
+                                                role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": $route.name === "layer-environment",
@@ -149,6 +158,8 @@
                                                 :stroke='1'
                                             /><span class='mx-3'>Environment</span></span>
                                             <span
+                                                tabindex='0'
+                                                role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": $route.name === "layer-schema",
@@ -160,6 +171,8 @@
                                                 :stroke='1'
                                             /><span class='mx-3'>Schema</span></span>
                                             <span
+                                                tabindex='0'
+                                                role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": $route.name === "layer-styles",

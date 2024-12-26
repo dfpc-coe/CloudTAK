@@ -127,8 +127,13 @@
                                         <h4 class='subheader'>
                                             Data Sections
                                         </h4>
-                                        <div class='list-group list-group-transparent'>
+                                        <div
+                                            role='menu'
+                                            class='list-group list-group-transparent'
+                                        >
                                             <span
+                                                tabindex='0'
+                                                role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": route.name === "data-groups",
@@ -140,6 +145,8 @@
                                                 stroke='1'
                                             /><span class='mx-3'>Channels</span></span>
                                             <span
+                                                tabindex='0'
+                                                role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": route.name === "data-files",
@@ -151,6 +158,8 @@
                                                 stroke='1'
                                             /><span class='mx-3'>Files</span></span>
                                             <span
+                                                tabindex='0'
+                                                role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": route.name === "data-layer",
@@ -162,6 +171,8 @@
                                                 stroke='1'
                                             /><span class='mx-3'>Layers</span></span>
                                             <span
+                                                tabindex='0'
+                                                role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": route.name === "data-jobs",

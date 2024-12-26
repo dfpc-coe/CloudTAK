@@ -106,13 +106,18 @@
                 />
             </template>
             <template v-if='query === null && queries'>
-                <div class='list-group list-group-flush px-2 py-2'>
+                <div
+                    role='menu'
+                    class='list-group list-group-flush px-2 py-2'
+                >
                     <div
                         v-for='(q, q_idx) in queries'
                         :key='q_idx'
                         class='my-1'
                     >
                         <div
+                            tabindex='0'
+                            role='menuitem'
                             class='cursor-pointer hover-light list-group-item list-group-item-action'
                             @click='openQuery(q_idx)'
                         >

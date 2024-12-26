@@ -58,6 +58,10 @@ export default async function router(schema: Schema, config: Config) {
             'group::Teal': Type.Optional(Type.String()),
             'group::Dark Green': Type.Optional(Type.String()),
             'group::Brown': Type.Optional(Type.String()),
+
+            'provider::url': Type.Optional(Type.String()),
+            'provider::secret': Type.Optional(Type.String()),
+            'provider::client': Type.Optional(Type.String()),
         }),
         res: Type.Any()
     }, async (req, res) => {
