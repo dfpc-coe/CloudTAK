@@ -56,34 +56,6 @@
                         :error='errors.webtak'
                     />
                 </div>
-                <div class='col-lg-12 py-2'>
-                    <TablerInput
-                        v-model='server.provider_url'
-                        :disabled='!edit'
-                        label='OAuth Authentication API'
-                        placeholder='https://'
-                        :error='errors.provider_url'
-                    />
-                </div>
-                <div class='col-lg-6 py-2'>
-                    <TablerInput
-                        v-model='server.provider_client'
-                        :disabled='!edit'
-                        label='OAuth Client ID'
-                        placeholder='https://'
-                        :error='errors.provider_client'
-                    />
-                </div>
-                <div class='col-lg-6 py-2'>
-                    <TablerInput
-                        v-model='server.provider_secret'
-                        type='password'
-                        :disabled='!edit'
-                        label='OAuth Client Secret'
-                        placeholder='https://'
-                        :error='errors.provider_secret'
-                    />
-                </div>
             </div>
             <div class='card-header'>
                 <h3 class='card-title'>
@@ -256,9 +228,6 @@ export default {
                 id: null,
                 created: null,
                 updated: null,
-                provider_url: '',
-                provider_id: '',
-                provider_secret: '',
                 name: '',
                 url: '',
                 api: '',
@@ -317,9 +286,6 @@ export default {
                 url: this.server.url,
                 api: this.server.api,
                 webtak: this.server.webtak,
-                provider_url: this.server.provider_url,
-                provider_client: this.server.provider_client,
-                provider_secret: this.server.provider_secret
             }
 
             if (this.auth.cert && this.auth.key) {
