@@ -29,10 +29,15 @@
                     />
                     <template v-else>
                         <div class='card-body'>
-                            <div class='list-group'>
+                            <div
+                                role='menu'
+                                class='list-group'
+                            >
                                 <span
                                     v-for='t of list.items'
                                     :key='t.prefix'
+                                    tabindex='0'
+                                    role='menu-item'
                                     class='list-group-item list-group-item-action d-flex align-items-center'
                                     :class='{
                                         "active": current.prefix === t.prefix,

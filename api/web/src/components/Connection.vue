@@ -117,8 +117,13 @@
                                         <h4 class='subheader'>
                                             Connection Sections
                                         </h4>
-                                        <div class='list-group list-group-transparent'>
-                                            <span
+                                        <div
+                                            role='menu'
+                                            class='list-group list-group-transparent'
+                                        >
+                                            <span 
+                                                tabindex='0'
+                                                role='menu-item'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": route.name === "connection-layers",
@@ -130,6 +135,8 @@
                                                 stroke='1'
                                             /><span class='mx-3'>Layers</span></span>
                                             <span
+                                                tabindex='0'
+                                                role='menu-item'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": route.name === "connection-groups",
@@ -141,6 +148,8 @@
                                                 stroke='1'
                                             /><span class='mx-3'>Channels</span></span>
                                             <span
+                                                tabindex='0'
+                                                role='menu-item'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": route.name === "connection-datas",
@@ -152,6 +161,8 @@
                                                 stroke='1'
                                             /><span class='mx-3'>Data Syncs</span></span>
                                             <span
+                                                tabindex='0'
+                                                role='menu-item'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": route.name === "connection-sinks",
@@ -163,6 +174,8 @@
                                                 stroke='1'
                                             /><span class='mx-3'>Outbounds Sinks</span></span>
                                             <span
+                                                tabindex='0'
+                                                role='menu-item'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": route.name === "connection-healths",
@@ -174,6 +187,8 @@
                                                 stroke='1'
                                             /><span class='mx-3'>Health &amp; Metrics</span></span>
                                             <span
+                                                tabindex='0'
+                                                role='menu-item'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
                                                     "active": route.name === "connection-tokens",
