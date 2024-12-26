@@ -76,6 +76,7 @@
                 <div class='col-12'>
                     <StyleContainer
                         v-model='overlay.styles'
+                        :advanced='true'
                     />
                 </div>
                 <div class='col-12 d-flex py-2'>
