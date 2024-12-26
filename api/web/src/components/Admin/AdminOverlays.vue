@@ -37,6 +37,12 @@
                 <div class='col-md-4'>
                     <TablerEnum
                         v-model='paging.scope'
+                        default='server'
+                        :options='[
+                            "all",
+                            "server",
+                            "user"
+                        ]'
                     />
                 </div>
             </div>
@@ -74,7 +80,22 @@
                             <template v-for='h in header'>
                                 <template v-if='h.display'>
                                     <td>
-                                        <span v-text='ov[h.name]' />
+                                        <div class='d-flex align-items-center'>
+                                            <span v-text='ov[h.name]' />
+
+                                            <template v-if='h.name === "name"'>
+                                                <div class='ms-auto'>
+                                                    <span
+                                                        v-if='!ov.username'
+                                                        class='mx-3 ms-auto badge border bg-blue text-white'
+                                                    >Public</span>
+                                                    <span
+                                                        v-else
+                                                        class='mx-3 ms-auto badge border bg-red text-white'
+                                                    >Private</span>
+                                                </div>
+                                            </template>
+                                        </div>
                                     </td>
                                 </template>
                             </template>
@@ -126,7 +147,7 @@ const paging = ref({
     sort: 'name',
     order: 'asc',
     limit: 100,
-    scope: '',
+    scope: 'server',
     page: 0
 });
 
@@ -170,6 +191,9 @@ async function fetchList() {
     loading.value = true;
     const url = stdurl('/api/basemap');
     url.searchParams.append('overlay', 'true');
+    if (paging.value.scope !== "all") {
+        url.searchParams.append('scope', paging.value.scope);
+    }
     url.searchParams.append('filter', paging.value.filter);
     url.searchParams.append('limit', String(paging.value.limit));
     url.searchParams.append('page', String(paging.value.page));
