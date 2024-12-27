@@ -3,7 +3,7 @@
         <div class='card-header'>
             <TablerIconButton
                 title='Back'
-                @click='this.$router.push("/admin/overlay")'
+                @click='$router.push("/admin/overlay")'
             >
                 <IconCircleArrowLeft
                     :size='32'
