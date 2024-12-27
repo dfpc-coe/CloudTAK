@@ -7,11 +7,12 @@
             <label class='subheader'>Filter</label>
             <div class='12'>
                 <CopyField
-                    :modelValue='JSON.stringify(l.filter) || "None"'
+                    :model-value='JSON.stringify(l.filter) || "None"'
                     :edit='!disabled'
                     :hover='!disabled'
+                    @update:model-value='l.filter = $event ? JSON.parse($event) : undefined'
                 />
-        </div>
+            </div>
         </div>
         <div
             v-if='advanced || l["minzoom"] || l["maxzoom"]'
@@ -21,16 +22,18 @@
 
             <div class='col-12 col-md-6 pe-md-1'>
                 <CopyField
-                    :modelValue='l.minzoom || "Not Set"'
+                    :model-value='l.minzoom || "Not Set"'
                     :edit='!disabled'
                     :hover='!disabled'
+                    @update:model-value='l.minzoom = !isNaN(parseInt($event)) ? parseInt($event) : undefined'
                 />
             </div>
             <div class='col-12 col-md-6 ps-md-1'>
                 <CopyField
-                    :modelValue='l.maxzoom || "Not Set"'
+                    :model-value='l.maxzoom || "Not Set"'
                     :edit='!disabled'
                     :hover='!disabled'
+                    @update:model-value='l.maxzoom = !isNaN(parseInt($event)) ? parseInt($event) : undefined'
                 />
             </div>
         </div>
@@ -40,9 +43,10 @@
         >
             <label class='subheader'>Source Layer</label>
             <CopyField
-                :modelValue='l["source-layer"] || None'
+                :model-value='l["source-layer"] || None'
                 :edit='!disabled'
                 :hover='!disabled'
+                @update:model-value='l["source-layer"] = $event ? $event : undefined'
             />
         </div>
         <div class='col-12'>
@@ -51,7 +55,11 @@
                 v-if='Object.keys(l.layout).length === 0'
                 class='col-12 d-flex py-1'
             >
-                <TablerNone :compact='true' label='Layout Properties' :create='false'/>
+                <TablerNone
+                    :compact='true'
+                    label='Layout Properties'
+                    :create='false'
+                />
             </div>
             <div
                 v-for='p of Object.keys(l.layout)'
@@ -80,14 +88,24 @@
                 v-if='Object.keys(l.paint).length === 0'
                 class='col-12 px-2 py-1'
             >
-                <TablerNone :compact='true' label='Paint Properties' :create='false'/>
+                <TablerNone
+                    :compact='true'
+                    label='Paint Properties'
+                    :create='false'
+                />
             </div>
             <div
                 v-for='p of Object.keys(l.paint)'
                 :key='p'
                 class='col-12'
             >
-                <template v-if='["fill-opacity", "line-opacity", "marker-opacity", "fill-outline-color"].includes(p)'>
+                <template
+                    v-if='[
+                        "fill-opacity",
+                        "line-opacity",
+                        "marker-opacity",
+                    ].includes(p)'
+                >
                     <template v-if='Array.isArray(l.paint[p]) && l.paint[p][0] === "number"'>
                         <TablerRange
                             v-model='l.paint[p][l.paint[p].length -1]'
@@ -123,7 +141,12 @@
                         <pre v-text='l.paint[p]' />
                     </template>
                 </template>
-                <template v-else-if='["line-width", "circle-radius"].includes(p)'>
+                <template
+                    v-else-if='[
+                        "line-width",
+                        "circle-radius"
+                    ].includes(p)'
+                >
                     <template v-if='Array.isArray(l.paint[p]) && l.paint[p][0] === "number"'>
                         <TablerRange
                             v-model='l.paint[p][l.paint[p].length -1]'
@@ -159,7 +182,16 @@
                         <pre v-text='l.paint[p]' />
                     </template>
                 </template>
-                <template v-else-if='["fill-color", "line-color", "circle-color", "text-color", "text-halo-color", "fill-outline-color"].includes(p)'>
+                <template
+                    v-else-if='[
+                        "fill-color",
+                        "line-color",
+                        "circle-color",
+                        "text-color",
+                        "text-halo-color",
+                        "fill-outline-color"
+                    ].includes(p)'
+                >
                     <template v-if='Array.isArray(l.paint[p]) && l.paint[p][0] === "string"'>
                         <TablerInput
                             v-model='l.paint[p][l.paint[p].length -1]'
@@ -188,15 +220,22 @@
                     </template>
                     <template v-else>
                         <span v-text='p' />
-                        <pre v-text='l.paint[p]' />
+                        <CopyField
+                            :model-value='JSON.stringify(l.paint[p])'
+                            :edit='!disabled'
+                            :hover='!disabled'
+                            @update:model-value='l.paint[p] = $event ? JSON.parse($event) : undefined'
+                        />
                     </template>
                 </template>
                 <template v-else>
                     <div v-text='p' />
                     <CopyField
-                        :modelValue='l.paint[p]'
+                        v-model='l.paint[p]'
+                        :model-value='JSON.stringify(l.paint[p])'
                         :edit='!disabled'
                         :hover='!disabled'
+                        @update:model-value='l.paint[p] = $event ? JSON.parse($event) : undefined'
                     />
                 </template>
             </div>

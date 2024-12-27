@@ -12,7 +12,12 @@
                             v-if='!edit'
                             title='Edit'
                             @click='edit = true'
-                        > <IconPencil :size='32' stroke='1' /></TablerIconButton>
+                        >
+                            <IconPencil
+                                :size='32'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
                     </div>
                 </div>
             </div>
