@@ -4,11 +4,11 @@
             <div class='col-12 px-2'>
                 <button
                     class='btn btn-primary w-100'
-                    @click='$router.push("/menu/files")'
+                    @click='router.push("/menu/files")'
                 >
                     <IconUser
                         :size='32'
-                        :stroke='1'
+                        stroke='1'
                     />Your Files
                 </button>
             </div>
@@ -40,8 +40,11 @@
     </MenuTemplate>
 </template>
 
-<script>
-import { std, stdurl } from '/src/std.ts';
+<script setup lang='ts'>
+import { ref, onMounted, watch } from 'vue';
+import { useRouter } from 'vue-router';
+import type { Basemap, BasemapList } from '../../../types.ts';
+import { std, stdurl } from '../../../std.ts';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import {
     TablerNone,
@@ -50,71 +53,64 @@ import {
 import {
     IconUser,
 } from '@tabler/icons-vue'
-import Overlay from '/src/stores/base/overlay.ts';
-import { useMapStore } from '/src/stores/map.ts';
+import Overlay from '../../../stores/base/overlay.ts';
+import { useMapStore } from '../../../stores/map.ts';
+
 const mapStore = useMapStore();
+const router = useRouter();
 
-export default {
-    name: 'OverlayExplorer',
-    components: {
-        IconUser,
-        TablerNone,
-        TablerLoading,
-        MenuTemplate
-    },
-    data: function() {
-        return {
-            loading: false,
-            paging: {
-                filter: '',
-                limit: 30,
-                page: 0
-            },
-            list: {
-                total: 0,
-                items: []
-            }
-        }
-    },
-    watch: {
-        paging: {
-            deep: true,
-            handler: async function() {
-                await this.fetchList();
-            },
-        }
-    },
-    mounted: async function() {
-        await this.fetchList();
-    },
-    methods: {
-        createOverlay: async function(overlay) {
-            this.loading = true;
+const loading = ref(false);
 
-            await mapStore.overlays.push(await Overlay.create(mapStore.map, {
-                url: String(stdurl(`/api/basemap/${overlay.id}/tiles`)),
-                name: overlay.name,
-                mode: 'overlay',
-                mode_id: overlay.id,
-                type: overlay.type,
-                styles: overlay.styles
-            }));
+const paging = ref({
+    filter: '',
+    limit: 30,
+    page: 0
+});
 
-            this.loading = false;
-            this.$emit('mode', 'overlays');
+const list = ref<BasemapList>({
+    total: 0,
+    items: []
+});
 
-            this.$router.push('/menu/overlays');
-        },
-        fetchList: async function() {
-            this.loading = true;
-            const url = stdurl('/api/basemap');
-            if (this.paging.filter) url.searchParams.append('filter', this.paging.filter);
-            url.searchParams.append('overlay', 'true');
-            url.searchParams.append('limit', this.paging.limit);
-            url.searchParams.append('page', this.paging.page);
-            this.list = await std(url);
-            this.loading = false;
-        }
+watch(paging.value, async () => {
+    await fetchList();
+});
+
+
+onMounted(async () => {
+    await fetchList();
+});
+
+async function createOverlay(overlay: Basemap) {
+    loading.value = true;
+
+    try {
+        await mapStore.overlays.push(await Overlay.create(mapStore.map, {
+            url: String(stdurl(`/api/basemap/${overlay.id}/tiles`)),
+            name: overlay.name,
+            mode: 'overlay',
+            mode_id: String(overlay.id),
+            type: overlay.type,
+            styles: overlay.styles
+        }));
+
+        loading.value = false;
+
+        router.push('/menu/overlays');
+    } catch (err) {
+        loading.value = false;
+        throw err;
     }
+}
+
+async function fetchList() {
+    loading.value = true;
+    const url = stdurl('/api/basemap');
+    if (paging.value.filter) url.searchParams.append('filter', paging.value.filter);
+    url.searchParams.append('overlay', 'true');
+    url.searchParams.append('limit', String(paging.value.limit));
+    url.searchParams.append('page', String(paging.value.page));
+    list.value = await std(url) as BasemapList;
+    loading.value = false;
 }
 </script>
