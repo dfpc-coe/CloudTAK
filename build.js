@@ -4,7 +4,7 @@ import CP from 'child_process';
 process.env.GITSHA = sha();
 
 process.env.API_URL = process.env.API_URL || '"https://example.com"';
-process.env.Environment = process.env.Environment || 'prod'
+process.env.Environment = process.env.Environment || 'prod';
 
 for (const env of [
     'GITSHA',
@@ -36,7 +36,7 @@ if (!process.argv[2]) {
     } else if (process.argv[2] === 'ui') {
         await cloudtak_ui();
     } else {
-        await clodutak_task(process.argv[2]);
+        await cloudtak_task(process.argv[2]);
     }
 }
 
