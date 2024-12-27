@@ -99,6 +99,7 @@ export const Basemap = pgTable('basemaps', {
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     name: text().notNull(),
+    title: text().notNull().default('callsign'), // Title of features within the layer
     url: text().notNull(),
     overlay: boolean().notNull().default(false),
     username: text().references(() => Profile.username),
