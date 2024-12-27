@@ -1,0 +1,1 @@
+ALTER TABLE "basemaps" ADD COLUMN "title" text DEFAULT 'callsign' NOT NULL;
