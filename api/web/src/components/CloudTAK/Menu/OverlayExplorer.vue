@@ -1,40 +1,55 @@
 <template>
-    <MenuTemplate name='Overlay Explorer'>
-        <div class='row g-0 py-2'>
-            <div class='col-12 px-2'>
-                <button
-                    class='btn btn-primary w-100'
-                    @click='router.push("/menu/files")'
-                >
-                    <IconUser
-                        :size='32'
-                        stroke='1'
-                    />Your Files
-                </button>
-            </div>
-        </div>
-
-        <TablerLoading v-if='loading' />
-        <template v-else>
-            <TablerNone
-                v-if='!list.total'
-                label='Server Overlays'
-                :create='false'
-            />
-            <template v-else>
-                <div
-                    v-for='ov in list.items'
-                    :key='ov.id'
-                    class='cursor-pointer col-12 py-2 px-3 hover-dark'
-                    @click='createOverlay(ov)'
-                >
-                    <div class='col-12 py-2 px-2 d-flex align-items-center'>
-                        <span
-                            class='mx-2'
-                            v-text='ov.name'
-                        />
-                    </div>
+    <MenuTemplate
+        name='Overlay Explorer'
+    >
+        <template #buttons>
+            <TablerIconButton
+                title='Refresh'
+                @click='fetchList'
+            >
+                <IconRefresh
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
+        </template>
+        <template #default>
+            <div class='row g-0 py-2'>
+                <div class='col-12 px-2'>
+                    <button
+                        class='btn btn-primary w-100'
+                        @click='router.push("/menu/files")'
+                    >
+                        <IconUser
+                            :size='32'
+                            stroke='1'
+                        />Your Files
+                    </button>
                 </div>
+            </div>
+
+            <TablerLoading v-if='loading' />
+            <template v-else>
+                <TablerNone
+                    v-if='!list.total'
+                    label='Server Overlays'
+                    :create='false'
+                />
+                <template v-else>
+                    <div
+                        v-for='ov in list.items'
+                        :key='ov.id'
+                        class='cursor-pointer col-12 py-2 px-3 hover-dark'
+                        @click='createOverlay(ov)'
+                    >
+                        <div class='col-12 py-2 px-2 d-flex align-items-center'>
+                            <span
+                                class='mx-2'
+                                v-text='ov.name'
+                            />
+                        </div>
+                    </div>
+                </template>
             </template>
         </template>
     </MenuTemplate>
@@ -48,10 +63,12 @@ import { std, stdurl } from '../../../std.ts';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import {
     TablerNone,
-    TablerLoading
+    TablerLoading,
+    TablerIconButton
 } from '@tak-ps/vue-tabler';
 import {
     IconUser,
+    IconRefresh
 } from '@tabler/icons-vue'
 import Overlay from '../../../stores/base/overlay.ts';
 import { useMapStore } from '../../../stores/map.ts';
