@@ -31,9 +31,26 @@
                 </div>
                 <div class='col-12'>
                     <TablerInput
+                        v-model='overlay.username'
+                        :disabled='public'
+                        label='Username'
+                    >
+                        <TablerToggle
+                            :label='`Shared ${overlay.overlay ? "Overlay" : "Basemap"}`'
+                            v-model='public'
+                        />
+                    </TablerInput>
+                </div>
+                <div class='col-12'>
+                    <TablerInput
                         v-model='overlay.url'
                         label='Data URL'
-                    />
+                    >
+                        <TablerToggle
+                            label='Overlay'
+                            v-model='overlay.overlay'
+                        />
+                    </TablerInput>
                 </div>
                 <div class='col-12 col-md-6'>
                     <TablerInput
@@ -108,6 +125,7 @@ import {
     TablerEnum,
     TablerInput,
     TablerLoading,
+    TablerToggle,
     TablerButton,
     TablerDelete,
     TablerIconButton
@@ -120,6 +138,7 @@ export default {
         TablerDelete,
         TablerButton,
         TablerInput,
+        TablerToggle,
         TablerLoading,
         StyleContainer,
         TablerIconButton,
@@ -128,6 +147,7 @@ export default {
     data: function() {
         return {
             loading: true,
+            public: false,
             overlay: {
                 name: '',
                 url: '',
@@ -175,6 +195,10 @@ export default {
                 return Number(b);
             })
 
+            if (this.public) {
+                overlay.username = null;
+            }
+
             this.loading = true;
 
             try {
@@ -214,6 +238,12 @@ export default {
                 overlay.center = '0, 0';
             } else {
                 overlay.center = overlay.center.join(',');
+            }
+
+            if (overlay.username.length) {
+                this.public = false;
+            } else {
+                this.public = true;
             }
 
             this.overlay = overlay
