@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v5.34.0 - 2024-12-27
+
+- :rocket: Fix style defaults in UI
+- :bug: Fix adding layers in UI
+- :tada: Add `title` field for Overlays
+
 ### v5.33.0 - 2024-12-26
 
 - Move COTAK API Integration into optional config instead of on the Server Page
