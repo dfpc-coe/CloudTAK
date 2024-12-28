@@ -79,7 +79,7 @@
                 :class='{
                     "hover-button-hidden": hover,
                 }'
-                style='right: 36px'
+                style='right: 36px; top: 6px;'
                 :size='24'
                 stroke='1'
                 @click='editing = true'
