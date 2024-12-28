@@ -221,9 +221,10 @@
                     <template v-else>
                         <span v-text='p' />
                         <CopyField
-                            :model-value='JSON.stringify(l.paint[p])'
+                            :model-value='JSON.stringify(l.paint[p], null, 4)'
                             :edit='!disabled'
                             :hover='!disabled'
+                            :rows='JSON.stringify(l.paint[p], null, 4).split("\n").length'
                             @update:model-value='l.paint[p] = $event ? JSON.parse($event) : undefined'
                         />
                     </template>
@@ -232,7 +233,8 @@
                     <div v-text='p' />
                     <CopyField
                         v-model='l.paint[p]'
-                        :model-value='JSON.stringify(l.paint[p])'
+                        :model-value='JSON.stringify(l.paint[p], null, 4)'
+                        :rows='JSON.stringify(l.paint[p], null, 4).split("\n").length'
                         :edit='!disabled'
                         :hover='!disabled'
                         @update:model-value='l.paint[p] = $event ? JSON.parse($event) : undefined'
