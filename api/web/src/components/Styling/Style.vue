@@ -3,29 +3,35 @@
         Style Editor
         <div class='ms-auto btn-list'>
             <template v-if='mode === "visual"'>
-                <IconPlus
-                    v-tooltip='"New Layer"'
-                    class='cursor-pointer'
-                    :size='32'
-                    stroke='1'
+                <TablerIconButton
+                    title='New Layer'
                     @click='newLayer'
-                />
-                <IconCode
-                    v-tooltip='"Code View"'
-                    class='cursor-pointer'
+                >
+                    <IconPlus
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+                <TablerIconButton
+                    title='Code View'
+                    @click='mode = "code"'
+                >
+                    <IconCode
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+            </template>
+            <TablerIconButton
+                v-if='mode === "code"'
+                title='Visual View'
+                @click='mode = "visual"'
+            >
+                <IconEye
                     :size='32'
                     stroke='1'
-                    @click='mode = "code"'
                 />
-            </template>
-            <IconEye
-                v-if='mode === "code"'
-                v-tooltip='"Visual View"'
-                class='cursor-pointer'
-                :size='32'
-                stroke='1'
-                @click='mode = "visual"'
-            />
+            </TablerIconButton>
         </div>
     </div>
 
@@ -112,22 +118,26 @@
                         class='ms-auto btn-list'
                         @click.stop.prevent
                     >
-                        <IconCode
+                        <TablerIconButton
                             v-if='!code.has(l.id)'
-                            v-tooltip='"Code View"'
-                            class='cursor-pointer'
-                            :size='32'
-                            stroke='1'
+                            title='Code View'
                             @click='code.add(l.id)'
-                        />
-                        <IconEye
+                        >
+                            <IconCode
+                                :size='32'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
+                        <TablerIconButton
                             v-else
-                            v-tooltip='"Visual View"'
-                            class='cursor-pointer'
-                            :size='32'
-                            stroke='1'
+                            title='Visual View'
                             @click='code.delete(l.id)'
-                        />
+                        >
+                            <IconEye
+                                :size='32'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
 
                         <TablerDelete
                             v-tooltip='"Remove Layer"'
@@ -154,6 +164,7 @@
 
 <script>
 import {
+    TablerIconButton,
     TablerDelete,
     TablerNone,
 } from '@tak-ps/vue-tabler';
@@ -191,6 +202,7 @@ export default {
         IconMountain,
         IconBackground,
         IconQuestionMark,
+        TablerIconButton,
         StyleLayer,
         TablerDelete,
         TablerNone,
