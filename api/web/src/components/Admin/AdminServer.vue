@@ -107,9 +107,9 @@
                     </div>
                     <div
                         v-if='server.certificate'
-                        class='col-12 datagrid pt-2 pb-5'
+                        class='row g-2'
                     >
-                        <div class='datagrid-item pb-2'>
+                        <div class='col-lg-4'>
                             <div class='datagrid-title'>
                                 Certificate Valid From
                             </div>
@@ -118,7 +118,7 @@
                                 v-text='server.certificate.validFrom'
                             />
                         </div>
-                        <div class='datagrid-item pb-2'>
+                        <div class='col-lg-4'>
                             <div class='datagrid-title'>
                                 Certificate Valid To
                             </div>
@@ -127,7 +127,7 @@
                                 v-text='server.certificate.validTo'
                             />
                         </div>
-                        <div class='datagrid-item pb-2'>
+                        <div class='col-lg-4'>
                             <div class='datagrid-title'>
                                 Certificate Subject
                             </div>
