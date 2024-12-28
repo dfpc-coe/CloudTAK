@@ -80,9 +80,6 @@ export default async function router(schema: Schema, config: Config) {
             api: Type.String(),
             webtak: Type.String(),
             name: Type.Optional(Type.String()),
-            provider_url: Type.Optional(Type.String()),
-            provider_secret: Type.Optional(Type.String()),
-            provider_client: Type.Optional(Type.String()),
 
             // Used during initial server config to test connection & set system admin
             username: Type.Optional(Type.String()),
