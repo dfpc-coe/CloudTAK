@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v5.35.0 - 2024-12-29
+
+- :rocket: `UI` Migrate AdminServer to TS
+- :rocket: `UI` Better responsive behavior
+
 ### v5.34.0 - 2024-12-27
 
 - :rocket: Fix style defaults in UI
