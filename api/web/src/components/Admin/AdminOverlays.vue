@@ -45,6 +45,12 @@
                         ]'
                     />
                 </div>
+                <div class='col-12'>
+                    <TablerToggle
+                        label='Show Overlays'
+                        v-model='paging.overlay'
+                    />
+                </div>
             </div>
 
             <TablerLoading
@@ -93,6 +99,15 @@
                                                         v-else
                                                         class='mx-3 ms-auto badge border bg-red text-white'
                                                     >Private</span>
+
+                                                    <span
+                                                        v-if='!ov.overlay'
+                                                        class='mx-3 ms-auto badge border bg-purple text-white'
+                                                    >Basemap</span>
+                                                    <span
+                                                        v-else
+                                                        class='mx-3 ms-auto badge border bg-green text-white'
+                                                    >Overlay</span>
                                                 </div>
                                             </template>
                                         </div>
@@ -128,6 +143,7 @@ import {
     TablerInput,
     TablerEnum,
     TablerAlert,
+    TablerToggle,
     TablerIconButton,
     TablerLoading
 } from '@tak-ps/vue-tabler';
@@ -148,6 +164,7 @@ const paging = ref({
     order: 'asc',
     limit: 100,
     scope: 'server',
+    overlay: false,
     page: 0
 });
 
@@ -190,7 +207,7 @@ async function listBasemapSchema() {
 async function fetchList() {
     loading.value = true;
     const url = stdurl('/api/basemap');
-    url.searchParams.append('overlay', 'true');
+    url.searchParams.append('overlay', String(paging.value.overlay));
     if (paging.value.scope !== "all") {
         url.searchParams.append('scope', paging.value.scope);
     }
