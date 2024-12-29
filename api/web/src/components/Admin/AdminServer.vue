@@ -8,13 +8,15 @@
                 </h3>
                 <div class='ms-auto'>
                     <div class='btn-list'>
-                        <IconSettings
-                            v-tooltip='"Configure Server"'
-                            :size='32'
-                            :stroke='1'
-                            class='cursor-pointer'
+                        <TablerIconButton
+                            title='Configure Server'
                             @click='edit = true'
-                        />
+                        >
+                            <IconPencil
+                                :size='32'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
                     </div>
                 </div>
             </div>
@@ -68,7 +70,7 @@
                     <IconPlus
                         v-tooltip='"Upload P12"'
                         :size='32'
-                        :stroke='1'
+                        stroke='1'
                         class='cursor-pointer'
                         @click='modal.upload = true'
                     />
@@ -97,14 +99,17 @@
                     <div class='col-auto'>
                         <IconLock
                             :size='50'
-                            :stroke='1'
+                            stroke='1'
                         />
                     </div>
                     <div class='col-auto d-flex align-items-center'>
                         Once Certificates are uploaded they cannot be viewed
                     </div>
-                    <div class='col-12 datagrid pt-2 pb-5'>
-                        <div class='datagrid-item pb-2'>
+                    <div
+                        v-if='server.certificate'
+                        class='row g-2'
+                    >
+                        <div class='col-lg-4'>
                             <div class='datagrid-title'>
                                 Certificate Valid From
                             </div>
@@ -113,7 +118,7 @@
                                 v-text='server.certificate.validFrom'
                             />
                         </div>
-                        <div class='datagrid-item pb-2'>
+                        <div class='col-lg-4'>
                             <div class='datagrid-title'>
                                 Certificate Valid To
                             </div>
@@ -122,7 +127,7 @@
                                 v-text='server.certificate.validTo'
                             />
                         </div>
-                        <div class='datagrid-item pb-2'>
+                        <div class='col-lg-4'>
                             <div class='datagrid-title'>
                                 Certificate Subject
                             </div>
@@ -175,13 +180,15 @@
             v-if='modal.upload'
             @certs='p12upload($event)'
             @close='modal.upload = false'
-            @err='err = $event'
+            @err='error = $event'
         />
     </div>
 </template>
 
-<script>
-import { std } from '/src/std.ts';
+<script setup lang='ts'>
+import { ref, onMounted } from 'vue';
+import { std } from '../../std.ts';
+import type { Server, Server_Update } from '../../types.ts';
 import Upload from '../util/UploadP12.vue';
 import {
     TablerLoading,
@@ -190,124 +197,123 @@ import {
 import {
     IconPlus,
     IconLock,
-    IconSettings
+    IconPencil
 } from '@tabler/icons-vue';
 import timeDiff from '../../timediff.ts';
 
-export default {
-    name: 'AdminServer',
-    components: {
-        IconSettings,
-        TablerLoading,
-        TablerInput,
-        IconLock,
-        IconPlus,
-        Upload
-    },
-    data: function() {
-        return {
-            edit: false,
-            loading: true,
-            regen: false,
-            modal: {
-                upload: false
-            },
-            auth: {
-                cert: '',
-                key: ''
-            },
-            errors: {
-                cert: '',
-                key: '',
-                name: '',
-                url: '',
-                api: '',
-                webtak: ''
-            },
-            server: {
-                id: null,
-                created: null,
-                updated: null,
-                name: '',
-                url: '',
-                api: '',
-                webtak: '',
+const edit = ref(false);
+const loading = ref(true);
+const regen = ref(false);
+
+const modal = ref({
+    upload: false
+})
+
+const auth = ref({
+    cert: '',
+    key: ''
+})
+
+const error = ref<Error | undefined>();
+
+const errors = ref<Record<string, string>>({
+    cert: '',
+    key: '',
+    name: '',
+    url: '',
+    api: '',
+    webtak: ''
+})
+
+const server = ref<Server>({
+    id: 0,
+    created: new Date().toISOString(),
+    updated: new Date().toISOString(),
+    status: 'unconfigured',
+    auth: false,
+    name: '',
+    url: '',
+    api: '',
+    webtak: '',
+});
+
+onMounted(async () => {
+    await fetch();
+
+    if (server.value.status === 'unconfigured') {
+        edit.value = true;
+    }
+});
+
+async function fetch() {
+    loading.value = true;
+    server.value = await std(`/api/server`) as Server;
+    if (!server.value.auth) regen.value = true;
+    loading.value = false;
+}
+
+function p12upload(certs: {
+    pemCertificate: string,
+    pemKey: string
+}) {
+    modal.value.upload = false;
+    auth.value.cert = certs.pemCertificate
+        .split('-----BEGIN CERTIFICATE-----')
+        .join('-----BEGIN CERTIFICATE-----\n')
+        .split('-----END CERTIFICATE-----')
+        .join('\n-----END CERTIFICATE-----');
+    auth.value.key = certs.pemKey
+        .split('-----BEGIN RSA PRIVATE KEY-----')
+        .join('-----BEGIN RSA PRIVATE KEY-----\n')
+        .split('-----END RSA PRIVATE KEY-----')
+        .join('\n-----END RSA PRIVATE KEY-----');
+}
+
+async function postServer() {
+    errors.value.api = !server.value.api ? 'Cannot be empty' : '';
+    errors.value.url = !server.value.url ? 'Cannot be empty' : '';
+    errors.value.name = !server.value.name ? 'Cannot be empty' : '';
+
+    let field: keyof Server;
+    let fields: Array<keyof Server> = ['api', 'url', 'webtak'];
+    for (field of fields) {
+        if (!errors.value[field]) {
+            try {
+                new URL(String(server.value[field]));
+            } catch (err) {
+                errors.value[field] = err instanceof Error ? err.message : String(err);
             }
-        }
-    },
-    mounted: async function() {
-        await this.fetch();
-
-        if (this.server.status === 'unconfigured') this.edit = true;
-    },
-    methods: {
-        timeDiff: function(updated) {
-            return timeDiff(updated);
-        },
-        fetch: async function() {
-            this.loading = true;
-            this.server = await std(`/api/server`);
-            if (!this.server.auth) this.regen = true;
-            this.loading = false;
-        },
-        p12upload: function(certs) {
-            this.modal.upload = false;
-            this.auth.cert = certs.pemCertificate
-                .split('-----BEGIN CERTIFICATE-----')
-                .join('-----BEGIN CERTIFICATE-----\n')
-                .split('-----END CERTIFICATE-----')
-                .join('\n-----END CERTIFICATE-----');
-            this.auth.key = certs.pemKey
-                .split('-----BEGIN RSA PRIVATE KEY-----')
-                .join('-----BEGIN RSA PRIVATE KEY-----\n')
-                .split('-----END RSA PRIVATE KEY-----')
-                .join('\n-----END RSA PRIVATE KEY-----');
-        },
-        postServer: async function() {
-            for (const field of ['api', 'url', 'name']) {
-                this.errors[field] = !this.server[field] ? 'Cannot be empty' : '';
-            }
-
-            for (const field of ['api', 'url', 'webtak']) {
-                if (!this.errors[field]) {
-                    try {
-                        new URL(this.server[field]);
-                    } catch (err) {
-                        this.errors[field] = err.message;
-                    }
-                }
-            }
-
-            for (const e in this.errors) if (this.errors[e]) return;
-
-            this.loading = true;
-            const body = {
-                name: this.server.name,
-                url: this.server.url,
-                api: this.server.api,
-                webtak: this.server.webtak,
-            }
-
-            if (this.auth.cert && this.auth.key) {
-                body.auth = this.auth;
-            }
-
-            if (this.server.status === 'unconfigured') {
-                this.server = await std(`/api/server`, {
-                    method: 'POST', body
-                });
-            } else {
-                this.server = await std(`/api/server`, {
-                    method: 'PATCH', body
-                });
-            }
-
-            this.auth.cert = '';
-            this.auth.key = '';
-            this.regen = false;
-            this.edit = false;
-            this.loading = false;
         }
     }
+
+    for (const e in errors.value) if (errors.value[e]) return;
+
+    loading.value = true;
+    const body: Server_Update = {
+        name: server.value.name,
+        url: server.value.url,
+        api: server.value.api,
+        webtak: server.value.webtak,
+    }
+
+    if (auth.value.cert && auth.value.key) {
+        body.auth = auth.value;
+    }
+
+    if (server.value.status === 'unconfigured') {
+        server.value = await std(`/api/server`, {
+            method: 'POST', body
+        }) as Server;
+    } else {
+        server.value = await std(`/api/server`, {
+            method: 'PATCH', body
+        }) as Server;
+    }
+
+    auth.value.cert = '';
+    auth.value.key = '';
+    regen.value = false;
+    edit.value = false;
+    loading.value = false;
 }
 </script>
