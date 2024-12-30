@@ -30,16 +30,12 @@
                     />
                 </div>
                 <div class='col-12'>
-                    <TablerInput
-                        v-model='overlay.username'
-                        :disabled='public'
-                        label='Username'
-                    >
-                        <TablerToggle
-                            :label='`Shared ${overlay.overlay ? "Overlay" : "Basemap"}`'
-                            v-model='public'
+                    <label class='mx-2 my-1'>Ownership</label>
+                    <div class='border rounded'>
+                        <UserSelect
+                            v-model='overlay.username'
                         />
-                    </TablerInput>
+                    </div>
                 </div>
                 <div class='col-12'>
                     <TablerInput
@@ -118,6 +114,7 @@
 <script>
 import { std, stdurl, stdclick } from '/src/std.ts';
 import StyleContainer from '../Styling/Style.vue';
+import UserSelect from '../util/UserSelect.vue';
 import {
     IconCircleArrowLeft
 } from '@tabler/icons-vue';
@@ -134,6 +131,7 @@ import {
 export default {
     name: 'OverlayAdmin',
     components: {
+        UserSelect,
         TablerEnum,
         TablerDelete,
         TablerButton,
