@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v5.37.0 - 2024-12-30
+
+- :tada: Add snapping feature when drawing Lines & Polys (thanks to adding the custom function hook @JamesLMilner with [TerraDraw](https://github.com/JamesLMilner/terra-draw/)
+- :bug: Fix display of layers on a given connection
+
 ### v5.36.0 - 2024-12-29
 
 - :tada: `UI` Implement User Select dropdown
