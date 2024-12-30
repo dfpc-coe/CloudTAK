@@ -8,6 +8,7 @@
 */
 
 import { defineStore } from 'pinia'
+import type { Position } from "geojson";
 import COT from './base/cot.ts';
 import Subscription from './base/mission.ts';
 import Overlay from './base/overlay.ts';
@@ -15,6 +16,8 @@ import { std, stdurl } from '../std.js';
 import mapgl from 'maplibre-gl'
 import * as terraDraw from 'terra-draw';
 import type { ProfileOverlay, Basemap, APIList } from '../types.ts';
+import { coordEach } from '@turf/meta';
+import { distance } from '@turf/distance';
 import type { Feature } from 'geojson';
 import type {
     LngLat,
@@ -456,6 +459,43 @@ export const useMapStore = defineStore('cloudtak', {
             this.radial.mode = opts.mode;
         },
         initDraw: function() {
+            const cotStore = useCOTStore();
+
+            const toCustom = (event: terraDraw.TerraDrawMouseEvent): Position | undefined => {
+                let closest: {
+                    dist: number
+                    cot: COT | undefined
+                    coord: Position
+                } | undefined = undefined;
+
+                cotStore.filter((cot) => {
+                    coordEach(cot.geometry, (coord: Position) => {
+                        const dist = distance([event.lng, event.lat], coord);
+
+                        if (!closest || (dist < closest.dist)) {
+                            closest = { dist, cot, coord }
+                        }
+                    });
+
+                    return false;
+                }, { mission: true})
+
+                if (closest) {
+                    // Base Threshold / Math.pow(decayFactor, zoomLevel)
+                    const threshold = 1000 / Math.pow(2, this.map.getZoom());
+
+                    // @ts-expect-error Somehow getting assigned a never value
+                    if (closest.dist < threshold) {
+                        // @ts-expect-error Somehow getting assigned a never value
+                        return closest.coord;
+                    }
+
+                    return;
+                } else {
+                    return;
+                }
+            }
+
             this._draw = new terraDraw.TerraDraw({
                 adapter: new terraDraw.TerraDrawMapLibreGLAdapter({
                     map: this.map
@@ -472,8 +512,12 @@ export const useMapStore = defineStore('cloudtak', {
                 },
                 modes: [
                     new terraDraw.TerraDrawPointMode(),
-                    new terraDraw.TerraDrawLineStringMode(),
-                    new terraDraw.TerraDrawPolygonMode(),
+                    new terraDraw.TerraDrawLineStringMode({
+                        snapping: { toCustom }
+                    }),
+                    new terraDraw.TerraDrawPolygonMode({
+                        snapping: { toCustom }
+                    }),
                     new terraDraw.TerraDrawAngledRectangleMode(),
                     new terraDraw.TerraDrawFreehandMode(),
                     new terraDraw.TerraDrawSectorMode(),
