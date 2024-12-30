@@ -43,8 +43,8 @@
                         label='Data URL'
                     >
                         <TablerToggle
-                            label='Overlay'
                             v-model='overlay.overlay'
+                            label='Overlay'
                         />
                     </TablerInput>
                 </div>
