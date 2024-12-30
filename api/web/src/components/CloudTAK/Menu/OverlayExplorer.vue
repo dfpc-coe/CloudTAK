@@ -47,6 +47,17 @@
                                 class='mx-2'
                                 v-text='ov.name'
                             />
+
+                            <div class='ms-auto'>
+                                <span
+                                    v-if='!ov.username'
+                                    class='badge border bg-blue text-white'
+                                >Public</span>
+                                <span
+                                    v-else
+                                    class='badge border bg-red text-white'
+                                >Private</span>
+                            </div>
                         </div>
                     </div>
                 </template>
