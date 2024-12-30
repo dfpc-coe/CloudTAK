@@ -30,16 +30,12 @@
                     />
                 </div>
                 <div class='col-12'>
-                    <TablerInput
-                        v-model='overlay.username'
-                        :disabled='public'
-                        label='Username'
-                    >
-                        <TablerToggle
-                            :label='`Shared ${overlay.overlay ? "Overlay" : "Basemap"}`'
-                            v-model='public'
+                    <label class='mx-2 my-1'>Ownership</label>
+                    <div class='border rounded'>
+                        <UserSelect
+                            v-model='overlay.username'
                         />
-                    </TablerInput>
+                    </div>
                 </div>
                 <div class='col-12'>
                     <TablerInput
@@ -47,8 +43,8 @@
                         label='Data URL'
                     >
                         <TablerToggle
-                            label='Overlay'
                             v-model='overlay.overlay'
+                            label='Overlay'
                         />
                     </TablerInput>
                 </div>
@@ -118,6 +114,7 @@
 <script>
 import { std, stdurl, stdclick } from '/src/std.ts';
 import StyleContainer from '../Styling/Style.vue';
+import UserSelect from '../util/UserSelect.vue';
 import {
     IconCircleArrowLeft
 } from '@tabler/icons-vue';
@@ -134,6 +131,7 @@ import {
 export default {
     name: 'OverlayAdmin',
     components: {
+        UserSelect,
         TablerEnum,
         TablerDelete,
         TablerButton,
@@ -147,7 +145,6 @@ export default {
     data: function() {
         return {
             loading: true,
-            public: false,
             overlay: {
                 name: '',
                 url: '',
@@ -185,37 +182,42 @@ export default {
             }
         },
         saveOverlay: async function() {
-            let overlay = JSON.parse(JSON.stringify(this.overlay));
+            let body = JSON.parse(JSON.stringify(this.overlay));
 
-            overlay.bounds = overlay.bounds.split(',').map((b) => {
+            body.bounds = body.bounds.split(',').map((b) => {
                 return Number(b);
             })
 
-            overlay.center = overlay.center.split(',').map((b) => {
+            body.center = body.center.split(',').map((b) => {
                 return Number(b);
             })
 
-            if (this.public) {
-                overlay.username = null;
+            if (body.username) {
+                body.scope = 'user'
+            } else {
+                body.scope = 'server'
             }
 
             this.loading = true;
 
             try {
                 if (this.$route.params.overlay === 'new') {
-                    overlay = await std(`/api/basemap`, {
-                        method: 'POST',
-                        body: overlay
-                    });
-                } else {
-                    overlay = await std(`/api/basemap/${this.overlay.id}`, {
-                        method: 'PATCH',
-                        body: overlay
-                    });
-                }
+                    const url = stdurl(`/api/basemap`);
+                    if (body.username) url.searchParams.append('impersonate', body.username);
+                    const ov = await std(url, { method: 'POST', body });
+                    ov.bounds = ov.bounds.join(',');
+                    ov.center = ov.center.join(',');
 
-                overlay.bounds = overlay.bounds.join(',');
-                overlay.center = overlay.center.join(',');
+                    this.overlay = ov;
+                } else {
+                    const url = stdurl(`/api/basemap/${this.overlay.id}`);
+                    if (body.username) url.searchParams.append('impersonate', body.username);
+                    const ov = await std(url, { method: 'PATCH', body });
+                    ov.bounds = ov.bounds.join(',');
+                    ov.center = ov.center.join(',');
+
+                    this.overlay = ov;
+                }
 
                 this.loading = false;
             } catch (err) {
@@ -240,11 +242,6 @@ export default {
                 overlay.center = overlay.center.join(',');
             }
 
-            if (overlay.username.length) {
-                this.public = false;
-            } else {
-                this.public = true;
-            }
 
             this.overlay = overlay
             this.loading = false;

@@ -22,7 +22,7 @@
 
             <div class='col-12 col-md-6 pe-md-1'>
                 <CopyField
-                    :model-value='l.minzoom || "Not Set"'
+                    :model-value='!isNaN(l.minzoom) ? l.minzoom : "Not Set"'
                     :edit='!disabled'
                     :hover='!disabled'
                     @update:model-value='l.minzoom = !isNaN(parseInt($event)) ? parseInt($event) : undefined'
@@ -30,7 +30,7 @@
             </div>
             <div class='col-12 col-md-6 ps-md-1'>
                 <CopyField
-                    :model-value='l.maxzoom || "Not Set"'
+                    :model-value='!isNaN(l.maxzoom) ? l.maxzoom : "Not Set"'
                     :edit='!disabled'
                     :hover='!disabled'
                     @update:model-value='l.maxzoom = !isNaN(parseInt($event)) ? parseInt($event) : undefined'
