@@ -61,6 +61,9 @@ export class AuthUser {
     access: AuthUserAccess;
     email: string;
 
+    // Username of admin doing the impersonating - if this value is populated the calling user is guarenteed to be an admin
+    impersonate?: string; 
+
     constructor(access: AuthUserAccess, email: string) {
         this.access = access;
         this.email = email;
@@ -190,6 +193,24 @@ export default class Auth {
         if (this.#is_user(auth)) throw new Err(401, null, 'Only a resource token can access this resource');
 
         return auth as AuthResource;
+    }
+
+    static async impersonate(
+        config: Config,
+        req: Request<any, any, any, any>,
+        impersonate: string
+    ): Promise<AuthUser> {
+        const adminUser = await this.as_user(config, req, { admin: true });
+
+        const imp = await config.models.Profile.from(impersonate);
+
+        let access = AuthUserAccess.USER
+        if (imp.agency_admin) access = AuthUserAccess.AGENCY;
+        if (imp.system_admin) access = AuthUserAccess.ADMIN;
+
+        const resolved = new AuthUser(access, impersonate);
+        resolved.impersonate = adminUser.email;
+        return resolved;
     }
 
     static async as_user(config: Config, req: Request<any, any, any, any>, opts: {

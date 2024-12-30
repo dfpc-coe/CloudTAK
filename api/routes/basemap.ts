@@ -251,6 +251,9 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Create Basemap',
         group: 'BaseMap',
         description: 'Register a new basemap',
+        query: Type.Object({
+            impersonate: Type.Optional(Type.String({ description: 'Filter the given resource by a given username' })),
+        }),
         body: Type.Object({
             name: Default.NameField,
             collection: Type.Optional(Type.Integer()),
@@ -269,7 +272,9 @@ export default async function router(schema: Schema, config: Config) {
         res: AugmentedBasemapResponse
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req);
+            const user = req.query.impersonate
+                ? await Auth.impersonate(config, req, req.query.impersonate)
+                : await Auth.as_user(config, req);
 
             let bounds: Geometry | undefined = undefined;
             if (req.body.bounds) {
@@ -316,9 +321,13 @@ export default async function router(schema: Schema, config: Config) {
         params: Type.Object({
             basemapid: Type.Integer({ minimum: 1 })
         }),
+        query: Type.Object({
+            impersonate: Type.Optional(Type.String({ description: 'Filter the given resource by a given username' })),
+        }),
         body: Type.Object({
             name: Type.Optional(Default.NameField),
             collection: Type.Optional(Type.Union([Type.Null(), Type.Integer()])),
+            scope: Type.Enum(ResourceCreationScope, { default: ResourceCreationScope.USER }),
             url: Type.Optional(Type.String()),
             minzoom: Type.Optional(Type.Integer()),
             maxzoom: Type.Optional(Type.Integer()),
@@ -327,12 +336,14 @@ export default async function router(schema: Schema, config: Config) {
             type: Type.Optional(Type.Enum(Basemap_Type)),
             bounds: Type.Optional(Type.Array(Type.Number(), { minItems: 4, maxItems: 4 })),
             center: Type.Optional(Type.Array(Type.Number())),
-            styles: Type.Optional(Type.Array(Type.Unknown()))
+            styles: Type.Optional(Type.Array(Type.Unknown())),
         }),
         res: AugmentedBasemapResponse
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req);
+            const user = req.query.impersonate
+                ? await Auth.impersonate(config, req, req.query.impersonate)
+                : await Auth.as_user(config, req);
 
             let bounds: Geometry | undefined = undefined;
             let center: Geometry | undefined = undefined;
@@ -346,11 +357,25 @@ export default async function router(schema: Schema, config: Config) {
 
             if (existing.username && existing.username !== user.email && user.access === AuthUserAccess.USER) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
-            } else if (!existing.username && user.access !== AuthUserAccess.ADMIN) {
-                throw new Err(400, null, 'Only System Admin can edit Server Resource');
+            } else if (!existing.username && (user.access !== AuthUserAccess.ADMIN && !user.impersonate)) {
+                throw new Err(400, null, 'Only System Admin can edit Server Resources');
+            }
+
+            let username: string | null = existing.username;
+            if (
+                req.body.scope !== undefined
+                && req.body.scope === ResourceCreationScope.SERVER
+                && (!user.impersonate && user.access !== AuthUserAccess.ADMIN)
+            ) {
+                throw new Err(400, null, 'Only Server Admins can edit scoped basemaps');
+            } else if (req.body.scope !== undefined && user.access === AuthUserAccess.ADMIN && req.body.scope === ResourceCreationScope.SERVER) {
+                username = null
+            } else if (req.body.scope && user.access === AuthUserAccess.USER || req.body.scope === ResourceCreationScope.USER) {
+                username = user.email;
             }
 
             const basemap = await config.models.Basemap.commit(Number(req.params.basemapid), {
+                username,
                 updated: sql`Now()`,
                 ...req.body,
                 bounds, center,
