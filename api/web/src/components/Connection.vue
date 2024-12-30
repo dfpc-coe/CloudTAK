@@ -107,7 +107,7 @@
                     </div>
 
                     <div
-                        v-if='!connection'
+                        v-if='connection'
                         class='col-lg-12'
                     >
                         <div class='card'>
