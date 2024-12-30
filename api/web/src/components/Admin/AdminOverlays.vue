@@ -30,15 +30,15 @@
             <div class='row col-12 mx-1 my-2'>
                 <div class='col-md-6'>
                     <TablerInput
-                        label='Name Filter'
                         v-model='paging.filter'
+                        label='Name Filter'
                         placeholder='Filter...'
                     />
                 </div>
                 <div class='col-md-3'>
                     <TablerEnum
-                        label='Ownership'
                         v-model='paging.scope'
+                        label='Ownership'
                         default='all'
                         :options='[
                             "all",
@@ -49,8 +49,8 @@
                 </div>
                 <div class='col-md-3'>
                     <TablerEnum
-                        label='Type'
                         v-model='paging.type'
+                        label='Type'
                         default='basemap'
                         :options='[
                             "basemap",
@@ -150,7 +150,6 @@ import {
     TablerInput,
     TablerEnum,
     TablerAlert,
-    TablerToggle,
     TablerIconButton,
     TablerLoading
 } from '@tak-ps/vue-tabler';
