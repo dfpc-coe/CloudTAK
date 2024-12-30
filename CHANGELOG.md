@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v5.36.0 - 2024-12-29
+
+- :tada: `UI` Implement User Select dropdown
+- :rocket: `UI/API`Allow assigning System/Private scope to basemaps via Admin Basemaps console
+- :rocket: `UI` Allow assigning Username to Private Basemaps
+
 ### v5.35.0 - 2024-12-29
 
 - :rocket: `UI` Migrate AdminServer to TS
