@@ -28,16 +28,18 @@
         </div>
         <div style='min-height: 20vh; margin-bottom: 61px'>
             <div class='row col-12 mx-1 my-2'>
-                <div class='col-md-8'>
+                <div class='col-md-6'>
                     <TablerInput
                         v-model='paging.filter'
+                        label='Name Filter'
                         placeholder='Filter...'
                     />
                 </div>
-                <div class='col-md-4'>
+                <div class='col-md-3'>
                     <TablerEnum
                         v-model='paging.scope'
-                        default='server'
+                        label='Ownership'
+                        default='all'
                         :options='[
                             "all",
                             "server",
@@ -45,10 +47,15 @@
                         ]'
                     />
                 </div>
-                <div class='col-12'>
-                    <TablerToggle
-                        label='Show Overlays'
-                        v-model='paging.overlay'
+                <div class='col-md-3'>
+                    <TablerEnum
+                        v-model='paging.type'
+                        label='Type'
+                        default='basemap'
+                        :options='[
+                            "basemap",
+                            "overlay"
+                        ]'
                     />
                 </div>
             </div>
@@ -143,7 +150,6 @@ import {
     TablerInput,
     TablerEnum,
     TablerAlert,
-    TablerToggle,
     TablerIconButton,
     TablerLoading
 } from '@tak-ps/vue-tabler';
@@ -164,7 +170,7 @@ const paging = ref({
     order: 'asc',
     limit: 100,
     scope: 'server',
-    overlay: false,
+    type: 'basemap',
     page: 0
 });
 
@@ -207,7 +213,11 @@ async function listBasemapSchema() {
 async function fetchList() {
     loading.value = true;
     const url = stdurl('/api/basemap');
-    url.searchParams.append('overlay', String(paging.value.overlay));
+
+    if (paging.value.type === 'overlay') {
+        url.searchParams.append('overlay', String(true));
+    }
+
     if (paging.value.scope !== "all") {
         url.searchParams.append('scope', paging.value.scope);
     }
