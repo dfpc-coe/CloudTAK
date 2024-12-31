@@ -1,8 +1,14 @@
 import TAKAPI, {
     APIAuthPassword
 } from '../tak-api.js';
+import { Static, Type } from '@sinclair/typebox';
 import pem from 'pem';
 import xml2js from 'xml2js';
+
+export const CertificateResponse = Type.Object({
+    cert: Type.String(),
+    key: Type.String()
+});
 
 export default class {
     api: TAKAPI;
@@ -18,7 +24,7 @@ export default class {
         });
     }
 
-    async generate() {
+    async generate(): Promise<Static<typeof CertificateResponse>> {
         if (!(this.api.auth instanceof APIAuthPassword)) throw new Error('Must use Password Auth');
 
         const config = await xml2js.parseStringPromise(await this.config());
