@@ -854,10 +854,12 @@ function editGeometry(featid: string) {
         updateCOT();
 
         // @ts-expect-error Cast Feature to GeoJSONStoreFeature
-        const status = mapStore.draw.addFeatures([feat]);
+        const errorStatus = mapStore.draw.addFeatures([feat]).filter((status) => {
+            return !status.valid;
+        });
 
-        if (status && status.length) {
-            throw new Error('Error editing this feature: ' + status[0].reason)
+        if (errorStatus.length) {
+            throw new Error('Error editing this feature: ' + errorStatus[0].reason)
         }
 
         mapStore.draw.selectFeature(cot.id);
@@ -980,66 +982,68 @@ function mountMap(): Promise<void> {
             })
 
             // @ts-expect-error TerraDraw currently doesn't allow async here per TypeDefs
-            mapStore.draw.on('finish', async (id: string) => {
-                if (mapStore.draw.getMode() === 'select' || mapStore.edit) {
-                    return;
-                } else if (mapStore.draw.getMode() === 'freehand') {
+            mapStore.draw.on('finish', async (id, context) => {
+                if (context.action === "draw") {
+                    if (mapStore.draw.getMode() === 'select' || mapStore.edit) {
+                        return;
+                    } else if (mapStore.draw.getMode() === 'freehand') {
+                        // @ts-expect-error There is currently no getFeature API
+                        const geometry = mapStore.draw._store.store[id].geometry;
+                        mapStore.draw.removeFeatures([id]);
+                        mapStore.draw.setMode('static');
+                        mapStore.drawOptions.mode = 'static';
+                        mapStore.draw.stop();
+
+                        cotStore.touching(geometry).forEach((feat) => {
+                            mapStore.selected.set(feat.id, feat);
+                        })
+
+                        return;
+                    }
+
                     // @ts-expect-error There is currently no getFeature API
                     const geometry = mapStore.draw._store.store[id].geometry;
+
+                    const now = new Date();
+                    const feat: Feature = {
+                        id: id,
+                        type: 'Feature',
+                        path: '/',
+                        properties: {
+                            id: id,
+                            type: 'u-d-p',
+                            how: 'h-g-i-g-o',
+                            archived: true,
+                            callsign: 'New Feature',
+                            time: now.toISOString(),
+                            start: now.toISOString(),
+                            stale: new Date(now.getTime() + 3600).toISOString(),
+                            center: [0,0]
+                        },
+                        geometry
+                    };
+
+                    if (
+                        mapStore.draw.getMode() === 'polygon'
+                        || mapStore.draw.getMode() === 'angled-rectangle'
+                        || mapStore.draw.getMode() === 'sector'
+                    ) {
+                        feat.properties.type = 'u-d-f';
+                    } else if (mapStore.draw.getMode() === 'linestring') {
+                        feat.properties.type = 'u-d-f';
+                    } else if (mapStore.draw.getMode() === 'point') {
+                        feat.properties.type = mapStore.drawOptions.pointMode || 'u-d-p';
+                        feat.properties["marker-opacity"] = 1;
+                        feat.properties["marker-color"] = '#00FF00';
+                    }
+
                     mapStore.draw.removeFeatures([id]);
                     mapStore.draw.setMode('static');
                     mapStore.drawOptions.mode = 'static';
                     mapStore.draw.stop();
-
-                    cotStore.touching(geometry).forEach((feat) => {
-                        mapStore.selected.set(feat.id, feat);
-                    })
-
-                    return;
+                    await cotStore.add(feat);
+                    await updateCOT();
                 }
-
-                // @ts-expect-error There is currently no getFeature API
-                const geometry = mapStore.draw._store.store[id].geometry;
-
-                const now = new Date();
-                const feat: Feature = {
-                    id: id,
-                    type: 'Feature',
-                    path: '/',
-                    properties: {
-                        id: id,
-                        type: 'u-d-p',
-                        how: 'h-g-i-g-o',
-                        archived: true,
-                        callsign: 'New Feature',
-                        time: now.toISOString(),
-                        start: now.toISOString(),
-                        stale: new Date(now.getTime() + 3600).toISOString(),
-                        center: [0,0]
-                    },
-                    geometry
-                };
-
-                if (
-                    mapStore.draw.getMode() === 'polygon'
-                    || mapStore.draw.getMode() === 'angled-rectangle'
-                    || mapStore.draw.getMode() === 'sector'
-                ) {
-                    feat.properties.type = 'u-d-f';
-                } else if (mapStore.draw.getMode() === 'linestring') {
-                    feat.properties.type = 'u-d-f';
-                } else if (mapStore.draw.getMode() === 'point') {
-                    feat.properties.type = mapStore.drawOptions.pointMode || 'u-d-p';
-                    feat.properties["marker-opacity"] = 1;
-                    feat.properties["marker-color"] = '#00FF00';
-                }
-
-                mapStore.draw.removeFeatures([id]);
-                mapStore.draw.setMode('static');
-                mapStore.drawOptions.mode = 'static';
-                mapStore.draw.stop();
-                await cotStore.add(feat);
-                await updateCOT();
             });
 
             profileStore.setupTimer();
