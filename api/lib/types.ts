@@ -112,6 +112,10 @@ export const LayerTemplateResponse = createSelectSchema(schemas.LayerTemplate, {
     config: Type.Unknown(),
 });
 
+export const ProfileInterestResponse = createSelectSchema(schemas.ProfileInterest, {
+    id: Type.Integer(),
+});
+
 export const ProfileFeature = Type.Composite([ Feature.Feature, Type.Object({
     path: Type.String({ default: '/' }),
 })]);
