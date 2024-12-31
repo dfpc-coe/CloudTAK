@@ -53,4 +53,6 @@ test('GET: api/connection/1', async (t) => {
     t.end();
 });
 
+//flight.connection();
+
 flight.landing();

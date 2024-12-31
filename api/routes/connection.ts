@@ -91,7 +91,7 @@ export default async function router(schema: Schema, config: Config) {
             name: Default.NameField,
             description: Default.DescriptionField,
             enabled: Type.Optional(Type.Boolean({ default: true })),
-            agency: Type.Union([Type.Null(), Type.Integer({ minimum: 1 })]),
+            agency: Type.Optional(Type.Union([Type.Null(), Type.Integer({ minimum: 1 })])),
             integrationId: Type.Optional(Type.Integer()),
             auth: Type.Object({
                 key: Type.String({ minLength: 1, maxLength: 4096 }),
