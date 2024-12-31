@@ -63,8 +63,8 @@ m<template>
                     role='menu'
                 >
                     <div
-                        :key='conn.id'
                         v-for='conn in list.items'
+                        :key='conn.id'
                         tabindex='0'
                         role='menuitem'
                         @click='router.push(`/connection/${conn.id}`)'
