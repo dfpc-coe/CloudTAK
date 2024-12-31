@@ -568,6 +568,13 @@
       "when": 1735323219376,
       "tag": "0080_demonic_wither",
       "breakpoints": true
+    },
+    {
+      "idx": 81,
+      "version": "7",
+      "when": 1735613720206,
+      "tag": "0081_fluffy_loners",
+      "breakpoints": true
     }
   ]
 }
