@@ -288,6 +288,8 @@ export default class Flight {
                     }
                 }
             }, true);
+
+            t.end();
        })
     }
 

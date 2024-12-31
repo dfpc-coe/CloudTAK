@@ -1,6 +1,5 @@
 import path from 'node:path';
 import { bbox } from '@turf/bbox';
-import fs from 'node:fs/promises'
 import Err from '@openaddresses/batch-error';
 import TileJSON, { TileJSONType } from '../lib/control/tilejson.js';
 import Auth, { AuthUserAccess, ResourceCreationScope } from '../lib/auth.js';
@@ -30,27 +29,6 @@ const AugmentedBasemapResponse = Type.Composite([
 ])
 
 export default async function router(schema: Schema, config: Config) {
-    const count = await config.models.Basemap.count();
-    if (count === 0) {
-        try {
-            await fs.access(new URL('../data/', import.meta.url));
-
-            for (const file of await fs.readdir(new URL('../data/basemaps/', import.meta.url))) {
-                console.error(`ok - loading basemap ${file}`);
-                const b = (await BasemapParser.parse(String(await fs.readFile(new URL(`../data/basemaps/${file}`, import.meta.url))))).to_json();
-
-                await config.models.Basemap.generate({
-                    name: b.name || 'Unknown',
-                    url: b.url,
-                    minzoom: b.minZoom || 0,
-                    maxzoom: b.maxZoom || 16
-                })
-            }
-        } catch (err) {
-            console.log('Could not automatically load basemaps', err);
-        }
-    }
-
     await schema.put('/basemap', {
         name: 'Import Basemaps',
         group: 'BaseMap',
