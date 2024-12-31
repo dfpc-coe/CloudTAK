@@ -38,6 +38,10 @@ export const useMapStore = defineStore('cloudtak', {
         isLoaded: boolean;
         bearing: number;
         selected: Map<string, COT>;
+        drawOptions: {
+            mode: string;
+            pointMode: string;
+        },
         select: {
             mode?: string;
             e?: MapMouseEvent;
@@ -63,6 +67,10 @@ export const useMapStore = defineStore('cloudtak', {
                 mode: undefined,
                 feats: [],
                 x: 0, y: 0,
+            },
+            drawOptions: {
+                mode: 'static',
+                pointMode: 'u-d-p'
             },
             radial: {
                 mode: undefined,
