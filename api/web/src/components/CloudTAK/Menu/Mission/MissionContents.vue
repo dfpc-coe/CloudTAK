@@ -6,7 +6,7 @@
     >
         <template #buttons>
             <TablerIconButton
-                v-if='!upload && role.permissions.includes("MISSION_WRITE")'
+                v-if='!upload && role && role.permissions.includes("MISSION_WRITE")'
                 title='Upload File'
                 @click='upload = true'
             >
@@ -64,9 +64,9 @@
                 </div>
                 <div class='col-auto ms-auto btn-list'>
                     <TablerDelete
-                        v-if='role.permissions.includes("MISSION_WRITE")'
+                        v-if='role && role.permissions.includes("MISSION_WRITE")'
                         displaytype='icon'
-                        @delete='deleteFile(content.data)'
+                        @delete='deleteFile(content.data.hash)'
                     />
                     <TablerIconButton
                         title='Import File'
@@ -79,7 +79,7 @@
                     </TablerIconButton>
                     <a
                         v-tooltip='"Download Asset"'
-                        :href='downloadFile(content.data)'
+                        :href='downloadFile(content.data.hash)'
                     ><IconDownload
                         :size='32'
                         stroke='1'
@@ -160,12 +160,18 @@ watch(upload, async () => {
     await fetchImports();
 });
 
-async function deleteFile(file) {
-    await std(`/api/marti/missions/${props.mission.name}/upload/${file.hash}`, {
+async function deleteFile(hash: string) {
+    await std(`/api/marti/missions/${props.mission.name}/upload/${hash}`, {
         method: 'DELETE'
     });
 
     emit("refresh");
+}
+
+function downloadFile(hash: string): string {
+    const url = stdurl(`/api/marti/api/files/${hash}`)
+    url.searchParams.append('token', localStorage.token);
+    return String(url);
 }
 
 function genConfig() {
