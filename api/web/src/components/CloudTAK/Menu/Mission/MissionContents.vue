@@ -70,7 +70,7 @@
                     />
                     <TablerIconButton
                         title='Import File'
-                        @click='importFile(content)'
+                        @click='importFile(content.data.name)'
                     >
                         <IconFileImport
                             :size='32'
@@ -88,30 +88,31 @@
                     /></a>
                 </div>
             </div>
-        </template>
 
-        <template v-if='imports.items.length'>
-            <label class='subheader px-2'>Imports</label>
-
-            <div
-                v-for='imp in imports.items'
-                :key='imp.id'
-                class='col-12 d-flex px-2 py-2 hover-dark align-items-center cursor-pointer'
-                @click='$router.push(`/menu/imports/${imp.id}`)'
-            >
-                <Status :status='imp.status' />
+            <template v-if='imports.items.length'>
+                <label class='subheader px-2'>Imports</label>
 
                 <div
-                    class='mx-2'
-                    v-text='imp.name'
-                />
-            </div>
+                    v-for='imp in imports.items'
+                    :key='imp.id'
+                    class='col-12 d-flex px-2 py-2 hover-dark align-items-center cursor-pointer'
+                    @click='router.push(`/menu/imports/${imp.id}`)'
+                >
+                    <Status :status='imp.status' />
+
+                    <div
+                        class='mx-2'
+                        v-text='imp.name'
+                    />
+                </div>
+            </template>
         </template>
     </MenuTemplate>
 </template>
 
 <script setup lang='ts'>
 import { ref, onMounted, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import { std, stdurl } from '../../../../std.ts';
 import type {
     Mission,
@@ -142,6 +143,8 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits([ 'refresh' ]);
+
+const router = useRouter();
 
 const error = ref<Error | undefined>();
 const upload = ref(false);
@@ -176,6 +179,21 @@ function downloadFile(hash: string): string {
 
 function genConfig() {
     return { id: props.mission.name }
+}
+
+async function importFile(name: string) {
+    loading.value = true;
+
+    const imp = await std('/api/import', {
+        method: 'POST',
+        body: {
+            name: name,
+            mode: 'Mission',
+            mode_id: props.mission.guid
+        }
+    }) as Import;
+
+    router.push(`/menu/imports/${imp.id}`)
 }
 
 async function fetchImports() {
