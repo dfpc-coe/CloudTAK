@@ -981,7 +981,6 @@ function mountMap(): Promise<void> {
                 await updateCOT();
             })
 
-            // @ts-expect-error TerraDraw currently doesn't allow async here per TypeDefs
             mapStore.draw.on('finish', async (id, context) => {
                 if (context.action === "draw") {
                     if (mapStore.draw.getMode() === 'select' || mapStore.edit) {
@@ -1006,11 +1005,11 @@ function mountMap(): Promise<void> {
 
                     const now = new Date();
                     const feat: Feature = {
-                        id: id,
+                        id: String(id),
                         type: 'Feature',
                         path: '/',
                         properties: {
-                            id: id,
+                            id: String(id),
                             type: 'u-d-p',
                             how: 'h-g-i-g-o',
                             archived: true,
