@@ -12,6 +12,15 @@
 
 ### Pending Release
 
+### v5.38.0 - 2025-01-02
+
+- :rocket: Rewrite Connection Pane in TS
+- :rocket: Use `menu` & `menuitem` for accessibility
+- :rocket: Rewrite MissionContents in TS and remove a ton of unused cruft and fix a bunch of bugs around showing imports related to that mission
+- :tada: Update to latest node-cot which supports `strict:false` mode for automatically converting an invalid DataPackage into a valid one
+- :tada: Use the new `strict: false` mode for automatically importing default Iconsets on a newly provisioned server
+- :rocket: Move all the initial loading code to the `Bulldozer` class which runs on server startup
+
 ### v5.37.0 - 2024-12-30
 
 - :tada: Add snapping feature when drawing Lines & Polys (thanks to adding the custom function hook @JamesLMilner with [TerraDraw](https://github.com/JamesLMilner/terra-draw/)
