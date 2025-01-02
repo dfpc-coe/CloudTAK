@@ -329,6 +329,14 @@ export const ConnectionToken = pgTable('connection_tokens', {
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
 });
 
+export const ProfileInterest = pgTable('profile_interests', {
+    id: serial().primaryKey(),
+    name: text().notNull(),
+    bounds: geometry({ type: GeometryType.Polygon, srid: 4326 }).$type<Polygon>(),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+});
+
 export const ProfileMission = pgTable('profile_missions', {
     id: serial().primaryKey(),
     name: text().notNull(),
