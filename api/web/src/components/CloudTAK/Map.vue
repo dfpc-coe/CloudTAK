@@ -21,8 +21,11 @@
                 @close='warnChannels = false'
             />
 
+            <DrawOverlay
+                v-if='mapStore.drawOptions.mode !== "static"'
+            />
             <div
-                v-if='profileStore.profile'
+                v-else-if='profileStore.profile'
                 class='position-absolute bottom-0 begin-0 text-white'
                 style='
                     z-index: 1;
@@ -209,21 +212,6 @@
                 '
                 @close='searchBoxShown = false'
             />
-
-
-            <div
-                v-if='drawMode === "point"'
-                class='position-absolute top-0 text-white bg-dark px-2 py-2'
-                style='
-                    z-index: 1;
-                    left: calc(50% - 120px);
-                    width: 380px;
-                '
-            >
-                <CoordinateType
-                    v-model='drawModePoint'
-                />
-            </div>
 
             <div
                 v-if='mapStore.isLoaded && mode === "Default"'
@@ -465,15 +453,15 @@
 import {ref, watch, computed, onMounted, onBeforeUnmount, useTemplateRef } from 'vue';
 import {useRoute, useRouter } from 'vue-router';
 import CoTVideo from './util/Video.vue';
+import DrawOverlay from './util/DrawOverlay.vue';
 import WarnChannels from './util/WarnChannels.vue';
 import SearchBox from './util/SearchBox.vue';
 import WarnConfiguration from './util/WarnConfiguration.vue';
 import Status from '../util/Status.vue';
 import CoordInput from './CoordInput.vue';
-import CoordinateType from './util/CoordinateType.vue';
 import type { MapGeoJSONFeature, GeoJSONSource, LngLatLike } from 'maplibre-gl';
-import { std, stdurl } from '../../../src/std.ts';
-import type { IconsetList, Feature } from '../../../src/types.ts';
+import { std, stdurl } from '../..//std.ts';
+import type { IconsetList, Feature } from '../../types.ts';
 import CloudTAKFeatView from './FeatView.vue';
 import {
     IconSearch,
@@ -509,11 +497,11 @@ import {
 import Loading from './Loading.vue';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import RadialMenu from './RadialMenu/RadialMenu.vue';
-import { useMapStore } from '../../../src/stores/map.ts';
-import { useVideoStore } from '../../../src/stores/videos.ts';
-import { useProfileStore } from '../../../src/stores/profile.ts';
-import { useCOTStore } from '../../../src/stores/cots.ts';
-import { useConnectionStore } from '../../../src/stores/connection.ts';
+import { useMapStore } from '../../stores/map.ts';
+import { useVideoStore } from '../../stores/videos.ts';
+import { useProfileStore } from '../../stores/profile.ts';
+import { useCOTStore } from '../../stores/cots.ts';
+import { useConnectionStore } from '../../stores/connection.ts';
 import UploadImport from './util/UploadImport.vue'
 import { coordEach } from '@turf/meta';
 const profileStore = useProfileStore();
@@ -537,8 +525,6 @@ const warnChannels = ref<boolean>(false)
 const warnConfiguration = ref<boolean>(false);
 
 const searchBoxShown = ref(false);
-const drawMode = ref<string>('static') // Set the terra-draw mode to avoid getMode() calls
-const drawModePoint = ref<string>('u-d-p');
 const pointInput = ref<boolean>(false);
 const feat = ref()        // Show the Feat Viewer sidebar
 
@@ -790,7 +776,7 @@ function startDraw(type: string) {
     if (!mapStore.draw) throw new Error('Drawing Tools haven\'t loaded');
     mapStore.draw.start();
     mapStore.draw.setMode(type);
-    drawMode.value = type;
+    mapStore.drawOptions.mode = type;
 }
 
 async function handleRadial(event: string): Promise<void> {
@@ -843,41 +829,48 @@ function editGeometry(featid: string) {
     const cot = cotStore.get(featid, { mission: true });
     if (!cot) return;
 
-    mapStore.edit = cot;
-    mapStore.draw.start();
-    mapStore.draw.setMode('select');
-    drawMode.value = 'select';
-
-    const feat = cot.as_feature({ clone: true });
-    if (feat.geometry.type === 'Polygon') {
-        feat.properties.mode = 'polygon';
-    } else if (feat.geometry.type === 'LineString') {
-        feat.properties.mode = 'linestring';
-    } else if (feat.geometry.type === 'Point') {
-        feat.properties.mode = 'point';
-    }
-
-    coordEach(feat, (coord) => {
-        if (coord.length > 2) {
-            coord.splice(2, coord.length - 2);
-        }
-    });
-
-    cotStore.hidden.add(cot.id);
-    updateCOT();
     try {
-        // @ts-expect-error Cast Feature to GeoJSONStoreFeature
-        const status = mapStore.draw.addFeatures([feat]);
+        mapStore.edit = cot;
+        mapStore.draw.start();
+        mapStore.draw.setMode('select');
+        mapStore.drawOptions.mode = 'select';
 
-        if (status && status.length) {
-            // @ts-expect-error No Typing due to above
-            throw new Error('Error editing this feature: ', status[0].reason)
+        const feat = cot.as_feature({ clone: true });
+        if (feat.geometry.type === 'Polygon') {
+            feat.properties.mode = 'polygon';
+        } else if (feat.geometry.type === 'LineString') {
+            feat.properties.mode = 'linestring';
+        } else if (feat.geometry.type === 'Point') {
+            feat.properties.mode = 'point';
+        }
+
+        coordEach(feat, (coord) => {
+            if (coord.length > 2) {
+                coord.splice(2, coord.length - 2);
+            }
+        });
+
+        cotStore.hidden.add(cot.id);
+        updateCOT();
+
+        // @ts-expect-error Cast Feature to GeoJSONStoreFeature
+        const errorStatus = mapStore.draw.addFeatures([feat]).filter((status) => {
+            return !status.valid;
+        });
+
+        if (errorStatus.length) {
+            throw new Error('Error editing this feature: ' + errorStatus[0].reason)
         }
 
         mapStore.draw.selectFeature(cot.id);
     } catch (err) {
+        cotStore.hidden.delete(cot.id);
         mapStore.draw.setMode('static');
-        throw err;
+        updateCOT();
+        mapStore.drawOptions.mode = 'static';
+        mapStore.draw.stop();
+
+        emit('err', err);
     }
 }
 
@@ -980,7 +973,7 @@ function mountMap(): Promise<void> {
                 mapStore.edit = undefined
 
                 mapStore.draw.setMode('static');
-                drawMode.value = 'static';
+                mapStore.drawOptions.mode = 'static';
                 mapStore.draw.stop();
 
                 cotStore.cots.delete(feat.id);
@@ -988,67 +981,68 @@ function mountMap(): Promise<void> {
                 await updateCOT();
             })
 
-            // @ts-expect-error TerraDraw currently doesn't allow async here per TypeDefs
-            mapStore.draw.on('finish', async (id: string) => {
-                if (mapStore.draw.getMode() === 'select' || mapStore.edit) {
-                    return;
-                } else if (mapStore.draw.getMode() === 'freehand') {
+            mapStore.draw.on('finish', async (id, context) => {
+                if (context.action === "draw") {
+                    if (mapStore.draw.getMode() === 'select' || mapStore.edit) {
+                        return;
+                    } else if (mapStore.draw.getMode() === 'freehand') {
+                        // @ts-expect-error There is currently no getFeature API
+                        const geometry = mapStore.draw._store.store[id].geometry;
+                        mapStore.draw.removeFeatures([id]);
+                        mapStore.draw.setMode('static');
+                        mapStore.drawOptions.mode = 'static';
+                        mapStore.draw.stop();
+
+                        cotStore.touching(geometry).forEach((feat) => {
+                            mapStore.selected.set(feat.id, feat);
+                        })
+
+                        return;
+                    }
+
                     // @ts-expect-error There is currently no getFeature API
                     const geometry = mapStore.draw._store.store[id].geometry;
+
+                    const now = new Date();
+                    const feat: Feature = {
+                        id: String(id),
+                        type: 'Feature',
+                        path: '/',
+                        properties: {
+                            id: String(id),
+                            type: 'u-d-p',
+                            how: 'h-g-i-g-o',
+                            archived: true,
+                            callsign: 'New Feature',
+                            time: now.toISOString(),
+                            start: now.toISOString(),
+                            stale: new Date(now.getTime() + 3600).toISOString(),
+                            center: [0,0]
+                        },
+                        geometry
+                    };
+
+                    if (
+                        mapStore.draw.getMode() === 'polygon'
+                        || mapStore.draw.getMode() === 'angled-rectangle'
+                        || mapStore.draw.getMode() === 'sector'
+                    ) {
+                        feat.properties.type = 'u-d-f';
+                    } else if (mapStore.draw.getMode() === 'linestring') {
+                        feat.properties.type = 'u-d-f';
+                    } else if (mapStore.draw.getMode() === 'point') {
+                        feat.properties.type = mapStore.drawOptions.pointMode || 'u-d-p';
+                        feat.properties["marker-opacity"] = 1;
+                        feat.properties["marker-color"] = '#00FF00';
+                    }
+
                     mapStore.draw.removeFeatures([id]);
                     mapStore.draw.setMode('static');
-                    drawMode.value = 'static';
+                    mapStore.drawOptions.mode = 'static';
                     mapStore.draw.stop();
-
-                    cotStore.touching(geometry).forEach((feat) => {
-                        mapStore.selected.set(feat.id, feat);
-                    })
-
-                    return;
+                    await cotStore.add(feat);
+                    await updateCOT();
                 }
-
-                // @ts-expect-error There is currently no getFeature API
-                const geometry = mapStore.draw._store.store[id].geometry;
-
-                const now = new Date();
-                const feat: Feature = {
-                    id: id,
-                    type: 'Feature',
-                    path: '/',
-                    properties: {
-                        id: id,
-                        type: 'u-d-p',
-                        how: 'h-g-i-g-o',
-                        archived: true,
-                        callsign: 'New Feature',
-                        time: now.toISOString(),
-                        start: now.toISOString(),
-                        stale: new Date(now.getTime() + 3600).toISOString(),
-                        center: [0,0]
-                    },
-                    geometry
-                };
-
-                if (
-                    mapStore.draw.getMode() === 'polygon'
-                    || mapStore.draw.getMode() === 'angled-rectangle'
-                    || mapStore.draw.getMode() === 'sector'
-                ) {
-                    feat.properties.type = 'u-d-f';
-                } else if (mapStore.draw.getMode() === 'linestring') {
-                    feat.properties.type = 'u-d-f';
-                } else if (mapStore.draw.getMode() === 'point') {
-                    feat.properties.type = drawModePoint.value || 'u-d-p';
-                    feat.properties["marker-opacity"] = 1;
-                    feat.properties["marker-color"] = '#00FF00';
-                }
-
-                mapStore.draw.removeFeatures([id]);
-                mapStore.draw.setMode('static');
-                drawMode.value = 'static';
-                mapStore.draw.stop();
-                await cotStore.add(feat);
-                await updateCOT();
             });
 
             profileStore.setupTimer();

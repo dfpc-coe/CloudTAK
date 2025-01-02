@@ -1,6 +1,7 @@
 process.env.StackName = 'test';
 
 import assert from 'assert';
+import CP from 'node:child_process'
 import jwt from 'jsonwebtoken';
 import fs from 'fs';
 import api from '../index.js';
@@ -266,6 +267,30 @@ export default class Flight {
             }
             t.end();
         });
+    }
+
+    connection() {
+        test(`Creating Connection`, async (t) => {
+            CP.execSync(`openssl genrsa -out /tmp/cloudtak-test-private.key 2048`);
+            CP.execSync(`openssl req -x509 -new -days 365 -subj "/DC=org/DC=CloudTAKTest/DC=users/UID=123456+CN=John Doe" -key /tmp/cloudtak-test-private.key -out /tmp/cloudtak-test-certificate.cert`);
+
+            await this.fetch('/api/connection', {
+                method: 'POST',
+                auth: {
+                    bearer: this.token.admin
+                },
+                body: {
+                    name: 'Test Connection',
+                    description: 'Connection created by Flight Test Runner',
+                    auth: {
+                        key: String(fs.readFileSync('/tmp/cloudtak-test-private.key')),
+                        cert: String(fs.readFileSync('/tmp/cloudtak-test-certificate.cert'))
+                    }
+                }
+            }, true);
+
+            t.end();
+       })
     }
 
     /**

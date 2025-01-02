@@ -3,6 +3,7 @@ import path from 'node:path';
 import cors from 'cors';
 import express from 'express';
 import SwaggerUI from 'swagger-ui-express';
+import Bulldozer from './lib/initialization.js';
 import history, {Context} from 'connect-history-api-fallback';
 import Schema from '@openaddresses/batch-schema';
 import { ProfileConnConfig } from './lib/connection-config.js';
@@ -70,6 +71,9 @@ export default async function server(config: Config) {
     } catch (err) {
         console.log(`ok - failed to flush cache: ${err instanceof Error? err.message : String(err)}`);
     }
+
+    // If the database is empty, populate it with generally sensible defaults
+    await Bulldozer.fireItUp(config);
 
     await config.conns.init();
 

@@ -102,8 +102,6 @@
                             </template>
                         </TablerDropdown>
 
-
-
                         <TablerDelete
                             displaytype='icon'
                             @delete='deleteCOT'
