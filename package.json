@@ -1,7 +1,7 @@
 {
     "name": "@tak-ps/CloudTAK",
     "type": "module",
-    "version": "5.38.0",
+    "version": "5.39.0",
     "description": "Facilitate ETL operations to bring non-TAK sources into a TAK Server",
     "scripts": {
         "lint": "eslint build.js cloudformation/",
