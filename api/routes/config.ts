@@ -125,7 +125,8 @@ export default async function router(schema: Schema, config: Config) {
                 return final[k.value.key.replace('group::', '')] = String(k.value.value);
             });
 
-            for (const group of keys) {
+            for (let group of keys) {
+                group = group.replace('group::', '')
                 if (!final[group]) final[group] = '';
             }
 
