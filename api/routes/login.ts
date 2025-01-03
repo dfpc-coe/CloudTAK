@@ -26,7 +26,7 @@ export default async function router(schema: Schema, config: Config) {
             let profile;
 
             if (config.server.auth.key && config.server.auth.cert) {
-                const email = await provider.login(req.body.username.toLowerCase(), req.body.password);
+                const email = await provider.login(req.body.username, req.body.password);
 
                 if (config.external && config.external.configured) {
                     try {
