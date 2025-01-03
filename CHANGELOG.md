@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v5.39.0 - 2025-01-03
+
+- :bug: Allow non-email usernames as provided by a TAK Server
+
 ### v5.38.0 - 2025-01-02
 
 - :rocket: Rewrite Connection Pane in TS
