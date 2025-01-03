@@ -320,7 +320,7 @@ export function tokenParser(token: string, secret: string): AuthUser | AuthResou
             access: AuthUserAccess;
             email: string;
         } = {
-            email: decoded.email.toLowerCase(),
+            email: decoded.email,
             access
         };
 
