@@ -12,6 +12,14 @@
 
 ### Pending Release
 
+### v5.34.0 - 2025-01-03
+
+- :bug: If a custom TAK Group name is not set the group:: prefix is shown to the user when it shouldn't be and is correctly rejected if selected by the PATCH Profile API
+
+### v5.39.0 - 2025-01-03
+
+- :bug: Allow non-email usernames as provided by a TAK Server
+
 ### v5.38.0 - 2025-01-02
 
 - :rocket: Rewrite Connection Pane in TS
