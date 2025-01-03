@@ -13,7 +13,9 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Create Login',
         group: 'Login',
         body: Type.Object({
-            username: Type.String(),
+            username: Type.String({
+                description: 'Case-Sensitive username, if an email, the client MUST lowercase'
+            }),
             password: Type.String()
         }),
         res: Type.Object({
