@@ -13,19 +13,34 @@
             />
         </div>
         <div v-else-if='mapStore.drawOptions.mode === "angled-rectangle"'>
-            <IconVector :size='24' stroke='1'/><span class='mx-2'>Rectangle Editing</span>
+            <IconVector
+                :size='24'
+                stroke='1'
+            /><span class='mx-2'>Rectangle Editing</span>
         </div>
         <div v-else-if='mapStore.drawOptions.mode === "linestring"'>
-            <IconLine :size='24' stroke='1'/><span class='mx-2'>Line Editing</span>
+            <IconLine
+                :size='24'
+                stroke='1'
+            /><span class='mx-2'>Line Editing</span>
         </div>
         <div v-else-if='mapStore.drawOptions.mode === "polygon"'>
-            <IconPolygon :size='24' stroke='1'/><span class='mx-2'>Polygon Editing</span>
+            <IconPolygon
+                :size='24'
+                stroke='1'
+            /><span class='mx-2'>Polygon Editing</span>
         </div>
         <div v-else-if='mapStore.drawOptions.mode === "sector"'>
-            <IconCone :size='24' stroke='1'/><span class='mx-2'>Sector Editing</span>
+            <IconCone
+                :size='24'
+                stroke='1'
+            /><span class='mx-2'>Sector Editing</span>
         </div>
         <div v-else-if='mapStore.drawOptions.mode === "freehand"'>
-            <IconLasso :size='24' stroke='1'/><span class='mx-2'>Lasso Select</span>
+            <IconLasso
+                :size='24'
+                stroke='1'
+            /><span class='mx-2'>Lasso Select</span>
         </div>
         <div v-else>
             Unknown Editing
