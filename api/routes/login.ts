@@ -13,7 +13,9 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Create Login',
         group: 'Login',
         body: Type.Object({
-            username: Type.String(),
+            username: Type.String({
+                description: 'Case-Sensitive username, if an email, the client MUST lowercase'
+            }),
             password: Type.String()
         }),
         res: Type.Object({
@@ -26,7 +28,7 @@ export default async function router(schema: Schema, config: Config) {
             let profile;
 
             if (config.server.auth.key && config.server.auth.cert) {
-                const email = await provider.login(req.body.username.toLowerCase(), req.body.password);
+                const email = await provider.login(req.body.username, req.body.password);
 
                 if (config.external && config.external.configured) {
                     try {
