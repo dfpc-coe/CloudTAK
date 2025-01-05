@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { std, stdurl } from '../std.ts';
 import type { Feature, Group, Profile, Profile_Update } from '../types.ts';
 import { useConnectionStore } from './connection.ts';
+import { useCOTStore } from './cots.ts';
 
 export type TAKNotification = {
     type: string;
@@ -14,7 +15,7 @@ export const useProfileStore = defineStore('profile', {
     state: (): {
         // Interval for reporting location to TAK Server
         timerSelf: ReturnType<typeof setInterval> | undefined,
-        live_loc: Feature | undefined,
+        live_loc: number[] | undefined,
         notifications: Array<TAKNotification>;
         channels: Array<Group>;
         profile: Profile | null;
@@ -102,19 +103,25 @@ export const useProfileStore = defineStore('profile', {
                 body
             }) as Profile
         },
-        CoT: function(feat?: Feature) {
+        CoT: function(coords?: number[]): Feature {
             if (!this.profile) throw new Error('Profile must be loaded before CoT is called');
 
-            return {
+            const feat: Feature = {
                 // Need to differentiate between servers eventually
                 id: `ANDROID-CloudTAK-${this.profile.username}`,
+                path: '/',
                 type: 'Feature',
                 properties: {
+                    id: `ANDROID-CloudTAK-${this.profile.username}`,
                     type: 'a-f-G-E-V-C',
                     how: 'm-g',
                     callsign: this.profile.tak_callsign,
                     droid: this.profile.tak_callsign,
-                    contact:{
+                    time: new Date().toISOString(),
+                    start: new Date().toISOString(),
+                    stale: new Date(new Date().getTime() + (1000 * 60)).toISOString(),
+                    center: coords || (this.profile.tak_loc ? this.profile.tak_loc.coordinates : [ 0, 0 ]),
+                    contact: {
                         endpoint:"*:-1:stcp",
                         callsign: this.profile.tak_callsign,
                     },
@@ -130,8 +137,15 @@ export const useProfileStore = defineStore('profile', {
                         version: '1.0.0'
                     }
                 },
-                geometry: feat ? feat.geometry : this.profile.tak_loc
+                geometry: coords
+                    ? { type: 'Point', coordinates: coords }
+                    : (this.profile.tak_loc || { type: 'Point', coordinates: [0,0] })
             }
+
+            const cotStore = useCOTStore();
+            cotStore.add(feat);
+
+            return feat;
         },
     }
 })
