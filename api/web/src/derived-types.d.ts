@@ -388,7 +388,10 @@ export interface paths {
         /** Register a new basemap */
         post: {
             parameters: {
-                query?: never;
+                query?: {
+                    /** @description Filter the given resource by a given username */
+                    impersonate?: string;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -536,7 +539,10 @@ export interface paths {
         /** Update a basemap */
         patch: {
             parameters: {
-                query?: never;
+                query?: {
+                    /** @description Filter the given resource by a given username */
+                    impersonate?: string;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -547,6 +553,8 @@ export interface paths {
                         /** @description Human readable name */
                         name?: string;
                         collection?: null | number;
+                        /** @default user */
+                        scope: "server" | "user";
                         url?: string;
                         minzoom?: number;
                         maxzoom?: number;
@@ -1641,6 +1649,8 @@ export interface paths {
                                 };
                                 contact?: {
                                     phone?: string;
+                                    name?: string;
+                                    callsign: string;
                                     endpoint?: string;
                                 };
                                 shape?: {
@@ -1869,6 +1879,8 @@ export interface paths {
                                         };
                                         contact?: {
                                             phone?: string;
+                                            name?: string;
+                                            callsign: string;
                                             endpoint?: string;
                                         };
                                         shape?: {
@@ -2116,6 +2128,8 @@ export interface paths {
                                 };
                                 contact?: {
                                     phone?: string;
+                                    name?: string;
+                                    callsign: string;
                                     endpoint?: string;
                                 };
                                 shape?: {
@@ -2373,6 +2387,8 @@ export interface paths {
                                     };
                                     contact?: {
                                         phone?: string;
+                                        name?: string;
+                                        callsign: string;
                                         endpoint?: string;
                                     };
                                     shape?: {
@@ -4401,7 +4417,7 @@ export interface paths {
                         description: string;
                         /** @default true */
                         enabled?: boolean;
-                        agency: null | number;
+                        agency?: null | number;
                         integrationId?: number;
                         auth: {
                             key: string;
@@ -5792,372 +5808,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/template": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List all layer templates */
-        get: {
-            parameters: {
-                query: {
-                    /** @description Limit the number of responses returned */
-                    limit: number;
-                    /** @description Iterate through "pages" of items based on the "limit" query param */
-                    page: number;
-                    /** @description Order in which results are returned based on the "sort" query param */
-                    order: "asc" | "desc";
-                    /** @description No Description */
-                    sort?: "id" | "created" | "updated" | "name" | "description" | "username" | "datasync" | "priority" | "enabled_styles" | "styles" | "logging" | "stale" | "task" | "cron" | "webhooks" | "config" | "memory" | "timeout" | "alarm_period" | "alarm_evals" | "alarm_points" | "alarm_threshold" | "enableRLS";
-                    /** @description Filter results by a human readable name field */
-                    filter: string;
-                    /** @description No Description */
-                    data?: number;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            total: number;
-                            items: {
-                                id: number;
-                                created: string;
-                                updated: string;
-                                name: string;
-                                description: string;
-                                username: string;
-                                datasync: boolean;
-                                priority: string;
-                                enabled_styles: boolean;
-                                styles: (string | number | boolean | null) | unknown[] | Record<string, never>;
-                                logging: boolean;
-                                stale: number;
-                                task: string;
-                                cron: string | null;
-                                webhooks: boolean;
-                                config: unknown;
-                                memory: number;
-                                timeout: number;
-                                alarm_period: number;
-                                alarm_evals: number;
-                                alarm_points: number;
-                                alarm_threshold: number;
-                            }[];
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        /** Create a layer template */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        /** @description Human readable name */
-                        name: string;
-                        /** @description Human readable description */
-                        description: string;
-                        /** @default true */
-                        datasync?: boolean;
-                        layer: number;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: number;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            description: string;
-                            username: string;
-                            datasync: boolean;
-                            priority: string;
-                            enabled_styles: boolean;
-                            styles: (string | number | boolean | null) | unknown[] | Record<string, never>;
-                            logging: boolean;
-                            stale: number;
-                            task: string;
-                            cron: string | null;
-                            webhooks: boolean;
-                            config: unknown;
-                            memory: number;
-                            timeout: number;
-                            alarm_period: number;
-                            alarm_evals: number;
-                            alarm_points: number;
-                            alarm_threshold: number;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/template/{:templateid}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Return a single Layer Template */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: number;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            description: string;
-                            username: string;
-                            datasync: boolean;
-                            priority: string;
-                            enabled_styles: boolean;
-                            styles: (string | number | boolean | null) | unknown[] | Record<string, never>;
-                            logging: boolean;
-                            stale: number;
-                            task: string;
-                            cron: string | null;
-                            webhooks: boolean;
-                            config: unknown;
-                            memory: number;
-                            timeout: number;
-                            alarm_period: number;
-                            alarm_evals: number;
-                            alarm_points: number;
-                            alarm_threshold: number;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        /** Create a layer template */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        /** Update a layer template */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        /** @description Human readable name */
-                        name: string;
-                        /** @description Human readable description */
-                        description: string;
-                        /** @default true */
-                        datasync?: boolean;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: number;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            description: string;
-                            username: string;
-                            datasync: boolean;
-                            priority: string;
-                            enabled_styles: boolean;
-                            styles: (string | number | boolean | null) | unknown[] | Record<string, never>;
-                            logging: boolean;
-                            stale: number;
-                            task: string;
-                            cron: string | null;
-                            webhooks: boolean;
-                            config: unknown;
-                            memory: number;
-                            timeout: number;
-                            alarm_period: number;
-                            alarm_evals: number;
-                            alarm_points: number;
-                            alarm_threshold: number;
-                        };
-                    };
-                };
-            };
-        };
-        trace?: never;
-    };
-    "/ldap/channel": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Channels by proxy */
-        get: {
-            parameters: {
-                query: {
-                    /** @description No Description */
-                    agency?: number;
-                    /** @description No Description */
-                    filter: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            total: number;
-                            items: {
-                                id: number;
-                                rdn: string;
-                                name: string;
-                                description: unknown;
-                            }[];
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/ldap/user": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Create a machine user */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        name: string;
-                        description: string;
-                        agency_id: number | null;
-                        channels: number[];
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            integrationId?: number;
-                            auth: {
-                                cert: string;
-                                key: string;
-                            };
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/iconset": {
         parameters: {
             query?: never;
@@ -6747,6 +6397,372 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/template": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all layer templates */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort?: "id" | "created" | "updated" | "name" | "description" | "username" | "datasync" | "priority" | "enabled_styles" | "styles" | "logging" | "stale" | "task" | "cron" | "webhooks" | "config" | "memory" | "timeout" | "alarm_period" | "alarm_evals" | "alarm_points" | "alarm_threshold" | "enableRLS";
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
+                    /** @description No Description */
+                    data?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: number;
+                                created: string;
+                                updated: string;
+                                name: string;
+                                description: string;
+                                username: string;
+                                datasync: boolean;
+                                priority: string;
+                                enabled_styles: boolean;
+                                styles: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                                logging: boolean;
+                                stale: number;
+                                task: string;
+                                cron: string | null;
+                                webhooks: boolean;
+                                config: unknown;
+                                memory: number;
+                                timeout: number;
+                                alarm_period: number;
+                                alarm_evals: number;
+                                alarm_points: number;
+                                alarm_threshold: number;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create a layer template */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Human readable name */
+                        name: string;
+                        /** @description Human readable description */
+                        description: string;
+                        /** @default true */
+                        datasync?: boolean;
+                        layer: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            description: string;
+                            username: string;
+                            datasync: boolean;
+                            priority: string;
+                            enabled_styles: boolean;
+                            styles: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                            logging: boolean;
+                            stale: number;
+                            task: string;
+                            cron: string | null;
+                            webhooks: boolean;
+                            config: unknown;
+                            memory: number;
+                            timeout: number;
+                            alarm_period: number;
+                            alarm_evals: number;
+                            alarm_points: number;
+                            alarm_threshold: number;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/template/{:templateid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return a single Layer Template */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            description: string;
+                            username: string;
+                            datasync: boolean;
+                            priority: string;
+                            enabled_styles: boolean;
+                            styles: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                            logging: boolean;
+                            stale: number;
+                            task: string;
+                            cron: string | null;
+                            webhooks: boolean;
+                            config: unknown;
+                            memory: number;
+                            timeout: number;
+                            alarm_period: number;
+                            alarm_evals: number;
+                            alarm_points: number;
+                            alarm_threshold: number;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /** Create a layer template */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update a layer template */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Human readable name */
+                        name: string;
+                        /** @description Human readable description */
+                        description: string;
+                        /** @default true */
+                        datasync?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            description: string;
+                            username: string;
+                            datasync: boolean;
+                            priority: string;
+                            enabled_styles: boolean;
+                            styles: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                            logging: boolean;
+                            stale: number;
+                            task: string;
+                            cron: string | null;
+                            webhooks: boolean;
+                            config: unknown;
+                            memory: number;
+                            timeout: number;
+                            alarm_period: number;
+                            alarm_evals: number;
+                            alarm_points: number;
+                            alarm_threshold: number;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/ldap/channel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Channels by proxy */
+        get: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    agency?: number;
+                    /** @description No Description */
+                    filter: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: number;
+                                rdn: string;
+                                name: string;
+                                description: unknown;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ldap/user": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create a machine user */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name: string;
+                        description: string;
+                        agency_id: number | null;
+                        channels: number[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            integrationId?: number;
+                            auth: {
+                                cert: string;
+                                key: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/login": {
         parameters: {
             query?: never;
@@ -6790,6 +6806,7 @@ export interface paths {
             requestBody: {
                 content: {
                     "application/json": {
+                        /** @description Case-Sensitive username, if an email, the client MUST lowercase */
                         username: string;
                         password: string;
                     };
@@ -6929,6 +6946,8 @@ export interface paths {
                                 };
                                 contact?: {
                                     phone?: string;
+                                    name?: string;
+                                    callsign: string;
                                     endpoint?: string;
                                 };
                                 shape?: {
@@ -7188,6 +7207,8 @@ export interface paths {
                                     };
                                     contact?: {
                                         phone?: string;
+                                        name?: string;
+                                        callsign: string;
                                         endpoint?: string;
                                     };
                                     shape?: {
@@ -8173,6 +8194,8 @@ export interface paths {
                                     };
                                     contact?: {
                                         phone?: string;
+                                        name?: string;
+                                        callsign: string;
                                         endpoint?: string;
                                     };
                                     shape?: {
@@ -9847,6 +9870,8 @@ export interface paths {
                                     };
                                     contact?: {
                                         phone?: string;
+                                        name?: string;
+                                        callsign: string;
                                         endpoint?: string;
                                     };
                                     shape?: {
@@ -10083,6 +10108,8 @@ export interface paths {
                             };
                             contact?: {
                                 phone?: string;
+                                name?: string;
+                                callsign: string;
                                 endpoint?: string;
                             };
                             shape?: {
@@ -10305,6 +10332,8 @@ export interface paths {
                                 };
                                 contact?: {
                                     phone?: string;
+                                    name?: string;
+                                    callsign: string;
                                     endpoint?: string;
                                 };
                                 shape?: {
@@ -10582,6 +10611,8 @@ export interface paths {
                                 };
                                 contact?: {
                                     phone?: string;
+                                    name?: string;
+                                    callsign: string;
                                     endpoint?: string;
                                 };
                                 shape?: {
@@ -10789,6 +10820,62 @@ export interface paths {
                 };
             };
         };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/profile/interest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         *                 Return a list of Profile AOIs
+         *              */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort?: "id" | "name" | "bounds" | "created" | "updated" | "enableRLS";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: number;
+                                name: string;
+                                bounds: unknown | null;
+                                created: string;
+                                updated: string;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -11397,9 +11484,6 @@ export interface paths {
                             status: string;
                             created: string;
                             updated: string;
-                            provider_client?: string;
-                            provider_secret?: string;
-                            provider_url?: string;
                             name: string;
                             url: string;
                             api: string;
@@ -11457,9 +11541,6 @@ export interface paths {
                             status: string;
                             created: string;
                             updated: string;
-                            provider_client?: string;
-                            provider_secret?: string;
-                            provider_url?: string;
                             name: string;
                             url: string;
                             api: string;
