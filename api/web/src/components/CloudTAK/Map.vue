@@ -620,31 +620,7 @@ onMounted(async () => {
     if (("geolocation" in navigator)) {
         navigator.geolocation.watchPosition((position) => {
             if (position.coords.accuracy <= 50) {
-                profileStore.live_loc = {
-                    id: 'you',
-                    type: 'Feature',
-                    path: '/',
-                    properties: {
-                        id: 'you',
-                        type: 'u-d-p',
-                        how: 'm-g',
-                        time: new Date().toISOString(),
-                        start: new Date().toISOString(),
-                        stale: new Date(new Date().getTime() + 120).toISOString(),
-                        callsign: 'Your Location',
-                        accuracy: position.coords.accuracy,
-                        center: [ position.coords.longitude, position.coords.latitude ]
-                    },
-                    geometry: {
-                        type: 'Point',
-                        coordinates: [
-                            position.coords.longitude,
-                            position.coords.latitude
-                        ],
-                    }
-                }
-
-                setYou(profileStore.live_loc);
+                profileStore.live_loc = [ position.coords.longitude, position.coords.latitude ]
             }
         }, (err) => {
             if (err.code === 0) {
@@ -723,7 +699,7 @@ function closeRadial() {
 function toLocation() {
     if (profileStore.live_loc) {
         mapStore.map.flyTo({
-            center: profileStore.live_loc.geometry.coordinates as LngLatLike,
+            center: profileStore.live_loc as LngLatLike,
             zoom: 14
         });
     } else if (!profileStore.profile || !profileStore.profile.tak_loc) {
@@ -748,8 +724,6 @@ function setLocation() {
                 coordinates: [e.lngLat.lng, e.lngLat.lat]
             }
         })
-
-        setYou();
     });
 }
 
@@ -767,7 +741,7 @@ function getLocation() {
     }
 
     mapStore.map.flyTo({
-        center: profileStore.live_loc.geometry.coordinates as LngLatLike,
+        center: profileStore.live_loc as LngLatLike,
         zoom: 14
     });
 }
@@ -910,36 +884,6 @@ async function updateCOT() {
     }
 }
 
-function setYou(feat?: Feature) {
-    if (!feat && profileStore.profile && profileStore.profile.tak_loc) {
-        connectionStore.sendCOT(profileStore.CoT());
-
-        const youSource = mapStore.map.getSource('0') as GeoJSONSource;
-        if (youSource) {
-            youSource.setData({
-                type: 'FeatureCollection',
-                features: [{
-                    type: 'Feature',
-                    properties: {
-                        accuracy: 10
-                    },
-                    geometry: profileStore.profile.tak_loc
-                }]
-            });
-        }
-    } else if (feat) {
-        connectionStore.sendCOT(profileStore.CoT(feat));
-
-        const youSource = mapStore.map.getSource('0') as GeoJSONSource;
-        if (youSource) {
-            youSource.setData({
-                type: 'FeatureCollection',
-                features: [feat]
-            });
-        }
-    }
-}
-
 function mountMap(): Promise<void> {
     return new Promise((resolve) => {
         if (!mapRef.value) throw new Error('Map Element could not be found - Please refresh the page and try again');
@@ -959,7 +903,7 @@ function mountMap(): Promise<void> {
             await mapStore.initOverlays();
             mapStore.initDraw();
 
-            setYou();
+            cotStore.add(profileStore.CoT());
 
             mapStore.draw.on('deselect', async () => {
                 if (!mapStore.edit) return;
