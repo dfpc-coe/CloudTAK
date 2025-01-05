@@ -103,16 +103,21 @@ export const useProfileStore = defineStore('profile', {
                 body
             }) as Profile
         },
+        uid: function(): string {
+            if (!this.profile) throw new Error('Profile must be loaded before CoT is called');
+
+            // Need to differentiate between servers eventually
+            return `ANDROID-CloudTAK-${this.profile.username}`;
+        },
         CoT: function(coords?: number[]): Feature {
             if (!this.profile) throw new Error('Profile must be loaded before CoT is called');
 
             const feat: Feature = {
-                // Need to differentiate between servers eventually
-                id: `ANDROID-CloudTAK-${this.profile.username}`,
+                id: this.uid(),
                 path: '/',
                 type: 'Feature',
                 properties: {
-                    id: `ANDROID-CloudTAK-${this.profile.username}`,
+                    id: this.uid(),
                     type: 'a-f-G-E-V-C',
                     how: 'm-g',
                     callsign: this.profile.tak_callsign,

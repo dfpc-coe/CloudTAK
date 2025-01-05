@@ -2,6 +2,7 @@ import { std } from '../../std.ts';
 import { bbox } from '@turf/bbox'
 import type { LngLatBoundsLike } from 'maplibre-gl';
 import { useCOTStore } from '../cots.ts'
+import { useProfileStore } from '../profile.ts'
 import { useMapStore } from '../map.ts';
 import pointOnFeature from '@turf/point-on-feature';
 import type { Feature, Subscription } from './../../types.ts'
@@ -150,6 +151,11 @@ export default class COT {
         return !!this.properties.group;
     }
 
+    get is_self(): boolean {
+        const profileStore = useProfileStore();
+        return this.id === profileStore.uid();
+    }
+
     get is_archivable(): boolean {
         return !this.is_skittle;
     }
@@ -159,7 +165,7 @@ export default class COT {
             // TODO Check role and allow editing if role allows & also auto update mission with edited CoT
             return false;
         } else {
-            return this.properties.archived || false;
+            return this.properties.archived || this.is_self || false;
         }
     }
 

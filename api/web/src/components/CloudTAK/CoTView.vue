@@ -466,7 +466,7 @@
             />
 
             <div
-                v-if='cot.is_editable'
+                v-if='cot.is_editable && !cot.is_self'
                 class='px-1 pb-2 col-12'
             >
                 <label class='mx-1 subheader'>COT Style</label>
