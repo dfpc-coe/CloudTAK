@@ -2,6 +2,7 @@ import { std } from '../../std.ts';
 import { bbox } from '@turf/bbox'
 import type { LngLatBoundsLike } from 'maplibre-gl';
 import { useCOTStore } from '../cots.ts'
+import { useProfileStore } from '../profile.ts'
 import { useMapStore } from '../map.ts';
 import pointOnFeature from '@turf/point-on-feature';
 import type { Feature, Subscription } from './../../types.ts'
@@ -100,11 +101,11 @@ export default class COT {
     }, opts?: {
         skipSave?: boolean;
     }): Promise<boolean> {
-        let changed = false;
+        let visuallyChanged = false;
         if (update.geometry) {
             //TODO Detect Geometry changes, use centroid?!
             this._geometry = update.geometry;
-            changed = true;
+            visuallyChanged = true;
         }
 
         if (update.properties) {
@@ -112,7 +113,7 @@ export default class COT {
 
             for (const prop of RENDERED_PROPERTIES) {
                 if (this._properties[prop] !== update.properties[prop]) {
-                    changed = true;
+                    visuallyChanged = true;
                     break;
                 }
             }
@@ -129,9 +130,26 @@ export default class COT {
             this._store.pending.set(this.id, this);
         }
 
-        if (!opts || (opts && !opts.skipSave)) await this.save();
+        if (this.is_self) {
+            const profileStore = useProfileStore();
 
-        return changed;
+            if (
+                profileStore.profile
+                && (
+                    this.properties.remarks !== profileStore.profile.tak_remarks
+                    || this.properties.callsign !== profileStore.profile.tak_callsign
+                )
+            ) {
+                await profileStore.update({
+                    tak_callsign: this.properties.callsign,
+                    tak_remarks: this.properties.remarks
+                })
+            }
+        } else if (!opts || (opts && !opts.skipSave)) {
+            await this.save();
+        }
+
+        return visuallyChanged;
     }
 
     /**
@@ -150,6 +168,11 @@ export default class COT {
         return !!this.properties.group;
     }
 
+    get is_self(): boolean {
+        const profileStore = useProfileStore();
+        return this.id === profileStore.uid();
+    }
+
     get is_archivable(): boolean {
         return !this.is_skittle;
     }
@@ -159,7 +182,7 @@ export default class COT {
             // TODO Check role and allow editing if role allows & also auto update mission with edited CoT
             return false;
         } else {
-            return this.properties.archived || false;
+            return this.properties.archived || this.is_self || false;
         }
     }
 

@@ -64,6 +64,7 @@ export const ProfileResponse = Type.Object({
     system_admin: Type.Boolean(),
     agency_admin: Type.Array(Type.Integer()),
     tak_callsign: Type.String(),
+    tak_remarks: Type.String(),
     tak_group: Type.Enum(TAKGroup),
     tak_role: Type.Enum(TAKRole),
     tak_loc: Type.Union([Type.Object({

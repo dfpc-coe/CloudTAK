@@ -34,6 +34,7 @@ export const Profile = pgTable('profile', {
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     phone: text().notNull().default(''),
     tak_callsign: text().notNull().default('CloudTAK User'),
+    tak_remarks: text().notNull().default('CloudTAK User'),
     tak_group: text().$type<TAKGroup>().notNull().default(TAKGroup.ORANGE),
     tak_role: text().$type<TAKRole>().notNull().default(TAKRole.TEAM_MEMBER),
     tak_loc: geometry({ srid: 4326, type: GeometryType.Point }),

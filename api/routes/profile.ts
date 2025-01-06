@@ -38,6 +38,7 @@ export default async function router(schema: Schema, config: Config) {
             display_speed: Type.Optional(Type.Enum(Profile_Speed)),
             display_text: Type.Optional(Type.Enum(Profile_Text)),
             tak_callsign: Type.Optional(Type.String()),
+            tak_remarks: Type.Optional(Type.String()),
             tak_group: Type.Optional(Type.Enum(TAKGroup)),
             tak_role: Type.Optional(Type.Enum(TAKRole)),
             tak_loc_freq: Type.Optional(Type.Integer()),
