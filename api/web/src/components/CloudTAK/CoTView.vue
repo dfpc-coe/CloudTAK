@@ -103,6 +103,7 @@
                         </TablerDropdown>
 
                         <TablerDelete
+                            v-if='!cot.is_self'
                             displaytype='icon'
                             @delete='deleteCOT'
                         />
@@ -118,7 +119,7 @@
                         </TablerIconButton>
 
                         <TablerIconButton
-                            v-if='cot.properties.group'
+                            v-if='cot.properties.group && !cot.is_self'
                             title='Chat'
                             @click='router.push(`/menu/chats/new?callsign=${cot.properties.callsign}&uid=${cot.id}`)'
                         >
@@ -129,7 +130,7 @@
                         </TablerIconButton>
 
                         <TablerDropdown
-                            v-if='cot.is_editable'
+                            v-if='cot.is_editable && !cot.is_self'
                         >
                             <TablerIconButton
                                 title='Add Properties'
@@ -466,7 +467,7 @@
             />
 
             <div
-                v-if='cot.is_editable'
+                v-if='cot.is_editable && !cot.is_self'
                 class='px-1 pb-2 col-12'
             >
                 <label class='mx-1 subheader'>COT Style</label>

@@ -225,11 +225,6 @@ export const useMapStore = defineStore('cloudtak', {
                             cluster: false,
                             promoteId: 'id',
                             data: { type: 'FeatureCollection', features: [] }
-                        },
-                        0: {
-                            type: 'geojson',
-                            cluster: false,
-                            data: { type: 'FeatureCollection', features: [] }
                         }
                     },
                     layers: [{
@@ -385,21 +380,6 @@ export const useMapStore = defineStore('cloudtak', {
                 id: -1,
                 name: 'CoT Icons',
                 type: 'geojson',
-            }));
-
-            this.overlays.push(Overlay.internal(map, {
-                id: 0,
-                name: 'Your Location',
-                type: 'vector',
-                styles: [{
-                    id: 'you',
-                    type: 'circle',
-                    source: '0',
-                    paint: {
-                        'circle-radius': 10,
-                        'circle-color': '#0000f6',
-                    },
-                }]
             }));
 
             // Data Syncs are specially loaded as they are dynamic

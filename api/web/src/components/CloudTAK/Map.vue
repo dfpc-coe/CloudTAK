@@ -51,20 +51,19 @@
                         v-tooltip='"Set Location"'
                         class='hover-button h-100 px-2 d-flex align-items-center cursor-pointer'
                         style='width: 40px;'
+                        @click='setLocation'
                     >
                         <IconLocationOff
                             v-if='!profileStore.profile.tak_loc'
                             title='Set Your Location Button (No Location currently set)'
                             :size='20'
                             stroke='1'
-                            @click='setLocation'
                         />
                         <IconLocation
                             v-else
                             title='Set Your Location Button'
                             :size='20'
                             stroke='1'
-                            @click='setLocation'
                         />
                     </div>
                     <div
@@ -724,6 +723,8 @@ function setLocation() {
                 coordinates: [e.lngLat.lng, e.lngLat.lat]
             }
         })
+        profileStore.CoT();
+        await updateCOT();
     });
 }
 

@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { std, stdurl } from '../std.ts';
 import type { Feature, Group, Profile, Profile_Update } from '../types.ts';
 import { useConnectionStore } from './connection.ts';
+import { useCOTStore } from './cots.ts';
 
 export type TAKNotification = {
     type: string;
@@ -102,19 +103,25 @@ export const useProfileStore = defineStore('profile', {
                 body
             }) as Profile
         },
+        uid: function(): string {
+            if (!this.profile) throw new Error('Profile must be loaded before CoT is called');
+
+            // Need to differentiate between servers eventually
+            return `ANDROID-CloudTAK-${this.profile.username}`;
+        },
         CoT: function(coords?: number[]): Feature {
             if (!this.profile) throw new Error('Profile must be loaded before CoT is called');
 
-            return {
-                // Need to differentiate between servers eventually
-                id: `ANDROID-CloudTAK-${this.profile.username}`,
+            const feat: Feature = {
+                id: this.uid(),
                 path: '/',
                 type: 'Feature',
                 properties: {
-                    id: `ANDROID-CloudTAK-${this.profile.username}`,
+                    id: this.uid(),
                     type: 'a-f-G-E-V-C',
                     how: 'm-g',
                     callsign: this.profile.tak_callsign,
+                    remarks: this.profile.tak_remarks,
                     droid: this.profile.tak_callsign,
                     time: new Date().toISOString(),
                     start: new Date().toISOString(),
@@ -140,6 +147,11 @@ export const useProfileStore = defineStore('profile', {
                     ? { type: 'Point', coordinates: coords }
                     : (this.profile.tak_loc || { type: 'Point', coordinates: [0,0] })
             }
+
+            const cotStore = useCOTStore();
+            cotStore.add(feat);
+
+            return feat;
         },
     }
 })
