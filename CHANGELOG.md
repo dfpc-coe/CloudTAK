@@ -12,7 +12,11 @@
 
 ### Pending Release
 
-### v5.41.0 - 2025-01-03
+### v5.42.0 - 2025-01-05
+
+- :bug: Fix coordinate precision when editing features
+
+### v5.41.0 - 2025-01-05
 
 - :tada: Allow editing your own CoT's remarks
 - :rocket: Treat one's own location as a typical CoT
