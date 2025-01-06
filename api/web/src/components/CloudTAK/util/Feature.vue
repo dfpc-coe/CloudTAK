@@ -162,6 +162,7 @@ watch(canvas, async () => {
 
     context.drawImage(
         await createImageBitmap(new ImageData(
+            // @ts-expect-error icon.data.data issue
             new Uint8ClampedArray(icon.data.data, icon.data.width, icon.data.height),
             icon.data.width,
             icon.data.height,
