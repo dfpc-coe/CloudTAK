@@ -575,6 +575,13 @@
       "when": 1735613720206,
       "tag": "0081_fluffy_loners",
       "breakpoints": true
+    },
+    {
+      "idx": 82,
+      "version": "7",
+      "when": 1736129468932,
+      "tag": "0082_flat_whizzer",
+      "breakpoints": true
     }
   ]
 }
