@@ -823,6 +823,11 @@ function editGeometry(featid: string) {
             if (coord.length > 2) {
                 coord.splice(2, coord.length - 2);
             }
+
+            // Ensure precision is within bounds
+            for (let i = 0; i < coord.length; i++) {
+                coord[i] = Math.round(coord[i] * Math.pow(10, 9)) / Math.pow(10, 9);
+            }
         });
 
         cotStore.hidden.add(cot.id);
