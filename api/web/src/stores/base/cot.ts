@@ -101,11 +101,11 @@ export default class COT {
     }, opts?: {
         skipSave?: boolean;
     }): Promise<boolean> {
-        let changed = false;
+        let visuallyChanged = false;
         if (update.geometry) {
             //TODO Detect Geometry changes, use centroid?!
             this._geometry = update.geometry;
-            changed = true;
+            visuallyChanged = true;
         }
 
         if (update.properties) {
@@ -113,7 +113,7 @@ export default class COT {
 
             for (const prop of RENDERED_PROPERTIES) {
                 if (this._properties[prop] !== update.properties[prop]) {
-                    changed = true;
+                    visuallyChanged = true;
                     break;
                 }
             }
@@ -130,9 +130,23 @@ export default class COT {
             this._store.pending.set(this.id, this);
         }
 
-        if (!opts || (opts && !opts.skipSave)) await this.save();
+        if (this.is_self) {
+            const profileStore = useProfileStore();
 
-        return changed;
+            if (
+                profileStore.profile
+                && (
+                    this.properties.remarks !== profileStore.profile.tak_remarks
+                    || this.properties.callsign !== profileStore.profile.tak_callsign
+                )
+            ) {
+
+            }
+        } else if (!opts || (opts && !opts.skipSave)) {
+            await this.save();
+        }
+
+        return visuallyChanged;
     }
 
     /**
