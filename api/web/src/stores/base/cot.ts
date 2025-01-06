@@ -140,7 +140,10 @@ export default class COT {
                     || this.properties.callsign !== profileStore.profile.tak_callsign
                 )
             ) {
-
+                await profileStore.update({
+                    tak_callsign: this.properties.callsign,
+                    tak_remarks: this.properties.remarks
+                })
             }
         } else if (!opts || (opts && !opts.skipSave)) {
             await this.save();
