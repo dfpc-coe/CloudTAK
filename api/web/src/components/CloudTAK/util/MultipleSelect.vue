@@ -1,6 +1,7 @@
 <template>
     <div
         ref='selectMenu'
+        role='menu'
         class='position-absolute bg-dark rounded'
         style='
             width: 200px;
@@ -14,6 +15,8 @@
         <div
             v-for='feat in mapStore.select.feats'
             :key='feat.properties.id'
+            role='menuitem'
+            tabindex='0'
             class='col-12 text-white'
             @click='emit("selected", feat)'
         >
