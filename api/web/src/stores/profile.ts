@@ -121,6 +121,7 @@ export const useProfileStore = defineStore('profile', {
                     type: 'a-f-G-E-V-C',
                     how: 'm-g',
                     callsign: this.profile.tak_callsign,
+                    remarks: this.profile.tak_remarks,
                     droid: this.profile.tak_callsign,
                     time: new Date().toISOString(),
                     start: new Date().toISOString(),
