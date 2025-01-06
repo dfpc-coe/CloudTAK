@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v5.35.0 - 2025-01-03
+
+- :tada: Allow editing your own CoT's remarks
+- :rocket: Treat one's own location as a typical CoT
+
 ### v5.34.0 - 2025-01-03
 
 - :bug: If a custom TAK Group name is not set the group:: prefix is shown to the user when it shouldn't be and is correctly rejected if selected by the PATCH Profile API
