@@ -65,7 +65,7 @@
         "vite": "^6.0.0",
         "vite-plugin-babel": "^1.2.0",
         "vite-plugin-pwa": "^0.21.0",
-        "vue-tsc": "2.0.29"
+        "vue-tsc": "2.2.0"
     },
     "browserslist": [
         "> 1%",
