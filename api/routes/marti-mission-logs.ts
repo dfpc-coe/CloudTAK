@@ -61,7 +61,8 @@ export default async function router(schema: Schema, config: Config) {
         }),
         description: 'Helper API to add a log to a mission',
         body: Type.Object({
-            content: Type.String()
+            content: Type.String(),
+            keywords: Type.Optional(Type.Array(Type.String()))
         }),
         res: GenericMartiResponse
     }, async (req, res) => {
@@ -80,7 +81,8 @@ export default async function router(schema: Schema, config: Config) {
                 req.params.name,
                 {
                     creatorUid: creatorUid,
-                    content: req.body.content
+                    content: req.body.content,
+                    keywords: req.body.keywords
                 },
                 opts
             );
@@ -100,7 +102,8 @@ export default async function router(schema: Schema, config: Config) {
         }),
         description: 'Helper API to update a log on a mission',
         body: Type.Object({
-            content: Type.String()
+            content: Type.String(),
+            keywords: Type.Optional(Type.Array(Type.String()))
         }),
         res: TAKItem(MissionLog)
     }, async (req, res) => {
@@ -120,7 +123,8 @@ export default async function router(schema: Schema, config: Config) {
                 {
                     id: req.params.logid,
                     creatorUid: creatorUid,
-                    content: req.body.content
+                    content: req.body.content,
+                    keywords: req.body.keywords
                 },
                 opts
             );

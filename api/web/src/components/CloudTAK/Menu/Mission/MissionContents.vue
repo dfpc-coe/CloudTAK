@@ -25,7 +25,7 @@
             :err='error'
         />
         <div
-            v-if='upload'
+            v-else-if='upload'
             class='mx-2'
         >
             <UploadImport

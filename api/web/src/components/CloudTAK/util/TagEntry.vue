@@ -1,40 +1,61 @@
 <template>
-    <div @click="focusNewTag()"
-        :class="{
-            'tag-entry--focus': isInputActive,
-            'tag-entry--error': isError
-        }"
-        class='form-control tag-entry my-2 py-1 px-1'
-    >
-        <div class="tag-entry-content">
-            <span v-for="(tag, index) in innerTags"
-                  :key="index"
-                  class="tag-entry-tag">
-                <slot v-if="$slots.item"
-                      name="item" v-bind="{ name: tag, index }"></slot>
-                <span v-else> {{ tag }} </span>
-                <a v-if="!readOnly" @click.prevent.stop="remove(index)" class="tag-entry-remove-tag"></a>
-            </span>
-            <input
-                ref="inputTag"
-                :placeholder="placeholder"
-                v-model="newTag"
-                @keydown.delete.stop="removeLastTag"
-                @keydown="addNew"
-                @blur="handleInputBlur"
-                @focus="handleInputFocus"
-                @input="makeItNormal"
-                class="tag-entry-new-tag"
-            />
+    <div>
+        <div
+            :class='{
+                "tag-entry--focus": isInputActive,
+                "is-invalid": error
+            }'
+            class='form-control tag-entry my-2 py-1 px-1'
+            @click='focusNewTag()'
+        >
+            <div class='tag-entry-content'>
+                <span
+                    v-for='(tag, index) in innerTags'
+                    :key='index'
+                    class='me-1 d-flex badge badge-outline bg-blue-lt'
+                >
+                    <slot
+                        v-if='$slots.item'
+                        name='item'
+                        v-bind='{ name: tag, index }'
+                    />
+                    <span v-else> {{ tag }} </span>
+
+                    <TablerIconButton
+                        v-if='!disabled'
+                        title='Remove Tag'
+                        @click.prevent.stop='innerTags.splice(index, 1);'
+                    ><IconX :size='16' stroke='2'/>
+                    </TablerIconButton>
+                </span>
+                <input
+                    v-model='newTag'
+                    :placeholder='placeholder'
+                    :disabled='disabled'
+                    class='tag-entry-new-tag'
+                    @keydown.delete.stop='removeLastTag'
+                    @keydown='addNew'
+                    @blur='handleInputBlur'
+                    @focus='handleInputFocus'
+                    @input='handleInput'
+                >
+            </div>
         </div>
+        <div class="invalid-feedback" v-if='error' v-text='error'></div>
     </div>
 </template>
 
 <script>
+    import {
+        TablerIconButton
+    } from '@tak-ps/vue-tabler';
+    import {
+        IconX
+    } from '@tabler/icons-vue';
+
     export default {
-        emits: ['update:modelValue', 'on-limit', 'on-tags-changed', 'on-remove', 'on-error', 'on-focus', 'on-blur'],
         props: {
-            readOnly: {
+            disabled: {
                 type: Boolean,
                 default: false
             },
@@ -81,10 +102,11 @@
                 default: false
             },
         },
+        emits: ['update:modelValue', 'on-limit', 'tags', 'on-error', 'on-focus', 'on-blur'],
         data() {
             return {
                 isInputActive: false,
-                isError: false,
+                error: false,
                 newTag: '',
                 innerTags: []
             }
@@ -99,13 +121,9 @@
             }
         },
         watch: {
-            error() {
-                this.isError = this.error;
-            },
             modelValue: {
                 immediate: true,
                 handler(value) {
-                    console.log('value: ', value)
                     this.newTag = value;
                 }
             },
@@ -114,28 +132,20 @@
                 immediate: true,
                 handler(tags) {
                     this.innerTags = [...tags];
+                    this.$emit('tags', this.innerTags);
                 }
             },
-            newTag() {
-                if((this.tagLength !== -1 || this.newTag.length > this.tagLength)){
-                    this.$refs.inputTag.className = 'tag-entry-new-tag tag-entry-new-tag--error';
-                    this.$refs.inputTag.style.textDecoration="underline";
-                }
-            }
+        },
+        components: {
+            TablerIconButton,
+            IconX
         },
         methods: {
-            makeItNormal(event) {
-                this.$emit('update:modelValue', event.target.value)
-                this.$refs.inputTag.className = 'tag-entry-new-tag';
-                this.$refs.inputTag.style.textDecoration="none";
-            },
-            resetData() {
-                this.innerTags = []
-            },
             focusNewTag() {
-                if (this.readOnly || !this.$el.querySelector(".tag-entry-new-tag")) {
+                if (!this.$el.querySelector(".tag-entry-new-tag")) {
                     return;
                 }
+
                 this.$el.querySelector(".tag-entry-new-tag").focus();
             },
             handleInputFocus(event) {
@@ -151,71 +161,74 @@
                 const keyShouldAddTag = e
                     ? this.addTagOnKeys.indexOf(e.keyCode) !== -1
                     : true;
+
                 const typeIsNotBlur = e && e.type !== "blur";
-                if (
-                    (!keyShouldAddTag && (typeIsNotBlur || !this.addTagOnBlur)) ||
-                    this.isLimit
+
+                if (this.isLimit) {
+                    this.makeItError('Exceeds max number of tags');
+                    return;
+                } else if (
+                    !keyShouldAddTag && (typeIsNotBlur || !this.addTagOnBlur)
                 ) {
+                    this.makeItError(false)
                     return;
                 }
-                if (
-                    this.newTag &&
-                    (this.allowDuplicates || this.innerTags.indexOf(this.newTag) === -1) &&
-                    this.validateIfNeeded(this.newTag) && (this.tagLength === -1 || this.newTag.length <= this.tagLength)
-                ) {
+
+                this.makeItError(this.validateIfNeeded(this.newTag));
+
+                if (this.newTag && (this.tagLength !== -1 && this.newTag.length <= this.tagLength)) {
+                    this.makeItError(`Exceeds ${this.tagLength} characters`);
+                }
+
+                if (!this.allowDuplicates && this.innerTags.includes(this.newTag)) {
+                    this.makeItError(`Duplicate Tag`);
+                }
+
+                if (!this.error) {
                     this.innerTags.push(this.newTag);
-                    this.newTag = "";
+                    this.newTag = '';
                     this.$emit('update:modelValue', '');
-                    this.tagChange();
-                    e && e.preventDefault();
-                } else {
-                    if(this.validateIfNeeded(this.newTag)){
-                        if(this.newTag && (this.tagLength === -1 || this.newTag.length <= this.tagLength)) {
-                            this.makeItError(true);
-                        }else {
-                            this.makeItError('maxLength');
-                        }
-                    } else {
-                        this.makeItError(false);
-                    }
-                    e && e.preventDefault();
+                }
+
+                if (e) {
+                    e.preventDefault();
                 }
             },
-            makeItError(isDuplicatedOrMaxLength) {
-                this.$refs.inputTag.className = 'tag-entry-new-tag tag-entry-new-tag--error';
-                this.$refs.inputTag.style.textDecoration="underline";
-                this.$emit('on-error', isDuplicatedOrMaxLength);
+            handleInput(event) {
+                this.$emit("update:modelValue", event.target.value)
+            },
+            makeItError(errorMessage) {
+                if (errorMessage) {
+                    this.error = errorMessage
+                    this.$emit('on-error', new Error(errorMessage));
+                } else {
+                    this.error = false;
+                }
             },
             validateIfNeeded(tagValue) {
                 if (this.validate === "" || this.validate === undefined) {
-                    return true;
+                    return false;
                 }
+
                 if (typeof this.validate === "function") {
                     return this.validate(tagValue);
                 }
+
                 if (
                     typeof this.validate === "object" &&
                     this.validate.test !== undefined
                 ) {
                     return this.validate.test(tagValue);
                 }
-                return true;
+
+                return false;
             },
             removeLastTag() {
                 if (this.newTag) {
                     return;
                 }
                 this.innerTags.pop();
-                this.tagChange();
             },
-            remove(index) {
-                this.innerTags.splice(index, 1);
-                this.tagChange();
-                this.$emit("on-remove", index)
-            },
-            tagChange() {
-                this.$emit("on-tags-changed", this.innerTags);
-            }
         }
     };
 </script>
@@ -248,31 +261,6 @@
         width: 100%;
         display: flex;
         flex-wrap: wrap;
-    }
-
-    .tag-entry-tag {
-        display: flex;
-        font-weight: 400;
-        margin: 3px;
-        padding: 0 5px;
-        background: #317CAF;
-        color: #ffffff;
-        height: 27px;
-        border-radius: 5px;
-        align-items: center;
-        .tag-entry-remove-tag {
-            color: #ffffff;
-            transition: opacity .3s ease;
-            opacity: .5;
-            cursor: pointer;
-            padding: 0 5px 0 7px;
-            &::before {
-                content: "x";
-            }
-            &:hover {
-                opacity: 1;
-            }
-        }
     }
 
     .tag-entry-new-tag {

@@ -104,6 +104,7 @@ export default class {
             body: {
                 content: body.content,
                 creatorUid: body.creatorUid,
+                keywords: body.keywords,
                 missionNames: [ mission ],
             }
         });
@@ -131,6 +132,7 @@ export default class {
             body: {
                 content: body.content,
                 creatorUid: body.creatorUid,
+                keywords: body.keywords,
                 missionNames: [ mission ],
             }
         });
