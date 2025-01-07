@@ -46,6 +46,7 @@
                         <TablerDelete
                             v-if='role.permissions.includes("MISSION_WRITE")'
                             displaytype='icon'
+                            size='24'
                             class='position-absolute cursor-pointer end-0 mx-2 my-2'
                             @delete='deleteLog(logidx)'
                         />
@@ -55,7 +56,10 @@
                         />
                     </div>
 
-                    <div class='col-12'>
+                    <div
+                        v-if='log.keywords.length'
+                        class='col-12 pt-1'
+                    >
                         <span
                             v-for='keyword in log.keywords'
                             :key='keyword'
@@ -76,16 +80,19 @@
         <template v-if='role.permissions.includes("MISSION_WRITE")'>
             <div class='mx-2'>
                 <TablerInput
-                    label='Create Log'
                     v-model='createLog.content'
+                    label='Create Log'
                     :rows='4'
                     @keyup.enter='submitOnEnter ? submitLog() : undefined'
                 >
                     <TablerDropdown>
                         <template #default>
-                            <IconSettings :size='24' stroke='1'/>
+                            <IconSettings
+                                :size='24'
+                                stroke='1'
+                            />
                         </template>
-                       <template #dropdown>
+                        <template #dropdown>
                             <TablerToggle
                                 v-model='submitOnEnter'
                                 label='Submit on Enter'
@@ -95,7 +102,7 @@
                 </TablerInput>
 
                 <TagEntry
-                    :tags='createLog.keywords'
+                    @tags='createLog.keywords = $event'
                     placeholder='Keyword Entry'
                 />
 
@@ -207,24 +214,26 @@ async function deleteLog(logidx: number): Promise<void> {
 }
 
 async function submitLog() {
-    if (sub.value) {
-        loading.value.create = true;
-        const log = await Subscription.logCreate(props.mission.guid, props.token, {
-            content: createLog.value
-        });
+    try {
+        if (sub.value) {
+            loading.value.create = true;
+            const log = await Subscription.logCreate(props.mission.guid, props.token, createLog.value)
 
-        sub.value.logs.push(log);
+            sub.value.logs.push(log);
 
+            loading.value.create = false;
+        } else {
+            loading.value.logs = true;
+            await Subscription.logCreate(props.mission.guid, props.token, createLog.value)
+            await fetchLogs();
+        }
+
+        createLog.value.keywords = [];
+        createLog.value.content = '';
+    } catch (err) {
         loading.value.create = false;
-    } else {
-        loading.value.logs = true;
-        await Subscription.logCreate(props.mission.guid, props.token, {
-            content: createLog.value
-        });
-        await fetchLogs();
-    }
 
-    createLog.value.keywords = [];
-    createLog.value.content.value = '';
+        throw err;
+    }
 }
 </script>
