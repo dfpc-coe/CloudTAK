@@ -76,15 +76,27 @@
         <template v-if='role.permissions.includes("MISSION_WRITE")'>
             <div class='mx-2'>
                 <TablerInput
-                    v-model='createLog'
                     label='Create Log'
+                    v-model='createLog.content'
                     :rows='4'
                     @keyup.enter='submitOnEnter ? submitLog() : undefined'
-                />
+                >
+                    <TablerDropdown>
+                        <template #default>
+                            <IconSettings :size='24' stroke='1'/>
+                        </template>
+                       <template #dropdown>
+                            <TablerToggle
+                                v-model='submitOnEnter'
+                                label='Submit on Enter'
+                            />
+                        </template>
+                    </TablerDropdown>
+                </TablerInput>
 
-                <TablerToggle
-                    v-model='submitOnEnter'
-                    label='Submit on Enter'
+                <TagEntry
+                    :tags='createLog.keywords'
+                    placeholder='Keyword Entry'
                 />
 
                 <div class='d-flex my-2'>
@@ -105,14 +117,19 @@
 <script setup lang='ts'>
 import { ref, computed, onMounted } from 'vue'
 import type { ComputedRef } from 'vue';
+import TagEntry from '../../util/TagEntry.vue';
 import type { MissionLog } from '../../../../types.ts';
 import {
     TablerInput,
     TablerDelete,
     TablerToggle,
     TablerLoading,
+    TablerDropdown,
     TablerNone
 } from '@tak-ps/vue-tabler';
+import {
+    IconSettings
+} from '@tabler/icons-vue';
 import MenuTemplate from '../../util/MenuTemplate.vue';
 import Subscription from '../../../../stores/base/mission.ts';
 import { useCOTStore } from '../../../../stores/cots.ts';
@@ -133,7 +150,11 @@ const props = defineProps({
 const submitOnEnter = ref(true);
 const sub = ref<Subscription | undefined>();
 const paging = ref({ filter: '' });
-const createLog = ref('');
+
+const createLog = ref({
+    content: '',
+    keywords: []
+});
 const logs = ref<MissionLog[]>([]);
 const loading = ref<{
     logs: boolean,
@@ -203,6 +224,7 @@ async function submitLog() {
         await fetchLogs();
     }
 
-    createLog.value = '';
+    createLog.value.keywords = [];
+    createLog.value.content.value = '';
 }
 </script>
