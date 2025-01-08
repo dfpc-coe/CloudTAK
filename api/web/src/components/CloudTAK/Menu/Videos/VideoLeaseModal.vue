@@ -466,7 +466,7 @@ async function saveLease() {
             const res = await std(`/api/video/lease/${editLease.value.id}`, {
                 method: 'PATCH',
                 body: {
-                    ...editLease.value,
+                    name: editLease.value.name,
                     channel: channels.value.length ? channels.value[0] : null,
                     duration: editLease.value.duration === 'Permanent' ? undefined : parseInt(editLease.value.duration.split(' ')[0]) * 60 * 60,
                     permanent: editLease.value.duration === 'Permanent' ? true : false
