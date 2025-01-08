@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v5.43.0 - 2025-01-08
+
+- :tada: Allow creating `keywords` on Mission Logs
+
 ### v5.42.0 - 2025-01-05
 
 - :bug: Fix coordinate precision when editing features
