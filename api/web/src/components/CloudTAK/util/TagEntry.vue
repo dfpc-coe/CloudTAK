@@ -12,7 +12,8 @@
                 <span
                     v-for='(tag, index) in innerTags'
                     :key='index'
-                    class='me-1 d-flex badge badge-outline bg-blue-lt'
+                    class='mx-1 my-1 d-flex badge badge-outline bg-blue-lt'
+                    style='height: 24px;'
                 >
                     <slot
                         v-if='$slots.item'
@@ -41,7 +42,11 @@
                 >
             </div>
         </div>
-        <div class="invalid-feedback" v-if='error' v-text='error'></div>
+        <div
+            v-if='error'
+            class='invalid-feedback'
+            v-text='error'
+        ></div>
     </div>
 </template>
 
