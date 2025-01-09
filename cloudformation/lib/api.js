@@ -14,8 +14,6 @@ export default {
             Properties: {
                 Name: cf.stackName,
                 Type: 'application',
-                Scheme: 'internet-facing',
-                IpAddressType: 'dualstack',
                 SecurityGroups: [cf.ref('ELBSecurityGroup')],
                 LoadBalancerAttributes: [{
                     Key: 'idle_timeout.timeout_seconds',
