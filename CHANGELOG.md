@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v5.43.2 - 2025-01-09
+
+- :bug: Fix Connection filtering in CloudTAK Menu
+
 ### v5.43.1 - 2025-01-09
 
 - :bug: Fix a bug where lease renewal wouldn't take place
