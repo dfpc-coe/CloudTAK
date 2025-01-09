@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v5.43.1 - 2025-01-09
+
+- :bug: Fix a bug where lease renewal wouldn't take place
+
 ### v5.43.0 - 2025-01-08
 
 - :tada: Allow creating `keywords` on Mission Logs
