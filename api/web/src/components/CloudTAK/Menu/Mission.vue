@@ -184,9 +184,9 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, watch, onMounted } from 'vue';
-import type { Feature, Mission, MissionRole } from '../../../../src/types.ts';
-import Subscription from '../../../../src/stores/base/mission.ts';
+import { ref, onMounted } from 'vue';
+import type { Feature, Mission, MissionRole } from '../../../types.ts';
+import Subscription from '../../../stores/base/mission.ts';
 import {
     IconRefresh,
     IconPackages,
@@ -207,9 +207,9 @@ import {
 import MenuTemplate from '../util/MenuTemplate.vue';
 import ShareToPackage from '../util/ShareToPackage.vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useMapStore } from '../../../../src/stores/map.ts';
+import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();
-import { useCOTStore } from '../../../../src/stores/cots.ts';
+import { useCOTStore } from '../../../stores/cots.ts';
 const cotStore = useCOTStore();
 const route = useRoute();
 const router = useRouter();
@@ -223,21 +223,6 @@ const shareToPackage = ref(false);
 const role = ref<MissionRole>({ type: 'MISSION_READONLY_SUBSCRIBER', permissions: [] });
 const mission = ref<Mission | undefined>(undefined)
 const missionSub = ref<Subscription | undefined>(undefined)
-
-// TODO BROKEN
-watch(cotStore.subscriptions, () => {
-    const subMission = cotStore.subscriptions.get(String(route.params.mission));
-
-    if (subMission) {
-        missionSub.value = subMission;
-    } else if (!subMission && missionSub) {
-        missionSub.value = undefined;
-    }
-})
-
-watch(route, async function() {
-    await fetchMission();
-});
 
 onMounted(async () => {
     await fetchMission();
