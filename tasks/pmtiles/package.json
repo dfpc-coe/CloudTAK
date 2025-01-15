@@ -11,7 +11,7 @@
         "prod": "NODE_OPTIONS='--max-old-space-size=6144' node dist/index.js"
     },
     "dependencies": {
-        "@aws-sdk/client-s3": "^3.213.0",
+        "@aws-sdk/client-s3": "^3.726.1",
         "@aws-sdk/node-http-handler": "^3.212.0",
         "@mapbox/tilebelt": "^2.0.1",
         "@mapbox/vtquery": "^0.6.0",
