@@ -1,3 +1,4 @@
+import AWSS3 from '@aws-sdk/client-s3';
 import express from 'express';
 import { createHash } from "crypto";
 import Err from '@openaddresses/batch-error';
@@ -52,6 +53,61 @@ schema.get('/tiles', {
     res.json({
        name: process.env.StackName || 'Default Tiles API'
     });
+});
+
+schema.get('/tiles/public', {
+    name: 'Get Sources',
+    group: 'PublicTiles',
+    description: 'Return a list of public tile sources',
+    query: Type.Object({
+        token: Type.String()
+    }),
+    res: Type.Object({
+        total: Type.Integer(),
+        items: Type.Array(Type.Object({
+            name: Type.String(),
+            hash: Type.String(),
+            updated: Type.String(),
+            size: Type.Integer(),
+        }))
+    })
+}, async (req, res) => {
+    try { 
+        //auth(req.query.token);
+
+        const client = new AWSS3.S3Client();
+
+        const Contents = [];
+
+        let s3res;
+        do {
+            const req: AWSS3.ListObjectsV2CommandInput = { 
+                Bucket: process.env.ASSET_BUCKET,
+                Prefix: 'public/'
+            };  
+
+            if (s3res && s3res.NextToken) req.NextToken = s3res.NextToken;
+            s3res = await client.send(new AWSS3.ListObjectsV2Command(req))
+
+            Contents.push(...(s3res.Contents.filter((Content) => {
+                return Content.Key.endsWith('.pmtiles')
+            }) || []));
+        } while (s3res.NextToken)
+
+        return res.json({
+            total: Contents.length,
+            items: Contents.map((Content) => {
+                return {
+                    name: Content.Key,
+                    hash: JSON.parse(Content.ETag),
+                    updated: Content.LastModified,
+                    size: Content.Size
+                }
+            })
+        }) 
+    } catch (err) {
+        Err.respond(err, res);
+    }
 });
 
 schema.get('/tiles/profile/:username/:file', {
