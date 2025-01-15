@@ -43,7 +43,7 @@
         "@aws-sdk/lib-storage": "^3.299.0",
         "@humanwhocodes/momoa": "^3.0.0",
         "@mapbox/tilebelt": "^2.0.0",
-        "@maplibre/maplibre-gl-style-spec": "^22.0.0",
+        "@maplibre/maplibre-gl-style-spec": "^23.0.0",
         "@openaddresses/batch-error": "^2.1.4",
         "@openaddresses/batch-generic": "^24.0.1",
         "@openaddresses/batch-schema": "^10.9.0",
