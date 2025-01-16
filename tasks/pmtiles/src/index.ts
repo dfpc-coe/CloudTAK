@@ -72,8 +72,8 @@ schema.get('/tiles/public', {
         }))
     })
 }, async (req, res) => {
-    try { 
-        //auth(req.query.token);
+    try {
+        auth(req.query.token);
 
         const client = new AWSS3.S3Client();
 
@@ -81,10 +81,10 @@ schema.get('/tiles/public', {
 
         let s3res;
         do {
-            const req: AWSS3.ListObjectsV2CommandInput = { 
+            const req: AWSS3.ListObjectsV2CommandInput = {
                 Bucket: process.env.ASSET_BUCKET,
                 Prefix: 'public/'
-            };  
+            };
 
             if (s3res && s3res.NextToken) req.NextToken = s3res.NextToken;
             s3res = await client.send(new AWSS3.ListObjectsV2Command(req))
@@ -104,7 +104,7 @@ schema.get('/tiles/public', {
                     size: Content.Size
                 }
             })
-        }) 
+        })
     } catch (err) {
         Err.respond(err, res);
     }
