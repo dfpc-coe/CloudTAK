@@ -7,49 +7,53 @@
                 :size='24'
             />
             <span
-                v-tooltip='"Feet"'
+                v-tooltip='"Square Feet"'
                 class='my-1 px-2'
                 :class='{
-                    "bg-gray-500 rounded-bottom": mode === "feet",
-                    "cursor-pointer": mode !== "feet",
+                    "bg-gray-500 rounded-bottom": mode === "sqfeet",
+                    "cursor-pointer": mode !== "sqfeet",
                 }'
-                @click='mode = "feet"'
-            >Feet</span>
+                @click='mode = "sqfeet"'
+            >Feet<sup>2</sup></span>
             <span
-                v-tooltip='"Meters"'
+                v-tooltip='"Square Meters"'
                 class='my-1 px-2'
                 :class='{
-                    "bg-gray-500 rounded-bottom": mode === "meter",
-                    "cursor-pointer": mode !== "meter",
+                    "bg-gray-500 rounded-bottom": mode === "sqmeter",
+                    "cursor-pointer": mode !== "sqmeter",
                 }'
-                @click='mode = "meter"'
-            >Meters</span>
+                @click='mode = "sqmeter"'
+            >Meters<sup>2</sup></span>
         </div>
     </div>
 </template>
 
 <script setup lang='ts'>
 import { ref, computed } from 'vue';
+import { area } from '@turf/area';
 import CopyField from './CopyField.vue';
+import COT from '../../../stores/base/cot.ts';
 
 const props = defineProps({
-    elevation: {
-        type: Number,
+    cot: {
+        type: COT,
         required: true
     },
     unit: {
         type: String,
-        default: 'feet'
+        default: 'sqfeet'
     }
 })
 
-const mode = ref(props.unit);
+const mode = ref(props.unit || 'sqfeet');
 
 const inMode = computed(() => {
-    if (mode.value === 'feet') {
-        return Math.round(props.elevation * 3.28084 * 1000) / 1000;
-    } else if (mode.value === 'meter') {
-        return Math.round(props.elevation * 100) / 100;
+    const cotArea = area(props.cot.geometry);
+
+    if (mode.value === 'sqfeet') {
+        return cotArea * 10.7639;
+    } else if (mode.value === 'sqmeter') {
+        return cotArea;
     } else {
         return 'UNKNOWN';
     }

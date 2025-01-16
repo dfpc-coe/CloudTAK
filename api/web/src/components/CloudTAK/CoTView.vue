@@ -321,10 +321,10 @@
                 </div>
 
                 <div
+                    v-if='cot && cot.geometry.type === "Polygon"'
                     class='col-12 pt-2'
-                    v-if='cot.geometry.type === "Polygon"'
                 >
-                    <PolygonArea :cot='cot'/>
+                    <PolygonArea :cot='cot' />
                 </div>
 
                 <div
