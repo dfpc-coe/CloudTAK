@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v5.44.0 - 2025-01-15
+
+- :rocket: Update Postgres to 17.2
+
 ### v5.43.2 - 2025-01-09
 
 - :bug: Fix Connection filtering in CloudTAK Menu
