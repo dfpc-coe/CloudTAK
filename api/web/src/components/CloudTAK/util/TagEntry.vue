@@ -26,7 +26,10 @@
                         v-if='!disabled'
                         title='Remove Tag'
                         @click.prevent.stop='innerTags.splice(index, 1);'
-                    ><IconX :size='16' stroke='2'/>
+                    ><IconX
+                        :size='16'
+                        stroke='2'
+                    />
                     </TablerIconButton>
                 </span>
                 <input
@@ -46,7 +49,7 @@
             v-if='error'
             class='invalid-feedback'
             v-text='error'
-        ></div>
+        />
     </div>
 </template>
 
@@ -59,6 +62,10 @@
     } from '@tabler/icons-vue';
 
     export default {
+        components: {
+            TablerIconButton,
+            IconX
+        },
         props: {
             disabled: {
                 type: Boolean,
@@ -140,10 +147,6 @@
                     this.$emit('tags', this.innerTags);
                 }
             },
-        },
-        components: {
-            TablerIconButton,
-            IconX
         },
         methods: {
             focusNewTag() {
