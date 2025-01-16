@@ -489,7 +489,8 @@ export const useMapStore = defineStore('cloudtak', {
             this._draw = new terraDraw.TerraDraw({
                 adapter: new TerraDrawMapLibreGLAdapter({
                     map: this.map,
-                    lib: mapgl.MapLibreGL
+                    // @ts-expect-error TS is complaining
+                    lib: mapgl
                 }),
                 idStrategy: {
                     isValidId: (id: string | number): boolean => {

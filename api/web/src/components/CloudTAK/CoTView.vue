@@ -321,6 +321,12 @@
                 </div>
 
                 <div
+                    class='col-12 pt-2'
+                >
+                    <PolygonArea v-model='cot' />
+                </div>
+
+                <div
                     v-if='profile && cot.properties.speed !== undefined && !isNaN(cot.properties.speed)'
                     class='pt-2'
                     :class='{
@@ -652,6 +658,7 @@ import CopyField from './util/CopyField.vue';
 import IconSelect from '../util/IconSelect.vue';
 import Battery from './util/Battery.vue';
 import Share from './util/Share.vue';
+import PolygonArea from './util/Area.vue';
 import Coordinate from './util/Coordinate.vue';
 import Course from './util/Course.vue';
 import CoTSensor from './util/Sensor.vue';
