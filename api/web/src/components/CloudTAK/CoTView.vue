@@ -322,8 +322,9 @@
 
                 <div
                     class='col-12 pt-2'
+                    v-if='cot.geometry.type === "Polygon"'
                 >
-                    <PolygonArea v-model='cot' />
+                    <PolygonArea :cot='cot'/>
                 </div>
 
                 <div
@@ -658,7 +659,7 @@ import CopyField from './util/CopyField.vue';
 import IconSelect from '../util/IconSelect.vue';
 import Battery from './util/Battery.vue';
 import Share from './util/Share.vue';
-import PolygonArea from './util/Area.vue';
+import PolygonArea from './util/PolygonArea.vue';
 import Coordinate from './util/Coordinate.vue';
 import Course from './util/Course.vue';
 import CoTSensor from './util/Sensor.vue';
