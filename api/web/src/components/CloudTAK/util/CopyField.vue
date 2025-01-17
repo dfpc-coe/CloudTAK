@@ -8,12 +8,14 @@
             :rows='rows'
             :autofocus='true'
             label=''
-            @change='emit("update:modelValue", text)'
-            @blur='editing = false'
+            :error='error'
+            @update:modelValue='testValidate(text)'
+            @blur='blurChange'
             @submit='rows > 1 ? undefined : editing = false'
         />
 
         <TablerIconButton
+            v-if='!error'
             title='Done Editing'
             class='position-absolute'
             style='right: 8px; top: 8px;'
@@ -73,17 +75,21 @@
         <template v-else>
             <span v-text='text' />
 
-            <IconPencil
+            <TablerIconButton
                 v-if='edit'
+                title='Edit'
                 class='position-absolute'
                 :class='{
                     "hover-button-hidden": hover,
                 }'
                 style='right: 36px; top: 6px;'
-                :size='24'
-                stroke='1'
                 @click='editing = true'
-            />
+            >
+                <IconPencil
+                    :size='24'
+                    stroke='1'
+                />
+            </TablerIconButton>
 
             <CopyButton
                 :text='text'
@@ -129,6 +135,10 @@ const props = defineProps({
         type: Number,
         default: 32
     },
+    validate: {
+        // (text: string | number) => false | string
+        type: Function
+    },
     hover: {
         type: Boolean,
         default: false
@@ -149,6 +159,7 @@ const props = defineProps({
 
 const editing = ref(false);
 const text = ref(props.modelValue);
+const error = ref<string | undefined>()
 
 const infoboxRef = useTemplateRef<HTMLElement>('infobox');
 
@@ -177,6 +188,30 @@ watch(props, () => {
         text.value = props.modelValue;
     }
 })
+
+function blurChange() {
+    editing.value = false;
+
+    if (typeof props.validate === 'function' && props.validate(text.value) !== true) {
+        text.value = props.modelValue
+        emit("update:modelValue", text.value);
+    }
+}
+
+function testValidate(text: string | number) {
+    if (typeof props.validate !== 'function') {
+        emit("update:modelValue", text);
+    } else {
+        const res = props.validate(text);
+
+        if (typeof res === 'string') {
+            error.value = res;
+        } else {
+            error.value = undefined;
+            emit("update:modelValue", text);
+        }
+    }
+}
 
 </script>
 

@@ -3,12 +3,11 @@
         class='sticky-top col-12 border-bottom border-light bg-dark'
         style='border-radius: 0px;'
     >
-        <div class='modal-header px-0 mx-2 align-center'>
-            <div class='modal-title' />
+        <div class='modal-header px-0 mx-2 d-flex align-items-center'>
             <div class='modal-title'>
                 Query Mode
             </div>
-            <div class='btn-list'>
+            <div class='ms-auto btn-list'>
                 <TablerIconButton
                     title='Refresh'
                     @click='fetch'
@@ -64,7 +63,8 @@ import { std } from '../../std.ts';
 import QueryWeather from './Query/Weather.vue';
 import QueryReverse from './Query/Reverse.vue';
 import {
-    TablerLoading
+    TablerLoading,
+    TablerIconButton
 } from '@tak-ps/vue-tabler';
 import Coordinate from './util/Coordinate.vue';
 
@@ -88,6 +88,8 @@ onMounted(async () => {
 });
 
 async function fetch() {
+    query.value = undefined;
+
     if (coords.value && coords.value.length >= 2) {
         try {
             error.value = undefined;

@@ -102,8 +102,8 @@
                 </TablerInput>
 
                 <TagEntry
-                    @tags='createLog.keywords = $event'
                     placeholder='Keyword Entry'
+                    @tags='createLog.keywords = $event'
                 />
 
                 <div class='d-flex my-2'>

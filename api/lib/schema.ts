@@ -330,6 +330,19 @@ export const ConnectionToken = pgTable('connection_tokens', {
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
 });
 
+export const FusionType = pgTable('fusion_type', {
+    id: serial().primaryKey(),
+    name: text().notNull(),
+    schema: json().notNull()
+});
+
+export const ProfileFusionSource = pgTable('profile_fusion', {
+    id: serial().primaryKey(),
+    username: text().notNull().references(() => Profile.username),
+    fusion: integer().notNull().references(() => FusionType.id),
+    value: json().$type<Record<string, string>>().notNull().default({}),
+});
+
 export const ProfileInterest = pgTable('profile_interests', {
     id: serial().primaryKey(),
     name: text().notNull(),
