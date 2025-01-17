@@ -7,7 +7,7 @@
         <div class='mx-2'>
             <CopyField
                 :modelValue='inMode'
-                @update:modelValue=''
+                @update:modelValue='coordinateEntry($event)'
                 :edit='edit && mode === "dd"'
                 :hover='hover && mode === "dd"'
                 :validate='validateInput'
@@ -117,7 +117,6 @@ export default {
     data: function() {
         return {
             mode: 'dd',
-            coordinateEntry: [this.modelValue[1], this.modelValue[0]].join(',')
         }
     },
     computed: {
@@ -160,16 +159,15 @@ export default {
             return 'UNKNOWN'
         }
     },
-    watch: {
-        coordinateEntry: function() {
-            this.$emit('update:modelValue', this.coordinateEntry
-                .split(',')
-                .map((c) => Number(c.trim()))
-                .reverse()
-            );
-        }
-    },
     methods: {
+        coordinateEntry: function(text) {
+            this.$emit('update:modelValue',
+                text
+                    .split(',')
+                    .map((c) => Number(c.trim()))
+                    .reverse()
+            );
+        },
         // WRONG!!!!
         asDMS: function(dd) {
             const deg = dd | 0;
