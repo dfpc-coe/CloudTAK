@@ -307,6 +307,8 @@
                     }'
                 >
                     <Coordinate
+                        :edit='cot.is_editable'
+                        :hover='cot.is_editable'
                         v-model='center'
                     />
                 </div>

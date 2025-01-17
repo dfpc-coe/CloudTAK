@@ -6,16 +6,13 @@
         />
         <div class='mx-2'>
             <CopyField
-                v-if='!edit'
-                v-model='inMode'
+                :modelValue='inMode'
+                @update:modelValue=''
+                :edit='edit && mode === "dd"'
+                :hover='hover && mode === "dd"'
+                :validate='validateInput'
                 :size='24'
             />
-            <template v-else>
-                <TablerInput
-                    v-model='coordinateEntry'
-                    @submit='$emit("submit")'
-                />
-            </template>
             <template v-if='modes.length'>
                 <div role='menu'>
                     <span
@@ -89,6 +86,10 @@ export default {
             type: String,
             default: 'Coordinates'
         },
+        hover: {
+            type: Boolean,
+            default: false
+        },
         edit: {
             type: Boolean,
             default: false
@@ -120,6 +121,24 @@ export default {
         }
     },
     computed: {
+        validateInput: function() {
+            return (text) => {
+                if (this.mode === 'dd') {
+                    const dd = text.split(',').map((d) => {
+                        return Number(d.trim())
+                    });
+
+                    const errors = [];
+                    if (dd.length !== 2) errors.push('Must have contain latitude,longitude');
+                    if (isNaN(dd[0])) errors.push('First number (latitude) is not a number');
+                    if (isNaN(dd[1])) errors.push('Second number (longitude) is not a number');
+
+                    return errors.length ? errors[0] : true;
+                } else {
+                    return false;
+                }
+            }
+        },
         inMode: function() {
             if (this.mode === 'dd') {
                 if (this.truncate) {
@@ -151,6 +170,7 @@ export default {
         }
     },
     methods: {
+        // WRONG!!!!
         asDMS: function(dd) {
             const deg = dd | 0;
             const frac = Math.abs(dd - deg);
