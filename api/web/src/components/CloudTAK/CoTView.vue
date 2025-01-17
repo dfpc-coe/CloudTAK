@@ -310,7 +310,7 @@
                         :edit='cot.is_editable'
                         :hover='cot.is_editable'
                         :modelValue='center'
-                        @update:modelValue='cot.properties.center = $event'
+                        @update:modelValue='updateCenter($event)'
                     />
                 </div>
                 <div
@@ -785,6 +785,14 @@ function timediffFormat(date: string) {
         return timediff(date);
     } else {
         return date;
+    }
+}
+
+function updateCenter(center) {
+    cot.value.properties.center = center;
+
+    if (cot.value.geometry.type === 'Point') {
+        cot.value.geometry.coordinates = center;
     }
 }
 
