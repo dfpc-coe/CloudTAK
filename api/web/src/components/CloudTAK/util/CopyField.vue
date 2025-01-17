@@ -136,7 +136,7 @@ const props = defineProps({
         default: 32
     },
     validate: {
-        // (text) => false | string
+        // (text: string | number) => false | string
         type: Function
     },
     hover: {
@@ -192,18 +192,18 @@ watch(props, () => {
 function blurChange() {
     editing.value = false;
 
-    if (testValidate(text.value) !== true) {
+    if (typeof props.validate === 'function' && props.validate(text.value) !== true) {
         text.value = props.modelValue
         emit("update:modelValue", text.value);
     }
 }
 
-function testValidate(text) {
+function testValidate(text: string | number) {
     if (typeof props.validate !== 'function') {
         emit("update:modelValue", text);
     } else {
         const res = props.validate(text);
-        console.error(res);
+
         if (typeof res === 'string') {
             error.value = res;
         } else {
