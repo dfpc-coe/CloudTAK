@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v5.45.0 - 2025-01-16
+
+- :tada: `UI` Allow Editing Coordinates
+- :bug: `UI` Fix bug in UTM calculations
+- :tada: `UI` Show Polygon Area when possible
+- :tada` `API` Add Fusion Tables
+
 ### v5.44.0 - 2025-01-15
 
 - :rocket: Update Postgres to 17.2
