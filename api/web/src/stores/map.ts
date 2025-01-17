@@ -15,6 +15,8 @@ import Overlay from './base/overlay.ts';
 import { std, stdurl } from '../std.js';
 import mapgl from 'maplibre-gl'
 import * as terraDraw from 'terra-draw';
+import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
+
 import type { ProfileOverlay, Basemap, APIList } from '../types.ts';
 import { coordEach } from '@turf/meta';
 import { distance } from '@turf/distance';
@@ -485,8 +487,10 @@ export const useMapStore = defineStore('cloudtak', {
             }
 
             this._draw = new terraDraw.TerraDraw({
-                adapter: new terraDraw.TerraDrawMapLibreGLAdapter({
-                    map: this.map
+                adapter: new TerraDrawMapLibreGLAdapter({
+                    map: this.map,
+                    // @ts-expect-error TS is complaining
+                    lib: mapgl
                 }),
                 idStrategy: {
                     isValidId: (id: string | number): boolean => {

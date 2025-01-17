@@ -7,7 +7,7 @@
                 "border-bottom border-light": border
             }'
         >
-            <div class='modal-header px-0 mx-2'>
+            <div class='card-header py-2 px-0 mx-2'>
                 <TablerIconButton
                     v-if='backType === "close"'
                     title='Close Menu'

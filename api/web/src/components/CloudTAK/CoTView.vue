@@ -307,7 +307,10 @@
                     }'
                 >
                     <Coordinate
-                        v-model='center'
+                        :edit='cot.is_editable'
+                        :hover='cot.is_editable'
+                        :modelValue='center'
+                        @update:modelValue='updateCenter($event)'
                     />
                 </div>
                 <div
@@ -318,6 +321,13 @@
                         :unit='profile.display_elevation'
                         :elevation='cot.properties.center[2]'
                     />
+                </div>
+
+                <div
+                    v-if='cot && cot.geometry.type === "Polygon"'
+                    class='col-12 pt-2'
+                >
+                    <PolygonArea :cot='cot' />
                 </div>
 
                 <div
@@ -652,6 +662,7 @@ import CopyField from './util/CopyField.vue';
 import IconSelect from '../util/IconSelect.vue';
 import Battery from './util/Battery.vue';
 import Share from './util/Share.vue';
+import PolygonArea from './util/PolygonArea.vue';
 import Coordinate from './util/Coordinate.vue';
 import Course from './util/Course.vue';
 import CoTSensor from './util/Sensor.vue';
@@ -774,6 +785,16 @@ function timediffFormat(date: string) {
         return timediff(date);
     } else {
         return date;
+    }
+}
+
+function updateCenter(center: number[]) {
+    if (!cot.value) return;
+
+    cot.value.properties.center = center;
+
+    if (cot.value.geometry.type === 'Point') {
+        cot.value.geometry.coordinates = center;
     }
 }
 
