@@ -70,15 +70,11 @@
 </template>
 
 <script>
-import {
-    TablerInput
-} from '@tak-ps/vue-tabler';
 import CopyField from './CopyField.vue';
 
 export default {
     name: 'COTCoordinate',
     components: {
-        TablerInput,
         CopyField,
     },
     props: {
@@ -132,6 +128,12 @@ export default {
                     if (isNaN(dd[0])) errors.push('First number (latitude) is not a number');
                     if (isNaN(dd[1])) errors.push('Second number (longitude) is not a number');
 
+                    if (dd[0] < -90) errors.push('Latitude cannot be less than -90°');
+                    if (dd[0] > 90) errors.push('Latitude cannot exceed 90°');
+
+                    if (dd[1] < -180) errors.push('Longitude cannot be less than -180°');
+                    if (dd[1] > 180) errors.push('Longitude cannot exceed 180°');
+
                     return errors.length ? errors[0] : true;
                 } else {
                     return false;
@@ -168,35 +170,25 @@ export default {
                     .reverse()
             );
         },
-        // WRONG!!!!
         asDMS: function(dd) {
-            const deg = dd | 0;
-            const frac = Math.abs(dd - deg);
-            const min = (frac * 60) | 0;
-            const sec = frac * 3600 - min * 60;
-            return deg + '° ' + min + '\' ' + Math.floor(sec + 100) / 100 + '"';
+            const abs = Math.abs(dd);
+            const deg = Math.floor(abs);
+            const min = Math.floor((abs - deg) * 60);
+            const sec = (abs - deg - min / 60) * 3600;
+            return (dd < 0 ? '-' : '') + deg + '° ' + min + '\' ' + Math.floor(sec * 100) / 100 + '"';
         },
         asUTM: function(latitude, longitude) {
-            if (latitude > 84 || latitude < -80) {
-                throw new RangeError('latitude out of range (must be between 80 deg S and 84 deg N)');
-            }
-            if (longitude > 180 || longitude < -180) {
-                throw new RangeError('longitude out of range (must be between 180 deg W and 180 deg E)');
-            }
+            const K0 = 0.9996;
+            const E = 0.00669438;
+            const E_P2 = E / (1 - E);
+            const E2 = Math.pow(E, 2);
+            const E3 = Math.pow(E, 3);
+            const R = 6378137;
 
-            var K0 = 0.9996;
-
-            var E = 0.00669438;
-            var E2 = Math.pow(E, 2);
-            var E3 = Math.pow(E, 3);
-            var E_P2 = E / (1 - E);
-
-            var M1 = 1 - E / 4 - 3 * E2 / 64 - 5 * E3 / 256;
-            var M2 = 3 * E / 8 + 3 * E2 / 32 + 45 * E3 / 1024;
-            var M3 = 15 * E2 / 256 + 45 * E3 / 1024;
+            const M1 = 1 - E / 4 - 3 * E2 / 64 - 5 * E3 / 256;
+            const M2 = 3 * E / 8 + 3 * E2 / 32 + 45 * E3 / 1024;
+            const M3 = 15 * E2 / 256 + 45 * E3 / 1024;
             var M4 = 35 * E3 / 3072;
-
-            var R = 6378137;
 
             const latRad = this.toRadians(latitude);
             const latSin = Math.sin(latRad);
@@ -207,6 +199,7 @@ export default {
             const latTan4 = Math.pow(latTan, 4);
 
             const zoneNum = this.latLonToZoneNumber(latitude, longitude);
+
             const zoneLetter = this.latitudeToZoneLetter(latitude);
 
             const lonRad = this.toRadians(longitude);
@@ -227,7 +220,7 @@ export default {
                 M2 * Math.sin(2 * latRad) +
                 M3 * Math.sin(4 * latRad) -
                 M4 * Math.sin(6 * latRad));
-            let easting = K0 * n * (a +
+            const easting = K0 * n * (a +
                 a3 / 6 * (1 - latTan2 + c) +
                 a5 / 120 * (5 - 18 * latTan2 + latTan4 + 72 * c - 58 * E_P2)) + 500000;
             let northing = K0 * (m + n * latTan * (a2 / 2 +
@@ -238,8 +231,8 @@ export default {
             return `${zoneNum}${zoneLetter} ${Math.floor(easting)} ${Math.floor(northing)}`;
         },
         zoneNumberToCentralLongitude: function(zoneNum) {
-          return (zoneNum - 1) * 6 - 180 + 3;
-          },
+            return (zoneNum - 1) * 6 - 180 + 3;
+        },
         toRadians: function(deg) {
             return deg * Math.PI / 180;
         },
