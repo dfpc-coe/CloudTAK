@@ -788,7 +788,9 @@ function timediffFormat(date: string) {
     }
 }
 
-function updateCenter(center) {
+function updateCenter(center: number[]) {
+    if (!cot.value) return;
+
     cot.value.properties.center = center;
 
     if (cot.value.geometry.type === 'Point') {
