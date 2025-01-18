@@ -61,7 +61,7 @@ export default {
             Properties: {
                 Engine: 'postgres',
                 EngineVersion: '17.2',
-                AllowMajorVersionUpgrade: true,
+                AllowMajorVersionUpgrade: false,
                 DBName: 'tak_ps_etl',
                 CopyTagsToSnapshot: true,
                 DBInstanceIdentifier: cf.stackName,
