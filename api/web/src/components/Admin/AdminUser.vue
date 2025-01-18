@@ -149,7 +149,6 @@
 
                     <span class='mx-2 user-select-none'>Display Settings</span>
                 </div>
-
                 <div
                     v-if='opened.has("display")'
                     class='col-lg-12 card-body border rounded'
@@ -171,6 +170,22 @@
                             </div>
                         </template>
                     </div>
+                </div>
+
+                <div
+                    class='col-lg-12 hover-light py-2 mt-2 cursor-pointer'
+                    @click='opened.has("fusion") ? opened.delete("fusion") : opened.add("fusion")'
+                >
+                    <IconChevronDown v-if='opened.has("fusion")' />
+                    <IconChevronRight v-else />
+
+                    <span class='mx-2 user-select-none'>Fused Sensors</span>
+                </div>
+                <div
+                    v-if='opened.has("fusion")'
+                    class='col-lg-12 card-body border rounded'
+                >
+                    Fused Sensors
                 </div>
             </template>
         </div>
