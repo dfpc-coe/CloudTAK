@@ -204,7 +204,7 @@ watch(editModal, async () => {
     await fetchList();
 });
 
-watch(paging, async () => {
+watch(paging.value, async () => {
     await fetchList();
 });
 
