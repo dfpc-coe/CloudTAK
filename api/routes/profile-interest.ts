@@ -92,13 +92,13 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req);
 
-            const interest = await config.models.ProfileInterest.from(req.params.interestid);
+            let interest = await config.models.ProfileInterest.from(req.params.interestid);
 
             if (interest.username !== user.email) {
                 throw new Err(400, null, 'You did not create this interest area');
             }
 
-            const interest = await config.models.ProfileInterest.commit(req.params.interestid, {
+            interest = await config.models.ProfileInterest.commit(req.params.interestid, {
                 ...req.body
             });
 
@@ -117,23 +117,19 @@ export default async function router(schema: Schema, config: Config) {
         params: Type.Object({
             interestid: Type.Integer()
         }),
-        body: Type.Object({
-            name: Type.Optional(Type.String()),
-            bounds: Type.Optional(Type.Array(Type.Number(), { minItems: 4, maxItems: 4 })),
-        }),
         res: StandardResponse
 
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
 
-            const interest = await config.models.ProfileInterest.from(req.params.interestid);
+            let interest = await config.models.ProfileInterest.from(req.params.interestid);
 
             if (interest.username !== user.email) {
                 throw new Err(400, null, 'You did not create this interest area');
             }
 
-            const interest = await config.models.ProfileInterest.delete(req.params.interestid);
+            interest = await config.models.ProfileInterest.delete(req.params.interestid);
 
             res.json({
                 status: 200,
