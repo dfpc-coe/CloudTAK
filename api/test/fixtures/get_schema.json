@@ -839,6 +839,21 @@
         "query": true,
         "res": true
     },
+    "POST /profile/interest": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /profile/interest/:interestid": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /profile/interest/:interestid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /profile/overlay": {
         "body": false,
         "query": true,
