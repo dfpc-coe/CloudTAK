@@ -12,6 +12,14 @@
 
 ### Pending Release
 
+### v5.46.0 - 2025-01-21
+
+- :bug: `DevOps` Update `python3.8` Lambda as it is being sunset
+- :rocket: Add support for full suite of Profile Interest Areas
+- :rocket: Add initial Sensor Fusion Support
+- :tada: Significant refactor to AdminUser pane
+- :bug: Fix search in Data Package list
+
 ### v5.45.0 - 2025-01-16
 
 - :tada: `UI` Allow Editing Coordinates
