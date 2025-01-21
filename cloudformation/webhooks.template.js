@@ -113,7 +113,7 @@ export default cf.merge(
                     Code: {
                         ZipFile: "def handler(event, context):\n    return {\n        'statusCode': 200,\n        'body': 'Hello from Lambda!'\n    }"
                     },
-                    Runtime: 'python3.8'
+                    Runtime: 'python3.13'
                 }
             },
             CloudTAKWebhooksHealthCheckFunctionRole: {
