@@ -129,7 +129,7 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'You did not create this interest area');
             }
 
-            interest = await config.models.ProfileInterest.delete(req.params.interestid);
+            await config.models.ProfileInterest.delete(req.params.interestid);
 
             res.json({
                 status: 200,
