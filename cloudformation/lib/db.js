@@ -111,7 +111,14 @@ export default {
                     IpProtocol: 'TCP',
                     FromPort: 5432,
                     ToPort: 5432,
-                    SourceSecurityGroupId: cf.getAtt('ServiceSecurityGroup', 'GroupId')
+                    SourceSecurityGroupId: cf.getAtt('ServiceSecurityGroup', 'GroupId'),
+                    Description: 'Allow CloudTAK ECS Service Access'
+                },{
+                    IpProtocol: 'TCP',
+                    FromPort: 5432,
+                    ToPort: 5432,
+                    CidrIp: cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-vpc-cidr'])),
+                    Description: 'Allow Internal network access'
                 }]
             }
         }
