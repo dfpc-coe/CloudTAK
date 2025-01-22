@@ -126,7 +126,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req);
 
-            let interest = await config.models.ProfileInterest.from(req.params.interestid);
+            const interest = await config.models.ProfileInterest.from(req.params.interestid);
 
             if (interest.username !== user.email) {
                 throw new Err(400, null, 'You did not create this interest area');
