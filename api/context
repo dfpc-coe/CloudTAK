@@ -9,14 +9,13 @@ set -euo pipefail
 echo "Loading $Stack"
 
 cd ..
-
 POSTGRES=$(deploy info prod | jq .Outputs.DB)
-
-cd $(pwd)
+cd $(pwd)/api
 
 ssh "${Stack}-bastion" -t "pg_dump -d ${POSTGRES} > ${Stack}-latest.dump; exit"
 scp "${Stack}-bastion:~/${Stack}-latest.dump" .
 ssh "${Stack}-bastion" -t "rm ${Stack}-latest.dump; exit"
+
 npm run loaddb "${Stack}-latest.dump"
 
 npm run dev -- --env ${Stack}
