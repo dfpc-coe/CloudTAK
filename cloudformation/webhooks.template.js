@@ -36,6 +36,7 @@ export default cf.merge(
             CloudTAKWebhooksApiGatewayRole: {
                 Type: 'AWS::IAM::Role',
                 Properties: {
+                    RoleName: cf.stackName,
                     AssumeRolePolicyDocument: {
                         Version: '2012-10-17',
                         Statement: [{
