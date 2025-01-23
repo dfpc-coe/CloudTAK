@@ -282,12 +282,31 @@ export default class VideoServiceControl {
         return protocols;
     }
 
+    async updateSecure(lease: Static<typeof VideoLeaseResponse>, secure: boolean) {
+        if (secure && (!lease.stream_user || !lease.stream_pass || !lease.read_user || !lease.read_pass)) {
+            await this.config.models.VideoLease.commit(lease.id, {
+                stream_user: `write${lease.id}`,
+                stream_pass: Math.random().toString(20).substr(2, 6),
+                read_user: `read${lease.id}`,
+                read_pass: Math.random().toString(20).substr(2, 6)
+            });
+        } else if (!secure && (lease.stream_user || lease.stream_pass || lease.read_user || lease.read_pass)) {
+            await this.config.models.VideoLease.commit(lease.id, {
+                stream_user: null,
+                stream_pass: null,
+                read_user: null,
+                read_pass: null
+            });
+        }
+    }
+
     async generate(opts: {
         name: string;
         ephemeral: boolean;
         expiration: string | null;
         path: string;
         username: string;
+        secure: boolean;
         channel?: string | null;
         proxy?: string | null;
     }): Promise<Static<typeof VideoLeaseResponse>> {
@@ -305,6 +324,8 @@ export default class VideoServiceControl {
             channel: opts.channel,
             proxy: opts.proxy
         });
+
+        await updateSecure(lease, opts.secure);
 
         const url = new URL(`/v3/config/paths/add/${lease.path}`, video.url);
         url.port = '9997';
@@ -390,6 +411,7 @@ export default class VideoServiceControl {
         body: {
             name?: string,
             channel?: string | null,
+            secure?: boolean,
             expiration: string | null
         },
         opts: {
@@ -404,6 +426,10 @@ export default class VideoServiceControl {
         await this.from(leaseid, opts);
 
         const lease = await this.config.models.VideoLease.commit(leaseid, body);
+
+        if (body.secure !== undefined) {
+            await updateSecure(lease, opts.secure);
+        }
 
         try {
             await this.path(lease.path);
