@@ -309,8 +309,8 @@
                     <Coordinate
                         :edit='cot.is_editable'
                         :hover='cot.is_editable'
-                        :modelValue='center'
-                        @update:modelValue='updateCenter($event)'
+                        :model-value='center'
+                        @update:model-value='updateCenter($event)'
                     />
                 </div>
                 <div
