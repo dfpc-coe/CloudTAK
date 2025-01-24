@@ -782,7 +782,7 @@ async function handleRadial(event: string): Promise<void> {
         editGeometry(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
         closeRadial()
     } else if (event === 'feat:view') {
-        selectFeat(mapStore.radial.cot);
+        selectFeat(mapStore.radial.cot as MapGeoJSONFeature);
         closeRadial()
     } else if (event === 'context:new') {
         // @ts-expect-error MapLibreFeature vs Feature

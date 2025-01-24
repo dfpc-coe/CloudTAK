@@ -86,7 +86,7 @@
                             </template>
                             <template v-else-if='ele === "username"'>
                                 <CopyField
-                                    :modelValue='user.username'
+                                    :model-value='user.username'
                                 />
                             </template>
                             <template v-else>
@@ -126,7 +126,7 @@
 
                                 <template v-if='ele === "tak_loc"'>
                                     <CopyField
-                                        :modelValue='user.tak_loc ? user.tak_loc.coordinates.map(c => Math.round(c * 1000000) / 1000000).join(",") : "Unset"'
+                                        :model-value='user.tak_loc ? user.tak_loc.coordinates.map(c => Math.round(c * 1000000) / 1000000).join(",") : "Unset"'
                                     />
                                 </template>
                                 <template v-else>
