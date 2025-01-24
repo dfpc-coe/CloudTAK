@@ -73,8 +73,12 @@ export const VideoLease = pgTable('video_lease', {
 
     expiration: timestamp({ withTimezone: true, mode: 'string' }).default(sql`Now() + INTERVAL 1 HOUR;`),
     path: text().notNull(),
+
     stream_user: text(),
     stream_pass: text(),
+
+    read_user: text(),
+    read_pass: text(),
 
     // Optional Proxy Mode
     proxy: text().default(sql`null`),

@@ -3,6 +3,8 @@ import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
+import type { BBox } from 'geojson';
+import { bboxPolygon } from '@turf/bbox-polygon';
 import { ProfileInterest } from '../lib/schema.js';
 import { ProfileInterestResponse, StandardResponse } from '../lib/types.js'
 import { sql } from 'drizzle-orm';
@@ -63,7 +65,8 @@ export default async function router(schema: Schema, config: Config) {
             const user = await Auth.as_user(config, req);
 
             const interest = await config.models.ProfileInterest.generate({
-                ...req.body,
+                name: req.body.name,
+                bounds: bboxPolygon(req.body.bounds as BBox).geometry,
                 username: user.email
             });
 
@@ -123,13 +126,13 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req);
 
-            let interest = await config.models.ProfileInterest.from(req.params.interestid);
+            const interest = await config.models.ProfileInterest.from(req.params.interestid);
 
             if (interest.username !== user.email) {
                 throw new Err(400, null, 'You did not create this interest area');
             }
 
-            interest = await config.models.ProfileInterest.delete(req.params.interestid);
+            await config.models.ProfileInterest.delete(req.params.interestid);
 
             res.json({
                 status: 200,

@@ -129,10 +129,12 @@ export default async function router(schema: Schema, config: Config) {
                 default: false,
                 description: 'System Admins can create non-expiring leases'
             }),
+            secure: Type.Boolean({
+                default: false,
+                description: 'Increase stream security by enforcing a seperate read and write username/password'
+            }),
             channel: Type.Optional(Type.Union([Type.String(), Type.Null()])),
             path: Type.Optional(Type.String()),
-            stream_user: Type.Optional(Type.String()),
-            stream_pass: Type.Optional(Type.String()),
             proxy: Type.Optional(Type.String())
         }),
         res: Type.Object({
@@ -157,6 +159,7 @@ export default async function router(schema: Schema, config: Config) {
                 channel: req.body.channel,
                 expiration: req.body.permanent ? null : moment().add(req.body.duration, 'seconds').toISOString(),
                 path: req.body.path || randomUUID(),
+                secure: req.body.secure,
                 username: user.email,
                 proxy: req.body.proxy
             })
@@ -185,6 +188,7 @@ export default async function router(schema: Schema, config: Config) {
                 description: 'Duration in Seconds'
             }),
             channel: Type.Optional(Type.Union([Type.String(), Type.Null()])),
+            secure: Type.Optional(Type.Boolean()),
             permanent: Type.Boolean({
                 default: false,
                 description: 'System Admins can create non-expiring leases'

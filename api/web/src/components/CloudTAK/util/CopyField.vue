@@ -9,7 +9,7 @@
             :autofocus='true'
             label=''
             :error='error'
-            @update:modelValue='testValidate(text)'
+            @update:model-value='testValidate(text)'
             @blur='blurChange'
             @submit='rows > 1 ? undefined : editing = false'
         />
