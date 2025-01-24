@@ -256,7 +256,7 @@ export default {
                             ],
                             Resource: [
                                 cf.join(['arn:', cf.partition, ':iam::', cf.accountId, ':role/', cf.stackName]),
-                                cf.join(['arn:', cf.partition, ':iam::', cf.accountId, ':role/coe-etl-webhooks-'])
+                                cf.join(['arn:', cf.partition, ':iam::', cf.accountId, ':role/coe-etl-webhooks-', cf.ref('Environment')])
                             ]
                         },{
                             Effect: 'Allow',

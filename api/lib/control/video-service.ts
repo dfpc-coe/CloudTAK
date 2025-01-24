@@ -325,7 +325,7 @@ export default class VideoServiceControl {
             proxy: opts.proxy
         });
 
-        await updateSecure(lease, opts.secure);
+        await this.updateSecure(lease, opts.secure);
 
         const url = new URL(`/v3/config/paths/add/${lease.path}`, video.url);
         url.port = '9997';
@@ -428,7 +428,7 @@ export default class VideoServiceControl {
         const lease = await this.config.models.VideoLease.commit(leaseid, body);
 
         if (body.secure !== undefined) {
-            await updateSecure(lease, opts.secure);
+            await this.updateSecure(lease, body.secure);
         }
 
         try {
