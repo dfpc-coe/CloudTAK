@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v5.47.0 - 2025-01-24
+
+- :bug: `UI` Fix feat/CoT side bar switcher
+- :rocket: Add Secure Username/Pass to VideoLease table
+- :bug: Fix webhook role name for creating SubStacks that use webhooks
+
 ### v5.46.0 - 2025-01-21
 
 - :bug: `DevOps` Update `python3.8` Lambda as it is being sunset
