@@ -6,12 +6,12 @@
         />
         <div class='mx-2'>
             <CopyField
-                :modelValue='inMode'
-                @update:modelValue='coordinateEntry($event)'
+                :model-value='inMode'
                 :edit='edit && config.mode === "dd"'
                 :hover='hover && config.mode === "dd"'
                 :validate='validateInput'
                 :size='24'
+                @update:model-value='coordinateEntry($event)'
             />
             <template v-if='modes.length'>
                 <div role='menu'>

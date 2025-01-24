@@ -410,7 +410,7 @@
             />
 
             <CloudTAKFeatView
-                v-if='feat && mode === "Default"'
+                v-if='feat && mode === "Default" && route.name === "home"'
                 :key='feat.id'
                 :feat='feat'
             />
@@ -680,6 +680,7 @@ function selectFeat(selectedFeat: MapGeoJSONFeature) {
     if (source === 'cot') {
         router.push(`/cot/${selectedFeat.properties.id}`);
     } else {
+        router.push(`/`);
         feat.value = selectedFeat;
     }
 }
@@ -781,7 +782,7 @@ async function handleRadial(event: string): Promise<void> {
         editGeometry(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
         closeRadial()
     } else if (event === 'feat:view') {
-        feat.value = mapStore.radial.cot;
+        selectFeat(mapStore.radial.cot as MapGeoJSONFeature);
         closeRadial()
     } else if (event === 'context:new') {
         // @ts-expect-error MapLibreFeature vs Feature
