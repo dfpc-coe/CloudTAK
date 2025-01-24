@@ -156,28 +156,71 @@
             v-if='advanced'
             class='col-12'
         >
-            <div class='row'>
-                <div class='col-12'>
-                    <div class='d-flex'>
-                        <div class='w-100'>
-                            <TablerInput
-                                v-model='environment.ARCGIS_QUERY'
-                                label='ArcGIS SQL Query'
-                                :disabled='disabled || !environment.ARCGIS_URL'
-                            />
-                        </div>
-                        <button
-                            v-if='!disabled && environment.ARCGIS_URL'
-                            class='btn'
-                            style='height: 40px; margin-left: 8px; margin-top: 28px;'
-                            @click='filterModal = true'
-                        >
-                            <IconFilter
-                                :size='32'
-                                :stroke='1'
-                            /> Query Editor
-                        </button>
+            <div class='row g-2'>
+                <div class='col-12 d-flex'>
+                    <div class='w-100'>
+                        <TablerInput
+                            v-model='environment.ARCGIS_QUERY'
+                            label='ArcGIS SQL Query'
+                            :disabled='disabled || !environment.ARCGIS_URL'
+                        />
                     </div>
+                    <button
+                        v-if='!disabled && environment.ARCGIS_URL'
+                        class='btn'
+                        style='height: 40px; margin-left: 8px; margin-top: 28px;'
+                        @click='filterModal = true'
+                    >
+                        <IconFilter
+                            :size='32'
+                            :stroke='1'
+                        /> Query Editor
+                    </button>
+                </div>
+                <div class='col-12'>
+                    <div class='col-12 d-flex align-items-center'>
+                        <label class='mx-2'>Custom URL Parameters</label>
+                        <div class='ms-auto'>
+                            <TablerIconButton
+                                v-if='!disabled'
+                                title='Add Parameter'
+                                @click='Array.isArray(environment.ARCGIS_PARAMS) ? environment.ARCGIS_PARAMS.push({ Key: "", Value: "" }) : environment.ARCGIS_PARAMS = [{ Key: "", Value: "" }]'
+                            ><IconPlus stroke='1'/>
+                            </TablerIconButton>
+                        </div>
+                    </div>
+
+                    <TablerNone
+                        v-if='!environment.ARCGIS_PARAMS || environment.ARCGIS_PARAMS.length === 0'
+                        label='Custom Params'
+                        :compact='true'
+                        :create='false'
+                    />
+                    <template v-else>
+                        <div class='row mt-2' v-for='(param, pit) of environment.ARCGIS_PARAMS'>
+                            <div class='col-md-6'>
+                                <TablerInput
+                                    v-model='param.Key'
+                                    :disabled='disabled'
+                                    placeholder='Param Key'
+                                />
+                            </div>
+                            <div class='col-md-6 d-flex align-items-center'>
+                                <TablerInput
+                                    :style='disabled ? "width: 100%" : "width: calc(100% - 32px)"'
+                                    :disabled='disabled'
+                                    v-model='param.Value'
+                                    placeholder='Param Value'
+                                />
+                                <TablerDelete
+                                    v-if='!disabled'
+                                    class='mx-2'
+                                    displaytype='icon'
+                                    @delete='environment.ARCGIS_PARAMS.splice(pit, 1)'
+                                />
+                            </div>
+                        </div>
+                    </template>
                 </div>
             </div>
         </div>
@@ -222,11 +265,15 @@
 
 <script>
 import {
+    TablerIconButton,
+    TablerDelete,
     TablerInput,
+    TablerNone,
 } from '@tak-ps/vue-tabler';
 import EsriPortal from './../util/EsriPortal.vue';
 import EsriFilter from './../util/EsriFilter.vue';
 import {
+    IconPlus,
     IconSquareChevronRight,
     IconChevronDown,
     IconFilter,
@@ -236,10 +283,14 @@ export default {
     name: 'LayerEnvironmentArcGIS',
     components: {
         EsriPortal,
+        IconPlus,
         IconSquareChevronRight,
         IconChevronDown,
-        TablerInput,
         IconFilter,
+        TablerIconButton,
+        TablerInput,
+        TablerNone,
+        TablerDelete,
         EsriFilter
     },
     props: {
@@ -280,6 +331,7 @@ export default {
             delete this.environment.ARCGIS_USERNAME;
             delete this.environment.ARCGIS_PASSWORD;
             this.environment.ARCGIS_QUERY = '';
+            this.environment.ARCGIS_PARAMS = [];
             delete this.environment.ARCGIS_TOKEN;
             delete this.environment.ARCGIS_EXPIRES;
         },
