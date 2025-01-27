@@ -414,6 +414,7 @@ const emit = defineEmits([
     'stack'
 ]);
 
+const error = ref<Error | undefined>();
 const disabled = ref(true);
 const cronEnabled = ref(true);
 const taskmodal = ref(false);
@@ -494,20 +495,26 @@ function reload() {
 async function saveLayer() {
     loading.value.save = true;
 
-    if (!cronEnabled.value) {
-        config.value.cron = null;
+    try {
+        if (!cronEnabled.value) {
+            config.value.cron = null;
+        }
+
+        const layer = await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}`, {
+            method: 'PATCH',
+            body: config.value
+        });
+
+        disabled.value = true;
+
+        loading.value.save = false;
+
+        emit('layer', layer);
+        emit('stack');
+    } catch (err) {
+        loading.value.save = false;
+        throw err;
     }
-
-    const layer = await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}`, {
-        method: 'PATCH',
-        body: config.value
-    });
-
-    disabled.value = true;
-    loading.value.save = false;
-
-    emit('layer', layer);
-    emit('stack');
 }
 
 function updateTask() {
