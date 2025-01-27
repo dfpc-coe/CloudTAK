@@ -486,6 +486,8 @@ function reload() {
     config.value.alarm_threshold = props.layer.alarm_threshold;
     config.value.uuid = props.layer.uuid;
 
+    cronEnabled.value = !!config.value.cron
+
     disabled.value = true;
 }
 
