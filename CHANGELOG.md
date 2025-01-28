@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v5.48.0 - 2025-01-28
+
+- :bug: `UI` Fix status of Layer Cron if no cron is specified
+- :bug: `UI` Turn off loading indicator if layer save fails
+
 ### v5.47.0 - 2025-01-24
 
 - :bug: `UI` Fix feat/CoT side bar switcher
