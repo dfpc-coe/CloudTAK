@@ -486,26 +486,34 @@ function reload() {
     config.value.alarm_threshold = props.layer.alarm_threshold;
     config.value.uuid = props.layer.uuid;
 
+    cronEnabled.value = !!config.value.cron
+
     disabled.value = true;
 }
 
 async function saveLayer() {
     loading.value.save = true;
 
-    if (!cronEnabled.value) {
-        config.value.cron = null;
+    try {
+        if (!cronEnabled.value) {
+            config.value.cron = null;
+        }
+
+        const layer = await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}`, {
+            method: 'PATCH',
+            body: config.value
+        });
+
+        disabled.value = true;
+
+        loading.value.save = false;
+
+        emit('layer', layer);
+        emit('stack');
+    } catch (err) {
+        loading.value.save = false;
+        throw err;
     }
-
-    const layer = await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}`, {
-        method: 'PATCH',
-        body: config.value
-    });
-
-    disabled.value = true;
-    loading.value.save = false;
-
-    emit('layer', layer);
-    emit('stack');
 }
 
 function updateTask() {

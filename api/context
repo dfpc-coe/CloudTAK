@@ -1,5 +1,5 @@
 if [[ -z $1 ]]; then
-    Stack="cotak-prod"
+    Stack="prod"
 else
     Stack=$1
 fi
@@ -9,7 +9,7 @@ set -euo pipefail
 echo "Loading $Stack"
 
 cd ..
-POSTGRES=$(deploy info prod | jq .Outputs.DB)
+POSTGRES=$(deploy info ${Stack} | jq .Outputs.DB)
 cd $(pwd)/api
 
 ssh "${Stack}-bastion" -t "pg_dump -d ${POSTGRES} > ${Stack}-latest.dump; exit"
