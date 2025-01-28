@@ -217,7 +217,7 @@ export default async function router(schema: Schema, config: Config) {
                 });
             }
 
-            if (cots.length === 0) {
+            if (cots.length === 0 && !errors.length) {
                 throw new Err(200, null, 'No features found');
             }
 
