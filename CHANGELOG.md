@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v5.48.2 - 2025-01-28
+
+- :bug: `API` Fix issue where Breadcrumb wouldn't load due to missing callsign
+
 ### v5.48.1 - 2025-01-28
 
 - :bug: `API` Parsing errors can be dropped if there are no CoTs to submit to the TAK Server
