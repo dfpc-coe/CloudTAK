@@ -414,7 +414,6 @@ const emit = defineEmits([
     'stack'
 ]);
 
-const error = ref<Error | undefined>();
 const disabled = ref(true);
 const cronEnabled = ref(true);
 const taskmodal = ref(false);
