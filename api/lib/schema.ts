@@ -228,28 +228,6 @@ export const Layer = pgTable('layers', {
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     name: text().notNull(),
     priority: text().$type<Layer_Priority>().notNull().default(Layer_Priority.OFF),
-
-    cron: text(),
-    webhooks: boolean().notNull().default(false),
-    alarm_period: integer().notNull().default(30),
-    alarm_evals: integer().notNull().default(5),
-    alarm_points: integer().notNull().default(4),
-    alarm_threshold: integer().notNull().default(0),
-    description: text().notNull().default(''),
-    enabled: boolean().notNull().default(true),
-    enabled_styles: boolean().notNull().default(false),
-    styles: json().$type<Static<typeof StyleContainer>>().notNull().default({}),
-    logging: boolean().notNull().default(true),
-    stale: integer().notNull().default(20),
-    task: text().notNull(),
-    connection: integer().notNull().references(() => Connection.id),
-    environment: json().notNull().default({}),
-    ephemeral: json().$type<Record<string, string>>().notNull().default({}),
-    config: json().$type<Static<typeof Layer_Config>>().notNull().default({}),
-    memory: integer().notNull().default(128),
-    timeout: integer().notNull().default(128),
-    data: integer().references(() => Data.id),
-    schema: json().notNull().default({ type: 'object', required: [], properties: {} })
 }, (t) => ({
     unq: unique().on(t.connection, t.name)
 }));
