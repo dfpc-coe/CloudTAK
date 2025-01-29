@@ -12,7 +12,7 @@ import Config from '../lib/config.js';
 import Schedule from '../lib/schedule.js';
 import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
-import { StandardResponse, LayerResponse } from '../lib/types.js';
+import { StandardResponse, LayerResponse, LayerIncomingResponse } from '../lib/types.js';
 import DataMission from '../lib/data-mission.js';
 import { MAX_LAYERS_IN_DATA_SYNC } from '../lib/data-mission.js';
 import { Layer_Config } from '../lib/models/Layer.js';
@@ -210,7 +210,7 @@ export default async function router(schema: Schema, config: Config) {
             alarm_points: Type.Optional(Type.Integer()),
             alarm_threshold: Type.Optional(Type.Integer()),
         }),
-        res: LayerResponse
+        res: LayerIncomingResponse
     }, async (req, res) => {
         try {
             await Auth.is_connection(config, req, {

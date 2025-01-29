@@ -1650,7 +1650,7 @@ export interface paths {
                                 contact?: {
                                     phone?: string;
                                     name?: string;
-                                    callsign: string;
+                                    callsign?: string;
                                     endpoint?: string;
                                 };
                                 shape?: {
@@ -1880,7 +1880,7 @@ export interface paths {
                                         contact?: {
                                             phone?: string;
                                             name?: string;
-                                            callsign: string;
+                                            callsign?: string;
                                             endpoint?: string;
                                         };
                                         shape?: {
@@ -2129,7 +2129,7 @@ export interface paths {
                                 contact?: {
                                     phone?: string;
                                     name?: string;
-                                    callsign: string;
+                                    callsign?: string;
                                     endpoint?: string;
                                 };
                                 shape?: {
@@ -2388,7 +2388,7 @@ export interface paths {
                                     contact?: {
                                         phone?: string;
                                         name?: string;
-                                        callsign: string;
+                                        callsign?: string;
                                         endpoint?: string;
                                     };
                                     shape?: {
@@ -2676,7 +2676,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort?: "id" | "uuid" | "created" | "updated" | "name" | "priority" | "cron" | "webhooks" | "alarm_period" | "alarm_evals" | "alarm_points" | "alarm_threshold" | "description" | "enabled" | "enabled_styles" | "styles" | "logging" | "stale" | "task" | "connection" | "environment" | "ephemeral" | "config" | "memory" | "timeout" | "data" | "schema" | "enableRLS";
+                    sort?: "id" | "uuid" | "created" | "updated" | "name" | "enabled" | "description" | "priority" | "connection" | "logging" | "task" | "memory" | "timeout" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description No Description */
@@ -2708,10 +2708,212 @@ export interface paths {
                                 updated: string;
                                 uuid: string;
                                 name: string;
-                                webhooks: boolean;
-                                cron: string | null;
                                 description: string;
                                 enabled: boolean;
+                                logging: boolean;
+                                task: string;
+                                connection?: number;
+                                memory: number;
+                                timeout: number;
+                                priority: "high" | "low" | "off";
+                                incoming?: {
+                                    config: {
+                                        timezone?: {
+                                            timezone: string;
+                                        };
+                                    };
+                                    cron: string | null;
+                                    webhooks: boolean;
+                                    alarm_period: number;
+                                    alarm_evals: number;
+                                    alarm_points: number;
+                                    alarm_threshold: number;
+                                    enabled_styles: boolean;
+                                    styles: {
+                                        line?: {
+                                            stroke?: string;
+                                            "stroke-style"?: string;
+                                            "stroke-opacity"?: string;
+                                            "stroke-width"?: string;
+                                            id?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                        };
+                                        point?: {
+                                            "marker-color"?: string;
+                                            "marker-opacity"?: string;
+                                            id?: string;
+                                            type?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                            icon?: string;
+                                        };
+                                        polygon?: {
+                                            stroke?: string;
+                                            "stroke-style"?: string;
+                                            "stroke-opacity"?: string;
+                                            "stroke-width"?: string;
+                                            fill?: string;
+                                            "fill-opacity"?: string;
+                                            id?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                        };
+                                        id?: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                        queries?: {
+                                            query: string;
+                                            id?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                            styles: {
+                                                id?: string;
+                                                remarks?: string;
+                                                callsign?: string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                                line?: {
+                                                    stroke?: string;
+                                                    "stroke-style"?: string;
+                                                    "stroke-opacity"?: string;
+                                                    "stroke-width"?: string;
+                                                    id?: string;
+                                                    remarks?: string;
+                                                    callsign?: string;
+                                                    links?: {
+                                                        remarks: string;
+                                                        url: string;
+                                                    }[];
+                                                };
+                                                point?: {
+                                                    "marker-color"?: string;
+                                                    "marker-opacity"?: string;
+                                                    id?: string;
+                                                    type?: string;
+                                                    remarks?: string;
+                                                    callsign?: string;
+                                                    links?: {
+                                                        remarks: string;
+                                                        url: string;
+                                                    }[];
+                                                    icon?: string;
+                                                };
+                                                polygon?: {
+                                                    stroke?: string;
+                                                    "stroke-style"?: string;
+                                                    "stroke-opacity"?: string;
+                                                    "stroke-width"?: string;
+                                                    fill?: string;
+                                                    "fill-opacity"?: string;
+                                                    id?: string;
+                                                    remarks?: string;
+                                                    callsign?: string;
+                                                    links?: {
+                                                        remarks: string;
+                                                        url: string;
+                                                    }[];
+                                                };
+                                            };
+                                        }[];
+                                    };
+                                    stale: number;
+                                    environment: unknown;
+                                    ephemeral: Record<string, never>;
+                                    data: number | null;
+                                    schema: unknown;
+                                };
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Register a new layer */
+        post: {
+            parameters: {
+                query: {
+                    /** @description Get Live Alarm state from CloudWatch */
+                    alarms: boolean;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Human readable name */
+                        name: string;
+                        priority?: "high" | "low" | "off";
+                        /** @description Human readable description */
+                        description: string;
+                        webhooks?: boolean;
+                        enabled?: boolean;
+                        task: string;
+                        logging: boolean;
+                        memory?: number;
+                        timeout?: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            status?: string;
+                            created: string;
+                            updated: string;
+                            uuid: string;
+                            name: string;
+                            description: string;
+                            enabled: boolean;
+                            logging: boolean;
+                            task: string;
+                            connection?: number;
+                            memory: number;
+                            timeout: number;
+                            priority: "high" | "low" | "off";
+                            incoming?: {
+                                config: {
+                                    timezone?: {
+                                        timezone: string;
+                                    };
+                                };
+                                cron: string | null;
+                                webhooks: boolean;
+                                alarm_period: number;
+                                alarm_evals: number;
+                                alarm_points: number;
+                                alarm_threshold: number;
                                 enabled_styles: boolean;
                                 styles: {
                                     line?: {
@@ -2823,40 +3025,36 @@ export interface paths {
                                         };
                                     }[];
                                 };
-                                logging: boolean;
                                 stale: number;
-                                task: string;
-                                connection?: number;
                                 environment: unknown;
                                 ephemeral: Record<string, never>;
-                                config: {
-                                    timezone?: {
-                                        timezone: string;
-                                    };
-                                };
-                                memory: number;
-                                timeout: number;
                                 data: number | null;
                                 schema: unknown;
-                                priority: "high" | "low" | "off";
-                                alarm_period: number;
-                                alarm_evals: number;
-                                alarm_points: number;
-                                alarm_threshold: number;
-                            }[];
+                            };
                         };
                     };
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connection/{:connectionid}/layer/{:layerid}/incoming": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
         put?: never;
         /** Register a new layer */
         post: {
             parameters: {
-                query: {
-                    /** @description Get Live Alarm state from CloudWatch */
-                    alarms: boolean;
-                };
+                query?: never;
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -2864,16 +3062,8 @@ export interface paths {
             requestBody: {
                 content: {
                     "application/json": {
-                        /** @description Human readable name */
-                        name: string;
-                        priority?: "high" | "low" | "off";
                         webhooks?: boolean;
-                        /** @description Human readable description */
-                        description: string;
-                        enabled?: boolean;
-                        task: string;
                         cron?: string;
-                        logging: boolean;
                         stale?: number;
                         data?: number;
                         schema?: unknown;
@@ -2988,8 +3178,6 @@ export interface paths {
                                 };
                             }[];
                         };
-                        memory?: number;
-                        timeout?: number;
                         config?: {
                             timezone?: {
                                 timezone: string;
@@ -3016,70 +3204,33 @@ export interface paths {
                             updated: string;
                             uuid: string;
                             name: string;
-                            webhooks: boolean;
-                            cron: string | null;
                             description: string;
                             enabled: boolean;
-                            enabled_styles: boolean;
-                            styles: {
-                                line?: {
-                                    stroke?: string;
-                                    "stroke-style"?: string;
-                                    "stroke-opacity"?: string;
-                                    "stroke-width"?: string;
-                                    id?: string;
-                                    remarks?: string;
-                                    callsign?: string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
+                            logging: boolean;
+                            task: string;
+                            connection?: number;
+                            memory: number;
+                            timeout: number;
+                            priority: "high" | "low" | "off";
+                            incoming?: {
+                                config: {
+                                    timezone?: {
+                                        timezone: string;
+                                    };
                                 };
-                                point?: {
-                                    "marker-color"?: string;
-                                    "marker-opacity"?: string;
-                                    id?: string;
-                                    type?: string;
-                                    remarks?: string;
-                                    callsign?: string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
-                                    icon?: string;
-                                };
-                                polygon?: {
-                                    stroke?: string;
-                                    "stroke-style"?: string;
-                                    "stroke-opacity"?: string;
-                                    "stroke-width"?: string;
-                                    fill?: string;
-                                    "fill-opacity"?: string;
-                                    id?: string;
-                                    remarks?: string;
-                                    callsign?: string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
-                                };
-                                id?: string;
-                                remarks?: string;
-                                callsign?: string;
-                                links?: {
-                                    remarks: string;
-                                    url: string;
-                                }[];
-                                queries?: {
-                                    query: string;
-                                    id?: string;
-                                    remarks?: string;
-                                    callsign?: string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
-                                    styles: {
+                                cron: string | null;
+                                webhooks: boolean;
+                                alarm_period: number;
+                                alarm_evals: number;
+                                alarm_points: number;
+                                alarm_threshold: number;
+                                enabled_styles: boolean;
+                                styles: {
+                                    line?: {
+                                        stroke?: string;
+                                        "stroke-style"?: string;
+                                        "stroke-opacity"?: string;
+                                        "stroke-width"?: string;
                                         id?: string;
                                         remarks?: string;
                                         callsign?: string;
@@ -3087,70 +3238,109 @@ export interface paths {
                                             remarks: string;
                                             url: string;
                                         }[];
-                                        line?: {
-                                            stroke?: string;
-                                            "stroke-style"?: string;
-                                            "stroke-opacity"?: string;
-                                            "stroke-width"?: string;
-                                            id?: string;
-                                            remarks?: string;
-                                            callsign?: string;
-                                            links?: {
-                                                remarks: string;
-                                                url: string;
-                                            }[];
-                                        };
-                                        point?: {
-                                            "marker-color"?: string;
-                                            "marker-opacity"?: string;
-                                            id?: string;
-                                            type?: string;
-                                            remarks?: string;
-                                            callsign?: string;
-                                            links?: {
-                                                remarks: string;
-                                                url: string;
-                                            }[];
-                                            icon?: string;
-                                        };
-                                        polygon?: {
-                                            stroke?: string;
-                                            "stroke-style"?: string;
-                                            "stroke-opacity"?: string;
-                                            "stroke-width"?: string;
-                                            fill?: string;
-                                            "fill-opacity"?: string;
-                                            id?: string;
-                                            remarks?: string;
-                                            callsign?: string;
-                                            links?: {
-                                                remarks: string;
-                                                url: string;
-                                            }[];
-                                        };
                                     };
-                                }[];
-                            };
-                            logging: boolean;
-                            stale: number;
-                            task: string;
-                            connection?: number;
-                            environment: unknown;
-                            ephemeral: Record<string, never>;
-                            config: {
-                                timezone?: {
-                                    timezone: string;
+                                    point?: {
+                                        "marker-color"?: string;
+                                        "marker-opacity"?: string;
+                                        id?: string;
+                                        type?: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                        icon?: string;
+                                    };
+                                    polygon?: {
+                                        stroke?: string;
+                                        "stroke-style"?: string;
+                                        "stroke-opacity"?: string;
+                                        "stroke-width"?: string;
+                                        fill?: string;
+                                        "fill-opacity"?: string;
+                                        id?: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                    };
+                                    id?: string;
+                                    remarks?: string;
+                                    callsign?: string;
+                                    links?: {
+                                        remarks: string;
+                                        url: string;
+                                    }[];
+                                    queries?: {
+                                        query: string;
+                                        id?: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                        styles: {
+                                            id?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                            line?: {
+                                                stroke?: string;
+                                                "stroke-style"?: string;
+                                                "stroke-opacity"?: string;
+                                                "stroke-width"?: string;
+                                                id?: string;
+                                                remarks?: string;
+                                                callsign?: string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                            };
+                                            point?: {
+                                                "marker-color"?: string;
+                                                "marker-opacity"?: string;
+                                                id?: string;
+                                                type?: string;
+                                                remarks?: string;
+                                                callsign?: string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                                icon?: string;
+                                            };
+                                            polygon?: {
+                                                stroke?: string;
+                                                "stroke-style"?: string;
+                                                "stroke-opacity"?: string;
+                                                "stroke-width"?: string;
+                                                fill?: string;
+                                                "fill-opacity"?: string;
+                                                id?: string;
+                                                remarks?: string;
+                                                callsign?: string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                            };
+                                        };
+                                    }[];
                                 };
+                                stale: number;
+                                environment: unknown;
+                                ephemeral: Record<string, never>;
+                                data: number | null;
+                                schema: unknown;
                             };
-                            memory: number;
-                            timeout: number;
-                            data: number | null;
-                            schema: unknown;
-                            priority: "high" | "low" | "off";
-                            alarm_period: number;
-                            alarm_evals: number;
-                            alarm_points: number;
-                            alarm_threshold: number;
                         };
                     };
                 };
@@ -3195,70 +3385,33 @@ export interface paths {
                             updated: string;
                             uuid: string;
                             name: string;
-                            webhooks: boolean;
-                            cron: string | null;
                             description: string;
                             enabled: boolean;
-                            enabled_styles: boolean;
-                            styles: {
-                                line?: {
-                                    stroke?: string;
-                                    "stroke-style"?: string;
-                                    "stroke-opacity"?: string;
-                                    "stroke-width"?: string;
-                                    id?: string;
-                                    remarks?: string;
-                                    callsign?: string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
+                            logging: boolean;
+                            task: string;
+                            connection?: number;
+                            memory: number;
+                            timeout: number;
+                            priority: "high" | "low" | "off";
+                            incoming?: {
+                                config: {
+                                    timezone?: {
+                                        timezone: string;
+                                    };
                                 };
-                                point?: {
-                                    "marker-color"?: string;
-                                    "marker-opacity"?: string;
-                                    id?: string;
-                                    type?: string;
-                                    remarks?: string;
-                                    callsign?: string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
-                                    icon?: string;
-                                };
-                                polygon?: {
-                                    stroke?: string;
-                                    "stroke-style"?: string;
-                                    "stroke-opacity"?: string;
-                                    "stroke-width"?: string;
-                                    fill?: string;
-                                    "fill-opacity"?: string;
-                                    id?: string;
-                                    remarks?: string;
-                                    callsign?: string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
-                                };
-                                id?: string;
-                                remarks?: string;
-                                callsign?: string;
-                                links?: {
-                                    remarks: string;
-                                    url: string;
-                                }[];
-                                queries?: {
-                                    query: string;
-                                    id?: string;
-                                    remarks?: string;
-                                    callsign?: string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
-                                    styles: {
+                                cron: string | null;
+                                webhooks: boolean;
+                                alarm_period: number;
+                                alarm_evals: number;
+                                alarm_points: number;
+                                alarm_threshold: number;
+                                enabled_styles: boolean;
+                                styles: {
+                                    line?: {
+                                        stroke?: string;
+                                        "stroke-style"?: string;
+                                        "stroke-opacity"?: string;
+                                        "stroke-width"?: string;
                                         id?: string;
                                         remarks?: string;
                                         callsign?: string;
@@ -3266,70 +3419,109 @@ export interface paths {
                                             remarks: string;
                                             url: string;
                                         }[];
-                                        line?: {
-                                            stroke?: string;
-                                            "stroke-style"?: string;
-                                            "stroke-opacity"?: string;
-                                            "stroke-width"?: string;
-                                            id?: string;
-                                            remarks?: string;
-                                            callsign?: string;
-                                            links?: {
-                                                remarks: string;
-                                                url: string;
-                                            }[];
-                                        };
-                                        point?: {
-                                            "marker-color"?: string;
-                                            "marker-opacity"?: string;
-                                            id?: string;
-                                            type?: string;
-                                            remarks?: string;
-                                            callsign?: string;
-                                            links?: {
-                                                remarks: string;
-                                                url: string;
-                                            }[];
-                                            icon?: string;
-                                        };
-                                        polygon?: {
-                                            stroke?: string;
-                                            "stroke-style"?: string;
-                                            "stroke-opacity"?: string;
-                                            "stroke-width"?: string;
-                                            fill?: string;
-                                            "fill-opacity"?: string;
-                                            id?: string;
-                                            remarks?: string;
-                                            callsign?: string;
-                                            links?: {
-                                                remarks: string;
-                                                url: string;
-                                            }[];
-                                        };
                                     };
-                                }[];
-                            };
-                            logging: boolean;
-                            stale: number;
-                            task: string;
-                            connection?: number;
-                            environment: unknown;
-                            ephemeral: Record<string, never>;
-                            config: {
-                                timezone?: {
-                                    timezone: string;
+                                    point?: {
+                                        "marker-color"?: string;
+                                        "marker-opacity"?: string;
+                                        id?: string;
+                                        type?: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                        icon?: string;
+                                    };
+                                    polygon?: {
+                                        stroke?: string;
+                                        "stroke-style"?: string;
+                                        "stroke-opacity"?: string;
+                                        "stroke-width"?: string;
+                                        fill?: string;
+                                        "fill-opacity"?: string;
+                                        id?: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                    };
+                                    id?: string;
+                                    remarks?: string;
+                                    callsign?: string;
+                                    links?: {
+                                        remarks: string;
+                                        url: string;
+                                    }[];
+                                    queries?: {
+                                        query: string;
+                                        id?: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                        styles: {
+                                            id?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                            line?: {
+                                                stroke?: string;
+                                                "stroke-style"?: string;
+                                                "stroke-opacity"?: string;
+                                                "stroke-width"?: string;
+                                                id?: string;
+                                                remarks?: string;
+                                                callsign?: string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                            };
+                                            point?: {
+                                                "marker-color"?: string;
+                                                "marker-opacity"?: string;
+                                                id?: string;
+                                                type?: string;
+                                                remarks?: string;
+                                                callsign?: string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                                icon?: string;
+                                            };
+                                            polygon?: {
+                                                stroke?: string;
+                                                "stroke-style"?: string;
+                                                "stroke-opacity"?: string;
+                                                "stroke-width"?: string;
+                                                fill?: string;
+                                                "fill-opacity"?: string;
+                                                id?: string;
+                                                remarks?: string;
+                                                callsign?: string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                            };
+                                        };
+                                    }[];
                                 };
+                                stale: number;
+                                environment: unknown;
+                                ephemeral: Record<string, never>;
+                                data: number | null;
+                                schema: unknown;
                             };
-                            memory: number;
-                            timeout: number;
-                            data: number | null;
-                            schema: unknown;
-                            priority: "high" | "low" | "off";
-                            alarm_period: number;
-                            alarm_evals: number;
-                            alarm_points: number;
-                            alarm_threshold: number;
                         };
                     };
                 };
@@ -3530,70 +3722,33 @@ export interface paths {
                             updated: string;
                             uuid: string;
                             name: string;
-                            webhooks: boolean;
-                            cron: string | null;
                             description: string;
                             enabled: boolean;
-                            enabled_styles: boolean;
-                            styles: {
-                                line?: {
-                                    stroke?: string;
-                                    "stroke-style"?: string;
-                                    "stroke-opacity"?: string;
-                                    "stroke-width"?: string;
-                                    id?: string;
-                                    remarks?: string;
-                                    callsign?: string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
+                            logging: boolean;
+                            task: string;
+                            connection?: number;
+                            memory: number;
+                            timeout: number;
+                            priority: "high" | "low" | "off";
+                            incoming?: {
+                                config: {
+                                    timezone?: {
+                                        timezone: string;
+                                    };
                                 };
-                                point?: {
-                                    "marker-color"?: string;
-                                    "marker-opacity"?: string;
-                                    id?: string;
-                                    type?: string;
-                                    remarks?: string;
-                                    callsign?: string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
-                                    icon?: string;
-                                };
-                                polygon?: {
-                                    stroke?: string;
-                                    "stroke-style"?: string;
-                                    "stroke-opacity"?: string;
-                                    "stroke-width"?: string;
-                                    fill?: string;
-                                    "fill-opacity"?: string;
-                                    id?: string;
-                                    remarks?: string;
-                                    callsign?: string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
-                                };
-                                id?: string;
-                                remarks?: string;
-                                callsign?: string;
-                                links?: {
-                                    remarks: string;
-                                    url: string;
-                                }[];
-                                queries?: {
-                                    query: string;
-                                    id?: string;
-                                    remarks?: string;
-                                    callsign?: string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
-                                    styles: {
+                                cron: string | null;
+                                webhooks: boolean;
+                                alarm_period: number;
+                                alarm_evals: number;
+                                alarm_points: number;
+                                alarm_threshold: number;
+                                enabled_styles: boolean;
+                                styles: {
+                                    line?: {
+                                        stroke?: string;
+                                        "stroke-style"?: string;
+                                        "stroke-opacity"?: string;
+                                        "stroke-width"?: string;
                                         id?: string;
                                         remarks?: string;
                                         callsign?: string;
@@ -3601,70 +3756,109 @@ export interface paths {
                                             remarks: string;
                                             url: string;
                                         }[];
-                                        line?: {
-                                            stroke?: string;
-                                            "stroke-style"?: string;
-                                            "stroke-opacity"?: string;
-                                            "stroke-width"?: string;
-                                            id?: string;
-                                            remarks?: string;
-                                            callsign?: string;
-                                            links?: {
-                                                remarks: string;
-                                                url: string;
-                                            }[];
-                                        };
-                                        point?: {
-                                            "marker-color"?: string;
-                                            "marker-opacity"?: string;
-                                            id?: string;
-                                            type?: string;
-                                            remarks?: string;
-                                            callsign?: string;
-                                            links?: {
-                                                remarks: string;
-                                                url: string;
-                                            }[];
-                                            icon?: string;
-                                        };
-                                        polygon?: {
-                                            stroke?: string;
-                                            "stroke-style"?: string;
-                                            "stroke-opacity"?: string;
-                                            "stroke-width"?: string;
-                                            fill?: string;
-                                            "fill-opacity"?: string;
-                                            id?: string;
-                                            remarks?: string;
-                                            callsign?: string;
-                                            links?: {
-                                                remarks: string;
-                                                url: string;
-                                            }[];
-                                        };
                                     };
-                                }[];
-                            };
-                            logging: boolean;
-                            stale: number;
-                            task: string;
-                            connection?: number;
-                            environment: unknown;
-                            ephemeral: Record<string, never>;
-                            config: {
-                                timezone?: {
-                                    timezone: string;
+                                    point?: {
+                                        "marker-color"?: string;
+                                        "marker-opacity"?: string;
+                                        id?: string;
+                                        type?: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                        icon?: string;
+                                    };
+                                    polygon?: {
+                                        stroke?: string;
+                                        "stroke-style"?: string;
+                                        "stroke-opacity"?: string;
+                                        "stroke-width"?: string;
+                                        fill?: string;
+                                        "fill-opacity"?: string;
+                                        id?: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                    };
+                                    id?: string;
+                                    remarks?: string;
+                                    callsign?: string;
+                                    links?: {
+                                        remarks: string;
+                                        url: string;
+                                    }[];
+                                    queries?: {
+                                        query: string;
+                                        id?: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                        styles: {
+                                            id?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                            line?: {
+                                                stroke?: string;
+                                                "stroke-style"?: string;
+                                                "stroke-opacity"?: string;
+                                                "stroke-width"?: string;
+                                                id?: string;
+                                                remarks?: string;
+                                                callsign?: string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                            };
+                                            point?: {
+                                                "marker-color"?: string;
+                                                "marker-opacity"?: string;
+                                                id?: string;
+                                                type?: string;
+                                                remarks?: string;
+                                                callsign?: string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                                icon?: string;
+                                            };
+                                            polygon?: {
+                                                stroke?: string;
+                                                "stroke-style"?: string;
+                                                "stroke-opacity"?: string;
+                                                "stroke-width"?: string;
+                                                fill?: string;
+                                                "fill-opacity"?: string;
+                                                id?: string;
+                                                remarks?: string;
+                                                callsign?: string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                            };
+                                        };
+                                    }[];
                                 };
+                                stale: number;
+                                environment: unknown;
+                                ephemeral: Record<string, never>;
+                                data: number | null;
+                                schema: unknown;
                             };
-                            memory: number;
-                            timeout: number;
-                            data: number | null;
-                            schema: unknown;
-                            priority: "high" | "low" | "off";
-                            alarm_period: number;
-                            alarm_evals: number;
-                            alarm_points: number;
-                            alarm_threshold: number;
                         };
                     };
                 };
@@ -6029,7 +6223,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort?: "id" | "uuid" | "created" | "updated" | "name" | "priority" | "cron" | "webhooks" | "alarm_period" | "alarm_evals" | "alarm_points" | "alarm_threshold" | "description" | "enabled" | "enabled_styles" | "styles" | "logging" | "stale" | "task" | "connection" | "environment" | "ephemeral" | "config" | "memory" | "timeout" | "data" | "schema" | "enableRLS";
+                    sort?: "id" | "uuid" | "created" | "updated" | "name" | "enabled" | "description" | "priority" | "connection" | "logging" | "task" | "memory" | "timeout" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description No Description */
@@ -6066,10 +6260,211 @@ export interface paths {
                                 updated: string;
                                 uuid: string;
                                 name: string;
-                                webhooks: boolean;
-                                cron: string | null;
                                 description: string;
                                 enabled: boolean;
+                                logging: boolean;
+                                task: string;
+                                connection?: number;
+                                memory: number;
+                                timeout: number;
+                                priority: "high" | "low" | "off";
+                                incoming?: {
+                                    config: {
+                                        timezone?: {
+                                            timezone: string;
+                                        };
+                                    };
+                                    cron: string | null;
+                                    webhooks: boolean;
+                                    alarm_period: number;
+                                    alarm_evals: number;
+                                    alarm_points: number;
+                                    alarm_threshold: number;
+                                    enabled_styles: boolean;
+                                    styles: {
+                                        line?: {
+                                            stroke?: string;
+                                            "stroke-style"?: string;
+                                            "stroke-opacity"?: string;
+                                            "stroke-width"?: string;
+                                            id?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                        };
+                                        point?: {
+                                            "marker-color"?: string;
+                                            "marker-opacity"?: string;
+                                            id?: string;
+                                            type?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                            icon?: string;
+                                        };
+                                        polygon?: {
+                                            stroke?: string;
+                                            "stroke-style"?: string;
+                                            "stroke-opacity"?: string;
+                                            "stroke-width"?: string;
+                                            fill?: string;
+                                            "fill-opacity"?: string;
+                                            id?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                        };
+                                        id?: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                        queries?: {
+                                            query: string;
+                                            id?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                            styles: {
+                                                id?: string;
+                                                remarks?: string;
+                                                callsign?: string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                                line?: {
+                                                    stroke?: string;
+                                                    "stroke-style"?: string;
+                                                    "stroke-opacity"?: string;
+                                                    "stroke-width"?: string;
+                                                    id?: string;
+                                                    remarks?: string;
+                                                    callsign?: string;
+                                                    links?: {
+                                                        remarks: string;
+                                                        url: string;
+                                                    }[];
+                                                };
+                                                point?: {
+                                                    "marker-color"?: string;
+                                                    "marker-opacity"?: string;
+                                                    id?: string;
+                                                    type?: string;
+                                                    remarks?: string;
+                                                    callsign?: string;
+                                                    links?: {
+                                                        remarks: string;
+                                                        url: string;
+                                                    }[];
+                                                    icon?: string;
+                                                };
+                                                polygon?: {
+                                                    stroke?: string;
+                                                    "stroke-style"?: string;
+                                                    "stroke-opacity"?: string;
+                                                    "stroke-width"?: string;
+                                                    fill?: string;
+                                                    "fill-opacity"?: string;
+                                                    id?: string;
+                                                    remarks?: string;
+                                                    callsign?: string;
+                                                    links?: {
+                                                        remarks: string;
+                                                        url: string;
+                                                    }[];
+                                                };
+                                            };
+                                        }[];
+                                    };
+                                    stale: number;
+                                    environment: unknown;
+                                    ephemeral: Record<string, never>;
+                                    data: number | null;
+                                    schema: unknown;
+                                };
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/layer/{:layerid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         *                 Events don't have the Connection ID but they have a valid data token
+         *                 This API allows a layer token to request the layer object and obtain the
+         *                 connection ID for subsequent calls
+         *              */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            status?: string;
+                            created: string;
+                            updated: string;
+                            uuid: string;
+                            name: string;
+                            description: string;
+                            enabled: boolean;
+                            logging: boolean;
+                            task: string;
+                            connection?: number;
+                            memory: number;
+                            timeout: number;
+                            priority: "high" | "low" | "off";
+                            incoming?: {
+                                config: {
+                                    timezone?: {
+                                        timezone: string;
+                                    };
+                                };
+                                cron: string | null;
+                                webhooks: boolean;
+                                alarm_period: number;
+                                alarm_evals: number;
+                                alarm_points: number;
+                                alarm_threshold: number;
                                 enabled_styles: boolean;
                                 styles: {
                                     line?: {
@@ -6181,209 +6576,12 @@ export interface paths {
                                         };
                                     }[];
                                 };
-                                logging: boolean;
                                 stale: number;
-                                task: string;
-                                connection?: number;
                                 environment: unknown;
                                 ephemeral: Record<string, never>;
-                                config: {
-                                    timezone?: {
-                                        timezone: string;
-                                    };
-                                };
-                                memory: number;
-                                timeout: number;
                                 data: number | null;
                                 schema: unknown;
-                                priority: "high" | "low" | "off";
-                                alarm_period: number;
-                                alarm_evals: number;
-                                alarm_points: number;
-                                alarm_threshold: number;
-                            }[];
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/layer/{:layerid}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         *                 Events don't have the Connection ID but they have a valid data token
-         *                 This API allows a layer token to request the layer object and obtain the
-         *                 connection ID for subsequent calls
-         *              */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: number;
-                            status?: string;
-                            created: string;
-                            updated: string;
-                            uuid: string;
-                            name: string;
-                            webhooks: boolean;
-                            cron: string | null;
-                            description: string;
-                            enabled: boolean;
-                            enabled_styles: boolean;
-                            styles: {
-                                line?: {
-                                    stroke?: string;
-                                    "stroke-style"?: string;
-                                    "stroke-opacity"?: string;
-                                    "stroke-width"?: string;
-                                    id?: string;
-                                    remarks?: string;
-                                    callsign?: string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
-                                };
-                                point?: {
-                                    "marker-color"?: string;
-                                    "marker-opacity"?: string;
-                                    id?: string;
-                                    type?: string;
-                                    remarks?: string;
-                                    callsign?: string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
-                                    icon?: string;
-                                };
-                                polygon?: {
-                                    stroke?: string;
-                                    "stroke-style"?: string;
-                                    "stroke-opacity"?: string;
-                                    "stroke-width"?: string;
-                                    fill?: string;
-                                    "fill-opacity"?: string;
-                                    id?: string;
-                                    remarks?: string;
-                                    callsign?: string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
-                                };
-                                id?: string;
-                                remarks?: string;
-                                callsign?: string;
-                                links?: {
-                                    remarks: string;
-                                    url: string;
-                                }[];
-                                queries?: {
-                                    query: string;
-                                    id?: string;
-                                    remarks?: string;
-                                    callsign?: string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
-                                    styles: {
-                                        id?: string;
-                                        remarks?: string;
-                                        callsign?: string;
-                                        links?: {
-                                            remarks: string;
-                                            url: string;
-                                        }[];
-                                        line?: {
-                                            stroke?: string;
-                                            "stroke-style"?: string;
-                                            "stroke-opacity"?: string;
-                                            "stroke-width"?: string;
-                                            id?: string;
-                                            remarks?: string;
-                                            callsign?: string;
-                                            links?: {
-                                                remarks: string;
-                                                url: string;
-                                            }[];
-                                        };
-                                        point?: {
-                                            "marker-color"?: string;
-                                            "marker-opacity"?: string;
-                                            id?: string;
-                                            type?: string;
-                                            remarks?: string;
-                                            callsign?: string;
-                                            links?: {
-                                                remarks: string;
-                                                url: string;
-                                            }[];
-                                            icon?: string;
-                                        };
-                                        polygon?: {
-                                            stroke?: string;
-                                            "stroke-style"?: string;
-                                            "stroke-opacity"?: string;
-                                            "stroke-width"?: string;
-                                            fill?: string;
-                                            "fill-opacity"?: string;
-                                            id?: string;
-                                            remarks?: string;
-                                            callsign?: string;
-                                            links?: {
-                                                remarks: string;
-                                                url: string;
-                                            }[];
-                                        };
-                                    };
-                                }[];
                             };
-                            logging: boolean;
-                            stale: number;
-                            task: string;
-                            connection?: number;
-                            environment: unknown;
-                            ephemeral: Record<string, never>;
-                            config: {
-                                timezone?: {
-                                    timezone: string;
-                                };
-                            };
-                            memory: number;
-                            timeout: number;
-                            data: number | null;
-                            schema: unknown;
-                            priority: "high" | "low" | "off";
-                            alarm_period: number;
-                            alarm_evals: number;
-                            alarm_points: number;
-                            alarm_threshold: number;
                         };
                     };
                 };
@@ -6947,7 +7145,7 @@ export interface paths {
                                 contact?: {
                                     phone?: string;
                                     name?: string;
-                                    callsign: string;
+                                    callsign?: string;
                                     endpoint?: string;
                                 };
                                 shape?: {
@@ -7208,7 +7406,7 @@ export interface paths {
                                     contact?: {
                                         phone?: string;
                                         name?: string;
-                                        callsign: string;
+                                        callsign?: string;
                                         endpoint?: string;
                                     };
                                     shape?: {
@@ -8197,7 +8395,7 @@ export interface paths {
                                     contact?: {
                                         phone?: string;
                                         name?: string;
-                                        callsign: string;
+                                        callsign?: string;
                                         endpoint?: string;
                                     };
                                     shape?: {
@@ -9873,7 +10071,7 @@ export interface paths {
                                     contact?: {
                                         phone?: string;
                                         name?: string;
-                                        callsign: string;
+                                        callsign?: string;
                                         endpoint?: string;
                                     };
                                     shape?: {
@@ -10111,7 +10309,7 @@ export interface paths {
                             contact?: {
                                 phone?: string;
                                 name?: string;
-                                callsign: string;
+                                callsign?: string;
                                 endpoint?: string;
                             };
                             shape?: {
@@ -10335,7 +10533,7 @@ export interface paths {
                                 contact?: {
                                     phone?: string;
                                     name?: string;
-                                    callsign: string;
+                                    callsign?: string;
                                     endpoint?: string;
                                 };
                                 shape?: {
@@ -10614,7 +10812,7 @@ export interface paths {
                                 contact?: {
                                     phone?: string;
                                     name?: string;
-                                    callsign: string;
+                                    callsign?: string;
                                     endpoint?: string;
                                 };
                                 shape?: {
