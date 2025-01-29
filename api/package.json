@@ -49,6 +49,7 @@
         "@openaddresses/batch-schema": "^10.9.0",
         "@openaddresses/cloudfriend": "^7.0.0",
         "@sinclair/typebox": "^0.34.0",
+        "@tak-ps/etl": "^7.1.0",
         "@tak-ps/node-cot": "^12.11.0",
         "@tak-ps/node-tak": "^8.0.0",
         "@turf/bbox": "^7.1.0",

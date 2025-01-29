@@ -6,12 +6,14 @@ import Config from '../config.js';
 import jwt from 'jsonwebtoken';
 import Schedule from '../schedule.js';
 import process from 'node:process';
+import { Static } from '@sinclair/typebox'
+import { Capabilities } from '@tak-ps/etl'
 
 /**
  * @class
  */
 export default class Lambda {
-    static async schema(config: Config, layerid: number, type: string = 'schema:input'): Promise<object> {
+    static async capabilities(config: Config, layerid: number): Promise<typeof Capabilities> {
         const lambda = new AWSLambda.LambdaClient({ region: process.env.AWS_REGION });
         const FunctionName = `${config.StackName}-layer-${layerid}`;
 
@@ -19,11 +21,12 @@ export default class Lambda {
             FunctionName,
             InvocationType: 'RequestResponse',
             Payload: Buffer.from(JSON.stringify({
-                type
+                type: 'capabilities'
             }))
         }));
 
         if (!res.Payload) return {};
+
         return JSON.parse(Buffer.from(res.Payload).toString());
     }
 
