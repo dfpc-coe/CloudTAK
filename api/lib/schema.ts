@@ -228,6 +228,7 @@ export const Layer = pgTable('layers', {
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     name: text().notNull(),
     priority: text().$type<Layer_Priority>().notNull().default(Layer_Priority.OFF),
+    connection: integer().notNull().references(() => Connection.id),
 }, (t) => ({
     unq: unique().on(t.connection, t.name)
 }));
