@@ -4,10 +4,11 @@ import * as schemas from './schema.js';
 import { TAKGroup, TAKRole } from './api/types.js';
 import { Profile_Projection } from './enums.js';
 import { AugmentedData } from './models/Data.js';
-import { AugmentedLayer } from './models/Layer.js';
+import { AugmentedLayer, AugmentedLayerIncoming } from './models/Layer.js';
 import { Feature } from '@tak-ps/node-cot';
 
 export const LayerResponse = AugmentedLayer;
+export const LayerIncomingResponse = AugmentedLayerIncoming;
 export const DataResponse = AugmentedData;
 
 export const LayerError = Type.Object({

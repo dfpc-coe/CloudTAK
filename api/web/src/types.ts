@@ -109,7 +109,10 @@ export type ETLConnectionList = paths["/connection"]["get"]["responses"]["200"][
 export type ETLConnection = paths["/connection/{:connectionid}"]["get"]["responses"]["200"]["content"]["application/json"]
 export type ETLConnectionSink = paths["/connection/{:connectionid}/sink/{:sinkid}"]["get"]["responses"]["200"]["content"]["application/json"]
 export type ETLAgency = paths["/agency/{:agencyid}"]["get"]["responses"]["200"]["content"]["application/json"]
+
 export type ETLLayer = paths["/connection/{:connectionid}/layer/{:layerid}"]["get"]["responses"]["200"]["content"]["application/json"]
+export type ETLLayerIncoming = paths["/connection/{:connectionid}/layer/{:layerid}/incoming"]["post"]["responses"]["200"]["content"]["application/json"]
+
 export type ETLData = paths["/connection/{:connectionid}/data/{:dataid}"]["get"]["responses"]["200"]["content"]["application/json"]
 
 export type VideoService = paths["/video/service"]["get"]["responses"]["200"]["content"]["application/json"];
