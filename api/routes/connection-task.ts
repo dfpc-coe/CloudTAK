@@ -8,12 +8,8 @@ import CloudFormation from '../lib/aws/cloudformation.js';
 import Logs from '../lib/aws/lambda-logs.js';
 import Cacher from '../lib/cacher.js';
 import Config from '../lib/config.js';
+import { Capabilities } from '@tak-ps/etl'
 import { StandardResponse, JobLogResponse } from '../lib/types.js';
-
-export enum TaskSchemaEnum {
-    OUTPUT = 'schema:output',
-    INPUT = 'schema:input'
-}
 
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/connection/:connectionid/layer/:layerid/task', {
@@ -146,22 +142,15 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.get('/connection/:connectionid/layer/:layerid/task/schema', {
-        name: 'Task Schema',
+    await schema.get('/connection/:connectionid/layer/:layerid/task/capabilities', {
+        name: 'Task Capabilities',
         group: 'Task',
         params: Type.Object({
             connectionid: Type.Integer(),
             layerid: Type.Integer(),
         }),
-        description: 'Get the JSONSchema for the expected environment variables',
-        query: Type.Object({
-            type: Type.Enum(TaskSchemaEnum, {
-                default: TaskSchemaEnum.INPUT
-            })
-        }),
-        res: Type.Object({
-            schema: Type.Any()
-        })
+        description: 'Get the Capabilities object',
+        res: Capabilities
     }, async (req, res) => {
         try {
             const { connection } = await Auth.is_connection(config, req, {
@@ -176,15 +165,9 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
             }
 
-            const schema = await Lambda.schema(config, layer.id, String(req.query.type));
+            const capabilities = await Lambda.capabilities(config, layer.id);
 
-            // @ts-expect-error Type these eventually
-            if (schema.errorType && schema.errorMessage) {
-                // @ts-expect-error Type these eventually
-                throw new Err(400, null, `ETL Error: ${schema.errorMessage}`);
-            }
-
-            res.json({ schema });
+            res.json(capabilities);
         } catch (err) {
             Err.respond(err, res);
         }

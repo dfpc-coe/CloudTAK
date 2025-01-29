@@ -294,6 +294,7 @@ const loading = ref({
 });
 const stack = ref({})
 const layer = ref({})
+const capabilities = ref({});
 const alerts = ref({})
 const looping = ref(false);
 
@@ -307,6 +308,8 @@ watch(stack.value, async () => {
 
 onMounted(async () => {
     await fetch();
+
+    await fetchCapabilities();
 
     await fetchStatus();
     looping.value = setInterval(() => {
@@ -351,6 +354,10 @@ async function fetchStatus(load = false) {
     loading.value.stack = load;
     stack.value = await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/task`);
     loading.value.stack = false;
+}
+
+async function fetchCapabilities() {
+    capabilities.value = await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/task/capabilities`);
 }
 
 async function fetchAlerts() {
