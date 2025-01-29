@@ -8,8 +8,15 @@ set -euo pipefail
 
 echo "Loading $Stack"
 
+
 cd ..
-POSTGRES=$(deploy info ${Stack} | jq .Outputs.DB)
+
+if [[ $Stack == *"staging"* ]]; then
+    POSTGRES=$(deploy info ${Stack} --profile coestaging --region us-east-1 | jq .Outputs.DB)
+else
+    POSTGRES=$(deploy info ${Stack} | jq .Outputs.DB)
+fi
+
 cd $(pwd)/api
 
 ssh "${Stack}-bastion" -t "pg_dump -d ${POSTGRES} > ${Stack}-latest.dump; exit"
