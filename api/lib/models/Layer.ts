@@ -1,3 +1,4 @@
+import type { SQL } from 'drizzle-orm'
 import Modeler, { GenericList, GenericListInput } from '@openaddresses/batch-generic';
 import { jsonBuildObject } from './utils.js';
 import { StyleContainer } from '../style.js';
@@ -5,7 +6,7 @@ import { Layer_Priority } from '../enums.js';
 import { Static, Type } from '@sinclair/typebox'
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { Layer, LayerIncoming } from '../schema.js';
-import { sql, eq, asc, desc } from 'drizzle-orm';
+import { sql, eq, asc, desc, is } from 'drizzle-orm';
 
 export const Layer_Config = Type.Object({
     timezone: Type.Optional(Type.Object({
@@ -85,6 +86,50 @@ export default class LayerModel extends Modeler<typeof Layer> {
         }
 
         return l
+    }
+
+    async augmented_from(id: unknown | SQL<unknown>): Promise<Static<typeof AugmentedLayer>> {
+        const pgres = await this.pool
+            .select({
+                id: Layer.id,
+                uuid: Layer.uuid,
+                priority: Layer.priority,
+                created: Layer.created,
+                updated: Layer.updated,
+                name: Layer.name,
+                description: Layer.description,
+                enabled: Layer.enabled,
+                logging: Layer.logging,
+                task: Layer.task,
+                connection: Layer.connection,
+                memory: Layer.memory,
+                timeout: Layer.timeout,
+
+                incoming: jsonBuildObject({
+                    cron: LayerIncoming.cron,
+                    stale: LayerIncoming.stale,
+                    webhooks: LayerIncoming.webhooks,
+                    alarm_period: LayerIncoming.alarm_period,
+                    alarm_evals: LayerIncoming.alarm_evals,
+                    alarm_points: LayerIncoming.alarm_points,
+                    alarm_threshold: LayerIncoming.alarm_threshold,
+                    environment: LayerIncoming.environment,
+                    ephemeral: LayerIncoming.ephemeral,
+                    config: LayerIncoming.config,
+                    data: LayerIncoming.data,
+                    schema: LayerIncoming.schema,
+                    enabled_styles: LayerIncoming.enabled_styles,
+                    styles: LayerIncoming.styles,
+                })
+            })
+            .from(Layer)
+            .leftJoin(LayerIncoming, eq(LayerIncoming.layer, Layer.id))
+            .where(is(id, SQL)? id as SQL<unknown> : eq(this.requiredPrimaryKey(), id))
+            .limit(1)
+
+        if (pgres.length !== 1) throw new Err(404, null, `Item Not Found`);
+
+        return pgres[0] as Static<typeof AugmentedLayer>;
     }
 
     async augmented_list(query: GenericListInput = {}): Promise<GenericList<Static<typeof AugmentedLayer>>> {
