@@ -254,6 +254,10 @@ export const Layer = pgTable('layers', {
     unq: unique().on(t.connection, t.name)
 }));
 
+export const LayerIncoming = pgTable('layers_incoming', {
+    layer: integer().references(() => Layer.id),
+});
+
 export const LayerTemplate = pgTable('layers_template', {
     id: serial().primaryKey(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
