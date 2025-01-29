@@ -1,4 +1,3 @@
-import type { SQL } from 'drizzle-orm'
 import Modeler, { GenericList, GenericListInput } from '@openaddresses/batch-generic';
 import { jsonBuildObject } from './utils.js';
 import { StyleContainer } from '../style.js';
@@ -6,7 +5,7 @@ import { Layer_Priority } from '../enums.js';
 import { Static, Type } from '@sinclair/typebox'
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { Layer, LayerIncoming } from '../schema.js';
-import { sql, eq, asc, desc, is } from 'drizzle-orm';
+import { sql, eq, asc, desc, is, SQL } from 'drizzle-orm';
 
 export const Layer_Config = Type.Object({
     timezone: Type.Optional(Type.Object({
@@ -15,6 +14,7 @@ export const Layer_Config = Type.Object({
 });
 
 export const AugmentedLayerIncoming = Type.Object({
+    config: Layer_Config,
     cron: Type.Union([Type.String(), Type.Null()]),
     webhooks: Type.Boolean(),
     alarm_period: Type.Integer(),
@@ -26,7 +26,6 @@ export const AugmentedLayerIncoming = Type.Object({
     stale: Type.Integer(),
     environment: Type.Any(),
     ephemeral: Type.Record(Type.String(), Type.String()),
-    config: Layer_Config,
     data: Type.Union([Type.Integer(), Type.Null()]),
     schema: Type.Any(),
 })
@@ -129,7 +128,7 @@ export default class LayerModel extends Modeler<typeof Layer> {
 
         if (pgres.length !== 1) throw new Err(404, null, `Item Not Found`);
 
-        return pgres[0] as Static<typeof AugmentedLayer>;
+        return this.parse(pgres[0] as Static<typeof AugmentedLayer>);
     }
 
     async augmented_list(query: GenericListInput = {}): Promise<GenericList<Static<typeof AugmentedLayer>>> {

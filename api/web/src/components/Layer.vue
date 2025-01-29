@@ -30,27 +30,20 @@
 
                                 <a
                                     class='card-title cursor-pointer mx-2'
-                                    @click='$router.push(`/connection/${$route.params.connectionid}/layer/${layer.id}`)'
+                                    @click='router.push(`/connection/${route.params.connectionid}/layer/${layer.id}`)'
                                     v-text='layer.name'
                                 />
 
                                 <div class='ms-auto'>
                                     <div class='btn-list'>
-                                        <IconAlertTriangle
-                                            v-tooltip='"Layer Alerts"'
-                                            :size='32'
-                                            :stroke='1'
-                                            class='cursor-pointer'
-                                            :class='{ "text-red": alerts.total }'
-                                            @click='$router.push(`/connection/${$route.params.connectionid}/layer/${layer.id}/alert`)'
-                                        />
-                                        <IconSettings
-                                            v-tooltip='"Edit"'
-                                            :size='32'
-                                            :stroke='1'
-                                            class='cursor-pointer'
-                                            @click='$router.push(`/connection/${$route.params.connectionid}/layer/${layer.id}/edit`)'
-                                        />
+                                        <TablerIconButton
+                                            title='Layer Alerts'
+                                            @click='router.push(`/connection/${route.params.connectionid}/layer/${layer.id}/alert`)'
+                                        ><IconAlertTriangle :size='32' stroke='1' :class='{ "text-red": alerts.total }' /></TablerIconButton>
+                                        <TablerIconButton
+                                            title='Edit'
+                                            @click='router.push(`/connection/${route.params.connectionid}/layer/${layer.id}/edit`)'
+                                        > <IconPencil :size='32' :stroke='1' /></TablerIconButton>
                                     </div>
                                 </div>
                             </div>
@@ -123,66 +116,124 @@
                                                 role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
-                                                    "active": $route.name === "layer-deployment",
-                                                    "cursor-pointer": $route.name !== "layer-deployment"
+                                                    "active": route.name === "layer-deployment",
+                                                    "cursor-pointer": route.name !== "layer-deployment"
                                                 }'
-                                                @click='$router.push(`/connection/${$route.params.connectionid}/layer/${$route.params.layerid}/deployment`)'
+                                                @click='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/deployment`)'
                                             ><IconPlaneDeparture
                                                 :size='32'
                                                 :stroke='1'
                                             /><span class='mx-3'>Deployment</span></span>
-                                            <span
-                                                tabindex='0'
-                                                role='menuitem'
-                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
-                                                :class='{
-                                                    "active": $route.name === "layer-config",
-                                                    "cursor-pointer": $route.name !== "layer-config"
-                                                }'
-                                                @click='$router.push(`/connection/${$route.params.connectionid}/layer/${$route.params.layerid}/config`)'
-                                            ><IconAdjustments
-                                                :size='32'
-                                                :stroke='1'
-                                            /><span class='mx-3'>Config</span></span>
-                                            <span
-                                                tabindex='0'
-                                                role='menuitem'
-                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
-                                                :class='{
-                                                    "active": $route.name === "layer-environment",
-                                                    "cursor-pointer": $route.name !== "layer-environment"
-                                                }'
-                                                @click='$router.push(`/connection/${$route.params.connectionid}/layer/${$route.params.layerid}/environment`)'
-                                            ><IconBeach
-                                                :size='32'
-                                                :stroke='1'
-                                            /><span class='mx-3'>Environment</span></span>
-                                            <span
-                                                tabindex='0'
-                                                role='menuitem'
-                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
-                                                :class='{
-                                                    "active": $route.name === "layer-schema",
-                                                    "cursor-pointer": $route.name !== "layer-schema"
-                                                }'
-                                                @click='$router.push(`/connection/${$route.params.connectionid}/layer/${$route.params.layerid}/schema`)'
-                                            ><IconSchema
-                                                :size='32'
-                                                :stroke='1'
-                                            /><span class='mx-3'>Schema</span></span>
-                                            <span
-                                                tabindex='0'
-                                                role='menuitem'
-                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
-                                                :class='{
-                                                    "active": $route.name === "layer-styles",
-                                                    "cursor-pointer": $route.name !== "layer-styles"
-                                                }'
-                                                @click='$router.push(`/connection/${$route.params.connectionid}/layer/${$route.params.layerid}/styles`)'
-                                            ><IconPaint
-                                                :size='32'
-                                                :stroke='1'
-                                            /><span class='mx-3'>Styling</span></span>
+
+                                            <div
+                                                class='px-2 py-2 round btn-group w-100'
+                                                role='group'
+                                            >
+                                                <input
+                                                    id='layer-incoming'
+                                                    type='radio'
+                                                    class='btn-check'
+                                                    autocomplete='off'
+                                                    :checked='mode === "incoming"'
+                                                    @click='mode = "incoming"'
+                                                >
+                                                <label
+                                                    for='layer-incoming'
+                                                    type='button'
+                                                    class='btn btn-sm'
+                                                ><IconWorldDownload
+                                                    v-tooltip='"Incoming"'
+                                                    :size='32'
+                                                    stroke='1'
+                                                />Incoming</label>
+
+                                                <input
+                                                    id='layer-outgoing'
+                                                    type='radio'
+                                                    class='btn-check'
+                                                    autocomplete='off'
+                                                    :checked='mode === "outgoing"'
+                                                    @click='mode = "outgoing"'
+                                                >
+                                                <label
+                                                    for='layer-outgoing'
+                                                    type='button'
+                                                    class='btn btn-sm'
+                                                ><IconWorldUpload
+                                                    v-tooltip='"Outgoing"'
+                                                    :size='32'
+                                                    stroke='1'
+                                                />Outgoing</label>
+                                            </div>
+
+                                            <template v-if='mode === "incoming"'>
+                                                <TablerNone
+                                                    v-if='!layer.incoming'
+                                                    label='Incoming Config'
+                                                    :create='false'
+                                                />
+                                                <template v-else>
+                                                    <span
+                                                        tabindex='0'
+                                                        role='menuitem'
+                                                        class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
+                                                        :class='{
+                                                            "active": route.name === "layer-incoming-config",
+                                                            "cursor-pointer": route.name !== "layer-incoming-config"
+                                                        }'
+                                                        @click='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/incoming/config`)'
+                                                    ><IconAdjustments
+                                                        :size='32'
+                                                        :stroke='1'
+                                                    /><span class='mx-3'>Config</span></span>
+
+                                                    <span
+                                                        tabindex='0'
+                                                        role='menuitem'
+                                                        class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
+                                                        :class='{
+                                                            "active": route.name === "layer-incoming-environment",
+                                                            "cursor-pointer": route.name !== "layer-incoming-environment"
+                                                        }'
+                                                        @click='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/incoming/environment`)'
+                                                    ><IconBeach
+                                                        :size='32'
+                                                        :stroke='1'
+                                                    /><span class='mx-3'>Environment</span></span>
+                                                    <span
+                                                        tabindex='0'
+                                                        role='menuitem'
+                                                        class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
+                                                        :class='{
+                                                            "active": route.name === "layer-incoming-schema",
+                                                            "cursor-pointer": route.name !== "layer-incoming-schema"
+                                                        }'
+                                                        @click='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/incoming/schema`)'
+                                                    ><IconSchema
+                                                        :size='32'
+                                                        :stroke='1'
+                                                    /><span class='mx-3'>Schema</span></span>
+                                                    <span
+                                                        tabindex='0'
+                                                        role='menuitem'
+                                                        class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
+                                                        :class='{
+                                                            "active": route.name === "layer-incoming-styles",
+                                                            "cursor-pointer": route.name !== "layer-incoming-styles"
+                                                        }'
+                                                        @click='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/incoming/styles`)'
+                                                    ><IconPaint
+                                                        :size='32'
+                                                        :stroke='1'
+                                                    /><span class='mx-3'>Styling</span></span>
+                                                </template>
+                                            </template>
+                                            <template v-else>
+                                                <TablerNone
+                                                    label='Outgoing Config'
+                                                    :create='false'
+                                                />
+                                            </template>
                                         </div>
                                     </div>
                                 </div>
@@ -205,20 +256,26 @@
     </div>
 </template>
 
-<script>
+<script setup>
+import { ref, watch, onMounted, onUnmounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { std, stdurl } from '/src/std.ts';
 import PageFooter from './PageFooter.vue';
 import LayerStatus from './Layer/utils/Status.vue';
 import cronstrue from 'cronstrue';
 import timeDiff from '../timediff.ts';
 import {
+    TablerNone,
     TablerBreadCrumb,
+    TablerIconButton,
     TablerMarkdown,
     TablerLoading
 } from '@tak-ps/vue-tabler'
 import {
     IconX,
-    IconSettings,
+    IconWorldDownload,
+    IconWorldUpload,
+    IconPencil,
     IconAlertTriangle,
     IconPlaneDeparture,
     IconAdjustments,
@@ -227,95 +284,76 @@ import {
     IconPaint,
 } from '@tabler/icons-vue'
 
-export default {
-    name: 'ConnectionLayer',
-    components: {
-        LayerStatus,
-        PageFooter,
-        TablerBreadCrumb,
-        TablerMarkdown,
-        TablerLoading,
-        IconX,
-        IconSettings,
-        IconAlertTriangle,
-        IconPlaneDeparture,
-        IconAdjustments,
-        IconBeach,
-        IconSchema,
-        IconPaint,
-    },
-    data: function() {
-        return {
-            err: false,
-            loading: {
-                layer: true,
-                stack: true
-            },
-            stack: {},
-            layer: {},
-            alerts: {},
-            looping: false
-        }
-    },
-    watch: {
-        'stack.status': async function() {
-            if (this.stack.status.includes("_COMPLETE")) {
-                this.loading.layer = true;
-                await this.fetch()
-                this.loading.layer = false;
-            }
-        }
-    },
-    mounted: async function() {
-        await this.fetch();
+const route = useRoute();
+const router = useRouter();
 
-        await this.fetchStatus();
-        this.looping = setInterval(() => {
-            this.fetchStatus();
-        }, 10 * 1000);
+const mode = ref('incoming');
+const loading = ref({
+    layer: true,
+    stack: true
+});
+const stack = ref({})
+const layer = ref({})
+const alerts = ref({})
+const looping = ref(false);
 
-        await this.fetchAlerts();
-
-        this.loading.layer = false;
-    },
-    unmounted: function() {
-        this.clear()
-    },
-    methods: {
-        timeDiff(update) {
-            return timeDiff(update);
-        },
-        clear: function() {
-            if (this.looping) clearInterval(this.looping);
-        },
-        cronstr: function(cron) {
-            if (!cron) return;
-
-            if (cron.includes('cron(')) {
-                return cronstrue.toString(cron.replace('cron(', '').replace(')', ''));
-            } else {
-                const rate = cron.replace('rate(', '').replace(')', '');
-                return `Once every ${rate}`;
-            }
-        },
-        fetch: async function() {
-            const url = stdurl(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}`);
-            url.searchParams.append('alarms', 'true');
-            this.layer = await std(url);
-        },
-        cancelUpdate: async function() {
-            await std(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}/task`, {
-                method: 'DELETE'
-            });
-        },
-        fetchStatus: async function(loading = false) {
-            this.loading.stack = loading;
-            this.stack = await std(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}/task`);
-            this.loading.stack = false;
-        },
-        fetchAlerts: async function() {
-            this.alerts = await std(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}/alert`);
-        }
+watch(stack.value, async () => {
+    if (stack.value.status.includes("_COMPLETE")) {
+        loading.value.layer = true;
+        await fetch()
+        loading.value.layer = false;
     }
+});
+
+onMounted(async () => {
+    await fetch();
+
+    await fetchStatus();
+    looping.value = setInterval(() => {
+        fetchStatus();
+    }, 10 * 1000);
+
+    await fetchAlerts();
+
+    loading.value.layer = false;
+});
+
+onUnmounted(() => {
+    if (looping.value) {
+        clearInterval(looping.value);
+    }
+});
+
+function cronstr(cron) {
+    if (!cron) return;
+
+    if (cron.includes('cron(')) {
+        return cronstrue.toString(cron.replace('cron(', '').replace(')', ''));
+    } else {
+        const rate = cron.replace('rate(', '').replace(')', '');
+        return `Once every ${rate}`;
+    }
+}
+
+async function fetch() {
+    const url = stdurl(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}`);
+    url.searchParams.append('alarms', 'true');
+    layer.value = await std(url);
+}
+
+async function cancelUpdate() {
+    await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/task`, {
+        method: 'DELETE'
+    });
+}
+
+async function fetchStatus(load = false) {
+    loading.value.stack = load;
+    stack.value = await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/task`);
+    loading.value.stack = false;
+}
+
+async function fetchAlerts() {
+    alerts.value = await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/alert`);
 }
 </script>

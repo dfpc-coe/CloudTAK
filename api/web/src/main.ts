@@ -170,21 +170,21 @@ const router = VueRouter.createRouter({
                 name: 'layer-deployment',
                 component: () => import('./components/Layer/LayerDeployment.vue')
             },{
-                path: 'config',
-                name: 'layer-config',
-                component: () => import('./components/Layer/LayerConfig.vue')
+                path: 'incoming/config',
+                name: 'layer-incoming-config',
+                component: () => import('./components/Layer/LayerIncomingConfig.vue')
             },{
-                path: 'environment',
-                name: 'layer-environment',
-                component: () => import('./components/Layer/LayerEnvironment.vue')
+                path: 'incoming/environment',
+                name: 'layer-incoming-environment',
+                component: () => import('./components/Layer/LayerIncomingEnvironment.vue')
             },{
-                path: 'schema',
-                name: 'layer-schema',
-                component: () => import('./components/Layer/LayerSchema.vue')
+                path: 'incoming/schema',
+                name: 'layer-incoming-schema',
+                component: () => import('./components/Layer/LayerIncomingSchema.vue')
             },{
-                path: 'styles',
-                name: 'layer-styles',
-                component: () => import('./components/Layer/LayerStyles.vue')
+                path: 'incoming/styles',
+                name: 'layer-incoming-styles',
+                component: () => import('./components/Layer/LayerIncomingStyles.vue')
             }]
         },
 
