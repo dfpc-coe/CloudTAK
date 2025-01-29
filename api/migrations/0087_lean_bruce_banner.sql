@@ -13,3 +13,24 @@ ALTER TABLE "layers_incoming" ADD COLUMN "config" json DEFAULT '{}'::json NOT NU
 ALTER TABLE "layers_incoming" ADD COLUMN "data" integer;--> statement-breakpoint
 ALTER TABLE "layers_incoming" ADD COLUMN "schema" json DEFAULT '{"type":"object","required":[],"properties":{}}'::json NOT NULL;--> statement-breakpoint
 ALTER TABLE "layers_incoming" ADD CONSTRAINT "layers_incoming_data_data_id_fk" FOREIGN KEY ("data") REFERENCES "public"."data"("id") ON DELETE no action ON UPDATE no action;
+
+INSERT INTO "layers_incoming"
+    ("layer", "cron", "webhooks", "alarm_period", "alarm_evals", "alarm_points", "alarm_threshold", "enabled_styles", "styles", "stale", "environment", "ephemeral", "config", "data", "schema")
+    SELECT
+        id as layer,
+        cron,
+        webhooks,
+        alarm_period,
+        alarm_evals,
+        alarm_points,
+        alarm_threshold,
+        enabled_styles,
+        styles,
+        stale,
+        environment,
+        ephemeral,
+        config,
+        data,
+        schema
+    FROM
+        layers;
