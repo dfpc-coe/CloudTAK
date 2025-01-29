@@ -610,6 +610,13 @@
       "when": 1738170297346,
       "tag": "0086_fixed_thunderball",
       "breakpoints": true
+    },
+    {
+      "idx": 87,
+      "version": "7",
+      "when": 1738170479655,
+      "tag": "0087_lean_bruce_banner",
+      "breakpoints": true
     }
   ]
 }
