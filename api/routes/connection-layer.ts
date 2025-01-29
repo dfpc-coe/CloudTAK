@@ -150,19 +150,58 @@ export default async function router(schema: Schema, config: Config) {
         body: Type.Object({
             name: Default.NameField,
             priority: Type.Optional(Type.Enum(Layer_Priority)),
-            webhooks: Type.Optional(Type.Boolean()),
             description: Default.DescriptionField,
+            webhooks: Type.Optional(Type.Boolean()),
             enabled: Type.Optional(Type.Boolean()),
             task: Type.String(),
-            cron: Type.Optional(Type.String()),
             logging: Type.Boolean(),
+            memory: Type.Optional(Type.Integer()),
+            timeout: Type.Optional(Type.Integer()),
+        }),
+        res: LayerResponse
+    }, async (req, res) => {
+        try {
+            await Auth.is_connection(config, req, {
+                resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
+            }, req.params.connectionid);
+
+            const layer = await config.models.Layer.generate({
+                connection: req.params.connectionid,
+                ...req.body
+            });
+
+            try {
+                const stack = await Lambda.generate(config, layer);
+                await CloudFormation.create(config, layer.id, stack);
+            } catch (err) {
+                console.error(err);
+            }
+
+            res.json({
+                status: (config.StackName !== 'test' && req.query.alarms) ? await alarm.get(layer.id) : 'unknown',
+                ...layer
+            });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.post('/connection/:connectionid/layer/:layerid/incoming', {
+        name: 'Create Incoming',
+        group: 'Layer',
+        description: 'Register a new layer',
+        params: Type.Object({
+            connectionid: Type.Integer({ minimum: 1 }),
+            layerid: Type.Integer({ minimum: 1 })
+        }),
+        body: Type.Object({
+            webhooks: Type.Optional(Type.Boolean()),
+            cron: Type.Optional(Type.String()),
             stale: Type.Optional(Type.Integer()),
             data: Type.Optional(Type.Integer()),
             schema: Type.Optional(Type.Any()),
             enabled_styles: Type.Optional(Type.Boolean()),
             styles: Type.Optional(StyleContainer),
-            memory: Type.Optional(Type.Integer()),
-            timeout: Type.Optional(Type.Integer()),
             config: Type.Optional(Layer_Config),
             alarm_period: Type.Optional(Type.Integer()),
             alarm_evals: Type.Optional(Type.Integer()),
