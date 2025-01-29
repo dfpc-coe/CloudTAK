@@ -25,7 +25,7 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
-            let layer =  await config.models.Layer.from(req.params.layerid)
+            let layer =  await config.models.Layer.augmented_from(req.params.layerid)
 
             if (layer.connection !== connection.id) {
                 throw new Err(400, null, 'Layer does not belong to this connection');

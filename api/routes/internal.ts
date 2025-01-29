@@ -151,7 +151,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await config.models.Layer.from(req.params.layerid);
+                return await config.models.Layer.augmented_from(req.params.layerid);
             });
 
             res.json({

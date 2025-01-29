@@ -131,7 +131,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req, { admin: true });
 
-            const layer = await config.models.Layer.from(req.body.layer);
+            const layer = await config.models.Layer.augmented_from(req.body.layer);
 
             const template = await config.models.LayerTemplate.generate({
                 ...layer,
