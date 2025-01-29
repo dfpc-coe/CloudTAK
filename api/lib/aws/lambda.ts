@@ -1,6 +1,6 @@
 import cf from '@openaddresses/cloudfriend';
 import { InferSelectModel } from 'drizzle-orm';
-import type { Layer } from '../schema.js';
+import type { AugmentedLayer } from '../models/Layer.js';
 import AWSLambda from '@aws-sdk/client-lambda';
 import Config from '../config.js';
 import jwt from 'jsonwebtoken';
@@ -38,7 +38,10 @@ export default class Lambda {
         }));
     }
 
-    static generate(config: Config, layer: InferSelectModel<typeof Layer>): object {
+    static generate(
+        config: Config,
+        layer: InferSelectModel<typeof AugmentedLayer>
+    ): object {
         const StackName = `${config.StackName}-layer-${layer.id}`;
 
         const stack: any = {
@@ -59,48 +62,6 @@ export default class Lambda {
                     Properties: {
                         LogGroupName: `/aws/lambda/${StackName}`,
                         RetentionInDays: 7
-                    }
-                },
-                LambdaAlarm: {
-                    Type: 'AWS::CloudWatch::Alarm',
-                    Properties: {
-                        AlarmName: StackName,
-                        ActionsEnabled: true,
-                        AlarmActions: [ ],
-                        MetricName: 'Errors',
-                        Namespace: 'AWS/Lambda',
-                        Statistic: 'Maximum',
-                        Dimensions: [{
-                            Name: 'FunctionName',
-                            Value: StackName
-                        }],
-                        Period: layer.alarm_period,
-                        EvaluationPeriods: layer.alarm_evals,
-                        DatapointsToAlarm: layer.alarm_points,
-                        Threshold: layer.alarm_threshold,
-                        ComparisonOperator: 'GreaterThanThreshold',
-                        TreatMissingData: 'missing'
-                    }
-                },
-                LambdaNoInvocationAlarm: {
-                    Type: 'AWS::CloudWatch::Alarm',
-                    Properties: {
-                        AlarmName: cf.join([StackName, '-no-invocations']),
-                        ActionsEnabled: true,
-                        AlarmActions: [ ],
-                        MetricName: 'Invocations',
-                        Namespace: 'AWS/Lambda',
-                        Statistic: 'Maximum',
-                        Dimensions: [{
-                            Name: 'FunctionName',
-                            Value: StackName
-                        }],
-                        Period: layer.alarm_period,
-                        EvaluationPeriods: layer.alarm_evals,
-                        DatapointsToAlarm: layer.alarm_points,
-                        Threshold: layer.alarm_threshold,
-                        ComparisonOperator: 'LessThanOrEqualToThreshold',
-                        TreatMissingData: 'missing'
                     }
                 },
                 ETLFunction: {
@@ -127,77 +88,123 @@ export default class Lambda {
             }
         }
 
-        if (layer.webhooks) {
-            stack.Resources.WebHookResourceBase = {
-                Type: 'AWS::ApiGatewayV2::Route',
+        if (layer.incoming) {
+            stack.Resources.LambdaAlarm = {
+                Type: 'AWS::CloudWatch::Alarm',
                 Properties: {
-                    RouteKey: cf.join(['ANY /', cf.ref('UniqueID') ]),
-                    ApiId: cf.importValue(config.StackName.replace(/^coe-etl-/, 'coe-etl-webhooks-') + '-api'),
-                    Target: cf.join(['integrations/', cf.ref('WebHookResourceIntegration')])
+                    AlarmName: StackName,
+                    ActionsEnabled: true,
+                    AlarmActions: [ ],
+                    MetricName: 'Errors',
+                    Namespace: 'AWS/Lambda',
+                    Statistic: 'Maximum',
+                    Dimensions: [{
+                        Name: 'FunctionName',
+                        Value: StackName
+                    }],
+                    Period: layer.incoming.alarm_period,
+                    EvaluationPeriods: layer.incoming.alarm_evals,
+                    DatapointsToAlarm: layer.incoming.alarm_points,
+                    Threshold: layer.incoming.alarm_threshold,
+                    ComparisonOperator: 'GreaterThanThreshold',
+                    TreatMissingData: 'missing'
                 }
             };
 
-            stack.Resources.WebHookResource = {
-                Type: 'AWS::ApiGatewayV2::Route',
+            stack.Resources.LambdaNoInvocationAlarm = {
+                Type: 'AWS::CloudWatch::Alarm',
                 Properties: {
-                    RouteKey: cf.join(['ANY /', cf.ref('UniqueID'), '/{proxy+}']),
-                    ApiId: cf.importValue(config.StackName.replace(/^coe-etl-/, 'coe-etl-webhooks-') + '-api'),
-                    Target: cf.join(['integrations/', cf.ref('WebHookResourceIntegration')])
+                    AlarmName: cf.join([StackName, '-no-invocations']),
+                    ActionsEnabled: true,
+                    AlarmActions: [ ],
+                    MetricName: 'Invocations',
+                    Namespace: 'AWS/Lambda',
+                    Statistic: 'Maximum',
+                    Dimensions: [{
+                        Name: 'FunctionName',
+                        Value: StackName
+                    }],
+                    Period: layer.incoming.alarm_period,
+                    EvaluationPeriods: layer.incoming.alarm_evals,
+                    DatapointsToAlarm: layer.incoming.alarm_points,
+                    Threshold: layer.incoming.alarm_threshold,
+                    ComparisonOperator: 'LessThanOrEqualToThreshold',
+                    TreatMissingData: 'missing'
                 }
             };
 
-            stack.Resources.WebHookResourceIntegration = {
-                Type: 'AWS::ApiGatewayV2::Integration',
-                Properties: {
-                    ApiId: cf.importValue(config.StackName.replace(/^coe-etl-/, 'coe-etl-webhooks-') + '-api'),
-                    IntegrationType: 'AWS_PROXY',
-                    IntegrationUri: cf.getAtt('ETLFunction', 'Arn'),
-                    CredentialsArn: cf.importValue(config.StackName.replace(/^coe-etl-/, 'coe-etl-webhooks-') + '-role'),
-                    PayloadFormatVersion: '2.0'
+            if (layer.incoming.webhooks) {
+                stack.Resources.WebHookResourceBase = {
+                    Type: 'AWS::ApiGatewayV2::Route',
+                    Properties: {
+                        RouteKey: cf.join(['ANY /', cf.ref('UniqueID') ]),
+                        ApiId: cf.importValue(config.StackName.replace(/^coe-etl-/, 'coe-etl-webhooks-') + '-api'),
+                        Target: cf.join(['integrations/', cf.ref('WebHookResourceIntegration')])
+                    }
+                };
+
+                stack.Resources.WebHookResource = {
+                    Type: 'AWS::ApiGatewayV2::Route',
+                    Properties: {
+                        RouteKey: cf.join(['ANY /', cf.ref('UniqueID'), '/{proxy+}']),
+                        ApiId: cf.importValue(config.StackName.replace(/^coe-etl-/, 'coe-etl-webhooks-') + '-api'),
+                        Target: cf.join(['integrations/', cf.ref('WebHookResourceIntegration')])
+                    }
+                };
+
+                stack.Resources.WebHookResourceIntegration = {
+                    Type: 'AWS::ApiGatewayV2::Integration',
+                    Properties: {
+                        ApiId: cf.importValue(config.StackName.replace(/^coe-etl-/, 'coe-etl-webhooks-') + '-api'),
+                        IntegrationType: 'AWS_PROXY',
+                        IntegrationUri: cf.getAtt('ETLFunction', 'Arn'),
+                        CredentialsArn: cf.importValue(config.StackName.replace(/^coe-etl-/, 'coe-etl-webhooks-') + '-role'),
+                        PayloadFormatVersion: '2.0'
+                    }
                 }
             }
-        }
 
-        if (layer.priority !== 'off') {
-            stack.Resources.LambdaAlarm.Properties.AlarmActions.push(
-                cf.join(['arn:', cf.partition, ':sns:', cf.region, `:`, cf.accountId, `:${config.StackName}-${layer.priority}-urgency`])
-            )
+            if (layer.priority !== 'off') {
+                stack.Resources.LambdaAlarm.Properties.AlarmActions.push(
+                    cf.join(['arn:', cf.partition, ':sns:', cf.region, `:`, cf.accountId, `:${config.StackName}-${layer.priority}-urgency`])
+                )
 
-            stack.Resources.LambdaNoInvocationAlarm.Properties.AlarmActions.push(
-                cf.join(['arn:', cf.partition, ':sns:', cf.region, `:`, cf.accountId, `:${config.StackName}-${layer.priority}-urgency`])
-            )
-        }
+                stack.Resources.LambdaNoInvocationAlarm.Properties.AlarmActions.push(
+                    cf.join(['arn:', cf.partition, ':sns:', cf.region, `:`, cf.accountId, `:${config.StackName}-${layer.priority}-urgency`])
+                )
+            }
 
-        if (layer.cron && Schedule.is_aws(layer.cron)) {
-            stack.Parameters.ScheduleExpression = {
-                Type: 'String',
-                Default: layer.cron
-            };
-            stack.Parameters.Events = {
-                Type: 'String',
-                Default: layer.enabled ? 'ENABLED' : 'DISABLED'
-            };
-            stack.Resources.ETLEvents = {
-                Type: 'AWS::Events::Rule',
-                Properties: {
-                    Description: StackName,
-                    State: cf.ref('Events'),
-                    ScheduleExpression: cf.ref('ScheduleExpression'),
-                    Targets: [{
-                        Id: 'TagWatcherScheduler',
-                        Arn: cf.getAtt('ETLFunction', 'Arn')
-                    }]
-                }
-            };
-            stack.Resources.ETLFunctionInvoke = {
-                Type: 'AWS::Lambda::Permission',
-                Properties: {
-                    FunctionName: cf.getAtt('ETLFunction', 'Arn'),
-                    Action: 'lambda:InvokeFunction',
-                    Principal: 'events.amazonaws.com',
-                    SourceArn: cf.getAtt('ETLEvents', 'Arn')
-                }
-            };
+            if (layer.incoming.cron && Schedule.is_aws(layer.incoming.cron)) {
+                stack.Parameters.ScheduleExpression = {
+                    Type: 'String',
+                    Default: layer.incoming.cron
+                };
+                stack.Parameters.Events = {
+                    Type: 'String',
+                    Default: layer.enabled ? 'ENABLED' : 'DISABLED'
+                };
+                stack.Resources.ETLEvents = {
+                    Type: 'AWS::Events::Rule',
+                    Properties: {
+                        Description: StackName,
+                        State: cf.ref('Events'),
+                        ScheduleExpression: cf.ref('ScheduleExpression'),
+                        Targets: [{
+                            Id: 'TagWatcherScheduler',
+                            Arn: cf.getAtt('ETLFunction', 'Arn')
+                        }]
+                    }
+                };
+                stack.Resources.ETLFunctionInvoke = {
+                    Type: 'AWS::Lambda::Permission',
+                    Properties: {
+                        FunctionName: cf.getAtt('ETLFunction', 'Arn'),
+                        Action: 'lambda:InvokeFunction',
+                        Principal: 'events.amazonaws.com',
+                        SourceArn: cf.getAtt('ETLEvents', 'Arn')
+                    }
+                };
+            }
         }
 
         return stack;
