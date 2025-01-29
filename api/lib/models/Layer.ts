@@ -1,9 +1,10 @@
 import Modeler, { GenericList, GenericListInput } from '@openaddresses/batch-generic';
+import { jsonBuildObject } from './utils.js';
 import { StyleContainer } from '../style.js';
 import { Layer_Priority } from '../enums.js';
 import { Static, Type } from '@sinclair/typebox'
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import { Connection, Layer } from '../schema.js';
+import { Connection, Layer, LayerIncoming } from '../schema.js';
 import { sql, eq, asc, desc } from 'drizzle-orm';
 
 export const Layer_Config = Type.Object({
@@ -19,28 +20,31 @@ export const AugmentedLayer = Type.Object({
     updated: Type.String(),
     uuid: Type.String(),
     name: Type.String(),
-    webhooks: Type.Boolean(),
-    cron: Type.Union([Type.String(), Type.Null()]),
     description: Type.String(),
     enabled: Type.Boolean(),
-    enabled_styles: Type.Boolean(),
-    styles: StyleContainer,
     logging: Type.Boolean(),
-    stale: Type.Integer(),
     task: Type.String(),
     connection: Type.Optional(Type.Integer()),
-    environment: Type.Any(),
-    ephemeral: Type.Record(Type.String(), Type.String()),
-    config: Layer_Config,
     memory: Type.Integer(),
     timeout: Type.Integer(),
-    data: Type.Union([Type.Integer(), Type.Null()]),
-    schema: Type.Any(),
     priority: Type.Enum(Layer_Priority),
-    alarm_period: Type.Integer(),
-    alarm_evals: Type.Integer(),
-    alarm_points: Type.Integer(),
-    alarm_threshold: Type.Integer()
+
+    incoming: Type.Optional(Type.Object({
+        cron: Type.Union([Type.String(), Type.Null()]),
+        webhooks: Type.Boolean(),
+        alarm_period: Type.Integer(),
+        alarm_evals: Type.Integer(),
+        alarm_points: Type.Integer(),
+        alarm_threshold: Type.Integer(),
+        enabled_styles: Type.Boolean(),
+        styles: StyleContainer,
+        stale: Type.Integer(),
+        environment: Type.Any(),
+        ephemeral: Type.Record(Type.String(), Type.String()),
+        config: Layer_Config,
+        data: Type.Union([Type.Integer(), Type.Null()]),
+        schema: Type.Any(),
+    }))
 });
 
 export default class LayerModel extends Modeler<typeof Layer> {
@@ -78,34 +82,38 @@ export default class LayerModel extends Modeler<typeof Layer> {
                 count: sql<string>`count(*) OVER()`.as('count'),
                 id: Layer.id,
                 uuid: Layer.uuid,
-                webhooks: Layer.webhooks,
                 priority: Layer.priority,
                 created: Layer.created,
                 updated: Layer.updated,
                 name: Layer.name,
                 description: Layer.description,
                 enabled: Layer.enabled,
-                enabled_styles: Layer.enabled_styles,
-                styles: Layer.styles,
                 logging: Layer.logging,
-                stale: Layer.stale,
                 task: Layer.task,
                 connection: Layer.connection,
-                cron: Layer.cron,
-                environment: Layer.environment,
-                ephemeral: Layer.ephemeral,
-                config: Layer.config,
                 memory: Layer.memory,
                 timeout: Layer.timeout,
-                data: Layer.data,
-                schema: Layer.schema,
-                alarm_period: Layer.alarm_period,
-                alarm_evals: Layer.alarm_evals,
-                alarm_points: Layer.alarm_points,
-                alarm_threshold: Layer.alarm_threshold,
+
+                incoming: jsonBuildObject({
+                    cron: LayerIncoming.cron,
+                    stale: LayerIncoming.stale,
+                    webhooks: LayerIncoming.webhooks,
+                    alarm_period: LayerIncoming.alarm_period,
+                    alarm_evals: LayerIncoming.alarm_evals,
+                    alarm_points: LayerIncoming.alarm_points,
+                    alarm_threshold: LayerIncoming.alarm_threshold,
+                    environment: LayerIncoming.environment,
+                    ephemeral: LayerIncoming.ephemeral,
+                    config: LayerIncoming.config,
+                    data: LayerIncoming.data,
+                    schema: LayerIncoming.schema,
+                    enabled_styles: LayerIncoming.enabled_styles,
+                    styles: LayerIncoming.styles,
+                })
             })
             .from(Layer)
             .leftJoin(Connection, eq(Connection.id, Layer.connection))
+            .leftJoin(Layer, eq(LayerIncoming.layer, Layer.id))
             .where(query.where)
             .orderBy(orderBy)
             .limit(query.limit || 10)
@@ -115,6 +123,7 @@ export default class LayerModel extends Modeler<typeof Layer> {
             return { total: 0, items: [] };
         } else {
             return {
+                // @ts-expect-error never type
                 total: parseInt(pgres[0].count),
                 items: pgres.map((t) => {
                     return t as Static<typeof AugmentedLayer>

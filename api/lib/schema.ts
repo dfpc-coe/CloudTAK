@@ -255,7 +255,7 @@ export const Layer = pgTable('layers', {
 }));
 
 export const LayerIncoming = pgTable('layers_incoming', {
-    layer: integer().references(() => Layer.id),
+    layer: integer().primaryKey().references(() => Layer.id),
 
     cron: text(),
     webhooks: boolean().notNull().default(false),
