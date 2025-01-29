@@ -165,7 +165,7 @@ export default async function router(schema: Schema, config: Config) {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             }, req.params.connectionid);
 
-            const layer = await config.models.Layer.generate({
+            let layer = await config.models.Layer.generate({
                 connection: req.params.connectionid,
                 ...req.body
             });
@@ -176,6 +176,8 @@ export default async function router(schema: Schema, config: Config) {
             } catch (err) {
                 console.error(err);
             }
+
+            layer = await config.models.Layer.augmented_from(layer.id);
 
             res.json({
                 status: (config.StackName !== 'test' && req.query.alarms) ? await alarm.get(layer.id) : 'unknown',
@@ -236,7 +238,7 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
-            const layer = await config.models.Layer.generate({
+            layer = await config.models.Layer.generate({
                 connection: req.params.connectionid,
                 ...req.body
             });
@@ -267,6 +269,8 @@ export default async function router(schema: Schema, config: Config) {
                     console.error(err);
                 }
             }
+
+            layer = await config.models.Layer.augmented_from(layer.id);
 
             res.json({
                 status: (config.StackName !== 'test' && req.query.alarms) ? await alarm.get(layer.id) : 'unknown',
@@ -413,6 +417,8 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             await config.cacher.del(`layer-${req.params.layerid}`);
+
+            layer = await config.models.Layer.augmented_from(layer.id);
 
             res.json({
                 status: (config.StackName !== 'test' && req.query.alarms) ? await alarm.get(layer.id) : 'unknown',
