@@ -43,7 +43,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             await Auth.as_user(config, req, { admin: true });
 
-            const list = await config.models.Layer.list({
+            const list = await config.models.Layer.augmented_list({
                 limit: req.query.limit,
                 page: req.query.page,
                 order: req.query.order,

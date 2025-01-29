@@ -98,7 +98,7 @@ export default async function router(schema: Schema, config: Config) {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             }, req.params.connectionid);
 
-            const list = await config.models.Layer.list({
+            const list = await config.models.Layer.augmented_list({
                 limit: req.query.limit,
                 page: req.query.page,
                 order: req.query.order,
