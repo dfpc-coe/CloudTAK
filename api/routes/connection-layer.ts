@@ -285,7 +285,7 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
-            let layer = await config.models.Layer.from(req.params.layerid);
+            let layer = await config.models.Layer.augmented_from(req.params.layerid);
 
             if (req.body.data) {
                 const data = await config.models.Data.from(req.body.data);
@@ -409,7 +409,7 @@ export default async function router(schema: Schema, config: Config) {
             }, req.params.connectionid);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await config.models.Layer.from(req.params.layerid);
+                return await config.models.Layer.augmented_from(req.params.layerid);
             });
 
             if (layer.connection !== connection.id) {
@@ -442,7 +442,7 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
-            const layer = await config.models.Layer.from(req.params.layerid);
+            const layer = await config.models.Layer.augmented_from(req.params.layerid);
 
             if (layer.connection !== connection.id) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
@@ -488,7 +488,7 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
-            const layer = await config.models.Layer.from(req.params.layerid);
+            const layer = await config.models.Layer.augmented_from(req.params.layerid);
 
             if (layer.connection !== connection.id) {
                 throw new Err(400, null, 'Layer does not belong to this connection');

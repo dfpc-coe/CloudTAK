@@ -38,7 +38,7 @@ export default async function router(schema: Schema, config: Config) {
             if (!req.headers['content-type']) throw new Err(400, null, 'Content-Type not set');
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await config.models.Layer.from(req.params.layerid);
+                return await config.models.Layer.augmented_from(req.params.layerid);
             });
 
             const style = new Style(layer);
@@ -263,7 +263,7 @@ export default async function router(schema: Schema, config: Config) {
             }, req.params.connectionid);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await config.models.Layer.from(req.params.layerid);
+                return await config.models.Layer.augmented_from(req.params.layerid);
             });
 
             const pooledClient = await config.conns.get(layer.connection);
@@ -309,7 +309,7 @@ export default async function router(schema: Schema, config: Config) {
             }, req.params.connectionid);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await config.models.Layer.from(req.params.layerid);
+                return await config.models.Layer.augmented_from(req.params.layerid);
             });
 
             const pooledClient = await config.conns.get(layer.connection);
