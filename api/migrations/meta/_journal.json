@@ -603,6 +603,13 @@
       "when": 1737570878443,
       "tag": "0085_parched_celestials",
       "breakpoints": true
+    },
+    {
+      "idx": 86,
+      "version": "7",
+      "when": 1738170297346,
+      "tag": "0086_fixed_thunderball",
+      "breakpoints": true
     }
   ]
 }
