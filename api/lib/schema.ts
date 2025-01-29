@@ -256,6 +256,23 @@ export const Layer = pgTable('layers', {
 
 export const LayerIncoming = pgTable('layers_incoming', {
     layer: integer().references(() => Layer.id),
+
+    cron: text(),
+    webhooks: boolean().notNull().default(false),
+
+    alarm_period: integer().notNull().default(30),
+    alarm_evals: integer().notNull().default(5),
+    alarm_points: integer().notNull().default(4),
+    alarm_threshold: integer().notNull().default(0),
+
+    enabled_styles: boolean().notNull().default(false),
+    styles: json().$type<Static<typeof StyleContainer>>().notNull().default({}),
+    stale: integer().notNull().default(20),
+    environment: json().notNull().default({}),
+    ephemeral: json().$type<Record<string, string>>().notNull().default({}),
+    config: json().$type<Static<typeof Layer_Config>>().notNull().default({}),
+    data: integer().references(() => Data.id),
+    schema: json().notNull().default({ type: 'object', required: [], properties: {} })
 });
 
 export const LayerTemplate = pgTable('layers_template', {
