@@ -49,7 +49,10 @@
             <div>Output Schema could not be loaded from upstream source:</div>
             <div v-text='softAlert.message' />
         </div>
-
+        <TablerLoading
+            v-else-if='!environment'
+            desc='Loading Environment'
+        />
         <TablerLoading
             v-else-if='loading.save'
             desc='Saving Environment'
@@ -157,7 +160,7 @@ const softAlert = ref(false);
 const esriView = ref(false);
 const disabled = ref(true);
 const config = ref({});
-const environment = ref({});
+const environment = ref();
 
 const filterModal = ref(false);
 
@@ -196,7 +199,7 @@ async function reload() {
 async function saveLayer() {
     loading.value.save = true;
 
-    const layer = await std(`/api/connection/${props.layer.connection}/layer/${props.layer.id}/incoming`, {
+    await std(`/api/connection/${props.layer.connection}/layer/${props.layer.id}/incoming`, {
         method: 'PATCH',
         body: {
             environment: environment.value,
@@ -207,6 +210,6 @@ async function saveLayer() {
     disabled.value = true;
     loading.value.save = false;
 
-    emit('layer', layer);
+    emit('refresh');
 }
 </script>

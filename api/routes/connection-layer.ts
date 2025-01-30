@@ -106,7 +106,7 @@ export default async function router(schema: Schema, config: Config) {
                 where: sql`
                     name ~* ${req.query.filter}
                     AND connection = ${req.params.connectionid}
-                    AND (${Param(req.query.data)}::BIGINT IS NULL OR ${Param(req.query.data)}::BIGINT = layers.data)
+                    AND (${Param(req.query.data)}::BIGINT IS NULL OR ${Param(req.query.data)}::BIGINT = layers_incoming.data)
                 `
             });
 
