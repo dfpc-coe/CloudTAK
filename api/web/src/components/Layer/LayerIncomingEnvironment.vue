@@ -157,12 +157,9 @@ const emit = defineEmits([ 'layer' ]);
 const raw = ref(false);
 const alert = ref(false);
 const softAlert = ref(false);
-const esriView = ref(false);
 const disabled = ref(true);
 const config = ref({});
 const environment = ref();
-
-const filterModal = ref(false);
 
 const loading = ref({
     save: false

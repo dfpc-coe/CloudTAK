@@ -26,7 +26,7 @@
                 </thead>
                 <tbody>
                     <tr
-                        v-for='(field, field_it) in schema'
+                        v-for='field in schema'
                         :key='field.name'
                     >
                         <td>
@@ -78,19 +78,14 @@
 
 <script setup>
 import { ref, watch, onMounted} from 'vue';
-import { std, stdurl } from '/src/std.ts';
 import {
     TablerNone,
 } from '@tak-ps/vue-tabler';
 import {
     IconAlphabetLatin,
     IconSort09,
-    IconPlus,
-    IconSettings,
     IconDecimal,
     IconBinary,
-    IconTrash,
-    IconWorldDownload,
 } from '@tabler/icons-vue'
 
 const props = defineProps({

@@ -39,11 +39,22 @@
                                         <TablerIconButton
                                             title='Layer Alerts'
                                             @click='router.push(`/connection/${route.params.connectionid}/layer/${layer.id}/alert`)'
-                                        ><IconAlertTriangle :size='32' stroke='1' :class='{ "text-red": alerts.total }' /></TablerIconButton>
+                                        >
+                                            <IconAlertTriangle
+                                                :size='32'
+                                                stroke='1'
+                                                :class='{ "text-red": alerts.total }'
+                                            />
+                                        </TablerIconButton>
                                         <TablerIconButton
                                             title='Edit'
                                             @click='router.push(`/connection/${route.params.connectionid}/layer/${layer.id}/edit`)'
-                                        > <IconPencil :size='32' :stroke='1' /></TablerIconButton>
+                                        >
+                                            <IconPencil
+                                                :size='32'
+                                                :stroke='1'
+                                            />
+                                        </TablerIconButton>
                                     </div>
                                 </div>
                             </div>
@@ -269,7 +280,6 @@ import { useRoute, useRouter } from 'vue-router';
 import { std, stdurl } from '/src/std.ts';
 import PageFooter from './PageFooter.vue';
 import LayerStatus from './Layer/utils/Status.vue';
-import cronstrue from 'cronstrue';
 import timeDiff from '../timediff.ts';
 import {
     TablerNone,
@@ -336,17 +346,6 @@ async function refresh(full = false) {
     if (full) await fetch();
     await fetchStatus();
     await fetchCapabilities();
-}
-
-function cronstr(cron) {
-    if (!cron) return;
-
-    if (cron.includes('cron(')) {
-        return cronstrue.toString(cron.replace('cron(', '').replace(')', ''));
-    } else {
-        const rate = cron.replace('rate(', '').replace(')', '');
-        return `Once every ${rate}`;
-    }
 }
 
 async function createIncoming() {
