@@ -241,6 +241,8 @@ export const Layer = pgTable('layers', {
 
 export const LayerIncoming = pgTable('layers_incoming', {
     layer: integer().primaryKey().references(() => Layer.id),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
 
     cron: text(),
     webhooks: boolean().notNull().default(false),

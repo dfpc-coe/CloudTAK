@@ -1,9 +1,8 @@
 import AWSLambda from '@aws-sdk/client-lambda';
 import Schedule from './schedule.js';
-import { Layer } from './schema.js';
+import LayerModel from './models/Layer.js';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { type InferSelectModel } from 'drizzle-orm';
-import Modeler from '@openaddresses/batch-generic';
 import type * as pgtypes from './schema.js'
 
 const lambda = new AWSLambda.LambdaClient({ region: process.env.AWS_REGION });
@@ -30,27 +29,18 @@ export default class EventsPool {
      * @param pool        Postgres Pool
      */
     async init(pool: PostgresJsDatabase<typeof pgtypes>): Promise<void> {
-        const LayerModel = new Modeler(pool, Layer);
-        const layers: Map<number, InferSelectModel<typeof Layer>> = new Map();
+        const model = new LayerModel(pool);
 
-        const stream = await LayerModel.stream();
+        for await (const layer of model.augmented_iter()) {
+            if (
+                !layer.incoming
+                || !layer.enabled
+                || !layer.incoming.cron
+                || (layer.incoming.cron && Schedule.is_aws(layer.incoming.cron))
+            ) continue;
 
-        await new Promise((resolve) => {
-            stream.on('data', (layer: InferSelectModel<typeof Layer>) => {
-                if (
-                    (layer.cron && Schedule.is_aws(layer.cron))
-                    || !layer.enabled
-                ) return;
-
-                layers.set(layer.id, layer);
-            }).on('end', resolve);
-        });
-
-        for (const layer of layers.values()) {
             try {
-                if (layer.cron) {
-                    this.add(layer.id, layer.cron);
-                }
+                this.add(layer.id, layer.incoming.cron);
             } catch (err) {
                 console.error(`CloudTAK Cron: Init Error on Layer ${layer.id}`, err);
             }
