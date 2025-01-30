@@ -15,6 +15,7 @@ export const Layer_Config = Type.Object({
 });
 
 export const AugmentedLayerIncoming = Type.Object({
+    layer: Type.Integer(),
     config: Layer_Config,
     cron: Type.Union([Type.String(), Type.Null()]),
     webhooks: Type.Boolean(),
@@ -77,12 +78,14 @@ export default class LayerModel extends Modeler<typeof Layer> {
     }
 
     parse(l: Static<typeof AugmentedLayer>): Static<typeof AugmentedLayer> {
-        if (l.incoming) {
+        if (l.incoming.layer) {
             if (typeof l.incoming.config === 'string') l.incoming.config = JSON.parse(l.incoming.config)
             if (typeof l.incoming.styles === 'string') l.incoming.styles = JSON.parse(l.incoming.styles)
             if (typeof l.incoming.ephemeral === 'string') l.incoming.ephemeral = JSON.parse(l.incoming.ephemeral)
             if (typeof l.incoming.environment === 'string') l.incoming.environment = JSON.parse(l.incoming.environment)
             if (typeof l.incoming.schema === 'string') l.incoming.schema = JSON.parse(l.incoming.schema)
+        } else {
+            delete l.incoming;
         }
 
         return l
@@ -127,6 +130,7 @@ export default class LayerModel extends Modeler<typeof Layer> {
                 timeout: Layer.timeout,
 
                 incoming: jsonBuildObject({
+                    layer: LayerIncoming.layer,
                     cron: LayerIncoming.cron,
                     stale: LayerIncoming.stale,
                     webhooks: LayerIncoming.webhooks,
@@ -175,6 +179,7 @@ export default class LayerModel extends Modeler<typeof Layer> {
                 timeout: Layer.timeout,
 
                 incoming: jsonBuildObject({
+                    layer: LayerIncoming.layer,
                     cron: LayerIncoming.cron,
                     stale: LayerIncoming.stale,
                     webhooks: LayerIncoming.webhooks,
