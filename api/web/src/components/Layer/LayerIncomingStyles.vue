@@ -22,16 +22,16 @@
                             label='Styling Enabled'
                         />
 
-                        <div
+                        <button
                             class='btn btn-primary btn-icon px-2'
                             @click='saveLayer'
                         >
                             <IconDeviceFloppy
                                 v-tooltip='"Save Style"'
                                 :size='32'
-                                :stroke='1'
+                                stroke='1'
                             />
-                        </div>
+                        </button>
                     </div>
                 </template>
             </div>
@@ -71,7 +71,7 @@
                         <IconHelp
                             v-tooltip='"JSONata Help"'
                             :size='32'
-                            :stroke='1'
+                            stroke='1'
                         />
                     </button>
                     <button
@@ -82,7 +82,7 @@
                         <IconX
                             v-tooltip='"Return to list"'
                             :size='32'
-                            :stroke='1'
+                            stroke='1'
                         />
                     </button>
                     <template v-if='!disabled'>
@@ -197,7 +197,7 @@ const props = defineProps({
     }
 });
 
-const emits = defineEmits(['refresh']);
+const emit = defineEmits(['refresh']);
 
 const route = useRoute();
 
