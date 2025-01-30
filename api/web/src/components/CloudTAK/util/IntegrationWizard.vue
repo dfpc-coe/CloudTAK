@@ -103,7 +103,7 @@
                 </div>
             </template>
             <template v-else-if='stack && !complete'>
-                <LayerEnvironment
+                <LayerIncomingEnvironment
                     :editing='true'
                     :layer='layer'
                     @layer='complete = true'
@@ -168,7 +168,7 @@ import { std } from '/src/std.ts';
 import ConnectionSelect from './Wizard/ConnectionSelect.vue';
 import ChannelSelect from './Wizard/ChannelSelect.vue';
 import TemplateSelect from './Wizard/TemplateSelect.vue';
-import LayerEnvironment from '../../Layer/LayerEnvironment.vue';
+import LayerIncomingEnvironment from '../../Layer/LayerIncomingEnvironment.vue';
 import {
     IconCircleCheck,
     IconCaretLeft,
@@ -200,7 +200,7 @@ export default {
         ConnectionSelect,
         ChannelSelect,
         TemplateSelect,
-        LayerEnvironment
+        LayerIncomingEnvironment
     },
     emits: [ 'close' ],
     data: function() {
