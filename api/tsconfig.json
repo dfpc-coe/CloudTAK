@@ -1,7 +1,4 @@
 {
-    "ts-node": {
-        "esm": true
-    },
     "compilerOptions": {
         "strict": true,
         "strictNullChecks": true,

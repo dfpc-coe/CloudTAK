@@ -1,4 +1,5 @@
-import Modeler, { GenericList, GenericListInput } from '@openaddresses/batch-generic';
+import Modeler, { GenericList, GenericIterInput, GenericListInput } from '@openaddresses/batch-generic';
+import Err from '@openaddresses/batch-error';
 import { jsonBuildObject } from './utils.js';
 import { StyleContainer } from '../style.js';
 import { Layer_Priority } from '../enums.js';
@@ -85,6 +86,27 @@ export default class LayerModel extends Modeler<typeof Layer> {
         }
 
         return l
+    }
+
+    async *augmented_iter(query: GenericIterInput = {}): AsyncGenerator<Static<typeof AugmentedLayer>> {
+        const pagesize = query.pagesize || 100;
+        let page = 0;
+
+        let pgres;
+        do {
+            pgres = await this.augmented_list({
+                page,
+                limit: pagesize,
+                order: query.order,
+                where: query.where
+            });
+
+            for (const row of pgres.items) {
+                yield row as Static<typeof AugmentedLayer>
+            }
+
+            page++;
+        } while (pgres.items.length);
     }
 
     async augmented_from(id: unknown | SQL<unknown>): Promise<Static<typeof AugmentedLayer>> {

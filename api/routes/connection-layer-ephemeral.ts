@@ -6,7 +6,7 @@ import Config from '../lib/config.js';
 import { sql } from 'drizzle-orm';
 
 export default async function router(schema: Schema, config: Config) {
-    await schema.put('/connection/:connectionid/layer/:layerid/ephemeral', {
+    await schema.put('/connection/:connectionid/layer/:layerid/incoming/ephemeral', {
         name: 'Put Ephemeral',
         group: 'LayerEphemeral',
         description: 'Store ephemeral values',
@@ -25,20 +25,22 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
-            let layer =  await config.models.Layer.augmented_from(req.params.layerid)
+            const layer =  await config.models.Layer.augmented_from(req.params.layerid)
 
             if (layer.connection !== connection.id) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
+            } else if (!layer.incoming) {
+                throw new Err(400, null, 'Layer does not have incoming config');
             }
 
-            layer = await config.models.Layer.commit(req.params.layerid, {
+            const incoming = await config.models.LayerIncoming.commit(req.params.layerid, {
                 updated: sql`Now()`,
                 ephemeral: req.body
             });
 
             await config.cacher.del(`layer-${req.params.layerid}`);
 
-            res.json(layer.ephemeral)
+            res.json(incoming.ephemeral)
         } catch (err) {
             Err.respond(err, res);
         }

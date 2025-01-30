@@ -1,5 +1,5 @@
+import Err from '@openaddresses/batch-error';
 import cf from '@openaddresses/cloudfriend';
-import { InferSelectModel } from 'drizzle-orm';
 import type { AugmentedLayer } from '../models/Layer.js';
 import AWSLambda from '@aws-sdk/client-lambda';
 import Config from '../config.js';
@@ -25,7 +25,9 @@ export default class Lambda {
             }))
         }));
 
-        if (!res.Payload) return {};
+        if (!res.Payload) {
+            throw new Err(400, null, 'Capabilities API returned empty response');
+        }
 
         return JSON.parse(Buffer.from(res.Payload).toString());
     }
@@ -43,7 +45,7 @@ export default class Lambda {
 
     static generate(
         config: Config,
-        layer: InferSelectModel<typeof AugmentedLayer>
+        layer: Static<typeof AugmentedLayer>
     ): object {
         const StackName = `${config.StackName}-layer-${layer.id}`;
 
