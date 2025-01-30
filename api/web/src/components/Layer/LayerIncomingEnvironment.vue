@@ -64,19 +64,18 @@
             <template v-if='raw'>
                 <pre v-text='environment' />
             </template>
-            <template v-else-if='alert'>
-                <TablerAlert
-                    title='Layer failed to return an Environment Schema'
-                    :err='alert'
-                />
-            </template>
-            <template v-else-if='capabilities.incoming.schema.input.display === "arcgis"'>
+            <TablerAlert
+                v-else-if='!props.capabilities'
+                title='Missing Capabilities'
+                :err='new Error("Layer failed to return an incoming input schema on the Capabilities object")'
+            />
+            <template v-else-if='props.capabilities.incoming.schema.input.display === "arcgis"'>
                 <LayerEnvironmentArcGIS
                     v-model='environment'
                     :disabled='disabled'
                 />
             </template>
-            <template v-else-if='capabilities.incoming.schema.input.type !== "object"'>
+            <template v-else-if='props.capabilities.incoming.schema.input.type !== "object"'>
                 <div class='d-flex justify-content-center my-4'>
                     Only Object Schemas are Supported.
                 </div>
@@ -155,7 +154,6 @@ const props = defineProps({
 const emit = defineEmits([ 'layer' ]);
 
 const raw = ref(false);
-const alert = ref(false);
 const softAlert = ref(false);
 const disabled = ref(true);
 const config = ref({});
@@ -170,6 +168,8 @@ onMounted(async () => {
 });
 
 function hasDateTime() {
+    if (!props.capabilities) return false;
+
     for (const prop of Object.keys(props.capabilities.incoming.schema.output.properties)) {
         if (props.capabilities.incoming.schema.output.properties[prop].format && props.capabilities.incoming.schema.output.properties[prop].format === 'date-time') {
             return true;

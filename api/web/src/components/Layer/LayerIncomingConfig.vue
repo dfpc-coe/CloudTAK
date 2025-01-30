@@ -32,7 +32,7 @@
         >
             <div class='row g-2'>
                 <div
-                    v-if='props.capabilities.incoming.invocation.includes("schedule")'
+                    v-if='props.capabilities ? props.capabilities.incoming.invocation.includes("schedule") : true'
                     class='col-md-12'
                 >
                     <div class='d-flex'>
@@ -109,7 +109,7 @@
                     </div>
                 </div>
                 <div
-                    v-if='props.capabilities.incoming.invocation.includes("webhook")'
+                    v-if='props.capabilities ? props.capabilities.incoming.invocation.includes("webhook") : true'
                     class='col-md-12'
                 >
                     <div class='d-flex'>
