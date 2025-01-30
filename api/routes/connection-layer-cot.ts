@@ -41,7 +41,9 @@ export default async function router(schema: Schema, config: Config) {
                 return await config.models.Layer.augmented_from(req.params.layerid);
             });
 
-            const style = new Style(layer);
+            if (!layer.incoming) throw new Err(400, null, 'Incoming Layer Configuration has not been applied');
+
+            const style = new Style(layer.incoming);
 
             for (let i = 0; i < req.body.features.length; i++) {
                 if (!req.body.features[i].properties) req.body.features[i].properties = {};
