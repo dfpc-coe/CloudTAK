@@ -209,7 +209,7 @@
         "query": true,
         "res": true
     },
-    "PUT /connection/:connectionid/layer/:layerid/ephemeral": {
+    "PUT /connection/:connectionid/layer/:layerid/incoming/ephemeral": {
         "body": true,
         "query": false,
         "res": true
@@ -227,6 +227,21 @@
     "POST /connection/:connectionid/layer": {
         "body": true,
         "query": true,
+        "res": true
+    },
+    "POST /connection/:connectionid/layer/:layerid/incoming": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /connection/:connectionid/layer/:layerid/incoming": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /connection/:connectionid/layer/:layerid/incoming": {
+        "body": false,
+        "query": false,
         "res": true
     },
     "PATCH /connection/:connectionid/layer/:layerid": {
@@ -299,9 +314,9 @@
         "query": false,
         "res": true
     },
-    "GET /connection/:connectionid/layer/:layerid/task/schema": {
+    "GET /connection/:connectionid/layer/:layerid/task/capabilities": {
         "body": false,
-        "query": true,
+        "query": false,
         "res": true
     },
     "POST /connection/:connectionid/layer/:layerid/task": {
