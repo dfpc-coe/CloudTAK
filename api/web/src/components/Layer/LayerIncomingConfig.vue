@@ -257,13 +257,6 @@
                 </div>
             </div>
         </div>
-
-        <TaskModal
-            v-if='taskmodal'
-            :task='config.task'
-            @close='taskmodal = false'
-            @task='taskmodal = false; config.task = $event'
-        />
     </div>
 </template>
 
@@ -271,10 +264,9 @@
 import { ref, watch, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { std, humanSeconds } from '../../std.ts';
-import type { LayerIncoming } from '../../types.ts';
+import type { ETLLayerIncoming } from '../../types.ts';
 import cronstrue from 'cronstrue';
 import DataSelect from '../util/DataSelect.vue';
-import TaskModal from './utils/TaskModal.vue';
 import CopyField from '../CloudTAK/util/CopyField.vue';
 import {
     TablerIconButton,
@@ -312,7 +304,6 @@ const emit = defineEmits([
 
 const disabled = ref(true);
 const cronEnabled = ref(true);
-const taskmodal = ref(false);
 const advanced = ref(false);
 
 const loading = ref({
@@ -321,7 +312,7 @@ const loading = ref({
     save: false
 });
 
-const incoming = ref<LayerIncoming>(props.layer.incoming);
+const incoming = ref<ETLLayerIncoming>(props.layer.incoming);
 
 watch(incoming, () => {
     if (cronEnabled.value) {
