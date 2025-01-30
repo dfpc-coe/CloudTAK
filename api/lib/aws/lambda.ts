@@ -13,7 +13,7 @@ import { Capabilities } from '@tak-ps/etl'
  * @class
  */
 export default class Lambda {
-    static async capabilities(config: Config, layerid: number): Promise<typeof Capabilities> {
+    static async capabilities(config: Config, layerid: number): Promise<Static<typeof Capabilities>> {
         const lambda = new AWSLambda.LambdaClient({ region: process.env.AWS_REGION });
         const FunctionName = `${config.StackName}-layer-${layerid}`;
 
