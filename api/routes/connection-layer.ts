@@ -110,13 +110,19 @@ export default async function router(schema: Schema, config: Config) {
                 `
             });
 
-            const alarms = (config.StackName !== 'test' && req.query.alarms) ? await alarm.list() : new Map();
-
+            let alarms = new Map();
             const status = { healthy: 0, alarm: 0, unknown: 0 };
-            for (const state of alarms.values()) {
-                if (state === 'healthy') status.healthy++;
-                if (state === 'alarm') status.alarm++;
-                if (state === 'unknown') status.unknown++;
+            try {
+                alarms = (config.StackName !== 'test' && req.query.alarms) ? await alarm.list() : new Map();
+
+                for (const state of alarms.values()) {
+                    if (state === 'healthy') status.healthy++;
+                    if (state === 'alarm') status.alarm++;
+                    if (state === 'unknown') status.unknown++;
+                }
+            } catch (err) {
+                // Surface this in the future - failing alarm lists shouldn't nuke access
+                console.error(err);
             }
 
             res.json({
@@ -179,8 +185,17 @@ export default async function router(schema: Schema, config: Config) {
                 console.error(err);
             }
 
+            let status = 'unknown';
+            if (config.StackName !== 'test' && req.query.alarms) {
+                try {
+                    status = await alarm.get(layer.id);
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+
             res.json({
-                status: (config.StackName !== 'test' && req.query.alarms) ? await alarm.get(layer.id) : 'unknown',
+                status,
                 ...layer
             });
         } catch (err) {
@@ -532,8 +547,17 @@ export default async function router(schema: Schema, config: Config) {
 
             layer = await config.models.Layer.augmented_from(layer.id);
 
+            let status = 'unknown';
+            if (config.StackName !== 'test' && req.query.alarms) {
+                try {
+                    status = await alarm.get(layer.id);
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+
             res.json({
-                status: (config.StackName !== 'test' && req.query.alarms) ? await alarm.get(layer.id) : 'unknown',
+                status,
                 ...layer
             });
         } catch (err) {
@@ -573,8 +597,17 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
             }
 
+            let status = 'unknown';
+            if (config.StackName !== 'test' && req.query.alarms) {
+                try {
+                    status = await alarm.get(layer.id);
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+
             res.json({
-                status: (config.StackName !== 'test' && req.query.alarms) ? await alarm.get(layer.id) : 'unknown',
+                status,
                 ...layer
             });
         } catch (err) {
