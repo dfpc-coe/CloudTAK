@@ -242,6 +242,7 @@
                                         :layer='layer'
                                         :capabilities='capabilities'
                                         :stack='stack'
+                                        @refresh='refresh(true)'
                                         @layer='layer = $event'
                                         @stack='fetchStatus(true)'
                                     />
@@ -308,13 +309,10 @@ watch(stack.value, async () => {
 });
 
 onMounted(async () => {
-    await fetch();
+    await refresh(true);
 
-    await fetchCapabilities();
-
-    await fetchStatus();
-    looping.value = setInterval(() => {
-        fetchStatus();
+    looping.value = setInterval(async () => {
+        await refresh(false);
     }, 10 * 1000);
 
     await fetchAlerts();
@@ -327,6 +325,12 @@ onUnmounted(() => {
         clearInterval(looping.value);
     }
 });
+
+async function refresh(full = false) {
+    if (full) await fetch();
+    await fetchStatus();
+    await fetchCapabilities();
+}
 
 function cronstr(cron) {
     if (!cron) return;

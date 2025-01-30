@@ -185,7 +185,8 @@
                                 v-if='!disabled'
                                 title='Add Parameter'
                                 @click='Array.isArray(environment.ARCGIS_PARAMS) ? environment.ARCGIS_PARAMS.push({ Key: "", Value: "" }) : environment.ARCGIS_PARAMS = [{ Key: "", Value: "" }]'
-                            ><IconPlus stroke='1'/>
+                            >
+                                <IconPlus stroke='1' />
                             </TablerIconButton>
                         </div>
                     </div>
@@ -197,7 +198,10 @@
                         :create='false'
                     />
                     <template v-else>
-                        <div class='row mt-2' v-for='(param, pit) of environment.ARCGIS_PARAMS'>
+                        <div
+                            v-for='(param, pit) of environment.ARCGIS_PARAMS'
+                            class='row mt-2'
+                        >
                             <div class='col-md-6'>
                                 <TablerInput
                                     v-model='param.Key'
@@ -207,9 +211,9 @@
                             </div>
                             <div class='col-md-6 d-flex align-items-center'>
                                 <TablerInput
+                                    v-model='param.Value'
                                     :style='disabled ? "width: 100%" : "width: calc(100% - 32px)"'
                                     :disabled='disabled'
-                                    v-model='param.Value'
                                     placeholder='Param Value'
                                 />
                                 <TablerDelete
