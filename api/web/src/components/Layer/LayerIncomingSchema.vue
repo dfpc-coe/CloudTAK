@@ -1,13 +1,16 @@
 <template>
     <div>
         <div class='card-header'>
-            <h3 class='card-title'>
-                Layer Schema
-            </h3>
+            <h3 class='card-title'>Layer Schema</h3>
         </div>
 
+        <TablerAlert
+            v-if='!props.capabilities'
+            title='Missing Capabilities'
+            :err='new Error("Layer failed to return an incoming input schema on the Capabilities object")'
+        />
         <TablerNone
-            v-if='!schema.length'
+            v-else-if='!schema.length'
             label='Schema'
             :create='false'
         />
@@ -80,6 +83,7 @@
 import { ref, watch, onMounted} from 'vue';
 import {
     TablerNone,
+    TablerAlert
 } from '@tak-ps/vue-tabler';
 import {
     IconAlphabetLatin,
@@ -111,6 +115,7 @@ onMounted(() => {
 
 function processCapabilities() {
     schema.value.splice(0, schema.value.length);
+    if (!props.capabilities) return;
 
     for (const name in props.capabilities.incoming.schema.output.properties) {
         schema.value.push({

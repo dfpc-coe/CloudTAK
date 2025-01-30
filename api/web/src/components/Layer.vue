@@ -68,6 +68,20 @@
                         </div>
                     </div>
 
+                    <div
+                        v-if='softAlert'
+                        class='col-lg-12'
+                    >
+                        <div class='card'>
+                            <div
+                                class='bg-red-lt mx-2 px-2 py-2 my-2 rounded border border-red justify-content-center'
+                            >
+                                <div>Layer Capabilities could not be loaded from upstream source - Some functionality may not work until properly deployed &amp; configured</div>
+                            </div>
+                        </div>
+                    </div>
+
+
                     <div class='col-lg-12'>
                         <div
                             v-if='loading.layer'
@@ -185,7 +199,7 @@
                                                 <TablerNone
                                                     v-else-if='!layer.incoming'
                                                     label='Incoming Config'
-                                                    :create='capabilities.incoming'
+                                                    :create='capabilities && capabilities.incoming'
                                                     @create='createIncoming'
                                                 />
                                                 <template v-else>
@@ -305,6 +319,7 @@ const route = useRoute();
 const router = useRouter();
 
 const mode = ref('incoming');
+const softAlert = ref(false);
 const loading = ref({
     layer: true,
     incoming: false,
@@ -312,7 +327,7 @@ const loading = ref({
 });
 const stack = ref({})
 const layer = ref({})
-const capabilities = ref({});
+const capabilities = ref();
 const alerts = ref({})
 const looping = ref(false);
 
@@ -380,7 +395,13 @@ async function fetchStatus(load = false) {
 }
 
 async function fetchCapabilities() {
-    capabilities.value = await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/task/capabilities`);
+    try {
+        capabilities.value = await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/task/capabilities`);
+        softAlert.value = false
+    } catch (err) {
+        softAlert.value = true;
+        console.error(err);
+    }
 }
 
 async function fetchAlerts() {

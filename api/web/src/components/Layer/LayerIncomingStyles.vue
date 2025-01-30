@@ -37,8 +37,13 @@
             </div>
         </div>
 
+        <TablerAlert
+            v-if='!props.capabilities'
+            title='Missing Capabilities'
+            :err='new Error("Layer failed to return an incoming input schema on the Capabilities object")'
+        />
         <TablerLoading
-            v-if='loading.save'
+            v-else-if='loading.save'
             desc='Saving Styles'
         />
         <TablerLoading
@@ -178,6 +183,7 @@ import {
 } from '@tabler/icons-vue'
 import jsonata from 'jsonata';
 import {
+    TablerAlert,
     TablerInput,
     TablerToggle,
     TablerNone,
