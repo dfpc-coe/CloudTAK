@@ -256,8 +256,8 @@ export const LayerIncoming = pgTable('layers_incoming', {
     environment: json().notNull().default({}),
     ephemeral: json().$type<Record<string, string>>().notNull().default({}),
     config: json().$type<Static<typeof Layer_Config>>().notNull().default({}),
-    data: integer().references(() => Data.id),
-    schema: json().notNull().default({ type: 'object', required: [], properties: {} })
+    schema: json().notNull().default({ type: 'object', required: [], properties: {} }),
+    data: integer().references(() => Data.id)
 });
 
 export const LayerTemplate = pgTable('layers_template', {
