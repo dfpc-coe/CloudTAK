@@ -78,7 +78,7 @@ export default class LayerModel extends Modeler<typeof Layer> {
     }
 
     parse(l: Static<typeof AugmentedLayer>): Static<typeof AugmentedLayer> {
-        if (l.incoming.layer) {
+        if (l.incoming && l.incoming.layer) {
             if (typeof l.incoming.config === 'string') l.incoming.config = JSON.parse(l.incoming.config)
             if (typeof l.incoming.styles === 'string') l.incoming.styles = JSON.parse(l.incoming.styles)
             if (typeof l.incoming.ephemeral === 'string') l.incoming.ephemeral = JSON.parse(l.incoming.ephemeral)
