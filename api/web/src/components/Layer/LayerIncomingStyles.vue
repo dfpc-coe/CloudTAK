@@ -8,7 +8,7 @@
                 <TablerIconButton
                     v-if='disabled'
                     title='Edit Style'
-                        @click='disabled = false'
+                    @click='disabled = false'
                 >
                     <IconPencil
                         :size='32'
@@ -263,7 +263,7 @@ async function saveLayer() {
     loading.value.save = true;
 
     try {
-        const layer = await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/incoming`, {
+        await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/incoming`, {
             method: 'PATCH',
             body: {
                 enabled_styles: enabled.value,

@@ -234,7 +234,7 @@
 
 <script setup>
 import { ref, watch, onMounted, onUnmounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import TaskModal from './utils/TaskModal.vue';
 import { std } from '/src/std.ts';
 import {
@@ -269,7 +269,6 @@ const emit = defineEmits([
 ]);
 
 const route = useRoute();
-const router = useRouter();
 
 const disabled = ref(true);
 const looping = ref(false);

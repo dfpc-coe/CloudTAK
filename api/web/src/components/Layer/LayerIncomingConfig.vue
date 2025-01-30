@@ -102,6 +102,10 @@
                                 </template>
                             </TablerDropdown>
                         </TablerInput>
+                        <label
+                            v-if='incoming.cron'
+                            v-text='cronstr(incoming.cron)'
+                        />
                     </div>
                 </div>
                 <div
@@ -266,10 +270,10 @@
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import { std, humanSeconds } from '../../../src/std.ts';
-import type { ETLTaskVersions, ETLLayerIncoming } from '../../../src/types.ts';
-import DataSelect from '../util/DataSelect.vue';
+import { std, humanSeconds } from '../../std.ts';
+import type { LayerIncoming } from '../../types.ts';
 import cronstrue from 'cronstrue';
+import DataSelect from '../util/DataSelect.vue';
 import TaskModal from './utils/TaskModal.vue';
 import CopyField from '../CloudTAK/util/CopyField.vue';
 import {
@@ -277,7 +281,6 @@ import {
     TablerDropdown,
     TablerInput,
     TablerToggle,
-    TablerEnum,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
@@ -285,7 +288,6 @@ import {
     IconCalendarClock,
     IconChevronDown,
     IconWebhook,
-    IconRefresh,
     IconPencil,
     IconSettings,
     IconDatabase,
@@ -311,7 +313,6 @@ const emit = defineEmits([
 const disabled = ref(true);
 const cronEnabled = ref(true);
 const taskmodal = ref(false);
-const newTaskVersion = ref<string | undefined>();
 const advanced = ref(false);
 
 const loading = ref({
@@ -341,6 +342,17 @@ function reload() {
     disabled.value = true;
 }
 
+function cronstr(cron?: string) {
+    if (!cron) return;
+
+    if (cron.includes('cron(')) {
+        return cronstrue.toString(cron.replace('cron(', '').replace(')', ''));
+    } else {
+        const rate = cron.replace('rate(', '').replace(')', '');
+        return `Once every ${rate}`;
+    }
+}
+
 async function saveIncoming() {
     loading.value.save = true;
 
@@ -363,17 +375,6 @@ async function saveIncoming() {
     } catch (err) {
         loading.value.save = false;
         throw err;
-    }
-}
-
-function cronstr(cron?: string) {
-    if (!cron) return;
-
-    if (cron.includes('cron(')) {
-        return cronstrue.toString(cron.replace('cron(', '').replace(')', ''));
-    } else {
-        const rate = cron.replace('rate(', '').replace(')', '');
-        return `Once every ${rate}`;
     }
 }
 </script>
