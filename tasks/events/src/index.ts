@@ -22,7 +22,7 @@ export type Event = {
 
 export const handler = async (
     event: {
-        Records: Lambda.SQSRecord[] | Lambda.S3EventRecord[]
+        Records: Lambda.S3EventRecord[]
     }
 ): Promise<void> => {
     if (!event.Records) {
@@ -33,41 +33,12 @@ export const handler = async (
     for (const record of event.Records) {
         if (Object.keys(record).includes('s3')) {
             await s3Event(record as Lambda.S3EventRecord)
-        } else if (Object.keys(record).includes('body')) {
-            await sqsEvent(record as Lambda.SQSRecord);
         } else {
             console.log('Unknown Source', JSON.stringify(record));
             throw new Error('Unknown Source');
         }
     }
 };
-
-async function sqsEvent(record: Lambda.SQSRecord) {
-    const event = JSON.parse(record.body)
-
-    const msg = event.Message.split('\n');
-    const res: any = {};
-    for (const e of msg) {
-        if (!e) continue;
-        res[e.split('=')[0]] = e.split('=')[1].replace(/'/g, '')
-    }
-
-    if (!res.ResourceStatus && !res.ResourceStatus.endsWith('COMPLETE')) {
-        console.warn(`No Action: ${res.LogicalResourceId}:${res.ResourceStatus}`);
-        return;
-    }
-
-    const layerid = parseInt(res.PhysicalResourceId.replace(/.*-layer-/, ''));
-    const token = `etl.${jwt.sign({ access: 'layer' , id: layerid, internal: true }, String(process.env.SigningSecret))}`;
-
-    const layer = await API.fetchLayer({ layer: layerid, token });
-
-    const body = await API.fetchSchema({
-        ...layer,
-        token
-    });
-    await API.updateLayer({ ...layer, token, body });
-}
 
 async function s3Event(record: Lambda.S3EventRecord) {
     const md: Event = {
