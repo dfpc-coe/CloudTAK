@@ -28,8 +28,7 @@ export const AugmentedLayerIncoming = Type.Object({
     stale: Type.Integer(),
     environment: Type.Any(),
     ephemeral: Type.Record(Type.String(), Type.String()),
-    data: Type.Union([Type.Integer(), Type.Null()]),
-    schema: Type.Any(),
+    data: Type.Union([Type.Integer(), Type.Null()])
 })
 
 export const AugmentedLayer = Type.Object({
@@ -83,7 +82,6 @@ export default class LayerModel extends Modeler<typeof Layer> {
             if (typeof l.incoming.styles === 'string') l.incoming.styles = JSON.parse(l.incoming.styles)
             if (typeof l.incoming.ephemeral === 'string') l.incoming.ephemeral = JSON.parse(l.incoming.ephemeral)
             if (typeof l.incoming.environment === 'string') l.incoming.environment = JSON.parse(l.incoming.environment)
-            if (typeof l.incoming.schema === 'string') l.incoming.schema = JSON.parse(l.incoming.schema)
         } else {
             delete l.incoming;
         }
@@ -142,7 +140,6 @@ export default class LayerModel extends Modeler<typeof Layer> {
                     ephemeral: LayerIncoming.ephemeral,
                     config: LayerIncoming.config,
                     data: LayerIncoming.data,
-                    schema: LayerIncoming.schema,
                     enabled_styles: LayerIncoming.enabled_styles,
                     styles: LayerIncoming.styles,
                 })
@@ -191,7 +188,6 @@ export default class LayerModel extends Modeler<typeof Layer> {
                     ephemeral: LayerIncoming.ephemeral,
                     config: LayerIncoming.config,
                     data: LayerIncoming.data,
-                    schema: LayerIncoming.schema,
                     enabled_styles: LayerIncoming.enabled_styles,
                     styles: LayerIncoming.styles,
                 })
