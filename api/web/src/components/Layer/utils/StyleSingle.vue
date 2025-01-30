@@ -673,7 +673,10 @@ export default {
     },
     mounted: function() {
         for (const prop of ['id', 'remarks', 'callsign', 'links']) {
-            if (!this.modelValue[prop]) continue;
+            if (!this.modelValue[prop] || (Array.isArray(this.modelValue[prop]) && this.modelValue[prop].length === 0)) {
+                continue;
+            }
+
             this.filters[prop] = this.modelValue[prop];
             this.enabled[prop] = true;
         }

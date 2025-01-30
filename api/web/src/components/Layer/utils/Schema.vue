@@ -124,6 +124,7 @@
                     <TablerNone
                         v-if='!data[key] || !data[key].length'
                         :label='key'
+                        :create='!disabled'
                         @create='editModal(schema.properties[key].items, {}, key)'
                     />
                 </template>

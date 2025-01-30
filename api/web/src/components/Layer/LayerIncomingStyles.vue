@@ -52,7 +52,7 @@
             <div class='card-body'>
                 <StyleSingle
                     v-model='style'
-                    :schema='layer.schema'
+                    :schema='capabilities.incoming.schema.output'
                     :disabled='disabled'
                 />
             </div>
@@ -119,7 +119,7 @@
                             tabindex='0'
                             role='menuitem'
                             class='cursor-pointer hover-light list-group-item list-group-item-action'
-                            @click='openQuery(q_idx)'
+                            @click='query = q_idx'
                         >
                             <div class='d-flex'>
                                 <div
@@ -162,7 +162,9 @@
     </div>
 </template>
 
-<script>
+<script setup>
+import { ref, computed, onMounted } from 'vue';
+import { useRoute } from 'vue-router'
 import { std } from '/src/std.ts';
 import {
     IconX,
@@ -181,121 +183,102 @@ import {
 } from '@tak-ps/vue-tabler';
 import StyleSingle from './utils/StyleSingle.vue';
 
-export default {
-    name: 'LayerStyles',
-    components: {
-        IconX,
-        IconPlus,
-        IconHelp,
-        StyleSingle,
-        TablerInput,
-        IconTrash,
-        TablerLoading,
-        TablerToggle,
-        TablerNone,
-        IconSettings,
-        IconDeviceFloppy
+const props = defineProps({
+    layer: {
+        type: Object,
+        required: true
     },
-    props: {
-        layer: {
-            type: Object,
-            required: true
-        },
-    },
-    emits: [
-        'layer'
-    ],
-    data: function() {
-        return {
-            disabled: true,
-            loading: {
-                init: true,
-                save: false
-            },
-            enabled: this.layer.enabled_styles,
-            style: {
-                callsign: '',
-                remarks: '',
-                links: [],
-            },
-            queries: [],
-            query: null,
-        };
-    },
-    computed: {
-        error_query: function() {
-            if (!this.query) return '';
+    capabilities: {
+        type: Object,
+        required: true
+    }
+});
 
-            try {
-                jsonata(this.query.query)
-                return '';
-            } catch (err) {
-                return err.message;
+const emits = defineEmits(['refresh']);
+
+const route = useRoute();
+
+const disabled = ref(true);
+const loading = ref({
+    init: true,
+    save: false
+});
+
+const enabled = ref(props.layer.incoming.enabled_styles);
+
+const style = ref({
+    callsign: '',
+    remarks: '',
+    links: [],
+});
+
+const queries = ref([]);
+const query = ref(null);
+
+const error_query = computed(() => {
+    if (!query.value) return '';
+
+    try {
+        jsonata(query.value.query)
+        return '';
+    } catch (err) {
+        return err.message;
+    }
+});
+
+onMounted(() => {
+    reload();
+    loading.value.init = false;
+});
+
+function reload() {
+    const clone = JSON.parse(JSON.stringify(props.layer.incoming.styles));
+    queries.value = clone.queries || [];
+    delete clone.queries;
+
+    style.value = Object.assign(style.value, JSON.parse(JSON.stringify(props.layer.incoming.styles)));
+
+    disabled.value = true;
+}
+
+function help(topic) {
+    if (topic === "query") {
+        window.open('http://docs.jsonata.org/simple', '_blank');
+    }
+}
+
+function newQuery() {
+    queries.value.push({
+        query: '',
+        styles: {}
+    })
+
+    query.value = queries.value.length - 1;
+}
+
+async function saveLayer() {
+    loading.value.save = true;
+
+    try {
+        const layer = await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/incoming`, {
+            method: 'PATCH',
+            body: {
+                enabled_styles: enabled.value,
+                styles: {
+                    ...style.value,
+                    queries: queries.value
+                }
             }
-        }
-    },
-    watch: {
-        mode: function() {
-            if (this.mode === "disabled") this.enabled = false;
-            else this.enabled = true;
-        }
-    },
-    mounted: function() {
-        this.reload();
-        this.loading.init = false;
-    },
-    methods: {
-        reload: function() {
-            const clone = JSON.parse(JSON.stringify(this.layer.styles));
-            this.queries = clone.queries || [];
-            delete clone.queries;
+        });
 
-            this.style = Object.assign(this.style, JSON.parse(JSON.stringify(this.layer.styles)));
+        disabled.value = true;
+        loading.value.save = false;
+        query.value = null;
 
-            if (!this.enabled) this.mode = "disabled";
-
-            this.disabled = true;
-        },
-        help: function(topic) {
-            if (topic === "query") {
-                window.open('http://docs.jsonata.org/simple', '_blank');
-            }
-        },
-        newQuery: function() {
-            this.queries.push({
-                query: '',
-                styles: {}
-            })
-            this.query = this.queries.length - 1;
-        },
-        saveLayer: async function() {
-            this.loading.save = true;
-
-            try {
-                const layer = await std(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}`, {
-                    method: 'PATCH',
-                    body: {
-                        enabled_styles: this.enabled,
-                        styles: {
-                            ...this.style,
-                            queries: this.queries
-                        }
-                    }
-                });
-
-                this.disabled = true;
-                this.loading.save = false;
-                this.query = null;
-
-                this.$emit('layer', layer);
-            } catch (err) {
-                this.loading.save = false;
-                throw err;
-            }
-        },
-        openQuery: function(idx) {
-            this.query = idx
-        }
+        emit('refresh');
+    } catch (err) {
+        loading.value.save = false;
+        throw err;
     }
 }
 </script>

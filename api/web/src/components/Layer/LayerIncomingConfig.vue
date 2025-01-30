@@ -31,7 +31,10 @@
             class='card-body'
         >
             <div class='row g-2'>
-                <div v-if='props.capabilities.incoming.invocation.includes("schedule")' class='col-md-12'>
+                <div
+                    v-if='props.capabilities.incoming.invocation.includes("schedule")'
+                    class='col-md-12'
+                >
                     <div class='d-flex'>
                         <IconCalendarClock
                             :size='20'
@@ -51,8 +54,8 @@
                         class='col-12 border rounded px-2 py-2'
                     >
                         <TablerInput
-                            label='Cron Expression'
                             v-model='incoming.cron'
+                            label='Cron Expression'
                             :disabled='disabled'
                             placeholder='Cron Expression'
                         >
@@ -101,7 +104,10 @@
                         </TablerInput>
                     </div>
                 </div>
-                <div v-if='props.capabilities.incoming.invocation.includes("webhook")' class='col-md-12'>
+                <div
+                    v-if='props.capabilities.incoming.invocation.includes("webhook")'
+                    class='col-md-12'
+                >
                     <div class='d-flex'>
                         <IconWebhook
                             :size='20'
@@ -122,7 +128,7 @@
                     >
                         <label>Webhook URL</label>
                         <CopyField
-                            :modelValue='props.layer.uuid'
+                            :model-value='props.layer.uuid'
                         />
                     </div>
                 </div>
@@ -159,28 +165,32 @@
                     </div>
                 </div>
 
-                <label
+                <div
                     v-if='props.layer.priority !== "off"'
-                    class='subheader mt-3 cursor-pointer'
+                    class='col-md-12'
                 >
-                    <TablerIconButton
-                        v-if='!advanced'
-                        title='Open Advanced Settings'
-                        @click='advanced = true'
-                    ><IconSquareChevronRight
-                        :size='32'
-                        stroke='1'
-                    /></TablerIconButton>
-                    <TablerIconButton
-                        v-else
-                        title='Close Advanced Settings'
-                        @click='advanced = false'
-                    ><IconChevronDown
-                        :size='32'
-                        stroke='1'
-                    /></TablerIconButton>
-                    Advanced Alarm Options
-                </label>
+                    <label
+                        class='subheader mt-3 cursor-pointer d-flex align-items-center'
+                    >
+                        <TablerIconButton
+                            v-if='!advanced'
+                            title='Open Advanced Settings'
+                            @click='advanced = true'
+                        ><IconSquareChevronRight
+                            :size='32'
+                            stroke='1'
+                        /></TablerIconButton>
+                        <TablerIconButton
+                            v-else
+                            title='Close Advanced Settings'
+                            @click='advanced = false'
+                        ><IconChevronDown
+                            :size='32'
+                            stroke='1'
+                        /></TablerIconButton>
+                        <span class='mx-2'>Advanced Alarm Options</span>
+                    </label>
+                </div>
 
                 <div
                     v-if='advanced && props.layer.priority !== "off"'
