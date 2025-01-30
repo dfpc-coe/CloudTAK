@@ -5,14 +5,16 @@
                 Style Overrides
             </h3>
             <div class='ms-auto btn-list'>
-                <IconSettings
+                <TablerIconButton
                     v-if='disabled'
-                    v-tooltip='"Edit Style"'
-                    :size='32'
-                    :stroke='1'
-                    class='cursor-pointer'
-                    @click='disabled = false'
-                />
+                    title='Edit Style'
+                        @click='disabled = false'
+                >
+                    <IconPencil
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
                 <template v-else-if='!loading.save'>
                     <div class='btn-list d-flex align-items-center'>
                         <TablerToggle
@@ -171,7 +173,7 @@ import {
     IconPlus,
     IconHelp,
     IconTrash,
-    IconSettings,
+    IconPencil,
     IconDeviceFloppy
 } from '@tabler/icons-vue'
 import jsonata from 'jsonata';
@@ -180,6 +182,7 @@ import {
     TablerToggle,
     TablerNone,
     TablerLoading,
+    TablerIconButton
 } from '@tak-ps/vue-tabler';
 import StyleSingle from './utils/StyleSingle.vue';
 
