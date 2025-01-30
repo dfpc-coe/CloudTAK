@@ -167,10 +167,15 @@
                                             </div>
 
                                             <template v-if='mode === "incoming"'>
+                                                <TablerLoading
+                                                    v-if='loading.incoming'
+                                                    desc='Creating Config'
+                                                />
                                                 <TablerNone
-                                                    v-if='!layer.incoming'
+                                                    v-else-if='!layer.incoming'
                                                     label='Incoming Config'
-                                                    :create='false'
+                                                    :create='capabilities.incoming'
+                                                    @create='createIncoming'
                                                 />
                                                 <template v-else>
                                                     <span
@@ -292,6 +297,7 @@ const router = useRouter();
 const mode = ref('incoming');
 const loading = ref({
     layer: true,
+    incoming: false,
     stack: true
 });
 const stack = ref({})
@@ -341,6 +347,19 @@ function cronstr(cron) {
         const rate = cron.replace('rate(', '').replace(')', '');
         return `Once every ${rate}`;
     }
+}
+
+async function createIncoming() {
+    loading.value.incoming = true;
+
+    await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/incoming`, {
+        method: 'POST',
+        body: {}
+    });
+
+    await fetch();
+
+    loading.value.incoming = false;
 }
 
 async function fetch() {
