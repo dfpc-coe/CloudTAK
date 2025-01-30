@@ -51,19 +51,6 @@ export default {
                                 cf.join(['arn:', cf.partition, ':s3:::', cf.join('-', [cf.stackName, cf.accountId, cf.region]), '/*'])
                             ],
                             Action: '*'
-                        },{
-                            Effect: 'Allow',
-                            Action: [
-                                'sqs:SendMessage',
-                                'sqs:ReceiveMessage',
-                                'sqs:ChangeMessageVisibility',
-                                'sqs:DeleteMessage',
-                                'sqs:GetQueueUrl',
-                                'sqs:GetQueueAttributes'
-                            ],
-                            Resource: [
-                                cf.getAtt('StackHookQueue', 'Arn')
-                            ]
                         }]
                     }
                 }],
