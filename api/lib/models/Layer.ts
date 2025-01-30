@@ -16,6 +16,8 @@ export const Layer_Config = Type.Object({
 
 export const AugmentedLayerIncoming = Type.Object({
     layer: Type.Integer(),
+    created: Type.String(),
+    updated: Type.String(),
     config: Layer_Config,
     cron: Type.Union([Type.String(), Type.Null()]),
     webhooks: Type.Boolean(),
@@ -129,6 +131,8 @@ export default class LayerModel extends Modeler<typeof Layer> {
 
                 incoming: jsonBuildObject({
                     layer: LayerIncoming.layer,
+                    created: LayerIncoming.created,
+                    updated: LayerIncoming.updated,
                     cron: LayerIncoming.cron,
                     stale: LayerIncoming.stale,
                     webhooks: LayerIncoming.webhooks,
@@ -177,6 +181,8 @@ export default class LayerModel extends Modeler<typeof Layer> {
 
                 incoming: jsonBuildObject({
                     layer: LayerIncoming.layer,
+                    created: LayerIncoming.created,
+                    updated: LayerIncoming.updated,
                     cron: LayerIncoming.cron,
                     stale: LayerIncoming.stale,
                     webhooks: LayerIncoming.webhooks,
