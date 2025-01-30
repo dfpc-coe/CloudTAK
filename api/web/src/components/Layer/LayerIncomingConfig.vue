@@ -320,16 +320,7 @@ const loading = ref({
     save: false
 });
 
-const incoming = ref<LayerIncoming>({
-    webhooks: false,
-    data: null,
-    cron: '0/15 * * * ? *',
-    stale: 60 * 1000,
-    alarm_period: 30,
-    alarm_evals: 5,
-    alarm_points: 4,
-    alarm_threshold: 0
-});
+const incoming = ref<LayerIncoming>(props.layer.incoming);
 
 watch(incoming, () => {
     if (cronEnabled.value) {
