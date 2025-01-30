@@ -41,8 +41,7 @@ export default class CloudFormation {
         await cf.send(new AWSCloudFormation.CreateStackCommand({
             StackName: this.stdname(config, layerid),
             TemplateBody: JSON.stringify(stack),
-            Tags: (await this.self(config)).Tags,
-            NotificationARNs: [ `${arn}:${config.StackName}-stack-events` ]
+            Tags: (await this.self(config)).Tags
         }));
     }
 
@@ -54,7 +53,6 @@ export default class CloudFormation {
             StackName: this.stdname(config, layerid),
             TemplateBody: JSON.stringify(stack),
             Tags: (await this.self(config)).Tags,
-            NotificationARNs: [ `${arn}:${config.StackName}-stack-events` ]
         }));
     }
 
