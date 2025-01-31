@@ -199,7 +199,7 @@
                                                 <TablerNone
                                                     v-else-if='!layer.incoming'
                                                     label='Incoming Config'
-                                                    :create='capabilities && capabilities.incoming'
+                                                    :create='capabilities && capabilities.incoming !== undefined'
                                                     @create='createIncoming'
                                                 />
                                                 <template v-else>
@@ -260,13 +260,13 @@
                                             </template>
                                             <template v-else>
                                                 <TablerLoading
-                                                    v-if='loading.outgoingn'
+                                                    v-if='loading.outgoing'
                                                     desc='Creating Config'
                                                 />
                                                 <TablerNone
                                                     v-else-if='!layer.outgoing'
                                                     label='Incoming Config'
-                                                    :create='capabilities && capabilities.outgoing'
+                                                    :create='capabilities && capabilities.outgoing !== undefined'
                                                     @create='createOutgoing'
                                                 />
                                                 <template v-else>
