@@ -265,9 +265,11 @@ export default class Overlay {
 
         for (const click of opts.clickable) {
             mapStore.map.on('mouseenter', click.id, () => {
+                if (mapStore.drawOptions.mode !== 'static') return;
                 mapStore.map.getCanvas().style.cursor = 'pointer';
             })
             mapStore.map.on('mouseleave', click.id, () => {
+                if (mapStore.drawOptions.mode !== 'static') return;
                 mapStore.map.getCanvas().style.cursor = '';
             })
         }
