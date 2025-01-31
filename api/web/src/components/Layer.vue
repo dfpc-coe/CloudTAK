@@ -259,10 +259,31 @@
                                                 </template>
                                             </template>
                                             <template v-else>
-                                                <TablerNone
-                                                    label='Outgoing Config'
-                                                    :create='false'
+                                                <TablerLoading
+                                                    v-if='loading.outgoingn'
+                                                    desc='Creating Config'
                                                 />
+                                                <TablerNone
+                                                    v-else-if='!layer.outgoing'
+                                                    label='Incoming Config'
+                                                    :create='capabilities && capabilities.outgoing'
+                                                    @create='createOutgoing'
+                                                />
+                                                <template v-else>
+                                                    <span
+                                                        tabindex='0'
+                                                        role='menuitem'
+                                                        class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
+                                                        :class='{
+                                                            "active": route.name === "layer-outgoing-environment",
+                                                            "cursor-pointer": route.name !== "layer-outgoing-environment"
+                                                        }'
+                                                        @click='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/outgoing/environment`)'
+                                                    ><IconBeach
+                                                        :size='32'
+                                                        :stroke='1'
+                                                    /><span class='mx-3'>Environment</span></span>
+                                                </template>
                                             </template>
                                         </div>
                                     </div>
@@ -323,6 +344,7 @@ const softAlert = ref(false);
 const loading = ref({
     layer: true,
     incoming: false,
+    outgoing: false,
     stack: true
 });
 const stack = ref({})
@@ -361,6 +383,19 @@ async function refresh(full = false) {
     if (full) await fetch();
     await fetchStatus();
     await fetchCapabilities();
+}
+
+async function createOutgoing() {
+    loading.value.outgoing = true;
+
+    await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/outgoing`, {
+        method: 'POST',
+        body: {}
+    });
+
+    await fetch();
+
+    loading.value.outgoing = false;
 }
 
 async function createIncoming() {

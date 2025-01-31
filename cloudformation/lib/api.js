@@ -277,6 +277,19 @@ export default {
                         },{
                             Effect: 'Allow',
                             Action: [
+                                'sqs:CreateQueue',
+                                'sqs:GetQueueAttributes',
+                                'sqs:SetQueueAttributes',
+                                'sqs:ListQueueTags',
+                                'sqs:ReceiveMessage',
+                                'sqs:TagQueue'
+                            ],
+                            Resource: [
+                                cf.join(['arn:', cf.partition, ':', cf.region, ':', cf.accountId, ':coe-etl-', cf.ref('Environment'), '-layer-*'])
+                            ]
+                        },{
+                            Effect: 'Allow',
+                            Action: [
                                 'cloudwatch:PutMetricData',
                                 'cloudwatch:GetMetricData'
                             ],
@@ -508,6 +521,26 @@ export default {
                     }]
                 },
                 Path: '/',
+                Policies: [{
+                    PolicyName: cf.join([cf.stackName, '-etl-policy']),
+                    PolicyDocument: {
+                        Version: '2012-10-17',
+                        Statement: [{
+                            Effect: 'Allow',
+                            Action: [
+                                'sqs:SendMessage',
+                                'sqs:ReceiveMessage',
+                                'sqs:ChangeMessageVisibility',
+                                'sqs:DeleteMessage',
+                                'sqs:GetQueueUrl',
+                                'sqs:GetQueueAttributes'
+                            ],
+                            Resource: [
+                                cf.join(['arn:', cf.partition, ':', cf.region, ':', cf.accountId, ':coe-etl-', cf.ref('Environment'), '-layer-*'])
+                            ]
+                        }]
+                    }
+                }],
                 ManagedPolicyArns: [
                     cf.join(['arn:', cf.partition, ':iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'])
                 ]
