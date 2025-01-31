@@ -1,25 +1,25 @@
 <template>
     <MenuTemplate name='Chats'>
         <template #buttons>
-            <IconPlus
-                v-tooltip='"New Chat"'
-                :size='32'
-                :stroke='1'
-                role='button'
-                tabindex='0'
-                class='cursor-pointer'
+            <TablerIconButton
+                title='New Chat'
                 @click='$router.push("/menu/contacts")'
-            />
-            <IconRefresh
+            >
+                <IconPlus
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
+            <TablerIconButton
                 v-if='!loading'
-                v-tooltip='"Refresh"'
-                :size='32'
-                :stroke='1'
-                role='button'
-                tabindex='0'
-                class='cursor-pointer'
+                title='Refresh'
                 @click='fetchList'
-            />
+            >
+                <IconRefresh
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
         </template>
         <template #default>
             <TablerAlert
@@ -65,7 +65,8 @@ import { std, stdurl } from '/src/std.ts';
 import {
     TablerNone,
     TablerAlert,
-    TablerLoading
+    TablerLoading,
+    TablerIconButton
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import {
