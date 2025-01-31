@@ -98,7 +98,7 @@ export default class Lambda {
                 Type: 'AWS::SQS::Queue',
                 Properties: {
                     ContentBasedDeduplication: true,
-                    QueueName: cf.join('-', [cf.stackName, 'outgoing.fifo']),
+                    QueueName: cf.join([cf.stackName, '-outgoing.fifo']),
                     FifoQueue: true,
                     RedrivePolicy: {
                         deadLetterTargetArn: cf.getAtt('OutgoingDeadQueue', 'Arn'),
@@ -111,7 +111,7 @@ export default class Lambda {
                 Type: 'AWS::SQS::Queue',
                 Properties: {
                     FifoQueue: true,
-                    QueueName: cf.join('-', [cf.stackName, 'outgoing-dead.fifo'])
+                    QueueName: cf.join([cf.stackName, '-outgoing-dead.fifo'])
                 }
             };
 
