@@ -87,14 +87,36 @@
                     >
                         Subscribe
                     </button>
-                    <button
+                    <template
                         v-else-if='subscribed === true'
-                        class='btn btn-danger'
-                        style='height: 32px;'
-                        @click='subscribe(false)'
                     >
-                        Unsubscribe
-                    </button>
+                        <div class='btn-list'>
+                            <button
+                                class='btn btn-danger'
+                                style='height: 32px;'
+                                @click='subscribe(false)'
+                            >
+                                Unsubscribe
+                            </button>
+
+                            <button
+                                v-if='mapStore.mission !== props.mission.guid'
+                                class='btn btn-green'
+                                style='height: 32px;'
+                                @click='mapStore.mission = props.mission.guid'
+                            >
+                                Make Active
+                            </button>
+                            <button
+                                v-else
+                                class='btn btn-muted'
+                                style='height: 32px;'
+                                @click='mapStore.mission = undefined'
+                            >
+                                Deactivate
+                            </button>
+                        </div>
+                    </template>
                     <TablerLoading
                         v-else
                         :inline='true'
