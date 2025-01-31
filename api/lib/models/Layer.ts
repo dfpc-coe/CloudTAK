@@ -165,15 +165,16 @@ export default class LayerModel extends Modeler<typeof Layer> {
                 }),
 
                 outgoing: jsonBuildObject({
-                    layer: LayerIncoming.layer,
-                    created: LayerIncoming.created,
-                    updated: LayerIncoming.updated,
-                    environment: LayerIncoming.environment,
-                    ephemeral: LayerIncoming.ephemeral,
+                    layer: LayerOutgoing.layer,
+                    created: LayerOutgoing.created,
+                    updated: LayerOutgoing.updated,
+                    environment: LayerOutgoing.environment,
+                    ephemeral: LayerOutgoing.ephemeral,
                 })
             })
             .from(Layer)
             .leftJoin(LayerIncoming, eq(LayerIncoming.layer, Layer.id))
+            .leftJoin(LayerOutgoing, eq(LayerOutgoing.layer, Layer.id))
             .where(is(id, SQL)? id as SQL<unknown> : eq(this.requiredPrimaryKey(), id))
             .limit(1)
 
@@ -223,15 +224,16 @@ export default class LayerModel extends Modeler<typeof Layer> {
                 }),
 
                 outgoing: jsonBuildObject({
-                    layer: LayerIncoming.layer,
-                    created: LayerIncoming.created,
-                    updated: LayerIncoming.updated,
-                    environment: LayerIncoming.environment,
-                    ephemeral: LayerIncoming.ephemeral,
+                    layer: LayerOutgoing.layer,
+                    created: LayerOutgoing.created,
+                    updated: LayerOutgoing.updated,
+                    environment: LayerOutgoing.environment,
+                    ephemeral: LayerOutgoing.ephemeral,
                 })
             })
             .from(Layer)
             .leftJoin(LayerIncoming, eq(LayerIncoming.layer, Layer.id))
+            .leftJoin(LayerOutgoing, eq(LayerOutgoing.layer, Layer.id))
             .where(query.where)
             .orderBy(orderBy)
             .limit(query.limit || 10)
