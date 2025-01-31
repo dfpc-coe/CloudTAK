@@ -5,7 +5,7 @@ import { StyleContainer } from '../style.js';
 import { Layer_Priority } from '../enums.js';
 import { Static, Type } from '@sinclair/typebox'
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import { Layer, LayerIncoming } from '../schema.js';
+import { Layer, LayerIncoming, LayerOutgoing } from '../schema.js';
 import { sql, eq, asc, desc, is, SQL } from 'drizzle-orm';
 
 export const Layer_Config = Type.Object({
