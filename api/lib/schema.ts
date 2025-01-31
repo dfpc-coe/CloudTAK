@@ -239,6 +239,15 @@ export const Layer = pgTable('layers', {
     unq: unique().on(t.connection, t.name)
 }));
 
+export const LayerOutgoing = pgTable('layers_outgoing', {
+    layer: integer().primaryKey().references(() => Layer.id),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+
+    environment: json().notNull().default({}),
+    ephemeral: json().$type<Record<string, string>>().notNull().default({}),
+});
+
 export const LayerIncoming = pgTable('layers_incoming', {
     layer: integer().primaryKey().references(() => Layer.id),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
