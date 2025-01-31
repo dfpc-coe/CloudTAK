@@ -44,7 +44,7 @@ export const AugmentedLayer = Type.Object({
     enabled: Type.Boolean(),
     logging: Type.Boolean(),
     task: Type.String(),
-    connection: Type.Optional(Type.Integer()),
+    connection: Type.Integer(),
     memory: Type.Integer(),
     timeout: Type.Integer(),
     priority: Type.Enum(Layer_Priority),

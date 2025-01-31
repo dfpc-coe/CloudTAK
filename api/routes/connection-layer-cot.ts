@@ -61,10 +61,10 @@ export default async function router(schema: Schema, config: Config) {
             let pooledClient;
             let data;
 
-            if (!layer.data) {
+            if (!layer.incoming.data) {
                 pooledClient = await config.conns.get(layer.connection);
-            } else if (layer.data) {
-                data = await config.models.Data.from(layer.data);
+            } else if (layer.incoming.data) {
+                data = await config.models.Data.from(layer.incoming.data);
 
                 pooledClient = await config.conns.get(data.connection);
                 if (!pooledClient) throw new Err(500, null, `Pooled Client for ${data.connection} not found in config`);
@@ -89,7 +89,7 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
-            if (layer.data && data) {
+            if (layer.incoming.data && data) {
                 if (!data.mission_sync) {
                     throw new Err(202, null, 'Recieved but Data Mission Sync Disabled');
                 }
