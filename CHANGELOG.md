@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v6.3.0 - 2025-01-31
+
+- :tada: Add Outgoing APIs
+
 ### v6.2.0 - 2025-01-30
 
 - :tada: Sketch out outgoing Config
