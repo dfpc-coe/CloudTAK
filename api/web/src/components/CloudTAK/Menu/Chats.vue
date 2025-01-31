@@ -3,8 +3,8 @@
         <template #buttons>
             <IconPlus
                 v-tooltip='"New Chat"'
-                :size='32' 
-                :stroke='1' 
+                :size='32'
+                :stroke='1'
                 role='button'
                 tabindex='0'
                 class='cursor-pointer'
@@ -13,8 +13,8 @@
             <IconRefresh
                 v-if='!loading'
                 v-tooltip='"Refresh"'
-                :size='32' 
-                :stroke='1' 
+                :size='32'
+                :stroke='1'
                 role='button'
                 tabindex='0'
                 class='cursor-pointer'
@@ -22,7 +22,11 @@
             />
         </template>
         <template #default>
-            <TablerLoading v-if='loading' />
+            <TablerAlert
+                v-if='error'
+                :err='error'
+            />
+            <TablerLoading v-else-if='loading' />
             <TablerNone
                 v-else-if='!chats.items.length'
                 :create='false'
@@ -39,7 +43,7 @@
                         class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'
                         @click='$router.push(`/menu/chats/${chat.chatroom}`)'
                     >
-                        <IconUser 
+                        <IconUser
                             :size='32'
                             :stroke='1'
                         />
@@ -55,10 +59,12 @@
     </MenuTemplate>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted } from 'vue'
 import { std, stdurl } from '/src/std.ts';
 import {
     TablerNone,
+    TablerAlert,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
@@ -68,36 +74,28 @@ import {
     IconRefresh,
 } from '@tabler/icons-vue';
 
-export default {
-    name: 'CloudTAKChats',
-    components: {
-        IconPlus,
-        IconRefresh,
-        IconUser,
-        TablerNone,
-        TablerLoading,
-        MenuTemplate
-    },
-    data: function() {
-        return {
-            err: false,
-            loading: true,
-            chats: {
-                total: 0,
-                items: []
-            }
-        }
-    },
-    mounted: async function() {
-        await this.fetchList();
-    },
-    methods: {
-        fetchList: async function() {
-            this.loading = true;
-            const url = stdurl('/api/profile/chat');
-            this.chats = await std(url);
-            this.loading = false;
-        },
+const error = ref<Error | undefined>(undefined);
+const loading = ref(true);
+const chats = ref({
+    total: 0,
+    items: []
+});
+
+onMounted(async () => {
+    await fetchList();
+});
+
+async function fetchList() {
+    loading.value = true;
+
+    try {
+        const url = stdurl('/api/profile/chat');
+        chats.value = await std(url);
+        loading.value = false;
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(err);
     }
+
+    loading.value = false;
 }
 </script>
