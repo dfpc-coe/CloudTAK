@@ -12,6 +12,18 @@
 
 ### Pending Release
 
+### v6.0.0 =- 2025-01-30
+
+Note that while the frontend & database have no breaking changes and will be migrated automatically, ALL ETLs LAYERS MUST BE UPDATED!
+
+- :information_source: ETLs must be updated to handle the new flow direction parameter on the `schema()` function
+- :rocket: Ephemeral API is now prefixed with `/incoming`
+- :rocket: Layer APIs return `incoming: { config }` which is optional
+- :rocket: Incoming config is now configured via the `/:layerid/incoming*` API Endpoints
+- :rocket: Database migration is performed automatically and no data loss will occur, the user must only ensure that layers are updated to `@tak-ps/etl@8.0.2` or higher
+- :bug: Add `alarms=false` default to all layers endpoint
+- :rocket Add graceful fallback if AWS Alarms API call fails
+
 ### v5.48.2 - 2025-01-28
 
 - :bug: `API` Fix issue where Breadcrumb wouldn't load due to missing callsign
