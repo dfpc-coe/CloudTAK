@@ -688,6 +688,10 @@ export default async function router(schema: Schema, config: Config) {
 
             await CloudFormation.delete(config, layer.id);
 
+            if (layer.incoming) {
+                await config.models.LayerIncoming.delete(req.params.layerid);
+            }
+
             config.events.delete(layer.id);
 
             await config.models.Layer.delete(req.params.layerid);
