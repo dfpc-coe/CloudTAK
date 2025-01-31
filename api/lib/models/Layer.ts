@@ -14,6 +14,14 @@ export const Layer_Config = Type.Object({
     }))
 });
 
+export const AugmentedLayerOutgoing = Type.Object({
+    layer: Type.Integer(),
+    created: Type.String(),
+    updated: Type.String(),
+    environment: Type.Any(),
+    ephemeral: Type.Record(Type.String(), Type.String()),
+})
+
 export const AugmentedLayerIncoming = Type.Object({
     layer: Type.Integer(),
     created: Type.String(),
@@ -49,7 +57,8 @@ export const AugmentedLayer = Type.Object({
     timeout: Type.Integer(),
     priority: Type.Enum(Layer_Priority),
 
-    incoming: Type.Optional(AugmentedLayerIncoming)
+    incoming: Type.Optional(AugmentedLayerIncoming),
+    outgoing: Type.Optional(AugmentedLayerOutgoing)
 });
 
 export default class LayerModel extends Modeler<typeof Layer> {
@@ -86,6 +95,13 @@ export default class LayerModel extends Modeler<typeof Layer> {
             if (typeof l.incoming.environment === 'string') l.incoming.environment = JSON.parse(l.incoming.environment)
         } else {
             delete l.incoming;
+        }
+
+        if (l.outgoing && l.outgoing.layer) {
+            if (typeof l.outgoing.ephemeral === 'string') l.outgoing.ephemeral = JSON.parse(l.outgoing.ephemeral)
+            if (typeof l.outgoing.environment === 'string') l.outgoing.environment = JSON.parse(l.outgoing.environment)
+        } else {
+            delete l.outgoing;
         }
 
         return l
@@ -146,6 +162,14 @@ export default class LayerModel extends Modeler<typeof Layer> {
                     data: LayerIncoming.data,
                     enabled_styles: LayerIncoming.enabled_styles,
                     styles: LayerIncoming.styles,
+                }),
+
+                outgoing: jsonBuildObject({
+                    layer: LayerIncoming.layer,
+                    created: LayerIncoming.created,
+                    updated: LayerIncoming.updated,
+                    environment: LayerIncoming.environment,
+                    ephemeral: LayerIncoming.ephemeral,
                 })
             })
             .from(Layer)
@@ -196,6 +220,14 @@ export default class LayerModel extends Modeler<typeof Layer> {
                     data: LayerIncoming.data,
                     enabled_styles: LayerIncoming.enabled_styles,
                     styles: LayerIncoming.styles,
+                }),
+
+                outgoing: jsonBuildObject({
+                    layer: LayerIncoming.layer,
+                    created: LayerIncoming.created,
+                    updated: LayerIncoming.updated,
+                    environment: LayerIncoming.environment,
+                    ephemeral: LayerIncoming.ephemeral,
                 })
             })
             .from(Layer)
