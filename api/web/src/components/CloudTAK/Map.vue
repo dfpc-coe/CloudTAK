@@ -281,14 +281,16 @@
                 </TablerDropdown>
                 <TablerDropdown>
                     <template #default>
-                        <IconPencil
-                            role='button'
-                            tabindex='0'
-                            :size='40'
-                            stroke='1'
+                        <TablerIconButton
+                            title='Geometry Editing'
                             class='mx-2 cursor-pointer hover-button'
                             @click='closeAllMenu'
-                        />
+                        >
+                            <IconPencil
+                                :size='40'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
                     </template>
                     <template #dropdown>
                         <div
@@ -363,25 +365,28 @@
                 class='position-absolute top-0 end-0 text-white py-2'
                 style='z-index: 1; width: 60px; background-color: rgba(0, 0, 0, 0.5);'
             >
-                <IconMenu2
+                <TablerIconButton
                     v-if='noMenuShown'
-                    tabindex='0'
-                    role='button'
-                    title='Open Menu Button'
-                    :size='40'
-                    stroke='1'
+                    title='Open Menu'
                     class='mx-2 cursor-pointer hover-button'
                     @click='router.push("/menu")'
-                />
-                <IconX
+                >
+                    <IconMenu2
+                        :size='40'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+                <TablerIconButton
                     v-else
-                    tabindex='0'
-                    title='Close Menu Button'
-                    :size='40'
-                    stroke='1'
-                    class='mx-2 cursor-pointer bg-dark rounded'
+                    title='Close Menu'
+                    class='mx-2 cursor-pointer hover-button'
                     @click='closeAllMenu'
-                />
+                >
+                    <IconX
+                        :size='40'
+                        stroke='1'
+                    />
+                </TablerIconButton>
             </div>
 
 
@@ -489,6 +494,7 @@ import SelectFeats from './util/SelectFeats.vue';
 import MultipleSelect from './util/MultipleSelect.vue';
 import SideMenu from './Menu.vue';
 import {
+    TablerIconButton,
     TablerDropdown,
     TablerModal,
     TablerNone,
