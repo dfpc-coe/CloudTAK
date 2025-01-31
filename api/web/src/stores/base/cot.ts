@@ -52,7 +52,9 @@ export default class COT {
 
     origin: Origin
 
-    constructor(feat: Feature, origin?: Origin) {
+    constructor(feat: Feature, origin?: Origin, opts?: {
+        skipSave?: boolean;
+    }) {
         feat.properties = COT.style(feat.geometry.type, feat.properties);
 
         this.id = feat.id || crypto.randomUUID();
@@ -73,6 +75,10 @@ export default class COT {
 
         if (this.origin.mode === OriginMode.CONNECTION) {
             this._store.pending.set(this.id, this);
+        }
+
+        if (!this.is_self && (!opts || (opts && opts.skipSave === false))) {
+            this.save();
         }
     }
 
@@ -145,7 +151,7 @@ export default class COT {
                     tak_remarks: this.properties.remarks
                 })
             }
-        } else if (!opts || (opts && !opts.skipSave)) {
+        } else if (!opts || (opts && opts.skipSave === false)) {
             await this.save();
         }
 

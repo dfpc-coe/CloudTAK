@@ -47,8 +47,14 @@
                 </div>
                 <div class='col-12 d-flex my-2 mx-2'>
                     <div class='btn-list'>
+                        <IconStarFilled
+                            v-if='cot.properties.archived'
+                            title='Saved Feature'
+                            :size='32'
+                            stroke='1'
+                        />
                         <TablerIconButton
-                            v-if='cot.is_archivable'
+                            v-else-if='cot.is_archivable'
                             title='Save Feature'
                             @click='cot.properties.archived = true'
                         >
@@ -57,12 +63,6 @@
                                 stroke='1'
                             />
                         </TablerIconButton>
-                        <IconStarFilled
-                            v-else-if='cot.properties.archived'
-                            title='Saved Feature'
-                            :size='32'
-                            stroke='1'
-                        />
 
                         <TablerIconButton
                             v-if='cot.properties.video && cot.properties.video.url'

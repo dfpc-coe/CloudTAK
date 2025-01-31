@@ -34,6 +34,7 @@ export const useMapStore = defineStore('cloudtak', {
         _map?: mapgl.Map;
         _draw?: terraDraw.TerraDraw;
         edit: COT | undefined;
+        mission: string | undefined;
         container?: HTMLElement;
         hasTerrain: boolean;
         isTerrainEnabled: boolean;
@@ -64,6 +65,7 @@ export const useMapStore = defineStore('cloudtak', {
             isTerrainEnabled: false,
             isLoaded: false,
             bearing: 0,
+            mission: undefined,
             edit: undefined,
             select: {
                 mode: undefined,
