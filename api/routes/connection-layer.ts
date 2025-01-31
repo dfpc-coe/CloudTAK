@@ -12,7 +12,7 @@ import Config from '../lib/config.js';
 import Schedule from '../lib/schedule.js';
 import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
-import { StandardResponse, LayerResponse, LayerIncomingResponse } from '../lib/types.js';
+import { StandardResponse, LayerResponse, LayerIncomingResponse, LayerOutgoingResponse } from '../lib/types.js';
 import DataMission from '../lib/data-mission.js';
 import { MAX_LAYERS_IN_DATA_SYNC } from '../lib/data-mission.js';
 import { Layer_Config } from '../lib/models/Layer.js';
@@ -206,7 +206,7 @@ export default async function router(schema: Schema, config: Config) {
     await schema.post('/connection/:connectionid/layer/:layerid/incoming', {
         name: 'Create Incoming',
         group: 'Layer',
-        description: 'Register a new layer',
+        description: 'Register a new incoming layer config',
         params: Type.Object({
             connectionid: Type.Integer({ minimum: 1 }),
             layerid: Type.Integer({ minimum: 1 })
@@ -216,7 +216,6 @@ export default async function router(schema: Schema, config: Config) {
             cron: Type.Optional(Type.String()),
             stale: Type.Optional(Type.Integer()),
             data: Type.Optional(Type.Integer()),
-            schema: Type.Optional(Type.Any()),
             enabled_styles: Type.Optional(Type.Boolean()),
             styles: Type.Optional(StyleContainer),
             config: Type.Optional(Layer_Config),
@@ -465,6 +464,132 @@ export default async function router(schema: Schema, config: Config) {
             res.json({
                 status: 200,
                 message: 'Incoming Layer Config Deleted'
+            });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.post('/connection/:connectionid/layer/:layerid/outgoing', {
+        name: 'Create Outgoing',
+        group: 'Layer',
+        description: 'Register a new incoming layer config',
+        params: Type.Object({
+            connectionid: Type.Integer({ minimum: 1 }),
+            layerid: Type.Integer({ minimum: 1 })
+        }),
+        body: Type.Object({}),
+        res: LayerOutgoingResponse
+    }, async (req, res) => {
+        try {
+            const { connection } = await Auth.is_connection(config, req, {
+                resources: [
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                    { access: AuthResourceAccess.LAYER, id: req.params.layerid }
+                ]
+            }, req.params.connectionid);
+
+            let layer = await config.models.Layer.augmented_from(req.params.layerid);
+
+            if (layer.connection !== connection.id) {
+                throw new Err(400, null, 'Layer does not belong to this connection');
+            }
+
+            const incoming = await config.models.LayerOutgoing.generate({
+                layer: layer.id,
+                ...req.body
+            });
+
+            layer = await config.models.Layer.augmented_from(layer.id);
+
+            try {
+                const stack = await Lambda.generate(config, layer);
+                await CloudFormation.create(config, layer.id, stack);
+            } catch (err) {
+                console.error(err);
+            }
+
+            res.json(incoming);
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.patch('/connection/:connectionid/layer/:layerid/outgoing', {
+        name: 'Update Outgoing',
+        group: 'Layer',
+        description: 'Update an outgoing layer configuration',
+        params: Type.Object({
+            connectionid: Type.Integer({ minimum: 1 }),
+            layerid: Type.Integer({ minimum: 1 }),
+        }),
+        body: Type.Object({
+            environment: Type.Optional(Type.Any()),
+        }),
+        res: LayerOutgoingResponse
+    }, async (req, res) => {
+        try {
+            const { connection } = await Auth.is_connection(config, req, {
+                resources: [
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                    { access: AuthResourceAccess.LAYER, id: req.params.layerid }
+                ]
+            }, req.params.connectionid);
+
+            const layer = await config.models.Layer.augmented_from(req.params.layerid);
+
+            if (layer.connection !== connection.id) {
+                throw new Err(400, null, 'Layer does not belong to this connection');
+            } else if (!layer.outgoing) {
+                throw new Err(400, null, 'Layer does not have outgoing config');
+            }
+
+            const outgoing = await config.models.LayerOutgoing.commit(layer.id, {
+                updated: sql`Now()`,
+                ...req.body
+            });
+
+            await config.cacher.del(`layer-${req.params.layerid}`);
+
+            res.json(outgoing);
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.delete('/connection/:connectionid/layer/:layerid/outgoing', {
+        name: 'Delete Outgoing',
+        group: 'Layer',
+        description: 'Remove an outgoing config from a layer',
+        params: Type.Object({
+            connectionid: Type.Integer({ minimum: 1 }),
+            layerid: Type.Integer({ minimum: 1 })
+        }),
+        res: StandardResponse
+    }, async (req, res) => {
+        try {
+            const { connection } = await Auth.is_connection(config, req, {
+                resources: [
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                    { access: AuthResourceAccess.LAYER, id: req.params.layerid }
+                ]
+            }, req.params.connectionid);
+
+            const layer = await config.models.Layer.augmented_from(req.params.layerid);
+
+            if (layer.connection !== connection.id) {
+                throw new Err(400, null, 'Layer does not belong to this connection');
+            }
+
+            if (!layer.outgoing) {
+                throw new Err(400, null, 'Layer does not have an outgoing configuration');
+            }
+
+            await config.models.LayerOutgoing.delete(layer.id);
+
+            res.json({
+                status: 200,
+                message: 'Outgoing Layer Config Deleted'
             });
         } catch (err) {
             Err.respond(err, res);
