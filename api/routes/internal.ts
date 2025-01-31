@@ -148,6 +148,12 @@ export default async function router(schema: Schema, config: Config) {
             This API allows a layer token to request the layer object and obtain the
             connection ID for subsequent calls
         `,
+        query: Type.Object({
+            alarms: Type.Boolean({
+                default: false,
+                description: 'Get Live Alarm state from CloudWatch'
+            }),
+        }),
         params: Type.Object({
             layerid: Type.Integer({ minimum: 1 }),
         }),
@@ -164,8 +170,17 @@ export default async function router(schema: Schema, config: Config) {
                 return await config.models.Layer.augmented_from(req.params.layerid);
             });
 
+            let status = 'unknown';
+            if (config.StackName !== 'test' && req.query.alarms) {
+                try {
+                    status = await alarm.get(layer.id);
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+
             res.json({
-                status: config.StackName !== 'test' ? await alarm.get(layer.id) : 'unknown',
+                status,
                 ...layer
             });
         } catch (err) {
