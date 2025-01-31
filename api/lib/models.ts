@@ -35,6 +35,7 @@ export default class Models {
 
     Layer: Layer;
     LayerIncoming: Modeler<typeof pgtypes.LayerIncoming>;;
+    LayerOutgoing: Modeler<typeof pgtypes.LayerOutgoing>;;
     LayerTemplate: Modeler<typeof pgtypes.LayerTemplate>;
     LayerAlert: Modeler<typeof pgtypes.LayerAlert>;
 
@@ -61,6 +62,8 @@ export default class Models {
         this.Iconset = new Modeler(pg, pgtypes.Iconset);
         this.Layer = new Layer(pg);
         this.LayerIncoming = new Modeler(pg, pgtypes.LayerIncoming);
+        this.LayerOutgoing = new Modeler(pg, pgtypes.LayerOutgoing);
+
         this.LayerAlert = new Modeler(pg, pgtypes.LayerAlert);
         this.LayerTemplate = new Modeler(pg, pgtypes.LayerTemplate);
     }
