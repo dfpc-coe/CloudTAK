@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v6.2.0 - 2025-01-30
+
+- :tada: Sketch out outgoing Config
+
 ### v6.1.0 - 2025-01-30
 
 - :rocket: Cacher no longer returns `any` type
