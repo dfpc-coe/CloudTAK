@@ -12,7 +12,11 @@
 
 ### Pending Release
 
-### v6.0.0 =- 2025-01-30
+### v6.0.1 - 2025-01-30
+
+- :bug: Delete LayerIncoming if it exists when a layer is deleted
+
+### v6.0.0 - 2025-01-30
 
 Note that while the frontend & database have no breaking changes and will be migrated automatically, ALL ETLs LAYERS MUST BE UPDATED!
 
