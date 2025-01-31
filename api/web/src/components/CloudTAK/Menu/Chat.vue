@@ -4,12 +4,15 @@
         :loading='loading'
     >
         <template #buttons>
-            <IconRefresh
-                :size='32'
-                :stroke='1'
-                class='cursor-pointer'
+            <TablerIconButton
+                title='Refresh'
                 @click='fetchChats'
-            />
+            >
+                <IconRefresh
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
         </template>
         <template #default>
             <div
@@ -55,6 +58,7 @@
 <script>
 import { std } from '/src/std.ts';
 import {
+    TablerIconButton,
     TablerInput,
 } from '@tak-ps/vue-tabler';
 import {
