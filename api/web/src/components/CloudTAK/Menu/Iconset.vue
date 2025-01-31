@@ -2,7 +2,7 @@
     <MenuTemplate :name='iconset.name'>
         <template #buttons>
             <TablerIconButton
-                v-if='iconset.username || profile.system_admin'
+                v-if='iconset.username || profileStore.profile.system_admin'
                 title='Create Icon'
                 @click='editIconModal = {}'
             >
@@ -13,7 +13,7 @@
             </TablerIconButton>
 
             <TablerIconButton
-                v-if='iconset.username || profile.system_admin'
+                v-if='iconset.username || profileStore.profile.system_admin'
                 title='Settings'
                 @click='editIconsetModal = iconset'
             >
@@ -34,7 +34,7 @@
             </TablerIconButton>
 
             <TablerDelete
-                v-if='iconset.username || profile.system_admin'
+                v-if='iconset.username || profileStore.profile.system_admin'
                 displaytype='icon'
                 @delete='deleteIconset'
             />
@@ -66,7 +66,9 @@
     />
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { std, stdurl } from '/src/std.ts';
 import CombinedIcons from '../util/Icons.vue'
 import {
@@ -82,64 +84,50 @@ import {
 import MenuTemplate from '../util/MenuTemplate.vue';
 import IconEditModal from './Icon/EditModal.vue';
 import IconsetEditModal from './Iconset/EditModal.vue';
-import { mapState } from 'pinia';
 import { useProfileStore } from '/src/stores/profile.ts';
 
-export default {
-    name: 'CloudTAKIconset',
-    components: {
-        IconPlus,
-        IconSettings,
-        IconDownload,
-        IconEditModal,
-        IconsetEditModal,
-        MenuTemplate,
-        CombinedIcons,
-        TablerDelete,
-        TablerLoading,
-        TablerIconButton
-    },
-    data: function() {
-        return {
-            loading: true,
-            editIconsetModal: false,
-            editIconModal: false,
-            iconset: {
-                uid: ''
-            }
-        }
-    },
-    computed: {
-        ...mapState(useProfileStore, ['profile'])
-    },
-    mounted: async function() {
-        await this.refresh();
-    },
-    methods: {
-        refresh: async function() {
-            this.loading = true;
-            this.editIconModal = false;
-            this.editIconsetModal = false;
-            await this.fetch();
-            this.loading = false;
-        },
-        download: async function() {
-            window.location.href = stdurl(`api/iconset/${this.iconset.uid}?format=zip&download=true&token=${localStorage.token}`);
-        },
-        fetch: async function() {
-            this.loading = true;
-            const url = stdurl(`/api/iconset/${this.$route.params.iconset}`);
-            this.iconset = await std(url);
-            this.loading = false;
-        },
-        deleteIconset: async function() {
-            this.loading = true;
-            const url = stdurl(`/api/iconset/${this.$route.params.iconset}`);
-            this.iconset = await std(url, {
-                method: 'DELETE'
-            });
-            this.$router.push('/menu/iconset');
-        }
-    },
+const route = useRoute();
+const router = useRouter();
+
+const loading = ref(true);
+const editIconsetModal = ref(false);
+const editIconModal = ref(false);
+const iconset = ref({
+    uid: ''
+});
+
+const profileStore = useProfileStore();
+
+onMounted(async () => {
+    await refresh();
+});
+
+async function refresh() {
+    loading.value = true;
+    editIconModal.value = false;
+    editIconsetModal.value = false;
+    await fetchIconset();
+    loading.value = false;
+}
+
+function download() {
+    window.location.href = stdurl(`api/iconset/${iconset.value.uid}?format=zip&download=true&token=${localStorage.token}`);
+}
+
+async function fetchIconset() {
+    loading.value = true;
+    const url = stdurl(`/api/iconset/${route.params.iconset}`);
+    iconset.value = await std(url);
+    loading.value = false;
+}
+
+async function deleteIconset() {
+    loading.value = true;
+    const url = stdurl(`/api/iconset/${route.params.iconset}`);
+    iconset.value = await std(url, {
+        method: 'DELETE'
+    });
+
+    router.push('/menu/iconset');
 }
 </script>
