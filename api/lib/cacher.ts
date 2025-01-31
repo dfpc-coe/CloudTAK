@@ -24,7 +24,7 @@ export default class Cacher {
      * @param {function} miss Async Function to fallback to
      * @param {boolean} [isJSON=true] Should we automatically parse to JSON
      */
-    async get(key: string, miss: any, isJSON = true): Promise<any> {
+    async get<T>(key: string, miss: () => T, isJSON = true): Promise<T> {
         try {
             if (!key || this.nocache) throw new Error('Miss');
 
@@ -47,7 +47,7 @@ export default class Cacher {
 
             try {
                 if (key && !this.nocache) {
-                    const buff = Buffer.from(isJSON ? JSON.stringify(fresh) : fresh);
+                    const buff = Buffer.from(String(isJSON ? JSON.stringify(fresh) : fresh));
 
                     if (buff.length < 1000000) {
                         await this.cache.set(key, buff, {

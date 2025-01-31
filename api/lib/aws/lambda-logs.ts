@@ -1,6 +1,6 @@
+import { Static } from '@sinclair/typebox';
 import CloudWatchLogs from '@aws-sdk/client-cloudwatch-logs';
-import { InferSelectModel } from 'drizzle-orm'
-import type { Layer } from '../schema.js';
+import type { AugmentedLayer } from '../models/Layer.js';
 import Err from '@openaddresses/batch-error';
 import Config from '../config.js';
 import process from 'node:process';
@@ -9,7 +9,7 @@ import process from 'node:process';
  * @class
  */
 export default class LogGroup {
-    static async delete(config: Config, layer: InferSelectModel<typeof Layer>): Promise<void> {
+    static async delete(config: Config, layer: Static<typeof AugmentedLayer>): Promise<void> {
         const cwl = new CloudWatchLogs.CloudWatchLogsClient({ region: process.env.AWS_REGION });
 
         await cwl.send(new CloudWatchLogs.DeleteLogGroupCommand({
@@ -17,7 +17,7 @@ export default class LogGroup {
         }));
     }
 
-    static async list(config: Config, layer: InferSelectModel<typeof Layer>): Promise<{
+    static async list(config: Config, layer: Static<typeof AugmentedLayer>): Promise<{
         logs: Array<{
             message: string;
             timestamp: number;

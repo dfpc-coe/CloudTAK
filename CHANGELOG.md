@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v6.1.0 - 2025-01-30
+
+- :rocket: Cacher no longer returns `any` type
+
 ### v6.0.1 - 2025-01-30
 
 - :bug: Delete LayerIncoming if it exists when a layer is deleted

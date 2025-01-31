@@ -5,7 +5,7 @@ import Cacher from '../lib/cacher.js';
 import Auth, { AuthResourceAccess } from '../lib/auth.js';
 import { LayerAlert } from '../lib/schema.js';
 import Config from '../lib/config.js';
-import { sql, eq, InferSelectModel } from 'drizzle-orm';
+import { sql, InferSelectModel } from 'drizzle-orm';
 import { StandardResponse, LayerAlertResponse } from '../lib/types.js';
 import * as Default from '../lib/limits.js';
 
@@ -146,7 +146,7 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
             }
 
-            await config.models.LayerAlert.delete(eq(layer.id, LayerAlert.layer))
+            await config.models.LayerAlert.delete(sql`${layer.id} = ${LayerAlert.layer}`)
 
             res.json({
                 status: 200,
