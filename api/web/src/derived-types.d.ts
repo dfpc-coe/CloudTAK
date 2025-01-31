@@ -2712,12 +2712,14 @@ export interface paths {
                                 enabled: boolean;
                                 logging: boolean;
                                 task: string;
-                                connection?: number;
+                                connection: number;
                                 memory: number;
                                 timeout: number;
                                 priority: "high" | "low" | "off";
                                 incoming?: {
                                     layer: number;
+                                    created: string;
+                                    updated: string;
                                     config: {
                                         timezone?: {
                                             timezone: string;
@@ -2844,7 +2846,13 @@ export interface paths {
                                     environment: unknown;
                                     ephemeral: Record<string, never>;
                                     data: number | null;
-                                    schema: unknown;
+                                };
+                                outgoing?: {
+                                    layer: number;
+                                    created: string;
+                                    updated: string;
+                                    environment: unknown;
+                                    ephemeral: Record<string, never>;
                                 };
                             }[];
                         };
@@ -2899,12 +2907,14 @@ export interface paths {
                             enabled: boolean;
                             logging: boolean;
                             task: string;
-                            connection?: number;
+                            connection: number;
                             memory: number;
                             timeout: number;
                             priority: "high" | "low" | "off";
                             incoming?: {
                                 layer: number;
+                                created: string;
+                                updated: string;
                                 config: {
                                     timezone?: {
                                         timezone: string;
@@ -3031,7 +3041,13 @@ export interface paths {
                                 environment: unknown;
                                 ephemeral: Record<string, never>;
                                 data: number | null;
-                                schema: unknown;
+                            };
+                            outgoing?: {
+                                layer: number;
+                                created: string;
+                                updated: string;
+                                environment: unknown;
+                                ephemeral: Record<string, never>;
                             };
                         };
                     };
@@ -3201,6 +3217,8 @@ export interface paths {
                     content: {
                         "application/json": {
                             layer: number;
+                            created: string;
+                            updated: string;
                             config: {
                                 timezone?: {
                                     timezone: string;
@@ -3327,7 +3345,6 @@ export interface paths {
                             environment: unknown;
                             ephemeral: Record<string, never>;
                             data: number | null;
-                            schema: unknown;
                         };
                     };
                 };
@@ -3507,6 +3524,8 @@ export interface paths {
                     content: {
                         "application/json": {
                             layer: number;
+                            created: string;
+                            updated: string;
                             config: {
                                 timezone?: {
                                     timezone: string;
@@ -3633,7 +3652,6 @@ export interface paths {
                             environment: unknown;
                             ephemeral: Record<string, never>;
                             data: number | null;
-                            schema: unknown;
                         };
                     };
                 };
@@ -3678,12 +3696,14 @@ export interface paths {
                             enabled: boolean;
                             logging: boolean;
                             task: string;
-                            connection?: number;
+                            connection: number;
                             memory: number;
                             timeout: number;
                             priority: "high" | "low" | "off";
                             incoming?: {
                                 layer: number;
+                                created: string;
+                                updated: string;
                                 config: {
                                     timezone?: {
                                         timezone: string;
@@ -3810,7 +3830,13 @@ export interface paths {
                                 environment: unknown;
                                 ephemeral: Record<string, never>;
                                 data: number | null;
-                                schema: unknown;
+                            };
+                            outgoing?: {
+                                layer: number;
+                                created: string;
+                                updated: string;
+                                environment: unknown;
+                                ephemeral: Record<string, never>;
                             };
                         };
                     };
@@ -3890,12 +3916,14 @@ export interface paths {
                             enabled: boolean;
                             logging: boolean;
                             task: string;
-                            connection?: number;
+                            connection: number;
                             memory: number;
                             timeout: number;
                             priority: "high" | "low" | "off";
                             incoming?: {
                                 layer: number;
+                                created: string;
+                                updated: string;
                                 config: {
                                     timezone?: {
                                         timezone: string;
@@ -4022,7 +4050,13 @@ export interface paths {
                                 environment: unknown;
                                 ephemeral: Record<string, never>;
                                 data: number | null;
-                                schema: unknown;
+                            };
+                            outgoing?: {
+                                layer: number;
+                                created: string;
+                                updated: string;
+                                environment: unknown;
+                                ephemeral: Record<string, never>;
                             };
                         };
                     };
@@ -6394,6 +6428,8 @@ export interface paths {
                 query: {
                     /** @description Limit the number of responses returned */
                     limit: number;
+                    /** @description Get Live Alarm state from CloudWatch */
+                    alarms: boolean;
                     /** @description Iterate through "pages" of items based on the "limit" query param */
                     page: number;
                     /** @description Order in which results are returned based on the "sort" query param */
@@ -6440,12 +6476,14 @@ export interface paths {
                                 enabled: boolean;
                                 logging: boolean;
                                 task: string;
-                                connection?: number;
+                                connection: number;
                                 memory: number;
                                 timeout: number;
                                 priority: "high" | "low" | "off";
                                 incoming?: {
                                     layer: number;
+                                    created: string;
+                                    updated: string;
                                     config: {
                                         timezone?: {
                                             timezone: string;
@@ -6572,7 +6610,13 @@ export interface paths {
                                     environment: unknown;
                                     ephemeral: Record<string, never>;
                                     data: number | null;
-                                    schema: unknown;
+                                };
+                                outgoing?: {
+                                    layer: number;
+                                    created: string;
+                                    updated: string;
+                                    environment: unknown;
+                                    ephemeral: Record<string, never>;
                                 };
                             }[];
                         };
@@ -6602,7 +6646,10 @@ export interface paths {
          *              */
         get: {
             parameters: {
-                query?: never;
+                query: {
+                    /** @description Get Live Alarm state from CloudWatch */
+                    alarms: boolean;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -6626,12 +6673,14 @@ export interface paths {
                             enabled: boolean;
                             logging: boolean;
                             task: string;
-                            connection?: number;
+                            connection: number;
                             memory: number;
                             timeout: number;
                             priority: "high" | "low" | "off";
                             incoming?: {
                                 layer: number;
+                                created: string;
+                                updated: string;
                                 config: {
                                     timezone?: {
                                         timezone: string;
@@ -6758,7 +6807,13 @@ export interface paths {
                                 environment: unknown;
                                 ephemeral: Record<string, never>;
                                 data: number | null;
-                                schema: unknown;
+                            };
+                            outgoing?: {
+                                layer: number;
+                                created: string;
+                                updated: string;
+                                environment: unknown;
+                                ephemeral: Record<string, never>;
                             };
                         };
                     };
