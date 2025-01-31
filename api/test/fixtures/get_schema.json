@@ -244,6 +244,21 @@
         "query": false,
         "res": true
     },
+    "POST /connection/:connectionid/layer/:layerid/outgoing": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /connection/:connectionid/layer/:layerid/outgoing": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /connection/:connectionid/layer/:layerid/outgoing": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "PATCH /connection/:connectionid/layer/:layerid": {
         "body": true,
         "query": true,
@@ -989,11 +1004,6 @@
         "query": false,
         "res": true
     },
-    "GET /type/cot/:type": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "GET /user": {
         "body": false,
         "query": true,
@@ -1005,6 +1015,11 @@
         "res": true
     },
     "GET /user/:username": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /type/cot/:type": {
         "body": false,
         "query": false,
         "res": true
