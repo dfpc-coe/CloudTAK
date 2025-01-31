@@ -145,7 +145,7 @@ export default class COT {
                     tak_remarks: this.properties.remarks
                 })
             }
-        } else if (!opts || (opts && !opts.skipSave)) {
+        } else if (!opts || (opts && opts.skipSave === false)) {
             await this.save();
         }
 
