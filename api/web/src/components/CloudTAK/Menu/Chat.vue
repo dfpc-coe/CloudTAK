@@ -74,6 +74,7 @@ export default {
     name: 'CloudTAKChat',
     components: {
         TablerInput,
+        TablerIconButton,
         IconRefresh,
         MenuTemplate
     },
