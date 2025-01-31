@@ -267,7 +267,7 @@ export default {
         create: async function() {
             let fields =  ['name', 'description']
 
-            if (this.type === "manual") fields.push('task', 'cron');
+            if (this.type === "manual") fields.push('task');
 
             for (const field of fields) {
                 this.errors[field] = !this.layer[field] ? 'Cannot be empty' : '';
@@ -299,7 +299,6 @@ export default {
                     let body = JSON.parse(JSON.stringify(this.layer));
                     if (this.type === "template" && this.template) {
                         // These should be overwritten
-                        delete body.cron;
                         delete body.task;
                         body = { ...this.template, ...body };
                     }
