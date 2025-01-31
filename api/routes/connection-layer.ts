@@ -692,6 +692,10 @@ export default async function router(schema: Schema, config: Config) {
                 await config.models.LayerIncoming.delete(req.params.layerid);
             }
 
+            if (layer.outgoing) {
+                await config.models.LayerOutgoing.delete(req.params.layerid);
+            }
+
             config.events.delete(layer.id);
 
             await config.models.Layer.delete(req.params.layerid);
