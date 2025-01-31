@@ -69,7 +69,7 @@
                     </div>
 
                     <div
-                        v-if='softAlert'
+                        v-if='softAlert && (!stack || (stack && !["CREATE_IN_PROGRESS"].includes(stack.status)))'
                         class='col-lg-12'
                     >
                         <div class='card'>
