@@ -525,10 +525,12 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
-            layer = await config.models.Layer.commit(layer.id, {
+            await config.models.Layer.commit(layer.id, {
                 updated: sql`Now()`,
                 ...req.body
             });
+
+            layer = await config.models.Layer.augmented_from(req.params.layerid);
 
             if (changed) {
                 try {
