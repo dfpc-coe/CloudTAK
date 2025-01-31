@@ -65,6 +65,7 @@ export const useMapStore = defineStore('cloudtak', {
             isTerrainEnabled: false,
             isLoaded: false,
             bearing: 0,
+            mission: undefined,
             edit: undefined,
             select: {
                 mode: undefined,
