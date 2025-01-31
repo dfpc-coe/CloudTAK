@@ -1,5 +1,5 @@
 CREATE TABLE "errors" (
-	"id" text PRIMARY KEY NOT NULL,
+	"id" serial PRIMARY KEY NOT NULL,
 	"created" timestamp with time zone DEFAULT Now() NOT NULL,
 	"updated" timestamp with time zone DEFAULT Now() NOT NULL,
 	"username" text NOT NULL,

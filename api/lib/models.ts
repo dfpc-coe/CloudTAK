@@ -33,15 +33,19 @@ export default class Models {
     Iconset: Modeler<typeof pgtypes.Iconset>;
     Icon: Icon;
 
+    Errors: Modeler<typeof pgtypes.Errors>;
+
     Layer: Layer;
-    LayerIncoming: Modeler<typeof pgtypes.LayerIncoming>;;
-    LayerOutgoing: Modeler<typeof pgtypes.LayerOutgoing>;;
+    LayerIncoming: Modeler<typeof pgtypes.LayerIncoming>;
+    LayerOutgoing: Modeler<typeof pgtypes.LayerOutgoing>;
     LayerTemplate: Modeler<typeof pgtypes.LayerTemplate>;
     LayerAlert: Modeler<typeof pgtypes.LayerAlert>;
 
     constructor(pg: Pool<typeof pgtypes>) {
         this.ProfileChat = new ProfileChat(pg);
         this.Icon = new Icon(pg);
+
+        this.Errors = new Modeler(pg, pgtypes.Errors);
 
         this.Token = new Modeler(pg, pgtypes.Token);
         this.Setting = new Setting(pg);

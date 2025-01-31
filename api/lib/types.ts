@@ -134,6 +134,12 @@ export const ImportResponse = createSelectSchema(schemas.Import, {
     result: Type.Unknown()
 });
 
+export const ErrorResponse = createSelectSchema(schemas.Errors, {
+    id: Type.Integer(),
+    created: Type.String(),
+    updated: Type.String(),
+});
+
 export const TaskResponse = createSelectSchema(schemas.Task, {
     id: Type.Integer(),
     created: Type.String(),

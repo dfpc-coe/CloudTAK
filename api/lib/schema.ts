@@ -124,7 +124,7 @@ export const Basemap = pgTable('basemaps', {
 })
 
 export const Errors = pgTable('errors', {
-    id: text().primaryKey(),
+    id: serial().primaryKey(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     username: text().notNull().references(() => Profile.username),
