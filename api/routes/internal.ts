@@ -21,6 +21,10 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Allow admins to list all layers on the server',
         query: Type.Object({
             limit: Default.Limit,
+            alarms: Type.Boolean({
+                default: false,
+                description: 'Get Live Alarm state from CloudWatch'
+            }),
             page: Default.Page,
             order: Default.Order,
             sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(Layer)})),
@@ -56,13 +60,19 @@ export default async function router(schema: Schema, config: Config) {
                 `
             });
 
-            const alarms = config.StackName !== 'test' ? await alarm.list() : new Map();
-
+            let alarms = new Map();
             const status = { healthy: 0, alarm: 0, unknown: 0 };
-            for (const state of alarms.values()) {
-                if (state === 'healthy') status.healthy++;
-                if (state === 'alarm') status.alarm++;
-                if (state === 'unknown') status.unknown++;
+            try {
+                alarms = (config.StackName !== 'test' && req.query.alarms) ? await alarm.list() : new Map();
+
+                for (const state of alarms.values()) {
+                    if (state === 'healthy') status.healthy++;
+                    if (state === 'alarm') status.alarm++;
+                    if (state === 'unknown') status.unknown++;
+                }
+            } catch (err) {
+                // Surface this in the future - failing alarm lists shouldn't nuke access
+                console.error(err);
             }
 
             res.json({
