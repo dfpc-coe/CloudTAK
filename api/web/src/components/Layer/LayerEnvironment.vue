@@ -67,23 +67,34 @@
             <TablerAlert
                 v-else-if='!props.capabilities'
                 title='Missing Capabilities'
-                :err='new Error("Layer failed to return an incoming input schema on the Capabilities object")'
+                :err='new Error("Layer failed to return an input schema on the Capabilities object")'
             />
-            <template v-else-if='props.capabilities.incoming.schema.input.display === "arcgis"'>
+            <template v-else-if='props.capabilities[direction].schema.input.display === "arcgis"'>
                 <LayerEnvironmentArcGIS
                     v-model='environment'
                     :disabled='disabled'
                 />
             </template>
-            <template v-else-if='props.capabilities.incoming.schema.input.type !== "object"'>
+            <template
+                v-else-if='
+                    props.capabilities[direction].schema.input.type !== "object"
+                        || !props.capabilities[direction].schema.input.properties
+                '
+            >
                 <div class='d-flex justify-content-center my-4'>
                     Only Object Schemas are Supported.
                 </div>
             </template>
             <template v-else>
+                <TablerNone
+                    v-if='Object.keys(capabilities[direction].schema.input.properties).length === 0'
+                    label='Schema'
+                    :create='false'
+                />
                 <Schema
+                    v-else
                     v-model='environment'
-                    :schema='capabilities.incoming.schema.input'
+                    :schema='capabilities[direction].schema.input'
                     :disabled='disabled'
                 />
             </template>
@@ -125,8 +136,10 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
 import { std } from '/src/std.ts';
 import {
+    TablerNone,
     TablerAlert,
     TablerLoading,
     TablerIconButton,
@@ -153,6 +166,10 @@ const props = defineProps({
 
 const emit = defineEmits([ 'layer' ]);
 
+const route = useRoute();
+
+const direction = ref(route.name.includes('incoming') ? 'incoming' : 'outgoing');
+
 const raw = ref(false);
 const softAlert = ref(false);
 const disabled = ref(true);
@@ -170,8 +187,8 @@ onMounted(async () => {
 function hasDateTime() {
     if (!props.capabilities) return false;
 
-    for (const prop of Object.keys(props.capabilities.incoming.schema.output.properties)) {
-        if (props.capabilities.incoming.schema.output.properties[prop].format && props.capabilities.incoming.schema.output.properties[prop].format === 'date-time') {
+    for (const prop of Object.keys(props.capabilities[direction.value].schema.output.properties)) {
+        if (props.capabilities[direction.value].schema.output.properties[prop].format && props.capabilities[direction.value].schema.output.properties[prop].format === 'date-time') {
             return true;
         }
     }
@@ -179,16 +196,19 @@ function hasDateTime() {
 }
 
 async function reload() {
-    environment.value = JSON.parse(JSON.stringify(props.layer.incoming.environment));
-    const cnf = JSON.parse(JSON.stringify(props.layer.incoming.config));
+    environment.value = JSON.parse(JSON.stringify(props.layer[direction.value].environment));
 
-    if (!hasDateTime()) {
-        delete cnf.timezone;
-    } else if (!cnf.timezone) {
-        cnf.timezone = { timezone: 'No TimeZone' }
+    if (direction.value === 'incoming')  {
+        const cnf = JSON.parse(JSON.stringify(props.layer[direction.value].config));
+
+        if (!hasDateTime()) {
+            delete cnf.timezone;
+        } else if (!cnf.timezone) {
+            cnf.timezone = { timezone: 'No TimeZone' }
+        }
+
+        config.value = cnf;
     }
-
-    config.value = cnf;
 
     disabled.value = true;
 }
@@ -196,7 +216,7 @@ async function reload() {
 async function saveLayer() {
     loading.value.save = true;
 
-    await std(`/api/connection/${props.layer.connection}/layer/${props.layer.id}/incoming`, {
+    await std(`/api/connection/${props.layer.connection}/layer/${props.layer.id}/${direction.value}`, {
         method: 'PATCH',
         body: {
             environment: environment.value,
