@@ -93,6 +93,40 @@ export default class Lambda {
             }
         }
 
+        if (layer.outgoing) {
+            stack.Resources.OutgoingQueue = {
+                Type: 'AWS::SQS::Queue',
+                Properties: {
+                    ContentBasedDeduplication: true,
+                    QueueName: cf.join([cf.stackName, '-outgoing.fifo']),
+                    FifoQueue: true,
+                    RedrivePolicy: {
+                        deadLetterTargetArn: cf.getAtt('OutgoingDeadQueue', 'Arn'),
+                        maxReceiveCount: 3
+                    },
+                    VisibilityTimeout: layer.timeout
+                }
+            };
+
+            stack.Resources.OutgoingDeadQueue = {
+                Type: 'AWS::SQS::Queue',
+                Properties: {
+                    FifoQueue: true,
+                    QueueName: cf.join([cf.stackName, '-outgoing-dead.fifo']),
+                    VisibilityTimeout: layer.timeout
+                }
+            };
+
+            stack.Resources.OutgoingLambdaSource = {
+                Type: 'AWS::Lambda::EventSourceMapping',
+                Properties: {
+                    Enabled: 'True',
+                    EventSourceArn:  cf.getAtt('OutgoingQueue', 'Arn'),
+                    FunctionName: cf.ref('ETLFunction')
+                }
+            }
+        }
+
         if (layer.incoming) {
             stack.Resources.LambdaAlarm = {
                 Type: 'AWS::CloudWatch::Alarm',

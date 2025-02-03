@@ -199,7 +199,7 @@
                                                 <TablerNone
                                                     v-else-if='!layer.incoming'
                                                     label='Incoming Config'
-                                                    :create='capabilities && capabilities.incoming'
+                                                    :create='capabilities && capabilities.incoming !== undefined'
                                                     @create='createIncoming'
                                                 />
                                                 <template v-else>
@@ -256,13 +256,51 @@
                                                         :size='32'
                                                         :stroke='1'
                                                     /><span class='mx-3'>Styling</span></span>
+                                                    <div
+                                                        class='list-group-item list-group-item-action d-flex align-items-center justify-content-center'
+                                                    >
+                                                        <TablerDelete
+                                                            label='Delete Incoming'
+                                                            @delete='deleteConfig("incoming")'
+                                                        />
+                                                    </div>
                                                 </template>
                                             </template>
                                             <template v-else>
-                                                <TablerNone
-                                                    label='Outgoing Config'
-                                                    :create='false'
+                                                <TablerLoading
+                                                    v-if='loading.outgoing'
+                                                    desc='Creating Config'
                                                 />
+                                                <TablerNone
+                                                    v-else-if='!layer.outgoing'
+                                                    label='Outgoing Config'
+                                                    :create='capabilities && capabilities.outgoing !== undefined'
+                                                    @create='createOutgoing'
+                                                />
+                                                <template v-else>
+                                                    <span
+                                                        tabindex='0'
+                                                        role='menuitem'
+                                                        class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
+                                                        :class='{
+                                                            "active": route.name === "layer-outgoing-environment",
+                                                            "cursor-pointer": route.name !== "layer-outgoing-environment"
+                                                        }'
+                                                        @click='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/outgoing/environment`)'
+                                                    ><IconBeach
+                                                        :size='32'
+                                                        :stroke='1'
+                                                    /><span class='mx-3'>Environment</span></span>
+
+                                                    <div
+                                                        class='list-group-item list-group-item-action d-flex align-items-center justify-content-center'
+                                                    >
+                                                        <TablerDelete
+                                                            label='Delete Outgoing'
+                                                            @delete='deleteConfig("outgoing")'
+                                                        />
+                                                    </div>
+                                                </template>
                                             </template>
                                         </div>
                                     </div>
@@ -297,6 +335,7 @@ import LayerStatus from './Layer/utils/Status.vue';
 import timeDiff from '../timediff.ts';
 import {
     TablerNone,
+    TablerDelete,
     TablerBreadCrumb,
     TablerIconButton,
     TablerMarkdown,
@@ -323,6 +362,7 @@ const softAlert = ref(false);
 const loading = ref({
     layer: true,
     incoming: false,
+    outgoing: false,
     stack: true
 });
 const stack = ref({})
@@ -363,6 +403,20 @@ async function refresh(full = false) {
     await fetchCapabilities();
 }
 
+async function createOutgoing() {
+    loading.value.outgoing = true;
+
+    await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/outgoing`, {
+        method: 'POST',
+        body: {}
+    });
+
+    await fetch();
+    await fetchStatus();
+
+    loading.value.outgoing = false;
+}
+
 async function createIncoming() {
     loading.value.incoming = true;
 
@@ -372,6 +426,7 @@ async function createIncoming() {
     });
 
     await fetch();
+    await fetchStatus();
 
     loading.value.incoming = false;
 }
@@ -386,6 +441,21 @@ async function cancelUpdate() {
     await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/task`, {
         method: 'DELETE'
     });
+}
+
+async function deleteConfig(direction) {
+    loading.value.layer = true;
+
+    await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/${direction}`, {
+        method: 'DELETE'
+    });
+
+    await fetch();
+    await fetchStatus();
+
+    router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/deployment`);
+
+    loading.value.layer = false;
 }
 
 async function fetchStatus(load = false) {
