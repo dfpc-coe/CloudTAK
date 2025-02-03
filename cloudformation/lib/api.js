@@ -283,6 +283,7 @@ export default {
                                 'sqs:SetQueueAttributes',
                                 'sqs:ListQueueTags',
                                 'sqs:ReceiveMessage',
+                                'sqs:DeleteMessage',
                                 'sqs:TagQueue'
                             ],
                             Resource: [
@@ -530,6 +531,7 @@ export default {
                             Effect: 'Allow',
                             Action: [
                                 'sqs:SendMessage',
+                                'sqs:ReceiveMessage',
                                 'sqs:ReceiveMessage',
                                 'sqs:ChangeMessageVisibility',
                                 'sqs:DeleteMessage',
