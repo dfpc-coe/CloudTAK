@@ -270,6 +270,8 @@ async function deleteMission() {
 }
 
 async function exportToPackage(): Promise<void> {
+    if (!mission.value) return;
+
     loadingInline.value = 'Generating Archive'
     await std(`/api/marti/missions/${encodeURIComponent(mission.value.name)}/archive?download=true`, {
         download: true
