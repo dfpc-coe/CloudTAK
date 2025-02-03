@@ -225,15 +225,15 @@ export default class {
     async getArchive(
         name: string,
         opts?: Static<typeof MissionOptions>
-    ): Promise<Buffer> {
+    ): Promise<Readable> {
         const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/archive`, this.api.url);
 
         const res = await this.api.fetch(url, {
             method: 'GET',
             headers: this.#headers(opts),
-        });
+        }, true);
 
-        return res;
+        return res.body;
     }
 
     /**
