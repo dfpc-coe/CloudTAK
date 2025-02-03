@@ -412,6 +412,7 @@ async function createOutgoing() {
     });
 
     await fetch();
+    await fetchStatus();
 
     loading.value.outgoing = false;
 }
@@ -425,6 +426,7 @@ async function createIncoming() {
     });
 
     await fetch();
+    await fetchStatus();
 
     loading.value.incoming = false;
 }
@@ -449,7 +451,6 @@ async function deleteConfig(direction) {
     });
 
     await fetch();
-
     await fetchStatus();
 
     router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/deployment`);
