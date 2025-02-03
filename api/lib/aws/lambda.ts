@@ -103,7 +103,8 @@ export default class Lambda {
                     RedrivePolicy: {
                         deadLetterTargetArn: cf.getAtt('OutgoingDeadQueue', 'Arn'),
                         maxReceiveCount: 3
-                    }
+                    },
+                    VisibilityTimeout: layer.timeout
                 }
             };
 
@@ -111,7 +112,8 @@ export default class Lambda {
                 Type: 'AWS::SQS::Queue',
                 Properties: {
                     FifoQueue: true,
-                    QueueName: cf.join([cf.stackName, '-outgoing-dead.fifo'])
+                    QueueName: cf.join([cf.stackName, '-outgoing-dead.fifo']),
+                    VisibilityTimeout: layer.timeout
                 }
             };
 
