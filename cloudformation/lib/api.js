@@ -531,8 +531,6 @@ export default {
                             Effect: 'Allow',
                             Action: [
                                 'sqs:SendMessage',
-                                'sqs:ReceiveMessage',
-                                'sqs:ReceiveMessage',
                                 'sqs:ChangeMessageVisibility',
                                 'sqs:DeleteMessage',
                                 'sqs:GetQueueUrl',
@@ -545,6 +543,7 @@ export default {
                     }
                 }],
                 ManagedPolicyArns: [
+                    cf.join(['arn:', cf.partition, ':iam::aws:policy/AWSLambdaSQSExecutionRole']),
                     cf.join(['arn:', cf.partition, ':iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'])
                 ]
             }

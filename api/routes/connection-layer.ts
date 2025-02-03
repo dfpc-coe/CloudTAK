@@ -453,7 +453,7 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
-            const layer = await config.models.Layer.augmented_from(req.params.layerid);
+            let layer = await config.models.Layer.augmented_from(req.params.layerid);
 
             if (layer.connection !== connection.id) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
@@ -467,6 +467,8 @@ export default async function router(schema: Schema, config: Config) {
             if (!status.endsWith('_COMPLETE')) throw new Err(400, null, 'Layer is still Deploying, Wait for Deploy to succeed before deleting')
 
             await config.models.LayerIncoming.delete(layer.id);
+
+            layer = await config.models.Layer.augmented_from(req.params.layerid);
 
             try {
                 const stack = await Lambda.generate(config, layer);
@@ -597,7 +599,7 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
-            const layer = await config.models.Layer.augmented_from(req.params.layerid);
+            let layer = await config.models.Layer.augmented_from(req.params.layerid);
 
             if (layer.connection !== connection.id) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
@@ -611,6 +613,8 @@ export default async function router(schema: Schema, config: Config) {
             if (!status.endsWith('_COMPLETE')) throw new Err(400, null, 'Layer is still Deploying, Wait for Deploy to succeed before deleting')
 
             await config.models.LayerOutgoing.delete(layer.id);
+
+            layer = await config.models.Layer.augmented_from(req.params.layerid);
 
             try {
                 const stack = await Lambda.generate(config, layer);
