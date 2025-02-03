@@ -278,7 +278,11 @@ export default async function router(schema: Schema, config: Config) {
 
             try {
                 const stack = await Lambda.generate(config, layer);
-                await CloudFormation.create(config, layer.id, stack);
+                if (await CloudFormation.exists(config, layer.id)) {
+                    await CloudFormation.update(config, layer.id, stack);
+                } else {
+                    await CloudFormation.create(config, layer.id, stack);
+                }
             } catch (err) {
                 console.error(err);
             }
@@ -518,7 +522,11 @@ export default async function router(schema: Schema, config: Config) {
 
             try {
                 const stack = await Lambda.generate(config, layer);
-                await CloudFormation.create(config, layer.id, stack);
+                if (await CloudFormation.exists(config, layer.id)) {
+                    await CloudFormation.update(config, layer.id, stack);
+                } else {
+                    await CloudFormation.create(config, layer.id, stack);
+                }
             } catch (err) {
                 console.error(err);
             }
