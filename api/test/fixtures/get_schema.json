@@ -719,6 +719,11 @@
         "query": true,
         "res": true
     },
+    "GET /marti/missions/:name/archive": {
+        "body": false,
+        "query": true,
+        "res": false
+    },
     "GET /marti/missions/:name/role": {
         "body": false,
         "query": false,
