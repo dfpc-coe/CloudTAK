@@ -205,6 +205,47 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
+    await schema.get('/marti/missions/:name/archive', {
+        name: 'Mission Archive',
+        group: 'MartiMissions',
+        params: Type.Object({
+            name: Type.String(),
+        }),
+        query: Type.Object({
+            download: Type.Boolean({
+                default: false,
+                description: 'If set, the response will include a Content-Disposition Header'
+            })
+        }),
+        description: 'Get a Mission Archive',
+        res: TAKList(MissionSubscriber)
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+            const auth = (await config.models.Profile.from(user.email)).auth;
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+
+            const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
+                ? { token: String(req.headers['missionauthorization']) }
+                : await config.conns.subscription(user.email, req.params.name)
+
+            const archive = await api.Mission.getArchive(
+                req.params.name,
+                opts
+            );
+
+            res.setHeader('Content-Type', 'application/zip');
+
+            if (req.query.download) {
+                res.setHeader('Content-Disposition', `attachment; filename="${req.params.name}.zip"`);
+            }
+
+            res.send(archive);
+        } catch (err) {
+             Err.respond(err, res);
+        }
+    });
+
     await schema.get('/marti/missions/:name/role', {
         name: 'Mission Role',
         group: 'MartiMissions',
