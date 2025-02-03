@@ -278,7 +278,11 @@ export default async function router(schema: Schema, config: Config) {
 
             try {
                 const stack = await Lambda.generate(config, layer);
-                await CloudFormation.create(config, layer.id, stack);
+                if (await CloudFormation.exists(config, layer.id)) {
+                    await CloudFormation.update(config, layer.id, stack);
+                } else {
+                    await CloudFormation.create(config, layer.id, stack);
+                }
             } catch (err) {
                 console.error(err);
             }
@@ -449,7 +453,7 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
-            const layer = await config.models.Layer.augmented_from(req.params.layerid);
+            let layer = await config.models.Layer.augmented_from(req.params.layerid);
 
             if (layer.connection !== connection.id) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
@@ -459,7 +463,23 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'Layer does not have an incoming configuration');
             }
 
+            const status = (await CloudFormation.status(config, req.params.layerid)).status;
+            if (!status.endsWith('_COMPLETE')) throw new Err(400, null, 'Layer is still Deploying, Wait for Deploy to succeed before deleting')
+
             await config.models.LayerIncoming.delete(layer.id);
+
+            layer = await config.models.Layer.augmented_from(req.params.layerid);
+
+            try {
+                const stack = await Lambda.generate(config, layer);
+                if (await CloudFormation.exists(config, layer.id)) {
+                    await CloudFormation.update(config, layer.id, stack);
+                } else {
+                    await CloudFormation.create(config, layer.id, stack);
+                }
+            } catch (err) {
+                console.error(err);
+            }
 
             res.json({
                 status: 200,
@@ -504,7 +524,11 @@ export default async function router(schema: Schema, config: Config) {
 
             try {
                 const stack = await Lambda.generate(config, layer);
-                await CloudFormation.create(config, layer.id, stack);
+                if (await CloudFormation.exists(config, layer.id)) {
+                    await CloudFormation.update(config, layer.id, stack);
+                } else {
+                    await CloudFormation.create(config, layer.id, stack);
+                }
             } catch (err) {
                 console.error(err);
             }
@@ -575,7 +599,7 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
-            const layer = await config.models.Layer.augmented_from(req.params.layerid);
+            let layer = await config.models.Layer.augmented_from(req.params.layerid);
 
             if (layer.connection !== connection.id) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
@@ -585,7 +609,23 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'Layer does not have an outgoing configuration');
             }
 
+            const status = (await CloudFormation.status(config, req.params.layerid)).status;
+            if (!status.endsWith('_COMPLETE')) throw new Err(400, null, 'Layer is still Deploying, Wait for Deploy to succeed before deleting')
+
             await config.models.LayerOutgoing.delete(layer.id);
+
+            layer = await config.models.Layer.augmented_from(req.params.layerid);
+
+            try {
+                const stack = await Lambda.generate(config, layer);
+                if (await CloudFormation.exists(config, layer.id)) {
+                    await CloudFormation.update(config, layer.id, stack);
+                } else {
+                    await CloudFormation.create(config, layer.id, stack);
+                }
+            } catch (err) {
+                console.error(err);
+            }
 
             res.json({
                 status: 200,
@@ -810,6 +850,9 @@ export default async function router(schema: Schema, config: Config) {
             if (layer.connection !== connection.id) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
             }
+
+            const status = (await CloudFormation.status(config, req.params.layerid)).status;
+            if (!status.endsWith('_COMPLETE')) throw new Err(400, null, 'Layer is still Deploying, Wait for Deploy to succeed before deleting')
 
             await CloudFormation.delete(config, layer.id);
 

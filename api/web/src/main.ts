@@ -176,7 +176,7 @@ const router = VueRouter.createRouter({
             },{
                 path: 'incoming/environment',
                 name: 'layer-incoming-environment',
-                component: () => import('./components/Layer/LayerIncomingEnvironment.vue')
+                component: () => import('./components/Layer/LayerEnvironment.vue')
             },{
                 path: 'incoming/schema',
                 name: 'layer-incoming-schema',
@@ -185,6 +185,10 @@ const router = VueRouter.createRouter({
                 path: 'incoming/styles',
                 name: 'layer-incoming-styles',
                 component: () => import('./components/Layer/LayerIncomingStyles.vue')
+            },{
+                path: 'outgoing/environment',
+                name: 'layer-outgoing-environment',
+                component: () => import('./components/Layer/LayerEnvironment.vue')
             }]
         },
 
