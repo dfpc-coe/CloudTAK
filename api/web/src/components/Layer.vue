@@ -260,7 +260,7 @@
                                                         class='list-group-item list-group-item-action d-flex align-items-center justify-content-center'
                                                     >
                                                         <TablerDelete
-                                                            label='Delete Outgoing'
+                                                            label='Delete Incoming'
                                                             @delete='deleteConfig("incoming")'
                                                         />
                                                     </div>
