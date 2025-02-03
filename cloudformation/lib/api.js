@@ -278,6 +278,7 @@ export default {
                             Effect: 'Allow',
                             Action: [
                                 'sqs:CreateQueue',
+                                'sqs:DeleteQueue',
                                 'sqs:GetQueueAttributes',
                                 'sqs:SetQueueAttributes',
                                 'sqs:ListQueueTags',

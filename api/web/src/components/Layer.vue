@@ -256,6 +256,14 @@
                                                         :size='32'
                                                         :stroke='1'
                                                     /><span class='mx-3'>Styling</span></span>
+                                                    <div
+                                                        class='list-group-item list-group-item-action d-flex align-items-center justify-content-center'
+                                                    >
+                                                        <TablerDelete
+                                                            label='Delete Outgoing'
+                                                            @delete='deleteConfig("incoming")'
+                                                        />
+                                                    </div>
                                                 </template>
                                             </template>
                                             <template v-else>
@@ -283,6 +291,15 @@
                                                         :size='32'
                                                         :stroke='1'
                                                     /><span class='mx-3'>Environment</span></span>
+
+                                                    <div
+                                                        class='list-group-item list-group-item-action d-flex align-items-center justify-content-center'
+                                                    >
+                                                        <TablerDelete
+                                                            label='Delete Outgoing'
+                                                            @delete='deleteConfig("outgoing")'
+                                                        />
+                                                    </div>
                                                 </template>
                                             </template>
                                         </div>
@@ -318,6 +335,7 @@ import LayerStatus from './Layer/utils/Status.vue';
 import timeDiff from '../timediff.ts';
 import {
     TablerNone,
+    TablerDelete,
     TablerBreadCrumb,
     TablerIconButton,
     TablerMarkdown,
@@ -421,6 +439,20 @@ async function cancelUpdate() {
     await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/task`, {
         method: 'DELETE'
     });
+}
+
+async function deleteConfig(direction) {
+    loading.value.layer = true;
+
+    await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/${direction}`, {
+        method: 'DELETE'
+    });
+
+    await fetch();
+
+    router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/deployment`);
+
+    loading.value.layer = false;
 }
 
 async function fetchStatus(load = false) {
