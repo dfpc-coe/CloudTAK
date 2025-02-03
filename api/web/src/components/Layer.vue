@@ -450,6 +450,8 @@ async function deleteConfig(direction) {
 
     await fetch();
 
+    await fetchStatus();
+
     router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/deployment`);
 
     loading.value.layer = false;
