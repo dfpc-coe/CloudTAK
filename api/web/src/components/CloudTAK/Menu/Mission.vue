@@ -34,6 +34,16 @@
                             />
                             <span class='mx-2'>Export Data Package</span>
                         </div>
+                        <div
+                            class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2 py-2'
+                            @click='exportToPackage'
+                        >
+                            <IconFileZip
+                                :size='32'
+                                stroke='1'
+                            />
+                            <span class='mx-2'>Download Archive</span>
+                        </div>
                     </div>
                 </template>
             </TablerDropdown>
@@ -48,8 +58,13 @@
             </TablerIconButton>
         </template>
         <template #default>
+            <TablerLoading
+                v-if='loadingInline'
+                :desc='loadingInline'
+                :compact='true'
+            />
             <TablerAlert
-                v-if='error'
+                v-else-if='error'
                 :err='error'
             />
             <ShareToPackage
@@ -185,11 +200,13 @@
 
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue';
+import { std } from '../../../std.ts';
 import type { Feature, Mission, MissionRole } from '../../../types.ts';
 import Subscription from '../../../stores/base/mission.ts';
 import {
     IconRefresh,
     IconPackages,
+    IconFileZip,
     IconBoxMultiple,
     IconDotsVertical,
     IconArticle,
@@ -200,6 +217,7 @@ import {
 } from '@tabler/icons-vue';
 import {
     TablerAlert,
+    TablerLoading,
     TablerDropdown,
     TablerDelete,
     TablerIconButton
@@ -221,6 +239,7 @@ const loading = ref(false);
 const shareToPackage = ref(false);
 
 const role = ref<MissionRole>({ type: 'MISSION_READONLY_SUBSCRIBER', permissions: [] });
+const loadingInline = ref<string | undefined>(undefined);
 const mission = ref<Mission | undefined>(undefined)
 const missionSub = ref<Subscription | undefined>(undefined)
 
@@ -248,6 +267,14 @@ async function deleteMission() {
     }
 
     loading.value = false;
+}
+
+async function exportToPackage(): Promise<void> {
+    loadingInline.value = 'Generating Archive'
+    await std(`/api/marti/missions/${encodeURIComponent(mission.value.name)}/archive?download=true`, {
+        download: true
+    })
+    loadingInline.value = undefined;
 }
 
 async function fetchMission(): Promise<void> {

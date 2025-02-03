@@ -2,6 +2,7 @@
     <MenuTemplate
         v-if='menu'
         name='Mission Layers'
+        :zindex='0'
         :back='false'
         :border='false'
     >

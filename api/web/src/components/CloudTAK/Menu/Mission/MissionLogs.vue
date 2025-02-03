@@ -1,6 +1,7 @@
 <template>
     <MenuTemplate
         name='Mission Logs'
+        :zindex='0'
         :back='false'
         :border='false'
         :loading='loading.logs'
