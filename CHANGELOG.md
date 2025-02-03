@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v6.4.0 - 2025-02-03
+
+- :rocket: Call CloudWatch update when incoming/outgoing config are deleted
+- :rocket: Add additional permissions for EventSourceMapping
+- :rocket: Add ability to delete config from UI
+
 ### v6.3.0 - 2025-01-31
 
 - :tada: Add Outgoing APIs
