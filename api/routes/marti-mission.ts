@@ -217,8 +217,7 @@ export default async function router(schema: Schema, config: Config) {
                 description: 'If set, the response will include a Content-Disposition Header'
             })
         }),
-        description: 'Get a Mission Archive',
-        res: TAKList(MissionSubscriber)
+        description: 'Get a Mission Archive Zip'
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -240,7 +239,7 @@ export default async function router(schema: Schema, config: Config) {
                 res.setHeader('Content-Disposition', `attachment; filename="${req.params.name}.zip"`);
             }
 
-            res.send(archive);
+            archive.pipe(res);
         } catch (err) {
              Err.respond(err, res);
         }
