@@ -132,23 +132,23 @@
                                 <span
                                     v-tooltip='"Insert Zoom Variable"'
                                     class='badge bg-cyan-lt cursor-pointer'
-                                    @click='editing.url = editing.url + "${z}"'
-                                >${z}</span>
+                                    @click='editing.url = editing.url + "{$z}"'
+                                >{$z}</span>
                                 <span
                                     v-tooltip='"Insert X Variable"'
                                     class='badge bg-cyan-lt cursor-pointer'
-                                    @click='editing.url = editing.url + "${x}"'
-                                >${x}</span>
+                                    @click='editing.url = editing.url + "{$x}"'
+                                >{$x}</span>
                                 <span
                                     v-tooltip='"Insert Y Variable"'
                                     class='badge bg-cyan-lt cursor-pointer'
-                                    @click='editing.url = editing.url + "${y}"'
-                                >${y}</span>
+                                    @click='editing.url = editing.url + "{$y}"'
+                                >{$y}</span>
                                 <span
                                     v-tooltip='"Insert Quadkey Variable"'
                                     class='badge bg-cyan-lt cursor-pointer'
-                                    @click='editing.url = editing.url + "${q}"'
-                                >${q}</span>
+                                    @click='editing.url = editing.url + "{$q}"'
+                                >{$q}</span>
                             </div>
                         </TablerInput>
                     </div>
