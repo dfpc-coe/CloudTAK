@@ -1,6 +1,7 @@
 <template>
     <MenuTemplate
         name='Mission Info'
+        :zindex='0'
         :back='false'
         :border='false'
     >

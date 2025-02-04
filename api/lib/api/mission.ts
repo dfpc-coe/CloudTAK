@@ -218,6 +218,25 @@ export default class {
     }
 
     /**
+     * Return Zip archive of Mission Sync
+     *
+     * {@link https://docs.tak.gov/api/takserver/redoc#tag/mission-api/operation/getMissionArchive_1 TAK Server Docs}.
+     */
+    async getArchive(
+        name: string,
+        opts?: Static<typeof MissionOptions>
+    ): Promise<Readable> {
+        const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/archive`, this.api.url);
+
+        const res = await this.api.fetch(url, {
+            method: 'GET',
+            headers: this.#headers(opts),
+        }, true);
+
+        return res.body;
+    }
+
+    /**
      * Return Mission Sync changes in a given time range
      *
      * {@link https://docs.tak.gov/api/takserver/redoc#tag/mission-api/operation/getMissionChanges TAK Server Docs}.

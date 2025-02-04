@@ -2,7 +2,10 @@
     <div class='container px-0'>
         <div
             class='sticky-top col-12 bg-dark'
-            style='border-radius: 0px;'
+            :style='`z-index: ${zindex};`'
+            style='
+                border-radius: 0px;
+            '
             :class='{
                 "border-bottom border-light": border
             }'
@@ -81,6 +84,10 @@ const props = defineProps({
     name: {
         type: String,
         required: true
+    },
+    zindex: {
+        type: Number,
+        default: 1020
     },
     border: {
         type: Boolean,
