@@ -7,9 +7,10 @@
             <label class='subheader'>Filter</label>
             <div class='12'>
                 <CopyField
-                    :model-value='JSON.stringify(l.filter) || "None"'
+                    :model-value='JSON.stringify(l.filter)'
                     :edit='!disabled'
                     :hover='!disabled'
+                    :validate='validateFilter'
                     @update:model-value='l.filter = $event ? JSON.parse($event) : undefined'
                 />
             </div>
@@ -245,7 +246,8 @@
     </div>
 </template>
 
-<script>
+<script setup>
+import { ref, watch } from 'vue';
 import {
     TablerNone,
     TablerInput,
@@ -256,61 +258,52 @@ import CopyField from '../CloudTAK/util/CopyField.vue';
 import { useMapStore } from '/src/stores/map.ts';
 const mapStore = useMapStore();
 
-export default {
-    name: 'OverlayLayer',
-    components: {
-        CopyField,
-        TablerNone,
-        TablerRange,
-        TablerToggle,
-        TablerInput,
+const props = defineProps({
+    disabled: {
+        type: Boolean,
+        default: false
     },
-    props: {
-        disabled: {
-            type: Boolean,
-            default: false
-        },
-        advanced: {
-            type: Boolean,
-            default: false
-        },
-        layer: {
-            type: Object,
-            required: true
-        },
-        updateMap: {
-            type: Boolean,
-            default: true
-        }
+    advanced: {
+        type: Boolean,
+        default: false
     },
-    data: function() {
-        return {
-            err: false,
-            loading: false,
-            l: this.layer
-        }
+    layer: {
+        type: Object,
+        required: true
     },
-    watch: {
-        l: {
-            deep: true,
-            handler: function() {
-                if (!this.updateMap) return;
+    updateMap: {
+        type: Boolean,
+        default: true
+    }
+});
 
-                for (const paint of [
-                    'fill-opacity',
-                    'fill-color',
-                    'line-opacity',
-                    'line-color',
-                    'line-width',
-                    'text-halo-width',
-                    'text-halo-blur'
-                ]) {
-                    if (this.l.paint[paint]) {
-                        mapStore.map.setPaintProperty(String(this.l.id), paint, this.l.paint[paint]);
-                    }
-                }
-            }
+const l = ref(props.layer);
+
+function validateFilter(text) {
+    try {
+        JSON.parse(text) 
+    } catch (err) {
+        return err.message;
+    }
+
+    return true;
+}
+
+watch(l.value, () => {
+    if (!props.updateMap) return;
+
+    for (const paint of [
+        'fill-opacity',
+        'fill-color',
+        'line-opacity',
+        'line-color',
+        'line-width',
+        'text-halo-width',
+        'text-halo-blur'
+    ]) {
+        if (l.value.paint[paint]) {
+            mapStore.map.setPaintProperty(String(l.value.id), paint, l.value.paint[paint]);
         }
     }
-}
+});
 </script>
