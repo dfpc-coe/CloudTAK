@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v6.5.0 - 2025-02-03
+
+- :tada: Add the ability to export a MissionSync archive
+
 ### v6.4.0 - 2025-02-03
 
 - :rocket: Call CloudWatch update when incoming/outgoing config are deleted
