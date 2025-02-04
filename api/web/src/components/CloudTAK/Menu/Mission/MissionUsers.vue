@@ -1,6 +1,7 @@
 <template>
     <MenuTemplate
         name='Mission Subscribers'
+        :zindex='0'
         :back='false'
         :border='false'
         :none='!subscriptions.length'

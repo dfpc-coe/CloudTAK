@@ -72,9 +72,21 @@ export async function std(
     }
 
     const ContentType = res.headers.get('Content-Type');
-
+    const ContentDisposition = res.headers.get('Content-Disposition');
+        
     if (opts.download) {
-        const object = new File([await res.blob()], typeof opts.download === 'string' ? opts.download : 'download');
+        let name = 'download';
+        if (typeof opts.download === 'string') {
+            name = opts.download;
+        } else if (ContentDisposition) {
+            const regex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+            const matches = regex.exec(ContentDisposition);
+            if (matches && matches[1]) {
+                name = matches[1].replace(/['"]/g, '');
+            }
+        }
+
+        const object = new File([await res.blob()], name);
         const file = window.URL.createObjectURL(object);
         window.location.assign(file);
         return res;
