@@ -234,7 +234,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         body: Type.Object({
             name: Default.NameField,
-            collection: Type.Optional(Type.Integer()),
+            collection: Type.Optional(Type.Union([Type.Null(), Type.Integer()])),
             scope: Type.Enum(ResourceCreationScope, { default: ResourceCreationScope.USER }),
             url: Type.String(),
             overlay: Type.Boolean({ default: false }),
