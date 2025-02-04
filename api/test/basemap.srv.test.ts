@@ -84,7 +84,7 @@ test('POST: api/basemap - Invalid URL - No Variables', async (t) => {
 
         t.fail()
     } catch (err) {
-        t.equals(String(err), 'AssertionError [ERR_ASSERTION]: {"status":400,"message":"Either ZXY, Quadkey variables OR ESRI FeatureServer must be used","messages":[]}');
+        t.equals(String(err), 'AssertionError [ERR_ASSERTION]: {"status":400,"message":"Either ZXY, Quadkey variables OR ESRI FeatureServer/ImageServer must be used","messages":[]}');
     }
 
     t.end();
