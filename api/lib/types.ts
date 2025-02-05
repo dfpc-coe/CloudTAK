@@ -260,4 +260,5 @@ export const BasemapResponse = createSelectSchema(schemas.Basemap, {
     minzoom: Type.Integer(),
     maxzoom: Type.Integer(),
     styles: Type.Array(Type.Unknown()),
+    collection: Type.Optional(Type.Union([Type.Null(), Type.String()])),
 });
