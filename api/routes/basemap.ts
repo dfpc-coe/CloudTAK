@@ -189,7 +189,10 @@ export default async function router(schema: Schema, config: Config) {
                         name ~* ${Param(req.query.filter)}
                         AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
                         AND (${Param(req.query.type)}::TEXT IS NULL or ${Param(req.query.type)}::TEXT = type)
-                        AND (${Param(req.query.collection)}::TEXT IS NULL or ${Param(req.query.collection)}::TEXT = collection)
+                        AND (
+                                (${Param(req.query.collection)}::TEXT IS NULL AND collection IS NULL)
+                                OR ${Param(req.query.collection)}::TEXT = collection
+                            )
                         AND ${scope}
                         AND (${impersonate}::TEXT IS NULL OR username = ${impersonate}::TEXT)
                     `
@@ -203,7 +206,6 @@ export default async function router(schema: Schema, config: Config) {
                             collection ~* ${Param(req.query.filter)}
                             AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
                             AND (${Param(req.query.type)}::TEXT IS NULL or ${Param(req.query.type)}::TEXT = type)
-                            AND (${Param(req.query.collection)}::TEXT IS NULL or ${Param(req.query.collection)}::TEXT = collection)
                             AND ${scope}
                             AND (${impersonate}::TEXT IS NULL OR username = ${impersonate}::TEXT)
                         `
@@ -222,7 +224,10 @@ export default async function router(schema: Schema, config: Config) {
                         AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
                         AND (username IS NULL OR username = ${user.email})
                         AND (${Param(req.query.type)}::TEXT IS NULL or ${Param(req.query.type)}::TEXT = type)
-                        AND (${Param(req.query.collection)}::TEXT IS NULL or ${Param(req.query.collection)}::TEXT = collection)
+                        AND (
+                                (${Param(req.query.collection)}::TEXT IS NULL AND collection IS NULL)
+                                OR ${Param(req.query.collection)}::TEXT = collection
+                            )
                         AND ${scope}
                     `
                 });
@@ -236,7 +241,6 @@ export default async function router(schema: Schema, config: Config) {
                             AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
                             AND (username IS NULL OR username = ${user.email})
                             AND (${Param(req.query.type)}::TEXT IS NULL or ${Param(req.query.type)}::TEXT = type)
-                            AND (${Param(req.query.collection)}::TEXT IS NULL or ${Param(req.query.collection)}::TEXT = collection)
                             AND ${scope}
                         `
                     });
