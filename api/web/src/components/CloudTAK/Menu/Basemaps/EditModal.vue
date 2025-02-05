@@ -102,6 +102,7 @@
                 <div class='row row-cards'>
                     <div class='col-12 col-md-6 mt-3'>
                         <TablerInput
+                            required
                             v-model='editing.name'
                             label='Basemap Name'
                             :error='errors.name'
@@ -109,6 +110,7 @@
                     </div>
                     <div class='col-12 col-md-3 mt-3'>
                         <TablerEnum
+                            required
                             v-model='editing.type'
                             label='Basemap Type'
                             :options='["raster", "raster-dem", "vector"]'
@@ -116,6 +118,7 @@
                     </div>
                     <div class='col-12 col-md-3 mt-3'>
                         <TablerEnum
+                            required
                             v-model='scope'
                             label='Basemap Scope'
                             :disabled='(props.basemap.id && !profileStore.profile.system_admin)'
@@ -124,6 +127,7 @@
                     </div>
                     <div class='col-md-12'>
                         <TablerInput
+                            required
                             v-model='editing.url'
                             label='Basemap Url'
                             :error='errors.url'
@@ -154,18 +158,21 @@
                     </div>
                     <div class='col-md-4'>
                         <TablerInput
+                            required
                             v-model='editing.minzoom'
                             label='Basemap MinZoom'
                         />
                     </div>
                     <div class='col-md-4'>
                         <TablerInput
+                            required
                             v-model='editing.maxzoom'
                             label='Basemap MaxZoom'
                         />
                     </div>
                     <div class='col-12 col-md-4'>
                         <TablerEnum
+                            required
                             v-model='editing.format'
                             label='Basemap Format'
                             :options='["png", "jpeg", "mvt"]'
@@ -173,7 +180,7 @@
                     </div>
                     <div class='col-12'>
                         <TablerInput
-                            label='Collection'
+                            label='Optional Collection'
                             v-model='editing.collection'
                         />
                     </div>
@@ -255,7 +262,8 @@ const editing = ref({
     maxzoom: 16,
     format: 'png',
     bounds: [-180, -90, 180, 90 ],
-    center: [0, 0]
+    center: [0, 0],
+    collection: ''
 })
 
 onMounted(async () => {
@@ -325,6 +333,10 @@ async function create() {
             if (!body.bounds || !body.bounds.length) delete body.bounds;
             if (!body.center || !body.center.length) delete body.center;
 
+            if (body.collection.trim().length === 0) {
+                body.collection = null;
+            }
+
             await std(`/api/basemap/${props.basemap.id}`, {
                 method: 'PATCH',
                 body: {
@@ -334,11 +346,20 @@ async function create() {
             });
             emit('close');
         } else {
+            const body = JSON.parse(JSON.stringify(editing.value));
+
+            if (!body.bounds || !body.bounds.length) delete body.bounds;
+            if (!body.center || !body.center.length) delete body.center;
+
+            if (body.collection.trim().length === 0) {
+                body.collection = null;
+            }
+
             await std('/api/basemap', {
                 method: 'POST',
                 body: {
                     scope: scope.value,
-                    ...editing.value
+                    ...body
                 }
             });
             emit('close');
