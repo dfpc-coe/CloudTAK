@@ -102,24 +102,24 @@
                 <div class='row row-cards'>
                     <div class='col-12 col-md-6 mt-3'>
                         <TablerInput
-                            required
                             v-model='editing.name'
+                            required
                             label='Basemap Name'
                             :error='errors.name'
                         />
                     </div>
                     <div class='col-12 col-md-3 mt-3'>
                         <TablerEnum
-                            required
                             v-model='editing.type'
+                            required
                             label='Basemap Type'
                             :options='["raster", "raster-dem", "vector"]'
                         />
                     </div>
                     <div class='col-12 col-md-3 mt-3'>
                         <TablerEnum
-                            required
                             v-model='scope'
+                            required
                             label='Basemap Scope'
                             :disabled='(props.basemap.id && !profileStore.profile.system_admin)'
                             :options='["user", "server"]'
@@ -127,8 +127,8 @@
                     </div>
                     <div class='col-md-12'>
                         <TablerInput
-                            required
                             v-model='editing.url'
+                            required
                             label='Basemap Url'
                             :error='errors.url'
                         >
@@ -158,30 +158,30 @@
                     </div>
                     <div class='col-md-4'>
                         <TablerInput
-                            required
                             v-model='editing.minzoom'
+                            required
                             label='Basemap MinZoom'
                         />
                     </div>
                     <div class='col-md-4'>
                         <TablerInput
-                            required
                             v-model='editing.maxzoom'
+                            required
                             label='Basemap MaxZoom'
                         />
                     </div>
                     <div class='col-12 col-md-4'>
                         <TablerEnum
-                            required
                             v-model='editing.format'
+                            required
                             label='Basemap Format'
                             :options='["png", "jpeg", "mvt"]'
                         />
                     </div>
                     <div class='col-12'>
                         <TablerInput
-                            label='Optional Collection'
                             v-model='editing.collection'
+                            label='Optional Collection'
                         />
                     </div>
                     <div class='col-md-12 mt-3'>

@@ -47,8 +47,8 @@
                                 />
                                 <div
                                     v-for='user of list.items'
-                                    tabindex='0'
                                     :key='user.username'
+                                    tabindex='0'
                                     class='cursor-pointer my-1 hover-light px-2 py-1'
                                     @keyup.enter='selected = user'
                                     @click='selected = user'
