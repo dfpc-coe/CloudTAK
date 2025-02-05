@@ -306,7 +306,7 @@ export interface paths {
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description Only show Basemaps belonging to a given collection */
-                    collection?: number;
+                    collection?: string;
                     /** @description No Description */
                     overlay: boolean;
                 };
@@ -324,6 +324,9 @@ export interface paths {
                     content: {
                         "application/json": {
                             total: number;
+                            collections: {
+                                name: string;
+                            }[];
                             items: {
                                 id: number;
                                 created: string;
@@ -335,7 +338,7 @@ export interface paths {
                                 username: string | null;
                                 minzoom: number;
                                 maxzoom: number;
-                                collection: (null | number) | null;
+                                collection: string | null;
                                 format: string;
                                 style: string;
                                 styles: unknown[];
@@ -401,7 +404,7 @@ export interface paths {
                     "application/json": {
                         /** @description Human readable name */
                         name: string;
-                        collection?: number;
+                        collection?: null | string;
                         /** @default user */
                         scope: "server" | "user";
                         url: string;
@@ -437,7 +440,7 @@ export interface paths {
                             username: string | null;
                             minzoom: number;
                             maxzoom: number;
-                            collection: (null | number) | null;
+                            collection: string | null;
                             format: string;
                             style: string;
                             styles: unknown[];
@@ -496,7 +499,7 @@ export interface paths {
                             username: string | null;
                             minzoom: number;
                             maxzoom: number;
-                            collection: (null | number) | null;
+                            collection: string | null;
                             format: string;
                             style: string;
                             styles: unknown[];
@@ -552,7 +555,7 @@ export interface paths {
                     "application/json": {
                         /** @description Human readable name */
                         name?: string;
-                        collection?: null | number;
+                        collection?: null | string;
                         /** @default user */
                         scope: "server" | "user";
                         url?: string;
@@ -586,7 +589,7 @@ export interface paths {
                             username: string | null;
                             minzoom: number;
                             maxzoom: number;
-                            collection: (null | number) | null;
+                            collection: string | null;
                             format: string;
                             style: string;
                             styles: unknown[];
@@ -3069,7 +3072,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Register a new layer */
+        /** Register a new incoming layer config */
         post: {
             parameters: {
                 query?: never;
@@ -3084,7 +3087,6 @@ export interface paths {
                         cron?: string;
                         stale?: number;
                         data?: number;
-                        schema?: unknown;
                         enabled_styles?: boolean;
                         styles?: {
                             line?: {
@@ -3652,6 +3654,107 @@ export interface paths {
                             environment: unknown;
                             ephemeral: Record<string, never>;
                             data: number | null;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/connection/{:connectionid}/layer/{:layerid}/outgoing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Register a new incoming layer config */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            layer: number;
+                            created: string;
+                            updated: string;
+                            environment: unknown;
+                            ephemeral: Record<string, never>;
+                        };
+                    };
+                };
+            };
+        };
+        /** Remove an outgoing config from a layer */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update an outgoing layer configuration */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        environment?: unknown;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            layer: number;
+                            created: string;
+                            updated: string;
+                            environment: unknown;
+                            ephemeral: Record<string, never>;
                         };
                     };
                 };
@@ -5069,6 +5172,95 @@ export interface paths {
         };
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/error": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Let admins see errors coming out of the system */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort?: "id" | "created" | "updated" | "username" | "message" | "trace" | "enableRLS";
+                    /** @description No Description */
+                    username?: string;
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: number;
+                                created: string;
+                                updated: string;
+                                username: string;
+                                message: string;
+                                trace: string | null;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create a new error */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        message: string;
+                        trace?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -8989,6 +9181,43 @@ export interface paths {
                             nodeId?: string;
                         };
                     };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marti/missions/{:name}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a Mission Archive Zip */
+        get: {
+            parameters: {
+                query: {
+                    /** @description If set, the response will include a Content-Disposition Header */
+                    download: boolean;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
                 };
             };
         };

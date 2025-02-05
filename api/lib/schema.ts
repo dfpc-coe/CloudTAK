@@ -92,13 +92,6 @@ export const ProfileFeature = pgTable('profile_features', {
     geometry: geometry({ type: GeometryType.GeometryZ, srid: 4326 }).notNull()
 });
 
-export const BasemapCollection = pgTable('basemaps_collection', {
-    id: serial().primaryKey(),
-    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    name: text().notNull(),
-})
-
 export const Basemap = pgTable('basemaps', {
     id: serial().primaryKey(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
@@ -112,7 +105,7 @@ export const Basemap = pgTable('basemaps', {
     center: geometry({ type: GeometryType.Point, srid: 4326 }).$type<Point>(),
     minzoom: integer().notNull().default(0),
     maxzoom: integer().notNull().default(16),
-    collection: integer().references(() => BasemapCollection.id),
+    collection: text(),
     format: text().$type<Basemap_Format>().notNull().default(Basemap_Format.PNG),
     style: text().$type<Basemap_Style>().notNull().default(Basemap_Style.ZXY),
     styles: json().$type<Array<unknown>>().notNull().default([]),

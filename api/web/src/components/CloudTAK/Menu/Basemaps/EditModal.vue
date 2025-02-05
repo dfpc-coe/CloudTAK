@@ -103,6 +103,7 @@
                     <div class='col-12 col-md-6 mt-3'>
                         <TablerInput
                             v-model='editing.name'
+                            required
                             label='Basemap Name'
                             :error='errors.name'
                         />
@@ -110,6 +111,7 @@
                     <div class='col-12 col-md-3 mt-3'>
                         <TablerEnum
                             v-model='editing.type'
+                            required
                             label='Basemap Type'
                             :options='["raster", "raster-dem", "vector"]'
                         />
@@ -117,6 +119,7 @@
                     <div class='col-12 col-md-3 mt-3'>
                         <TablerEnum
                             v-model='scope'
+                            required
                             label='Basemap Scope'
                             :disabled='(props.basemap.id && !profileStore.profile.system_admin)'
                             :options='["user", "server"]'
@@ -125,6 +128,7 @@
                     <div class='col-md-12'>
                         <TablerInput
                             v-model='editing.url'
+                            required
                             label='Basemap Url'
                             :error='errors.url'
                         >
@@ -155,20 +159,29 @@
                     <div class='col-md-4'>
                         <TablerInput
                             v-model='editing.minzoom'
+                            required
                             label='Basemap MinZoom'
                         />
                     </div>
                     <div class='col-md-4'>
                         <TablerInput
                             v-model='editing.maxzoom'
+                            required
                             label='Basemap MaxZoom'
                         />
                     </div>
                     <div class='col-12 col-md-4'>
                         <TablerEnum
                             v-model='editing.format'
+                            required
                             label='Basemap Format'
                             :options='["png", "jpeg", "mvt"]'
+                        />
+                    </div>
+                    <div class='col-12'>
+                        <TablerInput
+                            v-model='editing.collection'
+                            label='Optional Collection'
                         />
                     </div>
                     <div class='col-md-12 mt-3'>
@@ -196,7 +209,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { std, stdurl } from '/src/std.ts';
+import { std, stdurl } from '../../../../std.ts';
 import Upload from '../../../util/Upload.vue';
 import {
     IconDownload,
@@ -211,7 +224,7 @@ import {
     TablerEnum,
     TablerInput
 } from '@tak-ps/vue-tabler';
-import { useProfileStore } from '/src/stores/profile.ts';
+import { useProfileStore } from '../../../../stores/profile.ts';
 
 const emit = defineEmits(['close']);
 
@@ -249,7 +262,8 @@ const editing = ref({
     maxzoom: 16,
     format: 'png',
     bounds: [-180, -90, 180, 90 ],
-    center: [0, 0]
+    center: [0, 0],
+    collection: ''
 })
 
 onMounted(async () => {
@@ -319,6 +333,10 @@ async function create() {
             if (!body.bounds || !body.bounds.length) delete body.bounds;
             if (!body.center || !body.center.length) delete body.center;
 
+            if (body.collection.trim().length === 0) {
+                body.collection = null;
+            }
+
             await std(`/api/basemap/${props.basemap.id}`, {
                 method: 'PATCH',
                 body: {
@@ -328,11 +346,20 @@ async function create() {
             });
             emit('close');
         } else {
+            const body = JSON.parse(JSON.stringify(editing.value));
+
+            if (!body.bounds || !body.bounds.length) delete body.bounds;
+            if (!body.center || !body.center.length) delete body.center;
+
+            if (body.collection.trim().length === 0) {
+                body.collection = null;
+            }
+
             await std('/api/basemap', {
                 method: 'POST',
                 body: {
                     scope: scope.value,
-                    ...editing.value
+                    ...body
                 }
             });
             emit('close');

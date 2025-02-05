@@ -13,8 +13,9 @@ import { Param } from '@openaddresses/batch-generic'
 import { sql } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import { Geometry, BBox } from 'geojson';
-import { Type } from '@sinclair/typebox'
+import { Static, Type } from '@sinclair/typebox'
 import { StandardResponse, BasemapResponse } from '../lib/types.js';
+import { BasemapCollection } from '../lib/models/Basemap.js';
 import { Basemap as BasemapParser } from '@tak-ps/node-cot';
 import { Basemap } from '../lib/schema.js';
 import { toEnum, Basemap_Format, Basemap_Style, Basemap_Type } from '../lib/enums.js';
@@ -152,18 +153,20 @@ export default async function router(schema: Schema, config: Config) {
             type: Type.Optional(Type.Enum(Basemap_Type)),
             sort: Type.String({ default: 'created', enum: Object.keys(Basemap) }),
             filter: Default.Filter,
-            collection: Type.Optional(Type.Integer({
+            collection: Type.Optional(Type.String({
                 description: 'Only show Basemaps belonging to a given collection'
             })),
             overlay: Type.Boolean({ default: false })
         }),
         res: Type.Object({
             total: Type.Integer(),
+            collections: Type.Array(BasemapCollection),
             items: Type.Array(AugmentedBasemapResponse)
         })
     }, async (req, res) => {
         try {
             let list;
+            let collections: Array<Static<typeof BasemapCollection>> = [];
 
             let scope = sql`True`;
             if (req.query.scope === ResourceCreationScope.SERVER) {
@@ -186,11 +189,28 @@ export default async function router(schema: Schema, config: Config) {
                         name ~* ${Param(req.query.filter)}
                         AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
                         AND (${Param(req.query.type)}::TEXT IS NULL or ${Param(req.query.type)}::TEXT = type)
-                        AND (${Param(req.query.collection)}::TEXT IS NULL or ${Param(req.query.collection)}::TEXT = 'collection')
+                        AND (
+                                (${Param(req.query.collection)}::TEXT IS NULL AND collection IS NULL)
+                                OR ${Param(req.query.collection)}::TEXT = collection
+                            )
                         AND ${scope}
                         AND (${impersonate}::TEXT IS NULL OR username = ${impersonate}::TEXT)
                     `
                 });
+
+                if (!req.query.collection) {
+                    collections = await config.models.Basemap.collections({
+                        order: req.query.order,
+                        sort: req.query.sort,
+                        where: sql`
+                            collection ~* ${Param(req.query.filter)}
+                            AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
+                            AND (${Param(req.query.type)}::TEXT IS NULL or ${Param(req.query.type)}::TEXT = type)
+                            AND ${scope}
+                            AND (${impersonate}::TEXT IS NULL OR username = ${impersonate}::TEXT)
+                        `
+                    });
+                }
             } else {
                 const user = await Auth.as_user(config, req);
 
@@ -204,14 +224,32 @@ export default async function router(schema: Schema, config: Config) {
                         AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
                         AND (username IS NULL OR username = ${user.email})
                         AND (${Param(req.query.type)}::TEXT IS NULL or ${Param(req.query.type)}::TEXT = type)
-                        AND (${Param(req.query.collection)}::TEXT IS NULL or ${Param(req.query.collection)}::TEXT = 'collection')
+                        AND (
+                                (${Param(req.query.collection)}::TEXT IS NULL AND collection IS NULL)
+                                OR ${Param(req.query.collection)}::TEXT = collection
+                            )
                         AND ${scope}
                     `
                 });
+
+                if (!req.query.collection) {
+                    collections = await config.models.Basemap.collections({
+                        order: req.query.order,
+                        sort: req.query.sort,
+                        where: sql`
+                            collection ~* ${Param(req.query.filter)}
+                            AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
+                            AND (username IS NULL OR username = ${user.email})
+                            AND (${Param(req.query.type)}::TEXT IS NULL or ${Param(req.query.type)}::TEXT = type)
+                            AND ${scope}
+                        `
+                    });
+                }
             }
 
             res.json({
                 total: list.total,
+                collections,
                 items: list.items.map((basemap) => {
                     return {
                         ...basemap,
@@ -234,7 +272,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         body: Type.Object({
             name: Default.NameField,
-            collection: Type.Optional(Type.Integer()),
+            collection: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             scope: Type.Enum(ResourceCreationScope, { default: ResourceCreationScope.USER }),
             url: Type.String(),
             overlay: Type.Boolean({ default: false }),
@@ -304,7 +342,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         body: Type.Object({
             name: Type.Optional(Default.NameField),
-            collection: Type.Optional(Type.Union([Type.Null(), Type.Integer()])),
+            collection: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             scope: Type.Enum(ResourceCreationScope, { default: ResourceCreationScope.USER }),
             url: Type.Optional(Type.String()),
             minzoom: Type.Optional(Type.Integer()),
