@@ -97,6 +97,7 @@ const paging = ref({
 
 const list = ref<BasemapList>({
     total: 0,
+    collections: [],
     items: []
 });
 

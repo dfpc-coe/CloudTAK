@@ -162,7 +162,8 @@
     </template>
 </template>
 
-<script>
+<script setup>
+import { ref, watch } from 'vue';
 import {
     TablerIconButton,
     TablerDelete,
@@ -186,72 +187,43 @@ import {
 } from '@tabler/icons-vue';
 import StyleLayer from './Layer.vue';
 
-export default {
-    name: 'StylingContainer',
-    components: {
-        IconEye,
-        IconAbc,
-        IconPlus,
-        IconCube,
-        IconCode,
-        IconPaint,
-        IconLine,
-        IconPhoto,
-        IconFlame,
-        IconCircle,
-        IconMountain,
-        IconBackground,
-        IconQuestionMark,
-        TablerIconButton,
-        StyleLayer,
-        TablerDelete,
-        TablerNone,
-        ObjectInput,
+const props = defineProps({
+    modelValue: {
+        type: Object,
+        required: true
     },
-    props: {
-        modelValue: {
-            type: Object,
-            required: true
-        },
-        advanced: {
-            type: Boolean,
-            default: false
-        }
-    },
-    emits: [
-        'update:modelValue'
-    ],
-    data: function() {
-        return {
-            styles: JSON.parse(JSON.stringify(this.modelValue)),
-            code: new Set(),
-            open: new Set(),
-            mode: 'visual'
-        }
-    },
-    watch: {
-        styles: {
-            deep: true,
-            handler: function() {
-                this.$emit('update:modelValue', this.styles);
-            }
-        }
-    },
-    methods: {
-        removeLayer: function(l, i) {
-            this.styles.splice(i, 1);
-            this.open.delete(l.id)
-            this.code.delete(l.id)
-        },
-        newLayer: function() {
-            this.styles.push({
-                id: "new-layer",
-                type: 'circle',
-                layout: {},
-                paint: {}
-            });
-            this.open.add('new-layer');
-        }
+    advanced: {
+        type: Boolean,
+        default: false
     }
+});
+
+const emit = defineEmits([
+    'update:modelValue'
+]);
+
+const styles = ref(JSON.parse(JSON.stringify(props.modelValue)))
+const code = ref(new Set());
+const open = ref(new Set());
+const mode = ref('visual');
+
+watch(styles.value, () => {
+    emit('update:modelValue', styles.value);
+});
+
+function removeLayer(l, i) {
+    styles.value.splice(i, 1);
+    open.value.delete(l.id)
+    code.value.delete(l.id)
+}
+
+function newLayer() {
+    styles.value.push({
+        id: "new-layer",
+        type: 'circle',
+        layout: {},
+        paint: {}
+    });
+    open.value.add('new-layer');
 }
 </script>

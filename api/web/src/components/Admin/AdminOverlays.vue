@@ -8,7 +8,7 @@
             <div class='ms-auto btn-list'>
                 <TablerIconButton
                     title='Create Overlay'
-                    @click='$router.push("/admin/overlay/new")'
+                    @click='router.push("/admin/overlay/new")'
                 >
                     <IconPlus
                         :size='32'
@@ -87,8 +87,10 @@
                         <tr
                             v-for='ov in list.items'
                             :key='ov.id'
+                            tabindex='0'
                             class='cursor-pointer'
-                            @click='stdclick($router, $event, `/admin/overlay/${ov.id}`)'
+                            @keyup.enter='stdclick(router, $event, `/admin/overlay/${ov.id}`)'
+                            @click='stdclick(router, $event, `/admin/overlay/${ov.id}`)'
                         >
                             <template v-for='h in header'>
                                 <template v-if='h.display'>
@@ -141,6 +143,7 @@
 
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { std, stdurl, stdclick } from '../../../src/std.ts';
 import type { Basemap, BasemapList } from '../../../src/types.ts';
 import TableHeader from '../util/TableHeader.vue'
@@ -160,6 +163,8 @@ import {
 
 type Header = { name: keyof Basemap, display: boolean };
 
+const router = useRouter();
+
 const error = ref<Error | undefined>();
 const loading = ref(true);
 const header = ref<Array<Header>>([]);
@@ -176,6 +181,7 @@ const paging = ref({
 
 const list = ref<BasemapList>({
     total: 0,
+    collections: [],
     items: []
 });
 

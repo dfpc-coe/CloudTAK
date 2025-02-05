@@ -25,10 +25,21 @@
         <template #default>
             <div
                 v-if='!share'
-                class='col-12 px-2 py-2'
+                class='col-12 px-2 py-2 d-flex align-items-center'
             >
+                <TablerIconButton
+                    v-if='paging.collection'
+                    title='Back'
+                    @click='paging.collection = ""'
+                >
+                    <IconCircleArrowLeft
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
                 <TablerInput
                     v-model='paging.filter'
+                    :style='paging.collection ? "width: calc(100% - 32px);" : "width: 100%;"'
                     icon='search'
                     placeholder='Filter'
                 />
@@ -47,21 +58,43 @@
                 @cancel='share = undefined'
             />
             <TablerNone
-                v-else-if='!list.items.length'
+                v-else-if='!list.items.length && !list.collections.length'
                 label='Basemaps'
                 @create='editModal = {}'
             />
             <template v-else>
-                <div
-                    v-for='basemap in list.items'
-                    :key='basemap.id'
-                    class='col-12 hover-dark cursor-pointer py-2 px-3'
-                    @click='setBasemap(basemap)'
+                <MenuItem
+                    v-for='collection in list.collections'
+                    :key='collection.name'
+                    @click='setCollection(collection.name)'
+                    @keyup.enter='setCollection(collection.name)'
                 >
                     <div class='d-flex align-items-center my-2'>
+                        <IconFolder
+                            :size='32'
+                            stroke='1'
+                        />
                         <span
                             class='mx-2 text-truncate'
                             style='font-size: 18px; width: 240px;'
+                            v-text='collection.name'
+                        />
+                    </div>
+                </MenuItem>
+                <MenuItem
+                    v-for='basemap in list.items'
+                    :key='basemap.id'
+                    @click='setBasemap(basemap)'
+                    @keyup.enter='setBasemap(basemap)'
+                >
+                    <div class='d-flex align-items-center my-2'>
+                        <IconMap
+                            :size='32'
+                            stroke='1'
+                        />
+                        <span
+                            class='mx-2 text-truncate'
+                            style='font-size: 18px; width: 220px;'
                             v-text='basemap.name'
                         />
 
@@ -76,15 +109,14 @@
                             >Private</span>
 
                             <TablerDropdown>
-                                <TablerButton
+                                <TablerIconButton
                                     title='More Options'
-                                    style='height: 30px'
                                 >
                                     <IconDotsVertical
                                         :size='20'
                                         stroke='1'
                                     />
-                                </TablerButton>
+                                </TablerIconButton>
 
                                 <template #dropdown>
                                     <div clas='col-12'>
@@ -125,7 +157,7 @@
                             </TablerDropdown>
                         </div>
                     </div>
-                </div>
+                </MenuItem>
 
                 <div class='col-lg-12'>
                     <TablerPager
@@ -150,6 +182,7 @@
 
 <script setup lang='ts'>
 import { onMounted, ref, computed, watch } from 'vue';
+import MenuItem from '../util/MenuItem.vue';
 import type { BasemapList, Basemap } from '../../../types.ts';
 import { std, stdurl } from '../../../std.ts';
 import Overlay from '../../../stores/base/overlay.ts';
@@ -161,18 +194,20 @@ import {
     TablerInput,
     TablerPager,
     TablerAlert,
-    TablerButton,
     TablerLoading,
     TablerIconButton,
     TablerDropdown
 } from '@tak-ps/vue-tabler';
 import {
+    IconMap,
     IconPlus,
+    IconFolder,
     IconShare2,
     IconRefresh,
     IconSettings,
     IconDownload,
     IconDotsVertical,
+    IconCircleArrowLeft,
 } from '@tabler/icons-vue'
 import { useMapStore } from '../../../stores/map.ts';
 import { useProfileStore } from '../../../stores/profile.ts';
@@ -185,12 +220,14 @@ const editModal = ref();
 const share = ref<Array<number> | undefined>();
 const paging = ref({
     filter: '',
+    collection: '',
     limit: 30,
     page: 0
 });
 
 const list = ref<BasemapList>({
     total: 0,
+    collections: [],
     items: []
 });
 
@@ -254,11 +291,19 @@ function download(basemap: Basemap) {
     window.open(stdurl(`api/basemap/${basemap.id}?format=xml&download=true&token=${localStorage.token}`), '_blank');
 }
 
+function setCollection(name: string) {
+    paging.value.collection = name;
+    paging.value.filter = '';
+}
+
 async function fetchList() {
+    error.value = undefined;
+
     try {
         loading.value = true;
         const url = stdurl('/api/basemap');
         if (paging.value.filter) url.searchParams.append('filter', paging.value.filter);
+        if (paging.value.collection) url.searchParams.append('collection', String(paging.value.collection));
         url.searchParams.append('limit', String(paging.value.limit));
         url.searchParams.append('page', String(paging.value.page));
         list.value = await std(url) as BasemapList;

@@ -18,6 +18,7 @@ test('GET: api/basemap', async (t) => {
 
         t.deepEquals(res.body, {
             total: 0,
+            collections: [],
             items: []
         });
     } catch (err) {
