@@ -255,14 +255,9 @@ export const ConnectionResponse = Type.Object({
     enabled: Type.Boolean(),
 });
 
-export const BasemapCollectionResponse = createSelectSchema(schemas.BasemapCollection, {
-    id: Type.Integer(),
-});
-
 export const BasemapResponse = createSelectSchema(schemas.Basemap, {
     id: Type.Integer(),
     minzoom: Type.Integer(),
     maxzoom: Type.Integer(),
     styles: Type.Array(Type.Unknown()),
-    collection: Type.Union([Type.Null(), Type.Integer()]),
 });
