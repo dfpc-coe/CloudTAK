@@ -172,7 +172,7 @@
                         />
                     </div>
                     <div class='col-12'>
-                        <BasemapCollection v-if='false'/>
+                        <BasemapCollection/>
                     </div>
                     <div class='col-md-12 mt-3'>
                         <div class='d-flex'>

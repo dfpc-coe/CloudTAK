@@ -1,59 +1,71 @@
 <template>
-    <div class='modal-body'>
-        <TablerInput
-            v-model='filter'
-            label='Channel Selection'
-            placeholder='Filter Channels...'
-        />
+    <div>
+        <div class='col-12 d-flex align-items-center'>
+            <TablerIconButton
+                :title='opened ? "Open Selection" : "Close Selection"'
+                @click='opened = !opened'
+            >
+                <IconChevronRight
+                    v-if='!opened'
+                    :size='32'
+                    stroke='1'
+                />
+                <IconChevronDown
+                    v-else
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
 
-        <div
-            v-if='props.limit'
-            class='alert alert-info mt-2'
-            role='alert'
-        >
-            <div class='d-flex align-items-center'>
-                <IconInfoCircle /><span class='mx-1'>Select up to&nbsp;<span v-text='props.limit' />&nbsp;Channel<span v-text='props.limit > 1 ? "s" : ""' /></span>
-            </div>
+            <label>Basemap Collection</label>
         </div>
 
-        <TablerLoading
-            v-if='loading'
-            desc='Loading Channels'
-        />
-        <TablerNone
-            v-else-if='!filtered.length'
-            label='Groups'
-            :create='false'
-        />
-        <template v-else>
-            <div
-                class='my-2 overflow-auto'
-                style='height: 25vh;'
-            >
+        <template v-if='opened'>
+            <TablerInput
+                v-model='filter'
+                label='Collection Selection'
+                placeholder='Filter Collections...'
+            />
+
+            <TablerLoading
+                v-if='loading'
+                desc='Loading Collections'
+            />
+            <TablerNone
+                v-else-if='!filtered.length'
+                label='Groups'
+                :create='false'
+            />
+            <template v-else>
                 <div
-                    v-for='group in filtered'
-                    :key='group'
-                    class='col-12 cursor-pointer'
-                    @click='updateGroup(group)'
+                    class='my-2 overflow-auto'
+                    style='height: 25vh;'
                 >
-                    <IconCircleFilled
-                        v-if='selected.has(group)'
-                        :size='32'
-                        stroke='1'
-                        class='cursor-pointer'
-                    />
-                    <IconCircle
-                        v-else
-                        :size='32'
-                        troke='1'
-                        class='cursor-pointer'
-                    />
-                    <span
-                        class='mx-2'
-                        v-text='group'
-                    />
+                    <div
+                        v-for='group in filtered'
+                        :key='group'
+                        class='col-12 cursor-pointer'
+                        @click='updateGroup(group)'
+                    >
+                        <IconCircleFilled
+                            v-if='selected.has(group)'
+                            :size='32'
+                            stroke='1'
+                            class='cursor-pointer'
+                        />
+                        <IconCircle
+                            v-else
+                            :size='32'
+                            troke='1'
+                            class='cursor-pointer'
+                        />
+                        <span
+                            class='mx-2'
+                            v-text='group'
+                        />
+                    </div>
                 </div>
-            </div>
+            </template>
         </template>
     </div>
 </template>
@@ -64,12 +76,15 @@ import { std, stdurl } from '../../../std.ts';
 import { useProfileStore } from '../../../stores/profile.ts';
 import type { Group } from '../../../types.ts';
 import {
+    TablerIconButton,
     TablerLoading,
     TablerInput,
     TablerNone,
 } from '@tak-ps/vue-tabler';
 import {
     IconCircle,
+    IconChevronRight,
+    IconChevronDown,
     IconInfoCircle,
     IconCircleFilled
 } from '@tabler/icons-vue';
@@ -83,6 +98,8 @@ const props = defineProps<{
 const emit = defineEmits([
     'update:modelValue'
 ]);
+
+const opened = ref(false);
 
 const profile = useProfileStore();
 const filter = ref('');
