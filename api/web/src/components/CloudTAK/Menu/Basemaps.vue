@@ -58,7 +58,7 @@
                 @cancel='share = undefined'
             />
             <TablerNone
-                v-else-if='!list.items.length'
+                v-else-if='!list.items.length && !list.collections.length'
                 label='Basemaps'
                 @create='editModal = {}'
             />
@@ -66,8 +66,8 @@
                 <MenuItem
                     v-for='collection in list.collections'
                     :key='collection.name'
-                    @click='paging.collection = collection.name'
-                    @keyup.enter='paging.collection = collection.name'
+                    @click='setCollection(collection.name)'
+                    @keyup.enter='setCollection(collection.name)'
                 >
                     <div class='d-flex align-items-center my-2'>
                         <IconFolder
@@ -289,6 +289,11 @@ async function setBasemap(basemap: Basemap) {
 
 function download(basemap: Basemap) {
     window.open(stdurl(`api/basemap/${basemap.id}?format=xml&download=true&token=${localStorage.token}`), '_blank');
+}
+
+function setCollection(name: string) {
+    paging.value.collection = name;
+    paging.value.filter = '';
 }
 
 async function fetchList() {
