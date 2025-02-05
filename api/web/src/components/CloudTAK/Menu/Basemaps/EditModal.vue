@@ -172,7 +172,10 @@
                         />
                     </div>
                     <div class='col-12'>
-                        <BasemapCollection/>
+                        <TablerInput
+                            label='Collection'
+                            v-model='editing.collection'
+                        />
                     </div>
                     <div class='col-md-12 mt-3'>
                         <div class='d-flex'>
@@ -201,7 +204,6 @@
 import { ref, onMounted } from 'vue';
 import { std, stdurl } from '../../../../std.ts';
 import Upload from '../../../util/Upload.vue';
-import BasemapCollection from '../../util/BasemapCollectionSelect.vue';
 import {
     IconDownload,
     IconFileImport,

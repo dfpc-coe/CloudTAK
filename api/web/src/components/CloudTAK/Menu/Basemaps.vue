@@ -255,6 +255,8 @@ function download(basemap: Basemap) {
 }
 
 async function fetchList() {
+    error.value = undefined;
+
     try {
         loading.value = true;
         const url = stdurl('/api/basemap');
