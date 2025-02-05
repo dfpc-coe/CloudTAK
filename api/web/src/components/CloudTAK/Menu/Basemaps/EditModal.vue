@@ -171,6 +171,9 @@
                             :options='["png", "jpeg", "mvt"]'
                         />
                     </div>
+                    <div class='col-12'>
+                        <BasemapCollection v-if='false'/>
+                    </div>
                     <div class='col-md-12 mt-3'>
                         <div class='d-flex'>
                             <div v-if='basemap.id'>
@@ -196,8 +199,9 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { std, stdurl } from '/src/std.ts';
+import { std, stdurl } from '../../../../std.ts';
 import Upload from '../../../util/Upload.vue';
+import BasemapCollection from '../../util/BasemapCollectionSelect.vue';
 import {
     IconDownload,
     IconFileImport,
@@ -211,7 +215,7 @@ import {
     TablerEnum,
     TablerInput
 } from '@tak-ps/vue-tabler';
-import { useProfileStore } from '/src/stores/profile.ts';
+import { useProfileStore } from '../../../../stores/profile.ts';
 
 const emit = defineEmits(['close']);
 
