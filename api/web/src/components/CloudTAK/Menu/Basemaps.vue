@@ -52,13 +52,35 @@
                 @create='editModal = {}'
             />
             <template v-else>
-                <div
-                    v-for='basemap in list.items'
-                    :key='basemap.id'
-                    class='col-12 hover-dark cursor-pointer py-2 px-3'
-                    @click='setBasemap(basemap)'
+                <MenuItem
+                    v-for='collection in list.collections'
+                    :key='collection.name'
+                    @click='paging.collection = collection.name'
+                    @keyup.enter='paging.collection = collection.name'
                 >
                     <div class='d-flex align-items-center my-2'>
+                        <IconFolder
+                            :size='32'
+                            stroke='1'
+                        />
+                        <span
+                            class='mx-2 text-truncate'
+                            style='font-size: 18px; width: 240px;'
+                            v-text='collection.name'
+                        />
+                    </div>
+                </MenuItem>
+                <MenuItem
+                    v-for='basemap in list.items'
+                    :key='basemap.id'
+                    @click='setBasemap(basemap)'
+                    @keyup.enter='setBasemap(basemap)'
+                >
+                    <div class='d-flex align-items-center my-2'>
+                        <IconMap
+                            :size='32'
+                            stroke='1'
+                        />
                         <span
                             class='mx-2 text-truncate'
                             style='font-size: 18px; width: 240px;'
@@ -125,7 +147,7 @@
                             </TablerDropdown>
                         </div>
                     </div>
-                </div>
+                </MenuItem>
 
                 <div class='col-lg-12'>
                     <TablerPager
@@ -150,6 +172,7 @@
 
 <script setup lang='ts'>
 import { onMounted, ref, computed, watch } from 'vue';
+import MenuItem from '../util/MenuItem.vue';
 import type { BasemapList, Basemap } from '../../../types.ts';
 import { std, stdurl } from '../../../std.ts';
 import Overlay from '../../../stores/base/overlay.ts';
@@ -167,7 +190,9 @@ import {
     TablerDropdown
 } from '@tak-ps/vue-tabler';
 import {
+    IconMap,
     IconPlus,
+    IconFolder,
     IconShare2,
     IconRefresh,
     IconSettings,
@@ -185,12 +210,14 @@ const editModal = ref();
 const share = ref<Array<number> | undefined>();
 const paging = ref({
     filter: '',
+    collection: '',
     limit: 30,
     page: 0
 });
 
 const list = ref<BasemapList>({
     total: 0,
+    collections: [],
     items: []
 });
 
@@ -261,6 +288,7 @@ async function fetchList() {
         loading.value = true;
         const url = stdurl('/api/basemap');
         if (paging.value.filter) url.searchParams.append('filter', paging.value.filter);
+        if (paging.value.collection) url.searchParams.append('collection', String(paging.value.collection));
         url.searchParams.append('limit', String(paging.value.limit));
         url.searchParams.append('page', String(paging.value.page));
         list.value = await std(url) as BasemapList;
