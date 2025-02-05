@@ -85,9 +85,9 @@
                     />
                     <tbody>
                         <tr
-                            tabindex='0'
                             v-for='ov in list.items'
                             :key='ov.id'
+                            tabindex='0'
                             class='cursor-pointer'
                             @keyup.enter='stdclick(router, $event, `/admin/overlay/${ov.id}`)'
                             @click='stdclick(router, $event, `/admin/overlay/${ov.id}`)'
@@ -181,6 +181,7 @@ const paging = ref({
 
 const list = ref<BasemapList>({
     total: 0,
+    collections: [],
     items: []
 });
 

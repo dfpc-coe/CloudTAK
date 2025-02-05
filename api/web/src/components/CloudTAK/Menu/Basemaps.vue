@@ -25,10 +25,21 @@
         <template #default>
             <div
                 v-if='!share'
-                class='col-12 px-2 py-2'
+                class='col-12 px-2 py-2 d-flex align-items-center'
             >
+                <TablerIconButton
+                    v-if='paging.collection'
+                    title='Back'
+                    @click='paging.collection = ""'
+                >
+                    <IconCircleArrowLeft
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
                 <TablerInput
                     v-model='paging.filter'
+                    :style='paging.collection ? "width: calc(100% - 32px);" : "width: 100%;"'
                     icon='search'
                     placeholder='Filter'
                 />
@@ -183,7 +194,6 @@ import {
     TablerInput,
     TablerPager,
     TablerAlert,
-    TablerButton,
     TablerLoading,
     TablerIconButton,
     TablerDropdown
@@ -197,6 +207,7 @@ import {
     IconSettings,
     IconDownload,
     IconDotsVertical,
+    IconCircleArrowLeft,
 } from '@tabler/icons-vue'
 import { useMapStore } from '../../../stores/map.ts';
 import { useProfileStore } from '../../../stores/profile.ts';
