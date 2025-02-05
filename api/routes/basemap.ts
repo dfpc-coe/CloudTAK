@@ -152,7 +152,7 @@ export default async function router(schema: Schema, config: Config) {
             type: Type.Optional(Type.Enum(Basemap_Type)),
             sort: Type.String({ default: 'created', enum: Object.keys(Basemap) }),
             filter: Default.Filter,
-            collection: Type.Optional(Type.Integer({
+            collection: Type.Optional(Type.String({
                 description: 'Only show Basemaps belonging to a given collection'
             })),
             overlay: Type.Boolean({ default: false })
@@ -234,7 +234,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         body: Type.Object({
             name: Default.NameField,
-            collection: Type.Optional(Type.Union([Type.Null(), Type.Integer()])),
+            collection: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             scope: Type.Enum(ResourceCreationScope, { default: ResourceCreationScope.USER }),
             url: Type.String(),
             overlay: Type.Boolean({ default: false }),
@@ -304,7 +304,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         body: Type.Object({
             name: Type.Optional(Default.NameField),
-            collection: Type.Optional(Type.Union([Type.Null(), Type.Integer()])),
+            collection: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             scope: Type.Enum(ResourceCreationScope, { default: ResourceCreationScope.USER }),
             url: Type.Optional(Type.String()),
             minzoom: Type.Optional(Type.Integer()),
