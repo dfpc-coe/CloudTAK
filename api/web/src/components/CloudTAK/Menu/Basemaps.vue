@@ -83,7 +83,7 @@
                         />
                         <span
                             class='mx-2 text-truncate'
-                            style='font-size: 18px; width: 240px;'
+                            style='font-size: 18px; width: 220px;'
                             v-text='basemap.name'
                         />
 
@@ -98,15 +98,14 @@
                             >Private</span>
 
                             <TablerDropdown>
-                                <TablerButton
+                                <TablerIconButton
                                     title='More Options'
-                                    style='height: 30px'
                                 >
                                     <IconDotsVertical
                                         :size='20'
                                         stroke='1'
                                     />
-                                </TablerButton>
+                                </TablerIconButton>
 
                                 <template #dropdown>
                                     <div clas='col-12'>

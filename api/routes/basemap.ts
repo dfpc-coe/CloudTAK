@@ -166,7 +166,7 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             let list;
-            let collections;
+            let collections: Array<Static<typeof BasemapCollection>> = [];
 
             let scope = sql`True`;
             if (req.query.scope === ResourceCreationScope.SERVER) {
@@ -189,24 +189,26 @@ export default async function router(schema: Schema, config: Config) {
                         name ~* ${Param(req.query.filter)}
                         AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
                         AND (${Param(req.query.type)}::TEXT IS NULL or ${Param(req.query.type)}::TEXT = type)
-                        AND (${Param(req.query.collection)}::TEXT IS NULL or ${Param(req.query.collection)}::TEXT = 'collection')
+                        AND (${Param(req.query.collection)}::TEXT IS NULL or ${Param(req.query.collection)}::TEXT = collection)
                         AND ${scope}
                         AND (${impersonate}::TEXT IS NULL OR username = ${impersonate}::TEXT)
                     `
                 });
 
-                collections = await config.models.Basemap.collections({
-                    order: req.query.order,
-                    sort: req.query.sort,
-                    where: sql`
-                        collection ~* ${Param(req.query.filter)}
-                        AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
-                        AND (${Param(req.query.type)}::TEXT IS NULL or ${Param(req.query.type)}::TEXT = type)
-                        AND (${Param(req.query.collection)}::TEXT IS NULL or ${Param(req.query.collection)}::TEXT = 'collection')
-                        AND ${scope}
-                        AND (${impersonate}::TEXT IS NULL OR username = ${impersonate}::TEXT)
-                    `
-                });
+                if (!req.query.collection) {
+                    collections = await config.models.Basemap.collections({
+                        order: req.query.order,
+                        sort: req.query.sort,
+                        where: sql`
+                            collection ~* ${Param(req.query.filter)}
+                            AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
+                            AND (${Param(req.query.type)}::TEXT IS NULL or ${Param(req.query.type)}::TEXT = type)
+                            AND (${Param(req.query.collection)}::TEXT IS NULL or ${Param(req.query.collection)}::TEXT = collection)
+                            AND ${scope}
+                            AND (${impersonate}::TEXT IS NULL OR username = ${impersonate}::TEXT)
+                        `
+                    });
+                }
             } else {
                 const user = await Auth.as_user(config, req);
 
@@ -220,23 +222,25 @@ export default async function router(schema: Schema, config: Config) {
                         AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
                         AND (username IS NULL OR username = ${user.email})
                         AND (${Param(req.query.type)}::TEXT IS NULL or ${Param(req.query.type)}::TEXT = type)
-                        AND (${Param(req.query.collection)}::TEXT IS NULL or ${Param(req.query.collection)}::TEXT = 'collection')
+                        AND (${Param(req.query.collection)}::TEXT IS NULL or ${Param(req.query.collection)}::TEXT = collection)
                         AND ${scope}
                     `
                 });
 
-                collections = await config.models.Basemap.collections({
-                    order: req.query.order,
-                    sort: req.query.sort,
-                    where: sql`
-                        collection ~* ${Param(req.query.filter)}
-                        AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
-                        AND (username IS NULL OR username = ${user.email})
-                        AND (${Param(req.query.type)}::TEXT IS NULL or ${Param(req.query.type)}::TEXT = type)
-                        AND (${Param(req.query.collection)}::TEXT IS NULL or ${Param(req.query.collection)}::TEXT = 'collection')
-                        AND ${scope}
-                    `
-                });
+                if (!req.query.collection) {
+                    collections = await config.models.Basemap.collections({
+                        order: req.query.order,
+                        sort: req.query.sort,
+                        where: sql`
+                            collection ~* ${Param(req.query.filter)}
+                            AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
+                            AND (username IS NULL OR username = ${user.email})
+                            AND (${Param(req.query.type)}::TEXT IS NULL or ${Param(req.query.type)}::TEXT = type)
+                            AND (${Param(req.query.collection)}::TEXT IS NULL or ${Param(req.query.collection)}::TEXT = collection)
+                            AND ${scope}
+                        `
+                    });
+                }
             }
 
             res.json({
