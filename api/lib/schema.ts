@@ -105,7 +105,7 @@ export const Basemap = pgTable('basemaps', {
     center: geometry({ type: GeometryType.Point, srid: 4326 }).$type<Point>(),
     minzoom: integer().notNull().default(0),
     maxzoom: integer().notNull().default(16),
-    collection: text(),
+    collection: text().notNull().default('default'),
     format: text().$type<Basemap_Format>().notNull().default(Basemap_Format.PNG),
     style: text().$type<Basemap_Style>().notNull().default(Basemap_Style.ZXY),
     styles: json().$type<Array<unknown>>().notNull().default([]),
