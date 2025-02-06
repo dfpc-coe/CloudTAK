@@ -482,6 +482,8 @@ async function fetchLease() {
 
     if (editLease.value.stream_user && editLease.value.read_user) {
         secure.value = true;
+    } else {
+        secure.value = false;
     }
 
     if (editLease.value.channel) {
@@ -498,6 +500,7 @@ async function fetchLease() {
 
     protocols.value = res.protocols;
 
+    disabled.value = true;
     loading.value = false;
 }
 
@@ -523,7 +526,7 @@ async function saveLease() {
         loading.value = true;
 
         if (editLease.value.id) {
-            const res = await std(`/api/video/lease/${editLease.value.id}`, {
+            await std(`/api/video/lease/${editLease.value.id}`, {
                 method: 'PATCH',
                 body: {
                     name: editLease.value.name,
@@ -532,18 +535,9 @@ async function saveLease() {
                     duration: editLease.value.duration === 'Permanent' ? undefined : parseInt(editLease.value.duration.split(' ')[0]) * 60 * 60,
                     permanent: editLease.value.duration === 'Permanent' ? true : false
                 }
-            }) as VideoLeaseResponse;
-
-            editLease.value = {
-                ...res.lease,
-                duration: '16 Hours'
-            }
-
-            protocols.value = res.protocols;
-            disabled.value = true;
-            loading.value = false;
+            })
         } else {
-            const res = await std('/api/video/lease', {
+            await std('/api/video/lease', {
                 method: 'POST',
                 body: {
                     name: editLease.value.name,
@@ -552,17 +546,10 @@ async function saveLease() {
                     duration: editLease.value.duration === 'Permanent' ? undefined : parseInt(editLease.value.duration.split(' ')[0]) * 60 * 60,
                     permanent: editLease.value.duration === 'Permanent' ? true : false
                 }
-            }) as VideoLeaseResponse;
-
-            editLease.value = {
-                ...res.lease,
-                duration: '16 Hours'
-            }
-
-            protocols.value = res.protocols;
-            disabled.value = true;
-            loading.value = false;
+            })
         }
+
+        await fetchLease();
     } catch (err) {
         loading.value = false;
         throw err;
