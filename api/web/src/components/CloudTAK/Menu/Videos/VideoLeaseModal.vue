@@ -206,7 +206,7 @@
                                 <IconArrowsLeftRight
                                     v-tooltip='"Read/Write User"'
                                     :size='32'
-                                    :stroke='1'
+                                    stroke='1'
                                 />
                                 <span class='ms-2 user-select-none'>Read-Write User</span>
                             </div>
@@ -231,7 +231,7 @@
                                     <IconBook2
                                         v-tooltip='"Read User"'
                                         :size='32'
-                                        :stroke='1'
+                                        stroke='1'
                                     />
                                     <span class='mx-2'>Read User</span>
                                 </label>
@@ -252,7 +252,7 @@
                                     <IconPencil
                                         v-tooltip='"Write User"'
                                         :size='32'
-                                        :stroke='1'
+                                        stroke='1'
                                     />
                                     <span class='mx-2'>Write User</span>
                                 </label>
@@ -416,12 +416,16 @@ const editLease = ref<{
     expiration?: string | null
     stream_user: string | null
     stream_pass: string | null
+    read_user: string | null
+    read_pass: string | null
 }>({
     name: '',
     duration: '16 Hours',
     channel: null,
     stream_user: '',
-    stream_pass: ''
+    stream_pass: '',
+    read_user: '',
+    read_pass: ''
 });
 
 onMounted(async () => {
@@ -460,6 +464,10 @@ async function fetchLease() {
     editLease.value = {
         ...res.lease,
         duration: '16 Hours'
+    }
+
+    if (editLease.value.stream_user && editLease.value.read_user) {
+        secure.value = true;
     }
 
     if (editLease.value.channel) {
