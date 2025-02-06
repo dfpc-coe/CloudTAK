@@ -8,7 +8,7 @@
             >
                 <IconPlus
                     :size='32'
-                    :stroke='1'
+                    stroke='1'
                 />
             </TablerIconButton>
 
@@ -19,7 +19,7 @@
             >
                 <IconSettings
                     :size='32'
-                    :stroke='1'
+                    stroke='1'
                 />
             </TablerIconButton>
 
@@ -29,7 +29,7 @@
             >
                 <IconDownload
                     :size='32'
-                    :stroke='1'
+                    stroke='1'
                 />
             </TablerIconButton>
 

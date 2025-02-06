@@ -137,7 +137,7 @@
                                                             <div class='ms-auto btn-list'>
                                                                 <IconSettings
                                                                     :size='16'
-                                                                    :stroke='1'
+                                                                    stroke='1'
                                                                     class='cursor-pointer'
                                                                     @click='taskmodal = true'
                                                                 />

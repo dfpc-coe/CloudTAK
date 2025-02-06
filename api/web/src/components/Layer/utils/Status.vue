@@ -6,7 +6,7 @@
         <template v-if='!layer.enabled'>
             <IconPlayerPause
                 :size='32'
-                :stroke='1'
+                stroke='1'
             />
         </template>
         <template v-else>

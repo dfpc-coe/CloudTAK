@@ -9,7 +9,7 @@
                 <IconPlus
                     v-tooltip='"Create Layer"'
                     :size='32'
-                    :stroke='1'
+                    stroke='1'
                     class='cursor-pointer'
                     @click='$router.push(`/connection/${$route.params.connectionid}/layer/new`)'
                 />
@@ -17,7 +17,7 @@
                 <IconRefresh
                     v-tooltip='"Refresh"'
                     :size='32'
-                    :stroke='1'
+                    stroke='1'
                     class='cursor-pointer'
                     @click='listLayers'
                 />
@@ -65,7 +65,7 @@
                                             v-if='layer.data'
                                             v-tooltip='`Pushing to Data Sync`'
                                             :size='32'
-                                            :stroke='1'
+                                            stroke='1'
                                             @click.stop.prevent='$router.push(`/connection/${$route.params.connectionid}/data/${layer.data}`)'
                                         />                                
                                     </div>

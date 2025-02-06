@@ -9,14 +9,14 @@
                 <IconPlus
                     v-tooltip='"Create Template"'
                     :size='32'
-                    :stroke='1'
+                    stroke='1'
                     class='cursor-pointer'
                     @click='$router.push("/admin/template/new")'
                 />
                 <IconRefresh
                     v-tooltip='"Refresh"'
                     :size='32'
-                    :stroke='1'
+                    stroke='1'
                     class='cursor-pointer'
                     @click='fetchList'
                 />

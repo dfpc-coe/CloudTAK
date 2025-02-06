@@ -52,7 +52,7 @@
                                         >
                                             <IconPencil
                                                 :size='32'
-                                                :stroke='1'
+                                                stroke='1'
                                             />
                                         </TablerIconButton>
                                     </div>
@@ -113,7 +113,7 @@
                                         v-tooltip='"Cancel Stack Update"'
                                         class='cursor-pointer'
                                         :size='32'
-                                        :stroke='1'
+                                        stroke='1'
                                         @click='cancelUpdate'
                                     />
                                 </div>
@@ -147,7 +147,7 @@
                                                 @click='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/deployment`)'
                                             ><IconPlaneDeparture
                                                 :size='32'
-                                                :stroke='1'
+                                                stroke='1'
                                             /><span class='mx-3'>Deployment</span></span>
 
                                             <div
@@ -214,7 +214,7 @@
                                                         @click='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/incoming/config`)'
                                                     ><IconAdjustments
                                                         :size='32'
-                                                        :stroke='1'
+                                                        stroke='1'
                                                     /><span class='mx-3'>Config</span></span>
 
                                                     <span
@@ -228,7 +228,7 @@
                                                         @click='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/incoming/environment`)'
                                                     ><IconBeach
                                                         :size='32'
-                                                        :stroke='1'
+                                                        stroke='1'
                                                     /><span class='mx-3'>Environment</span></span>
                                                     <span
                                                         tabindex='0'
@@ -241,7 +241,7 @@
                                                         @click='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/incoming/schema`)'
                                                     ><IconSchema
                                                         :size='32'
-                                                        :stroke='1'
+                                                        stroke='1'
                                                     /><span class='mx-3'>Schema</span></span>
                                                     <span
                                                         tabindex='0'
@@ -254,7 +254,7 @@
                                                         @click='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/incoming/styles`)'
                                                     ><IconPaint
                                                         :size='32'
-                                                        :stroke='1'
+                                                        stroke='1'
                                                     /><span class='mx-3'>Styling</span></span>
                                                     <div
                                                         class='list-group-item list-group-item-action d-flex align-items-center justify-content-center'
@@ -289,7 +289,7 @@
                                                         @click='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/outgoing/environment`)'
                                                     ><IconBeach
                                                         :size='32'
-                                                        :stroke='1'
+                                                        stroke='1'
                                                     /><span class='mx-3'>Environment</span></span>
 
                                                     <div

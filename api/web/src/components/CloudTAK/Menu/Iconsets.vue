@@ -7,7 +7,7 @@
             >
                 <IconPlus
                     :size='32'
-                    :stroke='1'
+                    stroke='1'
                 />
             </TablerIconButton>
 
@@ -18,7 +18,7 @@
             >
                 <IconFileUpload
                     :size='32'
-                    :stroke='1'
+                    stroke='1'
                 />
             </TablerIconButton>
 
@@ -29,7 +29,7 @@
             >
                 <IconRefresh
                     :size='32'
-                    :stroke='1'
+                    stroke='1'
                 />
             </TablerIconButton>
         </template>
@@ -66,7 +66,7 @@
                     ><IconAlbum
                         v-tooltip='"Iconsets"'
                         :size='32'
-                        :stroke='1'
+                        stroke='1'
                     /></label>
 
                     <input
@@ -84,7 +84,7 @@
                     ><IconPhoto
                         v-tooltip='"Icons"'
                         :size='32'
-                        :stroke='1'
+                        stroke='1'
                     /></label>
                 </div>
 
@@ -136,7 +136,7 @@
                                 >
                                     <IconDownload
                                         :size='32'
-                                        :stroke='1'
+                                        stroke='1'
                                     />
                                 </TablerIconButton>
                             </div>

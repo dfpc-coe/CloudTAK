@@ -40,25 +40,25 @@
                                     <template v-if='field.type === "string"'>
                                         <IconAlphabetLatin
                                             :size='32'
-                                            :stroke='1'
+                                            stroke='1'
                                         />
                                     </template>
                                     <template v-else-if='field.type === "number"'>
                                         <IconDecimal
                                             :size='32'
-                                            :stroke='1'
+                                            stroke='1'
                                         />
                                     </template>
                                     <template v-else-if='field.type === "integer"'>
                                         <IconSort09
                                             :size='32'
-                                            :stroke='1'
+                                            stroke='1'
                                         />
                                     </template>
                                     <template v-else>
                                         <IconBinary
                                             :size='32'
-                                            :stroke='1'
+                                            stroke='1'
                                         />
                                     </template>
                                 </span>

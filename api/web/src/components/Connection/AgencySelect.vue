@@ -35,7 +35,7 @@
                                     v-if='selected.id && data.total > 1'
                                     v-tooltip='"Remove Agency"'
                                     :size='32'
-                                    :stroke='1'
+                                    stroke='1'
                                     class='cursor-pointer'
                                     @click='selected.id = null'
                                 />
