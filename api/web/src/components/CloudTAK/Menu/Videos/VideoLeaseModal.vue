@@ -202,7 +202,7 @@
                         </div>
 
                         <div class='ms-auto'>
-                            <div v-if='secure'>
+                            <div v-if='!secure'>
                                 <IconArrowsLeftRight
                                     v-tooltip='"Read/Write User"'
                                     :size='32'
@@ -284,6 +284,34 @@
                         </div>
                     </template>
                     <template v-else>
+                        <template v-if='secure && mode === "write"'>
+                            <div class='col-md-6'>
+                                <CopyField
+                                    label='Write Username'
+                                    :model-value='editLease.stream_user'
+                                />
+                            </div>
+                            <div class='col-md-6'>
+                                <CopyField
+                                    label='Write Password'
+                                    :model-value='editLease.stream_pass'
+                                />
+                            </div>
+                        </template>
+                        <template v-else-if='secure && mode === "read"'>
+                            <div class='col-md-6'>
+                                <CopyField
+                                    label='Read Username'
+                                    :model-value='editLease.read_user'
+                                />
+                            </div>
+                            <div class='col-md-6'>
+                                <CopyField
+                                    label='Read Password'
+                                    :model-value='editLease.read_pass'
+                                />
+                            </div>
+                        </template>
                         <div
                             v-for='protocol in protocols'
                             class='pt-2'

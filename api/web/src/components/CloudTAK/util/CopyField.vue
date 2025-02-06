@@ -1,4 +1,6 @@
 <template>
+    <label v-if='label' v-text='props.label'/>
+
     <div
         v-if='editing'
         class='position-relative rounded-top'
@@ -122,6 +124,10 @@ const props = defineProps({
     mode: {
         type: String,
         default: 'text' // text or pre
+    },
+    label: {
+        type: String,
+        default: ''
     },
     modelValue: {
         type: [String, Number],
