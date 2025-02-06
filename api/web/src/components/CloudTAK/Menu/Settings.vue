@@ -2,6 +2,7 @@
     <MenuTemplate name='Settings'>
         <MenuItem
             @click='$router.push("/menu/settings/callsign")'
+            @keyup.enter='$router.push("/menu/settings/callsign")'
         >
             <IconUserCog
                 :size='32'
@@ -14,6 +15,7 @@
         </MenuItem>
         <MenuItem
             @click='$router.push("/menu/settings/display")'
+            @keyup.enter='$router.push("/menu/settings/display")'
         >
             <IconAdjustments
                 :size='32'
@@ -25,8 +27,8 @@
             >Display Preferences</span>
         </MenuItem>
         <MenuItem
-            class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'
             @click='$router.push("/menu/settings/tokens")'
+            @keyup.enter='$router.push("/menu/settings/tokens")'
         >
             <IconRobot
                 :size='32'
