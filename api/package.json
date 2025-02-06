@@ -85,6 +85,7 @@
         "semver-sort": "^1.0.0",
         "sharp": "^0.33.0",
         "spritesmith": "^3.4.1",
+        "suncalc": "^1.9.0",
         "swagger-ui-express": "^5.0.0",
         "tough-cookie": "^4.1.2",
         "tsx": "^4.15.1",
