@@ -8,14 +8,14 @@
             <IconPlus
                 v-tooltip='"New Token"'
                 :size='32'
-                :stroke='1'
+                stroke='1'
                 class='cursor-pointer'
                 @click='token={}'
             />
             <IconRefresh
                 v-tooltip='"Refresh"'
                 :size='32'
-                :stroke='1'
+                stroke='1'
                 class='cursor-pointer'
                 @click='fetch'
             />
@@ -29,7 +29,7 @@
             >
                 <IconRobot
                     :size='32'
-                    :stroke='1'
+                    stroke='1'
                 />
                 <span
                     class='mx-2'

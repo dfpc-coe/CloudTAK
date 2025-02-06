@@ -24,13 +24,13 @@
                                 <div class='ms-auto btn-list'>
                                     <IconTrash
                                         :size='32'
-                                        :stroke='1'
+                                        stroke='1'
                                         class='cursor-pointer'
                                         @click='deleteAlerts()'
                                     />
                                     <IconRefresh
                                         :size='32'
-                                        :stroke='1'
+                                        stroke='1'
                                         class='cursor-pointer'
                                         @click='query'
                                     />
@@ -75,7 +75,7 @@
                                             >
                                                 <IconAlertCircle
                                                     :size='32'
-                                                    :stroke='1'
+                                                    stroke='1'
                                                     class='mx-auto my-auto'
                                                 />
                                             </div>
@@ -83,7 +83,7 @@
                                             <div class='ms-auto my-1'>
                                                 <IconTrash
                                                     :size='32'
-                                                    :stroke='1'
+                                                    stroke='1'
                                                     class='cursor-pointer'
                                                     @click='deleteAlerts(alert.id)'
                                                 />

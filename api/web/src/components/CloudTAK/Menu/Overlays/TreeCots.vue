@@ -17,14 +17,14 @@
                 <IconChevronRight
                     v-if='!treeState.teams._'
                     :size='20'
-                    :stroke='1'
+                    stroke='1'
                     class='cursor-pointer'
                     @click='treeState.teams._ = true'
                 />
                 <IconChevronDown
                     v-else-if='treeState.teams._'
                     :size='20'
-                    :stroke='1'
+                    stroke='1'
                     class='cursor-pointer'
                     @click='treeState.teams._ = false'
                 />
@@ -44,14 +44,14 @@
                         <IconChevronRight
                             v-if='!treeState.teams[group]'
                             :size='20'
-                            :stroke='1'
+                            stroke='1'
                             class='cursor-pointer'
                             @click='treeState.teams[group] = true'
                         />
                         <IconChevronDown
                             v-else-if='treeState.teams[group]'
                             :size='20'
-                            :stroke='1'
+                            stroke='1'
                             class='cursor-pointer'
                             @click='treeState.teams[group] = false'
                         />
@@ -93,14 +93,14 @@
                 <IconChevronRight
                     v-if='!treeState.markers._'
                     :size='20'
-                    :stroke='1'
+                    stroke='1'
                     class='cursor-pointer'
                     @click='treeState.markers._ = true'
                 />
                 <IconChevronDown
                     v-else-if='treeState.markers._'
                     :size='20'
-                    :stroke='1'
+                    stroke='1'
                     class='cursor-pointer'
                     @click='treeState.markers._ = false'
                 />
@@ -115,7 +115,7 @@
                 >
                     <IconTrash
                         :size='20'
-                        :stroke='1'
+                        stroke='1'
                         class='cursor-pointer'
                         @click='deleteMarkers()'
                     />
@@ -131,14 +131,14 @@
                         <IconChevronRight
                             v-if='!treeState.markers[marker]'
                             :size='20'
-                            :stroke='1'
+                            stroke='1'
                             class='cursor-pointer'
                             @click='treeState.markers[marker] = true'
                         />
                         <IconChevronDown
                             v-else-if='treeState.markers[marker]'
                             :size='20'
-                            :stroke='1'
+                            stroke='1'
                             class='cursor-pointer'
                             @click='treeState.markers[marker] = false'
                         />
@@ -151,7 +151,7 @@
                         <div class='ms-auto btn-list hover-button-hidden'>
                             <IconTrash
                                 :size='20'
-                                :stroke='1'
+                                stroke='1'
                                 class='cursor-pointer'
                                 @click='deleteMarkers(marker)'
                             />
@@ -181,14 +181,14 @@
                 <IconChevronRight
                     v-if='!treeState.paths._'
                     :size='20'
-                    :stroke='1'
+                    stroke='1'
                     class='cursor-pointer'
                     @click='treeState.paths._ = true'
                 />
                 <IconChevronDown
                     v-else-if='treeState.paths._'
                     :size='20'
-                    :stroke='1'
+                    stroke='1'
                     class='cursor-pointer'
                     @click='treeState.paths._ = false'
                 />

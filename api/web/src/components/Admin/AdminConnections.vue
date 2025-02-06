@@ -9,14 +9,14 @@
                 <IconPlus
                     v-tooltip='"Create Connection"'
                     :size='32'
-                    :stroke='1'
+                    stroke='1'
                     class='cursor-pointer'
                     @click='$router.push("/connection/new")'
                 />
                 <IconRefresh
                     v-tooltip='"Refresh"'
                     :size='32'
-                    :stroke='1'
+                    stroke='1'
                     class='cursor-pointer'
                     @click='fetchList'
                 />

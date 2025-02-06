@@ -2,7 +2,7 @@
     <IconCircleFilled
         :style='compact ? "margin-left: 8px" : "margin-left: 16px;"'
         :size='compact ? 20 : 32'
-        :stroke='1'
+        stroke='1'
         :class='{
             "text-yellow": contact.team === "Yellow",
             "text-cyan": contact.team === "Cyan",

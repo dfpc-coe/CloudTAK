@@ -11,7 +11,7 @@
                     v-if='!disabled && !err && !loading'
                     v-tooltip='"Refresh"'
                     :size='32'
-                    :stroke='1'
+                    stroke='1'
                     class='cursor-pointer'
                     @click='getList'
                 />
@@ -20,7 +20,7 @@
                     v-if='!disabled && !err && !loading'
                     v-tooltip='"Back"'
                     :size='32'
-                    :stroke='1'
+                    stroke='1'
                     class='cursor-pointer'
                     @click='back'
                 />
@@ -28,7 +28,7 @@
                     v-if='!disabled'
                     v-tooltip='"Close Explorer"'
                     :size='32'
-                    :stroke='1'
+                    stroke='1'
                     class='cursor-pointer'
                     @click='$emit("close")'
                 />
@@ -68,7 +68,7 @@
                                         <template v-if='l.type === "folder"'>
                                             <IconFolder
                                                 :size='32'
-                                                :stroke='1'
+                                                stroke='1'
                                             />
                                             <span
                                                 class='mx-3'
@@ -78,7 +78,7 @@
                                         <template v-else>
                                             <IconMap
                                                 :size='32'
-                                                :stroke='1'
+                                                stroke='1'
                                             />
                                             <span
                                                 class='mx-3'
@@ -148,7 +148,7 @@
                                     <div class='d-flex align-items-center'>
                                         <IconMap
                                             :size='32'
-                                            :stroke='1'
+                                            stroke='1'
                                         /><span
                                             class='mx-3'
                                             v-text='lyr.name'
@@ -157,7 +157,7 @@
                                             <IconCheck
                                                 v-if='layer && Number(layer.id) === lyr.id'
                                                 :size='32'
-                                                :stroke='1'
+                                                stroke='1'
                                             />
                                             <TablerDelete
                                                 v-if='!readonly && !disabled'

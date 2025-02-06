@@ -18,7 +18,7 @@
                                 v-if='selected.id'
                                 v-tooltip='"Remove Template"'
                                 :size='32'
-                                :stroke='1'
+                                stroke='1'
                                 class='cursor-pointer'
                                 @click='selected = {}'
                             />

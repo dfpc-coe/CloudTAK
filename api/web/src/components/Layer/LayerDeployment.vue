@@ -22,7 +22,7 @@
                     >
                         <IconCloudUpload
                             :size='24'
-                            :stroke='1'
+                            stroke='1'
                         />
                     </TablerIconButton>
 

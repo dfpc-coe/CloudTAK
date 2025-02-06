@@ -5,7 +5,7 @@
                 v-if='!loading'
                 v-tooltip='"Refresh"'
                 :size='32'
-                :stroke='1'
+                stroke='1'
                 class='cursor-pointer'
                 @click='fetchList'
             />
@@ -29,14 +29,14 @@
                                 v-tooltip='"Add to Map"'
                                 class='cursor-pointer'
                                 :size='32'
-                                :stroke='1'
+                                stroke='1'
                                 @click='createOverlay(asset)'
                             />
                             <IconMapOff
                                 v-else
                                 v-tooltip='"Not Cloud Optimized"'
                                 :size='32'
-                                :stroke='1'
+                                stroke='1'
                             />
                         </div>
                         <div class='col-auto'>
