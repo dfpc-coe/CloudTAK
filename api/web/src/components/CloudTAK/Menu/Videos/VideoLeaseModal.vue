@@ -196,8 +196,68 @@
                 </div>
 
                 <template v-if='disabled && Object.keys(protocols).length'>
-                    <div class='subheader pt-4'>
-                        Video Streaming Protocols
+                    <div class='col-12 d-flex align-items-center pt-4'>
+                        <div class='subheader'>
+                            Video Streaming Protocols
+                        </div>
+
+                        <div class='ms-auto'>
+                            <div v-if='secure'>
+                                <IconArrowsLeftRight
+                                    v-tooltip='"Read/Write User"'
+                                    :size='32'
+                                    :stroke='1'
+                                />
+                                <span class='ms-2 user-select-none'>Read-Write User</span>
+                            </div>
+                            <div
+                                v-else
+                                class='px-2 py-2 round btn-group w-100'
+                                role='group'
+                            >
+                                <input
+                                    id='read-user'
+                                    type='radio'
+                                    class='btn-check'
+                                    autocomplete='off'
+                                    :checked='mode === "read"'
+                                    @click='mode = "read"'
+                                >
+                                <label
+                                    for='read-user'
+                                    type='button'
+                                    class='btn btn-sm'
+                                >
+                                    <IconBook2
+                                        v-tooltip='"Read User"'
+                                        :size='32'
+                                        :stroke='1'
+                                    />
+                                    <span class='mx-2'>Read User</span>
+                                </label>
+
+                                <input
+                                    id='write-user'
+                                    type='radio'
+                                    class='btn-check'
+                                    autocomplete='off'
+                                    :checked='mode === "write"'
+                                    @click='mode = "write"'
+                                >
+                                <label
+                                    for='write-user'
+                                    type='button'
+                                    class='btn btn-sm'
+                                >
+                                    <IconPencil
+                                        v-tooltip='"Write User"'
+                                        :size='32'
+                                        :stroke='1'
+                                    />
+                                    <span class='mx-2'>Write User</span>
+                                </label>
+                            </div>
+                        </div>
                     </div>
                     <template v-if='expired(editLease.expiration)'>
                         <TablerAlert
@@ -278,6 +338,8 @@ import {
     IconRefresh,
     IconPencil,
     IconWand,
+    IconArrowsLeftRight,
+    IconBook2,
     IconAffiliate,
     IconChevronRight,
     IconChevronLeft,
@@ -299,6 +361,7 @@ const props = defineProps<{
 
 const emit = defineEmits([ 'close', 'refresh' ])
 
+const mode = ref('read');
 const loading = ref(true);
 const secure = ref(false);
 const disabled = ref(true);
@@ -338,10 +401,6 @@ onMounted(async () => {
         editLease.value = {
             ...props.lease,
             duration: '16 Hours'
-        }
-
-        if (props.lease.stream_user && props.lease.read_user) {
-            secure.value = true;
         }
 
         await fetchLease();
