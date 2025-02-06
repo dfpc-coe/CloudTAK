@@ -237,13 +237,15 @@ export default class VideoServiceControl {
             const url = new URL(`/${lease.path}`, c.url.replace(/^http(s)?:/, 'rtmp:'))
             url.port = c.config.rtmpAddress.replace(':', '');
 
-            if (lease.stream_user) url.searchParams.append('user', '{{username}}');
-            if (lease.stream_pass) url.searchParams.append('pass', '{{password}}');
-
             protocols.rtmp = {
                 name: 'Real-Time Messaging Protocol (RTMP)',
                 url: String(url)
             }
+
+            if (lease.stream_user && lease.read_user) {
+                protocols.rtmp.url = `${protocols.rtmp.url}?user={{username}}&pass={{password}}`;
+            }
+
         }
 
         if (c.config && c.config.srt) {
@@ -251,9 +253,16 @@ export default class VideoServiceControl {
             const url = new URL(c.url.replace(/^http(s)?:/, 'srt:'))
             url.port = c.config.srtAddress.replace(':', '');
 
-            protocols.srt = {
-                name: 'Secure Reliable Transport (SRT)',
-                url: String(url) + `?streamid=publish:${lease.path}`
+            if (lease.stream_user && lease.read_user) {
+                protocols.srt = {
+                    name: 'Secure Reliable Transport (SRT)',
+                    url: String(url) + `?streamid={{mode}}:${lease.path}:{{username}}:{{password}}`
+                }
+            } else {
+                protocols.srt = {
+                    name: 'Secure Reliable Transport (SRT)',
+                    url: String(url) + `?streamid={{mode}}:${lease.path}`
+                }
             }
         }
 

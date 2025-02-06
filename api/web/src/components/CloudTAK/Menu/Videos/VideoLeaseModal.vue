@@ -141,6 +141,7 @@
                     <TablerToggle
                         label='Read/Write Security'
                         v-model='secure'
+                        :disabled='disabled'
                         description='Create a seperate Read/Write user to ensure unauthorized users cannot publish to a stream'
                     />
                 </div>
@@ -237,15 +238,15 @@
                                 </label>
 
                                 <input
-                                    id='write-user'
+                                    id='publish-user'
                                     type='radio'
                                     class='btn-check'
                                     autocomplete='off'
-                                    :checked='mode === "write"'
-                                    @click='mode = "write"'
+                                    :checked='mode === "publish"'
+                                    @click='mode = "publish"'
                                 >
                                 <label
-                                    for='write-user'
+                                    for='publish-user'
                                     type='button'
                                     class='btn btn-sm'
                                 >
@@ -284,7 +285,7 @@
                         </div>
                     </template>
                     <template v-else>
-                        <template v-if='secure && mode === "write"'>
+                        <template v-if='secure && mode === "publish"'>
                             <div class='col-md-6'>
                                 <CopyField
                                     label='Write Username'
@@ -320,17 +321,17 @@
                                 <CopyField
                                     v-if='secure && mode === "read"'
                                     :label='protocol.name'
-                                    :modelValue='encodeURI(decodeURI(protocol.url).replace("{{username}}", editLease.read_user).replace("{{password}}", editLease.read_pass))'
+                                    :modelValue='protocol.url.replace("{{mode}}", mode).replace("{{username}}", editLease.read_user).replace("{{password}}", editLease.read_pass)'
                                 />
                                 <CopyField
-                                    v-else-if='secure && mode === "write"'
+                                    v-else-if='secure && mode === "publish"'
                                     :label='protocol.name'
-                                    :modelValue='encodeURI(decodeURI(protocol.url).replace("{{username}}", editLease.stream_user).replace("{{password}}", editLease.stream_pass))'
+                                    :modelValue='protocol.url.replace("{{mode}}", mode).replace("{{username}}", editLease.stream_user).replace("{{password}}", editLease.stream_pass)'
                                 />
                                 <CopyField
                                     v-else
                                     :label='protocol.name'
-                                    :modelValue='protocol.url'
+                                    :modelValue='protocol.url.replace("{{mode}}", mode)'
                                 />
                             </template>
                         </div>
