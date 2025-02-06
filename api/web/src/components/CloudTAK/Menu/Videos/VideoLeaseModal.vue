@@ -134,6 +134,14 @@
                         :options='durations'
                         :disabled='disabled'
                         label='Lease Duration'
+                        description='Leases remain active on the server for the duration specified. Once the lease expires the lease can be renewed without the Lease URL changing'
+                    />
+                </div>
+                <div class='col-12'>
+                    <TablerToggle
+                        label='Read/Write Security'
+                        v-model='secure'
+                        description='Create a seperate Read/Write user to ensure unauthorized users cannot publish to a stream'
                     />
                 </div>
                 <div class='col-12'>
@@ -164,9 +172,13 @@
                     </div>
                 </div>
 
-                <div class='col-12'>
+                <div
+                    v-if='editLease.expiration !== undefined'
+                    class='col-12'
+                >
                     <label>Lease Expiration</label>
 
+                    <span v-text='editLease.expiration'/>
                     <div class='col-12'>
                         <span
                             v-if='expired(editLease.expiration)'
@@ -180,68 +192,6 @@
                             v-else-if='editLease.expiration'
                             :model-value='editLease.expiration'
                         />
-                    </div>
-                </div>
-
-                <div class='col-12'>
-                    <label
-                        class='subheader mt-3 cursor-pointer'
-                        @click='advanced = !advanced'
-                    >
-                        <IconSquareChevronRight
-                            v-if='!advanced'
-                            :size='32'
-                            stroke='1'
-                        />
-                        <IconChevronDown
-                            v-else
-                            :size='32'
-                            stroke='1'
-                        />
-                        Advanced Options
-                    </label>
-
-                    <div
-                        v-if='advanced'
-                        class='col-12 row'
-                    >
-                        <div
-                            class='alert alert-info'
-                            role='alert'
-                        >
-                            <div class='d-flex'>
-                                <div class='me-2'>
-                                    <IconInfoCircle
-                                        :size='32'
-                                        stroke='1'
-                                    />
-                                </div>
-                                <div>
-                                    <h4 class='alert-title'>
-                                        Stream Username & Password Disabled
-                                    </h4>
-                                    <div class='text-secondary'>
-                                        iTAK Does not currently support in URL username/passwords so this option is currently disabled
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- NOT SUPPORTED IN iTAK-->
-                        <div class='col-md-6'>
-                            <TablerInput
-                                v-model='editLease.stream_user'
-                                :disabled='true'
-                                label='Stream Username'
-                            />
-                        </div>
-                        <div class='col-md-6'>
-                            <TablerInput
-                                v-model='editLease.stream_pass'
-                                :disabled='true'
-                                label='Stream Password'
-                            />
-                        </div>
                     </div>
                 </div>
 
@@ -329,11 +279,8 @@ import {
     IconPencil,
     IconWand,
     IconAffiliate,
-    IconInfoCircle,
-    IconSquareChevronRight,
     IconChevronRight,
     IconChevronLeft,
-    IconChevronDown,
 } from '@tabler/icons-vue';
 import {
     TablerIconButton,
@@ -353,9 +300,9 @@ const props = defineProps<{
 const emit = defineEmits([ 'close', 'refresh' ])
 
 const loading = ref(true);
+const secure = ref(false);
 const disabled = ref(true);
 const wizard = ref(0);
-const advanced = ref(false);
 const protocols = ref<VideoLeaseProtocols>({});
 
 const channels = ref<string[]>([]);
@@ -391,6 +338,10 @@ onMounted(async () => {
         editLease.value = {
             ...props.lease,
             duration: '16 Hours'
+        }
+
+        if (props.lease.stream_user && props.lease.read_user) {
+            secure.value = true;
         }
 
         await fetchLease();
@@ -467,6 +418,7 @@ async function saveLease() {
                 method: 'PATCH',
                 body: {
                     name: editLease.value.name,
+                    secure: secure.value,
                     channel: channels.value.length ? channels.value[0] : null,
                     duration: editLease.value.duration === 'Permanent' ? undefined : parseInt(editLease.value.duration.split(' ')[0]) * 60 * 60,
                     permanent: editLease.value.duration === 'Permanent' ? true : false
@@ -486,6 +438,7 @@ async function saveLease() {
                 method: 'POST',
                 body: {
                     name: editLease.value.name,
+                    secure: secure.value,
                     channel: channels.value.length ? channels.value[0] : null,
                     duration: editLease.value.duration === 'Permanent' ? undefined : parseInt(editLease.value.duration.split(' ')[0]) * 60 * 60,
                     permanent: editLease.value.duration === 'Permanent' ? true : false
