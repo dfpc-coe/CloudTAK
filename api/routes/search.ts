@@ -1,4 +1,5 @@
 import { Type, Static } from '@sinclair/typebox'
+import SunCalc from 'suncalc'
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
@@ -15,6 +16,22 @@ export default async function router(schema: Schema, config: Config) {
     }
 
     const ReverseResponse = Type.Object({
+        sun: Type.Object({
+            sunrise: Type.String({ description: 'sunrise (top edge of the sun appears on the horizon)' }),
+            sunriseEnd: Type.String({ description: 'sunrise ends (bottom edge of the sun touches the horizon)' }),
+            goldenHourEnd: Type.String({ description: 'morning golden hour (soft light, best time for photography) ends' }),
+            solarNoon: Type.String({ description: 'solar noon (sun is in the highest position)' }),
+            goldenHour: Type.String({ description: 'evening golden hour starts' }),
+            sunsetStart: Type.String({ description: 'sunset starts (bottom edge of the sun touches the horizon)' }),
+            sunset: Type.String({ description: 'sunset (sun disappears below the horizon, evening civil twilight starts)' }),
+            dusk: Type.String({ description: 'dusk (evening nautical twilight starts)' }),
+            nauticalDusk: Type.String({ description: 'nautical dusk (evening astronomical twilight starts)' }),
+            night: Type.String({ description: 'night starts (dark enough for astronomical observations)' }),
+            nadir: Type.String({ description: 'nadir (darkest moment of the night, sun is in the lowest position)' }),
+            nightEnd: Type.String({ description: 'night ends (morning astronomical twilight starts)' }),
+            nauticalDawn: Type.String({ description: 'nautical dawn (morning nautical twilight starts)' }),
+            dawn: Type.String({ description: 'dawn (morning nautical twilight ends, morning civil twilight starts)' }),
+        }),
         weather: Type.Union([FetchHourly, Type.Null()]),
         reverse: Type.Union([FetchReverse, Type.Null()])
     });
@@ -40,6 +57,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             await Auth.as_user(config, req);
             const response: Static<typeof ReverseResponse> = {
+                sun: SunCalc.getTimes(new Date(), req.params.latitude, req.params.longitude, /* height */),
                 weather: null,
                 reverse: null,
             };

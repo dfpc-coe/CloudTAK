@@ -228,22 +228,22 @@ async function saveOverlay() {
 async function fetchOverlay() {
     loading.value = true;
     const url = stdurl(`/api/basemap/${route.params.overlay}`);
-    const overlay = await std(url);
+    const res = await std(url);
 
-    if (!overlay.bounds) {
-        overlay.bounds = '-180, -90, 180, 90';
+    if (!res.bounds) {
+        res.bounds = '-180, -90, 180, 90';
     } else {
-        overlay.bounds = overlay.bounds.join(',');
+        res.bounds = res.bounds.join(',');
     }
 
-    if (!overlay.center) {
-        overlay.center = '0, 0';
+    if (!res.center) {
+        res.center = '0, 0';
     } else {
-        overlay.center = overlay.center.join(',');
+        res.center = res.center.join(',');
     }
 
 
-    overlay.value = overlay
+    overlay.value = res;
     loading.value = false;
 }
 </script>
