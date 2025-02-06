@@ -317,8 +317,21 @@
                             class='pt-2'
                         >
                             <template v-if='protocol'>
-                                <div v-text='protocol.name' />
-                                <CopyField v-model='protocol.url' />
+                                <CopyField
+                                    v-if='secure && mode === "read"'
+                                    :label='protocol.name'
+                                    :modelValue='encodeURI(decodeURI(protocol.url).replace("{{username}}", editLease.read_user).replace("{{password}}", editLease.read_pass))'
+                                />
+                                <CopyField
+                                    v-else-if='secure && mode === "write"'
+                                    :label='protocol.name'
+                                    :modelValue='encodeURI(decodeURI(protocol.url).replace("{{username}}", editLease.stream_user).replace("{{password}}", editLease.stream_pass))'
+                                />
+                                <CopyField
+                                    v-else
+                                    :label='protocol.name'
+                                    :modelValue='protocol.url'
+                                />
                             </template>
                         </div>
                     </template>
