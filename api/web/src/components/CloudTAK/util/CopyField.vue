@@ -1,5 +1,9 @@
 <template>
-    <label v-if='label' v-text='props.label'/>
+    <label
+        v-if='label'
+        v-text='props.label'
+        class='mx-1'
+    />
 
     <div
         v-if='editing'

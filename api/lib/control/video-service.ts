@@ -237,8 +237,8 @@ export default class VideoServiceControl {
             const url = new URL(`/${lease.path}`, c.url.replace(/^http(s)?:/, 'rtmp:'))
             url.port = c.config.rtmpAddress.replace(':', '');
 
-            if (lease.stream_user) url.searchParams.append('user', lease.stream_user);
-            if (lease.stream_pass) url.searchParams.append('pass', lease.stream_pass);
+            if (lease.stream_user) url.searchParams.append('user', '{{username}}');
+            if (lease.stream_pass) url.searchParams.append('pass', '{{password}}');
 
             protocols.rtmp = {
                 name: 'Real-Time Messaging Protocol (RTMP)',
