@@ -178,7 +178,9 @@ export default class VideoServiceControl {
         return headers;
     }
 
-    async configure(config: Static<typeof VideoConfigUpdate>): Promise<Static<typeof Configuration>> {
+    async configure(
+        config: Static<typeof VideoConfigUpdate>
+    ): Promise<Static<typeof Configuration>> {
         const video = await this.settings();
         if (!video.configured) return video;
 
@@ -306,6 +308,9 @@ export default class VideoServiceControl {
     }
 
     async updateSecure(lease: Static<typeof VideoLeaseResponse>, secure: boolean): Promise<void> {
+        const video = await this.settings();
+        if (!video.configured) return video;
+
         if (secure && (!lease.stream_user || !lease.stream_pass || !lease.read_user || !lease.read_pass)) {
             await this.config.models.VideoLease.commit(lease.id, {
                 stream_user: `write${lease.id}`,
@@ -324,6 +329,7 @@ export default class VideoServiceControl {
 
         const defaultUser: Static<typeof AuthInternalUser> = {
             user: 'any',
+            pass: '',
             permissions: []
         };
 
@@ -348,6 +354,19 @@ export default class VideoServiceControl {
         }
 
         authInternalUsers.push(defaultUser);
+
+        authInternalUsers.push({
+            user: video.username,
+            pass: video.password,
+            permissions: [
+                { action: 'publish' },
+                { action: 'read' },
+                { action: 'playback' },
+                { action: 'api' },
+                { action: 'metrics' },
+                { action: 'pprof' }
+            ]
+        })
 
         await this.configure({ authInternalUsers })
     }

@@ -543,7 +543,7 @@ export default {
                     }
                 }],
                 ManagedPolicyArns: [
-                    cf.join(['arn:', cf.partition, ':iam::aws:policy/AWSLambdaSQSExecutionRole']),
+                    cf.join(['arn:', cf.partition, ':iam::aws:policy/service-role/AWSLambdaSQSQueueExecutionRole']),
                     cf.join(['arn:', cf.partition, ':iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'])
                 ]
             }
