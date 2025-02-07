@@ -28,6 +28,16 @@ export const Protocols = Type.Object({
     }))
 })
 
+export const AuthInternalUser = Type.Object({
+    user: Type.String(),
+    pass: Type.Optional(Type.String()),
+    ips: Type.Optional(Type.Array(Type.String())),
+    permissions: Type.Array(Type.Object({
+        action: Type.String(),
+        path: Type.String()
+    }))
+})
+
 export const VideoConfigUpdate = Type.Object({
     api: Type.Optional(Type.Boolean()),
     metrics: Type.Optional(Type.Boolean()),
@@ -38,16 +48,8 @@ export const VideoConfigUpdate = Type.Object({
     hls: Type.Optional(Type.Boolean()),
     webrtc: Type.Optional(Type.Boolean()),
     srt: Type.Optional(Type.Boolean()),
-})
 
-export const AuthInternalUser = Type.Object({
-    user: Type.String(),
-    pass: Type.Optional(Type.String()),
-    ips: Type.Optional(Type.Array(Type.String())),
-    permissions: Type.Array(Type.Object({
-        action: Type.String(),
-        path: Type.String()
-    }))
+    authInternalUsers: Type.Optional(Type.Array(AuthInternalUser)),
 })
 
 export const VideoConfig = Type.Object({
@@ -303,7 +305,7 @@ export default class VideoServiceControl {
         return protocols;
     }
 
-    async updateSecure(lease: Static<typeof VideoLeaseResponse>, secure: boolean) {
+    async updateSecure(lease: Static<typeof VideoLeaseResponse>, secure: boolean): Promise<void> {
         if (secure && (!lease.stream_user || !lease.stream_pass || !lease.read_user || !lease.read_pass)) {
             await this.config.models.VideoLease.commit(lease.id, {
                 stream_user: `write${lease.id}`,
@@ -347,7 +349,7 @@ export default class VideoServiceControl {
 
         authInternalUsers.push(defaultUser);
 
-        console.error(authInternalUsers);
+        await this.configure({ authInternalUsers })
     }
 
     async generate(opts: {
