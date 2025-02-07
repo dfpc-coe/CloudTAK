@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v6.7.0 - 2025-02-07
+
+- :tada: Add support for User auth on MediaMTX Endpoints
+- :bug: Fix User filtering on Admin Page
+
 ### v6.6.0 - 2025-02-05
 
 - :tada: Add support for ESRI ImageServer in Basemap Editor
