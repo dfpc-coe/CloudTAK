@@ -14,7 +14,7 @@
                 <IconCheck
                     v-if='selected'
                     :size='compact ? 20 : 32'
-                    :stroke='1'
+                    stroke='1'
                     :style='compact ? "margin-left: 8px" : "margin-left: 16px;"'
                 />
                 <ContactPuck
@@ -46,7 +46,7 @@
                     v-if='buttonChat && isChatable(contact)'
                     v-tooltip='"Start Chat"'
                     :size='compact ? 20 : 32'
-                    :stroke='1'
+                    stroke='1'
                     class='cursor-pointer'
                     @click='$emit("chat", contact)'
                 />

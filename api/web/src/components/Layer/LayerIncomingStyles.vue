@@ -99,7 +99,7 @@
                             <IconPlus
                                 v-tooltip='"New Query"'
                                 :size='32'
-                                :stroke='1'
+                                stroke='1'
                             />
                         </button>
                     </template>
@@ -137,7 +137,7 @@
                                     <IconTrash
                                         v-if='!disabled'
                                         :size='32'
-                                        :stroke='1'
+                                        stroke='1'
                                         @click.stop='queries.splice(q_idx, 1)'
                                     />
                                 </div>

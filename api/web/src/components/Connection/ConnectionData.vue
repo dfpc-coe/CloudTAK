@@ -7,14 +7,14 @@
                 <IconPlus
                     v-tooltip='"Create Sync"'
                     :size='32'
-                    :stroke='1'
+                    stroke='1'
                     class='cursor-pointer'
                     @click='$router.push(`/connection/${connection.id}/data/new`)'
                 />
                 <IconRefresh
                     v-tooltip='"Refresh"'
                     :size='32'
-                    :stroke='1'
+                    stroke='1'
                     class='cursor-pointer'
                     @click='listData'
                 />
@@ -62,14 +62,14 @@
                                             v-if='data.mission_sync'
                                             v-tooltip='"Mission Sync On"'
                                             :size='32'
-                                            :stroke='1'
+                                            stroke='1'
                                             class='cursor-pointer text-green'
                                         />
                                         <IconAccessPointOff
                                             v-else
                                             v-tooltip='"Mission Sync Off"'
                                             :size='32'
-                                            :stroke='1'
+                                            stroke='1'
                                             class='cursor-pointer text-red'
                                         />
                                     </div>

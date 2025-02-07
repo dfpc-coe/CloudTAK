@@ -3,7 +3,7 @@
         <div class='card-header'>
             <IconCircleArrowLeft
                 :size='32'
-                :stroke='1'
+                stroke='1'
                 class='cursor-pointer'
                 @click='$router.push("/admin/template")'
             />
@@ -28,7 +28,7 @@
                     v-if='!loading && $route.params.template !== "new"'
                     v-tooltip='"Refresh"'
                     :size='32'
-                    :stroke='1'
+                    stroke='1'
                     class='cursor-pointer'
                     @click='fetch'
                 />

@@ -33,7 +33,7 @@
                                     <div class='btn-list'>
                                         <IconRefresh
                                             :size='32'
-                                            :stroke='1'
+                                            stroke='1'
                                             class='cursor-pointer'
                                             @click='fetchLogs'
                                         />

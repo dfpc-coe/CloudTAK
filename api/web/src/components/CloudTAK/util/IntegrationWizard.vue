@@ -12,7 +12,7 @@
             <div class='strong d-flex align-items-center'>
                 <template v-if='!connection'>
                     <IconInfoHexagon
-                        :stroke='1'
+                        stroke='1'
                         :size='20'
                         class='me-2'
                     />
@@ -20,7 +20,7 @@
                 </template>
                 <template v-else-if='!template'>
                     <IconInfoHexagon
-                        :stroke='1'
+                        stroke='1'
                         :size='20'
                         class='me-2'
                     />
@@ -28,7 +28,7 @@
                 </template>
                 <template v-else-if='!layer'>
                     <IconInfoHexagon
-                        :stroke='1'
+                        stroke='1'
                         :size='20'
                         class='me-2'
                     />
@@ -36,7 +36,7 @@
                 </template>
                 <template v-else-if='!stack'>
                     <IconInfoHexagon
-                        :stroke='1'
+                        stroke='1'
                         :size='20'
                         class='me-2'
                     />
@@ -44,7 +44,7 @@
                 </template>
                 <template v-else-if='stack'>
                     <IconInfoHexagon
-                        :stroke='1'
+                        stroke='1'
                         :size='20'
                         class='me-2'
                     />
@@ -113,7 +113,7 @@
                 <div class='d-flex justify-content-center py-4'>
                     <IconCircleCheck
                         :size='48'
-                        :stroke='1'
+                        stroke='1'
                     />
                 </div>
                 <div class='d-flex justify-content-center'>

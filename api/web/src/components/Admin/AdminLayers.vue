@@ -9,7 +9,7 @@
                 <IconCloudUpload
                     v-tooltip='"Redeploy"'
                     :size='32'
-                    :stroke='1'
+                    stroke='1'
                     class='cursor-pointer'
                     @click='redeploy'
                 />
@@ -17,7 +17,7 @@
                 <IconRefresh
                     v-tooltip='"Refresh"'
                     :size='32'
-                    :stroke='1'
+                    stroke='1'
                     class='cursor-pointer'
                     @click='fetchList'
                 />

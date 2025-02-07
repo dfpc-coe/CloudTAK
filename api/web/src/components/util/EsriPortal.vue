@@ -53,7 +53,7 @@
                             v-if='!disabled && !err && !loading.main'
                             v-tooltip='"Refresh"'
                             :size='32'
-                            :stroke='1'
+                            stroke='1'
                             class='cursor-pointer'
                             @click='generateToken'
                         />
@@ -62,7 +62,7 @@
                             v-if='!readonly && !disabled && !err && !loading.main'
                             v-tooltip='"Create Hosted Service"'
                             :size='32'
-                            :stroke='1'
+                            stroke='1'
                             class='cursor-pointer'
                             @click='createModal = true'
                         />
@@ -70,7 +70,7 @@
                             v-if='pane && !disabled'
                             v-tooltip='"Close Explorer"'
                             :size='32'
-                            :stroke='1'
+                            stroke='1'
                             class='cursor-pointer'
                             @click='$emit("close")'
                         />
@@ -164,7 +164,7 @@
                                     <td>
                                         <IconMap
                                             :size='32'
-                                            :stroke='1'
+                                            stroke='1'
                                         />
                                         <span
                                             class='mx-1'

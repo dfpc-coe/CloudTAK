@@ -60,52 +60,52 @@
                     <IconPaint
                         v-if='l.type === "fill"'
                         :size='24'
-                        :stroke='1'
+                        stroke='1'
                     />
                     <IconLine
                         v-else-if='l.type === "line"'
                         :size='24'
-                        :stroke='1'
+                        stroke='1'
                     />
                     <IconAbc
                         v-else-if='l.type === "symbol"'
                         :size='24'
-                        :stroke='1'
+                        stroke='1'
                     />
                     <IconCircle
                         v-else-if='l.type === "circle"'
                         :size='24'
-                        :stroke='1'
+                        stroke='1'
                     />
                     <IconFlame
                         v-else-if='l.type === "heatmap"'
                         :size='24'
-                        :stroke='1'
+                        stroke='1'
                     />
                     <IconCube
                         v-else-if='l.type === "fill-extrusion"'
                         :size='24'
-                        :stroke='1'
+                        stroke='1'
                     />
                     <IconPhoto
                         v-else-if='l.type === "raster"'
                         :size='24'
-                        :stroke='1'
+                        stroke='1'
                     />
                     <IconMountain
                         v-else-if='l.type === "hillshade"'
                         :size='24'
-                        :stroke='1'
+                        stroke='1'
                     />
                     <IconBackground
                         v-else-if='l.type === "background"'
                         :size='24'
-                        :stroke='1'
+                        stroke='1'
                     />
                     <IconQuestionMark
                         v-else
                         :size='24'
-                        :stroke='1'
+                        stroke='1'
                     />
 
                     <span
