@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v6.7.1 - 2025-02-07
+
+- :bug: Ensure `management` user is retained
+
 ### v6.7.0 - 2025-02-07
 
 - :tada: Add support for User auth on MediaMTX Endpoints
