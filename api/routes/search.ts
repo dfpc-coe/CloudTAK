@@ -52,12 +52,35 @@ export default async function router(schema: Schema, config: Config) {
             latitude: Type.Number(),
             longitude: Type.Number()
         }),
+        query: Type.Object({
+            altitude: Type.Number({
+                default: 0
+            })
+        }),
         res: ReverseResponse
     }, async (req, res) => {
         try {
             await Auth.as_user(config, req);
+
+            const sun = SunCalc.getTimes(new Date(), req.params.latitude, req.params.longitude, req.query.altitude);
+
             const response: Static<typeof ReverseResponse> = {
-                sun: SunCalc.getTimes(new Date(), req.params.latitude, req.params.longitude, /* height */),
+                sun: {
+                    sunrise: sun.sunrise.toISOString(),
+                    sunriseEnd: sun.sunriseEnd.toISOString(),
+                    goldenHourEnd: sun.goldenHourEnd.toISOString(),
+                    solarNoon: sun.solarNoon.toISOString(),
+                    goldenHour: sun.goldenHour.toISOString(),
+                    sunsetStart: sun.sunsetStart.toISOString(),
+                    sunset: sun.sunset.toISOString(),
+                    dusk: sun.dusk.toISOString(),
+                    nauticalDusk: sun.nauticalDusk.toISOString(),
+                    night: sun.night.toISOString(),
+                    nadir: sun.nadir.toISOString(),
+                    nightEnd: sun.nightEnd.toISOString(),
+                    nauticalDawn: sun.nauticalDawn.toISOString(),
+                    dawn: sun.dawn.toISOString(),
+                },
                 weather: null,
                 reverse: null,
             };
