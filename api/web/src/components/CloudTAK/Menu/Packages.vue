@@ -61,27 +61,25 @@
                     :create='false'
                 />
                 <template v-else>
-                    <div
+                    <MenuItem
                         v-for='pkg in filteredList'
                         :key='pkg.Hash'
+                        :flex='false'
+                        @click='$router.push(`/menu/packages/${pkg.UID}`)'
+                        @keyup.enter='$router.push(`/menu/packages/${pkg.UID}`)'
                     >
                         <div
-                            class='col-12 py-2 px-3 align-items-center hover-dark cursor-pointer'
-                            @click='$router.push(`/menu/packages/${pkg.UID}`)'
-                        >
+                            class='col-12'
+                            v-text='pkg.Name'
+                        />
+                        <div class='col-12 subheader d-flex'>
+                            <div v-text='timeDiff(pkg.SubmissionDateTime)' />
                             <div
-                                class='col-12'
-                                v-text='pkg.Name'
+                                class='ms-auto'
+                                v-text='pkg.SubmissionUser'
                             />
-                            <div class='col-12 subheader d-flex'>
-                                <div v-text='timeDiff(pkg.SubmissionDateTime)' />
-                                <div
-                                    class='ms-auto'
-                                    v-text='pkg.SubmissionUser'
-                                />
-                            </div>
                         </div>
-                    </div>
+                    </MenuItem>
                 </template>
             </template>
         </template>
@@ -92,6 +90,7 @@
 import type { PackageList } from '../../../../src/types.ts';
 import { ref, computed, onMounted } from 'vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
+import MenuItem from '../util/MenuItem.vue';
 import { std, stdurl } from '../../../../src/std.ts';
 
 import {

@@ -45,7 +45,7 @@
                     >
                         <IconUser
                             :size='32'
-                            :stroke='1'
+                            stroke='1'
                         />
                         <span
                             class='mx-2'

@@ -20,12 +20,12 @@
                     <IconSquareChevronRight
                         v-if='!advanced'
                         :size='32'
-                        :stroke='1'
+                        stroke='1'
                     />
                     <IconChevronDown
                         v-else
                         :size='32'
-                        :stroke='1'
+                        stroke='1'
                     />
                     Advanced Options
                 </label>

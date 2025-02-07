@@ -8,7 +8,7 @@
             <div class='ms-auto btn-list'>
                 <IconRefresh
                     :size='32'
-                    :stroke='1'
+                    stroke='1'
                     class='cursor-pointer'
                     @click='fetchData'
                 />

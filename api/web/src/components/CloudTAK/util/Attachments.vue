@@ -7,7 +7,7 @@
                 v-if='!upload'
                 v-tooltip='"Add Attachment"'
                 :size='24'
-                :stroke='1'
+                stroke='1'
                 class='cursor-pointer'
                 @click='upload = true'
             />
@@ -46,12 +46,12 @@
                                 v-if='[".png", ".jpg"].includes(file.ext)'
                                 :src='downloadAssetUrl(file)'
                                 :size='24'
-                                :stroke='1'
+                                stroke='1'
                             >
                             <IconFile
                                 v-else
                                 :size='24'
-                                :stroke='1'
+                                stroke='1'
                             />
 
                             <div class='d-flex align-items-center mt-2'>
@@ -65,7 +65,7 @@
                                     <IconDownload
                                         v-tooltip='"Download Asset"'
                                         :size='24'
-                                        :stroke='1'
+                                        stroke='1'
                                         class='cursor-pointer'
                                         @click='downloadAsset(file)'
                                     />

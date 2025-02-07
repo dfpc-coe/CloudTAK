@@ -18,14 +18,14 @@
                         <IconChevronDown
                             v-if='order === "asc"'
                             :size='16'
-                            :stroke='1'
+                            stroke='1'
                             class='cursor-pointer'
                             @click='updateOrder("desc")'
                         />
                         <IconChevronUp
                             v-else
                             :size='16'
-                            :stroke='1'
+                            stroke='1'
                             class='cursor-pointer'
                             @click='updateOrder("asc")'
                         />
@@ -36,7 +36,7 @@
                             <TablerDropdown>
                                 <IconSettings
                                     :size='16'
-                                    :stroke='1'
+                                    stroke='1'
                                     class='mx-2 dropdown-toggle cursor-pointer'
                                 />
 

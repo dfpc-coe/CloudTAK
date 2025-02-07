@@ -18,7 +18,7 @@
                                 v-if='selected.id && list.total > 1'
                                 v-tooltip='"Remove Layer"'
                                 :size='32'
-                                :stroke='1'
+                                stroke='1'
                                 class='cursor-pointer'
                                 @click='selected = {}'
                             />

@@ -28,6 +28,16 @@ export const Protocols = Type.Object({
     }))
 })
 
+export const AuthInternalUser = Type.Object({
+    user: Type.String(),
+    pass: Type.Optional(Type.String()),
+    ips: Type.Optional(Type.Array(Type.String())),
+    permissions: Type.Array(Type.Object({
+        action: Type.String(),
+        path: Type.String()
+    }))
+})
+
 export const VideoConfigUpdate = Type.Object({
     api: Type.Optional(Type.Boolean()),
     metrics: Type.Optional(Type.Boolean()),
@@ -38,6 +48,8 @@ export const VideoConfigUpdate = Type.Object({
     hls: Type.Optional(Type.Boolean()),
     webrtc: Type.Optional(Type.Boolean()),
     srt: Type.Optional(Type.Boolean()),
+
+    authInternalUsers: Type.Optional(Type.Array(AuthInternalUser)),
 })
 
 export const VideoConfig = Type.Object({
@@ -70,6 +82,8 @@ export const VideoConfig = Type.Object({
 
     srt: Type.Boolean(),
     srtAddress: Type.String(),
+
+    authInternalUsers: Type.Array(AuthInternalUser)
 })
 
 export const PathConfig = Type.Object({
@@ -237,13 +251,15 @@ export default class VideoServiceControl {
             const url = new URL(`/${lease.path}`, c.url.replace(/^http(s)?:/, 'rtmp:'))
             url.port = c.config.rtmpAddress.replace(':', '');
 
-            if (lease.stream_user) url.searchParams.append('user', lease.stream_user);
-            if (lease.stream_pass) url.searchParams.append('pass', lease.stream_pass);
-
             protocols.rtmp = {
                 name: 'Real-Time Messaging Protocol (RTMP)',
                 url: String(url)
             }
+
+            if (lease.stream_user && lease.read_user) {
+                protocols.rtmp.url = `${protocols.rtmp.url}?user={{username}}&pass={{password}}`;
+            }
+
         }
 
         if (c.config && c.config.srt) {
@@ -251,9 +267,16 @@ export default class VideoServiceControl {
             const url = new URL(c.url.replace(/^http(s)?:/, 'srt:'))
             url.port = c.config.srtAddress.replace(':', '');
 
-            protocols.srt = {
-                name: 'Secure Reliable Transport (SRT)',
-                url: String(url) + `?streamid=publish:${lease.path}`
+            if (lease.stream_user && lease.read_user) {
+                protocols.srt = {
+                    name: 'Secure Reliable Transport (SRT)',
+                    url: String(url) + `?streamid={{mode}}:${lease.path}:{{username}}:{{password}}`
+                }
+            } else {
+                protocols.srt = {
+                    name: 'Secure Reliable Transport (SRT)',
+                    url: String(url) + `?streamid={{mode}}:${lease.path}`
+                }
             }
         }
 
@@ -282,7 +305,7 @@ export default class VideoServiceControl {
         return protocols;
     }
 
-    async updateSecure(lease: Static<typeof VideoLeaseResponse>, secure: boolean) {
+    async updateSecure(lease: Static<typeof VideoLeaseResponse>, secure: boolean): Promise<void> {
         if (secure && (!lease.stream_user || !lease.stream_pass || !lease.read_user || !lease.read_pass)) {
             await this.config.models.VideoLease.commit(lease.id, {
                 stream_user: `write${lease.id}`,
@@ -298,6 +321,35 @@ export default class VideoServiceControl {
                 read_pass: null
             });
         }
+
+        const defaultUser: Static<typeof AuthInternalUser> = {
+            user: 'any',
+            permissions: []
+        };
+
+        const authInternalUsers: Array<Static<typeof AuthInternalUser>> = [];
+        for await (const lease of this.config.models.VideoLease.iter()) {
+            if (lease.stream_user && lease.stream_pass && lease.read_user && lease.read_pass) {
+                authInternalUsers.push({
+                    user: lease.stream_user,
+                    pass: lease.stream_pass,
+                    permissions: [{ action: 'publish', path: lease.path }]
+                });
+
+                authInternalUsers.push({
+                    user: lease.read_user,
+                    pass: lease.read_pass,
+                    permissions: [{ action: 'read', path: lease.path }]
+                })
+            } else {
+                defaultUser.permissions.push({ action: 'read', path: lease.path });
+                defaultUser.permissions.push({ action: 'publish', path: lease.path });
+            }
+        }
+
+        authInternalUsers.push(defaultUser);
+
+        await this.configure({ authInternalUsers })
     }
 
     async generate(opts: {

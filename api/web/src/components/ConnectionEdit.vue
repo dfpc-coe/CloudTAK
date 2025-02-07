@@ -104,7 +104,7 @@
                                                         <IconTrash
                                                             v-tooltip='"Remove Certificate"'
                                                             :size='32'
-                                                            :stroke='1'
+                                                            stroke='1'
                                                             class='cursor-pointer'
                                                             @click='marti({ key: "", cert: ""})'
                                                         />
@@ -210,7 +210,7 @@
                                                     <div class='d-flex justify-content-center'>
                                                         <IconLock
                                                             :size='50'
-                                                            :stroke='1'
+                                                            stroke='1'
                                                         />
                                                     </div>
                                                     <div class='d-flex justify-content-center my-3'>

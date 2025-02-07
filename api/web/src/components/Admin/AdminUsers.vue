@@ -107,7 +107,7 @@ const paging = ref({
     page: 0
 });
 
-watch(paging, async () => {
+watch(paging.value, async () => {
     await fetchList();
 });
 

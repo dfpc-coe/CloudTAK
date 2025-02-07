@@ -67,7 +67,7 @@
                         </div>
                         <CopyField
                             v-if='protocols.rtsp'
-                            :model-value='protocols.rtsp.url.replace(/.*\//, "")'
+                            :modelValue='protocols.rtsp.url.replace(/.*\//, "")'
                         />
                     </div>
                 </div>
@@ -134,6 +134,15 @@
                         :options='durations'
                         :disabled='disabled'
                         label='Lease Duration'
+                        description='Leases remain active on the server for the duration specified. Once the lease expires the lease can be renewed without the Lease URL changing'
+                    />
+                </div>
+                <div class='col-12'>
+                    <TablerToggle
+                        label='Read/Write Security'
+                        v-model='secure'
+                        :disabled='disabled'
+                        description='Create a seperate Read/Write user to ensure unauthorized users cannot publish to a stream'
                     />
                 </div>
                 <div class='col-12'>
@@ -164,9 +173,13 @@
                     </div>
                 </div>
 
-                <div class='col-12'>
+                <div
+                    v-if='editLease.expiration !== undefined'
+                    class='col-12'
+                >
                     <label>Lease Expiration</label>
 
+                    <span v-text='editLease.expiration'/>
                     <div class='col-12'>
                         <span
                             v-if='expired(editLease.expiration)'
@@ -178,76 +191,74 @@
                         >Permanent</span>
                         <CopyField
                             v-else-if='editLease.expiration'
-                            :model-value='editLease.expiration'
+                            :modelValue='editLease.expiration'
                         />
-                    </div>
-                </div>
-
-                <div class='col-12'>
-                    <label
-                        class='subheader mt-3 cursor-pointer'
-                        @click='advanced = !advanced'
-                    >
-                        <IconSquareChevronRight
-                            v-if='!advanced'
-                            :size='32'
-                            stroke='1'
-                        />
-                        <IconChevronDown
-                            v-else
-                            :size='32'
-                            stroke='1'
-                        />
-                        Advanced Options
-                    </label>
-
-                    <div
-                        v-if='advanced'
-                        class='col-12 row'
-                    >
-                        <div
-                            class='alert alert-info'
-                            role='alert'
-                        >
-                            <div class='d-flex'>
-                                <div class='me-2'>
-                                    <IconInfoCircle
-                                        :size='32'
-                                        stroke='1'
-                                    />
-                                </div>
-                                <div>
-                                    <h4 class='alert-title'>
-                                        Stream Username & Password Disabled
-                                    </h4>
-                                    <div class='text-secondary'>
-                                        iTAK Does not currently support in URL username/passwords so this option is currently disabled
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- NOT SUPPORTED IN iTAK-->
-                        <div class='col-md-6'>
-                            <TablerInput
-                                v-model='editLease.stream_user'
-                                :disabled='true'
-                                label='Stream Username'
-                            />
-                        </div>
-                        <div class='col-md-6'>
-                            <TablerInput
-                                v-model='editLease.stream_pass'
-                                :disabled='true'
-                                label='Stream Password'
-                            />
-                        </div>
                     </div>
                 </div>
 
                 <template v-if='disabled && Object.keys(protocols).length'>
-                    <div class='subheader pt-4'>
-                        Video Streaming Protocols
+                    <div class='col-12 d-flex align-items-center pt-4'>
+                        <div class='subheader'>
+                            Video Streaming Protocols
+                        </div>
+
+                        <div class='ms-auto'>
+                            <div v-if='!secure'>
+                                <IconArrowsLeftRight
+                                    v-tooltip='"Read/Write User"'
+                                    :size='32'
+                                    stroke='1'
+                                />
+                                <span class='ms-2 user-select-none'>Read-Write User</span>
+                            </div>
+                            <div
+                                v-else
+                                class='px-2 py-2 round btn-group w-100'
+                                role='group'
+                            >
+                                <input
+                                    id='read-user'
+                                    type='radio'
+                                    class='btn-check'
+                                    autocomplete='off'
+                                    :checked='mode === "read"'
+                                    @click='mode = "read"'
+                                >
+                                <label
+                                    for='read-user'
+                                    type='button'
+                                    class='btn btn-sm'
+                                >
+                                    <IconBook2
+                                        v-tooltip='"Read User"'
+                                        :size='32'
+                                        stroke='1'
+                                    />
+                                    <span class='mx-2'>Read User</span>
+                                </label>
+
+                                <input
+                                    id='publish-user'
+                                    type='radio'
+                                    class='btn-check'
+                                    autocomplete='off'
+                                    :checked='mode === "publish"'
+                                    @click='mode = "publish"'
+                                >
+                                <label
+                                    for='publish-user'
+                                    type='button'
+                                    class='btn btn-sm'
+                                >
+                                    <IconPencil
+                                        v-tooltip='"Write User"'
+                                        :size='32'
+                                        stroke='1'
+                                    />
+                                    <span class='mx-2'>Write User</span>
+                                </label>
+                            </div>
+                        </div>
                     </div>
                     <template v-if='expired(editLease.expiration)'>
                         <TablerAlert
@@ -274,13 +285,54 @@
                         </div>
                     </template>
                     <template v-else>
+                        <template v-if='secure && mode === "publish"'>
+                            <div class='col-md-6'>
+                                <CopyField
+                                    label='Write Username'
+                                    :modelValue='editLease.stream_user || ""'
+                                />
+                            </div>
+                            <div class='col-md-6'>
+                                <CopyField
+                                    label='Write Password'
+                                    :modelValue='editLease.stream_pass || ""'
+                                />
+                            </div>
+                        </template>
+                        <template v-else-if='secure && mode === "read"'>
+                            <div class='col-md-6'>
+                                <CopyField
+                                    label='Read Username'
+                                    :modelValue='editLease.read_user || ""'
+                                />
+                            </div>
+                            <div class='col-md-6'>
+                                <CopyField
+                                    label='Read Password'
+                                    :modelValue='editLease.read_pass || ""'
+                                />
+                            </div>
+                        </template>
                         <div
                             v-for='protocol in protocols'
                             class='pt-2'
                         >
                             <template v-if='protocol'>
-                                <div v-text='protocol.name' />
-                                <CopyField v-model='protocol.url' />
+                                <CopyField
+                                    v-if='secure && mode === "read"'
+                                    :label='protocol.name'
+                                    :modelValue='protocol.url.replace("{{mode}}", mode).replace("{{username}}", editLease.read_user || "").replace("{{password}}", editLease.read_pass || "")'
+                                />
+                                <CopyField
+                                    v-else-if='secure && mode === "publish"'
+                                    :label='protocol.name'
+                                    :modelValue='protocol.url.replace("{{mode}}", mode).replace("{{username}}", editLease.stream_user || "").replace("{{password}}", editLease.stream_pass || "")'
+                                />
+                                <CopyField
+                                    v-else
+                                    :label='protocol.name'
+                                    :modelValue='protocol.url.replace("{{mode}}", mode)'
+                                />
                             </template>
                         </div>
                     </template>
@@ -328,12 +380,11 @@ import {
     IconRefresh,
     IconPencil,
     IconWand,
+    IconArrowsLeftRight,
+    IconBook2,
     IconAffiliate,
-    IconInfoCircle,
-    IconSquareChevronRight,
     IconChevronRight,
     IconChevronLeft,
-    IconChevronDown,
 } from '@tabler/icons-vue';
 import {
     TablerIconButton,
@@ -352,10 +403,11 @@ const props = defineProps<{
 
 const emit = defineEmits([ 'close', 'refresh' ])
 
+const mode = ref('read');
 const loading = ref(true);
+const secure = ref(false);
 const disabled = ref(true);
 const wizard = ref(0);
-const advanced = ref(false);
 const protocols = ref<VideoLeaseProtocols>({});
 
 const channels = ref<string[]>([]);
@@ -378,12 +430,16 @@ const editLease = ref<{
     expiration?: string | null
     stream_user: string | null
     stream_pass: string | null
+    read_user: string | null
+    read_pass: string | null
 }>({
     name: '',
     duration: '16 Hours',
     channel: null,
     stream_user: '',
-    stream_pass: ''
+    stream_pass: '',
+    read_user: '',
+    read_pass: ''
 });
 
 onMounted(async () => {
@@ -424,6 +480,12 @@ async function fetchLease() {
         duration: '16 Hours'
     }
 
+    if (editLease.value.stream_user && editLease.value.read_user) {
+        secure.value = true;
+    } else {
+        secure.value = false;
+    }
+
     if (editLease.value.channel) {
         channels.value = [ editLease.value.channel ];
     } else {
@@ -438,6 +500,7 @@ async function fetchLease() {
 
     protocols.value = res.protocols;
 
+    disabled.value = true;
     loading.value = false;
 }
 
@@ -463,44 +526,30 @@ async function saveLease() {
         loading.value = true;
 
         if (editLease.value.id) {
-            const res = await std(`/api/video/lease/${editLease.value.id}`, {
+            await std(`/api/video/lease/${editLease.value.id}`, {
                 method: 'PATCH',
                 body: {
                     name: editLease.value.name,
+                    secure: secure.value,
                     channel: channels.value.length ? channels.value[0] : null,
                     duration: editLease.value.duration === 'Permanent' ? undefined : parseInt(editLease.value.duration.split(' ')[0]) * 60 * 60,
                     permanent: editLease.value.duration === 'Permanent' ? true : false
                 }
-            }) as VideoLeaseResponse;
-
-            editLease.value = {
-                ...res.lease,
-                duration: '16 Hours'
-            }
-
-            protocols.value = res.protocols;
-            disabled.value = true;
-            loading.value = false;
+            })
         } else {
-            const res = await std('/api/video/lease', {
+            await std('/api/video/lease', {
                 method: 'POST',
                 body: {
                     name: editLease.value.name,
+                    secure: secure.value,
                     channel: channels.value.length ? channels.value[0] : null,
                     duration: editLease.value.duration === 'Permanent' ? undefined : parseInt(editLease.value.duration.split(' ')[0]) * 60 * 60,
                     permanent: editLease.value.duration === 'Permanent' ? true : false
                 }
-            }) as VideoLeaseResponse;
-
-            editLease.value = {
-                ...res.lease,
-                duration: '16 Hours'
-            }
-
-            protocols.value = res.protocols;
-            disabled.value = true;
-            loading.value = false;
+            })
         }
+
+        await fetchLease();
     } catch (err) {
         loading.value = false;
         throw err;
