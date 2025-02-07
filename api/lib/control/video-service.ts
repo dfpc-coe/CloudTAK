@@ -2,6 +2,7 @@ import Err from '@openaddresses/batch-error';
 import Config from '../config.js';
 import { Type, Static } from '@sinclair/typebox';
 import { VideoLeaseResponse } from '../types.js';
+import { sql } from 'drizzle-orm';
 import fetch from '../fetch.js';
 import TAKAPI, { APIAuthCertificate } from '../tak-api.js';
 
@@ -40,6 +41,16 @@ export const VideoConfigUpdate = Type.Object({
     srt: Type.Optional(Type.Boolean()),
 })
 
+export const AuthInternalUser = Type.Object({
+    user: Type.String(),
+    pass: Type.String(),
+    ips: Type.Optional(Type.Array(Type.String())),
+    permissions: Type.Array(Type.Object({
+        action: Type.String(),
+        path: Type.String()
+    }))
+})
+
 export const VideoConfig = Type.Object({
     api: Type.Boolean(),
     apiAddress: Type.String(),
@@ -70,6 +81,8 @@ export const VideoConfig = Type.Object({
 
     srt: Type.Boolean(),
     srtAddress: Type.String(),
+
+    authInternalUsers: Type.Array(AuthInternalUser)
 })
 
 export const PathConfig = Type.Object({
@@ -307,6 +320,30 @@ export default class VideoServiceControl {
                 read_pass: null
             });
         }
+
+        const authInternalUsers: Array<Static<typeof AuthInternalUser>> = [];
+        for await (const lease of this.config.models.VideoLease.iter({
+            where: sql`
+                stream_user IS NOT NULL
+                AND read_user IS NOT NULL
+            `
+        })) {
+            if (lease.stream_user && lease.stream_pass && lease.read_user && lease.read_pass) {
+                authInternalUsers.push({
+                    user: lease.stream_user,
+                    pass: lease.stream_pass,
+                    permissions: [{ action: 'publish', path: lease.path }]
+                });
+
+                authInternalUsers.push({
+                    user: lease.read_user,
+                    pass: lease.read_pass,
+                    permissions: [{ action: 'read', path: lease.path }]
+                })
+            }
+        }
+
+        console.error(authInternalUsers);
     }
 
     async generate(opts: {
