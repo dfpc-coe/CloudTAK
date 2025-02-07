@@ -2,7 +2,6 @@ import Err from '@openaddresses/batch-error';
 import Config from '../config.js';
 import { Type, Static } from '@sinclair/typebox';
 import { VideoLeaseResponse } from '../types.js';
-import { sql } from 'drizzle-orm';
 import fetch from '../fetch.js';
 import TAKAPI, { APIAuthCertificate } from '../tak-api.js';
 
@@ -43,7 +42,7 @@ export const VideoConfigUpdate = Type.Object({
 
 export const AuthInternalUser = Type.Object({
     user: Type.String(),
-    pass: Type.String(),
+    pass: Type.Optional(Type.String()),
     ips: Type.Optional(Type.Array(Type.String())),
     permissions: Type.Array(Type.Object({
         action: Type.String(),
@@ -321,13 +320,13 @@ export default class VideoServiceControl {
             });
         }
 
+        const defaultUser: Static<typeof AuthInternalUser> = {
+            user: 'any',
+            permissions: []
+        };
+
         const authInternalUsers: Array<Static<typeof AuthInternalUser>> = [];
-        for await (const lease of this.config.models.VideoLease.iter({
-            where: sql`
-                stream_user IS NOT NULL
-                AND read_user IS NOT NULL
-            `
-        })) {
+        for await (const lease of this.config.models.VideoLease.iter()) {
             if (lease.stream_user && lease.stream_pass && lease.read_user && lease.read_pass) {
                 authInternalUsers.push({
                     user: lease.stream_user,
@@ -340,8 +339,13 @@ export default class VideoServiceControl {
                     pass: lease.read_pass,
                     permissions: [{ action: 'read', path: lease.path }]
                 })
+            } else {
+                defaultUser.permissions.push({ action: 'read', path: lease.path });
+                defaultUser.permissions.push({ action: 'publish', path: lease.path });
             }
         }
+
+        authInternalUsers.push(defaultUser);
 
         console.error(authInternalUsers);
     }
