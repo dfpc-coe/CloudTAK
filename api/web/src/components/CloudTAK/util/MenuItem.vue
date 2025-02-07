@@ -4,7 +4,7 @@
         role='menuitem'
         class='cursor-pointer col-12 py-2 px-3 hover-dark'
         :class='{
-            "d-flex align-items-center": flex
+            "d-flex align-items-center": props.flex
         }'
     >
         <slot />
