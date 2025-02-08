@@ -83,26 +83,13 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         const conns: Promise<ConnectionClient>[] = [];
 
         const ConnectionModel = new Modeler(this.config.pg, Connection);
-        const stream = ConnectionModel.stream();
+        for await (const conn of ConnectionModel.iter()) {
+            if (conn.enabled) {
+                conns.push(this.add(new MachineConnConfig(this.config, conn)));
+            }
+        }
 
-        return new Promise((resolve, reject) => {
-            stream.on('data', async (conn: InferSelectModel<typeof Connection>) => {
-                if (conn.enabled) {
-                    conns.push(this.add(new MachineConnConfig(this.config, conn)));
-                }
-            }).on('error', (err) => {
-                return reject(err);
-            }).on('end', async () => {
-                try {
-                    await Promise.all(conns);
-                    return resolve();
-                } catch (err) {
-                    console.error(err);
-                    return reject(err);
-                }
-
-            });
-        });
+        await Promise.all(conns);
     }
 
     status(id: number | string): string {
