@@ -51,6 +51,7 @@ export default class Config {
     SubnetPublicA?: string;
     SubnetPublicB?: string;
     MediaSecurityGroup?: string;
+    arnPrefix?: string;
 
     constructor(init: {
         silent: boolean;
@@ -212,17 +213,23 @@ export default class Config {
      * Return a prefix to an ARN
      */
     async fetchArnPrefix(service = ''): Promise<string> {
-        const sts = new STS.STSClient({ region: process.env.AWS_REGION });
-        const account = await sts.send(new STS.GetCallerIdentityCommand({}));
-        const res = [];
+        if (this.arnPrefix) {
+            return this.arnPrefix;
+        } else {
+            const sts = new STS.STSClient({ region: process.env.AWS_REGION });
+            const account = await sts.send(new STS.GetCallerIdentityCommand({}));
+            const res = [];
 
-        if (!account.Arn) throw new Error('ARN Could not be determined');
+            if (!account.Arn) throw new Error('ARN Could not be determined');
 
-        res.push(...account.Arn.split(':').splice(0, 2));
-        res.push(service);
-        res.push(process.env.AWS_REGION);
-        res.push(...account.Arn.split(':').splice(4, 1))
-        return res.join(':');
+            res.push(...account.Arn.split(':').splice(0, 2));
+            res.push(service);
+            res.push(process.env.AWS_REGION);
+            res.push(...account.Arn.split(':').splice(4, 1))
+            this.arnPrefix = res.join(':');
+
+            return this.arnPrefix;
+        }
     }
 
     static async fetchSigningSecret(StackName: string): Promise<string> {
