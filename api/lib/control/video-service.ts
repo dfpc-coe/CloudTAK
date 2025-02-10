@@ -34,7 +34,7 @@ export const AuthInternalUser = Type.Object({
     ips: Type.Optional(Type.Array(Type.String())),
     permissions: Type.Array(Type.Object({
         action: Type.String(),
-        path: Type.String()
+        path: Type.Optional(Type.String())
     }))
 })
 
@@ -309,7 +309,7 @@ export default class VideoServiceControl {
 
     async updateSecure(lease: Static<typeof VideoLeaseResponse>, secure: boolean): Promise<void> {
         const video = await this.settings();
-        if (!video.configured) return video;
+        if (!video.configured || !video.username) return;
 
         if (secure && (!lease.stream_user || !lease.stream_pass || !lease.read_user || !lease.read_pass)) {
             await this.config.models.VideoLease.commit(lease.id, {

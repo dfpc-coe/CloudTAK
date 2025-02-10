@@ -7,7 +7,6 @@ import { randomUUID } from 'node:crypto';
 import TAK, { CoT } from '@tak-ps/node-tak';
 import Modeler from '@openaddresses/batch-generic';
 import { Connection } from './schema.js';
-import { InferSelectModel } from 'drizzle-orm';
 import sleep from './sleep.js';
 import TAKAPI, { APIAuthCertificate, } from '../lib/tak-api.js';
 import type ConnectionConfig from './connection-config.js';

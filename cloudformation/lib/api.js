@@ -287,7 +287,7 @@ export default {
                                 'sqs:TagQueue'
                             ],
                             Resource: [
-                                cf.join(['arn:', cf.partition, ':', cf.region, ':', cf.accountId, ':coe-etl-', cf.ref('Environment'), '-layer-*'])
+                                cf.join(['arn:', cf.partition, ':sqs:', cf.region, ':', cf.accountId, ':coe-etl-', cf.ref('Environment'), '-layer-*'])
                             ]
                         },{
                             Effect: 'Allow',
@@ -537,7 +537,7 @@ export default {
                                 'sqs:GetQueueAttributes'
                             ],
                             Resource: [
-                                cf.join(['arn:', cf.partition, ':', cf.region, ':', cf.accountId, ':coe-etl-', cf.ref('Environment'), '-layer-*'])
+                                cf.join(['arn:', cf.partition, ':sqs:', cf.region, ':', cf.accountId, ':coe-etl-', cf.ref('Environment'), '-layer-*'])
                             ]
                         }]
                     }
