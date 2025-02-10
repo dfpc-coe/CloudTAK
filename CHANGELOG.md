@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v6.8.2 - 2025-02-09
+
+- :bug: Allow creation of Lambda Event Sources
+
 ### v6.8.1 - 2025-02-09
 
 - :bug: Allow removal of Lambda Event Sources

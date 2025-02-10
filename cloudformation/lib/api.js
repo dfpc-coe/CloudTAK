@@ -349,6 +349,7 @@ export default {
                         },{
                             Effect: 'Allow',
                             Action: [
+                                'lambda:CreateEventSourceMapping',
                                 'lambda:DeleteEventSourceMapping',
                                 'batch:SubmitJob',
                                 'batch:ListJobs',
