@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v6.9.1 - 2025-02-12
+
+- :bug: Fix ArcGIS Geocoding API Suggest Endpoint
+
 ### v6.9.0 - 2025-02-11
 
 - :rocket: Add `hover` feature state to clickable vector layers automatically
