@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v6.9.0 - 2025-02-11
+
+- :rocket: Add `hover` feature state to clickable vector layers automatically
+- :arrow_up: Update Pinia@3
+
 ### v6.8.2 - 2025-02-09
 
 - :bug: Allow creation of Lambda Event Sources
