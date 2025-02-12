@@ -53,7 +53,7 @@
         <div class='col-12'>
             <label class='subheader'>Layout</label>
             <div
-                v-if='Object.keys(l.layout).length === 0'
+                v-if='!l.layout || Object.keys(l.layout).length === 0'
                 class='col-12 d-flex py-1'
             >
                 <TablerNone
@@ -62,26 +62,28 @@
                     :create='false'
                 />
             </div>
-            <div
-                v-for='p of Object.keys(l.layout)'
-                :key='p'
-                class='col-12 py-1'
-            >
-                <template v-if='p === "visibility"'>
-                    <TablerToggle
-                        v-model='l.layout[p]'
-                        :label='p'
-                    />
-                </template>
-                <template v-else>
-                    <span v-text='p' />
+            <template v-else>
+                <div
+                    v-for='p of Object.keys(l.layout)'
+                    :key='p'
+                    class='col-12 py-1'
+                >
+                    <template v-if='p === "visibility"'>
+                        <TablerToggle
+                            v-model='l.layout[p]'
+                            :label='p'
+                        />
+                    </template>
+                    <template v-else>
+                        <span v-text='p' />
 
-                    <span
-                        class='ms-auto'
-                        v-text='l.layout[p]'
-                    />
-                </template>
-            </div>
+                        <span
+                            class='ms-auto'
+                            v-text='l.layout[p]'
+                        />
+                    </template>
+                </div>
+            </template>
         </div>
         <div class='col-lg'>
             <label class='subheader'>Paint</label>
