@@ -144,7 +144,9 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Get information about a given string',
         query: Type.Object({
             query: Type.String(),
-            limit: Type.Optional(Type.Integer()),
+            limit: Type.Integer({
+                default: 10
+            }),
         }),
         res: SuggestResponse
     }, async (req, res) => {
@@ -158,9 +160,8 @@ export default async function router(schema: Schema, config: Config) {
             if (geocode.token && req.query.query.trim().length) {
                 response.items = await geocode.suggest(req.query.query, req.query.limit);
             }
-
             if (req.query.limit) {
-                response.items.splice(0, req.query.limit);
+                response.items = response.items.splice(0, req.query.limit);
             }
 
             res.json(response);
