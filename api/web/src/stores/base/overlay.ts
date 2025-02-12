@@ -264,13 +264,55 @@ export default class Overlay {
         }
 
         for (const click of opts.clickable) {
+            const hoverIds = new Set<string>();
             mapStore.map.on('mouseenter', click.id, () => {
                 if (mapStore.drawOptions.mode !== 'static') return;
                 mapStore.map.getCanvas().style.cursor = 'pointer';
             })
+
+            mapStore.map.on('mousemove', click.id, (e) => {
+                if (this.type === 'vector' && e.features) {
+                    const newIds = e.features.map(f => String(f.id));
+
+                    for (const id of hoverIds) {
+                        if (newIds.includes(id)) continue;
+
+                        mapStore.map.setFeatureState({
+                            id: id,
+                            source: String(this.id),
+                            sourceLayer: 'out'
+                        }, { hover: false });
+
+                        hoverIds.delete(id);
+                    }
+
+                    for (const id of newIds) {
+                        mapStore.map.setFeatureState({
+                            id: id,
+                            source: String(this.id),
+                            sourceLayer: 'out'
+                        }, { hover: true });
+
+                        hoverIds.add(id);
+                    }
+                }
+            });
+
             mapStore.map.on('mouseleave', click.id, () => {
                 if (mapStore.drawOptions.mode !== 'static') return;
                 mapStore.map.getCanvas().style.cursor = '';
+
+                if (this.type === 'vector') {
+                    for (const id of hoverIds) {
+                        mapStore.map.setFeatureState({
+                            id: id,
+                            source: String(this.id),
+                            sourceLayer: 'out'
+                        }, { hover: false });
+                    }
+
+                    hoverIds.clear()
+                }
             })
         }
 
