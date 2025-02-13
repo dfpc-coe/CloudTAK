@@ -26,6 +26,7 @@
         "@turf/point-on-feature": "^7.0.0",
         "apexcharts": "^3.0.0",
         "bootstrap": "^5.2.3",
+        "comlink": "^4.4.2",
         "core-js": "^3.6.4",
         "cronstrue": "^2.19.0",
         "deep-equal": "^2.2.3",
