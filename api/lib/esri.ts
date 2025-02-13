@@ -36,7 +36,6 @@ export const EsriExtent = Type.Object({
 })
 
 export const ImageLayer = Type.Object({
-    id: Type.Integer(),
     name: Type.String(),
     description: Type.String(),
     extent: EsriExtent
