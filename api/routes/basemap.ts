@@ -1,6 +1,6 @@
 import path from 'node:path';
-import { bbox } from '@turf/bbox';
 import Err from '@openaddresses/batch-error';
+import { bbox } from '@turf/bbox';
 import TileJSON, { TileJSONType } from '../lib/control/tilejson.js';
 import Auth, { AuthUserAccess, ResourceCreationScope } from '../lib/auth.js';
 import Cacher from '../lib/cacher.js';
@@ -14,11 +14,12 @@ import { sql } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import { Geometry, BBox } from 'geojson';
 import { Static, Type } from '@sinclair/typebox'
-import { StandardResponse, BasemapResponse } from '../lib/types.js';
+import { StandardResponse, BasemapResponse, OptionalTileJSON } from '../lib/types.js';
 import { BasemapCollection } from '../lib/models/Basemap.js';
 import { Basemap as BasemapParser } from '@tak-ps/node-cot';
 import { Basemap } from '../lib/schema.js';
 import { toEnum, Basemap_Format, Basemap_Style, Basemap_Type } from '../lib/enums.js';
+import { EsriBase, EsriProxyLayer } from '../lib/esri.js';
 import * as Default from '../lib/limits.js';
 
 const AugmentedBasemapResponse = Type.Composite([
@@ -39,17 +40,7 @@ export default async function router(schema: Schema, config: Config) {
 
             Both return as many BaseMap fields as possible to use in the creation of a new BaseMap
         `,
-        res: Type.Object({
-            name: Type.Optional(Type.String()),
-            type: Type.Optional(Type.Enum(Basemap_Type)),
-            url: Type.Optional(Type.String()),
-            bounds: Type.Optional(Type.Any()),
-            center: Type.Optional(Type.Any()),
-            minzoom: Type.Optional(Type.Integer()),
-            maxzoom: Type.Optional(Type.Integer()),
-            style: Type.Optional(Type.Enum(Basemap_Style)),
-            format: Type.Optional(Type.Enum(Basemap_Format))
-        })
+        res: OptionalTileJSON
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req);
@@ -110,25 +101,38 @@ export default async function router(schema: Schema, config: Config) {
                 req.pipe(bb);
             } else if (req.headers['content-type'] && req.headers['content-type'].startsWith('text/plain')) {
                 const url = new URL(String(await stream2buffer(req)));
-                const tjres = await fetch(url);
-                const tjbody = await tjres.json();
 
-                if (tjbody.name) imported.name = tjbody.name;
-                if (tjbody.maxzoom !== undefined) imported.maxzoom = tjbody.maxzoom;
-                if (tjbody.minzoom !== undefined) imported.minzoom = tjbody.minzoom;
-                if (tjbody.tiles.length) {
-                    imported.url = tjbody.tiles[0]
-                        .replace('{z}', '{$z}')
-                        .replace('{x}', '{$x}')
-                        .replace('{y}', '{$y}')
+                if (
+                    String(url).includes('/FeatureServer')
+                    || String(url).includes('/MapServer')
+                    || String(url).includes('/ImageServer')
+                ) {
+                    const base = new EsriBase(url);
+                    const layer = new EsriProxyLayer(base);
+                    const tilejson = await layer.tilejson();
+
+                    res.json(tilejson);
+                } else {
+                    const tjres = await fetch(url);
+                    const tjbody = await tjres.json();
+
+                    if (tjbody.name) imported.name = tjbody.name;
+                    if (tjbody.maxzoom !== undefined) imported.maxzoom = tjbody.maxzoom;
+                    if (tjbody.minzoom !== undefined) imported.minzoom = tjbody.minzoom;
+                    if (tjbody.tiles.length) {
+                        imported.url = tjbody.tiles[0]
+                            .replace('{z}', '{$z}')
+                            .replace('{x}', '{$x}')
+                            .replace('{y}', '{$y}')
+                    }
+
+                    if (imported.url) {
+                        const url = new URL(imported.url)
+                        imported.format = toEnum.fromString(Type.Enum(Basemap_Format), path.parse(url.pathname).ext.replace('.', ''));
+                    }
+
+                    res.json(imported);
                 }
-
-                if (imported.url) {
-                    const url = new URL(imported.url)
-                    imported.format = toEnum.fromString(Type.Enum(Basemap_Format), path.parse(url.pathname).ext.replace('.', ''));
-                }
-
-                res.json(imported);
             } else {
                 throw new Err(400, null, 'Unsupported Content-Type');
             }
