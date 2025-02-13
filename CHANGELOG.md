@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v6.10.0 - 2025-02-12
+
+- :rocket: Add TileJSON generation support for ESRI Feature/Image/Map Services
+
 ### v6.9.1 - 2025-02-12
 
 - :bug: Fix ArcGIS Geocoding API Suggest Endpoint
