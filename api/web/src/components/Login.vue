@@ -6,12 +6,12 @@
         <img
             class='position-absolute d-none d-md-inline'
             style='
+                height: 48px;
                 bottom: 24px;
                 left: 24px;
             '
-            src = "/CloudTAKLogo.svg"
+            src = "/CloudTAKLogoText.svg"
             alt="CloudTAK Logo"
-            width='128'
         />
 
         <div class='container container-normal py-4'>
