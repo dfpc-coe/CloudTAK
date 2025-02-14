@@ -8,11 +8,13 @@ import { useCOTStore } from './cots.ts';
 import { stdurl } from '../std.ts'
 import { useProfileStore } from './profile.ts';
 
-import ConnectionWorker from '../workers/connection.ts?worker';
+import ConnectionWorker from '../workers/connection.ts?worker&url';
 
 export const useConnectionStore = defineStore('connection', {
     state: function() {
-        const worker = new Worker(ConnectionWorker);
+        const worker = new Worker(ConnectionWorker, {
+            type: 'module'
+        });
 
         const com = Comlink.wrap(worker);
 
