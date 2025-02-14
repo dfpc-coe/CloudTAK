@@ -6,14 +6,14 @@ import { stdurl } from '../std.ts';
 import { expose } from 'comlink';
 import type { Feature } from '../types.ts';
 
-expose({ doCalculation, initialize });
-
 //import { useCOTStore } from './cots.ts';
 //import { useProfileStore } from './profile.ts';
 
+console.error('HERE');
+
 const destroyed: boolean = false;
 const open: boolean = false;
-const ws?: WebSocket;
+const ws: WebSocket | undefined = undefined;
 
 function destroy() {
     destroyed = true;
@@ -102,7 +102,13 @@ function sendCOT(data: object, type = 'cot') {
     ws.send(JSON.stringify({ type, data }));
 }
 
+function isDestroyed(): boolean {
+    return destroyed;
+}
+
 expose({
+    isDestroyed,
+    isOpen,
     destroy,
     connect,
     sendCOT,

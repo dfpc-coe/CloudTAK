@@ -665,7 +665,7 @@ onMounted(async () => {
     });
 
     if (!profileStore.profile) throw new Error('Profile did not load correctly');
-    connectionStore.connectSocket(profileStore.profile.username);
+    await connectionStore.connectSocket(profileStore.profile.username);
 });
 
 onBeforeUnmount(() => {
