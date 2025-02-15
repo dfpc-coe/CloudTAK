@@ -3,17 +3,26 @@
 */
 
 import { defineStore } from 'pinia'
-import * as Comlink from 'comlink';
-import { useCOTStore } from './cots.ts';
-import { stdurl } from '../std.ts'
 import { useProfileStore } from './profile.ts';
+import * as Comlink from 'comlink';
+import COT from './base/cot.ts';
 
 import ConnectionWorker from '../workers/connection.ts?worker&url';
 
 export const useConnectionStore = defineStore('connection', {
     state: function() {
+        const profileStore = useProfileStore();
+
         const worker = new Worker(ConnectionWorker, {
             type: 'module'
+        });
+
+        worker.addEventListener("cloudtak:notification", (event) => {
+            profileStore.pushNotification(event);
+        });
+
+        worker.addEventListener("cloudtak:map:diff", (event) => {
+            profileStore.pushNotification(event);
         });
 
         const com = Comlink.wrap(worker);
@@ -27,11 +36,14 @@ export const useConnectionStore = defineStore('connection', {
         destroy: async function(): Promise<void> {
             await this.com.destroy();
         },
-        connectSocket: async function(connection: string): Promise<void> {
-            await this.com.connect(connection);
+        loadArchive: async function(): Promise<void> {
+            await this.com.loadArchive();
         },
-        sendCOT: async function(data: object, type = 'cot'): Promise<void> {
-            await this.com.sendCOT(data, type);
+        connectSocket: async function(connection: string): Promise<void> {
+            await this.com.connect(connection, localStorage.token);
+        },
+        sendCOT: async function(cot: COT, type = 'cot'): Promise<void> {
+            await this.com.sendCOT(cot.as_feature({ clone: true }), type);
         }
     }
 })

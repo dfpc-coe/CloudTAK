@@ -610,7 +610,7 @@ onMounted(async () => {
 
     await Promise.all([
         profileStore.loadChannels(),
-        cotStore.loadArchive()
+        connectionStore.loadArchive()
     ]);
 
     warnChannels.value = profileStore.hasNoChannels;
@@ -730,7 +730,7 @@ function setLocation() {
                 coordinates: [e.lngLat.lng, e.lngLat.lat]
             }
         })
-        profileStore.CoT();
+        await profileStore.CoT();
         await updateCOT();
     });
 }
@@ -863,7 +863,7 @@ function editGeometry(featid: string) {
 
 async function updateCOT() {
     try {
-        const diff = cotStore.diff();
+        const diff = await connectionStore.diff();
 
         if (
             (diff.add && diff.add.length)
@@ -916,7 +916,7 @@ function mountMap(): Promise<void> {
             await mapStore.initOverlays();
             mapStore.initDraw();
 
-            cotStore.add(profileStore.CoT());
+            cotStore.add(await profileStore.CoT());
 
             mapStore.draw.on('deselect', async () => {
                 if (!mapStore.edit) return;

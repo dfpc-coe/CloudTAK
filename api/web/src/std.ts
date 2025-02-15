@@ -6,7 +6,7 @@ export function stdurl(url: string | URL): URL {
         url = new URL(url);
     } catch (err) {
         if (err instanceof TypeError) {
-            url = new URL((process.env.API_URL || window.location.origin) + url);
+            url = new URL((process.env.API_URL || self.location.origin) + url);
         } else {
             throw err;
         }
@@ -73,7 +73,7 @@ export async function std(
 
     const ContentType = res.headers.get('Content-Type');
     const ContentDisposition = res.headers.get('Content-Disposition');
-        
+
     if (opts.download) {
         let name = 'download';
         if (typeof opts.download === 'string') {
@@ -107,6 +107,11 @@ export function humanSeconds(seconds: number): string {
         if (date.getUTCMilliseconds() !== 0) str.push(date.getUTCMilliseconds() + " ms");
         return str.join(', ');
 }
+
+function isWebWorker() {
+    return typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope;
+}
+
 
 export function stdclick($router: Router, event: MouseEvent | KeyboardEvent, path: string) {
     if (event.ctrlKey === true) {
