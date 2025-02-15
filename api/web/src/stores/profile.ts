@@ -1,3 +1,4 @@
+import { toRaw } from 'vue';
 import { defineStore } from 'pinia'
 import { std, stdurl } from '../std.ts';
 import type { Feature, Group, Profile, Profile_Update } from '../types.ts';
@@ -55,11 +56,11 @@ export const useProfileStore = defineStore('profile', {
                 window.clearInterval(this.timerSelf);
             }
 
-            this.timerSelf = setInterval(() => {
+            this.timerSelf = setInterval(async () => {
                 if (this.live_loc) {
-                    connectionStore.sendCOT(this.CoT(this.live_loc))
+                    connectionStore.sendCOT(await this.CoT(this.live_loc))
                 } else if (this.profile && this.profile.tak_loc) {
-                    connectionStore.sendCOT(this.CoT());
+                    connectionStore.sendCOT(await this.CoT());
                 }
             }, this.profile ? this.profile.tak_loc_freq : 2000);
         },
@@ -109,7 +110,7 @@ export const useProfileStore = defineStore('profile', {
             // Need to differentiate between servers eventually
             return `ANDROID-CloudTAK-${this.profile.username}`;
         },
-        CoT: function(coords?: number[]): Feature {
+        CoT: async function(coords?: number[]): Promise<COT> {
             if (!this.profile) throw new Error('Profile must be loaded before CoT is called');
 
             const feat: Feature = {
@@ -128,7 +129,7 @@ export const useProfileStore = defineStore('profile', {
                     stale: new Date(new Date().getTime() + (1000 * 60)).toISOString(),
                     center: coords || (this.profile.tak_loc ? this.profile.tak_loc.coordinates : [ 0, 0 ]),
                     contact: {
-                        endpoint:"*:-1:stcp",
+                        endpoint: '*:-1:stcp',
                         callsign: this.profile.tak_callsign,
                     },
                     group: {
@@ -145,13 +146,11 @@ export const useProfileStore = defineStore('profile', {
                 },
                 geometry: coords
                     ? { type: 'Point', coordinates: coords }
-                    : (this.profile.tak_loc || { type: 'Point', coordinates: [0,0] })
+                    : (toRaw(this.profile.tak_loc) || { type: 'Point', coordinates: [0,0] })
             }
 
             const cotStore = useCOTStore();
-            cotStore.add(feat);
-
-            return feat;
+            return await cotStore.add(feat);
         },
     }
 })

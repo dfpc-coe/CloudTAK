@@ -130,109 +130,6 @@ export const useCOTStore = defineStore('cots', {
             return within;
         },
 
-        /**
-         * Load Archived CoTs
-         */
-        loadArchive: async function(): Promise<void> {
-            const archive = await std('/api/profile/feature') as APIList<Feature>;
-            for (const a of archive.items) {
-                this.add(a, undefined, {
-                    skipSave: true
-                });
-            }
-        },
-
-        /**
-         * Generate a GeoJSONDiff on existing COT Features
-         */
-        diff: function(): GeoJSONSourceDiff {
-            const now = +new Date();
-            const diff: GeoJSONSourceDiff = {};
-            diff.add = [];
-            diff.remove = [];
-            diff.update = [];
-
-            const profileStore = useProfileStore();
-            const display_stale = profileStore.profile ? profileStore.profile.display_stale : 'Immediate';
-
-            for (const cot of this.cots.values()) {
-                const render = cot.as_rendered();
-                const stale = new Date(cot.properties.stale).getTime();
-
-                if (this.hidden.has(String(cot.id))) {
-                    // TODO check if hidden already
-                    diff.remove.push(String(cot.id))
-                } else if (
-                    !['Never'].includes(display_stale)
-                    && !cot.properties.archived
-                    && (
-                        display_stale === 'Immediate'       && now > stale
-                        || display_stale === '10 Minutes'   && now > stale + 600000
-                        || display_stale === '30 Minutes'   && now > stale + 600000 * 3
-                        || display_stale === '1 Hour'       && now > stale + 600000 * 6
-                    )
-                ) {
-                    diff.remove.push(String(cot.id))
-                } else if (!cot.properties.archived) {
-                    if (now < stale && (cot.properties['icon-opacity'] !== 1 || cot.properties['marker-opacity'] !== 1)) {
-                        cot.properties['icon-opacity'] = 1;
-                        cot.properties['marker-opacity'] = 1;
-
-                        if (!['Point', 'Polygon', 'LineString'].includes(cot.geometry.type)) continue;
-
-                        diff.update.push({
-                            id: String(render.id),
-                            addOrUpdateProperties: Object.keys(render.properties).map((key) => {
-                                return { key, value: render.properties ? render.properties[key] : '' }
-                            }),
-                            newGeometry: render.geometry
-                        })
-                    } else if (now > stale && (cot.properties['icon-opacity'] !== 0.5 || cot.properties['marker-opacity'] !== 127)) {
-                        render.properties['icon-opacity'] = 0.5;
-                        render.properties['marker-opacity'] = 0.5;
-
-                        if (!['Point', 'Polygon', 'LineString'].includes(render.geometry.type)) continue;
-
-                        diff.update.push({
-                            id: String(render.id),
-                            addOrUpdateProperties: Object.keys(render.properties).map((key) => {
-                                return { key, value: cot.properties ? render.properties[key] : '' }
-                            }),
-                            newGeometry: render.geometry
-                        })
-                    }
-                }
-            }
-
-            for (const cot of this.pending.values()) {
-                const render = cot.as_rendered();
-
-                if (this.cots.has(cot.id)) {
-                    diff.update.push({
-                        id: String(render.id),
-                        addOrUpdateProperties: Object.keys(render.properties).map((key) => {
-                            return { key, value: render.properties[key] }
-                        }),
-                        newGeometry: render.geometry
-                    })
-                } else {
-                    diff.add.push(render);
-                }
-
-                this.cots.set(cot.id, cot);
-            }
-
-            this.pending.clear();
-
-            for (const id of this.pendingDelete) {
-                diff.remove.push(id);
-                this.cots.delete(id);
-            }
-
-            this.pendingDelete.clear();
-
-            return diff;
-        },
 
         paths(store?: Map<string, COT>): Array<NestedArray> {
             if (!store) store = this.cots;
@@ -412,43 +309,46 @@ export const useCOTStore = defineStore('cots', {
             opts?: {
                 skipSave?: boolean;
             }
-        ) {
+        ): Promise<COT> {
             if (!opts) opts = {};
             mission_guid = mission_guid || this.subscriptionPending.get(feat.id);
 
             if (mission_guid)  {
                 const sub = this.subscriptions.get(mission_guid);
                 if (!sub) {
-                    console.error(`Cannot add ${feat.id} to mission ${mission_guid} as it is not loaded`)
-                    return;
+                    throw new Error(`Cannot add ${feat.id} to mission ${mission_guid} as it is not loaded`)
                 }
 
                 const cot = new COT(feat, {
                     mode: OriginMode.MISSION,
                     mode_id: mission_guid
                 });
+
                 sub.cots.set(String(cot.id), cot);
 
                 const mapStore = useMapStore();
                 await mapStore.loadMission(mission_guid);
+
+                return cot;
             } else {
-                let is_mission_cot = false;
+                let is_mission_cot: COT | undefined;
                 for (const value of this.subscriptions.values()) {
                     const mission_cot = value.cots.get(feat.id);
                     if (mission_cot) {
                         await mission_cot.update(feat);
-                        is_mission_cot = true;
+                        is_mission_cot = mission_cot;
                     }
                 }
 
-                if (is_mission_cot) return;
+                if (is_mission_cot) return is_mission_cot;
 
                 const exists = this.cots.get(feat.id);
 
                 if (exists) {
                     exists.update(feat, { skipSave: opts.skipSave })
+                    return exists;
                 } else {
-                    new COT(feat);
+                    return new COT(feat);
                 }
             }
         }

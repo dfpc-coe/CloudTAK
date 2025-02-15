@@ -10,9 +10,9 @@
                 bottom: 24px;
                 left: 24px;
             '
-            src = "/CloudTAKLogoText.svg"
-            alt="CloudTAK Logo"
-        />
+            src='/CloudTAKLogoText.svg'
+            alt='CloudTAK Logo'
+        >
 
         <div class='container container-normal py-4'>
             <div class='row align-items-center g-4'>
