@@ -201,7 +201,7 @@ import MenuTemplate from '../util/MenuTemplate.vue';
 import VideoLeaseModal from './Videos/VideoLeaseModal.vue';
 import Feature from '../util/Feature.vue';
 import { std } from '../../../std.ts';
-import COT from '../../../../src/stores/base/cot.ts'
+import COT from '../../../base/cot.ts'
 import type { VideoLease, VideoLeaseList, VideoConnectionList, VideoConnection } from '../../../types.ts';
 import { useCOTStore } from '../../../stores/cots.ts';
 import { useVideoStore } from '../../../stores/videos.ts';

@@ -110,7 +110,7 @@ import {
     IconShare2
 } from '@tabler/icons-vue';
 import type { Feature } from '../../../types.ts';
-import COT from '../../..//stores/base/cot.ts'
+import COT from '../../../base/cot.ts'
 import { useCOTStore } from '../../../stores/cots.ts';
 import { useMapWorkerStore } from '../../../stores/worker.ts';
 import Subscription from '../../../stores/base/mission.ts'
@@ -178,7 +178,7 @@ async function share() {
             });
         }
 
-        mapWorkerStore.sendCOT(feat);
+        mapWorkerStore.worker.sendCOT(feat);
     }
 
     emit('done');

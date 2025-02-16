@@ -3,8 +3,9 @@
 */
 
 import { std, stdurl } from '../std.ts';
-import COT from '../stores/base/cot.ts';
+import COT from '../base/cot.ts';
 import { expose } from 'comlink';
+import type { GeoJSONSourceDiff } from 'maplibre-gl';
 import type { Feature } from '../types.ts';
 
 //import { useCOTStore } from './cots.ts';
@@ -291,6 +292,42 @@ async function add(
     }
 }
 
+/**
+ * Return a CoT by ID if it exists
+ */
+function get(id: string, opts: {
+    mission?: boolean,
+} = {
+    mission: false
+}): COT | undefined {
+    if (!opts) opts = {};
+
+    let cot = cots.get(id);
+
+    if (cot) {
+        return cot.as_proxy();
+    } else if (opts.mission) {
+        for (const sub of subscriptions.keys()) {
+            const store = subscriptions.get(sub);
+            if (!store) continue;
+            cot = store.cots.get(id);
+
+            if (cot) {
+                return cot.as_proxy();
+            }
+        }
+    }
+
+    return;
+}
+
+/**
+ * Returns if the CoT is present in the store given the ID
+ */
+function has(id: string): boolean {
+    return cots.has(id);
+}
+
 function destroy() {
     isDestroyed = true;
 
@@ -307,8 +344,12 @@ function sendCOT(data: object, type = 'cot') {
 
 expose({
     add,
+    has,
+    get,
     diff,
     isOpen,
+    remove,
+    clear,
     isDestroyed,
     loadArchive,
     destroy,

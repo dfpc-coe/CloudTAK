@@ -52,14 +52,14 @@ import {
     TablerInput,
     TablerIconButton
 } from '@tak-ps/vue-tabler';
-import { std } from '../../../../src/std.ts';
-import COT from '../../../../src/stores/base/cot.ts';
-import { useCOTStore } from '../../../../src/stores/cots.ts';
+import { std } from '../../../std.ts';
+import COT from '../../../base/cot.ts';
+import { useCOTStore } from '../../../stores/cots.ts';
 import {
     IconX,
 } from '@tabler/icons-vue';
 import { useRouter } from 'vue-router';
-import type { Feature, Content } from '../../../../src/types.ts';
+import type { Feature, Content } from '../../../types.ts';
 
 const cotStore = useCOTStore();
 const router = useRouter();

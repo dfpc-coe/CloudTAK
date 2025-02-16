@@ -506,7 +506,7 @@ const mapWorkerStore = useMapWorkerStore();
 const profileStore = useProfileStore();
 
 const profile = computed(() => profileStore.profile);
-const open = computed(() => mapWorkerStore.isOpen);
+const open = computed(() => mapWorkerStore.worker.isOpen);
 
 defineProps({
     compact: Boolean,

@@ -1,4 +1,4 @@
-import COT, { OriginMode } from './cot.ts'
+import COT, { OriginMode } from '../../base/cot.ts'
 import { std, stdurl } from '../../std.ts';
 import { useCOTStore } from '../cots.ts';
 import { bbox } from '@turf/bbox';

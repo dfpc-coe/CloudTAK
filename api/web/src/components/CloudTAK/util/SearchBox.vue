@@ -37,7 +37,7 @@ import Feature from './Feature.vue';
 import { std, stdurl } from '../../../std.ts'
 import { useMapStore } from '../../../stores/map.ts';
 import { useCOTStore } from '../../../stores/cots.ts';
-import COT from '../../../stores/base/cot.ts';
+import COT from '../../../base/cot.ts';
 import {
     TablerInput,
     TablerLoading

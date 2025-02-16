@@ -73,7 +73,7 @@ export default defineComponent({
     },
     methods: {
         submitPoint: async function() {
-            await mapWorkerStore.add({
+            await mapWorkerStore.worker.add({
                 type: 'Feature',
                 properties: {
                     type: this.type,

@@ -125,7 +125,7 @@
 </template>
 
 <script>
-import { OriginMode } from '../../../../src/stores/base/cot.ts';
+import { OriginMode } from '../../../base/cot.ts';
 import RadialMenu from './RadialMenu.js';
 import './RadialMenu.css';
 import { useMapStore } from '../../../../src/stores/map.ts';

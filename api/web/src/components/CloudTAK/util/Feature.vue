@@ -179,7 +179,7 @@ watch(canvas, async () => {
 
 async function deleteCOT() {
     if (props.deleteAction === 'delete') {
-        await mapWorkerStore.delete(props.feature.id);
+        await mapWorkerStore.worker.delete(props.feature.id);
     } else {
         emit('delete');
     }
