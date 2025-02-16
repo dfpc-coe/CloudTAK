@@ -300,57 +300,5 @@ export const useCOTStore = defineStore('cots', {
             }
         },
 
-        /**
-         * Add a CoT GeoJSON to the store and modify props to meet MapLibre style requirements
-         */
-        add: async function(
-            feat: Feature,
-            mission_guid?: string,
-            opts?: {
-                skipSave?: boolean;
-            }
-        ): Promise<COT> {
-            if (!opts) opts = {};
-            mission_guid = mission_guid || this.subscriptionPending.get(feat.id);
-
-            if (mission_guid)  {
-                const sub = this.subscriptions.get(mission_guid);
-                if (!sub) {
-                    throw new Error(`Cannot add ${feat.id} to mission ${mission_guid} as it is not loaded`)
-                }
-
-                const cot = new COT(feat, {
-                    mode: OriginMode.MISSION,
-                    mode_id: mission_guid
-                });
-
-                sub.cots.set(String(cot.id), cot);
-
-                const mapStore = useMapStore();
-                await mapStore.loadMission(mission_guid);
-
-                return cot;
-            } else {
-                let is_mission_cot: COT | undefined;
-                for (const value of this.subscriptions.values()) {
-                    const mission_cot = value.cots.get(feat.id);
-                    if (mission_cot) {
-                        await mission_cot.update(feat);
-                        is_mission_cot = mission_cot;
-                    }
-                }
-
-                if (is_mission_cot) return is_mission_cot;
-
-                const exists = this.cots.get(feat.id);
-
-                if (exists) {
-                    exists.update(feat, { skipSave: opts.skipSave })
-                    return exists;
-                } else {
-                    return new COT(feat);
-                }
-            }
-        }
     }
 })

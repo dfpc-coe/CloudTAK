@@ -31,6 +31,7 @@ export function stdurl(url: string | URL): URL {
 export async function std(
     url: string | URL,
     opts: {
+        token?: string;
         download?: boolean | string;
         headers?: Record<string, string>;
         body?: unknown;
@@ -47,8 +48,10 @@ export async function std(
         opts.headers['Content-Type'] = 'application/json';
     }
 
-    if (localStorage.token && !opts.headers.Authorization) {
+    if (!isWebWorker() && localStorage.token && !opts.headers.Authorization) {
         opts.headers['Authorization'] = 'Bearer ' + localStorage.token;
+    } else if (opts.token) {
+        opts.headers['Authorization'] = 'Bearer ' + opts.token
     }
 
     const res = await fetch(url, opts as RequestInit);
@@ -67,7 +70,9 @@ export async function std(
         err.body = bdy;
         throw err;
     } else if (res.status === 401) {
-        delete localStorage.token;
+        if (!isWebWorker()) {
+            delete localStorage.token;
+        }
         throw new Error('401');
     }
 

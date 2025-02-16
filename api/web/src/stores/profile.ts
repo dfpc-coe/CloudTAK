@@ -3,7 +3,6 @@ import { defineStore } from 'pinia'
 import { std, stdurl } from '../std.ts';
 import type { Feature, Group, Profile, Profile_Update } from '../types.ts';
 import { useConnectionStore } from './connection.ts';
-import { useCOTStore } from './cots.ts';
 
 export type TAKNotification = {
     type: string;
@@ -127,7 +126,7 @@ export const useProfileStore = defineStore('profile', {
                     time: new Date().toISOString(),
                     start: new Date().toISOString(),
                     stale: new Date(new Date().getTime() + (1000 * 60)).toISOString(),
-                    center: coords || (this.profile.tak_loc ? this.profile.tak_loc.coordinates : [ 0, 0 ]),
+                    center: coords || (this.profile.tak_loc ? toRaw(this.profile.tak_loc.coordinates) : [ 0, 0 ]),
                     contact: {
                         endpoint: '*:-1:stcp',
                         callsign: this.profile.tak_callsign,
@@ -149,8 +148,8 @@ export const useProfileStore = defineStore('profile', {
                     : (toRaw(this.profile.tak_loc) || { type: 'Point', coordinates: [0,0] })
             }
 
-            const cotStore = useCOTStore();
-            return await cotStore.add(feat);
+            const connectionStore = useConnectionStore();
+            return await connectionStore.add(feat);
         },
     }
 })

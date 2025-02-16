@@ -1,7 +1,6 @@
 import { std } from '../../std.ts';
 import { bbox } from '@turf/bbox'
 import type { LngLatBoundsLike } from 'maplibre-gl';
-import { useCOTStore } from '../cots.ts'
 import { useProfileStore } from '../profile.ts'
 import { useMapStore } from '../map.ts';
 import pointOnFeature from '@turf/point-on-feature';
@@ -47,14 +46,19 @@ export default class COT {
     _properties: Feature["properties"];
     _geometry: Feature["geometry"];
 
-    _store: ReturnType<typeof useCOTStore>;
+    _pending: Map<string, COT>;
     _username?: string;
 
     origin: Origin
 
-    constructor(feat: Feature, origin?: Origin, opts?: {
-        skipSave?: boolean;
-    }) {
+    constructor(
+        pending: Map<string, COT>,
+        feat: Feature,
+        origin?: Origin,
+        opts?: {
+            skipSave?: boolean;
+        }
+    ) {
         feat.properties = COT.style(feat.geometry.type, feat.properties);
 
         this.id = feat.id || crypto.randomUUID();
@@ -62,7 +66,7 @@ export default class COT {
         this._properties = feat["properties"] || {};
         this._geometry = feat["geometry"];
 
-        this._store = useCOTStore();
+        this._pending = pending;
         this.origin = origin || { mode: OriginMode.CONNECTION };
 
         if (!this._properties.archived) {
@@ -74,7 +78,7 @@ export default class COT {
         }
 
         if (this.origin.mode === OriginMode.CONNECTION) {
-            this._store.pending.set(this.id, this);
+            this._pending.set(this.id, this);
         }
 
         if (!this.is_self && (!opts || (opts && opts.skipSave === false))) {
@@ -133,7 +137,7 @@ export default class COT {
 
         // TODO only update if Geometry or Rendered Prop changes
         if (this.origin.mode === OriginMode.CONNECTION) {
-            this._store.pending.set(this.id, this);
+            this._pending.set(this.id, this);
         }
 
         if (this.is_self) {
@@ -175,8 +179,10 @@ export default class COT {
     }
 
     get is_self(): boolean {
-        const profileStore = useProfileStore();
-        return this.id === profileStore.uid();
+        // TODO Restore
+        //const profileStore = useProfileStore();
+        //return this.id === profileStore.uid();
+        return false
     }
 
     get is_archivable(): boolean {

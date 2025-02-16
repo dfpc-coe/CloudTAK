@@ -792,7 +792,7 @@ async function handleRadial(event: string): Promise<void> {
         closeRadial()
     } else if (event === 'context:new') {
         // @ts-expect-error MapLibreFeature vs Feature
-        await cotStore.add(mapStore.radial.cot);
+        await connectionStore.add(mapStore.radial.cot);
         updateCOT();
         closeRadial()
     } else if (event === 'context:info') {
@@ -916,7 +916,7 @@ function mountMap(): Promise<void> {
             await mapStore.initOverlays();
             mapStore.initDraw();
 
-            cotStore.add(await profileStore.CoT());
+            await connectionStore.add(await profileStore.CoT());
 
             mapStore.draw.on('deselect', async () => {
                 if (!mapStore.edit) return;
@@ -934,7 +934,7 @@ function mountMap(): Promise<void> {
                 mapStore.draw.stop();
 
                 cotStore.cots.delete(feat.id);
-                cotStore.add(feat);
+                await connectionStore.add(feat);
                 await updateCOT();
             })
 
@@ -997,7 +997,7 @@ function mountMap(): Promise<void> {
                     mapStore.draw.setMode('static');
                     mapStore.drawOptions.mode = 'static';
                     mapStore.draw.stop();
-                    await cotStore.add(feat);
+                    await connectionStore.add(feat);
                     await updateCOT();
                 }
             });
