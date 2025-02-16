@@ -109,7 +109,7 @@ export const useProfileStore = defineStore('profile', {
             // Need to differentiate between servers eventually
             return `ANDROID-CloudTAK-${this.profile.username}`;
         },
-        CoT: async function(coords?: number[]): Promise<COT> {
+        CoT: async function(coords?: number[]): Promise<void> {
             if (!this.profile) throw new Error('Profile must be loaded before CoT is called');
 
             const feat: Feature = {
@@ -149,7 +149,7 @@ export const useProfileStore = defineStore('profile', {
             }
 
             const mapWorkerStore = useMapWorkerStore();
-            return await mapWorkerStore.worker.add(feat);
+            await mapWorkerStore.worker.add(feat);
         },
     }
 })
