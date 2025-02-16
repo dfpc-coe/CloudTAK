@@ -45,8 +45,8 @@ import {
     TablerInput,
 } from '@tak-ps/vue-tabler';
 import { useMapStore } from '../../stores/map.ts';
-import { useConnectionStore } from '../../stores/connection.ts';
-const connectionStore = useConnectionStore();
+import { useMapWorkerStore } from '../../stores/worker.ts';
+const mapWorkerStore = useMapWorkerStore();
 const mapStore = useMapStore();
 
 export default defineComponent({
@@ -73,7 +73,7 @@ export default defineComponent({
     },
     methods: {
         submitPoint: async function() {
-            await connectionStore.add({
+            await mapWorkerStore.add({
                 type: 'Feature',
                 properties: {
                     type: this.type,

@@ -114,7 +114,7 @@
 
 <script setup lang='ts'>
 import { ref, computed, onMounted } from 'vue';
-import { std, stdurl } from '../../../../src/std.ts';
+import { std, stdurl } from '../../../std.ts';
 import {
     TablerNone,
     TablerInput,
@@ -127,14 +127,14 @@ import {
     IconBroadcast,
     IconShare2
 } from '@tabler/icons-vue';
-import COT from '../../../../src/stores/base/cot.ts'
-import type { Contact, ContactList, Feature } from '../../../../src/types.ts'
+import COT from '../../../stores/base/cot.ts'
+import type { Contact, ContactList, Feature } from '../../../types.ts'
 import COTContact from '../util/Contact.vue';
-import { useConnectionStore } from '../../../../src/stores/connection.ts';
-import { useCOTStore } from '../../../../src/stores/cots.ts';
+import { useMapWorkerStore } from '../../../stores/worker.ts';
+import { useCOTStore } from '../../../stores/cots.ts';
 
 const cotStore = useCOTStore();
-const connectionStore = useConnectionStore();
+const mapWorkerStore = useMapWorkerStore();
 
 const props = defineProps<{
     feats?: Feature[] | COT[],
@@ -195,7 +195,7 @@ async function share() {
         for (const contact of selected.value) {
             const feat = JSON.parse(JSON.stringify(feats[0]));
             feat.properties.dest = [{ uid: contact.uid }];
-            connectionStore.sendCOT(feat);
+            mapWorkerStore.sendCOT(feat);
         }
     } else {
         await std('/api/marti/package', {
@@ -223,7 +223,7 @@ async function broadcast() {
         && !props.basemaps
         && (!feats[0].properties.attachments || feats[0].properties.attachments.length === 0)
     ) {
-        connectionStore.sendCOT(JSON.parse(JSON.stringify(feats[0])));
+        mapWorkerStore.sendCOT(JSON.parse(JSON.stringify(feats[0])));
         emit('done');
     } else {
         await std('/api/marti/package', {

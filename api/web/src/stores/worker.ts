@@ -7,13 +7,13 @@ import { useProfileStore } from './profile.ts';
 import * as Comlink from 'comlink';
 import COT from './base/cot.ts';
 
-import ConnectionWorker from '../workers/connection-worker.ts?worker&url';
+import AtlasWorker from '../workers/atlas.ts?worker&url';
 
-export const useConnectionStore = defineStore('connection', {
+export const useMapWorkerStore = defineStore('MapWorkerStore', {
     state: function() {
         const profileStore = useProfileStore();
 
-        const worker = new Worker(ConnectionWorker, {
+        const worker = new Worker(AtlasWorker, {
             type: 'module'
         });
 

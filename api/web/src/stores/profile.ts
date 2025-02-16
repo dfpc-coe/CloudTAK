@@ -2,7 +2,7 @@ import { toRaw } from 'vue';
 import { defineStore } from 'pinia'
 import { std, stdurl } from '../std.ts';
 import type { Feature, Group, Profile, Profile_Update } from '../types.ts';
-import { useConnectionStore } from './connection.ts';
+import { useMapWorkerStore } from './worker.ts';
 
 export type TAKNotification = {
     type: string;
@@ -49,7 +49,7 @@ export const useProfileStore = defineStore('profile', {
             }
         },
         setupTimer() {
-            const connectionStore = useConnectionStore();
+            const mapWorkerStore = useMapWorkerStore();
 
             if (this.timerSelf) {
                 window.clearInterval(this.timerSelf);
@@ -57,9 +57,9 @@ export const useProfileStore = defineStore('profile', {
 
             this.timerSelf = setInterval(async () => {
                 if (this.live_loc) {
-                    connectionStore.sendCOT(await this.CoT(this.live_loc))
+                    mapWorkerStore.sendCOT(await this.CoT(this.live_loc))
                 } else if (this.profile && this.profile.tak_loc) {
-                    connectionStore.sendCOT(await this.CoT());
+                    mapWorkerStore.sendCOT(await this.CoT());
                 }
             }, this.profile ? this.profile.tak_loc_freq : 2000);
         },
@@ -148,8 +148,8 @@ export const useProfileStore = defineStore('profile', {
                     : (toRaw(this.profile.tak_loc) || { type: 'Point', coordinates: [0,0] })
             }
 
-            const connectionStore = useConnectionStore();
-            return await connectionStore.add(feat);
+            const mapWorkerStore = useMapWorkerStore();
+            return await mapWorkerStore.add(feat);
         },
     }
 })

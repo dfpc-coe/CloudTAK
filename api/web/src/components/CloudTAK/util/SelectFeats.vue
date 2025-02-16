@@ -137,8 +137,8 @@
 <script setup lang='ts'>
 import { ref } from 'vue';
 import DisplayFeature from './Feature.vue';
-import COT from '../../../../src/stores/base/cot.ts';
-import { useCOTStore } from '../../../../src/stores/cots.ts';
+import COT from '../../../stores/base/cot.ts';
+import { useMapWorkerStore } from '../../../stores/worker.ts';
 import {
     IconPackageExport,
     IconDotsVertical,
@@ -157,7 +157,7 @@ import Share from './Share.vue';
 import ShareToMission from './ShareToMission.vue';
 import ShareToPackage from './ShareToPackage.vue';
 
-const cotStore = useCOTStore();
+const mapWorkerStore = useMapWorkerStore();
 
 const props = defineProps<{
     selected: Map<string, COT>
@@ -177,7 +177,7 @@ async function deleteFeatures() {
     loading.value = true;
 
     for (const id of props.selected.keys()) {
-        await cotStore.delete(id);
+        await mapWorkerStore.delete(id);
     }
 
     props.selected.clear()
