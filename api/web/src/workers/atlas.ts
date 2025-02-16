@@ -210,7 +210,7 @@ async function loadArchive(token): Promise<void> {
 /**
  * Remove a given CoT from the store
  */
-async function remove(id: string, skipNetwork = false) {
+async function remove(id: string, skipNetwork = false): Promise<void> {
     pendingDelete.add(id);
 
     const cot = cots.get(id);
@@ -248,7 +248,7 @@ async function add(
     opts?: {
         skipSave?: boolean;
     }
-): Promise<COT> {
+): Promise<void> {
     if (!opts) opts = {};
     mission_guid = mission_guid || subscriptionPending.get(feat.id);
 
@@ -267,8 +267,6 @@ async function add(
 
         const mapStore = useMapStore();
         await mapStore.loadMission(mission_guid);
-
-        return cot;
     } else {
         let is_mission_cot: COT | undefined;
         for (const value of subscriptions.values()) {
@@ -279,15 +277,14 @@ async function add(
             }
         }
 
-        if (is_mission_cot) return is_mission_cot;
+        if (is_mission_cot) return;
 
         const exists = cots.get(feat.id);
 
         if (exists) {
             exists.update(feat, { skipSave: opts.skipSave })
-            return exists;
         } else {
-            return new COT(pending, feat);
+            new COT(pending, feat);
         }
     }
 }
@@ -299,13 +296,13 @@ function get(id: string, opts: {
     mission?: boolean,
 } = {
     mission: false
-}): COT | undefined {
+}): Feature | undefined {
     if (!opts) opts = {};
 
     let cot = cots.get(id);
 
     if (cot) {
-        return cot.as_proxy();
+        return cot.as_feature();
     } else if (opts.mission) {
         for (const sub of subscriptions.keys()) {
             const store = subscriptions.get(sub);
@@ -313,7 +310,7 @@ function get(id: string, opts: {
             cot = store.cots.get(id);
 
             if (cot) {
-                return cot.as_proxy();
+                return cot.as_feature();
             }
         }
     }
