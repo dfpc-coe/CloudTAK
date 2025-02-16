@@ -49,9 +49,9 @@ import {
     TablerButton,
     TablerLoading
 } from '@tak-ps/vue-tabler';
-import { useCOTStore } from '../../../../src/stores/cots.ts';
+import { useConnectionStore } from '../../../../src/stores/cots.ts';
 
-const cotStore = useCOTStore();
+const connectionStore = useConnectionStore();
 
 const props = defineProps<{
     uid: string
@@ -73,7 +73,7 @@ async function loadBreadcrumb() {
         const crumb = await std(url) as FeatureCollection;
 
         for (const feat of crumb.features) {
-            cotStore.add(feat)
+            connectionStore.add(feat)
         }
 
         loading.value = false;

@@ -7,7 +7,7 @@ import { useProfileStore } from './profile.ts';
 import * as Comlink from 'comlink';
 import COT from './base/cot.ts';
 
-import ConnectionWorker from '../workers/connection.ts?worker&url';
+import ConnectionWorker from '../workers/connection-worker.ts?worker&url';
 
 export const useConnectionStore = defineStore('connection', {
     state: function() {
@@ -21,10 +21,6 @@ export const useConnectionStore = defineStore('connection', {
             profileStore.pushNotification(event);
         });
 
-        worker.addEventListener("cloudtak:map:diff", (event) => {
-            profileStore.pushNotification(event);
-        });
-
         const com = Comlink.wrap(worker);
 
         return { com };
@@ -33,16 +29,25 @@ export const useConnectionStore = defineStore('connection', {
         isOpen: async function(): Promise<boolean> {
             return await this.com.isOpen()
         },
+        add: async function(feat): Promise<void> {
+            // TODO this shouldn't happen
+            if (!feat) return;
+            await this.com.add(feat);
+        },
         destroy: async function(): Promise<void> {
             await this.com.destroy();
         },
+        diff: async function(): Promise<unknown> {
+            return this.com.diff();
+        },
         loadArchive: async function(): Promise<void> {
-            await this.com.loadArchive();
+            await this.com.loadArchive(localStorage.token);
         },
         connectSocket: async function(connection: string): Promise<void> {
             await this.com.connect(connection, localStorage.token);
         },
         sendCOT: async function(cot: COT, type = 'cot'): Promise<void> {
+            if (!cot) return;
             await this.com.sendCOT(cot.as_feature({ clone: true }), type);
         }
     }
