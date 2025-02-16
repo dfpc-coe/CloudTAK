@@ -644,9 +644,9 @@
 <script setup lang='ts'>
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
-import type COT from '../../stores/base/cot.ts';
+import type COT from '../../base/cot.ts';
 import type { COTType } from '../../types.ts';
-import { OriginMode } from '../../stores/base/cot.ts'
+import { OriginMode } from '../../base/cot.ts'
 import Mission from '../../stores/base/mission.ts'
 import {
     TablerNone,
@@ -818,7 +818,7 @@ function addAttachment(hash: string) {
 
 async function deleteCOT() {
     if (!cot.value) return;
-    await mapWorkerStore.remove(cot.value.id);
+    await mapWorkerStore.worker.remove(cot.value.id);
     router.push('/');
 }
 </script>

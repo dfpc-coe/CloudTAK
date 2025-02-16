@@ -137,7 +137,7 @@
 <script setup lang='ts'>
 import { ref } from 'vue';
 import DisplayFeature from './Feature.vue';
-import COT from '../../../stores/base/cot.ts';
+import COT from '../../../base/cot.ts';
 import { useMapWorkerStore } from '../../../stores/worker.ts';
 import {
     IconPackageExport,
@@ -177,7 +177,7 @@ async function deleteFeatures() {
     loading.value = true;
 
     for (const id of props.selected.keys()) {
-        await mapWorkerStore.delete(id);
+        await mapWorkerStore.worker.delete(id);
     }
 
     props.selected.clear()

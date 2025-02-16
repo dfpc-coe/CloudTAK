@@ -331,7 +331,7 @@ export default {
             }
 
             for (const feat of cotStore.markerFeatures(cotStore.cots, marker)) {
-                await mapWorkerStore.delete(feat.id);
+                await mapWorkerStore.worker.delete(feat.id);
             }
 
             this.loading = false;
@@ -344,7 +344,7 @@ export default {
             }
 
             for (const feat of cotStore.pathFeatures(cotStore.cots, path)) {
-                await mapWorkerStore.delete(feat.id);
+                await mapWorkerStore.worker.delete(feat.id);
             }
 
             if (path) {

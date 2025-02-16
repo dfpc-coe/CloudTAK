@@ -1,10 +1,10 @@
-import { std } from '../../std.ts';
+import { std } from '../std.ts';
 import { bbox } from '@turf/bbox'
 import type { LngLatBoundsLike } from 'maplibre-gl';
-import { useProfileStore } from '../profile.ts'
-import { useMapStore } from '../map.ts';
+import { useProfileStore } from '../stores/profile.ts'
+import { useMapStore } from '../stores/map.ts';
 import pointOnFeature from '@turf/point-on-feature';
-import type { Feature, Subscription } from './../../types.ts'
+import type { Feature, Subscription } from '../types.ts'
 import type {
     BBox as GeoJSONBBox,
     Feature as GeoJSONFeature,

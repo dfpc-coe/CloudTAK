@@ -57,9 +57,9 @@ export const useProfileStore = defineStore('profile', {
 
             this.timerSelf = setInterval(async () => {
                 if (this.live_loc) {
-                    mapWorkerStore.sendCOT(await this.CoT(this.live_loc))
+                    mapWorkerStore.worker.sendCOT(await this.CoT(this.live_loc))
                 } else if (this.profile && this.profile.tak_loc) {
-                    mapWorkerStore.sendCOT(await this.CoT());
+                    mapWorkerStore.worker.sendCOT(await this.CoT());
                 }
             }, this.profile ? this.profile.tak_loc_freq : 2000);
         },
@@ -149,7 +149,7 @@ export const useProfileStore = defineStore('profile', {
             }
 
             const mapWorkerStore = useMapWorkerStore();
-            return await mapWorkerStore.add(feat);
+            return await mapWorkerStore.worker.add(feat);
         },
     }
 })

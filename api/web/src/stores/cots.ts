@@ -2,15 +2,13 @@
 * CotStore - Store & perform updates on all underlying CoT Features
 */
 
-import COT from './base/cot.ts'
+import COT from '../base/cot.ts'
 import { defineStore } from 'pinia'
-import type { GeoJSONSourceDiff } from 'maplibre-gl';
 import { std, stdurl } from '../std.ts';
 import Subscription from './base/mission.ts';
-import type { Feature, APIList } from '../types.ts';
+import type { Feature } from '../types.ts';
 import type { Polygon } from 'geojson';
 import { booleanWithin } from '@turf/boolean-within';
-import { useProfileStore } from './profile.ts';
 import { useMapStore } from './map.ts';
 
 type NestedArray = {
@@ -230,42 +228,6 @@ export const useCOTStore = defineStore('cots', {
                     this.delete(key, true);
                 }
             }
-        },
-
-        /**
-         * Return a CoT by ID if it exists
-         */
-        get: function(id: string, opts: {
-            mission?: boolean,
-        } = {
-            mission: false
-        }): COT | undefined {
-            if (!opts) opts = {};
-
-            let cot = this.cots.get(id);
-
-            if (cot) {
-                return cot.as_proxy();
-            } else if (opts.mission) {
-                for (const sub of this.subscriptions.keys()) {
-                    const store = this.subscriptions.get(sub);
-                    if (!store) continue;
-                    cot = store.cots.get(id);
-
-                    if (cot) {
-                        return cot.as_proxy();
-                    }
-                }
-            }
-
-            return;
-        },
-
-        /**
-         * Returns if the CoT is present in the store given the ID
-         */
-        has: function(id: string) {
-            return this.cots.has(id);
         },
     }
 })

@@ -9,7 +9,7 @@
 
 import { defineStore } from 'pinia'
 import type { Position } from "geojson";
-import COT from './base/cot.ts';
+import COT from '../base/cot.ts';
 import Subscription from './base/mission.ts';
 import Overlay from './base/overlay.ts';
 import { std, stdurl } from '../std.js';
