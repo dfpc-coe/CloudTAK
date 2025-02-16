@@ -2,7 +2,7 @@
 * CotStore - Store & perform updates on all underlying CoT Features
 */
 
-import COT, { OriginMode } from './base/cot.ts'
+import COT from './base/cot.ts'
 import { defineStore } from 'pinia'
 import type { GeoJSONSourceDiff } from 'maplibre-gl';
 import { std, stdurl } from '../std.ts';
@@ -267,38 +267,5 @@ export const useCOTStore = defineStore('cots', {
         has: function(id: string) {
             return this.cots.has(id);
         },
-
-        /**
-         * Remove a given CoT from the store
-         */
-        delete: async function(id: string, skipNetwork = false) {
-            this.pendingDelete.add(id);
-
-            const cot = this.cots.get(id);
-            if (!cot) return;
-
-            this.cots.delete(id);
-
-            if (!skipNetwork && cot.properties.archived) {
-                await std(`/api/profile/feature/${id}`, {
-                    method: 'DELETE'
-                });
-            }
-        },
-
-        /**
-         * Empty the store
-         */
-        clear: function(opts = {
-            ignoreArchived: false,
-            skipNetwork: false
-        }): void {
-            for (const feat of this.cots.values()) {
-                if (opts.ignoreArchived && feat.properties.archived) continue;
-
-                this.delete(feat.id, opts.skipNetwork);
-            }
-        },
-
     }
 })

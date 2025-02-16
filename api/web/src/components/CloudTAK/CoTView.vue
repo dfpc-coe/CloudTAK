@@ -644,10 +644,10 @@
 <script setup lang='ts'>
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
-import type COT from '../../../src/stores/base/cot.ts';
-import type { COTType } from '../../../src/types.ts';
-import { OriginMode } from '../../../src/stores/base/cot.ts'
-import Mission from '../../../src/stores/base/mission.ts'
+import type COT from '../../stores/base/cot.ts';
+import type { COTType } from '../../types.ts';
+import { OriginMode } from '../../stores/base/cot.ts'
+import Mission from '../../stores/base/mission.ts'
 import {
     TablerNone,
     TablerInput,
@@ -690,12 +690,15 @@ import {
     IconPaperclip,
 } from '@tabler/icons-vue';
 import Subscriptions from './util/Subscriptions.vue';
-import timediff from '../../../src/timediff.ts';
-import { std } from '../../../src/std.ts';
-import { useCOTStore } from '../../../src/stores/cots.ts';
+import timediff from '../../timediff.ts';
+import { std } from '../../std.ts';
+import { useCOTStore } from '../../stores/cots.ts';
+import { useProfileStore } from '../../stores/profile.ts';
+import { useVideoStore } from '../../stores/videos.ts';
+import { useMapWorkerStore } from '../../stores/worker.ts';
+
+const mapWorkerStore = useMapWorkerStore();
 const cotStore = useCOTStore();
-import { useProfileStore } from '../../../src/stores/profile.ts';
-import { useVideoStore } from '../../../src/stores/videos.ts';
 
 const profileStore = useProfileStore();
 const videoStore = useVideoStore();
@@ -815,7 +818,7 @@ function addAttachment(hash: string) {
 
 async function deleteCOT() {
     if (!cot.value) return;
-    await cotStore.delete(cot.value.id);
+    await mapWorkerStore.remove(cot.value.id);
     router.push('/');
 }
 </script>

@@ -105,9 +105,11 @@ import {
     IconCone,
     IconPolygon,
 } from '@tabler/icons-vue';
-import { useCOTStore } from '../../../../src/stores/cots.ts';
+import { useMapWorkerStore } from '../../../stores/worker.ts';
+const mapWorkerStore = useMapWorkerStore();
+import { useCOTStore } from '../../../stores/cots.ts';
 const cotStore = useCOTStore();
-import { useMapStore } from '../../../../src/stores/map.ts';
+import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();
 
 const props = defineProps({
@@ -177,7 +179,7 @@ watch(canvas, async () => {
 
 async function deleteCOT() {
     if (props.deleteAction === 'delete') {
-        await cotStore.delete(props.feature.id);
+        await mapWorkerStore.delete(props.feature.id);
     } else {
         emit('delete');
     }

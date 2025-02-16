@@ -506,13 +506,13 @@ import { useMapStore } from '../../stores/map.ts';
 import { useVideoStore } from '../../stores/videos.ts';
 import { useProfileStore } from '../../stores/profile.ts';
 import { useCOTStore } from '../../stores/cots.ts';
-import { useConnectionStore } from '../../stores/connection.ts';
+import { useMapWorkerStore } from '../../stores/worker.ts';
 import UploadImport from './util/UploadImport.vue'
 import { coordEach } from '@turf/meta';
 const profileStore = useProfileStore();
 const cotStore = useCOTStore();
 const mapStore = useMapStore();
-const connectionStore = useConnectionStore();
+const mapWorkerStore = useMapWorkerStore();
 const videoStore = useVideoStore();
 const router = useRouter();
 const route = useRoute();
@@ -610,7 +610,7 @@ onMounted(async () => {
 
     await Promise.all([
         profileStore.loadChannels(),
-        connectionStore.loadArchive()
+        mapWorkerStore.loadArchive()
     ]);
 
     warnChannels.value = profileStore.hasNoChannels;
@@ -665,7 +665,7 @@ onMounted(async () => {
     });
 
     if (!profileStore.profile) throw new Error('Profile did not load correctly');
-    await connectionStore.connectSocket(profileStore.profile.username);
+    await mapWorkerStore.connectSocket(profileStore.profile.username);
 });
 
 onBeforeUnmount(() => {
@@ -674,7 +674,7 @@ onBeforeUnmount(() => {
     }
 
     profileStore.destroy();
-    connectionStore.destroy();
+    mapWorkerStore.destroy();
     cotStore.$reset();
     mapStore.destroy();
 });
@@ -779,7 +779,7 @@ async function handleRadial(event: string): Promise<void> {
             router.push('/');
         }
 
-        await cotStore.delete(String(cot.id))
+        await mapWorkerStore.remove(String(cot.id))
         await updateCOT();
     } else if (event === 'cot:lock') {
         locked.value.push(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
@@ -792,7 +792,7 @@ async function handleRadial(event: string): Promise<void> {
         closeRadial()
     } else if (event === 'context:new') {
         // @ts-expect-error MapLibreFeature vs Feature
-        await connectionStore.add(mapStore.radial.cot);
+        await mapWorkerStore.add(mapStore.radial.cot);
         updateCOT();
         closeRadial()
     } else if (event === 'context:info') {
@@ -863,7 +863,7 @@ function editGeometry(featid: string) {
 
 async function updateCOT() {
     try {
-        const diff = await connectionStore.diff();
+        const diff = await mapWorkerStore.diff();
 
         if (
             (diff.add && diff.add.length)
@@ -916,7 +916,7 @@ function mountMap(): Promise<void> {
             await mapStore.initOverlays();
             mapStore.initDraw();
 
-            await connectionStore.add(await profileStore.CoT());
+            await mapWorkerStore.add(await profileStore.CoT());
 
             mapStore.draw.on('deselect', async () => {
                 if (!mapStore.edit) return;
@@ -934,7 +934,7 @@ function mountMap(): Promise<void> {
                 mapStore.draw.stop();
 
                 cotStore.cots.delete(feat.id);
-                await connectionStore.add(feat);
+                await mapWorkerStore.add(feat);
                 await updateCOT();
             })
 
@@ -997,7 +997,7 @@ function mountMap(): Promise<void> {
                     mapStore.draw.setMode('static');
                     mapStore.drawOptions.mode = 'static';
                     mapStore.draw.stop();
-                    await connectionStore.add(feat);
+                    await mapWorkerStore.add(feat);
                     await updateCOT();
                 }
             });

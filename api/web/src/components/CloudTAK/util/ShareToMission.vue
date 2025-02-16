@@ -109,14 +109,14 @@ import {
     IconAmbulance,
     IconShare2
 } from '@tabler/icons-vue';
-import type { Feature } from '../../../../src/types.ts';
-import COT from '../../../../src/stores/base/cot.ts'
-import { useCOTStore } from '../../../../src/stores/cots.ts';
-import { useConnectionStore } from '../../../../src/stores/connection.ts';
-import Subscription from '../../../../src/stores/base/mission.ts'
+import type { Feature } from '../../../types.ts';
+import COT from '../../..//stores/base/cot.ts'
+import { useCOTStore } from '../../../stores/cots.ts';
+import { useMapWorkerStore } from '../../../stores/worker.ts';
+import Subscription from '../../../stores/base/mission.ts'
 
 const cotStore = useCOTStore();
-const connectionStore = useConnectionStore();
+const mapWorkerStore = useMapWorkerStore();
 
 const missions = computed(() => {
     return Array.from(cotStore.subscriptions.values())
@@ -178,7 +178,7 @@ async function share() {
             });
         }
 
-        connectionStore.sendCOT(feat);
+        mapWorkerStore.sendCOT(feat);
     }
 
     emit('done');

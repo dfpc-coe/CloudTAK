@@ -263,7 +263,9 @@ import {
     IconChevronDown,
     IconFolder,
 } from '@tabler/icons-vue';
-import { useCOTStore } from '/src/stores/cots.ts';
+import { useMapWorkerStore } from '../../../stores/worker.ts';
+const mapWorkerStore = useMapWorkerStore();
+import { useCOTStore } from '../../../stores/cots.ts';
 const cotStore = useCOTStore();
 
 export default {
@@ -329,7 +331,7 @@ export default {
             }
 
             for (const feat of cotStore.markerFeatures(cotStore.cots, marker)) {
-                await cotStore.delete(feat.id);
+                await mapWorkerStore.delete(feat.id);
             }
 
             this.loading = false;
@@ -342,7 +344,7 @@ export default {
             }
 
             for (const feat of cotStore.pathFeatures(cotStore.cots, path)) {
-                await cotStore.delete(feat.id);
+                await mapWorkerStore.delete(feat.id);
             }
 
             if (path) {
