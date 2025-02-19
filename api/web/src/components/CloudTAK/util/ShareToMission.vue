@@ -116,8 +116,8 @@ import Subscription from '../../../stores/base/mission.ts'
 
 const mapStore = useMapStore();
 
-const missions = computed(() => {
-    return Array.from(mapStore.worker.db.subscriptions.values())
+const missions = computed(async () => {
+    return Array.from(await mapStore.worker.db.subscriptions.values())
         .filter((mission) => {
             return mission.role.permissions.includes("MISSION_WRITE")
         })
@@ -145,12 +145,12 @@ const selected = ref<Set<Subscription>>(new Set());
 
 /** Feats often come from Vector Tiles which don't contain the full feature */
 function currentFeats(): Array<Feature> {
-    return (props.feats || []).map((f) => {
+    return (props.feats || []).map(async (f) => {
         if (f.properties.type === 'b-f-t-r') {
             // FileShare is manually generated and won't exist in CoT Store
             return f;
         } else {
-            return mapStore.worker.db.get(f.id);
+            return await mapStore.worker.db.get(f.id);
         }
     }).filter((f) => {
         return !!f;
@@ -176,7 +176,7 @@ async function share() {
             });
         }
 
-        mapStore.worker.conn.sendCOT(feat);
+        await mapStore.worker.conn.sendCOT(feat);
     }
 
     emit('done');

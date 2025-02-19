@@ -117,7 +117,7 @@ export default {
 
             if (!single) throw new Error('Error sending Chat - Contact is not defined');
 
-            mapStore.worker.conn.sendCOT({
+            await mapStore.worker.conn.sendCOT({
                 chatroom: single.sender_callsign,
                 to: {
                     uid: single.sender_uid,

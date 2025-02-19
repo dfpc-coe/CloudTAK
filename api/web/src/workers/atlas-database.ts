@@ -2,6 +2,7 @@
 * ConnectionStore - Maintain the WebSocket connection with CloudTAK Server
 */
 
+import { proxy } from 'comlink';
 import { std } from '../std.ts';
 import COT from '../base/cot.ts';
 import type { GeoJSONSourceDiff } from 'maplibre-gl';
@@ -145,7 +146,7 @@ export default class AtlasDatabase {
         }) as APIList<Feature>;
 
         for (const a of archive.items) {
-            add(a, undefined, {
+            this.add(a, undefined, {
                 skipSave: true
             });
         }
@@ -246,7 +247,7 @@ export default class AtlasDatabase {
         let cot = this.cots.get(id);
 
         if (cot) {
-            return cot;
+            return proxy(cot);
         } else if (opts.mission) {
             for (const sub of this.subscriptions.keys()) {
                 const store = this.subscriptions.get(sub);
@@ -254,7 +255,7 @@ export default class AtlasDatabase {
                 cot = store.cots.get(id);
 
                 if (cot) {
-                    return cot;
+                    return proxy(cot);
                 }
             }
         }

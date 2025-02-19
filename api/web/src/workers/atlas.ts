@@ -29,6 +29,8 @@ export default class Atlas {
 
         const username = await this.profile.init();
         await this.conn.connect(username)
+
+        await this.db.init();
     }
 
     destroy() {

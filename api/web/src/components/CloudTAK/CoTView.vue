@@ -703,15 +703,9 @@ const videoStore = useVideoStore();
 const route = useRoute();
 const router = useRouter();
 
-const cot = ref<COT | undefined>(mapStore.worker.db.get(String(route.params.uid), {
-    mission: true
-}))
+const cot = ref<COT | undefined>(undefined);
 
 const mission = ref<Mission | undefined>();
-
-if (cot.value && cot.value.origin.mode === OriginMode.MISSION && cot.value.origin.mode_id) {
-    mission.value = mapStore.worker.db.subscriptions.get(cot.value.origin.mode_id);
-}
 
 const username = ref<string | undefined>();
 const type = ref<COTType | undefined>();
@@ -719,10 +713,10 @@ const mode = ref('default');
 const interval = ref<ReturnType<typeof setInterval> | undefined>();
 const time = ref('relative');
 
-watch(cot, () => {
+watch(cot, async () => {
     if (cot.value) {
         if (cot.value.origin.mode === OriginMode.MISSION && cot.value.origin.mode_id) {
-            mission.value = mapStore.worker.db.subscriptions.get(cot.value.origin.mode_id);
+            mission.value = await mapStore.worker.db.subscriptions.get(cot.value.origin.mode_id);
         } else {
             mission.value = undefined;
         }
@@ -766,9 +760,13 @@ const center = computed(() => {
 async function load_cot() {
     username.value = undefined;
 
-    cot.value = mapStore.worker.db.get(String(route.params.uid), {
+    cot.value = await mapStore.worker.db.get(String(route.params.uid), {
         mission: true
     })
+
+    if (cot.value && cot.value.origin.mode === OriginMode.MISSION && cot.value.origin.mode_id) {
+        mission.value = await mapStore.worker.db.subscriptions.get(cot.value.origin.mode_id);
+    }
 
     if (cot.value) {
         if (cot.value.is_skittle) {

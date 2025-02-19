@@ -506,7 +506,8 @@ const mapStore = useMapStore();
 const profileStore = useProfileStore();
 
 const profile = computed(() => profileStore.profile);
-const open = computed(() => mapStore.worker.conn.isOpen);
+
+const open = computed(async () => await mapStore.worker.conn.isOpen);
 
 defineProps({
     compact: Boolean,

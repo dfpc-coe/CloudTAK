@@ -69,9 +69,15 @@ export default class AtlasProfile {
 
         this.timerSelf = setInterval(async () => {
             if (this.live_loc) {
-                this.atlas.conn.sendCOT(await this.CoT(this.live_loc))
+                await this.CoT(this.live_loc);
             } else if (this.profile && this.profile.tak_loc) {
-                this.atlas.conn.sendCOT(await this.CoT());
+                await this.CoT();
+            }
+
+            const me = await this.atlas.db.get(this.uid());
+
+            if (me) {
+                this.atlas.conn.sendCOT(me.as_feature())
             }
         }, this.profile ? this.profile.tak_loc_freq : 2000);
     }

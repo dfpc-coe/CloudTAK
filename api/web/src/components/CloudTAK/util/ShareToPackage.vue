@@ -88,13 +88,13 @@ const body = ref({
 })
 
 /** Feats often come from Vector Tiles which don't contain the full feature */
-function currentFeats(): Array<Feature> {
-    return (props.feats || []).map((f) => {
+async function currentFeats(): Array<Feature> {
+    return (props.feats || []).map(async (f) => {
         if (f.properties.type === 'b-f-t-r') {
             // FileShare is manually generated and won't exist in CoT Store
             return f;
         } else {
-            return mapStore.worker.db.get(f.id) || f;
+            return await mapStore.worker.db.get(f.id) || f;
         }
     }).filter((f) => {
         return !!f;
@@ -108,7 +108,7 @@ function currentFeats(): Array<Feature> {
 }
 
 async function share() {
-    const feats = currentFeats();
+    const feats = await currentFeats();
 
     loading.value = true;
 
