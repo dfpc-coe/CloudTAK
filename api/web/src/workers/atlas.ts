@@ -2,15 +2,10 @@
 * ConnectionStore - Maintain the WebSocket connection with CloudTAK Server
 */
 
-import { std, stdurl } from '../std.ts';
-import COT from '../base/cot.ts';
-import { WorkerMessage } from '../base/events.ts';
 import { expose } from 'comlink';
-import type { GeoJSONSourceDiff } from 'maplibre-gl';
 import AtlasProfile from './atlas-profile.ts';
 import AtlasDatabase from './atlas-database.ts';
 import AtlasConnection from './atlas-connection.ts';
-import type { Feature } from '../types.ts';
 
 export default class Atlas {
     token: string;
@@ -32,7 +27,9 @@ export default class Atlas {
     async init(authToken: string) {
         this.token = authToken;
 
-        await this.profile.load();
+        await Promise.allSettled([
+            this.profile.init()
+        ])
     }
 
     destroy() {
@@ -44,7 +41,7 @@ export default class Atlas {
     }
 }
 
-const atlas = new AtlasPurse();
+const atlas = new Atlas();
 
 expose({
     atlas,

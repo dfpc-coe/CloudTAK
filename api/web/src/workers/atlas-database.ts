@@ -2,15 +2,12 @@
 * ConnectionStore - Maintain the WebSocket connection with CloudTAK Server
 */
 
-import { std, stdurl } from '../std.ts';
+import { std } from '../std.ts';
 import COT from '../base/cot.ts';
-import { WorkerMessage } from '../base/events.ts';
-import { expose } from 'comlink';
 import type { GeoJSONSourceDiff } from 'maplibre-gl';
-import AtlasProfile from './atlas-profile.ts';
 import type { Feature } from '../types.ts';
 
-export class AtlasDatabase {
+export default class AtlasDatabase {
     atlas: Atlas;
 
     cots: Map<string, COT>;
@@ -26,6 +23,8 @@ export class AtlasDatabase {
     subscriptionPending: Map<string, string>;
 
     constructor(atlas: Atlas) {
+        this.atlas = atlas;
+
         this.cots = new Map();
         this.hidden = new Set();
 
@@ -54,11 +53,11 @@ export class AtlasDatabase {
         //const display_stale = profileStore.profile ? profileStore.profile.display_stale : 'Immediate';
         const display_stale = 'Immediate';
 
-        for (const cot of purse.cots.values()) {
+        for (const cot of this.cots.values()) {
             const render = cot.as_rendered();
             const stale = new Date(cot.properties.stale).getTime();
 
-            if (purse.hidden.has(String(cot.id))) {
+            if (this.hidden.has(String(cot.id))) {
                 // TODO check if hidden already
                 diff.remove.push(String(cot.id))
             } else if (
@@ -103,10 +102,10 @@ export class AtlasDatabase {
             }
         }
 
-        for (const cot of purse.pending.values()) {
+        for (const cot of this.pending.values()) {
             const render = cot.as_rendered();
 
-            if (purse.cots.has(cot.id)) {
+            if (this.cots.has(cot.id)) {
                 diff.update.push({
                     id: String(render.id),
                     addOrUpdateProperties: Object.keys(render.properties).map((key) => {
@@ -118,26 +117,33 @@ export class AtlasDatabase {
                 diff.add.push(render);
             }
 
-            purse.cots.set(cot.id, cot);
+            this.cots.set(cot.id, cot);
         }
 
-        purse.pending.clear();
+        this.pending.clear();
 
-        for (const id of purse.pendingDelete) {
+        for (const id of this.pendingDelete) {
             diff.remove.push(id);
-            purse.cots.delete(id);
+            this.cots.delete(id);
         }
 
-        purse.pendingDelete.clear();
+        this.pendingDelete.clear();
 
         return diff;
+    }
+
+    async init(): Promise<void> {
+        await this.loadArchive()
     }
 
     /**
      * Load Archived CoTs
      */
     async loadArchive(): Promise<void> {
-        const archive = await std('/api/profile/feature', { token: purse.token }) as APIList<Feature>;
+        const archive = await std('/api/profile/feature', {
+            token: this.atlas.token
+        }) as APIList<Feature>;
+
         for (const a of archive.items) {
             add(a, undefined, {
                 skipSave: true
@@ -149,12 +155,12 @@ export class AtlasDatabase {
      * Remove a given CoT from the store
      */
     async remove(id: string, skipNetwork = false): Promise<void> {
-        purse.pendingDelete.add(id);
+        this.pendingDelete.add(id);
 
-        const cot = purse.cots.get(id);
+        const cot = this.cots.get(id);
         if (!cot) return;
 
-        purse.cots.delete(id);
+        this.cots.delete(id);
 
         if (!skipNetwork && cot.properties.archived) {
             await std(`/api/profile/feature/${id}`, {
@@ -170,7 +176,7 @@ export class AtlasDatabase {
         ignoreArchived: false,
         skipNetwork: false
     }): void {
-        for (const feat of purse.cots.values()) {
+        for (const feat of this.cots.values()) {
             if (opts.ignoreArchived && feat.properties.archived) continue;
 
             delete(feat.id, opts.skipNetwork);
@@ -188,15 +194,15 @@ export class AtlasDatabase {
         }
     ): Promise<void> {
         if (!opts) opts = {};
-        mission_guid = mission_guid || purse.subscriptionPending.get(feat.id);
+        mission_guid = mission_guid || this.subscriptionPending.get(feat.id);
 
         if (mission_guid)  {
-            const sub = purse.subscriptions.get(mission_guid);
+            const sub = this.subscriptions.get(mission_guid);
             if (!sub) {
                 throw new Error(`Cannot add ${feat.id} to mission ${mission_guid} as it is not loaded`)
             }
 
-            const cot = new COT(purse, feat, {
+            const cot = new COT(this.atlas, feat, {
                 mode: OriginMode.MISSION,
                 mode_id: mission_guid
             });
@@ -207,7 +213,7 @@ export class AtlasDatabase {
             await mapStore.loadMission(mission_guid);
         } else {
             let is_mission_cot: COT | undefined;
-            for (const value of purse.subscriptions.values()) {
+            for (const value of this.subscriptions.values()) {
                 const mission_cot = value.cots.get(feat.id);
                 if (mission_cot) {
                     await mission_cot.update(feat);
@@ -217,12 +223,12 @@ export class AtlasDatabase {
 
             if (is_mission_cot) return;
 
-            const exists = purse.cots.get(feat.id);
+            const exists = this.cots.get(feat.id);
 
             if (exists) {
                 exists.update(feat, { skipSave: opts.skipSave })
             } else {
-                new COT(purse, feat);
+                new COT(this.atlas, feat);
             }
         }
     }
@@ -237,13 +243,13 @@ export class AtlasDatabase {
     }): Feature | undefined {
         if (!opts) opts = {};
 
-        let cot = purse.cots.get(id);
+        let cot = this.cots.get(id);
 
         if (cot) {
             return cot.as_feature();
         } else if (opts.mission) {
-            for (const sub of purse.subscriptions.keys()) {
-                const store = purse.subscriptions.get(sub);
+            for (const sub of this.subscriptions.keys()) {
+                const store = this.subscriptions.get(sub);
                 if (!store) continue;
                 cot = store.cots.get(id);
 
@@ -260,14 +266,6 @@ export class AtlasDatabase {
      * Returns if the CoT is present in the store given the ID
      */
     has(id: string): boolean {
-        return purse.cots.has(id);
-    }
-
-    destroy() {
-        purse.isDestroyed = true;
-
-        if (purse.ws) {
-            purse.ws.close();
-        }
+        return this.cots.has(id);
     }
 }

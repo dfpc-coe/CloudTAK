@@ -157,7 +157,7 @@ import Share from './Share.vue';
 import ShareToMission from './ShareToMission.vue';
 import ShareToPackage from './ShareToPackage.vue';
 
-const mapSTore = useMapStore();
+const mapStore = useMapStore();
 
 const props = defineProps<{
     selected: Map<string, COT>

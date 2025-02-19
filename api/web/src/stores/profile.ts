@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { std, stdurl } from '../std.ts';
-import type { Feature, Group, Profile, Profile_Update } from '../types.ts';
+import type { Group, Profile, Profile_Update } from '../types.ts';
 
 export type TAKNotification = {
     type: string;
