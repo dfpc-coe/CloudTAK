@@ -154,8 +154,8 @@ export default {
     unmounted: function() {
         this.$emit('close')
     },
-    mounted: function() {
-        this.genMenuItems();
+    mounted: async function() {
+        await this.genMenuItems();
 
         this.$nextTick(() => {
             this.menu = new RadialMenu({
@@ -172,11 +172,11 @@ export default {
     },
     methods: {
         ...mapActions(useMapStore, ['radialClick']),
-        genMenuItems: function() {
+        genMenuItems: async function() {
             this.menuItems.splice(0, this.menuItems.length);
             if (this.radial.mode === 'cot') {
                 if (this.radial.cot && this.radial.cot.properties) {
-                    const cot = mapStore.worker.db.get(this.radial.cot.properties.id, {
+                    const cot = await mapStore.worker.db.get(this.radial.cot.properties.id, {
                         mission: true
                     });
 
@@ -188,7 +188,7 @@ export default {
                             this.menuItems.push({ id: 'lock', icon: '#radial-lock' })
                         }
                     } else if (cot.origin.mode === OriginMode.MISSION && cot.origin.mode_id) {
-                        const sub = mapStore.worker.db.subscriptions.get(cot.origin.mode_id);
+                        const sub = await mapStore.worker.db.subscriptions.get(cot.origin.mode_id);
 
                         if (sub.role && sub.role.permissions.includes("MISSION_WRITE")) {
                             this.menuItems.push({ id: 'edit', icon: '#radial-pencil' })

@@ -73,7 +73,7 @@ async function loadBreadcrumb() {
         const crumb = await std(url) as FeatureCollection;
 
         for (const feat of crumb.features) {
-            mapStore.worker.db.add(feat)
+            await mapStore.worker.db.add(feat)
         }
 
         loading.value = false;
