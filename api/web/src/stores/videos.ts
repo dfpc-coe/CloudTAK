@@ -3,9 +3,9 @@
 */
 
 import { defineStore } from 'pinia'
-import { useMapWorkerStore } from './worker.ts';
+import { useMapStore } from './map.ts';
 import type { VideoConnection } from '../types.ts';
-const mapWorkerStore = useMapWorkerStore();
+const mapStore = useMapStore();
 
 export enum VideoStoreType {
     COT = 'cot',
@@ -45,8 +45,8 @@ export const useVideoStore = defineStore('video', {
                 y: 0
             })
         },
-        add(uid: string): void {
-            const cot = mapWorkerStore.worker.get(uid, {
+        async add(uid: string): void {
+            const cot = await mapStore.worker.db.get(uid, {
                 mission: true
             });
 

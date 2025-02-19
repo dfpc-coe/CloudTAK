@@ -8,6 +8,7 @@
 */
 
 import { defineStore } from 'pinia'
+import * as Comlink from 'comlink';
 import AtlasWorker from '../workers/atlas.ts?worker&url';
 import type { Position } from "geojson";
 import COT from '../base/cot.ts';
@@ -274,7 +275,7 @@ export const useMapStore = defineStore('cloudtak', {
                 this.bearing = map.getBearing()
             })
 
-            map.on('click', (e: MapMouseEvent) => {
+            map.on('click', async (e: MapMouseEvent) => {
                 if (this.draw.getMode() !== 'static') return;
 
                 if (this.radial.mode) this.radial.mode = undefined;
@@ -479,7 +480,8 @@ export const useMapStore = defineStore('cloudtak', {
                     coord: Position
                 } | undefined = undefined;
 
-                await this.worker.db.filter((cot) => {
+                //TODO This is jacked due to no await support
+                this.worker.db.filter((cot) => {
                     coordEach(cot.geometry, (coord: Position) => {
                         const dist = distance([event.lng, event.lat], coord);
 

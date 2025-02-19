@@ -767,7 +767,7 @@ async function handleRadial(event: string): Promise<void> {
         router.push(`/cot/${mapStore.radial.cot.properties.id}`);
         closeRadial()
     } else if (event === 'cot:play') {
-        videoStore.add(mapStore.radial.cot.properties.id);
+        await videoStore.add(mapStore.radial.cot.properties.id);
         closeRadial()
     } else if (event === 'cot:delete') {
         const cot = mapStore.radial.cot;
