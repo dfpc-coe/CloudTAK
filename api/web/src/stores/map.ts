@@ -36,7 +36,7 @@ export const useMapStore = defineStore('cloudtak', {
         _map?: mapgl.Map;
         _draw?: terraDraw.TerraDraw;
         channel: BroadcastChannel;
-        worker: Comlink.Remote<Atlas>;
+        worker: Comlink.Remove<Atlas>;
         edit: COT | undefined;
         mission: string | undefined;
         container?: HTMLElement;
@@ -84,10 +84,10 @@ export const useMapStore = defineStore('cloudtak', {
             type: 'module'
         });
 
-        const com = Comlink.wrap(worker);
+        const atlas = Comlink.wrap(worker);
 
         return {
-            worker: com,
+            worker: atlas,
             channel: new BroadcastChannel("cloudtak"),
             hasTerrain: false,
             isTerrainEnabled: false,

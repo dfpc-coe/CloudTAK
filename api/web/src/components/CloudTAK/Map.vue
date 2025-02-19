@@ -607,7 +607,7 @@ onMounted(async () => {
     await mountMap();
 
     console.error(mapStore.worker);
-    await mapStore.worker.init(localStorage.token);
+    await mapStore.worker.atlas.init(localStorage.token);
 
     // TODO these are no longer reactive, does it matter?
     warnChannels.value = await mapStore.worker.profile.hasNoChannels();

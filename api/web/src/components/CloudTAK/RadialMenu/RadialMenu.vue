@@ -180,15 +180,15 @@ export default {
                         mission: true
                     });
 
-                    if (cot.origin.mode === OriginMode.CONNECTION) {
+                    if (await cot.origin.mode === OriginMode.CONNECTION) {
                         this.menuItems.push({ id: 'edit', icon: '#radial-pencil' })
                         this.menuItems.push({ id: 'delete', icon: '#radial-trash' })
 
-                        if (cot.geometry.type === 'Point') {
+                        if (await cot.geometry.type === 'Point') {
                             this.menuItems.push({ id: 'lock', icon: '#radial-lock' })
                         }
-                    } else if (cot.origin.mode === OriginMode.MISSION && cot.origin.mode_id) {
-                        const sub = await mapStore.worker.db.subscriptions.get(cot.origin.mode_id);
+                    } else if (await cot.origin.mode === OriginMode.MISSION && await cot.origin.mode_id) {
+                        const sub = await mapStore.worker.db.subscriptions.get(await cot.origin.mode_id);
 
                         if (sub.role && sub.role.permissions.includes("MISSION_WRITE")) {
                             this.menuItems.push({ id: 'edit', icon: '#radial-pencil' })
@@ -196,7 +196,7 @@ export default {
                         }
                     }
 
-                    if (cot.properties.video) {
+                    if (await cot.properties.video) {
                         this.menuItems.push({ id: 'play', icon: '#radial-play' })
                     }
                 }
