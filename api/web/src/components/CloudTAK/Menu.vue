@@ -497,16 +497,16 @@ import {
 } from '@tabler/icons-vue';
 import Status from '../util/Status.vue';
 import { useProfileStore } from '../../stores/profile.ts';
-import { useMapWorkerStore } from '../../stores/worker.ts';
+import { useMapStore } from '../../stores/map.ts';
 import { useRouter, useRoute } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
 
-const mapWorkerStore = useMapWorkerStore();
+const mapStore = useMapStore();
 const profileStore = useProfileStore();
 
 const profile = computed(() => profileStore.profile);
-const open = computed(() => mapWorkerStore.worker.isOpen);
+const open = computed(() => mapStore.worker.conn.isOpen);
 
 defineProps({
     compact: Boolean,

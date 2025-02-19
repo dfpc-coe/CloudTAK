@@ -693,24 +693,24 @@ import Subscriptions from './util/Subscriptions.vue';
 import timediff from '../../timediff.ts';
 import { std } from '../../std.ts';
 import { useProfileStore } from '../../stores/profile.ts';
+import { useMapStore } from '../../stores/map.ts';
 import { useVideoStore } from '../../stores/videos.ts';
-import { useMapWorkerStore } from '../../stores/worker.ts';
 
-const mapWorkerStore = useMapWorkerStore();
+const mapStore = useMapStore();
 
 const profileStore = useProfileStore();
 const videoStore = useVideoStore();
 const route = useRoute();
 const router = useRouter();
 
-const cot = ref<COT | undefined>(mapWorkerStore.worker.get(String(route.params.uid), {
+const cot = ref<COT | undefined>(mapStore.worker.db.get(String(route.params.uid), {
     mission: true
 }))
 
 const mission = ref<Mission | undefined>();
 
 if (cot.value && cot.value.origin.mode === OriginMode.MISSION && cot.value.origin.mode_id) {
-    mission.value = mapWorkerStore.worker.subscriptions.get(cot.value.origin.mode_id);
+    mission.value = mapStore.worker.db.subscriptions.get(cot.value.origin.mode_id);
 }
 
 const username = ref<string | undefined>();
@@ -722,7 +722,7 @@ const time = ref('relative');
 watch(cot, () => {
     if (cot.value) {
         if (cot.value.origin.mode === OriginMode.MISSION && cot.value.origin.mode_id) {
-            mission.value = mapWorkerStore.worker.subscriptions.get(cot.value.origin.mode_id);
+            mission.value = mapStore.worker.db.subscriptions.get(cot.value.origin.mode_id);
         } else {
             mission.value = undefined;
         }
@@ -766,7 +766,7 @@ const center = computed(() => {
 async function load_cot() {
     username.value = undefined;
 
-    cot.value = mapWorkerStore.worker.get(String(route.params.uid), {
+    cot.value = mapStore.worker.db.get(String(route.params.uid), {
         mission: true
     })
 
@@ -816,7 +816,7 @@ function addAttachment(hash: string) {
 
 async function deleteCOT() {
     if (!cot.value) return;
-    await mapWorkerStore.worker.remove(cot.value.id);
+    await mapStore.worker.db.remove(cot.value.id);
     router.push('/');
 }
 </script>

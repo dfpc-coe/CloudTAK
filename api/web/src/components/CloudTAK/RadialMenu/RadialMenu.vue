@@ -129,10 +129,9 @@ import { OriginMode } from '../../../base/cot.ts';
 import RadialMenu from './RadialMenu.js';
 import './RadialMenu.css';
 import { useMapStore } from '../../../stores/map.ts';
-import { useMapWorkerStore } from '../../../stores/worker.ts';
 import { mapState, mapActions } from 'pinia'
 
-const mapWorkerStore = useMapWorkerStore();
+const mapStore = useMapStore();
 
 export default {
     name: 'RadialMenu',
@@ -177,7 +176,7 @@ export default {
             this.menuItems.splice(0, this.menuItems.length);
             if (this.radial.mode === 'cot') {
                 if (this.radial.cot && this.radial.cot.properties) {
-                    const cot = mapWorkerStore.worker.get(this.radial.cot.properties.id, {
+                    const cot = mapstore.worker.db.get(this.radial.cot.properties.id, {
                         mission: true
                     });
 
@@ -189,7 +188,7 @@ export default {
                             this.menuItems.push({ id: 'lock', icon: '#radial-lock' })
                         }
                     } else if (cot.origin.mode === OriginMode.MISSION && cot.origin.mode_id) {
-                        const sub = mapWorkerStore.worker.subscriptions.get(cot.origin.mode_id);
+                        const sub = mapStore.worker.db.subscriptions.get(cot.origin.mode_id);
 
                         if (sub.role && sub.role.permissions.includes("MISSION_WRITE")) {
                             this.menuItems.push({ id: 'edit', icon: '#radial-pencil' })

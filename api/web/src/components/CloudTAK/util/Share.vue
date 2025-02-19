@@ -130,9 +130,9 @@ import {
 import COT from '../../../base/cot.ts'
 import type { Contact, ContactList, Feature } from '../../../types.ts'
 import COTContact from '../util/Contact.vue';
-import { useMapWorkerStore } from '../../../stores/worker.ts';
+import { useMapStore } from '../../../stores/map.ts';
 
-const mapWorkerStore = useMapWorkerStore();
+const mapStore = useMapStore();
 
 const props = defineProps<{
     feats?: Feature[] | COT[],
@@ -169,7 +169,7 @@ function currentFeats(): Feature[] {
             // FileShare is manually generated and won't exist in CoT Store
             return f;
         } else {
-            const cot = mapWorkerStore.worker.get(f.id)
+            const cot = mapStore.worker.db.get(f.id)
             if (cot) {
                 return cot.as_feature();
             } else {
@@ -193,7 +193,7 @@ async function share() {
         for (const contact of selected.value) {
             const feat = JSON.parse(JSON.stringify(feats[0]));
             feat.properties.dest = [{ uid: contact.uid }];
-            mapWorkerStore.worker.sendCOT(feat);
+            mapStore.worker.conn.sendCOT(feat);
         }
     } else {
         await std('/api/marti/package', {
@@ -221,7 +221,7 @@ async function broadcast() {
         && !props.basemaps
         && (!feats[0].properties.attachments || feats[0].properties.attachments.length === 0)
     ) {
-        mapWorkerStore.worker.sendCOT(JSON.parse(JSON.stringify(feats[0])));
+        mapStore.worker.conn.sendCOT(JSON.parse(JSON.stringify(feats[0])));
         emit('done');
     } else {
         await std('/api/marti/package', {

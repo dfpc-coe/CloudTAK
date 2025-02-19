@@ -54,14 +54,14 @@ import {
 } from '@tak-ps/vue-tabler';
 import { std } from '../../../std.ts';
 import COT from '../../../base/cot.ts';
-import { useMapWorkerStore } from '../../../stores/worker.ts';
+import { useMapStore } from '../../../stores/map.ts';
 import {
     IconX,
 } from '@tabler/icons-vue';
 import { useRouter } from 'vue-router';
 import type { Feature, Content } from '../../../types.ts';
 
-const mapWorkerStore = useMapWorkerStore();
+const mapStore = useMapStore();
 const router = useRouter();
 
 const props = defineProps({
@@ -94,7 +94,7 @@ function currentFeats(): Array<Feature> {
             // FileShare is manually generated and won't exist in CoT Store
             return f;
         } else {
-            return mapWorkerStore.worker.get(f.id) || f;
+            return mapStore.worker.db.get(f.id) || f;
         }
     }).filter((f) => {
         return !!f;

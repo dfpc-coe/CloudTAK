@@ -49,9 +49,9 @@ import {
     TablerButton,
     TablerLoading
 } from '@tak-ps/vue-tabler';
-import { useMapWorkerStore } from '../../../stores/worker.ts';
+import { useMapStore } from '../../../stores/map.ts';
 
-const mapWorkerStore = useMapWorkerStore();
+const mapStore = useMapStore();
 
 const props = defineProps<{
     uid: string
@@ -73,7 +73,7 @@ async function loadBreadcrumb() {
         const crumb = await std(url) as FeatureCollection;
 
         for (const feat of crumb.features) {
-            mapWorkerStore.worker.add(feat)
+            mapStore.worker.db.add(feat)
         }
 
         loading.value = false;
