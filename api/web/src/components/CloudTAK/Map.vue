@@ -784,7 +784,6 @@ async function handleRadial(event: string): Promise<void> {
         selectFeat(mapStore.radial.cot as MapGeoJSONFeature);
         closeRadial()
     } else if (event === 'context:new') {
-        // @ts-expect-error MapLibreFeature vs Feature
         await mapStore.worker.db.add(mapStore.radial.cot);
         updateCOT();
         closeRadial()
@@ -833,7 +832,6 @@ async function editGeometry(featid: string) {
         await mapStore.worker.db.hidden.add(cot.id);
         updateCOT();
 
-        // @ts-expect-error Cast Feature to GeoJSONStoreFeature
         const errorStatus = mapStore.draw.addFeatures([feat]).filter((status) => {
             return !status.valid;
         });

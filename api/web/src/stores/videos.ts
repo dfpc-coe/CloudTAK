@@ -45,7 +45,7 @@ export const useVideoStore = defineStore('video', {
                 y: 0
             })
         },
-        async add(uid: string): void {
+        async add(uid: string): Promise<void> {
             const cot = await mapStore.worker.db.get(uid, {
                 mission: true
             });
