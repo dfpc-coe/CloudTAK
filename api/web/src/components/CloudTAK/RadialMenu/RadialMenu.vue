@@ -128,11 +128,11 @@
 import { OriginMode } from '../../../base/cot.ts';
 import RadialMenu from './RadialMenu.js';
 import './RadialMenu.css';
-import { useMapStore } from '../../../../src/stores/map.ts';
-import { useCOTStore } from '../../../../src/stores/cots.ts';
+import { useMapStore } from '../../../stores/map.ts';
+import { useMapWorkerStore } from '../../../stores/worker.ts';
 import { mapState, mapActions } from 'pinia'
 
-const cotStore = useCOTStore();
+const mapWorkerStore = useMapWorkerStore();
 
 export default {
     name: 'RadialMenu',

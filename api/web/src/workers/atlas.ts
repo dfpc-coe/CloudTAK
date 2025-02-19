@@ -8,31 +8,53 @@ import { expose } from 'comlink';
 import type { GeoJSONSourceDiff } from 'maplibre-gl';
 import type { Feature } from '../types.ts';
 
-//import { useCOTStore } from './cots.ts';
+export class AtlasPurse {
+    token: string;
+    isDestroyed: boolean;
+    isOpen: boolean;
+    ws: WebSocket | undefined;
 
-let isDestroyed: boolean = false;
-let isOpen: boolean = false;
-let ws: WebSocket | undefined = undefined;
+    cots: Map<string, COT>;
+    hidden: Set<string>;
 
-const cots: Map<string, COT> = new Map();
-const hidden: Set<string> = new Set();
+    pending: Map<string, COT>;
+    pendingDelete: Set<string>;
 
-const pending: Map<string, COT> = new Map();
-const pendingDelete: Set<string> = new Set();
+    subscriptions: Map<string, Subscription>;
+    subscriptionPending: Map<string, string>;
 
-const subscriptions: Map<string, Subscription> = new Map();
-const subscriptionPending: Map<string, string> = new Map(); // UID, Mission Guid
+    constructor() {
+        this.token = '';
+        this.sDestroyed = false;
+        this.isOpen = false;
+        this.ws = undefined;
 
+        this.cots = new Map();
+        this.hidden = new Set();
+
+        this.pending = new Map();
+        this.pendingDelete = new Set();
+
+        this.subscriptions = new Map();
+        this.subscriptionPending = new Map(); // UID, Mission Guid
+
+    }
+}
+
+const purse = new AtlasPurse();
+
+function auth(authToken: string) {
+    purse.token = authToken;
+}
 
 // COTs are submitted to pending and picked up by the partial update code every .5s
-
-function connect(connection: string, token: string) {
-    isDestroyed = false;
+function connect(connection: string) {
+    purse.isDestroyed = false;
 
     const url = stdurl('/api');
     url.searchParams.append('format', 'geojson');
     url.searchParams.append('connection', connection);
-    url.searchParams.append('token', token);
+    url.searchParams.append('token', purse.token);
 
     if (self.location.hostname === 'localhost') {
         url.protocol = 'ws:';
@@ -40,22 +62,22 @@ function connect(connection: string, token: string) {
         url.protocol = 'wss:';
     }
 
-    ws = new WebSocket(url);
-    ws.addEventListener('open', () => {
-        isOpen = true;
+    purse.ws = new WebSocket(url);
+    purse.ws.addEventListener('open', () => {
+        purse.isOpen = true;
     });
-    ws.addEventListener('error', (err) => {
+    purse.ws.addEventListener('error', (err) => {
         console.error(err);
     });
 
-    ws.addEventListener('close', () => {
+    purse.ws.addEventListener('close', () => {
         // Otherwise the user is probably logged out
-        if (!isDestroyed) connect(connection, token);
+        if (!purse.isDestroyed) connect(connection, purse.token);
 
-        isOpen = false;
+        purse.isOpen = false;
     });
 
-    ws.addEventListener('message', async (msg) => {
+    purse.ws.addEventListener('message', async (msg) => {
         const body = JSON.parse(msg.data) as {
             type: string;
             connection: number | string;
@@ -116,11 +138,11 @@ function diff(): GeoJSONSourceDiff {
     //const display_stale = profileStore.profile ? profileStore.profile.display_stale : 'Immediate';
     const display_stale = 'Immediate';
 
-    for (const cot of cots.values()) {
+    for (const cot of purse.cots.values()) {
         const render = cot.as_rendered();
         const stale = new Date(cot.properties.stale).getTime();
 
-        if (hidden.has(String(cot.id))) {
+        if (purse.hidden.has(String(cot.id))) {
             // TODO check if hidden already
             diff.remove.push(String(cot.id))
         } else if (
@@ -165,10 +187,10 @@ function diff(): GeoJSONSourceDiff {
         }
     }
 
-    for (const cot of pending.values()) {
+    for (const cot of purse.pending.values()) {
         const render = cot.as_rendered();
 
-        if (cots.has(cot.id)) {
+        if (purse.cots.has(cot.id)) {
             diff.update.push({
                 id: String(render.id),
                 addOrUpdateProperties: Object.keys(render.properties).map((key) => {
@@ -180,17 +202,17 @@ function diff(): GeoJSONSourceDiff {
             diff.add.push(render);
         }
 
-        cots.set(cot.id, cot);
+        purse.cots.set(cot.id, cot);
     }
 
-    pending.clear();
+    purse.pending.clear();
 
-    for (const id of pendingDelete) {
+    for (const id of purse.pendingDelete) {
         diff.remove.push(id);
-        cots.delete(id);
+        purse.cots.delete(id);
     }
 
-    pendingDelete.clear();
+    purse.pendingDelete.clear();
 
     return diff;
 }
@@ -198,8 +220,8 @@ function diff(): GeoJSONSourceDiff {
 /**
  * Load Archived CoTs
  */
-async function loadArchive(token): Promise<void> {
-    const archive = await std('/api/profile/feature', { token }) as APIList<Feature>;
+async function loadArchive(): Promise<void> {
+    const archive = await std('/api/profile/feature', { token: purse.token }) as APIList<Feature>;
     for (const a of archive.items) {
         add(a, undefined, {
             skipSave: true
@@ -211,12 +233,12 @@ async function loadArchive(token): Promise<void> {
  * Remove a given CoT from the store
  */
 async function remove(id: string, skipNetwork = false): Promise<void> {
-    pendingDelete.add(id);
+    purse.pendingDelete.add(id);
 
-    const cot = cots.get(id);
+    const cot = purse.cots.get(id);
     if (!cot) return;
 
-    cots.delete(id);
+    purse.cots.delete(id);
 
     if (!skipNetwork && cot.properties.archived) {
         await std(`/api/profile/feature/${id}`, {
@@ -232,7 +254,7 @@ function clear(opts = {
     ignoreArchived: false,
     skipNetwork: false
 }): void {
-    for (const feat of cots.values()) {
+    for (const feat of purse.cots.values()) {
         if (opts.ignoreArchived && feat.properties.archived) continue;
 
         delete(feat.id, opts.skipNetwork);
@@ -250,15 +272,15 @@ async function add(
     }
 ): Promise<void> {
     if (!opts) opts = {};
-    mission_guid = mission_guid || subscriptionPending.get(feat.id);
+    mission_guid = mission_guid || purse.subscriptionPending.get(feat.id);
 
     if (mission_guid)  {
-        const sub = subscriptions.get(mission_guid);
+        const sub = purse.subscriptions.get(mission_guid);
         if (!sub) {
             throw new Error(`Cannot add ${feat.id} to mission ${mission_guid} as it is not loaded`)
         }
 
-        const cot = new COT(pending, feat, {
+        const cot = new COT(purse, feat, {
             mode: OriginMode.MISSION,
             mode_id: mission_guid
         });
@@ -269,7 +291,7 @@ async function add(
         await mapStore.loadMission(mission_guid);
     } else {
         let is_mission_cot: COT | undefined;
-        for (const value of subscriptions.values()) {
+        for (const value of purse.subscriptions.values()) {
             const mission_cot = value.cots.get(feat.id);
             if (mission_cot) {
                 await mission_cot.update(feat);
@@ -279,12 +301,12 @@ async function add(
 
         if (is_mission_cot) return;
 
-        const exists = cots.get(feat.id);
+        const exists = purse.cots.get(feat.id);
 
         if (exists) {
             exists.update(feat, { skipSave: opts.skipSave })
         } else {
-            new COT(pending, feat);
+            new COT(purse, feat);
         }
     }
 }
@@ -299,13 +321,13 @@ function get(id: string, opts: {
 }): Feature | undefined {
     if (!opts) opts = {};
 
-    let cot = cots.get(id);
+    let cot = purse.cots.get(id);
 
     if (cot) {
         return cot.as_feature();
     } else if (opts.mission) {
-        for (const sub of subscriptions.keys()) {
-            const store = subscriptions.get(sub);
+        for (const sub of purse.subscriptions.keys()) {
+            const store = purse.subscriptions.get(sub);
             if (!store) continue;
             cot = store.cots.get(id);
 
@@ -322,21 +344,21 @@ function get(id: string, opts: {
  * Returns if the CoT is present in the store given the ID
  */
 function has(id: string): boolean {
-    return cots.has(id);
+    return purse.cots.has(id);
 }
 
 function destroy() {
-    isDestroyed = true;
+    purse.isDestroyed = true;
 
-    if (ws) {
-        ws.close();
+    if (purse.ws) {
+        purse.ws.close();
     }
 }
 
 
 function sendCOT(data: object, type = 'cot') {
-    if (!ws || ws.readyState !== WebSocket.OPEN) return;
-    ws.send(JSON.stringify({ type, data }));
+    if (!purse.ws || purse.ws.readyState !== WebSocket.OPEN) return;
+    purse.ws.send(JSON.stringify({ type, data }));
 }
 
 expose({
@@ -344,10 +366,11 @@ expose({
     has,
     get,
     diff,
-    isOpen,
+    auth,
     remove,
     clear,
-    isDestroyed,
+    isOpen: purse.isOpen,
+    isDestroyed: purse.isDestoryed,
     loadArchive,
     destroy,
     connect,

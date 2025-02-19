@@ -131,9 +131,7 @@ import COT from '../../../base/cot.ts'
 import type { Contact, ContactList, Feature } from '../../../types.ts'
 import COTContact from '../util/Contact.vue';
 import { useMapWorkerStore } from '../../../stores/worker.ts';
-import { useCOTStore } from '../../../stores/cots.ts';
 
-const cotStore = useCOTStore();
 const mapWorkerStore = useMapWorkerStore();
 
 const props = defineProps<{
@@ -171,7 +169,7 @@ function currentFeats(): Feature[] {
             // FileShare is manually generated and won't exist in CoT Store
             return f;
         } else {
-            const cot = cotStore.get(f.id)
+            const cot = mapWorkerStore.get(f.id)
             if (cot) {
                 return cot.as_feature();
             } else {

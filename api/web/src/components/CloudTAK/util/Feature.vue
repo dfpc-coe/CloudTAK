@@ -107,8 +107,6 @@ import {
 } from '@tabler/icons-vue';
 import { useMapWorkerStore } from '../../../stores/worker.ts';
 const mapWorkerStore = useMapWorkerStore();
-import { useCOTStore } from '../../../stores/cots.ts';
-const cotStore = useCOTStore();
 import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();
 
@@ -138,7 +136,7 @@ const props = defineProps({
 const emit = defineEmits(['delete']);
 
 const isZoomable = computed(() => {
-    const cot = cotStore.get(props.feature.id, {
+    const cot = mapWorkerStore.get(props.feature.id, {
         mission: true
     })
 
@@ -188,7 +186,7 @@ async function deleteCOT() {
 async function flyTo() {
     if (!isZoomable.value) return;
 
-    const cot = cotStore.get(props.feature.id, {
+    const cot = mapWorkerStore.get(props.feature.id, {
         mission: true
     });
 

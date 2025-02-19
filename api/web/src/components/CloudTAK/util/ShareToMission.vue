@@ -111,15 +111,13 @@ import {
 } from '@tabler/icons-vue';
 import type { Feature } from '../../../types.ts';
 import COT from '../../../base/cot.ts'
-import { useCOTStore } from '../../../stores/cots.ts';
 import { useMapWorkerStore } from '../../../stores/worker.ts';
 import Subscription from '../../../stores/base/mission.ts'
 
-const cotStore = useCOTStore();
 const mapWorkerStore = useMapWorkerStore();
 
 const missions = computed(() => {
-    return Array.from(cotStore.subscriptions.values())
+    return Array.from(mapWorkerStore.subscriptions.values())
         .filter((mission) => {
             return mission.role.permissions.includes("MISSION_WRITE")
         })
@@ -152,7 +150,7 @@ function currentFeats(): Array<Feature> {
             // FileShare is manually generated and won't exist in CoT Store
             return f;
         } else {
-            return cotStore.get(f.id);
+            return mapWorkerStore.get(f.id);
         }
     }).filter((f) => {
         return !!f;

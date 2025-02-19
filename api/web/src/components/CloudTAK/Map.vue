@@ -607,6 +607,7 @@ onMounted(async () => {
     });
 
     await mountMap();
+    await mapWorkerStore.worker.auth(localStorage.token);
 
     await Promise.all([
         profileStore.loadChannels(),
@@ -665,7 +666,7 @@ onMounted(async () => {
     });
 
     if (!profileStore.profile) throw new Error('Profile did not load correctly');
-    await mapWorkerStore.worker.connectSocket(profileStore.profile.username);
+    await mapWorkerStore.worker.connect(profileStore.profile.username);
 });
 
 onBeforeUnmount(() => {
@@ -808,7 +809,7 @@ async function handleRadial(event: string): Promise<void> {
 function editGeometry(featid: string) {
     if (!mapStore.draw) throw new Error('Drawing Tools haven\'t loaded');
 
-    const cot = cotStore.get(featid, { mission: true });
+    const cot = mapWorkerStore.get(featid, { mission: true });
     if (!cot) return;
 
     try {
@@ -874,10 +875,10 @@ async function updateCOT() {
             if (source) source.updateData(diff);
         }
 
-        if (locked.value.length && cotStore.has(locked.value[locked.value.length - 1])) {
+        if (locked.value.length && await mapWorkerStore.worker.has(locked.value[locked.value.length - 1])) {
             let featid = locked.value[locked.value.length - 1];
             if (featid) {
-                const feat = cotStore.get(featid);
+                const feat = mapWorkerStore.get(featid);
                 if (feat && feat.geometry.type === "Point") {
                     const flyTo = {
                         center: feat.properties.center as LngLatLike,
@@ -916,7 +917,7 @@ function mountMap(): Promise<void> {
             await mapStore.initOverlays();
             mapStore.initDraw();
 
-            await mapWorkerStore.worker.add(await profileStore.CoT());
+            await profileStore.CoT();
 
             mapStore.draw.on('deselect', async () => {
                 if (!mapStore.edit) return;
