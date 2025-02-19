@@ -1,4 +1,5 @@
 import { toRaw } from 'vue';
+import type Atlas from './atlas.ts';
 import { std, stdurl } from '../std.ts';
 import type { Feature, Group, Profile, Profile_Update } from '../types.ts';
 
@@ -10,6 +11,8 @@ export type TAKNotification = {
 }
 
 export default class AtlasProfile {
+    atlas: Atlas;
+
     timerSelf: ReturnType<typeof setInterval> | undefined;
 
     // Interval for reporting location to TAK Server
@@ -18,7 +21,9 @@ export default class AtlasProfile {
     channels: Array<Group>;
     profile: Profile | null;
 
-    constructor() {
+    constructor(atlas: Atlas) {
+        this.atlas = atlas;
+
         this.timerSelf = undefined;
         this.live_loc = undefined;
         this.notifications = [];
@@ -26,13 +31,15 @@ export default class AtlasProfile {
         this.profile = null;
     }
 
-    async init() {
+    async init(): Promise<string> {
         this.setupTimer();
 
-        await Promise.allSettled([
+        await Promise.all([
             this.load(),
             this.loadChannels()
         ])
+
+        return this.profile.username;
     }
 
     hasNoChannels(): boolean {
@@ -93,6 +100,7 @@ export default class AtlasProfile {
         this.profile = await std('/api/profile', {
             token: this.atlas.token
         }) as Profile;
+        console.error('LOAD', this.profile);
     }
 
     async loadChannels(): Promise<Array<Group>> {

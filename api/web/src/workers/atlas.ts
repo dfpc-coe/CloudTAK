@@ -27,8 +27,8 @@ export default class Atlas {
     async init(authToken: string) {
         this.token = authToken;
 
-        await this.profile.init();
-        await this.conn.connect(this.profile.username)
+        const username = await this.profile.init();
+        await this.conn.connect(username)
     }
 
     destroy() {

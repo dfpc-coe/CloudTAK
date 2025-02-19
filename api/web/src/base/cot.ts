@@ -77,7 +77,7 @@ export default class COT {
         }
 
         if (this.origin.mode === OriginMode.CONNECTION) {
-            this._atlas.pending.set(this.id, this);
+            this._atlas.db.pending.set(this.id, this);
         }
 
         if (!this.is_self && (!opts || (opts && opts.skipSave === false))) {
@@ -136,7 +136,7 @@ export default class COT {
 
         // TODO only update if Geometry or Rendered Prop changes
         if (this.origin.mode === OriginMode.CONNECTION) {
-            this._atlas.pending.set(this.id, this);
+            this._atlas.db.pending.set(this.id, this);
         }
 
         if (this.is_self) {
@@ -386,7 +386,7 @@ export default class COT {
                     properties.icon = properties.icon.replace(/.png$/, '');
                 }
 
-                if (!this._atlas.images.has(properties.icon)) {
+                if (!this._atlas.db.images.has(properties.icon)) {
                     console.warn(`No Icon for: ${properties.icon} fallback to ${properties.type}`);
                     properties.icon = `${properties.type}`;
                 }
