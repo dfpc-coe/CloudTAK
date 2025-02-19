@@ -240,13 +240,13 @@ export default class AtlasDatabase {
         mission?: boolean,
     } = {
         mission: false
-    }): Feature | undefined {
+    }): COT | undefined {
         if (!opts) opts = {};
 
         let cot = this.cots.get(id);
 
         if (cot) {
-            return cot.as_feature();
+            return cot;
         } else if (opts.mission) {
             for (const sub of this.subscriptions.keys()) {
                 const store = this.subscriptions.get(sub);
@@ -254,7 +254,7 @@ export default class AtlasDatabase {
                 cot = store.cots.get(id);
 
                 if (cot) {
-                    return cot.as_feature();
+                    return cot;
                 }
             }
         }
