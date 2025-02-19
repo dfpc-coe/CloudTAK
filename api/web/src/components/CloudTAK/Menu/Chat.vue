@@ -65,7 +65,7 @@ import {
     IconRefresh,
 } from '@tabler/icons-vue'
 import MenuTemplate from '../util/MenuTemplate.vue';
-import { useMapStore } from '../../stores/map.ts';
+import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();
 import { useProfileStore } from '/src/stores/profile.ts';
 const profileStore = useProfileStore();

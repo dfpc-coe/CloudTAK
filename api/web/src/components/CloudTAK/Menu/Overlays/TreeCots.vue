@@ -263,9 +263,9 @@ import {
     IconChevronDown,
     IconFolder,
 } from '@tabler/icons-vue';
-import { useMapStore } from '../../../stores/map.ts';
+import { useMapStore } from '../../../../stores/map.ts';
 const mapStore = useMapStore();
-import { useCOTStore } from '../../../stores/cots.ts';
+import { useCOTStore } from '../../../../stores/cots.ts';
 const cotStore = useCOTStore();
 
 export default {

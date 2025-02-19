@@ -46,7 +46,9 @@ export default class AtlasConnection {
 
         this.ws.addEventListener('close', () => {
             // Otherwise the user is probably logged out
-            if (!this.isDestroyed) connect(connection, this.atlas.token);
+            if (!this.isDestroyed) {
+                this.connect(connection, this.atlas.token);
+            }
 
             this.isOpen = false;
         });
