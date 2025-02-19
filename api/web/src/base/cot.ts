@@ -1,8 +1,7 @@
 import { std } from '../std.ts';
 import { bbox } from '@turf/bbox'
-import type { LngLatBoundsLike } from 'maplibre-gl';
 import { WorkerMessage } from'./events.ts'
-//import { useProfileStore } from '../stores/profile.ts'
+import type Atlas from '../workers/atlas.ts';
 import pointOnFeature from '@turf/point-on-feature';
 import type { Feature, Subscription } from '../types.ts'
 import type {
@@ -10,13 +9,6 @@ import type {
     Feature as GeoJSONFeature,
     Geometry as GeoJSONGeometry,
 } from 'geojson'
-
-export interface Config {
-    emit?: Worker.postMessage;
-    token: string;
-    images: Set<string>;
-    pending: Map<string, COT>;
-}
 
 export interface Origin {
     mode: OriginMode,
@@ -53,13 +45,13 @@ export default class COT {
     _properties: Feature["properties"];
     _geometry: Feature["geometry"];
 
-    _config: Config;
+    _atlas: Atlas;
     _username?: string;
 
     origin: Origin
 
     constructor(
-        config: Config,
+        atlas: Atlas,
         feat: Feature,
         origin?: Origin,
         opts?: {
@@ -73,7 +65,7 @@ export default class COT {
         this._properties = feat["properties"] || {};
         this._geometry = feat["geometry"];
 
-        this._config = config;
+        this._atlas = atlas;
         this.origin = origin || { mode: OriginMode.CONNECTION };
 
         if (!this._properties.archived) {
@@ -85,7 +77,7 @@ export default class COT {
         }
 
         if (this.origin.mode === OriginMode.CONNECTION) {
-            this._config.pending.set(this.id, this);
+            this._atlas.pending.set(this.id, this);
         }
 
         if (!this.is_self && (!opts || (opts && opts.skipSave === false))) {
@@ -144,7 +136,7 @@ export default class COT {
 
         // TODO only update if Geometry or Rendered Prop changes
         if (this.origin.mode === OriginMode.CONNECTION) {
-            this._config.pending.set(this.id, this);
+            this._atlas.pending.set(this.id, this);
         }
 
         if (this.is_self) {
@@ -311,8 +303,8 @@ export default class COT {
 
     flyTo() {
         // TODO Implement Upstream
-        if (this._config.emit) {
-            this._config.emit(WorkerMessage.Map_FlyTo, {
+        if (this._atlas.emit) {
+            this._atlas.emit(WorkerMessage.Map_FlyTo, {
                 maxZoom: 18,
                 padding: {
                     top: 20,
@@ -394,7 +386,7 @@ export default class COT {
                     properties.icon = properties.icon.replace(/.png$/, '');
                 }
 
-                if (!this._config.images.has(properties.icon)) {
+                if (!this._atlas.images.has(properties.icon)) {
                     console.warn(`No Icon for: ${properties.icon} fallback to ${properties.type}`);
                     properties.icon = `${properties.type}`;
                 }

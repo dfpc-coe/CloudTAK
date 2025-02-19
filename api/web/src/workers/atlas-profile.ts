@@ -1,5 +1,4 @@
 import { toRaw } from 'vue';
-import { defineStore } from 'pinia'
 import { std, stdurl } from '../std.ts';
 import type { Feature, Group, Profile, Profile_Update } from '../types.ts';
 
@@ -25,6 +24,15 @@ export default class AtlasProfile {
         this.notifications = [];
         this.channels = [];
         this.profile = null;
+    }
+
+    async init() {
+        this.setupTimer();
+
+        await Promise.allSettled([
+            this.load(),
+            this.loadChannels()
+        ])
     }
 
     hasNoChannels(): boolean {
@@ -82,13 +90,17 @@ export default class AtlasProfile {
     }
 
     async load(): Promise<void> {
-        this.profile = await std('/api/profile') as Profile;
+        this.profile = await std('/api/profile', {
+            token: this.atlas.token
+        }) as Profile;
     }
 
     async loadChannels(): Promise<Array<Group>> {
         const url = stdurl('/api/marti/group');
         url.searchParams.append('useCache', 'true');
-        this.channels = ((await std(url)) as {
+        this.channels = ((await std(url, {
+            token: this.atlas.token
+        })) as {
             data: Group[]
         }).data
 
@@ -100,8 +112,13 @@ export default class AtlasProfile {
             this.setupTimer();
         }
 
+        if (body.tak_loc) {
+            await this.CoT();
+        }
+
         this.profile = await std('/api/profile', {
             method: 'PATCH',
+            token: this.atlas.token,
             body
         }) as Profile
     }

@@ -176,7 +176,7 @@ export default {
             this.menuItems.splice(0, this.menuItems.length);
             if (this.radial.mode === 'cot') {
                 if (this.radial.cot && this.radial.cot.properties) {
-                    const cot = mapstore.worker.db.get(this.radial.cot.properties.id, {
+                    const cot = mapStore.worker.db.get(this.radial.cot.properties.id, {
                         mission: true
                     });
 

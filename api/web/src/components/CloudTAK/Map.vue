@@ -605,15 +605,13 @@ onMounted(async () => {
     });
 
     await mountMap();
-    await mapStore.worker.atlas.auth(localStorage.token);
 
-    await Promise.all([
-        profileStore.loadChannels(),
-        mapStore.worker.db.loadArchive()
-    ]);
+    await mapStore.worker.atlas.init(localStorage.token);
 
-    warnChannels.value = profileStore.hasNoChannels;
-    warnConfiguration.value = profileStore.hasNoConfiguration;
+    // TODO these are no longer reactive, does it matter?
+
+    warnChannels.value = await mapStore.worker.profile.hasNoChannels();
+    warnConfiguration.value = await mapStore.worker.profile.hasNoConfiguration();
 
     loading.value = false;
 
@@ -722,13 +720,14 @@ function setLocation() {
     mapStore.map.once('click', async (e) => {
         mapStore.map.getCanvas().style.cursor = ''
         mode.value = 'Default';
-        await profileStore.update({
+
+        await mapStore.worker.profile.update({
             tak_loc: {
                 type: 'Point',
                 coordinates: [e.lngLat.lng, e.lngLat.lat]
             }
         })
-        await profileStore.CoT();
+
         await updateCOT();
     });
 }
@@ -916,8 +915,6 @@ function mountMap(): Promise<void> {
             await mapStore.initOverlays();
             await mapStore.initDraw();
 
-            await profileStore.CoT();
-
             mapStore.draw.on('deselect', async () => {
                 if (!mapStore.edit) return;
 
@@ -1001,8 +998,6 @@ function mountMap(): Promise<void> {
                     await updateCOT();
                 }
             });
-
-            profileStore.setupTimer();
 
             timer.value = setInterval(async () => {
                 if (!mapStore.map) return;
