@@ -8,6 +8,7 @@
 */
 
 import { defineStore } from 'pinia'
+import AtlasWorker from '../workers/atlas.ts?worker&url';
 import type { Position } from "geojson";
 import COT from '../base/cot.ts';
 import Subscription from './base/mission.ts';
@@ -27,12 +28,12 @@ import type {
     MapMouseEvent,
     MapGeoJSONFeature
 } from 'maplibre-gl';
-import { useMapWorkerStore } from './worker.js'
 
 export const useMapStore = defineStore('cloudtak', {
     state: (): {
         _map?: mapgl.Map;
         _draw?: terraDraw.TerraDraw;
+        channel: BroadcastChannel;
         edit: COT | undefined;
         mission: string | undefined;
         container?: HTMLElement;
@@ -60,7 +61,31 @@ export const useMapStore = defineStore('cloudtak', {
         },
         overlays: Array<Overlay>
     } => {
+        const channel = new BroadcastChannel("cloudtak");
+
+        channel.onmessage = (event) => {
+            try {
+                const body = JSON.parse(event)
+
+                if (!body.type) return;
+
+                if (body.type === WorkerMessage.Map_FlyTo) {
+                    console.error('Map FlyTo');
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
+        const worker = new Worker(AtlasWorker, {
+            type: 'module'
+        });
+
+        const com = Comlink.wrap(worker);
+
         return {
+            worker: com,
+            channel: new BroadcastChannel("cloudtak"),
             hasTerrain: false,
             isTerrainEnabled: false,
             isLoaded: false,
@@ -119,8 +144,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             await overlay.delete();
             if (overlay.mode === 'mission' && overlay.mode_id) {
-                const mapWorkerStore = useMapWorkerStore();
-                mapWorkerStore.subscriptions.delete(overlay.mode_id);
+                await this.worker.db.subscriptions.delete(overlay.mode_id);
             }
         },
         getOverlayById(id: number): Overlay | null {
@@ -189,13 +213,11 @@ export const useMapStore = defineStore('cloudtak', {
             const oStore = this.map.getSource(String(overlay.id));
             if (!oStore) return false
 
-            const mapWorkerStore = useMapWorkerStore();
-
-            let sub = mapWorkerStore.subscriptions.get(guid);
+            let sub = await this.worker.db.subscriptions.get(guid);
 
             if (!sub) {
                 sub = await Subscription.load(guid, overlay.token || undefined);
-                mapWorkerStore.subscriptions.set(guid, sub)
+                await this.worker.db.subscriptions.set(guid, sub)
             }
 
             // @ts-expect-error Source.setData is not defined
@@ -281,8 +303,7 @@ export const useMapStore = defineStore('cloudtak', {
 
                 // MultiSelect Mode
                 if (e.originalEvent.ctrlKey && features.length) {
-                    const mapWorkerStore = useMapWorkerStore();
-                    const cot = mapWorkerStore.worker.get(features[0].properties.id, {
+                    const cot = await this.worker.db.get(features[0].properties.id, {
                         mission: true
                     });
 
@@ -450,9 +471,7 @@ export const useMapStore = defineStore('cloudtak', {
             this.radial.cot = feat;
             this.radial.mode = opts.mode;
         },
-        initDraw: function() {
-            const mapWorkerStore = useMapWorkerStore();
-
+        initDraw: async function() {
             const toCustom = (event: terraDraw.TerraDrawMouseEvent): Position | undefined => {
                 let closest: {
                     dist: number
@@ -460,7 +479,7 @@ export const useMapStore = defineStore('cloudtak', {
                     coord: Position
                 } | undefined = undefined;
 
-                mapWorkerStore.worker.filter((cot) => {
+                await this.worker.db.filter((cot) => {
                     coordEach(cot.geometry, (coord: Position) => {
                         const dist = distance([event.lng, event.lat], coord);
 

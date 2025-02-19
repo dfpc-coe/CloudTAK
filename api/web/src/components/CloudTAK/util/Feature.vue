@@ -105,8 +105,6 @@ import {
     IconCone,
     IconPolygon,
 } from '@tabler/icons-vue';
-import { useMapWorkerStore } from '../../../stores/worker.ts';
-const mapWorkerStore = useMapWorkerStore();
 import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();
 
@@ -136,7 +134,7 @@ const props = defineProps({
 const emit = defineEmits(['delete']);
 
 const isZoomable = computed(() => {
-    const cot = mapWorkerStore.worker.get(props.feature.id, {
+    const cot = mapStore.worker.db.get(props.feature.id, {
         mission: true
     })
 
@@ -177,7 +175,7 @@ watch(canvas, async () => {
 
 async function deleteCOT() {
     if (props.deleteAction === 'delete') {
-        await mapWorkerStore.worker.delete(props.feature.id);
+        await mapStore.worker.db.delete(props.feature.id);
     } else {
         emit('delete');
     }
@@ -186,7 +184,7 @@ async function deleteCOT() {
 async function flyTo() {
     if (!isZoomable.value) return;
 
-    const cot = mapWorkerStore.worker.get(props.feature.id, {
+    const cot = mapStore.worker.db.get(props.feature.id, {
         mission: true
     });
 

@@ -506,13 +506,11 @@ import { useMapStore } from '../../stores/map.ts';
 import { useVideoStore } from '../../stores/videos.ts';
 import { useProfileStore } from '../../stores/profile.ts';
 import { useCOTStore } from '../../stores/cots.ts';
-import { useMapWorkerStore } from '../../stores/worker.ts';
 import UploadImport from './util/UploadImport.vue'
 import { coordEach } from '@turf/meta';
 const profileStore = useProfileStore();
 const cotStore = useCOTStore();
 const mapStore = useMapStore();
-const mapWorkerStore = useMapWorkerStore();
 const videoStore = useVideoStore();
 const router = useRouter();
 const route = useRoute();
@@ -607,11 +605,11 @@ onMounted(async () => {
     });
 
     await mountMap();
-    await mapWorkerStore.worker.auth(localStorage.token);
+    await mapStore.worker.atlas.auth(localStorage.token);
 
     await Promise.all([
         profileStore.loadChannels(),
-        mapWorkerStore.worker.loadArchive()
+        mapStore.worker.db.loadArchive()
     ]);
 
     warnChannels.value = profileStore.hasNoChannels;
@@ -666,7 +664,7 @@ onMounted(async () => {
     });
 
     if (!profileStore.profile) throw new Error('Profile did not load correctly');
-    await mapWorkerStore.worker.connect(profileStore.profile.username);
+    await mapStore.worker.conn.connect(profileStore.profile.username);
 });
 
 onBeforeUnmount(() => {
@@ -675,7 +673,6 @@ onBeforeUnmount(() => {
     }
 
     profileStore.destroy();
-    mapWorkerStore.destroy();
     cotStore.$reset();
     mapStore.destroy();
 });
@@ -780,20 +777,20 @@ async function handleRadial(event: string): Promise<void> {
             router.push('/');
         }
 
-        await mapWorkerStore.worker.remove(String(cot.id))
+        await mapStore.worker.db.remove(String(cot.id))
         await updateCOT();
     } else if (event === 'cot:lock') {
         locked.value.push(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
         closeRadial()
     } else if (event === 'cot:edit') {
-        editGeometry(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
+        await editGeometry(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
         closeRadial()
     } else if (event === 'feat:view') {
         selectFeat(mapStore.radial.cot as MapGeoJSONFeature);
         closeRadial()
     } else if (event === 'context:new') {
         // @ts-expect-error MapLibreFeature vs Feature
-        await mapWorkerStore.worker.add(mapStore.radial.cot);
+        await mapStore.worker.db.add(mapStore.radial.cot);
         updateCOT();
         closeRadial()
     } else if (event === 'context:info') {
@@ -806,10 +803,10 @@ async function handleRadial(event: string): Promise<void> {
     }
 }
 
-function editGeometry(featid: string) {
+async function editGeometry(featid: string) {
     if (!mapStore.draw) throw new Error('Drawing Tools haven\'t loaded');
 
-    const cot = mapWorkerStore.get(featid, { mission: true });
+    const cot = await mapStore.worker.db.get(featid, { mission: true });
     if (!cot) return;
 
     try {
@@ -838,7 +835,7 @@ function editGeometry(featid: string) {
             }
         });
 
-        mapWorkerStore.worker.hidden.add(cot.id);
+        await mapStore.worker.db.hidden.add(cot.id);
         updateCOT();
 
         // @ts-expect-error Cast Feature to GeoJSONStoreFeature
@@ -852,7 +849,7 @@ function editGeometry(featid: string) {
 
         mapStore.draw.selectFeature(cot.id);
     } catch (err) {
-        mapWorkerStore.worker.hidden.delete(cot.id);
+        await mapStore.worker.db.hidden.delete(cot.id);
         mapStore.draw.setMode('static');
         updateCOT();
         mapStore.drawOptions.mode = 'static';
@@ -864,7 +861,7 @@ function editGeometry(featid: string) {
 
 async function updateCOT() {
     try {
-        const diff = await mapWorkerStore.worker.diff();
+        const diff = await mapStore.worker.db.diff();
 
         if (
             (diff.add && diff.add.length)
@@ -875,10 +872,10 @@ async function updateCOT() {
             if (source) source.updateData(diff);
         }
 
-        if (locked.value.length && await mapWorkerStore.worker.has(locked.value[locked.value.length - 1])) {
+        if (locked.value.length && await mapStore.worker.db.has(locked.value[locked.value.length - 1])) {
             let featid = locked.value[locked.value.length - 1];
             if (featid) {
-                const feat = mapWorkerStore.worker.get(featid);
+                const feat = await mapStore.worker.db.get(featid);
                 if (feat && feat.geometry.type === "Point") {
                     const flyTo = {
                         center: feat.properties.center as LngLatLike,
@@ -914,8 +911,10 @@ function mountMap(): Promise<void> {
                 mapStore.map.addSprite(iconset.uid, String(stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=${iconset.uid}&alt=true`)))
             }
 
+            await mapStore.worker.db.images.add(mapStore.map.listImages());
+
             await mapStore.initOverlays();
-            mapStore.initDraw();
+            await mapStore.initDraw();
 
             await profileStore.CoT();
 
@@ -935,7 +934,7 @@ function mountMap(): Promise<void> {
                 mapStore.draw.stop();
 
                 cotStore.cots.delete(feat.id);
-                await mapWorkerStore.worker.add(feat);
+                await mapStore.worker.db.add(feat);
                 await updateCOT();
             })
 
@@ -998,7 +997,7 @@ function mountMap(): Promise<void> {
                     mapStore.draw.setMode('static');
                     mapStore.drawOptions.mode = 'static';
                     mapStore.draw.stop();
-                    await mapWorkerStore.worker.add(feat);
+                    await mapStore.worker.db.add(feat);
                     await updateCOT();
                 }
             });

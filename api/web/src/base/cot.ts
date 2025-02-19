@@ -1,8 +1,8 @@
 import { std } from '../std.ts';
 import { bbox } from '@turf/bbox'
 import type { LngLatBoundsLike } from 'maplibre-gl';
-import { useProfileStore } from '../stores/profile.ts'
-import { useMapStore } from '../stores/map.ts';
+import { WorkerMessage } from'./events.ts'
+//import { useProfileStore } from '../stores/profile.ts'
 import pointOnFeature from '@turf/point-on-feature';
 import type { Feature, Subscription } from '../types.ts'
 import type {
@@ -12,7 +12,9 @@ import type {
 } from 'geojson'
 
 export interface Config {
+    emit?: Worker.postMessage;
     token: string;
+    images: Set<string>;
     pending: Map<string, COT>;
 }
 
@@ -51,7 +53,7 @@ export default class COT {
     _properties: Feature["properties"];
     _geometry: Feature["geometry"];
 
-    _config: Map<string, COT>;
+    _config: Config;
     _username?: string;
 
     origin: Origin
@@ -146,6 +148,8 @@ export default class COT {
         }
 
         if (this.is_self) {
+            // TODO
+            return false;
             const profileStore = useProfileStore();
 
             if (
@@ -306,19 +310,19 @@ export default class COT {
     }
 
     flyTo() {
-        const mapStore = useMapStore();
-        if (!mapStore.map) return;
-
-        mapStore.map.fitBounds(this.bounds() as LngLatBoundsLike, {
-            maxZoom: 18,
-            padding: {
-                top: 20,
-                bottom: 20,
-                left: 20,
-                right: 20
-            },
-            speed: Infinity,
-        })
+        // TODO Implement Upstream
+        if (this._config.emit) {
+            this._config.emit(WorkerMessage.Map_FlyTo, {
+                maxZoom: 18,
+                padding: {
+                    top: 20,
+                    bottom: 20,
+                    left: 20,
+                    right: 20
+                },
+                speed: Infinity,
+            })
+        }
     }
 
     /**
@@ -390,8 +394,7 @@ export default class COT {
                     properties.icon = properties.icon.replace(/.png$/, '');
                 }
 
-                const mapStore = useMapStore();
-                if (mapStore.map && !mapStore.map.hasImage(properties.icon)) {
+                if (!this._config.images.has(properties.icon)) {
                     console.warn(`No Icon for: ${properties.icon} fallback to ${properties.type}`);
                     properties.icon = `${properties.type}`;
                 }

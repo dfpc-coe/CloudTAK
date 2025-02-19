@@ -1,8 +1,6 @@
-import { toRaw } from 'vue';
 import { defineStore } from 'pinia'
 import { std, stdurl } from '../std.ts';
 import type { Feature, Group, Profile, Profile_Update } from '../types.ts';
-import { useMapWorkerStore } from './worker.ts';
 
 export type TAKNotification = {
     type: string;
@@ -48,21 +46,6 @@ export const useProfileStore = defineStore('profile', {
                 this.timerSelf = undefined;
             }
         },
-        setupTimer() {
-            const mapWorkerStore = useMapWorkerStore();
-
-            if (this.timerSelf) {
-                window.clearInterval(this.timerSelf);
-            }
-
-            this.timerSelf = setInterval(async () => {
-                if (this.live_loc) {
-                    mapWorkerStore.worker.sendCOT(await this.CoT(this.live_loc))
-                } else if (this.profile && this.profile.tak_loc) {
-                    mapWorkerStore.worker.sendCOT(await this.CoT());
-                }
-            }, this.profile ? this.profile.tak_loc_freq : 2000);
-        },
         clearNotifications: function(): void {
             this.notifications = [];
         },
@@ -94,62 +77,15 @@ export const useProfileStore = defineStore('profile', {
             return this.channels
         },
         update: async function(body: Profile_Update): Promise<void> {
+            // TODO FIX THIS
             if (this.profile && body.tak_loc_freq && this.profile.tak_loc_freq !== body.tak_loc_freq) {
-                this.setupTimer();
+                //this.setupTimer();
             }
 
             this.profile = await std('/api/profile', {
                 method: 'PATCH',
                 body
             }) as Profile
-        },
-        uid: function(): string {
-            if (!this.profile) throw new Error('Profile must be loaded before CoT is called');
-
-            // Need to differentiate between servers eventually
-            return `ANDROID-CloudTAK-${this.profile.username}`;
-        },
-        CoT: async function(coords?: number[]): Promise<void> {
-            if (!this.profile) throw new Error('Profile must be loaded before CoT is called');
-
-            const feat: Feature = {
-                id: this.uid(),
-                path: '/',
-                type: 'Feature',
-                properties: {
-                    id: this.uid(),
-                    type: 'a-f-G-E-V-C',
-                    how: 'm-g',
-                    callsign: this.profile.tak_callsign,
-                    remarks: this.profile.tak_remarks,
-                    droid: this.profile.tak_callsign,
-                    time: new Date().toISOString(),
-                    start: new Date().toISOString(),
-                    stale: new Date(new Date().getTime() + (1000 * 60)).toISOString(),
-                    center: coords || (this.profile.tak_loc ? toRaw(this.profile.tak_loc.coordinates) : [ 0, 0 ]),
-                    contact: {
-                        endpoint: '*:-1:stcp',
-                        callsign: this.profile.tak_callsign,
-                    },
-                    group: {
-                        name: this.profile.tak_group,
-                        role: this.profile.tak_role
-                    },
-                    takv: {
-                        device: navigator.userAgent,
-                        platform: 'CloudTAK',
-                        os: navigator.platform,
-                        //TODO Use versions
-                        version: '1.0.0'
-                    }
-                },
-                geometry: coords
-                    ? { type: 'Point', coordinates: coords }
-                    : (toRaw(this.profile.tak_loc) || { type: 'Point', coordinates: [0,0] })
-            }
-
-            const mapWorkerStore = useMapWorkerStore();
-            await mapWorkerStore.worker.add(feat);
         },
     }
 })
