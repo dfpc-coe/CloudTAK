@@ -166,6 +166,7 @@ export default class COT {
         if (this.properties.archived) {
             await std('/api/profile/feature', {
                 method: 'PUT',
+                token: this._atlas.token,
                 body: this.as_feature()
             })
         }
@@ -295,9 +296,9 @@ export default class COT {
     }
 
     flyTo() {
-        // TODO Implement Upstream
-        if (this._atlas.emit) {
-            this._atlas.emit(WorkerMessage.Map_FlyTo, {
+        this._atlas.channel.postMessage({
+            type: WorkerMessage.Map_FlyTo,
+            body: {
                 maxZoom: 18,
                 padding: {
                     top: 20,
@@ -306,8 +307,8 @@ export default class COT {
                     right: 20
                 },
                 speed: Infinity,
-            })
-        }
+            }
+        })
     }
 
     /**

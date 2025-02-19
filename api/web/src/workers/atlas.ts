@@ -7,15 +7,23 @@ import AtlasProfile from './atlas-profile.ts';
 import AtlasDatabase from './atlas-database.ts';
 import AtlasConnection from './atlas-connection.ts';
 
+export type {
+    AtlasProfile,
+    AtlasDatabase,
+    AtlasConnection
+};
+
 export default class Atlas {
+    channel: BroadcastChannel;
+
     token: string;
 
     db: AtlasDatabase;
     conn: AtlasConnection;
     profile: AtlasProfile;
 
-    constructor(emit: Worker.postMessage) {
-        this.emit = emit;
+    constructor() {
+        this.channel = new BroadcastChannel('cloudtak');
 
         this.token = '';
 
@@ -40,9 +48,4 @@ export default class Atlas {
 
 const atlas = new Atlas();
 
-expose({
-    atlas,
-    db: atlas.db,
-    conn: atlas.conn,
-    profile: atlas.profile
-})
+expose(atlas);

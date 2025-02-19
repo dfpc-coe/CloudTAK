@@ -3,6 +3,7 @@
 */
 
 import { stdurl } from '../std.ts';
+import type Atlas from './atlas.ts';
 import { WorkerMessage } from '../base/events.ts';
 import type { Feature } from '../types.ts';
 
@@ -49,7 +50,7 @@ export default class AtlasConnection {
         this.ws.addEventListener('close', () => {
             // Otherwise the user is probably logged out
             if (!this.isDestroyed) {
-                this.connect(connection, this.atlas.token);
+                this.connect(connection);
             }
 
             this.isOpen = false;

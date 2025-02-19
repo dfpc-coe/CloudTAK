@@ -4,9 +4,10 @@
 
 import { proxy } from 'comlink';
 import { std } from '../std.ts';
-import COT from '../base/cot.ts';
+import type Atlas from './atlas.ts';
+import COT, { OriginMode } from '../base/cot.ts';
 import type { GeoJSONSourceDiff } from 'maplibre-gl';
-import type { Feature } from '../types.ts';
+import type { Feature, APIList } from '../types.ts';
 
 export default class AtlasDatabase {
     atlas: Atlas;
@@ -52,7 +53,7 @@ export default class AtlasDatabase {
         // TODO
         //const profileStore = useProfileStore();
         //const display_stale = profileStore.profile ? profileStore.profile.display_stale : 'Immediate';
-        const display_stale = 'Immediate';
+        const display_stale: string = 'Immediate';
 
         for (const cot of this.cots.values()) {
             const render = cot.as_rendered();
@@ -180,7 +181,7 @@ export default class AtlasDatabase {
         for (const feat of this.cots.values()) {
             if (opts.ignoreArchived && feat.properties.archived) continue;
 
-            delete(feat.id, opts.skipNetwork);
+            this.delete(feat.id, opts.skipNetwork);
         }
     }
 

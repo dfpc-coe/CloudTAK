@@ -18,6 +18,8 @@ import { std, stdurl } from '../std.js';
 import mapgl from 'maplibre-gl'
 import * as terraDraw from 'terra-draw';
 import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
+import type Atlas from '../workers/atlas.ts';
+import type { AtlasProfile, AtlasDatabase, AtlasConnection } from '../workers/atlas.ts';
 
 import type { ProfileOverlay, Basemap, APIList } from '../types.ts';
 import { coordEach } from '@turf/meta';
@@ -35,6 +37,12 @@ export const useMapStore = defineStore('cloudtak', {
         _map?: mapgl.Map;
         _draw?: terraDraw.TerraDraw;
         channel: BroadcastChannel;
+        worker: Comlink.Remote<{
+            atlas: Atlas,
+            db: AtlasDatabase,
+            conn: AtlasConnection,
+            profile: AtlasProfile
+        }>;
         edit: COT | undefined;
         mission: string | undefined;
         container?: HTMLElement;

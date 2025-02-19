@@ -39,7 +39,11 @@ export default class AtlasProfile {
             this.loadChannels()
         ])
 
-        return this.profile.username;
+        if (!this.profile) {
+            throw new Error('Failed loading profile');
+        } else {
+            return this.profile.username;
+        }
     }
 
     hasNoChannels(): boolean {
