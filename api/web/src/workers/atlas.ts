@@ -46,6 +46,6 @@ export default class Atlas {
     }
 }
 
-const atlas = new Atlas();
+const atlas = new Atlas()
 
 expose(atlas);

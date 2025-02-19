@@ -5,6 +5,7 @@
 import { proxy } from 'comlink';
 import { std } from '../std.ts';
 import type Atlas from './atlas.ts';
+import type Subscription from '../stores/base/mission.ts';
 import COT, { OriginMode } from '../base/cot.ts';
 import type { GeoJSONSourceDiff } from 'maplibre-gl';
 import type { Feature, APIList } from '../types.ts';
@@ -181,7 +182,49 @@ export default class AtlasDatabase {
         for (const feat of this.cots.values()) {
             if (opts.ignoreArchived && feat.properties.archived) continue;
 
-            this.delete(feat.id, opts.skipNetwork);
+            this.remove(feat.id, opts.skipNetwork);
+        }
+    }
+
+    async subChange(task: Feature): Promise<void> {
+        if (task.properties.type === 't-x-m-c' && task.properties.mission && task.properties.mission.missionChanges) {
+            let updateGuid;
+
+            for (const change of task.properties.mission.missionChanges) {
+                if (!task.properties.mission.guid) {
+                    console.error(`Cannot add ${change.contentUid} to ${JSON.stringify(task.properties.mission)} as no guid was included`);
+                    continue;
+                }
+
+                if (change.type === 'ADD_CONTENT') {
+                    this.subscriptionPending.set(change.contentUid, task.properties.mission.guid);
+                } else if (change.type === 'REMOVE_CONTENT') {
+                    const sub = this.subscriptions.get(task.properties.mission.guid);
+                    if (!sub) {
+                        console.error(`Cannot remove ${change.contentUid} from ${task.properties.mission.guid} as it's not in memory`);
+                        continue;
+                    }
+
+                    sub.cots.delete(change.contentUid);
+                    updateGuid = task.properties.mission.guid;
+                }
+            }
+
+            if (updateGuid) {
+                // TODO Update COTS
+                //const mapStore = useMapStore();
+                //await mapStore.loadMission(updateGuid);
+            }
+        } else if (task.properties.type === 't-x-m-c-l' && task.properties.mission && task.properties.mission.guid) {
+            const sub = this.subscriptions.get(task.properties.mission.guid);
+            if (!sub) {
+                console.error(`Cannot refresh ${task.properties.mission.guid} logs as it is not subscribed`);
+                return;
+            }
+
+            await sub.updateLogs();
+        } else {
+            console.warn('Unknown Mission Task', JSON.stringify(task));
         }
     }
 
@@ -211,8 +254,9 @@ export default class AtlasDatabase {
 
             sub.cots.set(String(cot.id), cot);
 
-            const mapStore = useMapStore();
-            await mapStore.loadMission(mission_guid);
+            // TODO UPDATE COTS
+            //const mapStore = useMapStore();
+            //await mapStore.loadMission(mission_guid);
         } else {
             let is_mission_cot: COT | undefined;
             for (const value of this.subscriptions.values()) {

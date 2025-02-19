@@ -146,9 +146,9 @@ import {
     IconEyePlus,
     IconEyeOff,
 } from '@tabler/icons-vue';
-import { useProfileStore } from '../../../../src/stores/profile.ts';
-import { useCOTStore } from '../../../../src/stores/cots.ts';
-const cotStore = useCOTStore();
+import { useProfileStore } from '../../../stores/profile.ts';
+import { useMapStore } from '../../../stores/map.ts';
+const mapStore = useMapStore();
 const profileStore = useProfileStore();
 
 const error = ref<Error | undefined>();
@@ -212,7 +212,7 @@ async function setAllStatus(active=true) {
         return ch;
     });
 
-    await cotStore.clear({
+    await mapStore.worker.db.clear({
         ignoreArchived: true,
         skipNetwork: false
     })
@@ -230,7 +230,7 @@ async function setStatus(channel: Group, active=false) {
         return ch;
     });
 
-    await cotStore.clear({
+    await mapStore.worker.db.clear({
         ignoreArchived: true,
         skipNetwork: false
     })

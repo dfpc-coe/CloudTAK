@@ -18,7 +18,7 @@ export default class AtlasConnection {
         this.atlas = atlas;
 
         this.isDestroyed = false;
-        this.isDestroyed = false;
+        this.isOpen = false;
         this.ws = undefined;
     }
 
@@ -64,7 +64,7 @@ export default class AtlasConnection {
             };
 
             if (body.type === 'Error') {
-                const err = body as {
+                const err = body as unknown as {
                     properties: { message: string }
                 };
 
@@ -76,8 +76,7 @@ export default class AtlasConnection {
 
                 if (task.properties.type.startsWith('t-x-m-c')) {
                     // Mission Change Tasking
-                    const cotStore = useCOTStore();
-                    await cotStore.subChange(task);
+                    await this.atlas.db.subChange(task);
                 } else if (task.properties.type === 't-x-d-d') {
                     // CoT Delete Tasking
                     console.error('DELETE', task.properties);

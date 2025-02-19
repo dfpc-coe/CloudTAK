@@ -72,47 +72,6 @@ export const useCOTStore = defineStore('cots', {
             return cots;
         },
 
-        subChange: async function(task: Feature): Promise<void> {
-            if (task.properties.type === 't-x-m-c' && task.properties.mission && task.properties.mission.missionChanges) {
-                let updateGuid;
-
-                for (const change of task.properties.mission.missionChanges) {
-                    if (!task.properties.mission.guid) {
-                        console.error(`Cannot add ${change.contentUid} to ${JSON.stringify(task.properties.mission)} as no guid was included`);
-                        continue;
-                    }
-
-                    if (change.type === 'ADD_CONTENT') {
-                        this.subscriptionPending.set(change.contentUid, task.properties.mission.guid);
-                    } else if (change.type === 'REMOVE_CONTENT') {
-                        const sub = this.subscriptions.get(task.properties.mission.guid);
-                        if (!sub) {
-                            console.error(`Cannot remove ${change.contentUid} from ${task.properties.mission.guid} as it's not in memory`);
-                            continue;
-                        }
-
-                        sub.cots.delete(change.contentUid);
-                        updateGuid = task.properties.mission.guid;
-                    }
-                }
-
-                if (updateGuid) {
-                    const mapStore = useMapStore();
-                    await mapStore.loadMission(updateGuid);
-                }
-            } else if (task.properties.type === 't-x-m-c-l' && task.properties.mission && task.properties.mission.guid) {
-                const sub = this.subscriptions.get(task.properties.mission.guid);
-                if (!sub) {
-                    console.error(`Cannot refresh ${task.properties.mission.guid} logs as it is not subscribed`);
-                    return;
-                }
-
-                await sub.updateLogs();
-            } else {
-                console.warn('Unknown Mission Task', JSON.stringify(task));
-            }
-        },
-
         /**
          * Return CoTs touching a given polygon
          */

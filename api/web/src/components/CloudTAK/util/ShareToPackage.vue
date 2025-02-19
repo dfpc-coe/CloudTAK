@@ -88,7 +88,7 @@ const body = ref({
 })
 
 /** Feats often come from Vector Tiles which don't contain the full feature */
-async function currentFeats(): Array<Feature> {
+async function currentFeats(): Promise<Array<Feature>> {
     return (props.feats || []).map(async (f) => {
         if (f.properties.type === 'b-f-t-r') {
             // FileShare is manually generated and won't exist in CoT Store
