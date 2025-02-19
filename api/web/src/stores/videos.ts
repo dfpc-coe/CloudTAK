@@ -3,9 +3,9 @@
 */
 
 import { defineStore } from 'pinia'
-import { useCOTStore } from './cots.ts';
+import { useMapWorkerStore } from './worker.ts';
 import type { VideoConnection } from '../types.ts';
-const cotStore = useCOTStore();
+const mapWorkerStore = useMapWorkerStore();
 
 export enum VideoStoreType {
     COT = 'cot',
@@ -46,7 +46,7 @@ export const useVideoStore = defineStore('video', {
             })
         },
         add(uid: string): void {
-            const cot = cotStore.get(uid, {
+            const cot = mapWorkerStore.get(uid, {
                 mission: true
             });
 

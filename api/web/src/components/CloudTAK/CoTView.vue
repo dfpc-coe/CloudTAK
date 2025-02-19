@@ -692,27 +692,25 @@ import {
 import Subscriptions from './util/Subscriptions.vue';
 import timediff from '../../timediff.ts';
 import { std } from '../../std.ts';
-import { useCOTStore } from '../../stores/cots.ts';
 import { useProfileStore } from '../../stores/profile.ts';
 import { useVideoStore } from '../../stores/videos.ts';
 import { useMapWorkerStore } from '../../stores/worker.ts';
 
 const mapWorkerStore = useMapWorkerStore();
-const cotStore = useCOTStore();
 
 const profileStore = useProfileStore();
 const videoStore = useVideoStore();
 const route = useRoute();
 const router = useRouter();
 
-const cot = ref<COT | undefined>(cotStore.get(String(route.params.uid), {
+const cot = ref<COT | undefined>(mapWorkerStore.get(String(route.params.uid), {
     mission: true
 }))
 
 const mission = ref<Mission | undefined>();
 
 if (cot.value && cot.value.origin.mode === OriginMode.MISSION && cot.value.origin.mode_id) {
-    mission.value = cotStore.subscriptions.get(cot.value.origin.mode_id);
+    mission.value = mapWorkerStore.subscriptions.get(cot.value.origin.mode_id);
 }
 
 const username = ref<string | undefined>();
@@ -724,7 +722,7 @@ const time = ref('relative');
 watch(cot, () => {
     if (cot.value) {
         if (cot.value.origin.mode === OriginMode.MISSION && cot.value.origin.mode_id) {
-            mission.value = cotStore.subscriptions.get(cot.value.origin.mode_id);
+            mission.value = mapWorkerStore.subscriptions.get(cot.value.origin.mode_id);
         } else {
             mission.value = undefined;
         }
@@ -768,7 +766,7 @@ const center = computed(() => {
 async function load_cot() {
     username.value = undefined;
 
-    cot.value = cotStore.get(String(route.params.uid), {
+    cot.value = mapWorkerStore.get(String(route.params.uid), {
         mission: true
     })
 

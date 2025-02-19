@@ -11,6 +11,11 @@ import type {
     Geometry as GeoJSONGeometry,
 } from 'geojson'
 
+export interface Config {
+    token: string;
+    pending: Map<string, COT>;
+}
+
 export interface Origin {
     mode: OriginMode,
     mode_id?: string
@@ -46,13 +51,13 @@ export default class COT {
     _properties: Feature["properties"];
     _geometry: Feature["geometry"];
 
-    _pending: Map<string, COT>;
+    _config: Map<string, COT>;
     _username?: string;
 
     origin: Origin
 
     constructor(
-        pending: Map<string, COT>,
+        config: Config,
         feat: Feature,
         origin?: Origin,
         opts?: {
@@ -66,7 +71,7 @@ export default class COT {
         this._properties = feat["properties"] || {};
         this._geometry = feat["geometry"];
 
-        this._pending = pending;
+        this._config = config;
         this.origin = origin || { mode: OriginMode.CONNECTION };
 
         if (!this._properties.archived) {
@@ -78,7 +83,7 @@ export default class COT {
         }
 
         if (this.origin.mode === OriginMode.CONNECTION) {
-            this._pending.set(this.id, this);
+            this._config.pending.set(this.id, this);
         }
 
         if (!this.is_self && (!opts || (opts && opts.skipSave === false))) {
@@ -137,7 +142,7 @@ export default class COT {
 
         // TODO only update if Geometry or Rendered Prop changes
         if (this.origin.mode === OriginMode.CONNECTION) {
-            this._pending.set(this.id, this);
+            this._config.pending.set(this.id, this);
         }
 
         if (this.is_self) {

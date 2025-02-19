@@ -27,7 +27,7 @@ import type {
     MapMouseEvent,
     MapGeoJSONFeature
 } from 'maplibre-gl';
-import { useCOTStore } from './cots.js'
+import { useMapWorkerStore } from './worker.js'
 
 export const useMapStore = defineStore('cloudtak', {
     state: (): {
@@ -119,8 +119,8 @@ export const useMapStore = defineStore('cloudtak', {
 
             await overlay.delete();
             if (overlay.mode === 'mission' && overlay.mode_id) {
-                const cotStore = useCOTStore();
-                cotStore.subscriptions.delete(overlay.mode_id);
+                const mapWorkerStore = useMapWorkerStore();
+                mapWorkerStore.subscriptions.delete(overlay.mode_id);
             }
         },
         getOverlayById(id: number): Overlay | null {
@@ -189,13 +189,13 @@ export const useMapStore = defineStore('cloudtak', {
             const oStore = this.map.getSource(String(overlay.id));
             if (!oStore) return false
 
-            const cotStore = useCOTStore();
+            const mapWorkerStore = useMapWorkerStore();
 
-            let sub = cotStore.subscriptions.get(guid);
+            let sub = mapWorkerStore.subscriptions.get(guid);
 
             if (!sub) {
                 sub = await Subscription.load(guid, overlay.token || undefined);
-                cotStore.subscriptions.set(guid, sub)
+                mapWorkerStore.subscriptions.set(guid, sub)
             }
 
             // @ts-expect-error Source.setData is not defined
@@ -281,8 +281,8 @@ export const useMapStore = defineStore('cloudtak', {
 
                 // MultiSelect Mode
                 if (e.originalEvent.ctrlKey && features.length) {
-                    const cotStore = useCOTStore();
-                    const cot = cotStore.get(features[0].properties.id, {
+                    const mapWorkerStore = useMapWorkerStore();
+                    const cot = mapWorkerStore.get(features[0].properties.id, {
                         mission: true
                     });
 
@@ -451,7 +451,7 @@ export const useMapStore = defineStore('cloudtak', {
             this.radial.mode = opts.mode;
         },
         initDraw: function() {
-            const cotStore = useCOTStore();
+            const mapWorkerStore = useMapWorkerStore();
 
             const toCustom = (event: terraDraw.TerraDrawMouseEvent): Position | undefined => {
                 let closest: {
@@ -460,7 +460,7 @@ export const useMapStore = defineStore('cloudtak', {
                     coord: Position
                 } | undefined = undefined;
 
-                cotStore.filter((cot) => {
+                mapWorkerStore.filter((cot) => {
                     coordEach(cot.geometry, (coord: Position) => {
                         const dist = distance([event.lng, event.lat], coord);
 
