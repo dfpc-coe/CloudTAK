@@ -136,7 +136,7 @@ const props = defineProps({
 const emit = defineEmits(['delete']);
 
 const isZoomable = computed(() => {
-    const cot = mapWorkerStore.get(props.feature.id, {
+    const cot = mapWorkerStore.worker.get(props.feature.id, {
         mission: true
     })
 
@@ -186,7 +186,7 @@ async function deleteCOT() {
 async function flyTo() {
     if (!isZoomable.value) return;
 
-    const cot = mapWorkerStore.get(props.feature.id, {
+    const cot = mapWorkerStore.worker.get(props.feature.id, {
         mission: true
     });
 

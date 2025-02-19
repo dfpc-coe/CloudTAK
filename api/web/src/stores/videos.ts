@@ -46,7 +46,7 @@ export const useVideoStore = defineStore('video', {
             })
         },
         add(uid: string): void {
-            const cot = mapWorkerStore.get(uid, {
+            const cot = mapWorkerStore.worker.get(uid, {
                 mission: true
             });
 

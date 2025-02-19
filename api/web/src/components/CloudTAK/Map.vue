@@ -838,7 +838,7 @@ function editGeometry(featid: string) {
             }
         });
 
-        cotStore.hidden.add(cot.id);
+        mapWorkerStore.worker.hidden.add(cot.id);
         updateCOT();
 
         // @ts-expect-error Cast Feature to GeoJSONStoreFeature
@@ -852,7 +852,7 @@ function editGeometry(featid: string) {
 
         mapStore.draw.selectFeature(cot.id);
     } catch (err) {
-        cotStore.hidden.delete(cot.id);
+        mapWorkerStore.worker.hidden.delete(cot.id);
         mapStore.draw.setMode('static');
         updateCOT();
         mapStore.drawOptions.mode = 'static';
@@ -878,7 +878,7 @@ async function updateCOT() {
         if (locked.value.length && await mapWorkerStore.worker.has(locked.value[locked.value.length - 1])) {
             let featid = locked.value[locked.value.length - 1];
             if (featid) {
-                const feat = mapWorkerStore.get(featid);
+                const feat = mapWorkerStore.worker.get(featid);
                 if (feat && feat.geometry.type === "Point") {
                     const flyTo = {
                         center: feat.properties.center as LngLatLike,

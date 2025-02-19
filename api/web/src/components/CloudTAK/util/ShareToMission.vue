@@ -117,7 +117,7 @@ import Subscription from '../../../stores/base/mission.ts'
 const mapWorkerStore = useMapWorkerStore();
 
 const missions = computed(() => {
-    return Array.from(mapWorkerStore.subscriptions.values())
+    return Array.from(mapWorkerStore.worker.subscriptions.values())
         .filter((mission) => {
             return mission.role.permissions.includes("MISSION_WRITE")
         })
@@ -150,7 +150,7 @@ function currentFeats(): Array<Feature> {
             // FileShare is manually generated and won't exist in CoT Store
             return f;
         } else {
-            return mapWorkerStore.get(f.id);
+            return mapWorkerStore.worker.get(f.id);
         }
     }).filter((f) => {
         return !!f;

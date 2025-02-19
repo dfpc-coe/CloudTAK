@@ -94,7 +94,7 @@ function currentFeats(): Array<Feature> {
             // FileShare is manually generated and won't exist in CoT Store
             return f;
         } else {
-            return mapWorkerStore.get(f.id) || f;
+            return mapWorkerStore.worker.get(f.id) || f;
         }
     }).filter((f) => {
         return !!f;

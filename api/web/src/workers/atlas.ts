@@ -85,7 +85,7 @@ function connect(connection: string) {
         };
 
         if (body.type === 'Error') {
-            const err = body.data as {
+            const err = body as {
                 properties: { message: string }
             };
 
