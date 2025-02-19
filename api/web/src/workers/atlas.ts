@@ -27,17 +27,12 @@ export default class Atlas {
     async init(authToken: string) {
         this.token = authToken;
 
-        await Promise.allSettled([
-            this.profile.init()
-        ])
+        await this.profile.init();
+        await this.conn.connect(this.profile.username)
     }
 
     destroy() {
-        purse.isDestroyed = true;
-
-        if (purse.ws) {
-            purse.ws.close();
-        }
+        this.conn.destroy();
     }
 }
 

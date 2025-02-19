@@ -609,7 +609,6 @@ onMounted(async () => {
     await mapStore.worker.atlas.init(localStorage.token);
 
     // TODO these are no longer reactive, does it matter?
-
     warnChannels.value = await mapStore.worker.profile.hasNoChannels();
     warnConfiguration.value = await mapStore.worker.profile.hasNoConfiguration();
 
@@ -660,9 +659,6 @@ onMounted(async () => {
             }
         }
     });
-
-    if (!profileStore.profile) throw new Error('Profile did not load correctly');
-    await mapStore.worker.conn.connect(profileStore.profile.username);
 });
 
 onBeforeUnmount(() => {
