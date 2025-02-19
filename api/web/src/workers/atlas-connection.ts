@@ -37,9 +37,11 @@ export default class AtlasConnection {
         }
 
         this.ws = new WebSocket(url);
+
         this.ws.addEventListener('open', () => {
             this.isOpen = true;
         });
+
         this.ws.addEventListener('error', (err) => {
             console.error(err);
         });

@@ -58,7 +58,7 @@ export default class COT {
             skipSave?: boolean;
         }
     ) {
-        feat.properties = COT.style(feat.geometry.type, feat.properties);
+        feat.properties = COT.style(atlas, feat.geometry.type, feat.properties);
 
         this.id = feat.id || crypto.randomUUID();
         this.path = feat.path || '/';
@@ -118,7 +118,7 @@ export default class COT {
         }
 
         if (update.properties) {
-            update.properties = COT.style(this._geometry.type, update.properties);
+            update.properties = COT.style(this._atlas, this._geometry.type, update.properties);
 
             for (const prop of RENDERED_PROPERTIES) {
                 if (this._properties[prop] !== update.properties[prop]) {
@@ -140,18 +140,14 @@ export default class COT {
         }
 
         if (this.is_self) {
-            // TODO
-            return false;
-            const profileStore = useProfileStore();
-
             if (
-                profileStore.profile
+                this._atlas.profile.profile
                 && (
-                    this.properties.remarks !== profileStore.profile.tak_remarks
-                    || this.properties.callsign !== profileStore.profile.tak_callsign
+                    this.properties.remarks !== this._atlas.profile.profile.tak_remarks
+                    || this.properties.callsign !== this._atlas.profile.profile.tak_callsign
                 )
             ) {
-                await profileStore.update({
+                await this._atlas.profile.update({
                     tak_callsign: this.properties.callsign,
                     tak_remarks: this.properties.remarks
                 })
@@ -180,10 +176,7 @@ export default class COT {
     }
 
     get is_self(): boolean {
-        // TODO Restore
-        //const profileStore = useProfileStore();
-        //return this.id === profileStore.uid();
-        return false
+        return this._atlas.profile.uid() === this.id;
     }
 
     get is_archivable(): boolean {
@@ -321,6 +314,7 @@ export default class COT {
      * Consistent feature manipulation between add & update
      */
     static style(
+        atlas: Atlas,
         type: string,
         properties: Feature["properties"]
     ): Feature["properties"] {
@@ -386,7 +380,7 @@ export default class COT {
                     properties.icon = properties.icon.replace(/.png$/, '');
                 }
 
-                if (!this._atlas.db.images.has(properties.icon)) {
+                if (!atlas.db.images.has(properties.icon)) {
                     console.warn(`No Icon for: ${properties.icon} fallback to ${properties.type}`);
                     properties.icon = `${properties.type}`;
                 }

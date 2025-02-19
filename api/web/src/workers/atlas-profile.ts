@@ -100,7 +100,6 @@ export default class AtlasProfile {
         this.profile = await std('/api/profile', {
             token: this.atlas.token
         }) as Profile;
-        console.error('LOAD', this.profile);
     }
 
     async loadChannels(): Promise<Array<Group>> {
