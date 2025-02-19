@@ -282,7 +282,7 @@ export const useMapStore = defineStore('cloudtak', {
                 // MultiSelect Mode
                 if (e.originalEvent.ctrlKey && features.length) {
                     const mapWorkerStore = useMapWorkerStore();
-                    const cot = mapWorkerStore.get(features[0].properties.id, {
+                    const cot = mapWorkerStore.worker.get(features[0].properties.id, {
                         mission: true
                     });
 
@@ -460,7 +460,7 @@ export const useMapStore = defineStore('cloudtak', {
                     coord: Position
                 } | undefined = undefined;
 
-                mapWorkerStore.filter((cot) => {
+                mapWorkerStore.worker.filter((cot) => {
                     coordEach(cot.geometry, (coord: Position) => {
                         const dist = distance([event.lng, event.lat], coord);
 

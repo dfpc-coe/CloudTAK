@@ -177,7 +177,7 @@ export default {
             this.menuItems.splice(0, this.menuItems.length);
             if (this.radial.mode === 'cot') {
                 if (this.radial.cot && this.radial.cot.properties) {
-                    const cot = cotStore.get(this.radial.cot.properties.id, {
+                    const cot = mapWorkerStore.worker.get(this.radial.cot.properties.id, {
                         mission: true
                     });
 
@@ -189,7 +189,7 @@ export default {
                             this.menuItems.push({ id: 'lock', icon: '#radial-lock' })
                         }
                     } else if (cot.origin.mode === OriginMode.MISSION && cot.origin.mode_id) {
-                        const sub = cotStore.subscriptions.get(cot.origin.mode_id);
+                        const sub = mapWorkerStore.worker.subscriptions.get(cot.origin.mode_id);
 
                         if (sub.role && sub.role.permissions.includes("MISSION_WRITE")) {
                             this.menuItems.push({ id: 'edit', icon: '#radial-pencil' })
