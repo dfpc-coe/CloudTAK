@@ -606,7 +606,6 @@ onMounted(async () => {
 
     await mountMap();
 
-    console.error(mapStore.worker);
     await mapStore.worker.init(localStorage.token);
 
     // TODO these are no longer reactive, does it matter?
@@ -888,23 +887,23 @@ async function updateCOT() {
     }
 }
 
-function mountMap(): Promise<void> {
-    return new Promise((resolve) => {
-        if (!mapRef.value) throw new Error('Map Element could not be found - Please refresh the page and try again');
-        mapStore.init(mapRef.value);
+async function mountMap(): Promise<void> {
+    if (!mapRef.value) throw new Error('Map Element could not be found - Please refresh the page and try again');
+    mapStore.init(mapRef.value);
 
+    // Eventually make a sprite URL part of the overlay so KMLs can load a sprite package & add paging support
+    const iconsets = await std('/api/iconset') as IconsetList;
+    for (const iconset of iconsets.items) {
+        mapStore.map.addSprite(iconset.uid, String(stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=${iconset.uid}&alt=true`)))
+    }
+
+    return new Promise((resolve) => {
         mapStore.map.once('idle', async () => {
             if (profileStore.profile && profileStore.profile.display_projection === 'globe') {
                 mapStore.map.setProjection({ type: "globe" });
             }
-
-            // Eventually make a sprite URL part of the overlay so KMLs can load a sprite package & add paging support
-            const iconsets = await std('/api/iconset') as IconsetList;
-            for (const iconset of iconsets.items) {
-                mapStore.map.addSprite(iconset.uid, String(stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=${iconset.uid}&alt=true`)))
-            }
-
-            await mapStore.worker.db.images.add(mapStore.map.listImages());
+            
+            await mapStore.worker.db.updateImages(mapStore.map.listImages());
 
             await mapStore.initOverlays();
             await mapStore.initDraw();

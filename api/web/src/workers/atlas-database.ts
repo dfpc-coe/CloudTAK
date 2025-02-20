@@ -41,6 +41,16 @@ export default class AtlasDatabase {
 
     }
 
+    async init(): Promise<void> {
+        await this.loadArchive()
+    }
+
+    updateImages(images: Array<string>): void {
+        for (const image of images) {
+            this.images.add(image);
+        }
+    }
+
     /**
      * Generate a GeoJSONDiff on existing COT Features
      */
@@ -133,10 +143,6 @@ export default class AtlasDatabase {
         this.pendingDelete.clear();
 
         return diff;
-    }
-
-    async init(): Promise<void> {
-        await this.loadArchive()
     }
 
     /**
