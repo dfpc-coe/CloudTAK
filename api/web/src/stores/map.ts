@@ -12,6 +12,7 @@ import * as Comlink from 'comlink';
 import AtlasWorker from '../workers/atlas.ts?worker&url';
 import type { Position } from "geojson";
 import COT from '../base/cot.ts';
+import { WorkerMessage }from '../base/events.ts';
 import Subscription from './base/mission.ts';
 import Overlay from './base/overlay.ts';
 import { std, stdurl } from '../std.js';
@@ -36,7 +37,7 @@ export const useMapStore = defineStore('cloudtak', {
         _map?: mapgl.Map;
         _draw?: terraDraw.TerraDraw;
         channel: BroadcastChannel;
-        worker: Comlink.Remove<Atlas>;
+        worker: Comlink.Remote<Atlas>;
         edit: COT | undefined;
         mission: string | undefined;
         container?: HTMLElement;
@@ -80,14 +81,12 @@ export const useMapStore = defineStore('cloudtak', {
             }
         };
 
-        const worker = new Worker(AtlasWorker, {
+        const worker = Comlink.wrap<Atlas>(new Worker(AtlasWorker, {
             type: 'module'
-        });
-
-        const atlas = Comlink.wrap(worker);
+        }));
 
         return {
-            worker: atlas,
+            worker,
             channel: new BroadcastChannel("cloudtak"),
             hasTerrain: false,
             isTerrainEnabled: false,
