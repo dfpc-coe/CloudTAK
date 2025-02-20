@@ -139,7 +139,7 @@ import {
     IconSettings
 } from '@tabler/icons-vue';
 import MenuTemplate from '../../util/MenuTemplate.vue';
-import Subscription from '../../../../stores/base/mission.ts';
+import Subscription from '../../../../base/mission.ts';
 import { useCOTStore } from '../../../../stores/cots.ts';
 const cotStore = useCOTStore();
 

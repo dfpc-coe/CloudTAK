@@ -647,7 +647,7 @@ import { useRoute, useRouter } from 'vue-router'
 import type COT from '../../base/cot.ts';
 import type { COTType } from '../../types.ts';
 import { OriginMode } from '../../base/cot.ts'
-import Mission from '../../stores/base/mission.ts'
+import Mission from '../../base/mission.ts'
 import {
     TablerNone,
     TablerInput,

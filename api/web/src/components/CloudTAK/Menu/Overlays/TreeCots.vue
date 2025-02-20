@@ -265,8 +265,6 @@ import {
 } from '@tabler/icons-vue';
 import { useMapStore } from '../../../../stores/map.ts';
 const mapStore = useMapStore();
-import { useCOTStore } from '../../../../stores/cots.ts';
-const cotStore = useCOTStore();
 
 export default {
     name: 'TreeCots',
@@ -311,8 +309,8 @@ export default {
         this.paths = await mapStore.worker.db.paths();
     },
     methods: {
-        pathFeatures: function(path) {
-            return cotStore.pathFeatures(cotStore.cots, path);
+        pathFeatures: async function(path) {
+            return await mapStore.worker.db.pathFeatures(path);
         },
         deleteMarkers: async function(marker) {
             if (!this.deleteMarkerModal.shown) {
@@ -329,7 +327,7 @@ export default {
                 this.treeState.markers[marker] = false;
             }
 
-            for (const feat of cotStore.markerFeatures(cotStore.cots, marker)) {
+            for (const feat of await mapStore.worker.db.markerFeatures(marker)) {
                 await mapStore.worker.db.delete(feat.id);
             }
 
@@ -342,7 +340,7 @@ export default {
                 this.treeState.paths[path] = false;
             }
 
-            for (const feat of cotStore.pathFeatures(cotStore.cots, path)) {
+            for (const feat of await mapStore.worker.db.pathFeatures(path)) {
                 await mapStore.worker.db.delete(feat.id);
             }
 
@@ -356,11 +354,11 @@ export default {
 
             this.loading = false;
         },
-        markerFeatures: function(marker) {
-            return cotStore.markerFeatures(cotStore.cots, marker);
+        markerFeatures: async function(marker) {
+            return mapStore.worker.db.markerFeatures(marker);
         },
-        contacts: function(group) {
-            const contacts = cotStore.contacts(cotStore.cots, group);
+        contacts: async function(group) {
+            const contacts = await mapStore.worker.db.contacts(group);
             return contacts;
         },
         deletePath: async function(layer, path) {
@@ -377,8 +375,8 @@ export default {
 
             this.loading = false;
         },
-        markers: function() {
-            const markers = cotStore.markers();
+        markers: async function() {
+            const markers = await mapStore.worker.db.markers();
 
             for (const marker of markers) {
                 if (this.treeState.markers[marker] === undefined) {
@@ -388,8 +386,8 @@ export default {
 
             return markers;
         },
-        groups: function() {
-            const groups = cotStore.groups();
+        groups: async function() {
+            const groups = await mapStore.worker.db.groups();
 
             for (const group of groups) {
                 if (this.treeState.teams[group] === undefined) {

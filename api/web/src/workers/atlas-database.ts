@@ -5,7 +5,7 @@
 import { std, stdurl } from '../std.ts';
 import jsonata from 'jsonata';
 import type Atlas from './atlas.ts';
-import type Subscription from '../stores/base/mission.ts';
+import type Subscription from '../base/mission.ts';
 import COT, { OriginMode } from '../base/cot.ts';
 import type { GeoJSONSourceDiff } from 'maplibre-gl';
 import { booleanWithin } from '@turf/boolean-within';
@@ -50,6 +50,16 @@ export default class AtlasDatabase {
 
     async init(): Promise<void> {
         await this.loadArchive()
+    }
+
+    subscriptionSet(id: string, sub: Subscription): void {
+        this.subscriptions.set(id, sub);
+    }
+    subscriptionGet(id: string): Subscription | undefined {
+        return this.subscriptions.get(id);
+    }
+    subscriptionDelete(id: string): void {
+        this.subscriptions.delete(id);
     }
 
     updateImages(images: Array<string>): void {
@@ -412,5 +422,80 @@ export default class AtlasDatabase {
      */
     has(id: string): boolean {
         return this.cots.has(id);
+    }
+
+    groups(store?: Map<string, COT>): Array<string> {
+        if (!store) store = this.cots;
+
+        const groups: Set<string> = new Set();
+        for (const value of store.values()) {
+            if (value.properties.group) groups.add(value.properties.group.name);
+        }
+
+        return Array.from(groups);
+    }
+
+    pathFeatures(path: string, store?: Map<string, COT>): Array<COT> {
+        if (!store) store = this.cots;
+
+        const feats: Set<COT> = new Set();
+
+        for (const value of store.values()) {
+            if (value.path === path && value.properties.archived) {
+                feats.add(value);
+            }
+        }
+
+        return Array.from(feats);
+    }
+
+    markers(store?: Map<string, COT>): Array<string> {
+        if (!store) store = this.cots;
+
+        const markers: Set<string> = new Set();
+        for (const value of store.values()) {
+            if (value.properties.group) continue;
+            if (value.properties.archived) continue;
+            markers.add(value.properties.type);
+        }
+
+        return Array.from(markers);
+    }
+
+    markerFeatures(marker: string, store?: Map<string, COT>): Array<COT> {
+        if (!store) store = this.cots;
+
+        const feats: Set<COT> = new Set();
+
+        for (const value of store.values()) {
+            if (value.properties.group) continue;
+            if (value.properties.archived) continue;
+
+            if (value.properties.type === marker) {
+                feats.add(value);
+            }
+        }
+
+        return Array.from(feats);
+    }
+
+    contacts(group?: string, store?: Map<string, COT>): Array<COT> {
+        if (!store) store = this.cots;
+
+        const contacts: Set<COT> = new Set();
+        for (const value of store.values()) {
+            if (value.properties.group) contacts.add(value);
+        }
+
+        let list = Array.from(contacts);
+
+        if (group) {
+            list = list.filter((contact) => {
+                if (!contact.properties.group) return false;
+                return contact.properties.group.name === group;
+            })
+        }
+
+        return list;
     }
 }

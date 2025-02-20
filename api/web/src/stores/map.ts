@@ -10,7 +10,6 @@
 import { defineStore } from 'pinia'
 import * as Comlink from 'comlink';
 import AtlasWorker from '../workers/atlas.ts?worker&url';
-import type { Position } from "geojson";
 import COT from '../base/cot.ts';
 import { WorkerMessage }from '../base/events.ts';
 import Subscription from './base/mission.ts';
@@ -23,8 +22,6 @@ import type Atlas from '../workers/atlas.ts';
 import { CloudTAKTransferHandler } from '../workers/atlas.ts';
 
 import type { ProfileOverlay, Basemap, APIList } from '../types.ts';
-import { coordEach } from '@turf/meta';
-import { distance } from '@turf/distance';
 import type { Feature } from 'geojson';
 import type {
     LngLat,
@@ -150,7 +147,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             await overlay.delete();
             if (overlay.mode === 'mission' && overlay.mode_id) {
-                await this.worker.db.subscriptions.delete(overlay.mode_id);
+                await this.worker.db.subscriptionDelete(overlay.mode_id);
             }
         },
         getOverlayById(id: number): Overlay | null {
@@ -219,11 +216,11 @@ export const useMapStore = defineStore('cloudtak', {
             const oStore = this.map.getSource(String(overlay.id));
             if (!oStore) return false
 
-            let sub = await this.worker.db.subscriptions.get(guid);
+            let sub = await this.worker.db.subscriptionGet(guid);
 
             if (!sub) {
                 sub = await Subscription.load(guid, overlay.token || undefined);
-                await this.worker.db.subscriptions.set(guid, sub)
+                await this.worker.db.subscriptionSet(guid, sub)
             }
 
             // @ts-expect-error Source.setData is not defined
@@ -478,6 +475,7 @@ export const useMapStore = defineStore('cloudtak', {
             this.radial.mode = opts.mode;
         },
         initDraw: async function() {
+            /** TODO This is jacked due to no await support
             const toCustom = (event: terraDraw.TerraDrawMouseEvent): Position | undefined => {
                 let closest: {
                     dist: number
@@ -485,7 +483,6 @@ export const useMapStore = defineStore('cloudtak', {
                     coord: Position
                 } | undefined = undefined;
 
-                //TODO This is jacked due to no await support
                 this.worker.db.filter((cot) => {
                     coordEach(cot.geometry, (coord: Position) => {
                         const dist = distance([event.lng, event.lat], coord);
@@ -513,6 +510,7 @@ export const useMapStore = defineStore('cloudtak', {
                     return;
                 }
             }
+            */
 
             this._draw = new terraDraw.TerraDraw({
                 adapter: new TerraDrawMapLibreGLAdapter({
@@ -533,10 +531,10 @@ export const useMapStore = defineStore('cloudtak', {
                 modes: [
                     new terraDraw.TerraDrawPointMode(),
                     new terraDraw.TerraDrawLineStringMode({
-                        snapping: { toCustom }
+                        // snapping: { toCustom }
                     }),
                     new terraDraw.TerraDrawPolygonMode({
-                        snapping: { toCustom }
+                        // snapping: { toCustom }
                     }),
                     new terraDraw.TerraDrawAngledRectangleMode(),
                     new terraDraw.TerraDrawFreehandMode(),
