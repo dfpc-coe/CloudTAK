@@ -84,7 +84,7 @@ export default class COT {
             this._properties.center = pointOnFeature(this._geometry).geometry.coordinates;
         }
 
-        if (this.origin.mode === OriginMode.CONNECTION) {
+        if (this.origin.mode === OriginMode.CONNECTION && !this._remote) {
             this._atlas.db.pending.set(this.id, this);
         }
 

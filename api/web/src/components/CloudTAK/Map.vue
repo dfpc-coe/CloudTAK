@@ -902,7 +902,7 @@ async function mountMap(): Promise<void> {
             if (profileStore.profile && profileStore.profile.display_projection === 'globe') {
                 mapStore.map.setProjection({ type: "globe" });
             }
-            
+
             await mapStore.worker.db.updateImages(mapStore.map.listImages());
 
             await mapStore.initOverlays();
@@ -915,7 +915,7 @@ async function mountMap(): Promise<void> {
                 const feat = mapStore.draw._store.store[mapStore.edit.id];
                 delete feat.properties.center;
 
-                cotStore.hidden.delete(mapStore.edit.id);
+                await mapStore.worker.db.hidden.delete(mapStore.edit.id);
 
                 mapStore.edit = undefined
 

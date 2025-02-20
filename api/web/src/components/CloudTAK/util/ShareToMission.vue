@@ -135,7 +135,7 @@ const emit = defineEmits(['cancel', 'done']);
 
 const loading = ref(true);
 const selected = ref<Set<Subscription>>(new Set());
-const missions = ref<Array<Subscription>([]);
+const missions = ref<Array<Subscription>>([]);
 
 onMounted(async () => {
     missions.value = Array.from(await mapStore.worker.db.subscriptions.values())

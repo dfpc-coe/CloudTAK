@@ -12,7 +12,7 @@ import * as Comlink from 'comlink';
 import AtlasWorker from '../workers/atlas.ts?worker&url';
 import type { Position } from "geojson";
 import COT from '../base/cot.ts';
-import { WorkerMessage, CloudTAKTransferHandler }from '../base/events.ts';
+import { WorkerMessage }from '../base/events.ts';
 import Subscription from './base/mission.ts';
 import Overlay from './base/overlay.ts';
 import { std, stdurl } from '../std.js';
@@ -20,6 +20,7 @@ import mapgl from 'maplibre-gl'
 import * as terraDraw from 'terra-draw';
 import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 import type Atlas from '../workers/atlas.ts';
+import { CloudTAKTransferHandler } from '../workers/atlas.ts';
 
 import type { ProfileOverlay, Basemap, APIList } from '../types.ts';
 import { coordEach } from '@turf/meta';

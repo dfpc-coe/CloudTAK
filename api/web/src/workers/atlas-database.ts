@@ -2,7 +2,7 @@
 * ConnectionStore - Maintain the WebSocket connection with CloudTAK Server
 */
 
-import { std } from '../std.ts';
+import { std, stdurl } from '../std.ts';
 import type Atlas from './atlas.ts';
 import type Subscription from '../stores/base/mission.ts';
 import COT, { OriginMode } from '../base/cot.ts';
@@ -328,7 +328,7 @@ export default class AtlasDatabase {
 
         for (const [key, value] of store) {
             if (value.path && value.path.startsWith(path)) {
-                this.delete(key, true);
+                this.remove(key, true);
             }
         }
     }
