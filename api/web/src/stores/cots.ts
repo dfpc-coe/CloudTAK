@@ -29,40 +29,6 @@ export const useCOTStore = defineStore('cots', {
     },
     actions: {
         /**
-         * Iterate over cot messages and return list of CoTs
-         * with Video Streams
-         */
-        filter: function(
-            filter: (el: COT) => boolean,
-            opts: {
-                mission?: boolean,
-            } = {}
-        ): Set<COT> {
-            const cots: Set<COT> = new Set();
-
-            for (const cot of this.cots.values()) {
-                if (filter(cot)) {
-                    cots.add(cot);
-                }
-            }
-
-            if (opts.mission) {
-                for (const sub of this.subscriptions.keys()) {
-                    const store = this.subscriptions.get(sub);
-                    if (!store) continue;
-
-                    for (const cot of store.cots.values()) {
-                        if (filter(cot)) {
-                            cots.add(cot);
-                        }
-                    }
-                }
-            }
-
-            return cots;
-        },
-
-        /**
          * Return CoTs touching a given polygon
          */
         touching: function(poly: Polygon): COT[] {
