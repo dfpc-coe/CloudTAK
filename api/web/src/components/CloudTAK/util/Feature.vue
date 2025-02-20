@@ -175,7 +175,7 @@ watch(canvas, async () => {
 
 async function deleteCOT() {
     if (props.deleteAction === 'delete') {
-        await mapStore.worker.db.delete(props.feature.id);
+        await mapStore.worker.db.remove(props.feature.id);
     } else {
         emit('delete');
     }
