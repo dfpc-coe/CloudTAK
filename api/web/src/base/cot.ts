@@ -1,6 +1,7 @@
 import { std } from '../std.ts';
 import { bbox } from '@turf/bbox'
 import { WorkerMessage } from'./events.ts'
+import type { Remote } from 'comlink';
 import type Atlas from '../workers/atlas.ts';
 import pointOnFeature from '@turf/point-on-feature';
 import type { Feature, Subscription } from '../types.ts'
@@ -45,13 +46,13 @@ export default class COT {
     _properties: Feature["properties"];
     _geometry: Feature["geometry"];
 
-    _atlas: Atlas;
+    _atlas: Atlas | Remote<Atlas>;
     _username?: string;
 
     origin: Origin
 
     constructor(
-        atlas: Atlas,
+        atlas: Atlas | Remote<Atlas>,
         feat: Feature,
         origin?: Origin,
         opts?: {
@@ -66,6 +67,7 @@ export default class COT {
         this._geometry = feat["geometry"];
 
         this._atlas = atlas;
+
         this.origin = origin || { mode: OriginMode.CONNECTION };
 
         if (!this._properties.archived) {
@@ -83,6 +85,10 @@ export default class COT {
         if (!this.is_self && (!opts || (opts && opts.skipSave === false))) {
             this.save();
         }
+    }
+
+    static from_feature(feat: Feature): COT {
+        return new COT(undefined, feat, feat.origin);
     }
 
     set properties(properties: Feature["properties"]) {
@@ -116,6 +122,8 @@ export default class COT {
             this._geometry = update.geometry;
             visuallyChanged = true;
         }
+
+        console.error('UPDATE');
 
         if (update.properties) {
             update.properties = COT.style(this._atlas, this._geometry.type, update.properties);
@@ -177,7 +185,11 @@ export default class COT {
     }
 
     get is_self(): boolean {
-        return this._atlas.profile.uid() === this.id;
+        if (this._atlas) {
+            return this._atlas.profile.uid() === this.id;
+        } else {
+            return false;
+        }
     }
 
     get is_archivable(): boolean {
@@ -254,6 +266,7 @@ export default class COT {
             id: this.id,
             type: 'Feature',
             path: this.path,
+            origin: this.origin,
             properties: this._properties,
             geometry: this._geometry
         } as Feature
@@ -315,7 +328,7 @@ export default class COT {
      * Consistent feature manipulation between add & update
      */
     static style(
-        atlas: Atlas,
+        atlas: Atlas | Remote<Atlas>,
         type: string,
         properties: Feature["properties"]
     ): Feature["properties"] {
@@ -381,7 +394,7 @@ export default class COT {
                     properties.icon = properties.icon.replace(/.png$/, '');
                 }
 
-                
+
                 if (!atlas.db.images.has(properties.icon)) {
                     console.warn(`No Icon for: ${properties.icon} fallback to ${properties.type}`);
                     properties.icon = `${properties.type}`;
