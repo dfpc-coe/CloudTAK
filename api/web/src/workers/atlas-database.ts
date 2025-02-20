@@ -2,7 +2,6 @@
 * ConnectionStore - Maintain the WebSocket connection with CloudTAK Server
 */
 
-import { proxy } from 'comlink';
 import { std } from '../std.ts';
 import type Atlas from './atlas.ts';
 import type Subscription from '../stores/base/mission.ts';
@@ -312,6 +311,26 @@ export default class AtlasDatabase {
         }
 
         return;
+    }
+
+    async deletePath(
+        path: string,
+        store?: Map<string, COT>
+    ): Promise<void> {
+        if (!store) store = this.cots;
+
+        const url = stdurl('/api/profile/feature')
+        url.searchParams.append('path', path);
+        await std(url, {
+            token: this.atlas.token,
+            method: 'DELETE'
+        });
+
+        for (const [key, value] of store) {
+            if (value.path && value.path.startsWith(path)) {
+                this.delete(key, true);
+            }
+        }
     }
 
     /**

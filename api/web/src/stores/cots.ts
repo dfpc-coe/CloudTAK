@@ -6,10 +6,8 @@ import COT from '../base/cot.ts'
 import { defineStore } from 'pinia'
 import { std, stdurl } from '../std.ts';
 import Subscription from './base/mission.ts';
-import type { Feature } from '../types.ts';
 import type { Polygon } from 'geojson';
 import { booleanWithin } from '@turf/boolean-within';
-import { useMapStore } from './map.ts';
 
 type NestedArray = {
     path: string;
@@ -19,20 +17,12 @@ type NestedArray = {
 export const useCOTStore = defineStore('cots', {
     state: (): {
         cots: Map<string, COT>;
-        hidden: Set<string>;
-
-        // COTs are submitted to pending and picked up by the partial update code every .5s
-        pending: Map<string, COT>;
-        pendingDelete: Set<string>;
 
         subscriptions: Map<string, Subscription>;
         subscriptionPending: Map<string, string>; // UID, Mission Guid
     } => {
         return {
             cots: new Map(),                // Store all on-screen CoT messages
-            hidden: new Set(),              // Store CoTs that should be hidden
-            pending: new Map(),             // Store yet to be rendered on-screen CoT Messages
-            pendingDelete: new Set(),       // Store yet to be deleted on-screen CoT Messages
             subscriptions: new Map(),       // Store All Mission CoT messages by GUID
             subscriptionPending: new Map()  // Map<uid, guid>
         }
@@ -173,20 +163,6 @@ export const useCOTStore = defineStore('cots', {
             }
 
             return list;
-        },
-
-        async deletePath(path: string, store?: Map<string, COT>): Promise<void> {
-            if (!store) store = this.cots;
-
-            const url = stdurl('/api/profile/feature')
-            url.searchParams.append('path', path);
-            await std(url, { method: 'DELETE' });
-
-            for (const [key, value] of store) {
-                if (value.path && value.path.startsWith(path)) {
-                    this.delete(key, true);
-                }
-            }
         },
     }
 })

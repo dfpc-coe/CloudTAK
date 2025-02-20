@@ -370,7 +370,7 @@ export default {
             this.loading = true;
 
             try {
-                await cotStore.deletePath(path);
+                await mapStore.worker.db.deletePath(path);
             } catch (err) {
                 this.loading = false;
                 throw err;

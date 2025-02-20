@@ -3,7 +3,7 @@
 */
 
 import * as Comlink from 'comlink';
-import { TransferHandler } from '../base/events.ts';
+import { CloudTAKTransferHandler } from '../base/events.ts';
 import AtlasProfile from './atlas-profile.ts';
 import AtlasDatabase from './atlas-database.ts';
 import AtlasConnection from './atlas-connection.ts';
@@ -44,7 +44,7 @@ export default class Atlas {
 
 const atlas = new Atlas()
 
-const transfer = new TransferHandler(atlas);
+const transfer = new CloudTAKTransferHandler(atlas);
 Comlink.transferHandlers.set("cot", transfer.cot);
 
 Comlink.expose(Comlink.proxy(atlas));

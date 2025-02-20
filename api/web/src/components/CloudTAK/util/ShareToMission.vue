@@ -95,7 +95,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import type { PropType } from 'vue';
 import EmptyInfo from './EmptyInfo.vue';
 import {
@@ -116,13 +116,6 @@ import Subscription from '../../../stores/base/mission.ts'
 
 const mapStore = useMapStore();
 
-const missions = computed(async () => {
-    return Array.from(await mapStore.worker.db.subscriptions.values())
-        .filter((mission) => {
-            return mission.role.permissions.includes("MISSION_WRITE")
-        })
-});
-
 const props = defineProps({
     feats: {
         type: Array as PropType<Array<Feature>>,
@@ -140,8 +133,18 @@ const props = defineProps({
 
 const emit = defineEmits(['cancel', 'done']);
 
-const loading = ref(false);
+const loading = ref(true);
 const selected = ref<Set<Subscription>>(new Set());
+const missions = ref<Array<Subscription>([]);
+
+onMounted(async () => {
+    missions.value = Array.from(await mapStore.worker.db.subscriptions.values())
+        .filter((mission: Subscription) => {
+            return mission.role.permissions.includes("MISSION_WRITE")
+        })
+
+    loading.value = false;
+});
 
 /** Feats often come from Vector Tiles which don't contain the full feature */
 function currentFeats(): Array<Feature> {
