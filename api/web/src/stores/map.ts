@@ -12,7 +12,7 @@ import * as Comlink from 'comlink';
 import AtlasWorker from '../workers/atlas.ts?worker&url';
 import type { Position } from "geojson";
 import COT from '../base/cot.ts';
-import { WorkerMessage, TransferHandler }from '../base/events.ts';
+import { WorkerMessage, CloudTAKTransferHandler }from '../base/events.ts';
 import Subscription from './base/mission.ts';
 import Overlay from './base/overlay.ts';
 import { std, stdurl } from '../std.js';
@@ -69,15 +69,15 @@ export const useMapStore = defineStore('cloudtak', {
 
         channel.onmessage = (event) => {
             try {
-                const body = JSON.parse(event)
+                const body = JSON.parse(event.data)
 
                 if (!body.type) return;
 
                 if (body.type === WorkerMessage.Map_FlyTo) {
-                    console.error('Map FlyTo');
+                    console.error(body.data);
                 }
             } catch (err) {
-                console.error(err);
+                console.error(`Failed to parse event: ${event.data}`, err);
             }
         };
 
@@ -85,7 +85,7 @@ export const useMapStore = defineStore('cloudtak', {
             type: 'module'
         }));
 
-        const transfer = new TransferHandler(worker);
+        const transfer = new CloudTAKTransferHandler(worker);
         Comlink.transferHandlers.set("cot", transfer.cot);
 
         return {

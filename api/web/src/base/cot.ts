@@ -43,6 +43,9 @@ export const RENDERED_PROPERTIES = [
 export default class COT {
     id: string;
     path: string;
+
+    _remote: boolean;
+
     _properties: Feature["properties"];
     _geometry: Feature["geometry"];
 
@@ -57,6 +60,7 @@ export default class COT {
         origin?: Origin,
         opts?: {
             skipSave?: boolean;
+            remote?: boolean;
         }
     ) {
         feat.properties = COT.style(atlas, feat.geometry.type, feat.properties);
@@ -65,6 +69,8 @@ export default class COT {
         this.path = feat.path || '/';
         this._properties = feat["properties"] || {};
         this._geometry = feat["geometry"];
+
+        this._remote = (opts && opts.remote !== undefined) ? opts.remote : false
 
         this._atlas = atlas;
 
@@ -85,10 +91,6 @@ export default class COT {
         if (!this.is_self && (!opts || (opts && opts.skipSave === false))) {
             this.save();
         }
-    }
-
-    static from_feature(feat: Feature): COT {
-        return new COT(undefined, feat, feat.origin);
     }
 
     set properties(properties: Feature["properties"]) {
@@ -123,8 +125,6 @@ export default class COT {
             visuallyChanged = true;
         }
 
-        console.error('UPDATE');
-
         if (update.properties) {
             update.properties = COT.style(this._atlas, this._geometry.type, update.properties);
 
@@ -148,11 +148,15 @@ export default class COT {
         }
 
         if (this.is_self) {
+            const getProfile = await this._atlas.profile.profile;
+
+            const profile = getProfile instanceof Promise ? await getProfile : getProfile;
+
             if (
-                this._atlas.profile.profile
+                profile
                 && (
-                    this.properties.remarks !== this._atlas.profile.profile.tak_remarks
-                    || this.properties.callsign !== this._atlas.profile.profile.tak_callsign
+                    this.properties.remarks !== profile.tak_remarks
+                    || this.properties.callsign !== profile.tak_callsign
                 )
             ) {
                 await this._atlas.profile.update({
@@ -308,8 +312,8 @@ export default class COT {
         return bbox(this._geometry);
     }
 
-    flyTo() {
-        this._atlas.channel.postMessage({
+    flyTo(): void {
+        this._atlas.channel.postMessage(JSON.stringify({
             type: WorkerMessage.Map_FlyTo,
             body: {
                 maxZoom: 18,
@@ -321,7 +325,7 @@ export default class COT {
                 },
                 speed: Infinity,
             }
-        })
+        }))
     }
 
     /**

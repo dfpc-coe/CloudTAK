@@ -92,7 +92,7 @@
 </template>
 
 <script setup lang='ts'>
-import { computed, useTemplateRef, watch } from 'vue';
+import { ref, onMounted, useTemplateRef, watch } from 'vue';
 import Contact from './Contact.vue';
 import {
     TablerDelete
@@ -133,16 +133,17 @@ const props = defineProps({
 
 const emit = defineEmits(['delete']);
 
-const isZoomable = computed(async () => {
+const isZoomable = ref(false);
+
+const canvas = useTemplateRef<HTMLCanvasElement>('imgCanvas');
+
+onMounted(async () => {
     const cot = await mapStore.worker.db.get(props.feature.id, {
         mission: true
     })
 
-    if (cot) return true;
-    return false;
-});
-
-const canvas = useTemplateRef<HTMLCanvasElement>('imgCanvas');
+    isZoomable.value = cot ? true : false;
+})
 
 watch(canvas, async () => {
     if (!canvas.value) return;

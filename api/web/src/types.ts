@@ -1,5 +1,5 @@
 import type { paths } from './derived-types.js';
-import { Origin } from './base/cot.ts'
+import type { Origin } from './base/cot.ts'
 
 /*
  * This file exports more human managable types from the
