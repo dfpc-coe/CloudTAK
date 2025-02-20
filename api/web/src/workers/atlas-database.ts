@@ -3,6 +3,7 @@
 */
 
 import { std, stdurl } from '../std.ts';
+import jsonata from 'jsonata';
 import type Atlas from './atlas.ts';
 import type Subscription from '../stores/base/mission.ts';
 import COT, { OriginMode } from '../base/cot.ts';
@@ -142,6 +143,41 @@ export default class AtlasDatabase {
         this.pendingDelete.clear();
 
         return diff;
+    }
+
+    /**
+     * Iterate over cot messages and return list of CoTs that match filter pattern
+     */
+    async filter(
+        filter: string,
+        opts: {
+            mission?: boolean,
+        } = {}
+    ): Promise<Set<COT>> {
+        const cots: Set<COT> = new Set();
+
+        const expression = jsonata(filter);
+
+        for (const cot of this.cots.values()) {
+            if (await expression.evaluate(cot.as_feature()) === true) {
+                cots.add(cot);
+            }
+        }
+
+        if (opts.mission) {
+            for (const sub of this.subscriptions.keys()) {
+                const store = this.subscriptions.get(sub);
+                if (!store) continue;
+
+                for (const cot of store.cots.values()) {
+                    if (await expression.evaluate(cot.as_feature()) === true) {
+                        cots.add(cot);
+                    }
+                }
+            }
+        }
+
+        return cots;
     }
 
     /**
