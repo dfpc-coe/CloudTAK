@@ -2,7 +2,8 @@
 * ConnectionStore - Maintain the WebSocket connection with CloudTAK Server
 */
 
-import { expose, proxy } from 'comlink';
+import * as Comlink from 'comlink';
+import { TransferHandler } from '../base/events.ts';
 import AtlasProfile from './atlas-profile.ts';
 import AtlasDatabase from './atlas-database.ts';
 import AtlasConnection from './atlas-connection.ts';
@@ -18,9 +19,9 @@ export default class Atlas {
 
     token: string;
 
-    db = proxy(new AtlasDatabase(this));
-    conn = proxy(new AtlasConnection(this));
-    profile = proxy(new AtlasProfile(this));
+    db = Comlink.proxy(new AtlasDatabase(this));
+    conn = Comlink.proxy(new AtlasConnection(this));
+    profile = Comlink.proxy(new AtlasProfile(this));
 
     constructor() {
         this.channel = new BroadcastChannel('cloudtak');
@@ -41,6 +42,9 @@ export default class Atlas {
     }
 }
 
-const atlas = proxy(new Atlas())
+const atlas = new Atlas()
 
-expose(atlas);
+const transfer = new TransferHandler(atlas);
+Comlink.transferHandlers.set("cot", transfer.cot);
+
+Comlink.expose(Comlink.proxy(atlas));
