@@ -293,6 +293,7 @@ export default {
                 shown: false,
                 marker: null
             },
+            paths: [],
             treeState: {
                 teams: {
                     _: false
@@ -306,10 +307,8 @@ export default {
             },
         }
     },
-    computed: {
-        paths: function() {
-            return cotStore.paths();
-        },
+    mounted: async () => {
+        this.paths = await mapStore.worker.db.paths();
     },
     methods: {
         pathFeatures: function(path) {

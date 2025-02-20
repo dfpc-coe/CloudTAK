@@ -8,7 +8,14 @@ import type Atlas from './atlas.ts';
 import type Subscription from '../stores/base/mission.ts';
 import COT, { OriginMode } from '../base/cot.ts';
 import type { GeoJSONSourceDiff } from 'maplibre-gl';
+import { booleanWithin } from '@turf/boolean-within';
+import type { Polygon } from 'geojson';
 import type { Feature, APIList } from '../types.ts';
+
+type NestedArray = {
+    path: string;
+    paths: Array<NestedArray>;
+}
 
 export default class AtlasDatabase {
     atlas: Atlas;
@@ -178,6 +185,37 @@ export default class AtlasDatabase {
         }
 
         return cots;
+    }
+
+    async paths(store?: Map<string, COT>): Promise<Array<NestedArray>> {
+        if (!store) store = this.cots;
+
+        const paths = new Set();
+        for (const value of store.values()) {
+            if (value.path) paths.add(value.path);
+        }
+
+        return Array.from(paths).map((path) => {
+            return {
+                path: path,
+                paths: []
+            } as NestedArray
+        });
+    }
+
+    /**
+     * Return CoTs touching a given polygon
+     */
+    async touching(poly: Polygon): Promise<COT[]> {
+        const within: COT[] = [];
+
+        for (const cot of this.cots.values()) {
+            if (booleanWithin(cot.as_feature(), poly)) {
+                within.push(cot)
+            }
+        }
+
+        return within;
     }
 
     /**
