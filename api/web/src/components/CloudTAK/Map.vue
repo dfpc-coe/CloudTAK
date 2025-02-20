@@ -667,7 +667,6 @@ onBeforeUnmount(() => {
         window.clearInterval(timer.value);
     }
 
-    profileStore.destroy();
     cotStore.$reset();
     mapStore.destroy();
 });

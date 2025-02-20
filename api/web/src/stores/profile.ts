@@ -11,15 +11,12 @@ export type TAKNotification = {
 
 export const useProfileStore = defineStore('profile', {
     state: (): {
-        // Interval for reporting location to TAK Server
-        timerSelf: ReturnType<typeof setInterval> | undefined,
         live_loc: number[] | undefined,
         notifications: Array<TAKNotification>;
         channels: Array<Group>;
         profile: Profile | null;
     } => {
         return {
-            timerSelf: undefined,
             live_loc: undefined,
             notifications: [],
             channels: [],
@@ -40,12 +37,6 @@ export const useProfileStore = defineStore('profile', {
         }
     },
     actions: {
-        destroy: function(): void {
-            if (this.timerSelf) {
-                window.clearInterval(this.timerSelf);
-                this.timerSelf = undefined;
-            }
-        },
         clearNotifications: function(): void {
             this.notifications = [];
         },
