@@ -4,10 +4,8 @@
 
 import COT from '../base/cot.ts'
 import { defineStore } from 'pinia'
-import { std, stdurl } from '../std.ts';
 import Subscription from './base/mission.ts';
 import type { Polygon } from 'geojson';
-import { booleanWithin } from '@turf/boolean-within';
 
 type NestedArray = {
     path: string;
@@ -16,49 +14,15 @@ type NestedArray = {
 
 export const useCOTStore = defineStore('cots', {
     state: (): {
-        cots: Map<string, COT>;
-
         subscriptions: Map<string, Subscription>;
         subscriptionPending: Map<string, string>; // UID, Mission Guid
     } => {
         return {
-            cots: new Map(),                // Store all on-screen CoT messages
             subscriptions: new Map(),       // Store All Mission CoT messages by GUID
             subscriptionPending: new Map()  // Map<uid, guid>
         }
     },
     actions: {
-        /**
-         * Return CoTs touching a given polygon
-         */
-        touching: function(poly: Polygon): COT[] {
-            const within: COT[] = [];
-
-            for (const cot of this.cots.values()) {
-                if (booleanWithin(cot.as_feature(), poly)) {
-                    within.push(cot)
-                }
-            }
-
-            return within;
-        },
-
-
-        paths(store?: Map<string, COT>): Array<NestedArray> {
-            if (!store) store = this.cots;
-
-            const paths = new Set();
-            for (const value of store.values()) {
-                if (value.path) paths.add(value.path);
-            }
-
-            return Array.from(paths).map((path) => {
-                return {
-                    path: path,
-                    paths: []
-                } as NestedArray
-            });
-        },
 
         markers(store?: Map<string, COT>): Array<string> {
             if (!store) store = this.cots;
