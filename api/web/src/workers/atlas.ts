@@ -2,17 +2,34 @@
 * ConnectionStore - Maintain the WebSocket connection with CloudTAK Server
 */
 
+import COT from '../base/cot.ts';
 import * as Comlink from 'comlink';
-import { CloudTAKTransferHandler } from '../base/events.ts';
 import AtlasProfile from './atlas-profile.ts';
 import AtlasDatabase from './atlas-database.ts';
 import AtlasConnection from './atlas-connection.ts';
+import type { Remote, TransferHandler } from 'comlink';
+import type { Feature } from '../types.ts';
 
-export type {
-    AtlasProfile,
-    AtlasDatabase,
-    AtlasConnection
-};
+export class CloudTAKTransferHandler {
+    atlas: Atlas | Remote<Atlas>
+
+    constructor(atlas: Atlas | Remote<Atlas>) {
+        this.atlas = atlas;
+    }   
+
+    cot: TransferHandler<unknown, unknown> = { 
+        canHandle: (obj) => obj instanceof COT,
+        serialize: (cot: COT) => {
+            const feat = cot.as_feature();
+            return [feat, []];
+        },  
+        deserialize: (feat: Feature) => {
+            return new COT(this.atlas, feat, feat.origin, {
+                remote: true
+            }); 
+        }   
+    }   
+}
 
 export default class Atlas {
     channel: BroadcastChannel;
