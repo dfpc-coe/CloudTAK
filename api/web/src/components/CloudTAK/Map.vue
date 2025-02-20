@@ -505,11 +505,9 @@ import RadialMenu from './RadialMenu/RadialMenu.vue';
 import { useMapStore } from '../../stores/map.ts';
 import { useVideoStore } from '../../stores/videos.ts';
 import { useProfileStore } from '../../stores/profile.ts';
-import { useCOTStore } from '../../stores/cots.ts';
 import UploadImport from './util/UploadImport.vue'
 import { coordEach } from '@turf/meta';
 const profileStore = useProfileStore();
-const cotStore = useCOTStore();
 const mapStore = useMapStore();
 const videoStore = useVideoStore();
 const router = useRouter();
@@ -666,7 +664,6 @@ onBeforeUnmount(() => {
         window.clearInterval(timer.value);
     }
 
-    cotStore.$reset();
     mapStore.destroy();
 });
 
@@ -923,7 +920,7 @@ async function mountMap(): Promise<void> {
                 mapStore.drawOptions.mode = 'static';
                 mapStore.draw.stop();
 
-                cotStore.cots.delete(feat.id);
+                await mapStore.worker.db.remove(feat.id);
                 await mapStore.worker.db.add(feat);
                 await updateCOT();
             })
@@ -940,7 +937,7 @@ async function mountMap(): Promise<void> {
                         mapStore.drawOptions.mode = 'static';
                         mapStore.draw.stop();
 
-                        cotStore.touching(geometry).forEach((feat) => {
+                        (await mapStore.worker.db.touching(geometry)).forEach((feat) => {
                             mapStore.selected.set(feat.id, feat);
                         })
 

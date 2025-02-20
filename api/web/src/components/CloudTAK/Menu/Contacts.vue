@@ -67,11 +67,11 @@
 
 <script setup lang='ts'>
 import { ref, computed, onMounted } from 'vue';
-import { std, stdurl } from '../../../../src/std.ts';
-import type { ContactList } from '../../../../src/types.ts';
-import { useProfileStore } from '../../../..//src/stores/profile.ts';
-import { useCOTStore } from '../../../../src/stores/cots.ts';
-const cotStore = useCOTStore();
+import { std, stdurl } from '../../../std.ts';
+import type { ContactList } from '../../../types.ts';
+import { useProfileStore } from '../../../stores/profile.ts';
+import { useMapStore } from '../../../stores/map.ts';
+const mapStore = useMapStore();
 import MenuTemplate from '../util/MenuTemplate.vue';
 import {
     IconRefresh

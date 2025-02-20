@@ -95,7 +95,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import type { PropType } from 'vue';
 import EmptyInfo from './EmptyInfo.vue';
 import {
@@ -112,7 +112,7 @@ import {
 import type { Feature } from '../../../types.ts';
 import COT from '../../../base/cot.ts'
 import { useMapStore } from '../../../stores/map.ts';
-import Subscription from '../../../stores/base/mission.ts'
+import Subscription from '../../../base/mission.ts'
 
 const mapStore = useMapStore();
 

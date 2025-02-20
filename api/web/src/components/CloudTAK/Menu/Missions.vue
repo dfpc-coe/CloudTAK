@@ -148,8 +148,8 @@ import {
     TablerAlert,
     TablerModal
 } from '@tak-ps/vue-tabler';
-import type { Mission } from '../../../../src/types.ts';
-import { std, stdurl } from '../../../../src/std.ts';
+import type { Mission } from '../../../types.ts';
+import { std, stdurl } from '../../../std.ts';
 import {
     IconPlus,
     IconLock,
@@ -158,11 +158,11 @@ import {
     IconRefresh,
 } from '@tabler/icons-vue';
 import ChannelInfo from '../util/ChannelInfo.vue';
-import { useProfileStore } from '../../../../src/stores/profile.ts';
+import { useProfileStore } from '../../../stores/profile.ts';
 import EmptyInfo from '../util/EmptyInfo.vue';
-import { useMapStore } from '../../../../src/stores/map.ts';
-import { useCOTStore } from '../../../../src/stores/cots.ts';
-import Subscription from '../../../../src/stores/base/mission.ts';
+import { useMapStore } from '../../../stores/map.ts';
+import { useCOTStore } from '../../../stores/cots.ts';
+import Subscription from '../../../base/mission.ts';
 const mapStore = useMapStore();
 const cotStore = useCOTStore();
 const profileStore = useProfileStore();
