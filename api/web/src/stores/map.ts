@@ -67,7 +67,7 @@ export const useMapStore = defineStore('cloudtak', {
             type: 'module'
         }));
 
-        const transfer = new CloudTAKTransferHandler(worker);
+        const transfer = new CloudTAKTransferHandler(worker, new BroadcastChannel('sync'));
         Comlink.transferHandlers.set("cot", transfer.cot);
 
         return {
@@ -270,7 +270,7 @@ export const useMapStore = defineStore('cloudtak', {
                     if (msg.body.options.speed === null) {
                         msg.body.options.speed = Infinity;
                     }
-            
+
                     map.fitBounds(msg.body.bounds, msg.body.options);
                 }
             }

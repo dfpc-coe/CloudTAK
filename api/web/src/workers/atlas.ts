@@ -11,24 +11,26 @@ import type { Remote, TransferHandler } from 'comlink';
 import type { Feature } from '../types.ts';
 
 export class CloudTAKTransferHandler {
-    atlas: Atlas | Remote<Atlas>
+    atlas: Atlas | Remote<Atlas>;
+    sync: BroadcastChannel | null;
 
-    constructor(atlas: Atlas | Remote<Atlas>) {
+    constructor(atlas: Atlas | Remote<Atlas>, sync?: BroadcastChannel) {
         this.atlas = atlas;
-    }   
+        this.sync = sync || null;
+    }
 
-    cot: TransferHandler<unknown, unknown> = { 
+    cot: TransferHandler<unknown, unknown> = {
         canHandle: (obj) => obj instanceof COT,
         serialize: (cot: COT) => {
             const feat = cot.as_feature();
             return [feat, []];
-        },  
+        },
         deserialize: (feat: Feature) => {
             return new COT(this.atlas, feat, feat.origin, {
-                remote: true
-            }); 
-        }   
-    }   
+                remote: this.sync ? this.sync : null
+            });
+        }
+    }
 }
 
 export default class Atlas {
@@ -42,6 +44,7 @@ export default class Atlas {
 
     constructor() {
         this.channel = new BroadcastChannel('cloudtak');
+        this.sync = new BroadcastChannel('sync');
         this.token = '';
     }
 
