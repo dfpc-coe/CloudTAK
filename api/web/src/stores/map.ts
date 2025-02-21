@@ -12,7 +12,7 @@ import * as Comlink from 'comlink';
 import AtlasWorker from '../workers/atlas.ts?worker&url';
 import COT from '../base/cot.ts';
 import { WorkerMessage }from '../base/events.ts';
-import Subscription from './base/mission.ts';
+import Subscription from '../base/mission.ts';
 import Overlay from './base/overlay.ts';
 import { std, stdurl } from '../std.js';
 import mapgl from 'maplibre-gl'
@@ -63,22 +63,6 @@ export const useMapStore = defineStore('cloudtak', {
         },
         overlays: Array<Overlay>
     } => {
-        const channel = new BroadcastChannel("cloudtak");
-
-        channel.onmessage = (event) => {
-            try {
-                const body = JSON.parse(event.data)
-
-                if (!body.type) return;
-
-                if (body.type === WorkerMessage.Map_FlyTo) {
-                    console.error(body.data);
-                }
-            } catch (err) {
-                console.error(`Failed to parse event: ${event.data}`, err);
-            }
-        };
-
         const worker = Comlink.wrap<Atlas>(new Worker(AtlasWorker, {
             type: 'module'
         }));
@@ -266,7 +250,28 @@ export const useMapStore = defineStore('cloudtak', {
 
             if (!init.style || typeof init.style === 'string') throw new Error('init.style must be an object');
 
-            this._map = new mapgl.Map(init);
+            const map = new mapgl.Map(init);
+
+            this._map = map;
+
+            this.channel.onmessage = (event) => {
+                let msg;
+                try {
+                    msg = JSON.parse(event.data)
+
+                    if (!msg.type) return;
+                } catch (err) {
+                    console.error(`Failed to parse event: ${event.data}`, err);
+                }
+
+                if (msg.type === WorkerMessage.Map_FlyTo) {
+                    if (msg.body.options.speed === null) {
+                        msg.body.options.speed = Infinity;
+                    }
+            
+                    map.fitBounds(msg.body.bounds, msg.body.options);
+                }
+            }
         },
         initOverlays: async function() {
             if (!this.map) throw new Error('Cannot initLayers before map has loaded');
