@@ -44,12 +44,13 @@ export default class COT {
     id: string;
     path: string;
 
-    _remote: boolean;
-
     _properties: Feature["properties"];
     _geometry: Feature["geometry"];
 
+    _remote: BroadcastChannel | null;
+
     _atlas: Atlas | Remote<Atlas>;
+
     _username?: string;
 
     origin: Origin
@@ -60,7 +61,7 @@ export default class COT {
         origin?: Origin,
         opts?: {
             skipSave?: boolean;
-            remote?: boolean;
+            remote?: BroadcastChannel | null;
         }
     ) {
         feat.properties = COT.style(atlas, feat.geometry.type, feat.properties);
@@ -71,7 +72,6 @@ export default class COT {
         this._geometry = feat["geometry"];
 
         this._remote = (opts && opts.remote !== undefined) ? opts.remote : false
-
         this._atlas = atlas;
 
         this.origin = origin || { mode: OriginMode.CONNECTION };
@@ -90,6 +90,16 @@ export default class COT {
 
         if (!this.is_self && (!opts || (opts && opts.skipSave === false))) {
             this.save();
+        }
+
+        if (this._remote) {
+            // The sync BroadcastChannel will post a message anytime the underlying
+            // Atlas database has a COT update, resulting in a sync with the frontend
+            this._remote.onmessage = async (ev) => {
+                if (ev.data === `cot:${this.id}`) {
+                    this.update(await this._atlas.db.get(this.id))
+                }
+            };
         }
     }
 
@@ -118,57 +128,71 @@ export default class COT {
     }, opts?: {
         skipSave?: boolean;
     }): Promise<boolean> {
-        let visuallyChanged = false;
-        if (update.geometry) {
-            //TODO Detect Geometry changes, use centroid?!
-            this._geometry = update.geometry;
-            visuallyChanged = true;
-        }
+        if (this._remote) {
+            if (update.geometry) {
+                this._geometry = update.geometry;
+            }
 
-        if (update.properties) {
-            update.properties = COT.style(this._atlas, this._geometry.type, update.properties);
+            if (update.properties) {
+                this._geometry = update.properties;
+            }
 
-            for (const prop of RENDERED_PROPERTIES) {
-                if (this._properties[prop] !== update.properties[prop]) {
-                    visuallyChanged = true;
-                    break;
+            return false;
+        } else {
+            let visuallyChanged = false;
+            if (update.geometry) {
+                //TODO Detect Geometry changes, use centroid?!
+                this._geometry = update.geometry;
+                visuallyChanged = true;
+            }
+
+            if (update.properties) {
+                update.properties = COT.style(this._atlas, this._geometry.type, update.properties);
+
+                for (const prop of RENDERED_PROPERTIES) {
+                    if (this._properties[prop] !== update.properties[prop]) {
+                        visuallyChanged = true;
+                        break;
+                    }
                 }
+
+                Object.assign(this._properties, update.properties);
             }
 
-            Object.assign(this._properties, update.properties);
-        }
-
-        if (!this._properties.center || (this._properties.center[0] === 0 && this._properties.center[1] === 0) || update.geometry) {
-            this._properties.center = pointOnFeature(this._geometry).geometry.coordinates;
-        }
-
-        // TODO only update if Geometry or Rendered Prop changes
-        if (this.origin.mode === OriginMode.CONNECTION) {
-            this._atlas.db.pending.set(this.id, this);
-        }
-
-        if (this.is_self) {
-            const getProfile = await this._atlas.profile.profile;
-
-            const profile = getProfile instanceof Promise ? await getProfile : getProfile;
-
-            if (
-                profile
-                && (
-                    this.properties.remarks !== profile.tak_remarks
-                    || this.properties.callsign !== profile.tak_callsign
-                )
-            ) {
-                await this._atlas.profile.update({
-                    tak_callsign: this.properties.callsign,
-                    tak_remarks: this.properties.remarks
-                })
+            if (!this._properties.center || (this._properties.center[0] === 0 && this._properties.center[1] === 0) || update.geometry) {
+                this._properties.center = pointOnFeature(this._geometry).geometry.coordinates;
             }
-        } else if (!opts || (opts && opts.skipSave === false)) {
-            await this.save();
-        }
 
-        return visuallyChanged;
+            // TODO only update if Geometry or Rendered Prop changes
+            if (this.origin.mode === OriginMode.CONNECTION) {
+                this._atlas.db.pending.set(this.id, this);
+            }
+
+            this._atlas.sync.postMessage(`cot:${this.id}`);
+
+            if (this.is_self) {
+                const getProfile = await this._atlas.profile.profile;
+
+                const profile = getProfile instanceof Promise ? await getProfile : getProfile;
+
+                if (
+                    profile
+                    && (
+                        this.properties.remarks !== profile.tak_remarks
+                        || this.properties.callsign !== profile.tak_callsign
+                    )
+                ) {
+                    await this._atlas.profile.update({
+                        tak_callsign: this.properties.callsign,
+                        tak_remarks: this.properties.remarks
+                    })
+                }
+            } else if (!opts || (opts && opts.skipSave === false)) {
+                await this.save();
+            }
+
+            return visuallyChanged;
+        }
     }
 
     /**
