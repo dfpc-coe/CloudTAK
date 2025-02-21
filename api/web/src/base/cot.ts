@@ -97,7 +97,9 @@ export default class COT {
             // Atlas database has a COT update, resulting in a sync with the frontend
             this._remote.onmessage = async (ev) => {
                 if (ev.data === `cot:${this.id}`) {
-                    this.update(await this._atlas.db.get(this.id))
+                    const feat = await this._atlas.db.get(this.id)
+                    this.properties = feat.properties;
+                    this.geometry = feat.geometry;
                 }
             };
         }
@@ -129,13 +131,7 @@ export default class COT {
         skipSave?: boolean;
     }): Promise<boolean> {
         if (this._remote) {
-            if (update.geometry) {
-                this._geometry = update.geometry;
-            }
-
-            if (update.properties) {
-                this._geometry = update.properties;
-            }
+            console.error('REMOTE UPDATE TODO');
 
             return false;
         } else {
