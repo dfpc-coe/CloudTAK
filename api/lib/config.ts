@@ -118,7 +118,7 @@ export default class Config {
         if (!process.env.StackName || process.env.StackName === 'test') {
             process.env.StackName = 'test';
 
-            SigningSecret = 'coe-wildland-fire';
+            SigningSecret = process.env.SigningSecret || 'coe-wildland-fire';
             Bucket = process.env.ASSET_BUCKET;
             API_URL = process.env.API_URL || 'http://localhost:5001';
             PMTILES_URL = process.env.PMTILES_URL || 'http://localhost:5001';
