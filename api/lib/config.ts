@@ -38,7 +38,6 @@ export default class Config {
     UnsafeSigningSecret: string;
     API_URL: string;
     PMTILES_URL: string;
-    TileBaseURL: URL;
     DynamoDB?: string;
     wsClients: Map<string, ConnectionWebSocket[]>;
     Bucket?: string;
@@ -64,7 +63,6 @@ export default class Config {
         StackName: string;
         API_URL: string;
         PMTILES_URL: string;
-        TileBaseURL: URL;
         SigningSecret: string;
         wsClients: Map<string, ConnectionWebSocket[]>;
         pg: Pool<typeof pgtypes>;
@@ -85,7 +83,6 @@ export default class Config {
         this.SigningSecret = init.SigningSecret;
         this.API_URL = init.API_URL;
         this.PMTILES_URL = init.PMTILES_URL;
-        this.TileBaseURL = init.TileBaseURL;
         this.wsClients = init.wsClients;
         this.pg = init.pg;
         this.DynamoDB = init.DynamoDB;
@@ -173,7 +170,6 @@ export default class Config {
             nometrics: (args.nometrics || false),
             nosinks: (args.nosinks || false),
             nocache: (args.nocache || false),
-            TileBaseURL: process.env.TileBaseURL ? new URL(process.env.TileBaseURL) : new URL('./data-dev/zipcodes.tilebase', import.meta.url),
             StackName: process.env.StackName,
             wsClients: new Map(),
             server, SigningSecret, API_URL, DynamoDB, Bucket, pg, models, HookURL, PMTILES_URL
