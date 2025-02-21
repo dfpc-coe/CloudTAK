@@ -36,7 +36,6 @@ import type { SearchForward, SearchSuggest } from '../../../types.ts';
 import Feature from './Feature.vue';
 import { std, stdurl } from '../../../std.ts'
 import { useMapStore } from '../../../stores/map.ts';
-import { useCOTStore } from '../../../stores/cots.ts';
 import COT from '../../../base/cot.ts';
 import {
     TablerInput,
@@ -45,7 +44,6 @@ import {
 import { ref, watch } from 'vue';
 
 const mapStore = useMapStore();
-const cotStore = useCOTStore();
 
 const emit = defineEmits(['close']);
 
@@ -73,12 +71,13 @@ async function fetchSearch(queryText?: string, magicKey?: string) {
     cots.value = [];
 
     if (!magicKey || !queryText) {
-        cots.value.push(...Array.from(cotStore
-            .filter((cot) => {
-                return cot.properties.callsign.toLowerCase().includes(query.value.filter.toLowerCase());
-            }, { mission: true }))
-            .slice(0, 5)
-        )
+        cots.value.push(...Array.from(
+            await mapStore.worker.db
+                .filter(`$contains($lowercase(properties.callsign), "${query.value.filter.toLowerCase()}")`, {
+                    mission: true
+                })
+                .slice(0, 5)
+        ))
 
         partialLoading.value = true;
         const url = stdurl('/api/search/suggest');
@@ -93,7 +92,7 @@ async function fetchSearch(queryText?: string, magicKey?: string) {
         const items = ((await std(url)) as SearchForward).items;
 
         query.value.filter = '';
-        
+
         if (items.length) {
             mapStore.map.fitBounds([
                 [items[0].extent.xmin, items[0].extent.ymin],

@@ -316,14 +316,17 @@ export default class COT {
         this._atlas.channel.postMessage(JSON.stringify({
             type: WorkerMessage.Map_FlyTo,
             body: {
-                maxZoom: 18,
-                padding: {
-                    top: 20,
-                    bottom: 20,
-                    left: 20,
-                    right: 20
-                },
-                speed: Infinity,
+                bounds: this.bounds(),
+                options: {
+                    maxZoom: 18,
+                    padding: {
+                        top: 20,
+                        bottom: 20,
+                        left: 20,
+                        right: 20
+                    },
+                    speed: Infinity,
+                }
             }
         }))
     }
