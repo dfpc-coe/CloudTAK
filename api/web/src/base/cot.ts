@@ -131,7 +131,7 @@ export default class COT {
         skipSave?: boolean;
     }): Promise<boolean> {
         if (this._remote) {
-            console.error('REMOTE UPDATE TODO');
+            await this._atlas.db.add(this.as_feature());
 
             return false;
         } else {

@@ -760,9 +760,9 @@ const center = computed(() => {
 async function load_cot() {
     username.value = undefined;
 
-    cot.value = await mapStore.worker.db.get(String(route.params.uid), {
+    cot.value = (await mapStore.worker.db.get(String(route.params.uid), {
         mission: true
-    })
+    })).as_proxy();
 
     if (cot.value && cot.value.origin.mode === OriginMode.MISSION && cot.value.origin.mode_id) {
         mission.value = await mapStore.worker.db.subscriptions.get(cot.value.origin.mode_id);
