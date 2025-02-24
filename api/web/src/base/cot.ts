@@ -1,5 +1,6 @@
 import { std } from '../std.ts';
 import { bbox } from '@turf/bbox'
+import { isEqual } from '@react-hookz/deep-equal';
 import { WorkerMessage } from'./events.ts'
 import type { Remote } from 'comlink';
 import type Atlas from '../workers/atlas.ts';
@@ -164,7 +165,14 @@ export default class COT {
                 this._atlas.db.pending.set(this.id, this);
             }
 
-            this._atlas.sync.postMessage(`cot:${this.id}`);
+            // This is necessary to ensure endless loops don't occur due to a constant
+            // get/set action if using the as_proxy functionality
+            if (
+                (opts.properties && !isEqual(this.properties, opts.properties))
+                || (opts.geometry && !isEqual(this.geometry, opts.geometry))
+            ) {
+                this._atlas.sync.postMessage(`cot:${this.id}`);
+            }
 
             if (this.is_self) {
                 const getProfile = await this._atlas.profile.profile;

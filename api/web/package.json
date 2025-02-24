@@ -12,6 +12,7 @@
         "lint": "eslint ./src/"
     },
     "dependencies": {
+        "@react-hookz/deep-equal": "^3.0.3",
         "@tabler/core": "1.0.0",
         "@tabler/icons-vue": "^3.0.0",
         "@tak-ps/node-cot": "^12.21.0",
