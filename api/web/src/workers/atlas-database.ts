@@ -256,6 +256,7 @@ export default class AtlasDatabase {
 
         if (!skipNetwork && cot.properties.archived) {
             await std(`/api/profile/feature/${id}`, {
+                token: this.atlas.token,
                 method: 'DELETE'
             });
         }
