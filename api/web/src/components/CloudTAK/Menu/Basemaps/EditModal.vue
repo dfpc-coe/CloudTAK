@@ -100,27 +100,27 @@
             </template>
             <template v-else>
                 <div class='row row-cards'>
-                    <div class='col-12 col-md-6 mt-3'>
+                    <div class='col-12 col-lg-6 mt-3'>
                         <TablerInput
                             v-model='editing.name'
                             required
-                            label='Basemap Name'
+                            label='Name'
                             :error='errors.name'
                         />
                     </div>
-                    <div class='col-12 col-md-3 mt-3'>
+                    <div class='col-12 col-lg-3 mt-3'>
                         <TablerEnum
                             v-model='editing.type'
                             required
-                            label='Basemap Type'
+                            label='Type'
                             :options='["raster", "raster-dem", "vector"]'
                         />
                     </div>
-                    <div class='col-12 col-md-3 mt-3'>
+                    <div class='col-12 col-lg-3 mt-3'>
                         <TablerEnum
                             v-model='scope'
                             required
-                            label='Basemap Scope'
+                            label='Access Scope'
                             :disabled='(props.basemap.id && !profileStore.profile.system_admin)'
                             :options='["user", "server"]'
                         />
@@ -129,7 +129,7 @@
                         <TablerInput
                             v-model='editing.url'
                             required
-                            label='Basemap Url'
+                            label='Tile Url'
                             :error='errors.url'
                         >
                             <div class='btn-list'>
@@ -160,28 +160,29 @@
                         <TablerInput
                             v-model='editing.minzoom'
                             required
-                            label='Basemap MinZoom'
+                            label='MinZoom'
                         />
                     </div>
                     <div class='col-md-4'>
                         <TablerInput
                             v-model='editing.maxzoom'
                             required
-                            label='Basemap MaxZoom'
+                            label='MaxZoom'
                         />
                     </div>
                     <div class='col-12 col-md-4'>
                         <TablerEnum
                             v-model='editing.format'
                             required
-                            label='Basemap Format'
+                            label='Format'
                             :options='["png", "jpeg", "mvt"]'
                         />
                     </div>
                     <div class='col-12'>
                         <TablerInput
                             v-model='editing.collection'
-                            label='Optional Collection'
+                            label='Collection'
+                            placeholder='Optional Collection'
                         />
                     </div>
                     <div class='col-md-12 mt-3'>
