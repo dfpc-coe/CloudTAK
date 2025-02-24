@@ -908,8 +908,7 @@ async function mountMap(): Promise<void> {
             mapStore.draw.on('deselect', async () => {
                 if (!mapStore.edit) return;
 
-                // @ts-expect-error There is currently no getFeature API
-                const feat = mapStore.draw._store.store[mapStore.edit.id];
+                const feat = mapStore.draw.getSnapshotFeature(mapStore.edit.id);
                 delete feat.properties.center;
 
                 await mapStore.worker.db.hidden.delete(mapStore.edit.id);
@@ -930,8 +929,7 @@ async function mountMap(): Promise<void> {
                     if (mapStore.draw.getMode() === 'select' || mapStore.edit) {
                         return;
                     } else if (mapStore.draw.getMode() === 'freehand') {
-                        // @ts-expect-error There is currently no getFeature API
-                        const geometry = mapStore.draw._store.store[id].geometry;
+                        const geometry = mapStore.draw.getSnapshotFeature(id).geometry;
                         mapStore.draw.removeFeatures([id]);
                         mapStore.draw.setMode('static');
                         mapStore.drawOptions.mode = 'static';
