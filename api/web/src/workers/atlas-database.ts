@@ -318,7 +318,7 @@ export default class AtlasDatabase {
     }
 
     /**
-     * Add a CoT GeoJSON to the store and modify props to meet MapLibre style requirements
+     * Add or Update a CoT GeoJSON to the store and modify props to meet MapLibre style requirements
      */
     async add(
         feat: Feature,
