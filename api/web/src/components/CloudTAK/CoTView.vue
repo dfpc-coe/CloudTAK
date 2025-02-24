@@ -760,15 +760,17 @@ const center = computed(() => {
 async function load_cot() {
     username.value = undefined;
 
-    cot.value = (await mapStore.worker.db.get(String(route.params.uid), {
+    const baseCOT = (await mapStore.worker.db.get(String(route.params.uid), {
         mission: true
-    })).as_proxy();
+    }))
 
-    if (cot.value && cot.value.origin.mode === OriginMode.MISSION && cot.value.origin.mode_id) {
-        mission.value = await mapStore.worker.db.subscriptions.get(cot.value.origin.mode_id);
+    if (baseCOT && baseCOT.origin.mode === OriginMode.MISSION && baseCOT.origin.mode_id) {
+        mission.value = await mapStore.worker.db.subscriptions.get(baseCOT.origin.mode_id);
     }
 
-    if (cot.value) {
+    if (baseCOT) {
+        cot.value = baseCOT.as_proxy();
+
         if (cot.value.is_skittle) {
             username.value = await cot.value.username()
         } else {
