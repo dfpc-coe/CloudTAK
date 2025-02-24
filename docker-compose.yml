@@ -24,6 +24,7 @@ services:
             - POSTGRES=postgres://docker:docker@postgis:5432/gis
             - API_URL=localhost:5000
             - ROOT_URL=localhost:5001
+            - PMTILES_URL=localhost:5002
 
     tiles:
         platform: linux/amd64
