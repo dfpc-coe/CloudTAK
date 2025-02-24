@@ -1,6 +1,6 @@
 <template>
     <TablerLoading v-if='!subscription' />
-    <div 
+    <div
         v-else
         class='ms-3'
     >
@@ -14,18 +14,23 @@
 </template>
 
 <script setup lang='ts'>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
-import Overlay from '../../../../../src/stores/base/overlay.ts'
+import Overlay from '../../../../stores/base/overlay.ts'
+import Subscription from '../../../../base/mission.ts'
 import MissionLayers from '../Mission/MissionLayers.vue';
-import { useCOTStore } from '../../../../../src/stores/cots.ts';
-const cotStore = useCOTStore();
+import { useMapStore } from '../../../../stores/map.ts';
+const mapStore = useMapStore();
 
 const props = defineProps<{
     overlay: Overlay
 }>()
 
-const subscription = ref(cotStore.subscriptions.get(props.overlay.mode_id || ''));
+const subscription = ref<Subscription | undefined >(undefined);
+
+onMounted(async () => {
+    subscription.value = await mapStore.worker.db.subscriptionGet(props.overlay.mode_id || '');
+});
 </script>
