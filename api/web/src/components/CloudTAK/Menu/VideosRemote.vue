@@ -41,22 +41,16 @@
 
 <script setup lang='ts'>
 import MenuTemplate from '../util/MenuTemplate.vue';
+import type { VideoConnection } from '../../../types.ts';
 import { std } from '../../../std.ts';
 import { useRoute, useRouter } from 'vue-router';
 import {
     TablerInput,
     TablerDelete,
     TablerToggle,
-    TablerIconButton
 } from '@tak-ps/vue-tabler';
-import {
-    IconPlus,
-    IconVideo,
-    IconRefresh,
-    IconServer2,
-} from '@tabler/icons-vue';
 
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 
 const route = useRoute();
 const router = useRouter();
@@ -81,10 +75,11 @@ async function fetchConnection() {
         connection.value = await std(`/api/marti/video/${route.params.connectionid}`, {
             method: 'GET'
         });
-    } catch (err) {
-        throw err;
-    } finally {
+
         loading.value = false;
+    } catch (err) {
+        loading.value = false;
+        throw err;
     }
 }
 
@@ -98,10 +93,11 @@ async function saveConnection() {
         });
 
         router.push(`/menu/videos`)
-    } catch (err) {
-        throw err;
-    } finally {
+
         loading.value = false;
+    } catch (err) {
+        loading.value = false;
+        throw err;
     }
 }
 
