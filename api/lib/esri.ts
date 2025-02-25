@@ -194,11 +194,13 @@ export class EsriBase {
             if (!json.currentVersion) throw new Err(400, null, 'Could not determine ESRI Server Version, is this an ESRI Server?');
 
             if (this.type === EsriType.PORTAL || this.type === EsriType.SERVER) {
-                if (String(json.currentVersion).split('.').length < 2) throw new Err(400, null, 'Could not parse ESRI Server Version - this version may not be supported');
+                if (String(json.currentVersion).split('.').length < 2) {
+                    throw new Err(400, null, `Could not parse ESRI Server Version (${json.currentVersion}) - this version may not be supported`);
+                }
 
                 const major = parseInt(String(json.currentVersion).split('.')[0])
-                if (isNaN(major)) throw new Err(400, null, 'Could not parse ESRI Server Version - non-integer - this version may not be supported');
-                if (major < 8) throw new Err(400, null, 'ESRI Server version is too old - Update to at least version 8.x')
+                if (isNaN(major)) throw new Err(400, null, `Could not parse ESRI Server Version (${json.currentVersion}) - non-integer - this version may not be supported`);
+                if (major < 8) throw new Err(400, null, `ESRI Server version (${json.currentVersion}) is too old - Update to at least version 8.x`)
             }
 
             // ArcGIS Online (AGOL) uses a <year>.<month?> format - assume it's always at the bleeding edge
