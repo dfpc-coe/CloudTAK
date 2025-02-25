@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v6.12.1 - 2025-02-25
+
+- :rocket: Include version number in ESRI Errors
+
 ### v6.12.0 - 2025-02-25
 
 - :bug: Fix issue where new outgoing layers and sinks couldn't live together
