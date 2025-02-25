@@ -886,7 +886,7 @@ async function updateCOT() {
 
 async function mountMap(): Promise<void> {
     if (!mapRef.value) throw new Error('Map Element could not be found - Please refresh the page and try again');
-    mapStore.init(mapRef.value);
+    await mapStore.init(mapRef.value);
 
     // Eventually make a sprite URL part of the overlay so KMLs can load a sprite package & add paging support
     const iconsets = await std('/api/iconset') as IconsetList;
@@ -924,13 +924,7 @@ async function mountMap(): Promise<void> {
                 mapStore.drawOptions.mode = 'static';
                 mapStore.draw.stop();
 
-                if (!cot) {
-                    await mapStore.worker.db.add(feat);
-                } else {
-                    await cot.update({
-                        geometry: feat.geometry
-                    });
-                }
+                await mapStore.worker.db.add(feat);
 
                 await updateCOT();
             })
@@ -956,8 +950,8 @@ async function mountMap(): Promise<void> {
                         return;
                     }
 
-                    // @ts-expect-error There is currently no getFeature API
-                    const geometry = mapStore.draw._store.store[id].geometry;
+                    const storeFeat = mapStore.draw.getSnapshotFeature(id);
+                    if (!storeFeat) throw new Error('Could not find underlying marker');
 
                     const now = new Date();
                     const feat: Feature = {
@@ -975,7 +969,7 @@ async function mountMap(): Promise<void> {
                             stale: new Date(now.getTime() + 3600).toISOString(),
                             center: [0,0]
                         },
-                        geometry
+                        geometry: JSON.parse(JSON.stringify(storeFeat.geometry))
                     };
 
                     if (
