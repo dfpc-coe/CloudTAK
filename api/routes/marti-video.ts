@@ -5,6 +5,7 @@ import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import {
     VideoConnection,
+    VideoConnectionInput,
     VideoConnectionList,
     VideoConnectionListInput,
 } from '../lib/api/video.js';
@@ -53,6 +54,29 @@ export default async function router(schema: Schema, config: Config) {
             const conn = await api.Video.get(req.params.uid);
 
             res.json(conn);
+        } catch (err) {
+             Err.respond(err, res);
+        }
+    });
+
+    await schema.post('/marti/video', {
+        name: 'Create Video',
+        group: 'MartiVideos',
+        description: 'Helper API to create video streams',
+        body: VideoConnectionInput,
+        res: StandardResponse
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+            const auth = (await config.models.Profile.from(user.email)).auth;
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+
+            const conn = await api.Video.create(req.body);
+
+            res.json({
+                status: 200,
+                message: 'Video Stream Created'
+            });
         } catch (err) {
              Err.respond(err, res);
         }
