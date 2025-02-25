@@ -466,7 +466,7 @@
                 <div v-else-if='["home", "home-menu"].includes(String(route.name))'>
                     <Status
                         class='mx-2 my-2'
-                        :status='open ? "success" : "fail"'
+                        :status='mapStore.isOpen ? "success" : "fail"'
                         :dark='true'
                     />
                 </div>
@@ -506,8 +506,6 @@ const mapStore = useMapStore();
 const profileStore = useProfileStore();
 
 const profile = computed(() => profileStore.profile);
-
-const open = computed(async () => await mapStore.worker.conn.isOpen);
 
 defineProps({
     compact: Boolean,

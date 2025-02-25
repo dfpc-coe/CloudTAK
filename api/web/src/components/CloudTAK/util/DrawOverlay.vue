@@ -43,7 +43,7 @@
             /><span class='mx-2'>Lasso Select</span>
         </div>
         <div v-else>
-            Unknown Editing
+            Editing Existing Feature
         </div>
     </div>
 </template>

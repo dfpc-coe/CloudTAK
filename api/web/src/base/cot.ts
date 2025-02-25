@@ -146,61 +146,64 @@ export default class COT {
 
             let visuallyChanged = false;
             if (update.geometry) {
-                //TODO Detect Geometry changes, use centroid?!
-                this._geometry = update.geometry;
-                visuallyChanged = true;
+                if (!isEqual(this.geometry, update.geometry)) {
+                    delete update.geometry;
+                } else {
+                    Object.assign(this._geometry, update.geometry);
+                    visuallyChanged = true;
+                }
             }
 
             if (update.properties) {
                 update.properties = COT.style(atlas, this._geometry.type, update.properties);
 
-                for (const prop of RENDERED_PROPERTIES) {
-                    if (this._properties[prop] !== update.properties[prop]) {
-                        visuallyChanged = true;
-                        break;
+                if (!isEqual(this.properties, update.properties)) {
+                    delete update.properties
+                } else {
+                    for (const prop of RENDERED_PROPERTIES) {
+                        if (this._properties[prop] !== update.properties[prop]) {
+                            visuallyChanged = true;
+                            break;
+                        }
                     }
-                }
 
-                Object.assign(this._properties, update.properties);
+                    Object.assign(this._properties, update.properties);
+                }
             }
 
-            if (!this._properties.center || (this._properties.center[0] === 0 && this._properties.center[1] === 0) || update.geometry) {
+            if (!update.geometry && !update.properties) {
+                return false;
+            }
+
+            if (update.geometry || !this._properties.center || (this._properties.center[0] === 0 && this._properties.center[1] === 0)) {
                 this._properties.center = pointOnFeature(this._geometry).geometry.coordinates;
             }
 
-            // TODO only update if Geometry or Rendered Prop changes
             if (this.origin.mode === OriginMode.CONNECTION) {
                 atlas.db.pending.set(this.id, this);
             }
 
-            // This is necessary to ensure endless loops don't occur due to a constant
-            // get/set action if using the as_proxy functionality
-            if (
-                (update.properties && !isEqual(this.properties, update.properties))
-                || (update.geometry && !isEqual(this.geometry, update.geometry))
-            ) {
-                atlas.sync.postMessage(`cot:${this.id}`);
+            atlas.sync.postMessage(`cot:${this.id}`);
 
-                if (this.is_self) {
-                    const getProfile = await atlas.profile.profile;
+            if (this.is_self) {
+                const getProfile = await atlas.profile.profile;
 
-                    const profile = getProfile instanceof Promise ? await getProfile : getProfile;
+                const profile = getProfile instanceof Promise ? await getProfile : getProfile;
 
-                    if (
-                        profile
-                        && (
-                            this.properties.remarks !== profile.tak_remarks
-                            || this.properties.callsign !== profile.tak_callsign
-                        )
-                    ) {
-                        await atlas.profile.update({
-                            tak_callsign: this.properties.callsign,
-                            tak_remarks: this.properties.remarks
-                        })
-                    }
-                } else if (!opts || (opts && opts.skipSave !== false)) {
-                    await this.save();
+                if (
+                    profile
+                    && (
+                        this.properties.remarks !== profile.tak_remarks
+                        || this.properties.callsign !== profile.tak_callsign
+                    )
+                ) {
+                    await atlas.profile.update({
+                        tak_callsign: this.properties.callsign,
+                        tak_remarks: this.properties.remarks
+                    })
                 }
+            } else if (!opts || (opts && opts.skipSave !== false)) {
+                await this.save();
             }
 
             return visuallyChanged;
@@ -211,10 +214,12 @@ export default class COT {
      * Attempt to save the CoT to the database if necessary
      */
     async save(): Promise<void> {
-        if (!this.is_self && this.properties.archived) {
+        if (!this._remote && !this.is_self && this.properties.archived) {
+            const atlas = this._atlas as Atlas;
+
             await std('/api/profile/feature', {
                 method: 'PUT',
-                token: this._atlas.token,
+                token: atlas.token,
                 body: this.as_feature()
             })
         }

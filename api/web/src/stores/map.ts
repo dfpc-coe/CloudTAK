@@ -42,6 +42,7 @@ export const useMapStore = defineStore('cloudtak', {
         hasTerrain: boolean;
         isTerrainEnabled: boolean;
         isLoaded: boolean;
+        isOpen: boolean;
         bearing: number;
         selected: Map<string, COT>;
         drawOptions: {
@@ -75,6 +76,7 @@ export const useMapStore = defineStore('cloudtak', {
             channel: new BroadcastChannel("cloudtak"),
             hasTerrain: false,
             isTerrainEnabled: false,
+            isOpen: false,
             isLoaded: false,
             bearing: 0,
             mission: undefined,
@@ -214,7 +216,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             return true;
         },
-        init: function(container: HTMLElement) {
+        init: async function(container: HTMLElement) {
             this.container = container;
 
             const init: mapgl.MapOptions = {
@@ -272,6 +274,12 @@ export const useMapStore = defineStore('cloudtak', {
                     }
 
                     map.fitBounds(msg.body.bounds, msg.body.options);
+                } else if (msg.type === WorkerMessage.Connection_Open) {
+                    this.isOpen = true;
+                } else if (msg.type === WorkerMessage.Connection_Close) {
+                    this.isOpen = false;
+                } else {
+                    console.error('Unknown Event:', msg);
                 }
             }
         },
