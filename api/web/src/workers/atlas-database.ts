@@ -21,7 +21,6 @@ export default class AtlasDatabase {
     atlas: Atlas;
 
     cots: Map<string, COT>;
-    hidden: Set<string>;
 
     // Store ImageIDs currently loaded in MapLibre
     images: Set<string>;
@@ -36,7 +35,6 @@ export default class AtlasDatabase {
         this.atlas = atlas;
 
         this.cots = new Map();
-        this.hidden = new Set();
 
         this.images = new Set();
 
@@ -87,10 +85,7 @@ export default class AtlasDatabase {
             const render = cot.as_rendered();
             const stale = new Date(cot.properties.stale).getTime();
 
-            if (this.hidden.has(String(cot.id))) {
-                // TODO check if hidden already
-                diff.remove.push(String(cot.id))
-            } else if (
+            if (
                 !['Never'].includes(display_stale)
                 && !cot.properties.archived
                 && (
@@ -362,7 +357,10 @@ export default class AtlasDatabase {
             const exists = this.cots.get(feat.id);
 
             if (exists) {
-                exists.update(feat, { skipSave: opts.skipSave })
+                exists.update({
+                    properties: feat.properties,
+                    geometry: feat.geometry
+                }, { skipSave: opts.skipSave })
             } else {
                 new COT(this.atlas, feat);
             }
