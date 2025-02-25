@@ -146,7 +146,7 @@ export default class COT {
 
             let visuallyChanged = false;
             if (update.geometry) {
-                if (!isEqual(this.geometry, update.geometry)) {
+                if (isEqual(this.geometry, update.geometry)) {
                     delete update.geometry;
                 } else {
                     Object.assign(this._geometry, update.geometry);
@@ -157,7 +157,7 @@ export default class COT {
             if (update.properties) {
                 update.properties = COT.style(atlas, this._geometry.type, update.properties);
 
-                if (!isEqual(this.properties, update.properties)) {
+                if (isEqual(this.properties, update.properties)) {
                     delete update.properties
                 } else {
                     for (const prop of RENDERED_PROPERTIES) {
@@ -174,6 +174,8 @@ export default class COT {
             if (!update.geometry && !update.properties) {
                 return false;
             }
+
+            console.error(this.id, update.geometry);
 
             if (update.geometry || !this._properties.center || (this._properties.center[0] === 0 && this._properties.center[1] === 0)) {
                 this._properties.center = pointOnFeature(this._geometry).geometry.coordinates;

@@ -905,6 +905,7 @@ async function mountMap(): Promise<void> {
             await mapStore.initOverlays();
             await mapStore.initDraw();
 
+            // Deselect event is for editing existing features
             mapStore.draw.on('deselect', async () => {
                 if (!mapStore.edit) return;
 
@@ -929,6 +930,7 @@ async function mountMap(): Promise<void> {
                 await updateCOT();
             })
 
+            // Finish event is for creating new features
             mapStore.draw.on('finish', async (id, context) => {
                 if (!mapStore.draw) throw new Error('Drawing Tools haven\'t loaded');
 
