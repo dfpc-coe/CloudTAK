@@ -1,5 +1,20 @@
 import { Static, Type } from '@sinclair/typebox';
+import { randomUUID } from 'node:crypto';
 import TAKAPI from '../tak-api.js';
+
+export const FeedInput = Type.Object({
+    active: Type.Boolean(),
+    alias: Type.String(),
+    url: Type.String(),
+});
+
+export const VideoConnectionInput = Type.Object({
+    active: Type.Boolean({
+        default: true
+    }),
+    alias: Type.String(),
+    feeds: Type.Array(FeedInput)
+});
 
 export const Feed = Type.Object({
     uuid: Type.String(),
@@ -66,6 +81,32 @@ export default class {
         return await this.api.fetch(url, {
             method: 'GET'
         });
+    }
+
+    async create(
+        connection: Static<typeof VideoConnectionInput>
+    ): Promise<Static<typeof VideoConnection>> {
+        const url = new URL(`/Marti/api/video`, this.api.url);
+
+        const uuid = randomUUID();
+
+        await this.api.fetch(url, {
+            method: 'POST',
+            body: {
+                videoConnections: [{
+                    uuid,
+                    ...connection,
+                    feeds: connection.feeds.map((feed) => {
+                        return {
+                            uuid: randomUUID(),
+                            ...connection,
+                        }
+                    })
+                }]
+            }
+        });
+
+        return await this.get(uuid);
     }
 
     async get(

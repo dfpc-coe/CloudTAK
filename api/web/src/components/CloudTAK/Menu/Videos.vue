@@ -4,37 +4,48 @@
         :loading='loading'
     >
         <template #buttons>
-            <TablerIconButton
-                v-if='mode === "lease"'
-                title='Get Lease'
-                @click='lease={}'
-            >
-                <IconPlus
-                    :size='32'
-                    stroke='1'
-                />
-            </TablerIconButton>
+            <template v-if='mode === "lease"'>
+                <TablerIconButton
+                    title='Get Lease'
+                    @click='lease={}'
+                >
+                    <IconPlus
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
 
-            <TablerIconButton
-                v-if='mode === "lease"'
-                title='Refresh Leases'
-                @click='fetchLeases'
-            >
-                <IconRefresh
-                    :size='32'
-                    stroke='1'
-                />
-            </TablerIconButton>
-            <TablerIconButton
-                v-else
-                title='Refresh Connections'
-                @click='fetchConnections'
-            >
-                <IconRefresh
-                    :size='32'
-                    stroke='1'
-                />
-            </TablerIconButton>
+                <TablerIconButton
+                    title='Refresh Leases'
+                    @click='fetchLeases'
+                >
+                    <IconRefresh
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+            </template>
+            <template v-else>
+                <TablerIconButton
+                    title='Publish Video Stream'
+                    @click='$router.push(`/menu/videos/remote/new`)'
+                >
+                    <IconPlus
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+
+                <TablerIconButton
+                    title='Refresh Connections'
+                    @click='fetchConnections'
+                >
+                    <IconRefresh
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+            </template>
         </template>
         <template #default>
             <div
@@ -82,7 +93,7 @@
             <template v-if='mode === "connections"'>
                 <div class='col-12'>
                     <TablerNone
-                        v-if='videos.size && !connections.videoConnections.length'
+                        v-if='!videos.size && !connections.videoConnections.length'
                         label='Video Connections'
                         :create='false'
                     />
@@ -107,17 +118,21 @@
                             <span
                                 class='text-truncate'
                                 style='
-                                    width: calc(100% - 60px);
+                                    width: calc(100% - 100px);
                                 '
                                 v-text='connection.alias'
                             />
 
-                            <div class='ms-auto'>
-                                <TablerDelete
-                                    v-if='false'
-                                    displaytype='icon'
-                                    @delete='deleteConnection(connection)'
-                                />
+                            <div class='ms-auto btn-list'>
+                                <TablerIconButton
+                                    title='Edit Lease'
+                                    @click.stop='$router.push(`/menu/videos/remote/${connection.uuid}`)'
+                                >
+                                    <IconPencil
+                                        :size='24'
+                                        stroke='1'
+                                    />
+                                </TablerIconButton>
                             </div>
                         </div>
                         <Feature
@@ -214,6 +229,7 @@ import {
 import {
     IconPlus,
     IconVideo,
+    IconPencil,
     IconRefresh,
     IconServer2,
 } from '@tabler/icons-vue';
@@ -292,19 +308,4 @@ async function deleteLease(lease: VideoLease): Promise<void> {
     }
 }
 
-async function deleteConnection(connection: VideoConnection): Promise<void> {
-    loading.value = true;
-
-    try {
-        await std(`/api/marti/video/${connection.uuid}`, {
-            method: 'DELETE'
-        });
-
-        await fetchConnections();
-    } catch (err) {
-        loading.value = false;
-
-        throw err;
-    }
-}
 </script>
