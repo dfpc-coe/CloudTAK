@@ -26,6 +26,9 @@ export default class Sinks extends Map<string, typeof SinkInterface> {
     async cots(conn: ConnectionConfig, cots: CoT[]): Promise<boolean> {
         if (cots.length === 0) return true;
 
+        const newCOTs = [...cots];
+        const oldCOTs = [...cots];
+
         for await (const layer of this.config.models.Layer.augmented_iter({
             where: sql`
                 layers.connection = ${conn.id}
@@ -33,27 +36,26 @@ export default class Sinks extends Map<string, typeof SinkInterface> {
                 AND layers_outgoing.layer IS NOT NULL
             `
         })) {
+            const arnPrefix = (await this.config.fetchArnPrefix()).split(':');
+            const queue = `https://sqs.${arnPrefix[3]}.amazonaws.com/${arnPrefix[4]}/${this.config.StackName}-layer-${layer.id}-outgoing.fifo`;
+
             do {
                 try {
-                    const arnPrefix = (await this.config.fetchArnPrefix()).split(':');
-
                     await this.queue.submit(
-                        cots.splice(0, 10).map((cot) => {
+                        newCOTs.splice(0, 10).map((cot) => {
                             return {
                                 Id: (Math.random() + 1).toString(36).substring(7),
-                                MessageGroupId: `${String(conn.id)}-${cot.uid()}`,
+                                MessageGroupId: `${String(layer.id)}-${cot.uid()}`,
                                 MessageBody: JSON.stringify({
                                     xml: cot.to_xml(),
                                     geojson: cot.to_geojson()
                                 })
                             } as SQS.SendMessageBatchRequestEntry;
-                        }),
-                        `https://sqs.${arnPrefix[3]}.amazonaws.com/${arnPrefix[4]}/${this.config.StackName}-layer-${layer.id}-outgoing.fifo`
-                    );
+                        }), queue);
                 } catch (err) {
-                    console.error(err);
+                    console.error(`Queue: `, queue, ':', err);
                 }
-            } while (cots.length);
+            } while (newCOTs.length);
         }
 
         // OG Sink Implementation which will be phased out
@@ -82,7 +84,7 @@ export default class Sinks extends Map<string, typeof SinkInterface> {
             do {
                 try {
                    await this.queue.submit(
-                        cots.splice(0, 10).map((cot) => {
+                        oldCOTs.splice(0, 10).map((cot) => {
                             const feat = cot.to_geojson();
 
                             return {
@@ -100,7 +102,7 @@ export default class Sinks extends Map<string, typeof SinkInterface> {
                 } catch (err) {
                     console.error(err);
                 }
-            } while (cots.length);
+            } while (oldCOTs.length);
         }
 
         return true;
