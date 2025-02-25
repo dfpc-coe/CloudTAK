@@ -103,8 +103,8 @@ export default class COT {
                 if (ev.data === `cot:${this.id}`) {
                     const feat = await atlas.db.get(this.id)
                     if (feat) {
-                        this.properties = feat.properties;
-                        this.geometry = feat.geometry;
+                        this._properties = feat.properties;
+                        this._geometry = feat.geometry;
                     }
                 }
             };
@@ -175,7 +175,7 @@ export default class COT {
                 return false;
             }
 
-            console.error(this.id, update.geometry);
+            console.error('ACTUAL UPDATE', this.id, update);
 
             if (update.geometry || !this._properties.center || (this._properties.center[0] === 0 && this._properties.center[1] === 0)) {
                 this._properties.center = pointOnFeature(this._geometry).geometry.coordinates;
