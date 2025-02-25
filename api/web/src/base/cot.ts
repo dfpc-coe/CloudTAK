@@ -90,7 +90,7 @@ export default class COT {
             atlas.db.pending.set(this.id, this);
         }
 
-        if (!this.is_self && (!opts || (opts && opts.skipSave !== false))) {
+        if (!opts || (opts && opts.skipSave !== false)) {
             this.save();
         }
 
@@ -101,7 +101,7 @@ export default class COT {
             // Atlas database has a COT update, resulting in a sync with the frontend
             this._remote.onmessage = async (ev) => {
                 if (ev.data === `cot:${this.id}`) {
-                    const feat = await this._atlas.db.get(this.id)
+                    const feat = await atlas.db.get(this.id)
                     if (feat) {
                         this.properties = feat.properties;
                         this.geometry = feat.geometry;
@@ -180,27 +180,27 @@ export default class COT {
                 || (update.geometry && !isEqual(this.geometry, update.geometry))
             ) {
                 atlas.sync.postMessage(`cot:${this.id}`);
-            }
 
-            if (this.is_self) {
-                const getProfile = await atlas.profile.profile;
+                if (this.is_self) {
+                    const getProfile = await atlas.profile.profile;
 
-                const profile = getProfile instanceof Promise ? await getProfile : getProfile;
+                    const profile = getProfile instanceof Promise ? await getProfile : getProfile;
 
-                if (
-                    profile
-                    && (
-                        this.properties.remarks !== profile.tak_remarks
-                        || this.properties.callsign !== profile.tak_callsign
-                    )
-                ) {
-                    await atlas.profile.update({
-                        tak_callsign: this.properties.callsign,
-                        tak_remarks: this.properties.remarks
-                    })
+                    if (
+                        profile
+                        && (
+                            this.properties.remarks !== profile.tak_remarks
+                            || this.properties.callsign !== profile.tak_callsign
+                        )
+                    ) {
+                        await atlas.profile.update({
+                            tak_callsign: this.properties.callsign,
+                            tak_remarks: this.properties.remarks
+                        })
+                    }
+                } else if (!opts || (opts && opts.skipSave !== false)) {
+                    await this.save();
                 }
-            } else if (!opts || (opts && opts.skipSave !== false)) {
-                await this.save();
             }
 
             return visuallyChanged;
@@ -211,7 +211,7 @@ export default class COT {
      * Attempt to save the CoT to the database if necessary
      */
     async save(): Promise<void> {
-        if (this.properties.archived) {
+        if (!this.is_self && this.properties.archived) {
             await std('/api/profile/feature', {
                 method: 'PUT',
                 token: this._atlas.token,

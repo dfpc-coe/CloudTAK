@@ -916,14 +916,22 @@ async function mountMap(): Promise<void> {
 
                 await mapStore.worker.db.hidden.delete(mapStore.edit.id);
 
+                const cot = await mapStore.worker.db.get(mapStore.edit.id, { mission: true });
+
                 mapStore.edit = undefined
 
                 mapStore.draw.setMode('static');
                 mapStore.drawOptions.mode = 'static';
                 mapStore.draw.stop();
 
-                await mapStore.worker.db.remove(feat.id);
-                await mapStore.worker.db.add(feat);
+                if (!cot) {
+                    await mapStore.worker.db.add(feat);
+                } else {
+                    await cot.update({
+                        geometry: feat.geometry
+                    });
+                }
+
                 await updateCOT();
             })
 

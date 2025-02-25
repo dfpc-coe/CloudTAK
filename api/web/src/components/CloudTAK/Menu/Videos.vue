@@ -201,6 +201,7 @@ import MenuTemplate from '../util/MenuTemplate.vue';
 import VideoLeaseModal from './Videos/VideoLeaseModal.vue';
 import Feature from '../util/Feature.vue';
 import { std } from '../../../std.ts';
+import COT from '../../../base/cot.ts';
 import type { VideoLease, VideoLeaseList, VideoConnectionList, VideoConnection } from '../../../types.ts';
 import { useMapStore } from '../../../stores/map.ts';
 import { useVideoStore } from '../../../stores/videos.ts';
@@ -228,7 +229,7 @@ const loading = ref(true);
 const lease = ref();
 const leases = ref<VideoLeaseList>({ total: 0, items: [] });
 const connections = ref<VideoConnectionList>({ videoConnections: [] });
-const videos = ref<Array<COT>>(new Set())
+const videos = ref<Set<COT>>(new Set())
 
 onMounted(async () => {
     await fetchConnections();

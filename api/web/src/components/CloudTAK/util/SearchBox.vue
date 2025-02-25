@@ -72,10 +72,10 @@ async function fetchSearch(queryText?: string, magicKey?: string) {
 
     if (!magicKey || !queryText) {
         cots.value.push(...Array.from(
-            await mapStore.worker.db
+            (await mapStore.worker.db
                 .filter(`$contains($lowercase(properties.callsign), "${query.value.filter.toLowerCase()}")`, {
                     mission: true
-                })
+                }))
                 .slice(0, 5)
         ))
 
