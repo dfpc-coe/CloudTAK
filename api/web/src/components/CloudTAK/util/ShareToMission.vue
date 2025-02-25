@@ -95,7 +95,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed } from 'vue';
+import { ref, onMounted } from 'vue';
 import type { PropType } from 'vue';
 import EmptyInfo from './EmptyInfo.vue';
 import {
@@ -109,21 +109,12 @@ import {
     IconAmbulance,
     IconShare2
 } from '@tabler/icons-vue';
-import type { Feature } from '../../../../src/types.ts';
-import COT from '../../../../src/stores/base/cot.ts'
-import { useCOTStore } from '../../../../src/stores/cots.ts';
-import { useConnectionStore } from '../../../../src/stores/connection.ts';
-import Subscription from '../../../../src/stores/base/mission.ts'
+import type { Feature } from '../../../types.ts';
+import COT from '../../../base/cot.ts'
+import { useMapStore } from '../../../stores/map.ts';
+import Subscription from '../../../base/mission.ts'
 
-const cotStore = useCOTStore();
-const connectionStore = useConnectionStore();
-
-const missions = computed(() => {
-    return Array.from(cotStore.subscriptions.values())
-        .filter((mission) => {
-            return mission.role.permissions.includes("MISSION_WRITE")
-        })
-});
+const mapStore = useMapStore();
 
 const props = defineProps({
     feats: {
@@ -142,17 +133,27 @@ const props = defineProps({
 
 const emit = defineEmits(['cancel', 'done']);
 
-const loading = ref(false);
+const loading = ref(true);
 const selected = ref<Set<Subscription>>(new Set());
+const missions = ref<Array<Subscription>>([]);
+
+onMounted(async () => {
+    missions.value = Array.from(await mapStore.worker.db.subscriptions.values())
+        .filter((mission: Subscription) => {
+            return mission.role.permissions.includes("MISSION_WRITE")
+        })
+
+    loading.value = false;
+});
 
 /** Feats often come from Vector Tiles which don't contain the full feature */
 function currentFeats(): Array<Feature> {
-    return (props.feats || []).map((f) => {
+    return (props.feats || []).map(async (f) => {
         if (f.properties.type === 'b-f-t-r') {
             // FileShare is manually generated and won't exist in CoT Store
             return f;
         } else {
-            return cotStore.get(f.id);
+            return await mapStore.worker.db.get(f.id);
         }
     }).filter((f) => {
         return !!f;
@@ -178,7 +179,7 @@ async function share() {
             });
         }
 
-        connectionStore.sendCOT(feat);
+        await mapStore.worker.conn.sendCOT(feat);
     }
 
     emit('done');

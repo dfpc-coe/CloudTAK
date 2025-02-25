@@ -1,8 +1,8 @@
 import COT, { OriginMode } from './cot.ts'
-import { std, stdurl } from '../../std.ts';
-import { useCOTStore } from '../cots.ts';
+import { std, stdurl } from '../std.ts';
+import { useMapStore } from '../stores/map.ts';
 import { bbox } from '@turf/bbox';
-import type { Feature } from '../../types.ts';
+import type { Feature } from '../types.ts';
 import type {
     BBox,
     FeatureCollection
@@ -16,7 +16,7 @@ import type {
     MissionLogList,
     MissionLayerList,
     MissionSubscriptions
-} from '../../types.ts';
+} from '../types.ts';
 
 export default class Subscription {
     meta: Mission;
@@ -61,10 +61,10 @@ export default class Subscription {
     }
 
     async delete(): Promise<void> {
-        const cotStore = useCOTStore();
+        const mapStore = useMapStore();
 
         await Subscription.delete(this.meta.guid, this.token);
-        cotStore.subscriptions.delete(this.meta.guid);
+        mapStore.worker.db.subscriptionDelete(this.meta.guid);
     }
 
     async updateLogs(): Promise<void> {

@@ -85,8 +85,8 @@
 
 <script setup lang='ts'>
 import { ref, computed, onMounted } from 'vue';
-import type { Group } from '../../../../src/types.ts';
-import type COT from '../../../../src/stores/base/cot.ts';
+import type { Group } from '../../../types.ts';
+import type COT from '../../../base/cot.ts';
 import {
     TablerNone,
     TablerAlert,

@@ -52,16 +52,16 @@ import {
     TablerInput,
     TablerIconButton
 } from '@tak-ps/vue-tabler';
-import { std } from '../../../../src/std.ts';
-import COT from '../../../../src/stores/base/cot.ts';
-import { useCOTStore } from '../../../../src/stores/cots.ts';
+import { std } from '../../../std.ts';
+import COT from '../../../base/cot.ts';
+import { useMapStore } from '../../../stores/map.ts';
 import {
     IconX,
 } from '@tabler/icons-vue';
 import { useRouter } from 'vue-router';
-import type { Feature, Content } from '../../../../src/types.ts';
+import type { Feature, Content } from '../../../types.ts';
 
-const cotStore = useCOTStore();
+const mapStore = useMapStore();
 const router = useRouter();
 
 const props = defineProps({
@@ -88,13 +88,13 @@ const body = ref({
 })
 
 /** Feats often come from Vector Tiles which don't contain the full feature */
-function currentFeats(): Array<Feature> {
-    return (props.feats || []).map((f) => {
+async function currentFeats(): Promise<Array<Feature>> {
+    return (props.feats || []).map(async (f) => {
         if (f.properties.type === 'b-f-t-r') {
             // FileShare is manually generated and won't exist in CoT Store
             return f;
         } else {
-            return cotStore.get(f.id) || f;
+            return await mapStore.worker.db.get(f.id) || f;
         }
     }).filter((f) => {
         return !!f;
@@ -108,7 +108,7 @@ function currentFeats(): Array<Feature> {
 }
 
 async function share() {
-    const feats = currentFeats();
+    const feats = await currentFeats();
 
     loading.value = true;
 

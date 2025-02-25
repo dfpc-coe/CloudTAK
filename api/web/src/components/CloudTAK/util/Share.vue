@@ -114,7 +114,7 @@
 
 <script setup lang='ts'>
 import { ref, computed, onMounted } from 'vue';
-import { std, stdurl } from '../../../../src/std.ts';
+import { std, stdurl } from '../../../std.ts';
 import {
     TablerNone,
     TablerInput,
@@ -127,14 +127,12 @@ import {
     IconBroadcast,
     IconShare2
 } from '@tabler/icons-vue';
-import COT from '../../../../src/stores/base/cot.ts'
-import type { Contact, ContactList, Feature } from '../../../../src/types.ts'
+import COT from '../../../base/cot.ts'
+import type { Contact, ContactList, Feature } from '../../../types.ts'
 import COTContact from '../util/Contact.vue';
-import { useConnectionStore } from '../../../../src/stores/connection.ts';
-import { useCOTStore } from '../../../../src/stores/cots.ts';
+import { useMapStore } from '../../../stores/map.ts';
 
-const cotStore = useCOTStore();
-const connectionStore = useConnectionStore();
+const mapStore = useMapStore();
 
 const props = defineProps<{
     feats?: Feature[] | COT[],
@@ -165,13 +163,13 @@ onMounted(async () => {
 });
 
 /** Feats often come from Vector Tiles which don't contain the full feature */
-function currentFeats(): Feature[] {
-    return (props.feats || []).map((f) => {
+async function currentFeats(): Promise<Feature[]> {
+    return (props.feats || []).map(async (f) => {
         if (f.properties.type === 'b-f-t-r') {
             // FileShare is manually generated and won't exist in CoT Store
             return f;
         } else {
-            const cot = cotStore.get(f.id)
+            const cot = await mapStore.worker.db.get(f.id)
             if (cot) {
                 return cot.as_feature();
             } else {
@@ -184,7 +182,7 @@ function currentFeats(): Feature[] {
 }
 
 async function share() {
-    const feats = currentFeats();
+    const feats = await currentFeats();
 
     // CoTs with Attachments must always be send via a DataPackage
     if (
@@ -195,7 +193,7 @@ async function share() {
         for (const contact of selected.value) {
             const feat = JSON.parse(JSON.stringify(feats[0]));
             feat.properties.dest = [{ uid: contact.uid }];
-            connectionStore.sendCOT(feat);
+            await mapStore.worker.conn.sendCOT(feat);
         }
     } else {
         await std('/api/marti/package', {
@@ -216,14 +214,14 @@ async function share() {
 }
 
 async function broadcast() {
-    const feats = currentFeats();
+    const feats = await currentFeats();
 
     if (
         feats.length === 1
         && !props.basemaps
         && (!feats[0].properties.attachments || feats[0].properties.attachments.length === 0)
     ) {
-        connectionStore.sendCOT(JSON.parse(JSON.stringify(feats[0])));
+        await mapStore.worker.conn.sendCOT(JSON.parse(JSON.stringify(feats[0])));
         emit('done');
     } else {
         await std('/api/marti/package', {

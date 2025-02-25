@@ -202,7 +202,7 @@
 import { ref, onMounted } from 'vue';
 import { std } from '../../../std.ts';
 import type { Feature, Mission, MissionRole } from '../../../types.ts';
-import Subscription from '../../../stores/base/mission.ts';
+import Subscription from '../../../base/mission.ts';
 import {
     IconRefresh,
     IconPackages,

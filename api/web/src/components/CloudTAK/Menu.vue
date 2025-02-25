@@ -466,7 +466,7 @@
                 <div v-else-if='["home", "home-menu"].includes(String(route.name))'>
                     <Status
                         class='mx-2 my-2'
-                        :status='open ? "success" : "fail"'
+                        :status='mapStore.isOpen ? "success" : "fail"'
                         :dark='true'
                     />
                 </div>
@@ -496,17 +496,16 @@ import {
     IconAffiliate,
 } from '@tabler/icons-vue';
 import Status from '../util/Status.vue';
-import { useProfileStore } from '../../../src/stores/profile.ts';
-import { useConnectionStore } from '../../../src/stores/connection.ts';
+import { useProfileStore } from '../../stores/profile.ts';
+import { useMapStore } from '../../stores/map.ts';
 import { useRouter, useRoute } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
 
-const connectionStore = useConnectionStore();
+const mapStore = useMapStore();
 const profileStore = useProfileStore();
 
 const profile = computed(() => profileStore.profile);
-const open = computed(() => connectionStore.open);
 
 defineProps({
     compact: Boolean,
