@@ -536,11 +536,15 @@ export const useMapStore = defineStore('cloudtak', {
                     })()
                 },
                 modes: [
-                    new terraDraw.TerraDrawPointMode(),
+                    new terraDraw.TerraDrawPointMode({
+                        editable: true
+                    }),
                     new terraDraw.TerraDrawLineStringMode({
+                        editable: true
                         // snapping: { toCustom }
                     }),
                     new terraDraw.TerraDrawPolygonMode({
+                        editable: true
                         // snapping: { toCustom }
                     }),
                     new terraDraw.TerraDrawAngledRectangleMode(),
@@ -551,7 +555,6 @@ export const useMapStore = defineStore('cloudtak', {
                             polygon: {
                                 feature: {
                                     draggable: true,
-                                    editable: true,
                                     coordinates: {
                                         deletable: true,
                                         midpoints: true,
@@ -562,7 +565,6 @@ export const useMapStore = defineStore('cloudtak', {
                             linestring: {
                                 feature: {
                                     draggable: true,
-                                    editable: true,
                                     coordinates: {
                                         deletable: true,
                                         midpoints: true,
@@ -573,7 +575,6 @@ export const useMapStore = defineStore('cloudtak', {
                             point: {
                                 feature: {
                                     draggable: true,
-                                    editable: true,
                                 }
                             }
                         }
