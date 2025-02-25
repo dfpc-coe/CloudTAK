@@ -22,10 +22,13 @@ export default class AtlasDatabase {
 
     cots: Map<string, COT>;
 
+    hidden: Set<string>;
+
     // Store ImageIDs currently loaded in MapLibre
     images: Set<string>;
 
     pending: Map<string, COT>;
+    pendingUnhide: Set<string>;
     pendingDelete: Set<string>;
 
     subscriptions: Map<string, Subscription>;
@@ -36,14 +39,26 @@ export default class AtlasDatabase {
 
         this.cots = new Map();
 
+        this.hidden = new Set();
+
         this.images = new Set();
 
         this.pending = new Map();
+        this.pendingUnhide = new Map();
         this.pendingDelete = new Set();
 
         this.subscriptions = new Map();
         this.subscriptionPending = new Map(); // UID, Mission Guid
 
+    }
+
+    async hide(id: string): Promise<void> {
+        this.hidden.add(id);
+    }
+
+    async unhide(id: string): Promise<void> {
+        this.hidden.delete(id);
+        this.pendingUnhide.set(id);
     }
 
     async init(): Promise<void> {
@@ -85,7 +100,11 @@ export default class AtlasDatabase {
             const render = cot.as_rendered();
             const stale = new Date(cot.properties.stale).getTime();
 
-            if (
+
+            if (this.hidden.has(String(cot.id))) {
+                // TODO check if hidden already
+                diff.remove.push(String(cot.id))
+            } else if (
                 !['Never'].includes(display_stale)
                 && !cot.properties.archived
                 && (
@@ -126,6 +145,16 @@ export default class AtlasDatabase {
                 }
             }
         }
+
+        for (const id of this.pendingUnhide.values()) {
+            const cot = this.cots.get(id);
+            if (!cot) continue;
+
+            const render = cot.as_rendered();
+            diff.add.push(render);
+        }
+
+        this.pendingUnhide.clear();
 
         for (const cot of this.pending.values()) {
             const render = cot.as_rendered();

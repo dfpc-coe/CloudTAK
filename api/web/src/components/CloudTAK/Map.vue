@@ -825,7 +825,7 @@ async function editGeometry(featid: string) {
             }
         });
 
-        await mapStore.worker.db.hidden.add(cot.id);
+        await mapStore.worker.db.hide(cot.id);
         updateCOT();
 
         const errorStatus = mapStore.draw.addFeatures([feat]).filter((status) => {
@@ -838,7 +838,7 @@ async function editGeometry(featid: string) {
 
         mapStore.draw.selectFeature(cot.id);
     } catch (err) {
-        await mapStore.worker.db.hidden.delete(cot.id);
+        await mapStore.worker.db.unhide(cot.id);
         mapStore.draw.setMode('static');
         updateCOT();
         mapStore.drawOptions.mode = 'static';
@@ -915,7 +915,7 @@ async function mountMap(): Promise<void> {
 
                 delete feat.properties.center;
 
-                await mapStore.worker.db.hidden.delete(mapStore.edit.id);
+                await mapStore.worker.db.unhide(mapStore.edit.id);
 
                 const cot = await mapStore.worker.db.get(mapStore.edit.id, { mission: true });
 
