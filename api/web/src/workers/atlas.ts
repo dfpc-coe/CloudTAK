@@ -35,6 +35,7 @@ export class CloudTAKTransferHandler {
 
 export default class Atlas {
     channel: BroadcastChannel;
+    sync: BroadcastChannel;
 
     token: string;
 

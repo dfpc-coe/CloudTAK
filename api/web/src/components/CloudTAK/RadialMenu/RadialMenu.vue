@@ -180,6 +180,8 @@ export default {
                         mission: true
                     });
 
+                    if (!cot) throw new Error('Could not find marker');
+
                     if (await cot.origin.mode === OriginMode.CONNECTION) {
                         this.menuItems.push({ id: 'edit', icon: '#radial-pencil' })
                         this.menuItems.push({ id: 'delete', icon: '#radial-trash' })

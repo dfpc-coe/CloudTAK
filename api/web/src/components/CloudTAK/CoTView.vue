@@ -716,7 +716,7 @@ const time = ref('relative');
 watch(cot, async () => {
     if (cot.value) {
         if (cot.value.origin.mode === OriginMode.MISSION && cot.value.origin.mode_id) {
-            mission.value = await mapStore.worker.db.subscriptions.get(cot.value.origin.mode_id);
+            mission.value = await mapStore.worker.db.subscriptionGet(cot.value.origin.mode_id);
         } else {
             mission.value = undefined;
         }
@@ -765,7 +765,7 @@ async function load_cot() {
     }))
 
     if (baseCOT && baseCOT.origin.mode === OriginMode.MISSION && baseCOT.origin.mode_id) {
-        mission.value = await mapStore.worker.db.subscriptions.get(baseCOT.origin.mode_id);
+        mission.value = await mapStore.worker.db.subscriptionGet(baseCOT.origin.mode_id);
     }
 
     if (baseCOT) {

@@ -72,7 +72,7 @@ export default class COT {
         this._properties = feat["properties"] || {};
         this._geometry = feat["geometry"];
 
-        this._remote = (opts && opts.remote !== undefined) ? opts.remote : false
+        this._remote = (opts && opts.remote !== undefined) ? opts.remote : null;
         this._atlas = atlas;
 
         this.origin = origin || { mode: OriginMode.CONNECTION };
@@ -86,21 +86,26 @@ export default class COT {
         }
 
         if (this.origin.mode === OriginMode.CONNECTION && !this._remote) {
-            this._atlas.db.pending.set(this.id, this);
+            const atlas = this._atlas as Atlas;
+            atlas.db.pending.set(this.id, this);
         }
 
-        if (!this.is_self && (!opts || (opts && opts.skipSave === false))) {
+        if (!this.is_self && (!opts || (opts && opts.skipSave !== false))) {
             this.save();
         }
 
         if (this._remote) {
+            const atlas = this._atlas as Remote<Atlas>;
+
             // The sync BroadcastChannel will post a message anytime the underlying
             // Atlas database has a COT update, resulting in a sync with the frontend
             this._remote.onmessage = async (ev) => {
                 if (ev.data === `cot:${this.id}`) {
                     const feat = await this._atlas.db.get(this.id)
-                    this.properties = feat.properties;
-                    this.geometry = feat.geometry;
+                    if (feat) {
+                        this.properties = feat.properties;
+                        this.geometry = feat.geometry;
+                    }
                 }
             };
         }
@@ -132,10 +137,13 @@ export default class COT {
         skipSave?: boolean;
     }): Promise<boolean> {
         if (this._remote) {
-            await this._atlas.db.add(this.as_feature());
+            const atlas = this._atlas as Remote<Atlas>;
+            await atlas.db.add(this.as_feature());
 
             return false;
         } else {
+            const atlas = this._atlas as Atlas;
+
             let visuallyChanged = false;
             if (update.geometry) {
                 //TODO Detect Geometry changes, use centroid?!
@@ -144,7 +152,7 @@ export default class COT {
             }
 
             if (update.properties) {
-                update.properties = COT.style(this._atlas, this._geometry.type, update.properties);
+                update.properties = COT.style(atlas, this._geometry.type, update.properties);
 
                 for (const prop of RENDERED_PROPERTIES) {
                     if (this._properties[prop] !== update.properties[prop]) {
@@ -162,20 +170,20 @@ export default class COT {
 
             // TODO only update if Geometry or Rendered Prop changes
             if (this.origin.mode === OriginMode.CONNECTION) {
-                this._atlas.db.pending.set(this.id, this);
+                atlas.db.pending.set(this.id, this);
             }
 
             // This is necessary to ensure endless loops don't occur due to a constant
             // get/set action if using the as_proxy functionality
             if (
-                (opts.properties && !isEqual(this.properties, opts.properties))
-                || (opts.geometry && !isEqual(this.geometry, opts.geometry))
+                (update.properties && !isEqual(this.properties, update.properties))
+                || (update.geometry && !isEqual(this.geometry, update.geometry))
             ) {
-                this._atlas.sync.postMessage(`cot:${this.id}`);
+                atlas.sync.postMessage(`cot:${this.id}`);
             }
 
             if (this.is_self) {
-                const getProfile = await this._atlas.profile.profile;
+                const getProfile = await atlas.profile.profile;
 
                 const profile = getProfile instanceof Promise ? await getProfile : getProfile;
 
@@ -186,12 +194,12 @@ export default class COT {
                         || this.properties.callsign !== profile.tak_callsign
                     )
                 ) {
-                    await this._atlas.profile.update({
+                    await atlas.profile.update({
                         tak_callsign: this.properties.callsign,
                         tak_remarks: this.properties.remarks
                     })
                 }
-            } else if (!opts || (opts && opts.skipSave === false)) {
+            } else if (!opts || (opts && opts.skipSave !== false)) {
                 await this.save();
             }
 

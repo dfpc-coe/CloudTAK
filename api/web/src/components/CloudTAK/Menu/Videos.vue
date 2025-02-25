@@ -228,7 +228,7 @@ const loading = ref(true);
 const lease = ref();
 const leases = ref<VideoLeaseList>({ total: 0, items: [] });
 const connections = ref<VideoConnectionList>({ videoConnections: [] });
-const videos = ref(new Set())
+const videos = ref<Array<COT>>(new Set())
 
 onMounted(async () => {
     await fetchConnections();

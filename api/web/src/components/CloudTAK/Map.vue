@@ -909,6 +909,9 @@ async function mountMap(): Promise<void> {
                 if (!mapStore.edit) return;
 
                 const feat = mapStore.draw.getSnapshotFeature(mapStore.edit.id);
+
+                if (!feat) throw new Error('Could not find underlying marker');
+
                 delete feat.properties.center;
 
                 await mapStore.worker.db.hidden.delete(mapStore.edit.id);
@@ -925,17 +928,20 @@ async function mountMap(): Promise<void> {
             })
 
             mapStore.draw.on('finish', async (id, context) => {
+                if (!mapStore.draw) throw new Error('Drawing Tools haven\'t loaded');
+
                 if (context.action === "draw") {
                     if (mapStore.draw.getMode() === 'select' || mapStore.edit) {
                         return;
                     } else if (mapStore.draw.getMode() === 'freehand') {
-                        const geometry = mapStore.draw.getSnapshotFeature(id).geometry;
+                        const feat = mapStore.draw.getSnapshotFeature(id);
+                        if (!feat) throw new Error('Could not find underlying marker');
                         mapStore.draw.removeFeatures([id]);
                         mapStore.draw.setMode('static');
                         mapStore.drawOptions.mode = 'static';
                         mapStore.draw.stop();
 
-                        (await mapStore.worker.db.touching(geometry)).forEach((feat) => {
+                        (await mapStore.worker.db.touching(feat.geometry)).forEach((feat) => {
                             mapStore.selected.set(feat.id, feat);
                         })
 
