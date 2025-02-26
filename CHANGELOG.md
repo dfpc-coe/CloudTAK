@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v7.0.0 - 2025-02-26
+
+- :rocket: Remove custom AWS CloudWatch metrics as Connection Stability is fairly battletested at this point and costs were significant
+
 ### v6.13.0 - 2025-02-26
 
 - :tada: Allow CRUD operations for managing TAK Server Video Connections
