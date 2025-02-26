@@ -220,8 +220,7 @@ export default class Flight {
                 unsafe: true,
                 noevents: true,
                 nosinks: true,
-                nocache: true,
-                nometrics: true,
+                nocache: true
             });
 
             Object.assign(this.config, custom);

@@ -266,10 +266,6 @@ const router = VueRouter.createRouter({
                 name: 'connection-sinks',
                 component: () => import('./components/Connection/ConnectionSink.vue')
             },{
-                path: 'health',
-                name: 'connection-healths',
-                component: () => import('./components/Connection/ConnectionHealth.vue')
-            },{
                 path: 'tokens',
                 name: 'connection-tokens',
                 component: () => import('./components/Connection/ConnectionTokens.vue')
