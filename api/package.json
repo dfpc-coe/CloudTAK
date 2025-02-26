@@ -15,7 +15,7 @@
         "migratedb-custom": "npm run migratedb-pre && drizzle-kit generate --custom && npm run migratedb-commit",
         "migratedb-pre": "npm run lint && git stash && tsc --outDir .",
         "migratedb-commit": "git add migrations/* && git commit -m 'Custom DB Migration' && git clean -f && git stash",
-        "dev": "tsx watch --ignore web/ index.ts --noevents --nometrics --nosinks --unsafe",
+        "dev": "tsx watch --ignore web/ index.ts --noevents --nosinks --unsafe",
         "prod": "NODE_OPTIONS='--max-old-space-size=6144' node dist/index.js"
     },
     "repository": {
