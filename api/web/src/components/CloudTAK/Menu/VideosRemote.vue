@@ -15,14 +15,48 @@
             <div class='row g-2 px-2'>
                 <div class='col-12'>
                     <TablerInput
-                        label='Alias'
                         v-model='connection.alias'
+                        label='Alias'
                     >
                         <TablerToggle
-                            label='Active'
                             v-model='connection.active'
+                            label='Active'
                         />
                     </TablerInput>
+                </div>
+                <div class='col-12 d-flex'>
+                    <label>Feeds</label>
+
+                    <div class='ms-auto'>
+                        <TablerIconButton
+                            title='Add Feed'
+                            @click='newFeed'
+                        >
+                            <IconPlus
+                                :size='24'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
+                    </div>
+                </div>
+                <div class='col-12'>
+                    <TablerNone
+                        v-if='connection.feeds.length === 0'
+                        :create='false'
+                        :compact='true'
+                        label='Feeds'
+                    />
+                    <template v-else>
+                        <template
+                            :key='feed.uuid'
+                            v-for='(feed, fit) of connection.feeds'
+                        >
+                            <VideosRemoteFeed
+                                v-model='connection.feeds[fit]'
+                                @delete='connection.feeds.splice(fit, 1)'
+                            />
+                        </template>
+                    </template>
                 </div>
                 <div class='col-12 d-flex pt-3'>
                     <div class='ms-auto'>
@@ -30,7 +64,7 @@
                             class='btn btn-primary'
                             @click='saveConnection'
                         >
-                            Save Feed
+                            Save Connection
                         </button>
                     </div>
                 </div>
@@ -41,14 +75,21 @@
 
 <script setup lang='ts'>
 import MenuTemplate from '../util/MenuTemplate.vue';
-import type { VideoConnection, VideoConnection_Create } from '../../../types.ts';
+import type { VideoConnection, VideoConnectionFeed } from '../../../types.ts';
+import VideosRemoteFeed from './Videos/VideosRemoteFeed.vue';
 import { std } from '../../../std.ts';
 import { useRoute, useRouter } from 'vue-router';
 import {
     TablerInput,
     TablerDelete,
+    TablerIconButton,
+    TablerNone,
     TablerToggle,
 } from '@tak-ps/vue-tabler';
+
+import {
+    IconPlus
+} from '@tabler/icons-vue';
 
 import { ref, onMounted } from 'vue'
 
@@ -56,8 +97,11 @@ const route = useRoute();
 const router = useRouter();
 const loading = ref(String(route.params.connectionid) !== "new");
 const err = ref<Error | undefined>(undefined);
-const connection = ref<VideoConnection | VideoConnection_Create>({
+const connection = ref<VideoConnection>({
+    uuid: self.crypto.randomUUID(),
     active: true,
+    classification: '',
+    thumbnail: '',
     alias: '',
     feeds: []
 })
@@ -65,8 +109,19 @@ const connection = ref<VideoConnection | VideoConnection_Create>({
 onMounted(async () => {
     if (String(route.params.connectionid) !== "new") {
         await fetchConnection()
+    } else {
+        newFeed();
     }
 });
+
+function newFeed() {
+    connection.value.feeds.push({
+        uuid: self.crypto.randomUUID(),
+        alias: "",
+        url: "",
+        active: true
+    } as VideoConnectionFeed)
+}
 
 async function fetchConnection() {
     loading.value = true;
@@ -87,10 +142,17 @@ async function saveConnection() {
     loading.value = true;
 
     try {
-        await std('/api/marti/video', {
-            method: 'POST',
-            body: connection.value
-        });
+        if (String(route.params.connectionid) !== 'new') {
+            await std(`/api/marti/video/${connection.value.uuid}`, {
+                method: 'PUT',
+                body: connection.value
+            });
+        } else {
+            await std('/api/marti/video', {
+                method: 'POST',
+                body: connection.value
+            });
+        }
 
         router.push(`/menu/videos`)
 

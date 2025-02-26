@@ -1,14 +1,17 @@
+import Err from '@openaddresses/batch-error';
 import { Static, Type } from '@sinclair/typebox';
 import { randomUUID } from 'node:crypto';
 import TAKAPI from '../tak-api.js';
 
 export const FeedInput = Type.Object({
-    active: Type.Boolean(),
+    uuid: Type.Optional(Type.String()),
+    active: Type.Boolean({ default: true }),
     alias: Type.String(),
     url: Type.String(),
 });
 
 export const VideoConnectionInput = Type.Object({
+    uuid: Type.Optional(Type.String()),
     active: Type.Boolean({
         default: true
     }),
@@ -83,12 +86,33 @@ export default class {
         });
     }
 
+    async update(
+        connection: Static<typeof VideoConnectionInput>
+    ): Promise<Static<typeof VideoConnection>> {
+        const url = new URL(`/Marti/api/video/${connection.uuid}`, this.api.url);
+
+        if (!connection.uuid) throw new Err(400, null, 'UUID must be set when updating Video');
+
+        await this.api.fetch(url, {
+            method: 'PUT',
+            body: {
+                ...connection,
+                feeds: connection.feeds.map((feed) => {
+                    if (!feed.uuid) feed.uuid = randomUUID();
+                    return feed;
+                })
+            }
+        });
+
+        return await this.get(connection.uuid);
+    }
+
     async create(
         connection: Static<typeof VideoConnectionInput>
     ): Promise<Static<typeof VideoConnection>> {
         const url = new URL(`/Marti/api/video`, this.api.url);
 
-        const uuid = randomUUID();
+        const uuid = connection.uuid || randomUUID();
 
         await this.api.fetch(url, {
             method: 'POST',
