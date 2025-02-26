@@ -24,7 +24,6 @@
         "@turf/envelope": "^7.1.0",
         "@turf/meta": "^7.2.0",
         "@turf/point-on-feature": "^7.0.0",
-        "apexcharts": "^3.0.0",
         "bootstrap": "^5.2.3",
         "core-js": "^3.6.4",
         "cronstrue": "^2.19.0",
@@ -49,7 +48,6 @@
         "vue": "^3.2.31",
         "vue-mention": "^2.0.0-alpha.3",
         "vue-router": "^4.0.14",
-        "vue3-apexcharts": "1.7.0",
         "ws": "^8.11.0"
     },
     "devDependencies": {
