@@ -338,7 +338,7 @@ export interface paths {
                                 username: string | null;
                                 minzoom: number;
                                 maxzoom: number;
-                                collection: string | null;
+                                collection: (null | string) | null;
                                 format: string;
                                 style: string;
                                 styles: unknown[];
@@ -440,7 +440,7 @@ export interface paths {
                             username: string | null;
                             minzoom: number;
                             maxzoom: number;
-                            collection: string | null;
+                            collection: (null | string) | null;
                             format: string;
                             style: string;
                             styles: unknown[];
@@ -499,7 +499,7 @@ export interface paths {
                             username: string | null;
                             minzoom: number;
                             maxzoom: number;
-                            collection: string | null;
+                            collection: (null | string) | null;
                             format: string;
                             style: string;
                             styles: unknown[];
@@ -589,7 +589,7 @@ export interface paths {
                             username: string | null;
                             minzoom: number;
                             maxzoom: number;
-                            collection: string | null;
+                            collection: (null | string) | null;
                             format: string;
                             style: string;
                             styles: unknown[];
@@ -5662,362 +5662,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/import": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Imports */
-        get: {
-            parameters: {
-                query: {
-                    /** @description Limit the number of responses returned */
-                    limit: number;
-                    /** @description Iterate through "pages" of items based on the "limit" query param */
-                    page: number;
-                    /** @description Filter results by a human readable name field */
-                    filter: string;
-                    /** @description Order in which results are returned based on the "sort" query param */
-                    order: "asc" | "desc";
-                    /** @description No Description */
-                    sort?: "id" | "created" | "updated" | "name" | "status" | "error" | "batch" | "result" | "username" | "mode" | "mode_id" | "config" | "enableRLS";
-                    /** @description No Description */
-                    mode?: "Unknown" | "Mission" | "Package";
-                    /** @description No Description */
-                    mode_id?: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            total: number;
-                            items: {
-                                id: string;
-                                created: string;
-                                updated: string;
-                                name: string;
-                                status: string;
-                                error: string | null;
-                                batch: string | null;
-                                result: unknown;
-                                username: string;
-                                mode: string;
-                                mode_id: string | null;
-                                config: unknown;
-                            }[];
-                        };
-                    };
-                };
-            };
-        };
-        /** Import up to 5 unknown assets into the imports manager at a time */
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            imports: {
-                                file: string;
-                                uid: string;
-                                ext: string;
-                            }[];
-                        };
-                    };
-                };
-            };
-        };
-        /** Import an unknown asset into the imports manager */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        /** @description Human readable name */
-                        name: string;
-                        mode?: "Unknown" | "Mission" | "Package";
-                        mode_id?: string;
-                        config?: unknown;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: string;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            status: string;
-                            error: string | null;
-                            batch: string | null;
-                            result: unknown;
-                            username: string;
-                            mode: string;
-                            mode_id: string | null;
-                            config: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/import/{:import}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Import */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: string;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            status: string;
-                            error: string | null;
-                            batch: string | null;
-                            result: unknown;
-                            username: string;
-                            mode: string;
-                            mode_id: string | null;
-                            config: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        /** Import an asset into a previously configured import container */
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: string;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            status: string;
-                            error: string | null;
-                            batch: string | null;
-                            result: unknown;
-                            username: string;
-                            mode: string;
-                            mode_id: string | null;
-                            config: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        post?: never;
-        /** Delete Import */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        /** Update Import */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        status?: string;
-                        error?: string;
-                        result?: unknown;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: string;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            status: string;
-                            error: string | null;
-                            batch: string | null;
-                            result: unknown;
-                            username: string;
-                            mode: string;
-                            mode_id: string | null;
-                            config: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        trace?: never;
-    };
-    "/import/{:import}/batch": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Import Batch Job Logs */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            logs: {
-                                message: string;
-                                timestamp: number;
-                            }[];
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        /** Attach a Batch Job to an instance */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: string;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            status: string;
-                            error: string | null;
-                            batch: string | null;
-                            result: unknown;
-                            username: string;
-                            mode: string;
-                            mode_id: string | null;
-                            config: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/iconset": {
         parameters: {
             query?: never;
@@ -6601,6 +6245,362 @@ export interface paths {
         };
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Imports */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort?: "id" | "created" | "updated" | "name" | "status" | "error" | "batch" | "result" | "username" | "mode" | "mode_id" | "config" | "enableRLS";
+                    /** @description No Description */
+                    mode?: "Unknown" | "Mission" | "Package";
+                    /** @description No Description */
+                    mode_id?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: string;
+                                created: string;
+                                updated: string;
+                                name: string;
+                                status: string;
+                                error: string | null;
+                                batch: string | null;
+                                result: unknown;
+                                username: string;
+                                mode: string;
+                                mode_id: string | null;
+                                config: unknown;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        /** Import up to 5 unknown assets into the imports manager at a time */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            imports: {
+                                file: string;
+                                uid: string;
+                                ext: string;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        /** Import an unknown asset into the imports manager */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Human readable name */
+                        name: string;
+                        mode?: "Unknown" | "Mission" | "Package";
+                        mode_id?: string;
+                        config?: unknown;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            status: string;
+                            error: string | null;
+                            batch: string | null;
+                            result: unknown;
+                            username: string;
+                            mode: string;
+                            mode_id: string | null;
+                            config: unknown;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/import/{:import}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Import */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            status: string;
+                            error: string | null;
+                            batch: string | null;
+                            result: unknown;
+                            username: string;
+                            mode: string;
+                            mode_id: string | null;
+                            config: unknown;
+                        };
+                    };
+                };
+            };
+        };
+        /** Import an asset into a previously configured import container */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            status: string;
+                            error: string | null;
+                            batch: string | null;
+                            result: unknown;
+                            username: string;
+                            mode: string;
+                            mode_id: string | null;
+                            config: unknown;
+                        };
+                    };
+                };
+            };
+        };
+        post?: never;
+        /** Delete Import */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update Import */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        status?: string;
+                        error?: string;
+                        result?: unknown;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            status: string;
+                            error: string | null;
+                            batch: string | null;
+                            result: unknown;
+                            username: string;
+                            mode: string;
+                            mode_id: string | null;
+                            config: unknown;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/import/{:import}/batch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Import Batch Job Logs */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            logs: {
+                                message: string;
+                                timestamp: number;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Attach a Batch Job to an instance */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            status: string;
+                            error: string | null;
+                            batch: string | null;
+                            result: unknown;
+                            username: string;
+                            mode: string;
+                            mode_id: string | null;
+                            config: unknown;
+                        };
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -9940,7 +9940,73 @@ export interface paths {
             };
         };
         put?: never;
-        post?: never;
+        /** Helper API to create video streams */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        uuid?: string;
+                        /** @default true */
+                        active: boolean;
+                        alias: string;
+                        feeds: {
+                            uuid?: string;
+                            /** @default true */
+                            active: boolean;
+                            alias: string;
+                            url: string;
+                        }[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            uuid: string;
+                            active: boolean;
+                            alias: string;
+                            thumbnail: string | null;
+                            classification: string | null;
+                            feeds: {
+                                uuid: string;
+                                active: boolean;
+                                alias: string;
+                                url: string;
+                                order: number | null;
+                                macAddress: string;
+                                roverPort: string;
+                                ignoreEmbeddedKLV: string;
+                                source: string | null;
+                                networkTimeout: string;
+                                bufferTime: string;
+                                rtspReliable: string;
+                                thumbnail: string | null;
+                                classification: string | null;
+                                latitude: string | null;
+                                longitude: string | null;
+                                fov: string | null;
+                                heading: string | null;
+                                range: string | null;
+                                width: number | null;
+                                height: number | null;
+                                bitrate: number | null;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -10005,7 +10071,73 @@ export interface paths {
                 };
             };
         };
-        put?: never;
+        /** Helper API to update video streams */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        uuid?: string;
+                        /** @default true */
+                        active: boolean;
+                        alias: string;
+                        feeds: {
+                            uuid?: string;
+                            /** @default true */
+                            active: boolean;
+                            alias: string;
+                            url: string;
+                        }[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            uuid: string;
+                            active: boolean;
+                            alias: string;
+                            thumbnail: string | null;
+                            classification: string | null;
+                            feeds: {
+                                uuid: string;
+                                active: boolean;
+                                alias: string;
+                                url: string;
+                                order: number | null;
+                                macAddress: string;
+                                roverPort: string;
+                                ignoreEmbeddedKLV: string;
+                                source: string | null;
+                                networkTimeout: string;
+                                bufferTime: string;
+                                rtspReliable: string;
+                                thumbnail: string | null;
+                                classification: string | null;
+                                latitude: string | null;
+                                longitude: string | null;
+                                fov: string | null;
+                                heading: string | null;
+                                range: string | null;
+                                width: number | null;
+                                height: number | null;
+                                bitrate: number | null;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
         post?: never;
         /** Helper API to delete video stream */
         delete: {
@@ -12049,7 +12181,10 @@ export interface paths {
         /** Get information about a given point */
         get: {
             parameters: {
-                query?: never;
+                query: {
+                    /** @description No Description */
+                    altitude: number;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -12063,6 +12198,36 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
+                            sun: {
+                                /** @description sunrise (top edge of the sun appears on the horizon) */
+                                sunrise: string;
+                                /** @description sunrise ends (bottom edge of the sun touches the horizon) */
+                                sunriseEnd: string;
+                                /** @description morning golden hour (soft light, best time for photography) ends */
+                                goldenHourEnd: string;
+                                /** @description solar noon (sun is in the highest position) */
+                                solarNoon: string;
+                                /** @description evening golden hour starts */
+                                goldenHour: string;
+                                /** @description sunset starts (bottom edge of the sun touches the horizon) */
+                                sunsetStart: string;
+                                /** @description sunset (sun disappears below the horizon, evening civil twilight starts) */
+                                sunset: string;
+                                /** @description dusk (evening nautical twilight starts) */
+                                dusk: string;
+                                /** @description nautical dusk (evening astronomical twilight starts) */
+                                nauticalDusk: string;
+                                /** @description night starts (dark enough for astronomical observations) */
+                                night: string;
+                                /** @description nadir (darkest moment of the night, sun is in the lowest position) */
+                                nadir: string;
+                                /** @description night ends (morning astronomical twilight starts) */
+                                nightEnd: string;
+                                /** @description nautical dawn (morning nautical twilight starts) */
+                                nauticalDawn: string;
+                                /** @description dawn (morning nautical twilight ends, morning civil twilight starts) */
+                                dawn: string;
+                            };
                             weather: {
                                 type: string;
                                 properties: {
@@ -12202,7 +12367,7 @@ export interface paths {
                     /** @description No Description */
                     query: string;
                     /** @description No Description */
-                    limit?: number;
+                    limit: number;
                 };
                 header?: never;
                 path?: never;
@@ -13437,6 +13602,15 @@ export interface paths {
                                 webrtcAddress: string;
                                 srt: boolean;
                                 srtAddress: string;
+                                authInternalUsers: {
+                                    user: string;
+                                    pass?: string;
+                                    ips?: string[];
+                                    permissions: {
+                                        action: string;
+                                        path?: string;
+                                    }[];
+                                }[];
                             };
                             paths?: {
                                 name: string;
@@ -13485,6 +13659,15 @@ export interface paths {
                         hls?: boolean;
                         webrtc?: boolean;
                         srt?: boolean;
+                        authInternalUsers?: {
+                            user: string;
+                            pass?: string;
+                            ips?: string[];
+                            permissions: {
+                                action: string;
+                                path?: string;
+                            }[];
+                        }[];
                     };
                 };
             };
@@ -13520,6 +13703,15 @@ export interface paths {
                                 webrtcAddress: string;
                                 srt: boolean;
                                 srtAddress: string;
+                                authInternalUsers: {
+                                    user: string;
+                                    pass?: string;
+                                    ips?: string[];
+                                    permissions: {
+                                        action: string;
+                                        path?: string;
+                                    }[];
+                                }[];
                             };
                             paths?: {
                                 name: string;
