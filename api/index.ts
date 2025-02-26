@@ -22,7 +22,6 @@ const args = minimist(process.argv, {
         'nocache',  // Ignore MemCached
         'unsafe',   // Allow unsecure local dev creds
         'noevents', // Disable Initialization of Second Level Events
-        'nometrics', // Disable Sending AWS CloudWatch Metrics about each conn
         'nosinks',  // Disable Push to Sinks
     ],
     string: [
@@ -57,7 +56,6 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         unsafe: args.unsafe || false,
         noevents: args.noevents || false,
         postgres: process.env.POSTGRES || args.postgres || 'postgres://postgres@localhost:5432/tak_ps_etl',
-        nometrics: args.nometrics || false,
         nosinks: args.nosinks || false,
         nocache: args.nocache || false,
     });

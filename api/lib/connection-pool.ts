@@ -2,7 +2,6 @@ import Err from '@openaddresses/batch-error';
 import ImportControl, { ImportModeEnum }  from './control/import.js';
 import Sinks from './sinks.js';
 import Config from './config.js';
-import Metrics from './aws/metric.js';
 import { randomUUID } from 'node:crypto';
 import TAK, { CoT } from '@tak-ps/node-tak';
 import Modeler from '@openaddresses/batch-generic';
@@ -38,7 +37,6 @@ export class ConnectionClient {
  */
 export default class ConnectionPool extends Map<number | string, ConnectionClient> {
     config: Config;
-    metrics: Metrics;
     sinks: Sinks;
     importControl: ImportControl;
 
@@ -47,9 +45,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
 
         this.config = config;
         this.importControl = new ImportControl(config);
-        this.metrics = new Metrics(this.config.StackName);
 
-        if (config.nometrics) this.metrics.paused = true;
         this.sinks = new Sinks(config);
     }
 
@@ -207,14 +203,6 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         }).on('timeout', async () => {
             console.error(`not ok - ${connConfig.id} - ${connConfig.name} @ timeout`);
             this.retry(connClient);
-        }).on('ping', async () => {
-            if (this.config.StackName !== 'test' && !ephemeral && typeof connConfig.id === 'number') {
-                try {
-                    await this.metrics.post(connConfig.id);
-                } catch (err) {
-                    console.error(`not ok - failed to push metrics - ${err}`);
-                }
-            }
         }).on('error', async (err) => {
             console.error(`not ok - ${connConfig.id} - ${connConfig.name} @ error:${err}`);
             this.retry(connClient);

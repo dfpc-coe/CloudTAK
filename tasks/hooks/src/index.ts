@@ -39,41 +39,5 @@ export async function handler(
 
     await Promise.allSettled(pool);
 
-    if (process.env.StackName) {
-        const MetricData = event.Records.filter((record: Lambda.SQSRecord) => {
-            const body: any = JSON.parse(record.body)
-            if (!body.options) body.options = {};
-            return !!body.options.logging;
-        }).filter((record: Lambda.SQSRecord) => {
-            const m = meta.get(record.messageId);
-            if (!m) throw new Error('Indeterminant Meta');
-            return m.Error
-        }).map((record: Lambda.SQSRecord) => {
-            const m = meta.get(record.messageId);
-            if (!m) throw new Error('Indeterminant Meta');
-
-            return {
-                MetricName: 'ConnectionSinkFailure',
-                Value: 1,
-                Timestamp: m.Timestamp,
-                Dimensions: [{
-                    Name: 'StackName',
-                    Value: process.env.StackName
-                },{
-                    Name: 'ConnectionSinkId',
-                    Value: JSON.parse(record.body).id
-                }],
-            }
-        });
-
-        if (MetricData.length) {
-            const cw = new CW.CloudWatchClient({});
-            await cw.send(new CW.PutMetricDataCommand({
-                Namespace: 'TAKETL',
-                MetricData
-            }));
-        }
-    }
-
     return true;
 }

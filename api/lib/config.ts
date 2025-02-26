@@ -20,14 +20,12 @@ interface ConfigArgs {
     noevents: boolean,
     nosinks: boolean,
     nocache: boolean,
-    nometrics: boolean,
 }
 
 export default class Config {
     silent: boolean;
     unsafe: boolean;
     noevents: boolean;
-    nometrics: boolean;
     nosinks: boolean;
     nocache: boolean;
     models: Models;
@@ -56,7 +54,6 @@ export default class Config {
         silent: boolean;
         unsafe: boolean;
         noevents: boolean;
-        nometrics: boolean;
         nosinks: boolean;
         nocache: boolean;
         models: Models;
@@ -74,7 +71,6 @@ export default class Config {
         this.silent = init.silent;
         this.unsafe = init.unsafe;
         this.noevents = init.noevents;
-        this.nometrics = init.nometrics;
         this.nosinks = init.nosinks;
         this.nocache = init.nocache;
         this.models = init.models;
@@ -167,7 +163,6 @@ export default class Config {
             unsafe: (args.unsafe || false),
             silent: (args.silent || false),
             noevents: (args.noevents || false),
-            nometrics: (args.nometrics || false),
             nosinks: (args.nosinks || false),
             nocache: (args.nocache || false),
             StackName: process.env.StackName,
