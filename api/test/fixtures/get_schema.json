@@ -799,6 +799,11 @@
         "query": false,
         "res": true
     },
+    "POST /marti/video": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
     "DELETE /marti/video/:uid": {
         "body": false,
         "query": false,
