@@ -1,7 +1,6 @@
 import Err from '@openaddresses/batch-error';
 import { sql, and, inArray } from 'drizzle-orm';
 import Config from '../lib/config.js';
-import CW from '../lib/aws/metric.js';
 import Auth, { AuthResourceAccess } from '../lib/auth.js';
 import { X509Certificate } from 'crypto';
 import { Type } from '@sinclair/typebox'
@@ -12,8 +11,6 @@ import Schema from '@openaddresses/batch-schema';
 import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: Config) {
-    const cw = new CW(config.StackName);
-
     await schema.get('/connection', {
         name: 'List Connections',
         group: 'Connection',
@@ -306,72 +303,6 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Connection Deleted'
             });
-        } catch (err) {
-            Err.respond(err, res);
-        }
-    });
-
-    await schema.get('/connection/:connectionid/stats', {
-        name: 'Get Stats',
-        group: 'Connection',
-        description: 'Return Conn Success/Failure Stats',
-        params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 })
-        }),
-        res: Type.Object({
-            stats: Type.Array(Type.Object({
-                label: Type.String(),
-                success: Type.Integer()
-            }))
-        })
-    }, async (req, res) => {
-        try {
-            await Auth.is_connection(config, req, {
-                resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
-            }, req.params.connectionid);
-
-            const conn = await config.models.Connection.from(req.params.connectionid);
-
-            const stats = await cw.connection(conn.id);
-
-            const timestamps: Set<Date> = new Set();
-            const map: Map<string, number> = new Map();
-
-            if (!stats.length) {
-                res.json({ stats: [] });
-            } else {
-                const stat = stats[0];
-
-                if (!stat.Timestamps) stat.Timestamps = [];
-                if (!stat.Values) stat.Values = [];
-
-                for (let i = 0; i < stat.Timestamps.length; i++) {
-                    timestamps.add(stat.Timestamps[i]);
-                    map.set(String(stat.Timestamps[i]), Number(stat.Values[i]));
-                }
-
-                const ts_arr = Array.from(timestamps).sort((d1, d2) => {
-                    return d1.getTime() - d2.getTime();
-                }).map((d) => {
-                    return String(d);
-                });
-
-                const statsres: {
-                    stats: Array<{
-                        label: string;
-                        success: number;
-                    }>
-                } = { stats: [] }
-
-                for (const ts of ts_arr) {
-                    statsres.stats.push({
-                        label: ts,
-                        success: map.get(ts) || 0,
-                    });
-                }
-
-                res.json(statsres);
-            }
         } catch (err) {
             Err.respond(err, res);
         }

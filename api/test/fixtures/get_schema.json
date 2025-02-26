@@ -299,11 +299,6 @@
         "query": false,
         "res": true
     },
-    "GET /connection/:connectionid/sink/:sinkid/stats": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "DELETE /connection/:connectionid/sink/:sinkid": {
         "body": false,
         "query": false,
@@ -385,11 +380,6 @@
         "res": true
     },
     "DELETE /connection/:connectionid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /connection/:connectionid/stats": {
         "body": false,
         "query": false,
         "res": true

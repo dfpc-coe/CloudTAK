@@ -1,22 +1,10 @@
 import test from 'tape';
 import { handler as hook } from '../src/index.js';
-import Sinon from 'sinon';
-import CW from '@aws-sdk/client-cloudwatch';
 import { MockAgent, setGlobalDispatcher } from 'undici';
 
 process.env.StackName = 'test';
 
 test('Basic Feature - Unknown Type', async (t) => {
-    let called = false;
-    Sinon.stub(CW.CloudWatchClient.prototype, 'send').callsFake((command: any) => {
-        called = true;
-
-        t.deepEquals(command.input.Namespace, 'TAKETL');
-        t.deepEquals(command.input.MetricData.length, 1);
-        t.deepEquals(command.input.MetricData[0].MetricName, 'ConnectionSinkFailure');
-        return Promise.resolve({});
-    });
-
     try {
         await hook({
             Records: [{
@@ -45,18 +33,10 @@ test('Basic Feature - Unknown Type', async (t) => {
         t.error(err);
     }
 
-    t.ok(called, 'CloudWatch Metrics Must be called');
-    Sinon.restore();
     t.end();
 })
 
 test('Basic Point Feature', async (t) => {
-    let called = false;
-    Sinon.stub(CW.CloudWatchClient.prototype, 'send').callsFake((command: any) => {
-        called = true;
-        return Promise.resolve({});
-    });
-
     const mockAgent = new MockAgent();
     setGlobalDispatcher(mockAgent);
 
@@ -130,18 +110,10 @@ test('Basic Point Feature', async (t) => {
 
 
     mockAgent.assertNoPendingInterceptors()
-    t.ok(!called, 'CloudWatch Metrics Must NOT be called (Only called for errors)');
-    Sinon.restore();
     t.end();
 })
 
 test('Basic LineString Feature', async (t) => {
-    let called = false;
-    Sinon.stub(CW.CloudWatchClient.prototype, 'send').callsFake((command: any) => {
-        called = true;
-        return Promise.resolve({});
-    });
-
     const mockAgent = new MockAgent();
     setGlobalDispatcher(mockAgent);
 
@@ -220,18 +192,10 @@ test('Basic LineString Feature', async (t) => {
     }
 
     mockAgent.assertNoPendingInterceptors()
-    t.ok(!called, 'CloudWatch Metrics Must NOT be called (Only called for errors)');
-    Sinon.restore();
     t.end();
 })
 
 test('Basic Polygon Feature', async (t) => {
-    let called = false;
-    Sinon.stub(CW.CloudWatchClient.prototype, 'send').callsFake((command: any) => {
-        called = true;
-        return Promise.resolve({});
-    });
-
     const mockAgent = new MockAgent();
     setGlobalDispatcher(mockAgent);
 
@@ -307,7 +271,5 @@ test('Basic Polygon Feature', async (t) => {
     }
 
     mockAgent.assertNoPendingInterceptors()
-    t.ok(!called, 'CloudWatch Metrics Must NOT be called (Only called for errors)');
-    Sinon.restore();
     t.end();
 })
