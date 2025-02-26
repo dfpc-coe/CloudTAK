@@ -74,14 +74,6 @@ export default {
                         Statement: [{
                             Effect: 'Allow',
                             Action: [
-                                'cloudwatch:PutMetricData'
-                            ],
-                            Resource: [
-                                '*'
-                            ]
-                        },{
-                            Effect: 'Allow',
-                            Action: [
                                 'sqs:SendMessage',
                                 'sqs:ReceiveMessage',
                                 'sqs:ChangeMessageVisibility',
