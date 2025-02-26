@@ -1,8 +1,8 @@
 <template>
     <label
         v-if='label'
-        v-text='props.label'
         class='mx-1'
+        v-text='props.label'
     />
 
     <div
