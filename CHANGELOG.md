@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v6.13.0 - 2025-02-26
+
+- :tada: Allow CRUD operations for managing TAK Server Video Connections
+
 ### v6.12.1 - 2025-02-25
 
 - :rocket: Include version number in ESRI Errors
