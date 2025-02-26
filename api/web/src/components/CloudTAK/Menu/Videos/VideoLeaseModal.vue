@@ -526,7 +526,7 @@ async function saveLease() {
         loading.value = true;
 
         if (editLease.value.id) {
-            editLease.value = (await std(`/api/video/lease/${editLease.value.id}`, {
+            await std(`/api/video/lease/${editLease.value.id}`, {
                 method: 'PATCH',
                 body: {
                     name: editLease.value.name,
@@ -535,9 +535,9 @@ async function saveLease() {
                     duration: editLease.value.duration === 'Permanent' ? undefined : parseInt(editLease.value.duration.split(' ')[0]) * 60 * 60,
                     permanent: editLease.value.duration === 'Permanent' ? true : false
                 }
-            })).lease;
+            });
         } else {
-            editLease.value = (await std('/api/video/lease', {
+            editLease.value.id = ((await std('/api/video/lease', {
                 method: 'POST',
                 body: {
                     name: editLease.value.name,
@@ -546,7 +546,7 @@ async function saveLease() {
                     duration: editLease.value.duration === 'Permanent' ? undefined : parseInt(editLease.value.duration.split(' ')[0]) * 60 * 60,
                     permanent: editLease.value.duration === 'Permanent' ? true : false
                 }
-            })).lease;
+            })) as VideoLeaseResponse).lease.id;
         }
 
         await fetchLease();

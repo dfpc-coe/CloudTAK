@@ -41,7 +41,7 @@
 
 <script setup lang='ts'>
 import MenuTemplate from '../util/MenuTemplate.vue';
-import type { VideoConnection } from '../../../types.ts';
+import type { VideoConnection, VideoConnection_Create } from '../../../types.ts';
 import { std } from '../../../std.ts';
 import { useRoute, useRouter } from 'vue-router';
 import {
@@ -56,7 +56,7 @@ const route = useRoute();
 const router = useRouter();
 const loading = ref(String(route.params.connectionid) !== "new");
 const err = ref<Error | undefined>(undefined);
-const connection = ref({
+const connection = ref<VideoConnection | VideoConnection_Create>({
     active: true,
     alias: '',
     feeds: []
@@ -74,7 +74,7 @@ async function fetchConnection() {
     try {
         connection.value = await std(`/api/marti/video/${route.params.connectionid}`, {
             method: 'GET'
-        });
+        }) as VideoConnection;
 
         loading.value = false;
     } catch (err) {

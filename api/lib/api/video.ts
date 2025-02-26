@@ -99,7 +99,7 @@ export default class {
                     feeds: connection.feeds.map((feed) => {
                         return {
                             uuid: randomUUID(),
-                            ...connection,
+                            ...feed,
                         }
                     })
                 }]

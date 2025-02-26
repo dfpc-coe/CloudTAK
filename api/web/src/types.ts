@@ -40,6 +40,7 @@ export type ContactList = paths["/marti/api/contacts/all"]["get"]["responses"]["
 export type Content = paths["/marti/package"]["put"]["responses"]["200"]["content"]["application/json"];
 
 export type VideoConnection = paths["/marti/video/{:uid}"]["get"]["responses"]["200"]["content"]["application/json"];
+export type VideoConnection_Create = paths["/marti/video"]["post"]["requestBody"]["content"]["application/json"];
 export type VideoConnectionList = paths["/marti/video"]["get"]["responses"]["200"]["content"]["application/json"];
 
 export type Mission = paths["/marti/missions/{:name}"]["get"]["responses"]["200"]["content"]["application/json"];
