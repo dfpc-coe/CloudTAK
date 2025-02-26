@@ -148,25 +148,6 @@
                             </div>
                         </div>
                     </div>
-                    <div class='col-lg-12'>
-                        <ConnectionSinkChart v-if='sink && sink.logging' />
-                        <div
-                            v-else
-                            class='card'
-                        >
-                            <div class='card-header'>
-                                <h1 class='card-title'>
-                                    Sink Logging
-                                </h1>
-                            </div>
-                            <div class='card-body'>
-                                <TablerAlert
-                                    title='Logging Disabled'
-                                    err='new Error("Turn on Sink Logging to get CoT Delivery Logs")'
-                                />
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -189,10 +170,8 @@ import {
     IconPencil
 } from '@tabler/icons-vue'
 import EsriPortal from './util/EsriPortal.vue';
-import ConnectionSinkChart from './ConnectionSink/Chart.vue';
 import {
     TablerNone,
-    TablerAlert,
     TablerBreadCrumb,
     TablerLoading
 } from '@tak-ps/vue-tabler';

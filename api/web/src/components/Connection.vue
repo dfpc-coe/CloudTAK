@@ -178,19 +178,6 @@
                                                 role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
-                                                    "active": route.name === "connection-healths",
-                                                    "cursor-pointer": route.name !== "connection-healths"
-                                                }'
-                                                @click='router.push(`/connection/${route.params.connectionid}/health`)'
-                                            ><IconCloudDataConnection
-                                                :size='32'
-                                                stroke='1'
-                                            /><span class='mx-3'>Health &amp; Metrics</span></span>
-                                            <span
-                                                tabindex='0'
-                                                role='menuitem'
-                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
-                                                :class='{
                                                     "active": route.name === "connection-tokens",
                                                     "cursor-pointer": route.name !== "connection-tokens"
                                                 }'
@@ -233,7 +220,6 @@ import {
     IconOutbound,
     IconAffiliate,
     IconPlugConnected,
-    IconCloudDataConnection,
     IconBuildingBroadcastTower,
     IconSettings
 } from '@tabler/icons-vue'
