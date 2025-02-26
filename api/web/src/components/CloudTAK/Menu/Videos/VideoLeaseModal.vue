@@ -67,7 +67,7 @@
                         </div>
                         <CopyField
                             v-if='protocols.rtsp'
-                            :modelValue='protocols.rtsp.url.replace(/.*\//, "")'
+                            :model-value='protocols.rtsp.url.replace(/.*\//, "")'
                         />
                     </div>
                 </div>
@@ -139,8 +139,8 @@
                 </div>
                 <div class='col-12'>
                     <TablerToggle
-                        label='Read/Write Security'
                         v-model='secure'
+                        label='Read/Write Security'
                         :disabled='disabled'
                         description='Create a seperate Read/Write user to ensure unauthorized users cannot publish to a stream'
                     />
@@ -179,7 +179,7 @@
                 >
                     <label>Lease Expiration</label>
 
-                    <span v-text='editLease.expiration'/>
+                    <span v-text='editLease.expiration' />
                     <div class='col-12'>
                         <span
                             v-if='expired(editLease.expiration)'
@@ -191,7 +191,7 @@
                         >Permanent</span>
                         <CopyField
                             v-else-if='editLease.expiration'
-                            :modelValue='editLease.expiration'
+                            :model-value='editLease.expiration'
                         />
                     </div>
                 </div>
@@ -289,13 +289,13 @@
                             <div class='col-md-6'>
                                 <CopyField
                                     label='Write Username'
-                                    :modelValue='editLease.stream_user || ""'
+                                    :model-value='editLease.stream_user || ""'
                                 />
                             </div>
                             <div class='col-md-6'>
                                 <CopyField
                                     label='Write Password'
-                                    :modelValue='editLease.stream_pass || ""'
+                                    :model-value='editLease.stream_pass || ""'
                                 />
                             </div>
                         </template>
@@ -303,13 +303,13 @@
                             <div class='col-md-6'>
                                 <CopyField
                                     label='Read Username'
-                                    :modelValue='editLease.read_user || ""'
+                                    :model-value='editLease.read_user || ""'
                                 />
                             </div>
                             <div class='col-md-6'>
                                 <CopyField
                                     label='Read Password'
-                                    :modelValue='editLease.read_pass || ""'
+                                    :model-value='editLease.read_pass || ""'
                                 />
                             </div>
                         </template>
@@ -321,17 +321,17 @@
                                 <CopyField
                                     v-if='secure && mode === "read"'
                                     :label='protocol.name'
-                                    :modelValue='protocol.url.replace("{{mode}}", mode).replace("{{username}}", editLease.read_user || "").replace("{{password}}", editLease.read_pass || "")'
+                                    :model-value='protocol.url.replace("{{mode}}", mode).replace("{{username}}", editLease.read_user || "").replace("{{password}}", editLease.read_pass || "")'
                                 />
                                 <CopyField
                                     v-else-if='secure && mode === "publish"'
                                     :label='protocol.name'
-                                    :modelValue='protocol.url.replace("{{mode}}", mode).replace("{{username}}", editLease.stream_user || "").replace("{{password}}", editLease.stream_pass || "")'
+                                    :model-value='protocol.url.replace("{{mode}}", mode).replace("{{username}}", editLease.stream_user || "").replace("{{password}}", editLease.stream_pass || "")'
                                 />
                                 <CopyField
                                     v-else
                                     :label='protocol.name'
-                                    :modelValue='protocol.url.replace("{{mode}}", mode)'
+                                    :model-value='protocol.url.replace("{{mode}}", mode)'
                                 />
                             </template>
                         </div>
@@ -535,9 +535,9 @@ async function saveLease() {
                     duration: editLease.value.duration === 'Permanent' ? undefined : parseInt(editLease.value.duration.split(' ')[0]) * 60 * 60,
                     permanent: editLease.value.duration === 'Permanent' ? true : false
                 }
-            })
+            });
         } else {
-            await std('/api/video/lease', {
+            editLease.value.id = ((await std('/api/video/lease', {
                 method: 'POST',
                 body: {
                     name: editLease.value.name,
@@ -546,7 +546,7 @@ async function saveLease() {
                     duration: editLease.value.duration === 'Permanent' ? undefined : parseInt(editLease.value.duration.split(' ')[0]) * 60 * 60,
                     permanent: editLease.value.duration === 'Permanent' ? true : false
                 }
-            })
+            })) as VideoLeaseResponse).lease.id;
         }
 
         await fetchLease();
