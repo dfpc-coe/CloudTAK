@@ -338,7 +338,7 @@ export interface paths {
                                 username: string | null;
                                 minzoom: number;
                                 maxzoom: number;
-                                collection: string | null;
+                                collection: (null | string) | null;
                                 format: string;
                                 style: string;
                                 styles: unknown[];
@@ -440,7 +440,7 @@ export interface paths {
                             username: string | null;
                             minzoom: number;
                             maxzoom: number;
-                            collection: string | null;
+                            collection: (null | string) | null;
                             format: string;
                             style: string;
                             styles: unknown[];
@@ -499,7 +499,7 @@ export interface paths {
                             username: string | null;
                             minzoom: number;
                             maxzoom: number;
-                            collection: string | null;
+                            collection: (null | string) | null;
                             format: string;
                             style: string;
                             styles: unknown[];
@@ -589,7 +589,7 @@ export interface paths {
                             username: string | null;
                             minzoom: number;
                             maxzoom: number;
-                            collection: string | null;
+                            collection: (null | string) | null;
                             format: string;
                             style: string;
                             styles: unknown[];
@@ -9940,7 +9940,43 @@ export interface paths {
             };
         };
         put?: never;
-        post?: never;
+        /** Helper API to create video streams */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @default true */
+                        active: boolean;
+                        alias: string;
+                        feeds: {
+                            active: boolean;
+                            alias: string;
+                            url: string;
+                        }[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -12049,7 +12085,10 @@ export interface paths {
         /** Get information about a given point */
         get: {
             parameters: {
-                query?: never;
+                query: {
+                    /** @description No Description */
+                    altitude: number;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -12063,6 +12102,36 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
+                            sun: {
+                                /** @description sunrise (top edge of the sun appears on the horizon) */
+                                sunrise: string;
+                                /** @description sunrise ends (bottom edge of the sun touches the horizon) */
+                                sunriseEnd: string;
+                                /** @description morning golden hour (soft light, best time for photography) ends */
+                                goldenHourEnd: string;
+                                /** @description solar noon (sun is in the highest position) */
+                                solarNoon: string;
+                                /** @description evening golden hour starts */
+                                goldenHour: string;
+                                /** @description sunset starts (bottom edge of the sun touches the horizon) */
+                                sunsetStart: string;
+                                /** @description sunset (sun disappears below the horizon, evening civil twilight starts) */
+                                sunset: string;
+                                /** @description dusk (evening nautical twilight starts) */
+                                dusk: string;
+                                /** @description nautical dusk (evening astronomical twilight starts) */
+                                nauticalDusk: string;
+                                /** @description night starts (dark enough for astronomical observations) */
+                                night: string;
+                                /** @description nadir (darkest moment of the night, sun is in the lowest position) */
+                                nadir: string;
+                                /** @description night ends (morning astronomical twilight starts) */
+                                nightEnd: string;
+                                /** @description nautical dawn (morning nautical twilight starts) */
+                                nauticalDawn: string;
+                                /** @description dawn (morning nautical twilight ends, morning civil twilight starts) */
+                                dawn: string;
+                            };
                             weather: {
                                 type: string;
                                 properties: {
@@ -12202,7 +12271,7 @@ export interface paths {
                     /** @description No Description */
                     query: string;
                     /** @description No Description */
-                    limit?: number;
+                    limit: number;
                 };
                 header?: never;
                 path?: never;
@@ -13437,6 +13506,15 @@ export interface paths {
                                 webrtcAddress: string;
                                 srt: boolean;
                                 srtAddress: string;
+                                authInternalUsers: {
+                                    user: string;
+                                    pass?: string;
+                                    ips?: string[];
+                                    permissions: {
+                                        action: string;
+                                        path?: string;
+                                    }[];
+                                }[];
                             };
                             paths?: {
                                 name: string;
@@ -13485,6 +13563,15 @@ export interface paths {
                         hls?: boolean;
                         webrtc?: boolean;
                         srt?: boolean;
+                        authInternalUsers?: {
+                            user: string;
+                            pass?: string;
+                            ips?: string[];
+                            permissions: {
+                                action: string;
+                                path?: string;
+                            }[];
+                        }[];
                     };
                 };
             };
@@ -13520,6 +13607,15 @@ export interface paths {
                                 webrtcAddress: string;
                                 srt: boolean;
                                 srtAddress: string;
+                                authInternalUsers: {
+                                    user: string;
+                                    pass?: string;
+                                    ips?: string[];
+                                    permissions: {
+                                        action: string;
+                                        path?: string;
+                                    }[];
+                                }[];
                             };
                             paths?: {
                                 name: string;
