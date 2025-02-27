@@ -44,7 +44,7 @@ export default class AtlasDatabase {
         this.images = new Set();
 
         this.pending = new Map();
-        this.pendingUnhide = new Map();
+        this.pendingUnhide = new Set();
         this.pendingDelete = new Set();
 
         this.subscriptions = new Map();
@@ -58,7 +58,11 @@ export default class AtlasDatabase {
 
     async unhide(id: string): Promise<void> {
         this.hidden.delete(id);
-        this.pendingUnhide.set(id);
+        this.pendingUnhide.add(id);
+    }
+
+    async hasIcon(icon: string): Promise<void> {
+        return this.images.has(icon);
     }
 
     async init(): Promise<void> {

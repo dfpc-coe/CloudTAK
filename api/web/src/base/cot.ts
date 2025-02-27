@@ -355,8 +355,8 @@ export default class COT {
         return bbox(this._geometry);
     }
 
-    flyTo(): void {
-        this._atlas.channel.postMessage(JSON.stringify({
+    async flyTo(): Promise<void> {
+        await this._atlas.postMessage(JSON.stringify({
             type: WorkerMessage.Map_FlyTo,
             body: {
                 bounds: this.bounds(),

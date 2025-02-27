@@ -917,8 +917,6 @@ async function mountMap(): Promise<void> {
 
                 await mapStore.worker.db.unhide(mapStore.edit.id);
 
-                const cot = await mapStore.worker.db.get(mapStore.edit.id, { mission: true });
-
                 mapStore.edit = undefined
 
                 mapStore.draw.setMode('static');
