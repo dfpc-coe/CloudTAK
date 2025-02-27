@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v7.1.0 - 2025-02-27
+
+- :bug: Fix issue in ESRI Version Parsing
+- :arrow_up: Update DrizzleORM
+- :white_check_mark: Add basic ESRI test framework
+
 ### v7.0.0 - 2025-02-26
 
 - :rocket: Remove custom AWS CloudWatch metrics as Connection Stability is fairly battletested at this point and costs were significant
