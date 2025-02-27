@@ -1,7 +1,9 @@
 import postgres from 'postgres'
 
 export default async function drop(connstr: string) {
-    const client = postgres(connstr)
+    const client = postgres(connstr, {
+        onnotice: false
+    });
 
     console.log('ok - dropping database');
 
