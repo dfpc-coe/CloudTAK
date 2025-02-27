@@ -350,6 +350,7 @@ export default {
                             Effect: 'Allow',
                             Action: [
                                 'lambda:CreateEventSourceMapping',
+                                'lambda:GetEventSourceMapping',
                                 'lambda:DeleteEventSourceMapping',
                                 'batch:SubmitJob',
                                 'batch:ListJobs',
