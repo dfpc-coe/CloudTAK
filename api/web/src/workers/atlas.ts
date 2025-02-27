@@ -49,6 +49,10 @@ export default class Atlas {
         this.token = '';
     }
 
+    async postMessage(msg: string): Promise<void> {
+        return this.channel.sendMessage(msg);
+    }
+
     async init(authToken: string) {
         this.token = authToken;
 
