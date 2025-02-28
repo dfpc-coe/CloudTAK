@@ -71,13 +71,14 @@ async function fetchSearch(queryText?: string, magicKey?: string) {
     cots.value = [];
 
     if (!magicKey || !queryText) {
-        cots.value.push(...Array.from(
-            (await mapStore.worker.db
-                .filter(`$contains($lowercase(properties.callsign), "${query.value.filter.toLowerCase()}")`, {
-                    mission: true
-                }))
-                .slice(0, 5)
-        ))
+        cots.value.push(
+            ...Array.from(
+                (await mapStore.worker.db
+                    .filter(`$contains($lowercase(properties.callsign), "${query.value.filter.toLowerCase()}")`, {
+                        mission: true
+                    }))
+            ).slice(0, 5)
+        )
 
         partialLoading.value = true;
         const url = stdurl('/api/search/suggest');
