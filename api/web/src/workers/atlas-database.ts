@@ -11,6 +11,7 @@ import type { GeoJSONSourceDiff } from 'maplibre-gl';
 import { booleanWithin } from '@turf/boolean-within';
 import type { Polygon } from 'geojson';
 import type { Feature, APIList } from '../types.ts';
+import type { Mission, MissionRole } from '../types.ts';
 
 type NestedArray = {
     path: string;
@@ -69,13 +70,28 @@ export default class AtlasDatabase {
         await this.loadArchive()
     }
 
-    subscriptionSet(id: string, sub: Subscription): void {
+    async subscriptionList(): Promise<Array<{
+        meta: Mission
+        base: MissionRole
+    }>> {
+
+        return Array.from(this.subscriptions.values()).map((sub) => {
+            return {
+                meta: sub.meta,
+                role: sub.role
+            }
+        });
+    }
+
+    async subscriptionSet(id: string, sub: Subscription): Promise<void> {
         this.subscriptions.set(id, sub);
     }
-    subscriptionGet(id: string): Subscription | undefined {
+
+    async subscriptionGet(id: string): Promise<Subscription | undefined> {
         return this.subscriptions.get(id);
     }
-    subscriptionDelete(id: string): void {
+
+    async subscriptionDelete(id: string): Promise<void> {
         this.subscriptions.delete(id);
     }
 
