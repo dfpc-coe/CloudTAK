@@ -205,7 +205,7 @@ export class EsriBase {
 
             // ArcGIS Online (AGOL) uses a <year>.<month?> format - assume it's always at the bleeding edge
 
-            return json.currentVersion;
+            return Number(json.currentVersion);
         } catch (err) {
             if (err instanceof Error && err.name === 'PublicError') throw err;
             if (err instanceof Error) {

@@ -233,7 +233,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import TaskModal from './utils/TaskModal.vue';
 import { std } from '/src/std.ts';
@@ -265,7 +265,6 @@ const props = defineProps({
 
 const emit = defineEmits([
     'stack',
-    'layer'
 ]);
 
 const route = useRoute();
@@ -292,10 +291,6 @@ onMounted(async () => {
     looping.value = setInterval(async () => {
         await fetchLogs(false);
     }, 10 * 1000);
-});
-
-watch(config.value, () => {
-    emit('layer', config.value);
 });
 
 onUnmounted(() => {
@@ -380,7 +375,7 @@ async function saveLayer() {
     loading.value.full = true;
 
     try {
-        const layer = await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}`, {
+        await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}`, {
             method: 'PATCH',
             body: config.value
         });
@@ -388,7 +383,7 @@ async function saveLayer() {
         disabled.value = true;
         loading.value.full = false;
 
-        emit('layer', layer);
+        emit('refresh');
         emit('stack');
     } catch (err) {
         loading.value.full = false;

@@ -11,12 +11,7 @@ flight.user();
 
 test('GET: Ensure DFPC AGOL Portal is up and running', async (t) => {
     try {
-        const res = await fetch('https://co-dfpc.maps.arcgis.com/sharing/rest?f=json', {
-            method: 'GET',
-            auth: {
-                bearer: flight.token.admin
-            }
-        }, false);
+        const res = await fetch('https://co-dfpc.maps.arcgis.com/sharing/rest?f=json');
 
         await res.typed(Type.Object({
             currentVersion: Type.String()
