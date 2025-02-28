@@ -233,7 +233,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import TaskModal from './utils/TaskModal.vue';
 import { std } from '/src/std.ts';
@@ -375,7 +375,7 @@ async function saveLayer() {
     loading.value.full = true;
 
     try {
-        const layer = await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}`, {
+        await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}`, {
             method: 'PATCH',
             body: config.value
         });
