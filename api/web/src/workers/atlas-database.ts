@@ -62,7 +62,7 @@ export default class AtlasDatabase {
         this.pendingUnhide.add(id);
     }
 
-    async hasIcon(icon: string): Promise<void> {
+    async hasIcon(icon: string): Promise<boolean> {
         return this.images.has(icon);
     }
 

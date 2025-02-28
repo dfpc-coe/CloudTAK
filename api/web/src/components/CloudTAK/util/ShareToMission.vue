@@ -147,28 +147,17 @@ onMounted(async () => {
     loading.value = false;
 });
 
-/** Feats often come from Vector Tiles which don't contain the full feature */
-function currentFeats(): Array<Feature> {
-    return (props.feats || []).map(async (f) => {
+async function share(): Promise<void> {
+    const feats = [];
+    for (const f of props.feats || []) {
         if (f.properties.type === 'b-f-t-r') {
             // FileShare is manually generated and won't exist in CoT Store
-            return f;
+            feats.push(f);
         } else {
-            return await mapStore.worker.db.get(f.id);
+            const feat = await mapStore.worker.db.get(f.id);
+            if (feat) feats.push(feat.as_feature());
         }
-    }).filter((f) => {
-        return !!f;
-    }).map((f) => {
-        if (f instanceof COT) {
-            return f.as_feature();
-        } else {
-            return f;
-        }
-    })
-}
-
-async function share() {
-    const feats = currentFeats();
+    }
 
     for (let feat of feats) {
         feat = JSON.parse(JSON.stringify(feat));
