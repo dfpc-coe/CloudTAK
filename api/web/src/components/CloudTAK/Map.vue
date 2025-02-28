@@ -943,7 +943,7 @@ async function mountMap(): Promise<void> {
                         mapStore.drawOptions.mode = 'static';
                         mapStore.draw.stop();
 
-                        (await mapStore.worker.db.touching(feat.geometry)).forEach((feat) => {
+                        (await mapStore.worker.db.touching(feat.geometry as Polygon)).forEach((feat) => {
                             mapStore.selected.set(feat.id, feat);
                         })
 

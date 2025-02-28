@@ -56,7 +56,7 @@
                             </div>
                             <span
                                 class='mx-2'
-                                v-text='mission.meta.name'
+                                v-text='mission.name'
                             />
                         </div>
                     </div>
@@ -110,7 +110,6 @@ import {
     IconShare2
 } from '@tabler/icons-vue';
 import type { Feature, Mission } from '../../../types.ts';
-import COT from '../../../base/cot.ts'
 import { useMapStore } from '../../../stores/map.ts';
 
 const mapStore = useMapStore();

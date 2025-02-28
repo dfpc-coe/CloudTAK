@@ -53,7 +53,6 @@ import {
     TablerIconButton
 } from '@tak-ps/vue-tabler';
 import { std } from '../../../std.ts';
-import COT from '../../../base/cot.ts';
 import { useMapStore } from '../../../stores/map.ts';
 import {
     IconX,

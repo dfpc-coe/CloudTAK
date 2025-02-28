@@ -177,7 +177,7 @@ async function deleteFeatures() {
     loading.value = true;
 
     for (const id of props.selected.keys()) {
-        await mapStore.worker.db.delete(id);
+        await mapStore.worker.db.remove(id);
     }
 
     props.selected.clear()

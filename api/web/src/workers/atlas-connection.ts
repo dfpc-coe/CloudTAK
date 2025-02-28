@@ -40,7 +40,7 @@ export default class AtlasConnection {
         this.ws = new WebSocket(url);
 
         this.ws.addEventListener('open', () => {
-            self.postMessage(JSON.stringify({ type: WorkerMessage.Connection_Open }));
+            this.atlas.postMessage(JSON.stringify({ type: WorkerMessage.Connection_Open }));
             this.isOpen = true;
         });
 
@@ -54,7 +54,7 @@ export default class AtlasConnection {
                 this.connect(connection);
             }
 
-            self.postMessage(JSON.stringify({ type: WorkerMessage.Connection_Close }));
+            this.atlas.postMessage(JSON.stringify({ type: WorkerMessage.Connection_Close }));
             this.isOpen = false;
         });
 

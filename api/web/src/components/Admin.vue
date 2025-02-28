@@ -6,11 +6,11 @@
                     <div class='col-lg-12'>
                         <div class='card'>
                             <TablerLoading
-                                v-if='!profileStore.profile'
+                                v-if='isAdmin === undefined'
                                 desc='Loading Profile'
                             />
                             <TablerAlert
-                                v-else-if='!profileStore.profile.system_admin'
+                                v-else-if='!isAdmin'
                                 :err='new Error("Insufficient Access")'
                             />
                             <div
@@ -210,8 +210,9 @@
 </template>
 
 <script setup lang='ts'>
-import { onMounted } from 'vue';
-import { useProfileStore } from '../../src/stores/profile.ts';
+import { onMounted, ref } from 'vue';
+import type { Profile } from '../types.ts';
+import { std } from '../std.ts';
 import PageFooter from './PageFooter.vue';
 import {
     TablerAlert,
@@ -230,9 +231,11 @@ import {
     IconBuildingBroadcastTower,
     IconMap,
 } from '@tabler/icons-vue'
-const profileStore = useProfileStore();
+
+const isAdmin = ref<boolean | undefined>(undefined)
 
 onMounted(async () => {
-    await profileStore.load();
+    const profile = await std('/api/profile') as Profile;
+    isAdmin.value = profile.system_admin;
 });
 </script>
