@@ -50,7 +50,7 @@ export default class Atlas {
     }
 
     async postMessage(msg: string): Promise<void> {
-        return this.channel.sendMessage(msg);
+        return this.channel.postMessage(msg);
     }
 
     async init(authToken: string) {
