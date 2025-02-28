@@ -19,6 +19,31 @@ export class CloudTAKTransferHandler {
         this.sync = sync || null;
     }
 
+    cots: TransferHandler<unknown, unknown> = {
+        canHandle: (obj) => {
+            if (!(obj instanceof Set)) return false;
+            for (const val of obj.values()) {
+                if (!(val instanceof COT)) return false;
+            }
+            return true;
+        },
+        serialize: (cots: Set<COT>) => {
+            const feats = [];
+            for (const cot of cots.values()) {
+                feats.push(this.cot.serialize(cot))
+            }
+            return [feats, []];
+        },
+        deserialize: (feats: Array<Feature>) => {
+            const set = new Set<COT>;
+            for (const feat of feats) {
+                set.add(this.cot.deserialize(feat));
+            }
+
+            return set;
+        }
+    }
+
     cot: TransferHandler<unknown, unknown> = {
         canHandle: (obj) => obj instanceof COT,
         serialize: (cot: COT) => {
@@ -71,5 +96,6 @@ const atlas = new Atlas()
 
 const transfer = new CloudTAKTransferHandler(atlas);
 Comlink.transferHandlers.set("cot", transfer.cot);
+Comlink.transferHandlers.set("cots", transfer.cots);
 
 Comlink.expose(Comlink.proxy(atlas));
