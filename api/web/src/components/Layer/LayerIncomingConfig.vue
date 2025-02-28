@@ -352,7 +352,7 @@ async function saveIncoming() {
             incoming.value.cron = null;
         }
 
-        const layer = await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/incoming`, {
+        await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/incoming`, {
             method: 'PATCH',
             body: incoming.value
         });

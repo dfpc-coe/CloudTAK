@@ -48,8 +48,8 @@
                     />
                     <template v-else>
                         <template
-                            :key='feed.uuid'
                             v-for='(feed, fit) of connection.feeds'
+                            :key='feed.uuid'
                         >
                             <VideosRemoteFeed
                                 v-model='connection.feeds[fit]'
