@@ -40,6 +40,7 @@ export const useMapStore = defineStore('cloudtak', {
         mission: string | undefined;
         container?: HTMLElement;
         hasTerrain: boolean;
+        hasNoChannels: boolean;
         isTerrainEnabled: boolean;
         isLoaded: boolean;
         isOpen: boolean;
@@ -76,6 +77,7 @@ export const useMapStore = defineStore('cloudtak', {
             worker,
             channel: new BroadcastChannel("cloudtak"),
             hasTerrain: false,
+            hasNoChannels: false,
             isTerrainEnabled: false,
             isOpen: false,
             isLoaded: false,
@@ -279,6 +281,10 @@ export const useMapStore = defineStore('cloudtak', {
                     this.isOpen = true;
                 } else if (msg.type === WorkerMessage.Connection_Close) {
                     this.isOpen = false;
+                } else if (msg.type === WorkerMessage.Channels_None) {
+                    this.hasNoChannels = true;
+                } else if (msg.type === WorkerMessage.Channels_List) {
+                    this.hasNoChannels = false;
                 } else {
                     console.error('Unknown Event:', msg);
                 }

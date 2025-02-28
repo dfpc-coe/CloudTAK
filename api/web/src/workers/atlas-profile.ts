@@ -1,6 +1,7 @@
 import { toRaw } from 'vue';
 import type Atlas from './atlas.ts';
 import { std, stdurl } from '../std.ts';
+import { WorkerMessage } from '../base/events.ts'
 import type { Feature, Group, Profile, Profile_Update } from '../types.ts';
 
 export type TAKNotification = {
@@ -46,6 +47,16 @@ export default class AtlasProfile {
         }
     }
 
+    isSystemAdmin(): boolean {
+        if (!this.profile) return false;
+        return this.profile.system_admin;
+    }
+
+    hasNoConfiguration(): boolean {
+        if (!this.profile) return false;
+        return this.profile.created === this.profile.updated;
+    }
+
     hasNoChannels(): boolean {
         for (const ch of this.channels) {
             if (ch.active) return false
@@ -54,10 +65,6 @@ export default class AtlasProfile {
         return true;
     }
 
-    hasNoConfiguration(): boolean {
-        if (!this.profile) return false;
-        return this.profile.created === this.profile.updated;
-    }
 
     destroy(): void {
         if (this.timerSelf) {
@@ -120,6 +127,12 @@ export default class AtlasProfile {
         })) as {
             data: Group[]
         }).data
+
+        if (this.hasNoChannels) {
+            this.atlas.postMessage(JSON.stringify({ type: WorkerMessage.Channels_None }));
+        } else {
+            this.atlas.postMessage(JSON.stringify({ type: WorkerMessage.Channels_List }));
+        }
 
         return this.channels
     }
