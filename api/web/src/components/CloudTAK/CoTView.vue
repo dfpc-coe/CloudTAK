@@ -584,8 +584,8 @@
             <div
                 v-if='
                     cot.properties.takv
-                    && cot.properties.takv
-                    && Object.keys(cot.properties.takv).length
+                        && cot.properties.takv
+                        && Object.keys(cot.properties.takv).length
                 '
                 class='col-12 px-1 pb-2'
             >
@@ -595,7 +595,10 @@
                         title='Open Metadata'
                         @click='chevrons.add("metadata")'
                     >
-                        <IconChevronRight :size='24' stroke='1' />
+                        <IconChevronRight
+                            :size='24'
+                            stroke='1'
+                        />
                     </TablerIconbutton>
 
                     <TablerIconButton
@@ -603,11 +606,17 @@
                         title='Close Metadata'
                         @click='chevrons.delete("metadata")'
                     >
-                        <IconChevronDown :size='24' stroke='1' />
+                        <IconChevronDown
+                            :size='24'
+                            stroke='1'
+                        />
                     </TablerIconbutton>
                     <label class='subheader'>Metadata</label>
                 </div>
-                <div v-if='chevrons.has("metadata")' class='table-responsive rounded mx-2 py-2 px-2'>
+                <div
+                    v-if='chevrons.has("metadata")'
+                    class='table-responsive rounded mx-2 py-2 px-2'
+                >
                     <table class='table card-table table-hover table-vcenter datatable'>
                         <thead>
                             <tr>
