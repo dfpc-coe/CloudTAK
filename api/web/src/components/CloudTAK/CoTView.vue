@@ -642,7 +642,7 @@
             <div class='overflow-auto'>
                 <Share
                     style='height: 70vh'
-                    :feats='[cot]'
+                    :feats='[cot.as_feature()]'
                     @done='mode = "default"'
                     @cancel='mode = "default"'
                 />
