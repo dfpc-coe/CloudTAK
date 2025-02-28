@@ -109,10 +109,9 @@ import {
     IconAmbulance,
     IconShare2
 } from '@tabler/icons-vue';
-import type { Feature } from '../../../types.ts';
+import type { Feature, Mission } from '../../../types.ts';
 import COT from '../../../base/cot.ts'
 import { useMapStore } from '../../../stores/map.ts';
-import Subscription from '../../../base/mission.ts'
 
 const mapStore = useMapStore();
 
@@ -134,13 +133,15 @@ const props = defineProps({
 const emit = defineEmits(['cancel', 'done']);
 
 const loading = ref(true);
-const selected = ref<Set<Subscription>>(new Set());
-const missions = ref<Array<Subscription>>([]);
+const selected = ref<Set<Mission>>(new Set());
+const missions = ref<Array<Mission>>([]);
 
 onMounted(async () => {
-    missions.value = Array.from(await mapStore.worker.db.subscriptions.values())
-        .filter((mission: Subscription) => {
+    missions.value = (await mapStore.worker.db.subscriptionList())
+        .filter((mission) => {
             return mission.role.permissions.includes("MISSION_WRITE")
+        }).map((mission) => {
+            return mission.meta;
         })
 
     loading.value = false;
@@ -175,7 +176,7 @@ async function share() {
         feat.properties.dest = [];
         for (const mission of selected.value) {
             feat.properties.dest.push({
-                mission: mission.meta.name
+                mission: mission.name
             });
         }
 

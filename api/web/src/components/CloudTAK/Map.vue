@@ -780,7 +780,7 @@ async function handleRadial(event: string): Promise<void> {
         selectFeat(mapStore.radial.cot as MapGeoJSONFeature);
         closeRadial()
     } else if (event === 'context:new') {
-        await mapStore.worker.db.add(mapStore.radial.cot);
+        await mapStore.worker.db.add(mapStore.radial.cot.as_feature());
         updateCOT();
         closeRadial()
     } else if (event === 'context:info') {
@@ -923,7 +923,7 @@ async function mountMap(): Promise<void> {
                 mapStore.drawOptions.mode = 'static';
                 mapStore.draw.stop();
 
-                await mapStore.worker.db.add(feat);
+                await mapStore.worker.db.add(feat as Feature);
 
                 await updateCOT();
             })

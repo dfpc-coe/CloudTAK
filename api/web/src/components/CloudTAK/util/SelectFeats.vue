@@ -35,7 +35,7 @@
                     <DisplayFeature
                         :feature='select'
                         delete-action='emit'
-                        @delete='selected.delete(select.properties.id)'
+                        @delete='selected.delete(select.id)'
                     />
                 </div>
             </div>
