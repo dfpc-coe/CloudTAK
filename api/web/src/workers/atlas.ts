@@ -19,8 +19,8 @@ export class CloudTAKTransferHandler {
         this.sync = sync || null;
     }
 
-    cots: TransferHandler<unknown, unknown> = {
-        canHandle: (obj) => {
+    cots: TransferHandler<Set<COT>, Array<Feature>> = {
+        canHandle: (obj): obj is Set<COT> => {
             if (!(obj instanceof Set)) return false;
             for (const val of obj.values()) {
                 if (!(val instanceof COT)) return false;
@@ -30,27 +30,31 @@ export class CloudTAKTransferHandler {
         serialize: (cots: Set<COT>) => {
             const feats = [];
             for (const cot of cots.values()) {
-                feats.push(this.cot.serialize(cot))
+                feats.push(cot.as_feature());
             }
             return [feats, []];
         },
-        deserialize: (feats: Array<Feature>) => {
+        deserialize: (feats) => {
             const set = new Set<COT>;
             for (const feat of feats) {
-                set.add(this.cot.deserialize(feat));
+                set.add(new COT(this.atlas, feat, feat.origin, {
+                    remote: this.sync ? this.sync : null
+                }));
             }
 
             return set;
         }
     }
 
-    cot: TransferHandler<unknown, unknown> = {
-        canHandle: (obj) => obj instanceof COT,
+    cot: TransferHandler<COT, Feature> = {
+        canHandle: (obj): obj is COT => {
+            return obj instanceof COT;
+        },
         serialize: (cot: COT) => {
             const feat = cot.as_feature();
             return [feat, []];
         },
-        deserialize: (feat: Feature) => {
+        deserialize: (feat: Feature): COT => {
             return new COT(this.atlas, feat, feat.origin, {
                 remote: this.sync ? this.sync : null
             });

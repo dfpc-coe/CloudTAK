@@ -212,6 +212,7 @@ export default class AtlasDatabase {
     async filter(
         filter: string,
         opts: {
+            limit?: number;
             mission?: boolean,
         } = {}
     ): Promise<Set<COT>> {
@@ -238,7 +239,17 @@ export default class AtlasDatabase {
             }
         }
 
-        return cots;
+        if (opts.limit !== undefined) {
+            const subset: Set<COT> = new Set();
+            for (const cot of cots.values()) {
+                if (subset.size === opts.limit) break;
+                subset.add(cot);
+            }
+
+            return subset;
+        } else {
+            return cots;
+        }
     }
 
     async paths(store?: Map<string, COT>): Promise<Array<NestedArray>> {

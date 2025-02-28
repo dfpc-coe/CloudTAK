@@ -55,7 +55,7 @@ const query = ref<{
     filter: '',
 });
 
-const cots = ref<Array<COT>>([])
+const cots = ref<Set<COT>>(new Set())
 
 const results = ref<Array<{
     text: string
@@ -68,17 +68,13 @@ watch(query.value, async () => {
 
 async function fetchSearch(queryText?: string, magicKey?: string) {
     results.value = [];
-    cots.value = [];
 
     if (!magicKey || !queryText) {
-        cots.value.push(
-            ...Array.from(
-                (await mapStore.worker.db
-                    .filter(`$contains($lowercase(properties.callsign), "${query.value.filter.toLowerCase()}")`, {
-                        mission: true
-                    }))
-            ).slice(0, 5)
-        )
+        cots.value = await mapStore.worker.db
+            .filter(`$contains($lowercase(properties.callsign), "${query.value.filter.toLowerCase()}")`, {
+                mission: true,
+                limit: 5
+            })
 
         partialLoading.value = true;
         const url = stdurl('/api/search/suggest');
