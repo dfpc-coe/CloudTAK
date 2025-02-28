@@ -311,7 +311,6 @@
                                         :capabilities='capabilities'
                                         :stack='stack'
                                         @refresh='refresh(true)'
-                                        @layer='layer = $event'
                                         @stack='fetchStatus(true)'
                                     />
                                 </div>
