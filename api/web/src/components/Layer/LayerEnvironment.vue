@@ -164,7 +164,7 @@ const props = defineProps({
     }
 });
 
-const emit = defineEmits([ 'layer' ]);
+const emit = defineEmits([ 'refresh' ]);
 
 const route = useRoute();
 

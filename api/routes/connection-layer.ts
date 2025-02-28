@@ -714,6 +714,14 @@ export default async function router(schema: Schema, config: Config) {
 
             layer = await config.models.Layer.augmented_from(layer.id);
 
+            if (layer.incoming && config.events) {
+                if (layer.incoming.cron && !Schedule.is_aws(layer.incoming.cron) && layer.enabled) {
+                    config.events.add(layer.id, layer.incoming.cron);
+                } else if (!layer.incoming.cron || (layer.incoming.cron && Schedule.is_aws(layer.incoming.cron)) || !layer.enabled) {
+                    await config.events.delete(layer.id);
+                }
+            }
+
             let status = 'unknown';
             if (config.StackName !== 'test' && req.query.alarms) {
                 try {

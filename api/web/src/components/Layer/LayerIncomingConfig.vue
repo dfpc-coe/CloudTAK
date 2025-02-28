@@ -298,7 +298,7 @@ const props = defineProps({
 
 const route = useRoute();
 const emit = defineEmits([
-    'layer',
+    'refresh',
     'stack'
 ]);
 
@@ -352,7 +352,7 @@ async function saveIncoming() {
             incoming.value.cron = null;
         }
 
-        const layer = await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/incoming`, {
+        await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/incoming`, {
             method: 'PATCH',
             body: incoming.value
         });
@@ -361,7 +361,7 @@ async function saveIncoming() {
 
         loading.value.save = false;
 
-        emit('layer', layer);
+        emit('refresh');
         emit('stack');
     } catch (err) {
         loading.value.save = false;
