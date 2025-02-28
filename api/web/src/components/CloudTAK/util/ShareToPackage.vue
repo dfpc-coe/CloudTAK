@@ -87,28 +87,18 @@ const body = ref({
     name: ''
 })
 
-/** Feats often come from Vector Tiles which don't contain the full feature */
-async function currentFeats(): Promise<Array<Feature>> {
-    return (props.feats || []).map(async (f) => {
+async function share() {
+    const feats = [];
+
+    for (const f of props.feats || []) {
         if (f.properties.type === 'b-f-t-r') {
             // FileShare is manually generated and won't exist in CoT Store
             return f;
         } else {
-            return await mapStore.worker.db.get(f.id) || f;
+            const feat = await mapStore.worker.db.get(f.id);
+            if (feat) feats.push(feat.as_feature());
         }
-    }).filter((f) => {
-        return !!f;
-    }).map((f) => {
-        if (f instanceof COT) {
-            return f.as_feature();
-        } else {
-            return f;
-        }
-    })
-}
-
-async function share() {
-    const feats = await currentFeats();
+    }
 
     loading.value = true;
 

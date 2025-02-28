@@ -72,7 +72,7 @@ export default class AtlasDatabase {
 
     async subscriptionList(): Promise<Array<{
         meta: Mission
-        base: MissionRole
+        role: MissionRole
     }>> {
 
         return Array.from(this.subscriptions.values()).map((sub) => {

@@ -127,7 +127,6 @@ import {
     IconBroadcast,
     IconShare2
 } from '@tabler/icons-vue';
-import COT from '../../../base/cot.ts'
 import type { Contact, ContactList, Feature } from '../../../types.ts'
 import COTContact from '../util/Contact.vue';
 import { useMapStore } from '../../../stores/map.ts';
@@ -135,7 +134,7 @@ import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();
 
 const props = defineProps<{
-    feats?: Feature[] | COT[],
+    feats?: Feature[]
     basemaps?: number[],
     compact?: boolean
 }>();
@@ -164,21 +163,19 @@ onMounted(async () => {
 
 /** Feats often come from Vector Tiles which don't contain the full feature */
 async function currentFeats(): Promise<Feature[]> {
-    return (props.feats || []).map(async (f) => {
+    const feats = [];
+
+    for (const f of props.feats || []) {
         if (f.properties.type === 'b-f-t-r') {
             // FileShare is manually generated and won't exist in CoT Store
-            return f;
+            feats.push(f);
         } else {
             const cot = await mapStore.worker.db.get(f.id)
-            if (cot) {
-                return cot.as_feature();
-            } else {
-                return;
-            }
+            if (cot) feats.push(cot.as_feature());
         }
-    }).filter((f) => {
-        return !!f;
-    }) as Feature[];
+    }
+
+    return feats;
 }
 
 async function share() {
