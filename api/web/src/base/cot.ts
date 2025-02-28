@@ -175,8 +175,6 @@ export default class COT {
                 return false;
             }
 
-            console.error('ACTUAL UPDATE', this.id, update);
-
             if (update.geometry || !this._properties.center || (this._properties.center[0] === 0 && this._properties.center[1] === 0)) {
                 this._properties.center = pointOnFeature(this._geometry).geometry.coordinates;
             }
