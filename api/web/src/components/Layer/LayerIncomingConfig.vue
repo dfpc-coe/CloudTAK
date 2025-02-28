@@ -298,7 +298,7 @@ const props = defineProps({
 
 const route = useRoute();
 const emit = defineEmits([
-    'layer',
+    'refresh',
     'stack'
 ]);
 
@@ -361,7 +361,7 @@ async function saveIncoming() {
 
         loading.value.save = false;
 
-        emit('layer', layer);
+        emit('refresh');
         emit('stack');
     } catch (err) {
         loading.value.save = false;

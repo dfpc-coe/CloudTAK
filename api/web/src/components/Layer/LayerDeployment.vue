@@ -265,7 +265,6 @@ const props = defineProps({
 
 const emit = defineEmits([
     'stack',
-    'layer'
 ]);
 
 const route = useRoute();
@@ -292,10 +291,6 @@ onMounted(async () => {
     looping.value = setInterval(async () => {
         await fetchLogs(false);
     }, 10 * 1000);
-});
-
-watch(config.value, () => {
-    emit('layer', config.value);
 });
 
 onUnmounted(() => {
@@ -388,7 +383,7 @@ async function saveLayer() {
         disabled.value = true;
         loading.value.full = false;
 
-        emit('layer', layer);
+        emit('refresh');
         emit('stack');
     } catch (err) {
         loading.value.full = false;
