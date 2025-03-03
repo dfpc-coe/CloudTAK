@@ -92,8 +92,8 @@ const paging = ref({
     filter: ''
 });
 
-const visibleActiveContacts = ref<Array<ContactList>>([]);
-const visibleOfflineContacts = ref<Array<ContactList>>([]);
+const visibleActiveContacts = ref<ContactList>([]);
+const visibleOfflineContacts = ref<ContactList>([]);
 
 onMounted(async () => {
     await fetchList();

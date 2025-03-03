@@ -65,7 +65,11 @@ export default class COT {
             remote?: BroadcastChannel | null;
         }
     ) {
-        feat.properties = COT.style(atlas, feat.geometry.type, feat.properties);
+        if (!opts || (opts && !opts.remote)) {
+            const a = atlas as Atlas;
+            // Remote properties will already have the default style applied
+            feat.properties = COT.style(a, feat.geometry.type, feat.properties);
+        }
 
         this.id = feat.id || crypto.randomUUID();
         this.path = feat.path || '/';
@@ -376,7 +380,7 @@ export default class COT {
      * Consistent feature manipulation between add & update
      */
     static style(
-        atlas: Atlas | Remote<Atlas>,
+        atlas: Atlas,
         type: string,
         properties: Feature["properties"]
     ): Feature["properties"] {
