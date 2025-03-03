@@ -108,7 +108,8 @@ import ChannelInfo from '../util/ChannelInfo.vue';
 import EmptyInfo from '../util/EmptyInfo.vue';
 import Upload from '../../util/Upload.vue';
 import { useMapStore } from '../../../../src/stores/map.ts';
-const mapStore = useProfileStore();
+
+const mapStore = useMapStore();
 
 const error = ref<Error | undefined>();
 const loading = ref(true);

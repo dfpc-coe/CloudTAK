@@ -70,6 +70,12 @@ export default class AtlasDatabase {
         await this.loadArchive()
     }
 
+    async subscriptionListUid(): Promise<Set<string>> {
+        return new Set(Array.from(this.subscriptions.values()).map((sub) => {
+            return sub.meta.guid
+        }));
+    }
+
     async subscriptionList(): Promise<Array<{
         meta: Mission
         role: MissionRole

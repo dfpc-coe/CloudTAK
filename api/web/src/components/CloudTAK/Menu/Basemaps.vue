@@ -121,7 +121,7 @@
                                 <template #dropdown>
                                     <div clas='col-12'>
                                         <div
-                                            v-if='(!basemap.username && profile && profile.system_admin) || basemap.username'
+                                            v-if='(!basemap.username && isSystemAdmin) || basemap.username'
                                             class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2 py-2'
                                             @click.stop.prevent='editModal = basemap'
                                         >
