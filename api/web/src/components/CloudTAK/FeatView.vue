@@ -9,7 +9,8 @@
         >
             <div class='col-auto card-header row mx-1 my-2'>
                 <div
-                    class='card-title mx-2'
+                    class='card-title mx-2 text-truncate'
+                    style='width: 280px'
                     v-text='feat.properties?.name || "No Name"'
                 />
             </div>
