@@ -47,9 +47,19 @@ export default class AtlasProfile {
         }
     }
 
+    username(): string {
+        if (!this.profile) return '';
+        return this.profile.username;
+    }
+
     isSystemAdmin(): boolean {
         if (!this.profile) return false;
         return this.profile.system_admin;
+    }
+
+    isAgencyAdmin(): boolean {
+        if (!this.profile) return false;
+        return this.profile.agency_admin.length > 0;
     }
 
     hasNoConfiguration(): boolean {
