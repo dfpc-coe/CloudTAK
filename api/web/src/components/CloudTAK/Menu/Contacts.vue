@@ -66,10 +66,9 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import { std, stdurl } from '../../../std.ts';
 import type { ContactList } from '../../../types.ts';
-import { useProfileStore } from '../../../stores/profile.ts';
 import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();
 import MenuTemplate from '../util/MenuTemplate.vue';
@@ -86,7 +85,6 @@ import {
 import Contact from '../util/Contact.vue';
 import EmptyInfo from '../util/EmptyInfo.vue';
 
-const profileStore = useProfileStore();
 const error = ref<Error | undefined>();
 const loading = ref(true);
 const contacts = ref<ContactList>([])
@@ -108,12 +106,12 @@ watch(paging.value, async () => {
 
 async function updateContacts() {
     visibleActiveContacts.value = [];
-    visibleOfflineContacts = [];
+    visibleOfflineContacts.value = [];
 
     for (const contact of contacts.value) {
         if (!contact.callsign.toLowerCase().includes(paging.value.filter.toLowerCase())) continue;
 
-        if (await mapStore.worker.db.has(contact.uid) {
+        if (await mapStore.worker.db.has(contact.uid)) {
             visibleActiveContacts.value.push(contact);
         } else {
             visibleOfflineContacts.value.push(contact);

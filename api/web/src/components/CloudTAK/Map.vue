@@ -464,6 +464,7 @@ import WarnConfiguration from './util/WarnConfiguration.vue';
 import Status from '../util/Status.vue';
 import CoordInput from './CoordInput.vue';
 import type { MapGeoJSONFeature, GeoJSONSource, LngLatLike } from 'maplibre-gl';
+import type { Polygon } from 'geojson';
 import { std, stdurl } from '../..//std.ts';
 import type { IconsetList, Feature } from '../../types.ts';
 import CloudTAKFeatView from './FeatView.vue';
