@@ -767,8 +767,10 @@ onMounted(async () => {
     await load_cot();
 
     const profile = await mapStore.worker.profile.profile;
-    units.value.display_speed = profile.display_speed;
-    units.value.display_elevation = profile.display_elevation;
+    if (profile) {
+        units.value.display_speed = profile.display_speed;
+        units.value.display_elevation = profile.display_elevation;
+    }
 
     if (!cot.value) {
         interval.value = setInterval(async () => {

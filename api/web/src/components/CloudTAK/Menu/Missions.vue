@@ -206,7 +206,7 @@ async function generateFilteredList() {
 }
 
 async function openMission(mission: Mission, usePassword: boolean) {
-    if (mission.passwordProtected && subscribed.has(mission.guid)) {
+    if (mission.passwordProtected && subscribed.value.has(mission.guid)) {
         const o = mapStore.getOverlayByMode('mission', mission.guid);
 
         let fragment = `/menu/missions/${mission.guid}`;
