@@ -138,7 +138,7 @@ export default class AtlasProfile {
             data: Group[]
         }).data
 
-        if (this.hasNoChannels) {
+        if (this.hasNoChannels()) {
             this.atlas.postMessage(JSON.stringify({ type: WorkerMessage.Channels_None }));
         } else {
             this.atlas.postMessage(JSON.stringify({ type: WorkerMessage.Channels_List }));
