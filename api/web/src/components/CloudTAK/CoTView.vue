@@ -314,11 +314,11 @@
                     />
                 </div>
                 <div
-                    v-if='profile && center.length > 2'
+                    v-if='center.length > 2'
                     class='col-md-4 pt-2'
                 >
                     <Elevation
-                        :unit='profile.display_elevation'
+                        :unit='units.display_elevation'
                         :elevation='cot.properties.center[2]'
                     />
                 </div>
@@ -331,7 +331,7 @@
                 </div>
 
                 <div
-                    v-if='profile && cot.properties.speed !== undefined && !isNaN(cot.properties.speed)'
+                    v-if='cot.properties.speed !== undefined && !isNaN(cot.properties.speed)'
                     class='pt-2'
                     :class='{
                         "col-md-6": cot.properties.course,
@@ -339,7 +339,7 @@
                     }'
                 >
                     <Speed
-                        :unit='profile.display_speed'
+                        :unit='units.display_speed'
                         :speed='cot.properties.speed'
                         class='py-2'
                     />
@@ -394,7 +394,6 @@
                     :rows='10'
                     :edit='cot.is_editable'
                     :hover='cot.is_editable'
-                    class='mx-1'
                 />
             </div>
 
@@ -724,13 +723,11 @@ import {
 import Subscriptions from './util/Subscriptions.vue';
 import timediff from '../../timediff.ts';
 import { std } from '../../std.ts';
-import { useProfileStore } from '../../stores/profile.ts';
 import { useMapStore } from '../../stores/map.ts';
 import { useVideoStore } from '../../stores/videos.ts';
 
 const mapStore = useMapStore();
 
-const profileStore = useProfileStore();
 const videoStore = useVideoStore();
 const route = useRoute();
 const router = useRouter();
@@ -738,6 +735,11 @@ const router = useRouter();
 const cot = ref<COT | undefined>(undefined);
 
 const mission = ref<Mission | undefined>();
+
+const units = ref({
+    display_speed: 'mi/h',
+    display_elevation: 'feet'
+});
 
 const chevrons = ref<Set<string>>(new Set());
 const username = ref<string | undefined>();
@@ -764,6 +766,10 @@ watch(route, async () => {
 onMounted(async () => {
     await load_cot();
 
+    const profile = await mapStore.worker.profile.profile;
+    units.value.display_speed = profile.display_speed;
+    units.value.display_elevation = profile.display_elevation;
+
     if (!cot.value) {
         interval.value = setInterval(async () => {
             await load_cot();
@@ -774,8 +780,6 @@ onMounted(async () => {
         }, 1000)
     }
 });
-
-const profile = profileStore.profile;
 
 const hasBattery = computed(() => {
     return cot.value && cot.value.properties.status && cot.value.properties.status.battery && !isNaN(parseInt(cot.value.properties.status.battery))
