@@ -2,7 +2,7 @@
     <MenuTemplate name='Package'>
         <template #buttons>
             <TablerDelete
-                v-if='profile && pkg && profile.username === pkg.SubmissionUser'
+                v-if='pkg && (username === pkg.SubmissionUser)'
                 displaytype='icon'
                 @delete='deleteFile(pkg.Hash)'
             />
@@ -114,11 +114,11 @@ import {
     IconDownload,
     IconFileImport
 } from '@tabler/icons-vue';
-import { useProfileStore } from '../../../../src/stores/profile.ts';
+import { useMapStore } from '../../../stores/map.ts';
 
 const route = useRoute();
 const router = useRouter();
-const profileStore = useProfileStore();
+const mapStore = useMapStore();
 
 const loading = ref(true);
 const error = ref<Error | undefined>()
@@ -130,7 +130,7 @@ watch(route, async () => {
     await fetch();
 });
 
-const profile = profileStore.profile;
+const username = ref<string>('');
 
 const shareFeat = computed<Feature | undefined>(() => {
     if (!profile || !pkg.value || !server.value) return;
@@ -162,6 +162,7 @@ const shareFeat = computed<Feature | undefined>(() => {
 onMounted(async () => {
     await getServer();
     await fetch();
+    username.value = await mapStore.worker.profile.username();
 });
 
 async function getServer() {
