@@ -48,7 +48,7 @@
                 </div>
 
                 <ChannelInfo label='Data Packages' />
-                <EmptyInfo v-if='hasNoChannels' />
+                <EmptyInfo v-if='mapStore.hasNoChannels' />
 
                 <TablerAlert
                     v-if='error'
@@ -107,8 +107,8 @@ import timeDiff from '../../../timediff.ts';
 import ChannelInfo from '../util/ChannelInfo.vue';
 import EmptyInfo from '../util/EmptyInfo.vue';
 import Upload from '../../util/Upload.vue';
-import { useProfileStore } from '../../../../src/stores/profile.ts';
-const profileStore = useProfileStore();
+import { useMapStore } from '../../../../src/stores/map.ts';
+const mapStore = useProfileStore();
 
 const error = ref<Error | undefined>();
 const loading = ref(true);
@@ -126,8 +126,6 @@ const list = ref<PackageList>({
 onMounted(async () => {
     await fetchList();
 });
-
-const hasNoChannels = profileStore.hasNoChannels;
 
 const filteredList = computed(() => {
     return list.value.items.filter((pkg) => {

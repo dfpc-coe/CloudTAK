@@ -34,7 +34,7 @@
 
             <ChannelInfo />
 
-            <EmptyInfo v-if='profileStore.hasNoChannels' />
+            <EmptyInfo v-if='mapStore.hasNoChannels' />
 
             <TablerNone
                 v-if='!list.length'
@@ -158,14 +158,12 @@ import {
     IconRefresh,
 } from '@tabler/icons-vue';
 import ChannelInfo from '../util/ChannelInfo.vue';
-import { useProfileStore } from '../../../stores/profile.ts';
-import EmptyInfo from '../util/EmptyInfo.vue';
 import { useMapStore } from '../../../stores/map.ts';
+import EmptyInfo from '../util/EmptyInfo.vue';
 import { useCOTStore } from '../../../stores/cots.ts';
 import Subscription from '../../../base/mission.ts';
-const mapStore = useMapStore();
 const cotStore = useCOTStore();
-const profileStore = useProfileStore();
+const mapStore = useMapStore();
 
 const error = ref<Error | undefined>();
 const create = ref(false)

@@ -2,7 +2,7 @@
     <MenuTemplate name='Channels'>
         <template #buttons>
             <TablerIconButton
-                v-if='!loading && hasChannelsOn'
+                v-if='!loading && !mapStore.hasNoChannels'
                 title='All Channels On'
                 @click='setAllStatus(true)'
             >
@@ -12,7 +12,7 @@
                 />
             </TablerIconButton>
             <TablerIconButton
-                v-if='!loading && !hasChannelsOn'
+                v-if='!loading && mapStore.hasNoChannels'
                 title='All Channels Off'
                 @click='setAllStatus(false)'
             >
@@ -45,7 +45,7 @@
                 />
             </div>
 
-            <EmptyInfo v-if='profileStore.hasNoChannels' />
+            <EmptyInfo v-if='mapStore.hasNoChannels' />
 
             <TablerLoading v-if='loading' />
             <TablerAlert
@@ -160,12 +160,6 @@ const paging = ref({
 
 onMounted(async () => {
     await refresh();
-});
-
-const hasChannelsOn = computed<boolean>(() => {
-    return profileStore.channels.some((ch) => {
-        return !ch.active;
-    })
 });
 
 const processChannels = computed<Record<string, Group>>(() => {

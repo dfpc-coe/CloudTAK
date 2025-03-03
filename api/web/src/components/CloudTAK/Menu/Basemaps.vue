@@ -181,7 +181,7 @@
 </template>
 
 <script setup lang='ts'>
-import { onMounted, ref, computed, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import MenuItem from '../util/MenuItem.vue';
 import type { BasemapList, Basemap } from '../../../types.ts';
 import { std, stdurl } from '../../../std.ts';
@@ -210,9 +210,9 @@ import {
     IconCircleArrowLeft,
 } from '@tabler/icons-vue'
 import { useMapStore } from '../../../stores/map.ts';
-import { useProfileStore } from '../../../stores/profile.ts';
 const mapStore = useMapStore();
-const profileStore = useProfileStore();
+
+const isSystemAdmin = ref<boolean>(false);
 
 const error = ref<Error | undefined>();
 const loading = ref(true);
@@ -233,9 +233,8 @@ const list = ref<BasemapList>({
 
 onMounted(async () => {
     await fetchList();
+    isSystemAdmin.value = await mapStore.worker.profile.isSystemAdmin();
 });
-
-const profile = computed(() => profileStore.profile);
 
 watch(editModal, async () => {
     await fetchList();
