@@ -235,7 +235,7 @@
                                 class='hover-button'
                             />
                             <span
-                                v-if='profileStore.notifications.length'
+                                v-if='mapStore.notifications.length'
                                 class='badge bg-red mb-2'
                             />
                             <span
@@ -246,7 +246,7 @@
                     </template>
                     <template #dropdown>
                         <TablerNone
-                            v-if='!profileStore.notifications.length'
+                            v-if='!mapStore.notifications.length'
                             label='New Notifications'
                             :create='false'
                         />
@@ -254,13 +254,13 @@
                             <div class='col-12 d-flex py-2 px-2'>
                                 <div
                                     class='ms-auto cursor-pointer'
-                                    @click='profileStore.clearNotifications'
+                                    @click='mapStore.clearNotifications()'
                                 >
                                     Clear All
                                 </div>
                             </div>
                             <div
-                                v-for='n of profileStore.notifications'
+                                v-for='n of mapStore.notifications'
                                 class='col-12 px-2 py-2'
                             >
                                 <div

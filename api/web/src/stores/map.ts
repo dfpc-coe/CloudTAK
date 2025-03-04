@@ -30,6 +30,13 @@ import type {
     MapGeoJSONFeature
 } from 'maplibre-gl';
 
+export type TAKNotification = {
+    type: string;
+    name: string;
+    body: string;
+    url: string;
+}
+
 export const useMapStore = defineStore('cloudtak', {
     state: (): {
         _map?: mapgl.Map;
@@ -38,6 +45,7 @@ export const useMapStore = defineStore('cloudtak', {
         worker: Comlink.Remote<Atlas>;
         edit: COT | undefined;
         mission: string | undefined;
+        notifications: Array<TAKNotification>;
         container?: HTMLElement;
         hasTerrain: boolean;
         hasNoChannels: boolean;
@@ -76,6 +84,7 @@ export const useMapStore = defineStore('cloudtak', {
         return {
             worker,
             channel: new BroadcastChannel("cloudtak"),
+            notifications: [],
             hasTerrain: false,
             hasNoChannels: false,
             isTerrainEnabled: false,
@@ -128,6 +137,21 @@ export const useMapStore = defineStore('cloudtak', {
                 }
             }
             this.$reset();
+        },
+        pushNotification: function(notification: TAKNotification): void {
+            this.notifications.push(notification);
+
+            if ('Notification' in window && Notification && Notification.permission !== 'denied') {
+                const n = new Notification(notification.name, {
+                    body: notification.body
+                });
+
+                n.onclick = (event) => {
+                    event.preventDefault(); // prevent the browser from focusing the Notification's tab
+                    console.error(n);
+                };
+
+            }
         },
         removeOverlay: async function(overlay: Overlay) {
             // @ts-expect-error Doesn't like use of object to index array
