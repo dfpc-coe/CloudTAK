@@ -120,6 +120,7 @@ export default async function router(schema: Schema, config: Config) {
                 type: 'Feature',
                 ...(await config.models.ProfileFeature.generate({
                     id: req.body.id,
+                    path: req.body.path,
                     username: user.email,
                     properties: req.body.properties,
                     geometry: req.body.geometry
