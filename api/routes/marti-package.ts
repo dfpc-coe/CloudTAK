@@ -1,3 +1,4 @@
+import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import busboy from 'busboy';
@@ -34,8 +35,6 @@ export default async function router(schema: Schema, config: Config) {
             const id = crypto.randomUUID();
 
             if (req.headers['content-type'] && req.headers['content-type'].startsWith('multipart/form-data')) {
-                const pkg = new DataPackage(id, id);
-
                 const bb = busboy({
                     headers: req.headers,
                     limits: {
@@ -43,17 +42,33 @@ export default async function router(schema: Schema, config: Config) {
                     }
                 });
 
-                bb.on('file', async (fieldname, file, meta) => {
-                    try {
-                        pkg.settings.name = meta.filename;
-                        await pkg.addFile(file, {
-                            name: meta.filename,
-                        });
-                    } catch (err) {
-                         Err.respond(err, res);
-                    }
+                let singleFile: Promise<DataPackage> | undefined = undefined;
+                bb.on('file', (fieldname, file, meta) => {
+                    singleFile = (async () => {
+                        const { ext } = path.parse(meta.filename);
+                        const filePath = path.resolve(os.tmpdir(), `${crypto.randomUUID()}${ext}`);
+                        await fsp.writeFile(filePath, file);
+
+                        try {
+                            return await DataPackage.parse(filePath)
+                        } catch (err) {
+                            console.error('ok - treaing as unique file (not a DataPackage)', err);
+
+                            const pkg = new DataPackage(id, id);
+
+                            pkg.settings.name = meta.filename;
+                            await pkg.addFile(filePath, {
+                                name: meta.filename,
+                            });
+
+                            return pkg;
+                        }
+                    })();
                 }).on('finish', async () => {
-                    const out = await pkg.finalize()
+                    if (!singleFile) throw new Err(400, null, 'No File Provided');
+
+                    const pkg = await singleFile;
+                    const out = await pkg.finalize();
 
                     const hash = await DataPackage.hash(out);
 
