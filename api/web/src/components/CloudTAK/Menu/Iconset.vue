@@ -2,7 +2,7 @@
     <MenuTemplate :name='iconset.name'>
         <template #buttons>
             <TablerIconButton
-                v-if='iconset.username || profileStore.profile.system_admin'
+                v-if='iconset.username || isSystemAdmin()'
                 title='Create Icon'
                 @click='editIconModal = {}'
             >
@@ -13,7 +13,7 @@
             </TablerIconButton>
 
             <TablerIconButton
-                v-if='iconset.username || profileStore.profile.system_admin'
+                v-if='iconset.username || isSystemAdmin()'
                 title='Settings'
                 @click='editIconsetModal = iconset'
             >
@@ -34,7 +34,7 @@
             </TablerIconButton>
 
             <TablerDelete
-                v-if='iconset.username || profileStore.profile.system_admin'
+                v-if='iconset.username || isSystemAdmin()'
                 displaytype='icon'
                 @delete='deleteIconset'
             />
@@ -84,22 +84,23 @@ import {
 import MenuTemplate from '../util/MenuTemplate.vue';
 import IconEditModal from './Icon/EditModal.vue';
 import IconsetEditModal from './Iconset/EditModal.vue';
-import { useProfileStore } from '/src/stores/profile.ts';
+import { useMapStore } from '/src/stores/map.ts';
 
 const route = useRoute();
 const router = useRouter();
+const mapStore = useMapStore();
 
 const loading = ref(true);
 const editIconsetModal = ref(false);
 const editIconModal = ref(false);
+const isSystemAdmin = ref(false);
 const iconset = ref({
     uid: ''
 });
 
-const profileStore = useProfileStore();
-
 onMounted(async () => {
     await refresh();
+    isSystemAdmin.value = await mapStore.worker.profile.isSystemAdmin();
 });
 
 async function refresh() {
