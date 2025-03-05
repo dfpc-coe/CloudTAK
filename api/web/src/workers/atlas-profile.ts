@@ -139,9 +139,9 @@ export default class AtlasProfile {
         }).data
 
         if (this.hasNoChannels()) {
-            this.atlas.postMessage(JSON.stringify({ type: WorkerMessage.Channels_None }));
+            this.atlas.postMessage({ type: WorkerMessage.Channels_None });
         } else {
-            this.atlas.postMessage(JSON.stringify({ type: WorkerMessage.Channels_List }));
+            this.atlas.postMessage({ type: WorkerMessage.Channels_List });
         }
 
         return this.channels

@@ -40,7 +40,7 @@ export default class AtlasConnection {
         this.ws = new WebSocket(url);
 
         this.ws.addEventListener('open', () => {
-            this.atlas.postMessage(JSON.stringify({ type: WorkerMessage.Connection_Open }));
+            this.atlas.postMessage({ type: WorkerMessage.Connection_Open });
             this.isOpen = true;
         });
 
@@ -54,7 +54,7 @@ export default class AtlasConnection {
                 this.connect(connection);
             }
 
-            this.atlas.postMessage(JSON.stringify({ type: WorkerMessage.Connection_Close }));
+            this.atlas.postMessage({ type: WorkerMessage.Connection_Close });
             this.isOpen = false;
         });
 
@@ -88,7 +88,7 @@ export default class AtlasConnection {
             } else if (body.type === 'chat') {
                 const chat = (body.data as Feature).properties;
                 if (chat.chat) {
-                    self.postMessage(JSON.stringify({
+                    self.postMessage({
                         type: WorkerMessage.Notification,
                         body: {
                             type: 'Chat',
@@ -96,7 +96,7 @@ export default class AtlasConnection {
                             body: chat.remarks || '',
                             url: `/menu/chats`
                         }
-                    }));
+                    });
                 } else {
                     console.log('UNKNOWN Chat', body.data);
                 }

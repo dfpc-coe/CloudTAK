@@ -3,6 +3,7 @@
 */
 
 import COT from '../base/cot.ts';
+import { WorkerMessage } from '../base/events.ts';
 import * as Comlink from 'comlink';
 import AtlasProfile from './atlas-profile.ts';
 import AtlasDatabase from './atlas-database.ts';
@@ -78,8 +79,11 @@ export default class Atlas {
         this.token = '';
     }
 
-    async postMessage(msg: string): Promise<void> {
-        return this.channel.postMessage(msg);
+    async postMessage(msg: {
+        type: WorkerMessage,
+        body?: object
+    }): Promise<void> {
+        return this.channel.postMessage(JSON.stringify(msg));
     }
 
     async init(authToken: string) {
