@@ -246,7 +246,12 @@ export default function styles(id: string, opts: {
                 ],
                 'text-offset': [0, 2],
                 'text-font': ['Open Sans Bold'],
-                'text-field':  '{callsign}'
+                'text-field':  [
+                    "coalesce",
+                    ["get", "callsign"],
+                    ["get", "name"],
+                    ""
+                ]
             }
         }
 
@@ -277,7 +282,12 @@ export default function styles(id: string, opts: {
                     15, 15
                 ],
                 'text-font': ['Open Sans Bold'],
-                'text-field':  '{callsign}'
+                'text-field':  [
+                    "coalesce",
+                    ["get", "callsign"],
+                    ["get", "name"],
+                    ""
+                ]
             }
         }
 
@@ -307,7 +317,12 @@ export default function styles(id: string, opts: {
                     15, 15
                 ],
                 'text-font': ['Open Sans Bold'],
-                'text-field':  '{callsign}'
+                'text-field':  [
+                    "coalesce",
+                    ["get", "callsign"],
+                    ["get", "name"],
+                    ""
+                ]
             }
         }
 

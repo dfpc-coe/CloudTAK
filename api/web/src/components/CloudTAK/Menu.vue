@@ -352,7 +352,7 @@
                     </div>
 
                     <div
-                        v-if='profile && (profile.system_admin || profile.agency_admin.length)'
+                        v-if='isAgencyAdmin || isSystemAdmin'
                         role='menuitem'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
@@ -385,7 +385,7 @@
                         </span>
                     </div>
                     <div
-                        v-if='profile && profile.system_admin'
+                        v-if='isSystemAdmin'
                         role='menuitem'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
@@ -443,7 +443,7 @@
                             />
                             <span
                                 style='font-size: 18px;'
-                                v-text='profile ? profile.username : "Username"'
+                                v-text='username'
                             />
                         </div>
                     </div>
@@ -466,7 +466,7 @@
                 <div v-else-if='["home", "home-menu"].includes(String(route.name))'>
                     <Status
                         class='mx-2 my-2'
-                        :status='open ? "success" : "fail"'
+                        :status='mapStore.isOpen ? "success" : "fail"'
                         :dark='true'
                     />
                 </div>
@@ -476,7 +476,7 @@
 </template>
 
 <script setup lang='ts'>
-import { computed } from 'vue';
+import { ref, onMounted } from 'vue';
 import {
     IconMap,
     IconUser,
@@ -496,20 +496,24 @@ import {
     IconAffiliate,
 } from '@tabler/icons-vue';
 import Status from '../util/Status.vue';
-import { useProfileStore } from '../../../src/stores/profile.ts';
-import { useConnectionStore } from '../../../src/stores/connection.ts';
+import { useMapStore } from '../../stores/map.ts';
 import { useRouter, useRoute } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
 
-const connectionStore = useConnectionStore();
-const profileStore = useProfileStore();
-
-const profile = computed(() => profileStore.profile);
-const open = computed(() => connectionStore.open);
+const mapStore = useMapStore();
+const username = ref<string>('Username')
+const isSystemAdmin = ref<boolean>(false)
+const isAgencyAdmin = ref<boolean>(false)
 
 defineProps({
     compact: Boolean,
+})
+
+onMounted(async () => {
+    username.value = await mapStore.worker.profile.username();
+    isSystemAdmin.value = await mapStore.worker.profile.isSystemAdmin();
+    isAgencyAdmin.value = await mapStore.worker.profile.isAgencyAdmin();
 })
 
 function logout() {
