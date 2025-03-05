@@ -25,15 +25,25 @@ export default class Subscription {
     logs: Array<MissionLog>;
     cots: Map<string, COT>;
 
+    _remote: BroadcastChannel | null;
+    _atlas: Atlas | Remote<Atlas>;
+
     // Should features be automatically added
     auto: boolean;
 
     constructor(
+        atlas: Atlas | Remote<Atlas>,
         mission: Mission,
         role: MissionRole,
         logs: Array<MissionLog>,
-        token?: string
+        opts?: {
+            token?: string,
+            remote?: BroadcastChannel | null
+        }
     ) {
+        this._atlas = atlas;
+        this._remote = (opts && opts.remote !== undefined) ? opts.remote : null;
+
         this.meta = mission;
         this.role = role;
         this.logs = logs;
