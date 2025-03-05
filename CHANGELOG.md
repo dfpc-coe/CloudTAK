@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v7.3.0 - 2025-03-05
+
+- :tada: Encode path in ProfileFeature database
+- :white_check_mark: Sketch out ProfileFeatures tests
+- :white_check_mark: Initial sketching out of NYC coverage
+
 ### v7.2.0 - 2025-03-04
 
 - :tada: Implement a check when a file is uploaded via the DataPackage context to see if the upload is already in the DataPackage format and if so just pass it through instead of "double zipping" it
