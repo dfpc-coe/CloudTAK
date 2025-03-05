@@ -110,8 +110,8 @@ const body = ref<Login_Create>({
     password: ''
 });
 
-function external(url: unknown) {
-    window.location = url as Location;
+function external(url: string) {
+    window.location.assign(url);
 }
 
 async function createLogin() {
