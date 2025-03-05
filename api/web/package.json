@@ -56,7 +56,7 @@
         "@vitejs/plugin-vue": "^5.0.0",
         "babel-preset-vite": "^1.1.3",
         "eslint": "^9.0.0",
-        "eslint-plugin-vue": "^9.0.0",
+        "eslint-plugin-vue": "^10.0.0",
         "openapi-typescript": "^7.0.0",
         "typescript": "^5.7.0",
         "typescript-eslint": "^8.20.0",
