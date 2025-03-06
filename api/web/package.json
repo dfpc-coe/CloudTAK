@@ -14,7 +14,7 @@
     "dependencies": {
         "@tabler/core": "1.0.0",
         "@tabler/icons-vue": "^3.0.0",
-        "@tak-ps/vue-tabler": "^3.63.0",
+        "@tak-ps/vue-tabler": "^3.65.0",
         "@turf/area": "^7.2.0",
         "@turf/bbox": "^7.1.0",
         "@turf/boolean-point-in-polygon": "^7.1.0",
@@ -62,7 +62,7 @@
         "typescript-eslint": "^8.20.0",
         "vite": "^6.0.0",
         "vite-plugin-pwa": "^0.21.0",
-        "vue-tsc": "2.2.0"
+        "vue-tsc": "2.2.8"
     },
     "browserslist": [
         "> 1%",
