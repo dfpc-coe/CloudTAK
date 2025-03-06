@@ -19,12 +19,14 @@
                 v-if='total > limit'
                 class='col-sm-12 col-md-6 d-flex'
             >
-                <TablerPager
-                    :page='page'
-                    :total='total'
-                    :limit='limit'
-                    @page='page = $event'
-                />
+                <div class='ms-auto'>
+                    <TablerPager
+                        :page='page'
+                        :total='total'
+                        :limit='limit'
+                        @page='page = $event'
+                    />
+                </div>
             </div>
         </div>
     </div>

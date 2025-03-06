@@ -94,14 +94,16 @@
                                 </div>
                             </div>
 
-                            <div class='col-lg-12'>
-                                <TablerPager
-                                    v-if='list.total > paging.limit'
-                                    :page='paging.page'
-                                    :total='list.total'
-                                    :limit='paging.limit'
-                                    @page='paging.page = $event'
-                                />
+                            <div class='col-lg-12 d-flex'>
+                                <div class='ms-auto'>
+                                    <TablerPager
+                                        v-if='list.total > paging.limit'
+                                        :page='paging.page'
+                                        :total='list.total'
+                                        :limit='paging.limit'
+                                        @page='paging.page = $event'
+                                    />
+                                </div>
                             </div>
                         </template>
                     </template>
