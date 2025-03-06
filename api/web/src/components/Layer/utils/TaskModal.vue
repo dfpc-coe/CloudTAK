@@ -54,14 +54,16 @@
                         </div>
                     </template>
 
-                    <div class='col-lg-12 py-2'>
-                        <TablerPager
-                            v-if='list.total > paging.limit'
-                            :page='paging.page'
-                            :total='list.total'
-                            :limit='paging.limit'
-                            @page='paging.page = $event'
-                        />
+                    <div class='col-lg-12 py-2 d-flex'>
+                        <div class='ms-auto'>
+                            <TablerPager
+                                v-if='list.total > paging.limit'
+                                :page='paging.page'
+                                :total='list.total'
+                                :limit='paging.limit'
+                                @page='paging.page = $event'
+                            />
+                        </div>
                     </div>
                 </div>
                 <div class='col-12 col-md-9 position-relative px-4'>

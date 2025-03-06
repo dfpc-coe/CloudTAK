@@ -83,14 +83,16 @@
                 </div>
             </template>
 
-            <div class='px-2 py-2'>
-                <TablerPager
-                    v-if='list.total > paging.limit'
-                    :page='paging.page'
-                    :total='list.total'
-                    :limit='paging.limit'
-                    @page='paging.page = $event'
-                />
+            <div class='px-2 py-2 d-flex'>
+                <div class='ms-auto'>
+                    <TablerPager
+                        v-if='list.total > paging.limit'
+                        :page='paging.page'
+                        :total='list.total'
+                        :limit='paging.limit'
+                        @page='paging.page = $event'
+                    />
+                </div>
             </div>
         </template>
     </MenuTemplate>

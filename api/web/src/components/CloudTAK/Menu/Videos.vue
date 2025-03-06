@@ -1,7 +1,7 @@
 <template>
     <MenuTemplate
         name='Videos'
-        :loading='loading'
+        :loading='loading.main'
     >
         <template #buttons>
             <template v-if='mode === "lease"'>
@@ -92,8 +92,11 @@
 
             <template v-if='mode === "connections"'>
                 <div class='col-12'>
+                    <TablerLoading
+                        v-if='loading.connections'
+                    />
                     <TablerNone
-                        v-if='!videos.size && !connections.videoConnections.length'
+                        v-else-if='!videos.size && !connections.videoConnections.length'
                         label='Video Connections'
                         :create='false'
                     />
@@ -145,8 +148,18 @@
                 </div>
             </template>
             <template v-else-if='mode === "lease"'>
+                <div class='col-12 px-2'>
+                    <TablerInput
+                        icon='search'
+                        placeholder='Lease Search'
+                        v-model='leasePaging.filter'
+                    />
+                </div>
+                <TablerLoading
+                    v-if='loading.leases'
+                />
                 <TablerNone
-                    v-if='leases.total === 0'
+                    v-else-if='leases.total === 0'
                     label='Video Leases'
                     :create='false'
                 />
@@ -199,6 +212,15 @@
                         </div>
                     </div>
                 </div>
+                <div class='col-12 d-flex justify-content-center pt-3'>
+                    <TablerPager
+                        v-if='leases.total > leasePaging.limit'
+                        :page='leasePaging.page'
+                        :total='leases.total'
+                        :limit='leasePaging.limit'
+                        @page='leasePaging.page = $event'
+                    />
+                </div>
             </template>
         </template>
     </MenuTemplate>
@@ -215,15 +237,18 @@
 import MenuTemplate from '../util/MenuTemplate.vue';
 import VideoLeaseModal from './Videos/VideoLeaseModal.vue';
 import Feature from '../util/Feature.vue';
-import { std } from '../../../std.ts';
+import { std, stdurl } from '../../../std.ts';
 import COT from '../../../../src/stores/base/cot.ts'
 import type { VideoLease, VideoLeaseList, VideoConnectionList } from '../../../types.ts';
 import { useCOTStore } from '../../../stores/cots.ts';
 import { useVideoStore } from '../../../stores/videos.ts';
 import {
     TablerNone,
+    TablerInput,
     TablerAlert,
+    TablerPager,
     TablerDelete,
+    TablerLoading,
     TablerIconButton
 } from '@tak-ps/vue-tabler';
 import {
@@ -234,21 +259,36 @@ import {
     IconServer2,
 } from '@tabler/icons-vue';
 
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 
 const cotStore = useCOTStore();
 const videoStore = useVideoStore();
 
+const leasePaging = ref({
+    page: 0,
+    filter: '',
+    limit: 20
+})
+
 const mode = ref('connections');
 const error = ref<Error | undefined>();
-const loading = ref(true);
+const loading = ref({
+    main: true,
+    connections: true,
+    leases: true
+});
 const lease = ref();
 const leases = ref<VideoLeaseList>({ total: 0, items: [] });
 const connections = ref<VideoConnectionList>({ videoConnections: [] });
 
+watch(leasePaging.value, async () => {
+    await fetchLeases();
+});
+
 onMounted(async () => {
     await fetchConnections();
     await fetchLeases();
+    loading.value.main = false;
 });
 
 const videos = computed(() => {
@@ -269,31 +309,35 @@ function expired(expiration: string | null): boolean {
 async function fetchLeases(): Promise<void> {
     try {
         lease.value = undefined;
-        loading.value = true;
+        loading.value.leases = true;
         error.value = undefined;
-        leases.value = await std('/api/video/lease') as VideoLeaseList
+        const url = stdurl('/api/video/lease');
+        url.searchParams.append('filter', leasePaging.value.filter); 
+        url.searchParams.append('limit', String(leasePaging.value.limit)); 
+        url.searchParams.append('page', String(leasePaging.value.page)); 
+        leases.value = await std(url) as VideoLeaseList
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }
 
-    loading.value = false;
+    loading.value.leases = false;
 }
 
 async function fetchConnections(): Promise<void> {
     try {
         lease.value = undefined;
-        loading.value = true;
+        loading.value.connections = true;
         error.value = undefined;
         connections.value = await std('/api/marti/video') as VideoConnectionList;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }
 
-    loading.value = false;
+    loading.value.connections = false;
 }
 
 async function deleteLease(lease: VideoLease): Promise<void> {
-    loading.value = true;
+    loading.value.main = true;
 
     try {
         await std(`/api/video/lease/${lease.id}`, {
@@ -302,7 +346,7 @@ async function deleteLease(lease: VideoLease): Promise<void> {
 
         await fetchLeases();
     } catch (err) {
-        loading.value = false;
+        loading.value.main = false;
 
         throw err;
     }
