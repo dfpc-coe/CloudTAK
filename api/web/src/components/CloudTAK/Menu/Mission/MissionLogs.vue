@@ -139,9 +139,9 @@ import {
     IconSettings
 } from '@tabler/icons-vue';
 import MenuTemplate from '../../util/MenuTemplate.vue';
-import Subscription from '../../../../base/mission.ts';
-import { useCOTStore } from '../../../../stores/cots.ts';
-const cotStore = useCOTStore();
+import Subscription from '../../../../base/subscription.ts';
+import { useMapStore } from '../../../../stores/map.ts';
+const mapStore = useMapStore();
 
 const props = defineProps({
     mission: {
@@ -175,7 +175,7 @@ const loading = ref<{
 });
 
 onMounted(async () => {
-    sub.value = cotStore.subscriptions.get(props.mission.guid);
+    sub.value = await mapStore.worker.db.subscriptionGet(props.mission.guid);
 
     if (!sub.value) {
         await fetchLogs()

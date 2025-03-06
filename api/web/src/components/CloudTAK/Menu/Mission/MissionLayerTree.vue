@@ -130,7 +130,7 @@
 <script setup lang='ts'>
 import { ref, computed } from 'vue';
 import type { Mission, MissionLayer, MissionRole, Feature } from '../../../../types.ts';
-import Subscription from '../../../../base/mission.ts';
+import Subscription from '../../../../base/subscription.ts';
 import MissionLayerTree from './MissionLayerTree.vue';
 import {
     IconChevronRight,

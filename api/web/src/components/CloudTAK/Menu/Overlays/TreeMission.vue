@@ -19,7 +19,7 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import Overlay from '../../../../stores/base/overlay.ts'
-import Subscription from '../../../../base/mission.ts'
+import Subscription from '../../../../base/subscription.ts'
 import MissionLayers from '../Mission/MissionLayers.vue';
 import { useMapStore } from '../../../../stores/map.ts';
 const mapStore = useMapStore();

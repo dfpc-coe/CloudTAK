@@ -282,7 +282,7 @@
         >
             <div class='row g-0'>
                 <div
-                    v-if='mission'
+                    v-if='subscription'
                     class='col-12'
                 >
                     <div class='d-flex align-items-center py-2 px-2 my-2 mx-2 rounded bg-gray-500'>
@@ -293,8 +293,8 @@
                         <span class='ms-2'>From:</span>
                         <a
                             class='mx-2 cursor-pointer'
-                            @click='router.push(`/menu/missions/${mission.meta.guid}`)'
-                            v-text='mission.meta.name'
+                            @click='router.push(`/menu/missions/${subscription.meta.guid}`)'
+                            v-text='subscription.meta.name'
                         />
                     </div>
                 </div>
@@ -676,7 +676,7 @@ import { useRoute, useRouter } from 'vue-router'
 import type COT from '../../base/cot.ts';
 import type { COTType } from '../../types.ts';
 import { OriginMode } from '../../base/cot.ts'
-import Mission from '../../base/mission.ts'
+import Subscription from '../../base/subscription.ts'
 import {
     TablerNone,
     TablerInput,
@@ -734,7 +734,7 @@ const router = useRouter();
 
 const cot = ref<COT | undefined>(undefined);
 
-const mission = ref<Mission | undefined>();
+const subscription = ref<Subscription | undefined>();
 
 const units = ref({
     display_speed: 'mi/h',
@@ -751,9 +751,9 @@ const time = ref('relative');
 watch(cot, async () => {
     if (cot.value) {
         if (cot.value.origin.mode === OriginMode.MISSION && cot.value.origin.mode_id) {
-            mission.value = await mapStore.worker.db.subscriptionGet(cot.value.origin.mode_id);
+            subscription.value = await mapStore.worker.db.subscriptionGet(cot.value.origin.mode_id);
         } else {
-            mission.value = undefined;
+            subscription.value = undefined;
         }
     }
 });
@@ -804,7 +804,7 @@ async function load_cot() {
     }))
 
     if (baseCOT && baseCOT.origin.mode === OriginMode.MISSION && baseCOT.origin.mode_id) {
-        mission.value = await mapStore.worker.db.subscriptionGet(baseCOT.origin.mode_id);
+        subscription.value = await mapStore.worker.db.subscriptionGet(baseCOT.origin.mode_id);
     }
 
     if (baseCOT) {
