@@ -139,7 +139,7 @@ import {
     IconRefresh,
 } from '@tabler/icons-vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
-import Status from '../../util/Status.vue';
+import Status from '../../util/StatusDot.vue';
 import timeDiff from '../../../timediff.ts';
 import Upload from '../../util/Upload.vue';
 

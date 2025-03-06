@@ -18,7 +18,6 @@ export default class AtlasProfile {
 
     // Interval for reporting location to TAK Server
     live_loc: number[] | undefined;
-    notifications: Array<TAKNotification>;
     channels: Array<Group>;
     profile: Profile | null;
 
@@ -27,7 +26,6 @@ export default class AtlasProfile {
 
         this.timerSelf = undefined;
         this.live_loc = undefined;
-        this.notifications = [];
         this.channels = [];
         this.profile = null;
     }
@@ -103,12 +101,11 @@ export default class AtlasProfile {
         }, this.profile ? this.profile.tak_loc_freq : 2000);
     }
 
-    clearNotifications(): void {
-        this.notifications = [];
-    }
-
     pushNotification(notification: TAKNotification): void {
-        this.notifications.push(notification);
+        this.atlas.postMessage({
+            type: WorkerMessage.Notification,
+            body: notification
+        });
 
         if ('Notification' in self && Notification && Notification.permission !== 'denied') {
             const n = new Notification(notification.name, {
@@ -123,10 +120,14 @@ export default class AtlasProfile {
         }
     }
 
-    async load(): Promise<void> {
-        this.profile = await std('/api/profile', {
-            token: this.atlas.token
-        }) as Profile;
+    async load(): Promise<Profile> {
+        if (!this.profile) {
+            this.profile = await std('/api/profile', {
+                token: this.atlas.token
+            }) as Profile;
+        }
+
+        return this.profile;
     }
 
     async loadChannels(): Promise<Array<Group>> {
