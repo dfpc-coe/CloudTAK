@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v7.4.0 - 2025-03-06
+
+- :rocket: Introduce paging on the Video Lease Menu to surface leases that exceed the default limit
+
 ### v7.3.0 - 2025-03-05
 
 - :tada: Encode path in ProfileFeature database
