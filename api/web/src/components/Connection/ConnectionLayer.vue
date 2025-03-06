@@ -102,7 +102,7 @@ import {
     TablerAlert,
     TablerLoading
 } from '@tak-ps/vue-tabler'
-import LayerStatus from '../Layer/utils/Status.vue';
+import LayerStatus from '../Layer/utils/StatusDot.vue';
 
 export default {
     name: 'ConnectionLayers',

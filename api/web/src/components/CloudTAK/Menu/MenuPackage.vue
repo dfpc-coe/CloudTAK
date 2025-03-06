@@ -2,7 +2,7 @@
     <MenuTemplate name='Package'>
         <template #buttons>
             <TablerDelete
-                v-if='pkg && (username === pkg.SubmissionUser)'
+                v-if='pkg && (profile && profile.username === pkg.SubmissionUser)'
                 displaytype='icon'
                 @delete='deleteFile(pkg.Hash)'
             />
@@ -17,7 +17,7 @@
             /></a>
         </template>
         <template #default>
-            <TablerLoading v-if='loading || !pkg' />
+            <TablerLoading v-if='loading || !pkg || !profile' />
             <TablerAlert
                 v-else-if='error'
                 :err='error'
@@ -99,7 +99,7 @@
 <script setup lang='ts'>
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import type { Server, Package, Import, Feature } from '../../../../src/types.ts';
+import type { Profile, Server, Package, Import, Feature } from '../../../../src/types.ts';
 import { std, stdurl } from '../../../../src/std.ts';
 import Share from '../util/Share.vue';
 import timeDiff from '../../../timediff.ts';
@@ -130,10 +130,10 @@ watch(route, async () => {
     await fetch();
 });
 
-const username = ref<string>('');
+const profile = ref<Profile | undefined>(undefined);
 
 const shareFeat = computed<Feature | undefined>(() => {
-    if (!profile || !pkg.value || !server.value) return;
+    if (!profile.value || !pkg.value || !server.value) return;
 
     return {
         type: 'Feature',
@@ -145,8 +145,8 @@ const shareFeat = computed<Feature | undefined>(() => {
                 senderUrl: `${server.value.api}/Marti/sync/content?hash=${pkg.value.Hash}`,
                 sizeInBytes: parseInt(pkg.value.Size),
                 sha256: pkg.value.Hash,
-                senderUid: `ANDROID-CloudTAK-${profile.username}`,
-                senderCallsign: profile.tak_callsign,
+                senderUid: `ANDROID-CloudTAK-${profile.value.username}`,
+                senderCallsign: profile.value.tak_callsign,
                 name: pkg.value.Name
             },
             metadata: {},
@@ -162,7 +162,7 @@ const shareFeat = computed<Feature | undefined>(() => {
 onMounted(async () => {
     await getServer();
     await fetch();
-    username.value = await mapStore.worker.profile.username();
+    profile.value = await mapStore.worker.profile.load();
 });
 
 async function getServer() {

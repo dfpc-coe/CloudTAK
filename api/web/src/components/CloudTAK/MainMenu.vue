@@ -464,7 +464,7 @@
                     </div>
                 </div>
                 <div v-else-if='["home", "home-menu"].includes(String(route.name))'>
-                    <Status
+                    <StatusDot
                         class='mx-2 my-2'
                         :status='mapStore.isOpen ? "success" : "fail"'
                         :dark='true'
@@ -495,7 +495,7 @@ import {
     IconFileImport,
     IconAffiliate,
 } from '@tabler/icons-vue';
-import Status from '../util/Status.vue';
+import StatusDot from '../util/StatusDot.vue';
 import { useMapStore } from '../../stores/map.ts';
 import { useRouter, useRoute } from 'vue-router';
 const route = useRoute();

@@ -77,9 +77,11 @@ export const useMapStore = defineStore('cloudtak', {
             type: 'module'
         }));
 
-        const transfer = new CloudTAKTransferHandler(worker, new BroadcastChannel('sync'));
-        Comlink.transferHandlers.set("cot", transfer.cot);
-        Comlink.transferHandlers.set("cots", transfer.cots);
+        new CloudTAKTransferHandler(
+            worker,
+            Comlink.transferHandlers,
+            new BroadcastChannel('sync')
+        );
 
         return {
             worker,

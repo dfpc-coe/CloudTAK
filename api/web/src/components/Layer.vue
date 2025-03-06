@@ -330,7 +330,7 @@ import { ref, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { std, stdurl } from '/src/std.ts';
 import PageFooter from './PageFooter.vue';
-import LayerStatus from './Layer/utils/Status.vue';
+import LayerStatus from './Layer/utils/StatusDot.vue';
 import timeDiff from '../timediff.ts';
 import {
     TablerNone,

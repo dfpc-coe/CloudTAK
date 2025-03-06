@@ -2,6 +2,8 @@ import COT, { OriginMode } from './cot.ts'
 import { std, stdurl } from '../std.ts';
 import { useMapStore } from '../stores/map.ts';
 import { bbox } from '@turf/bbox';
+import type { Remote } from 'comlink';
+import type Atlas from '../workers/atlas.ts';
 import type { Feature } from '../types.ts';
 import type {
     BBox,
@@ -47,7 +49,7 @@ export default class Subscription {
         this.meta = mission;
         this.role = role;
         this.logs = logs;
-        this.token = token;
+        if (opts && opts.token) this.token = opts.token;
         this.cots = new Map();
 
         this.auto = false;

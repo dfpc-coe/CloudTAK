@@ -4,20 +4,71 @@
 
 import COT from '../base/cot.ts';
 import { WorkerMessage } from '../base/events.ts';
+import Subscription from '../base/mission.ts';
 import * as Comlink from 'comlink';
 import AtlasProfile from './atlas-profile.ts';
 import AtlasDatabase from './atlas-database.ts';
 import AtlasConnection from './atlas-connection.ts';
 import type { Remote, TransferHandler } from 'comlink';
 import type { Feature } from '../types.ts';
+import type {
+    Mission,
+    MissionLog,
+    MissionRole,
+} from '../types.ts';
 
 export class CloudTAKTransferHandler {
     atlas: Atlas | Remote<Atlas>;
     sync: BroadcastChannel | null;
 
-    constructor(atlas: Atlas | Remote<Atlas>, sync?: BroadcastChannel) {
+    constructor(
+        atlas: Atlas | Remote<Atlas>,
+        transferHandlers: Map<string, TransferHandler<unknown, unknown>>,
+        sync?: BroadcastChannel
+    ) {
         this.atlas = atlas;
         this.sync = sync || null;
+
+        transferHandlers.set("cot", this.cot);
+        transferHandlers.set("cots", this.cots);
+        transferHandlers.set("subscription", this.subscription);
+    }
+
+    subscription: TransferHandler<Subscription, {
+        mission: Mission,
+        role: MissionRole,
+        token?: string,
+        logs: Array<MissionLog>
+    }> = {
+        canHandle: (obj): obj is Subscription => {
+            return obj instanceof Subscription;
+        },
+        serialize: (subscription: Subscription) => {
+            return [{
+                mission: subscription.meta,
+                role: subscription.role,
+                logs: subscription.logs,
+            }, []]
+        },
+        deserialize: (ser: {
+            mission: Mission,
+            role: MissionRole,
+            token?: string,
+            logs: Array<MissionLog>
+        }) => {
+            const sub = new Subscription(
+                this.atlas, 
+                ser.mission,
+                ser.role,
+                ser.logs,
+                {
+                    token: ser.token,
+                    remote: this.sync ? this.sync : null
+                }
+            );
+
+            return sub;
+        }
     }
 
     cots: TransferHandler<Set<COT>, Array<Feature>> = {
@@ -102,8 +153,6 @@ export default class Atlas {
 
 const atlas = new Atlas()
 
-const transfer = new CloudTAKTransferHandler(atlas);
-Comlink.transferHandlers.set("cot", transfer.cot);
-Comlink.transferHandlers.set("cots", transfer.cots);
+new CloudTAKTransferHandler(atlas, Comlink.transferHandlers);
 
 Comlink.expose(Comlink.proxy(atlas));

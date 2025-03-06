@@ -211,7 +211,7 @@ import { useRoute, useRouter } from 'vue-router';
 import type { ETLConnection } from '../types.ts';
 import { std } from '../std.ts';
 import PageFooter from './PageFooter.vue';
-import ConnectionStatus from './Connection/Status.vue';
+import ConnectionStatus from './Connection/StatusDot.vue';
 import timeDiff from '../timediff.ts';
 import {
     IconRobot,

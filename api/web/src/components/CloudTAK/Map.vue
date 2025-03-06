@@ -9,7 +9,7 @@
             style='width: 100%;'
         />
 
-        <Loading v-if='loading || !mapStore.isLoaded' />
+        <MapLoading v-if='loading || !mapStore.isLoaded' />
 
         <template v-if='mapStore.isLoaded && !loading'>
             <WarnConfiguration
@@ -461,7 +461,7 @@ import DrawOverlay from './util/DrawOverlay.vue';
 import WarnChannels from './util/WarnChannels.vue';
 import SearchBox from './util/SearchBox.vue';
 import WarnConfiguration from './util/WarnConfiguration.vue';
-import Status from '../util/Status.vue';
+import Status from '../util/StatusDot.vue';
 import CoordInput from './CoordInput.vue';
 import type { MapGeoJSONFeature, GeoJSONSource, LngLatLike } from 'maplibre-gl';
 import type { Polygon } from 'geojson';
@@ -493,14 +493,14 @@ import {
 } from '@tabler/icons-vue';
 import SelectFeats from './util/SelectFeats.vue';
 import MultipleSelect from './util/MultipleSelect.vue';
-import SideMenu from './Menu.vue';
+import SideMenu from './MainMenu.vue';
 import {
     TablerIconButton,
     TablerDropdown,
     TablerModal,
     TablerNone,
 } from '@tak-ps/vue-tabler';
-import Loading from './Loading.vue';
+import MapLoading from './MapLoading.vue';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import RadialMenu from './RadialMenu/RadialMenu.vue';
 import { useMapStore } from '../../stores/map.ts';

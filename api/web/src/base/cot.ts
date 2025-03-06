@@ -358,7 +358,7 @@ export default class COT {
     }
 
     async flyTo(): Promise<void> {
-        await this._atlas.postMessage(JSON.stringify({
+        await this._atlas.postMessage({
             type: WorkerMessage.Map_FlyTo,
             body: {
                 bounds: this.bounds(),
@@ -373,7 +373,7 @@ export default class COT {
                     speed: Infinity,
                 }
             }
-        }))
+        })
     }
 
     /**

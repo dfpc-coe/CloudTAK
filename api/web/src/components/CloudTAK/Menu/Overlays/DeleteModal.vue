@@ -58,6 +58,7 @@ export default {
             default: 'button' // Or icon
         }
     },
+    emits: ['delete'],
     data: function() {
         return {
             loading: false,
