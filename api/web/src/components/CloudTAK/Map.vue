@@ -254,7 +254,7 @@
                             <div class='col-12 d-flex py-2 px-2'>
                                 <div
                                     class='ms-auto cursor-pointer'
-                                    @click='mapStore.clearNotifications()'
+                                    @click='mapStore.notifications.splice(0, mapStore.notifications.length)'
                                 >
                                     Clear All
                                 </div>
@@ -463,6 +463,7 @@ import SearchBox from './util/SearchBox.vue';
 import WarnConfiguration from './util/WarnConfiguration.vue';
 import Status from '../util/StatusDot.vue';
 import CoordInput from './CoordInput.vue';
+import type { GeoJSONStoreFeatures } from 'terra-draw'
 import type { MapGeoJSONFeature, GeoJSONSource, LngLatLike } from 'maplibre-gl';
 import type { Polygon } from 'geojson';
 import { std, stdurl } from '../..//std.ts';
@@ -781,7 +782,7 @@ async function handleRadial(event: string): Promise<void> {
         selectFeat(mapStore.radial.cot as MapGeoJSONFeature);
         closeRadial()
     } else if (event === 'context:new') {
-        await mapStore.worker.db.add(mapStore.radial.cot.as_feature());
+        await mapStore.worker.db.add(mapStore.radial.cot);
         updateCOT();
         closeRadial()
     } else if (event === 'context:info') {
@@ -829,7 +830,7 @@ async function editGeometry(featid: string) {
         await mapStore.worker.db.hide(cot.id);
         updateCOT();
 
-        const errorStatus = mapStore.draw.addFeatures([feat]).filter((status) => {
+        const errorStatus = mapStore.draw.addFeatures([feat as GeoJSONStoreFeatures]).filter((status) => {
             return !status.valid;
         });
 

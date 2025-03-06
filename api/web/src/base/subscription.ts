@@ -55,7 +55,7 @@ export default class Subscription {
         this.auto = false;
     }
 
-    collection(raw = false): FeatureCollection {
+    async collection(raw = false): Promise<FeatureCollection> {
         return {
             type: 'FeatureCollection',
             features: Array.from(this.cots.values()).map((f: COT) => {
@@ -68,8 +68,8 @@ export default class Subscription {
         }
     }
 
-    bounds(): BBox {
-        return bbox(this.collection());
+    async bounds(): Promise<BBox> {
+        return bbox(await this.collection());
     }
 
     async delete(): Promise<void> {
@@ -88,7 +88,11 @@ export default class Subscription {
         return Subscription.headers(this.token);
     }
 
-    static async load(guid: string, token?: string): Promise<Subscription> {
+    static async load(
+        atlas: Atlas | Remote<Atlas>,
+        guid: string,
+        token?: string
+    ): Promise<Subscription> {
         const url = stdurl('/api/marti/missions/' + encodeURIComponent(guid));
         url.searchParams.append('logs', 'true');
 
@@ -101,12 +105,18 @@ export default class Subscription {
             headers: Subscription.headers(token)
         }) as MissionRole;
 
-        const sub = new Subscription(mission, role, logs, token);
+        const sub = new Subscription(
+            atlas,
+            mission,
+            role,
+            logs,
+            { token }
+        );
 
         const fc = await this.featList(guid, token);
 
         for (const feat of fc.features) {
-            const cot = new COT(feat as Feature, {
+            const cot = new COT(atlas, feat as Feature, {
                 mode: OriginMode.MISSION,
                 mode_id: guid
             });

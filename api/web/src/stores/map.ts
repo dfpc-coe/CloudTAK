@@ -12,7 +12,6 @@ import * as Comlink from 'comlink';
 import AtlasWorker from '../workers/atlas.ts?worker&url';
 import COT from '../base/cot.ts';
 import { WorkerMessage }from '../base/events.ts';
-import Subscription from '../base/mission.ts';
 import Overlay from './base/overlay.ts';
 import { std, stdurl } from '../std.js';
 import mapgl from 'maplibre-gl'
@@ -140,21 +139,6 @@ export const useMapStore = defineStore('cloudtak', {
             }
             this.$reset();
         },
-        pushNotification: function(notification: TAKNotification): void {
-            this.notifications.push(notification);
-
-            if ('Notification' in window && Notification && Notification.permission !== 'denied') {
-                const n = new Notification(notification.name, {
-                    body: notification.body
-                });
-
-                n.onclick = (event) => {
-                    event.preventDefault(); // prevent the browser from focusing the Notification's tab
-                    console.error(n);
-                };
-
-            }
-        },
         removeOverlay: async function(overlay: Overlay) {
             // @ts-expect-error Doesn't like use of object to index array
             const pos = this.overlays.indexOf(overlay)
@@ -236,12 +220,11 @@ export const useMapStore = defineStore('cloudtak', {
             let sub = await this.worker.db.subscriptionGet(guid);
 
             if (!sub) {
-                sub = await Subscription.load(guid, overlay.token || undefined);
-                await this.worker.db.subscriptionSet(guid, sub)
+                sub = await this.worker.db.subscriptionLoad(guid, overlay.token || undefined)
             }
 
             // @ts-expect-error Source.setData is not defined
-            oStore.setData(sub.collection());
+            oStore.setData(await sub.collection());
 
             return true;
         },
@@ -311,6 +294,8 @@ export const useMapStore = defineStore('cloudtak', {
                     this.hasNoChannels = true;
                 } else if (msg.type === WorkerMessage.Channels_List) {
                     this.hasNoChannels = false;
+                } else if (msg.type === WorkerMessage.Notification) {
+                    this.notifications.push(msg.body as TAKNotification);
                 } else {
                     console.error('Unknown Event:', msg);
                 }

@@ -5,7 +5,7 @@
 import { std, stdurl } from '../std.ts';
 import jsonata from 'jsonata';
 import type Atlas from './atlas.ts';
-import type Subscription from '../base/mission.ts';
+import Subscription from '../base/subscription.ts';
 import COT, { OriginMode } from '../base/cot.ts';
 import type { GeoJSONSourceDiff } from 'maplibre-gl';
 import { booleanWithin } from '@turf/boolean-within';
@@ -89,8 +89,10 @@ export default class AtlasDatabase {
         });
     }
 
-    async subscriptionSet(id: string, sub: Subscription): Promise<void> {
-        this.subscriptions.set(id, sub);
+    async subscriptionLoad(guid: string, token?: string): Promise<Subscription> {
+        const sub = await Subscription.load(this.atlas, guid, token);
+        this.subscriptions.set(guid, sub);
+        return sub;
     }
 
     async subscriptionGet(id: string): Promise<Subscription | undefined> {

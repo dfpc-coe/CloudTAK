@@ -160,7 +160,7 @@ import {
 import ChannelInfo from '../util/ChannelInfo.vue';
 import { useMapStore } from '../../../stores/map.ts';
 import EmptyInfo from '../util/EmptyInfo.vue';
-import Subscription from '../../../base/mission.ts';
+import Subscription from '../../../base/subscription.ts';
 
 const mapStore = useMapStore();
 

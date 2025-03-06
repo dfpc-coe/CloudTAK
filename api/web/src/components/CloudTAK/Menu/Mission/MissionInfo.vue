@@ -132,7 +132,7 @@
 <script setup lang='ts'>
 import { ref, computed, onMounted } from 'vue';
 import type { MissionSubscriptions } from '../../../../types.ts'
-import Subscription from '../../../../base/mission.ts';
+import Subscription from '../../../../base/subscription.ts';
 import {
     TablerLoading,
 } from '@tak-ps/vue-tabler';

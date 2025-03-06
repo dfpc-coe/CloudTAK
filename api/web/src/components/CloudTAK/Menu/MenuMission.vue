@@ -26,7 +26,7 @@
                     <div clas='col-12'>
                         <div
                             class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2 py-2'
-                            @click='shareToPackage = true'
+                            @click='shareToPackageSetup'
                         >
                             <IconPackages
                                 :size='32'
@@ -68,9 +68,9 @@
                 :err='error'
             />
             <ShareToPackage
-                v-if='shareToPackage && missionSub'
-                :feats='missionSub.collection(true).features as Feature[]'
-                @close='shareToPackage = false'
+                v-if='shareToPackage.shown && missionSub'
+                :feats='shareToPackage.features'
+                @close='shareToPackage.shown = false'
             />
             <template v-else>
                 <div
@@ -202,7 +202,7 @@
 import { ref, onMounted } from 'vue';
 import { std } from '../../../std.ts';
 import type { Feature, Mission, MissionRole } from '../../../types.ts';
-import Subscription from '../../../base/mission.ts';
+import Subscription from '../../../base/subscription.ts';
 import {
     IconRefresh,
     IconPackages,
@@ -227,8 +227,6 @@ import ShareToPackage from '../util/ShareToPackage.vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();
-import { useCOTStore } from '../../../stores/cots.ts';
-const cotStore = useCOTStore();
 const route = useRoute();
 const router = useRouter();
 
@@ -236,7 +234,13 @@ const error = ref<Error | undefined>(undefined);
 const token = ref<string | undefined>(route.query.token ? String(route.query.token) : undefined)
 const loading = ref(false);
 
-const shareToPackage = ref(false);
+const shareToPackage = ref<{
+    shown: boolean,
+    features: Feature[]
+}>({
+    shown: false,
+    features: []
+});
 
 const role = ref<MissionRole>({ type: 'MISSION_READONLY_SUBSCRIBER', permissions: [] });
 const loadingInline = ref<string | undefined>(undefined);
@@ -247,8 +251,14 @@ onMounted(async () => {
     await fetchMission();
 })
 
+async function shareToPackageSetup(): Promise<void> {
+    if (!missionSub.value) return;
+    shareToPackage.value.features = (await missionSub.value.collection(true)).features as Feature[];
+    shareToPackage.value.shown = true;
+}
+
 async function deleteMission() {
-    const subMission = cotStore.subscriptions.get(String(route.params.mission));
+    const subMission = await mapStore.worker.db.subscriptionGet(String(route.params.mission));
     loading.value = true;
 
     try {
@@ -283,7 +293,7 @@ async function fetchMission(): Promise<void> {
     mission.value = undefined;
     missionSub.value = undefined;
 
-    const subMission = cotStore.subscriptions.get(String(route.params.mission));
+    const subMission = await mapStore.worker.db.subscriptionGet(String(route.params.mission));
 
     try {
         if (subMission) {

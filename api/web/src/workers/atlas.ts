@@ -4,7 +4,7 @@
 
 import COT from '../base/cot.ts';
 import { WorkerMessage } from '../base/events.ts';
-import Subscription from '../base/mission.ts';
+import Subscription from '../base/subscription.ts';
 import * as Comlink from 'comlink';
 import AtlasProfile from './atlas-profile.ts';
 import AtlasDatabase from './atlas-database.ts';
