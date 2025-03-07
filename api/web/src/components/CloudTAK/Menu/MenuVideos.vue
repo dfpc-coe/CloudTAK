@@ -237,7 +237,7 @@
 import MenuTemplate from '../util/MenuTemplate.vue';
 import VideoLeaseModal from './Videos/VideoLeaseModal.vue';
 import Feature from '../util/Feature.vue';
-import { std } from '../../../std.ts';
+import { std, stdurl } from '../../../std.ts';
 import COT from '../../../base/cot.ts';
 import type { VideoLease, VideoLeaseList, VideoConnectionList } from '../../../types.ts';
 import { useMapStore } from '../../../stores/map.ts';
@@ -259,7 +259,7 @@ import {
     IconServer2,
 } from '@tabler/icons-vue';
 
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 
 const mapStore = useMapStore();
 const videoStore = useVideoStore();
