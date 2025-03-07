@@ -40,6 +40,7 @@
 
         <TablerNone
             v-else-if='!mission.contents.length'
+            label='Files'
             :create='false'
         />
         <template v-else>
