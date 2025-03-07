@@ -112,7 +112,8 @@
 <script setup lang='ts'>
 import  { useRoute } from 'vue-router'
 import { ref, onMounted } from 'vue';
-import { std, stdurl } from '/src/std.ts';
+import { std, stdurl } from '../../std.ts';
+import type { ETLConnectionAssetList } from '../../types.ts';
 import {
     IconPlus,
     IconFile,
@@ -134,9 +135,9 @@ const route = useRoute();
 const error = ref<Error | undefined>(undefined);
 const upload = ref(false);
 const loading = ref(true);
-const list = ref({
+const list = ref<ETLConnectionAssetList>({
     total: 0,
-    assets: []
+    items: []
 });
 
 onMounted(async () => {
@@ -153,13 +154,13 @@ function uploadURL() {
     return stdurl(`/api/connection/${route.params.connectionid}/asset`);
 }
 
-async function downloadAsset(asset) {
+async function downloadAsset(asset: ETLConnectionAssetList["items"][0]) {
     const url = stdurl(`/api/connection/${route.params.connectionid}/asset/${asset.name}`);
     url.searchParams.append('token', localStorage.token);
     window.open(url, "_blank")
 }
 
-async function deleteAsset(asset) {
+async function deleteAsset(asset: ETLConnectionAssetList["items"][0]) {
     loading.value = true;
     await std(`/api/connection/${route.params.connectionid}/asset/${asset.name}`, {
         method: 'DELETE'
@@ -174,7 +175,7 @@ async function fetchList() {
     try {
         loading.value = true;
         error.value = undefined;
-        list.value = await std(`/api/connection/${route.params.connectionid}/asset`);
+        list.value = await std(`/api/connection/${route.params.connectionid}/asset`) as ETLConnectionAssetList;
         loading.value = false;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
