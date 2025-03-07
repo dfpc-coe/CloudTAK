@@ -152,6 +152,19 @@
                                                 role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
+                                                    "active": route.name === "connection-files",
+                                                    "cursor-pointer": route.name !== "connection-files"
+                                                }'
+                                                @click='router.push(`/connection/${route.params.connectionid}/files`)'
+                                            ><IconFiles
+                                                :size='32'
+                                                stroke='1'
+                                            /><span class='mx-3'>Files</span></span>
+                                            <span
+                                                tabindex='0'
+                                                role='menuitem'
+                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
+                                                :class='{
                                                     "active": route.name === "connection-datas",
                                                     "cursor-pointer": route.name !== "connection-datas"
                                                 }'
@@ -214,6 +227,7 @@ import PageFooter from './PageFooter.vue';
 import ConnectionStatus from './Connection/Status.vue';
 import timeDiff from '../timediff.ts';
 import {
+    IconFiles,
     IconRobot,
     IconRefresh,
     IconDatabase,
