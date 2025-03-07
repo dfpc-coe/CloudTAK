@@ -258,6 +258,10 @@ const router = VueRouter.createRouter({
                 name: 'connection-layers',
                 component: () => import('./components/Connection/ConnectionLayer.vue')
             },{
+                path: 'files',
+                name: 'connection-files',
+                component: () => import('./components/Connection/ConnectionFiles.vue')
+            },{
                 path: 'data',
                 name: 'connection-datas',
                 component: () => import('./components/Connection/ConnectionData.vue')

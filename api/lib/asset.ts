@@ -1,27 +1,28 @@
+import { Static, Type } from '@sinclair/typebox';
 import Err from '@openaddresses/batch-error';
 import path from 'path';
 import S3 from '../lib/aws/s3.js';
 import { _Object } from '@aws-sdk/client-s3';
 import Config from '../lib/config.js';
 
-export type AssetListOutput = {
-    total: number;
-    tiles: {
-        url: string;
-    },
-    assets: Array<AssetOutput>
-}
+export const AssetOutput = Type.Object({
+    name: Type.String({ "description": "The filename of the asset" }),
+    visualized: Type.Optional(Type.String()),
+    vectorized: Type.Optional(Type.String()),
+    updated: Type.Integer(),
+    etag: Type.String({ "description": "AWS S3 generated ETag of the asset" }),
+    size: Type.Integer({ "description": "Size in bytes of the asset" })
+})
 
-export type AssetOutput = {
-    name: string;
-    visualized?: string;
-    vectorized?: string,
-    updated: number;
-    etag: string;
-    size: number;
-}
+export const AssetListOutput = Type.Object({
+    total: Type.Integer(),
+    tiles: Type.Object({
+        url: Type.String()
+    }),
+    assets: Type.Array(AssetOutput)
+})
 
-export default async function AssetList(config: Config, prefix: string): Promise<AssetListOutput> {
+export default async function AssetList(config: Config, prefix: string): Promise<Static<typeof AssetListOutput>> {
     try {
         const viz = new Map() ;
         const geo = new Map() ;
@@ -33,7 +34,7 @@ export default async function AssetList(config: Config, prefix: string): Promise
                 else assets.push(l)
             });
 
-        const final: AssetOutput[]  = assets.map((a: _Object) => {
+        const final: Static<typeof AssetOutput>[]  = assets.map((a: _Object) => {
             const isViz = viz.get(path.parse(String(a.Key)).name);
             if (isViz) viz.delete(path.parse(String(a.Key)).name);
             const isGeo = geo.get(path.parse(String(a.Key)).name);
