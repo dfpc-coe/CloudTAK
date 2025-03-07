@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v7.6.0 - 2025-03-07
+
+- :tada: Introduce file storage at the connection level
+
 ### v7.5.0 - 2025-03-07
 
 - :rocket: Introduce a backup editing path to Layer Env if the capabilities object fails to populate
