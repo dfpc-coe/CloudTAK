@@ -22,12 +22,7 @@ import { CloudTAKTransferHandler } from '../workers/atlas.ts';
 
 import type { ProfileOverlay, Basemap, APIList } from '../types.ts';
 import type { Feature } from 'geojson';
-import type {
-    LngLat,
-    Point,
-    MapMouseEvent,
-    MapGeoJSONFeature
-} from 'maplibre-gl';
+import type { LngLat, Point, MapMouseEvent, MapGeoJSONFeature } from 'maplibre-gl';
 
 export type TAKNotification = {
     type: string;
@@ -230,6 +225,9 @@ export const useMapStore = defineStore('cloudtak', {
         },
         init: async function(container: HTMLElement) {
             this.container = container;
+
+            await this.worker.init(localStorage.token);
+
 
             const init: mapgl.MapOptions = {
                 container: this.container,
