@@ -1,11 +1,11 @@
-import { std } from '../../std.ts';
+import { std } from '../std.ts';
 import { bbox } from '@turf/bbox'
-import type { LngLatBoundsLike } from 'maplibre-gl';
-import { useCOTStore } from '../cots.ts'
-import { useProfileStore } from '../profile.ts'
-import { useMapStore } from '../map.ts';
+import { isEqual } from '@react-hookz/deep-equal';
+import { WorkerMessage } from'./events.ts'
+import type { Remote } from 'comlink';
+import type Atlas from '../workers/atlas.ts';
 import pointOnFeature from '@turf/point-on-feature';
-import type { Feature, Subscription } from './../../types.ts'
+import type { Feature, Subscription } from '../types.ts'
 import type {
     BBox as GeoJSONBBox,
     Feature as GeoJSONFeature,
@@ -44,25 +44,41 @@ export const RENDERED_PROPERTIES = [
 export default class COT {
     id: string;
     path: string;
+
     _properties: Feature["properties"];
     _geometry: Feature["geometry"];
 
-    _store: ReturnType<typeof useCOTStore>;
+    _remote: BroadcastChannel | null;
+
+    _atlas: Atlas | Remote<Atlas>;
+
     _username?: string;
 
     origin: Origin
 
-    constructor(feat: Feature, origin?: Origin, opts?: {
-        skipSave?: boolean;
-    }) {
-        feat.properties = COT.style(feat.geometry.type, feat.properties);
+    constructor(
+        atlas: Atlas | Remote<Atlas>,
+        feat: Feature,
+        origin?: Origin,
+        opts?: {
+            skipSave?: boolean;
+            remote?: BroadcastChannel | null;
+        }
+    ) {
+        if (!opts || (opts && !opts.remote)) {
+            const a = atlas as Atlas;
+            // Remote properties will already have the default style applied
+            feat.properties = COT.style(a, feat.geometry.type, feat.properties);
+        }
 
         this.id = feat.id || crypto.randomUUID();
         this.path = feat.path || '/';
         this._properties = feat["properties"] || {};
         this._geometry = feat["geometry"];
 
-        this._store = useCOTStore();
+        this._remote = (opts && opts.remote !== undefined) ? opts.remote : null;
+        this._atlas = atlas;
+
         this.origin = origin || { mode: OriginMode.CONNECTION };
 
         if (!this._properties.archived) {
@@ -73,12 +89,29 @@ export default class COT {
             this._properties.center = pointOnFeature(this._geometry).geometry.coordinates;
         }
 
-        if (this.origin.mode === OriginMode.CONNECTION) {
-            this._store.pending.set(this.id, this);
+        if (this.origin.mode === OriginMode.CONNECTION && !this._remote) {
+            const atlas = this._atlas as Atlas;
+            atlas.db.pending.set(this.id, this);
         }
 
-        if (!this.is_self && (!opts || (opts && opts.skipSave === false))) {
+        if (!opts || (opts && opts.skipSave !== false)) {
             this.save();
+        }
+
+        if (this._remote) {
+            const atlas = this._atlas as Remote<Atlas>;
+
+            // The sync BroadcastChannel will post a message anytime the underlying
+            // Atlas database has a COT update, resulting in a sync with the frontend
+            this._remote.onmessage = async (ev) => {
+                if (ev.data === `cot:${this.id}`) {
+                    const feat = await atlas.db.get(this.id)
+                    if (feat) {
+                        this._properties = feat.properties;
+                        this._geometry = feat.geometry;
+                    }
+                }
+            };
         }
     }
 
@@ -107,64 +140,90 @@ export default class COT {
     }, opts?: {
         skipSave?: boolean;
     }): Promise<boolean> {
-        let visuallyChanged = false;
-        if (update.geometry) {
-            //TODO Detect Geometry changes, use centroid?!
-            this._geometry = update.geometry;
-            visuallyChanged = true;
-        }
+        if (this._remote) {
+            const atlas = this._atlas as Remote<Atlas>;
+            await atlas.db.add(this.as_feature());
 
-        if (update.properties) {
-            update.properties = COT.style(this._geometry.type, update.properties);
+            return false;
+        } else {
+            const atlas = this._atlas as Atlas;
 
-            for (const prop of RENDERED_PROPERTIES) {
-                if (this._properties[prop] !== update.properties[prop]) {
+            let visuallyChanged = false;
+            if (update.geometry) {
+                if (isEqual(this.geometry, update.geometry)) {
+                    delete update.geometry;
+                } else {
+                    Object.assign(this._geometry, update.geometry);
                     visuallyChanged = true;
-                    break;
                 }
             }
 
-            Object.assign(this._properties, update.properties);
-        }
+            if (update.properties) {
+                update.properties = COT.style(atlas, this._geometry.type, update.properties);
 
-        if (!this._properties.center || (this._properties.center[0] === 0 && this._properties.center[1] === 0) || update.geometry) {
-            this._properties.center = pointOnFeature(this._geometry).geometry.coordinates;
-        }
+                if (isEqual(this.properties, update.properties)) {
+                    delete update.properties
+                } else {
+                    for (const prop of RENDERED_PROPERTIES) {
+                        if (this._properties[prop] !== update.properties[prop]) {
+                            visuallyChanged = true;
+                            break;
+                        }
+                    }
 
-        // TODO only update if Geometry or Rendered Prop changes
-        if (this.origin.mode === OriginMode.CONNECTION) {
-            this._store.pending.set(this.id, this);
-        }
-
-        if (this.is_self) {
-            const profileStore = useProfileStore();
-
-            if (
-                profileStore.profile
-                && (
-                    this.properties.remarks !== profileStore.profile.tak_remarks
-                    || this.properties.callsign !== profileStore.profile.tak_callsign
-                )
-            ) {
-                await profileStore.update({
-                    tak_callsign: this.properties.callsign,
-                    tak_remarks: this.properties.remarks
-                })
+                    Object.assign(this._properties, update.properties);
+                }
             }
-        } else if (!opts || (opts && opts.skipSave === false)) {
-            await this.save();
-        }
 
-        return visuallyChanged;
+            if (!update.geometry && !update.properties) {
+                return false;
+            }
+
+            if (update.geometry || !this._properties.center || (this._properties.center[0] === 0 && this._properties.center[1] === 0)) {
+                this._properties.center = pointOnFeature(this._geometry).geometry.coordinates;
+            }
+
+            if (this.origin.mode === OriginMode.CONNECTION) {
+                atlas.db.pending.set(this.id, this);
+            }
+
+            atlas.sync.postMessage(`cot:${this.id}`);
+
+            if (this.is_self) {
+                const getProfile = await atlas.profile.profile;
+
+                const profile = getProfile instanceof Promise ? await getProfile : getProfile;
+
+                if (
+                    profile
+                    && (
+                        this.properties.remarks !== profile.tak_remarks
+                        || this.properties.callsign !== profile.tak_callsign
+                    )
+                ) {
+                    await atlas.profile.update({
+                        tak_callsign: this.properties.callsign,
+                        tak_remarks: this.properties.remarks
+                    })
+                }
+            } else if (!opts || (opts && opts.skipSave !== false)) {
+                await this.save();
+            }
+
+            return visuallyChanged;
+        }
     }
 
     /**
      * Attempt to save the CoT to the database if necessary
      */
     async save(): Promise<void> {
-        if (this.properties.archived) {
+        if (!this._remote && !this.is_self && this.properties.archived) {
+            const atlas = this._atlas as Atlas;
+
             await std('/api/profile/feature', {
                 method: 'PUT',
+                token: atlas.token,
                 body: this.as_feature()
             })
         }
@@ -175,8 +234,11 @@ export default class COT {
     }
 
     get is_self(): boolean {
-        const profileStore = useProfileStore();
-        return this.id === profileStore.uid();
+        if (this._atlas) {
+            return this._atlas.profile.uid() === this.id;
+        } else {
+            return false;
+        }
     }
 
     get is_archivable(): boolean {
@@ -253,6 +315,7 @@ export default class COT {
             id: this.id,
             type: 'Feature',
             path: this.path,
+            origin: this.origin,
             properties: this._properties,
             geometry: this._geometry
         } as Feature
@@ -294,19 +357,22 @@ export default class COT {
         return bbox(this._geometry);
     }
 
-    flyTo() {
-        const mapStore = useMapStore();
-        if (!mapStore.map) return;
-
-        mapStore.map.fitBounds(this.bounds() as LngLatBoundsLike, {
-            maxZoom: 18,
-            padding: {
-                top: 20,
-                bottom: 20,
-                left: 20,
-                right: 20
-            },
-            speed: Infinity,
+    async flyTo(): Promise<void> {
+        await this._atlas.postMessage({
+            type: WorkerMessage.Map_FlyTo,
+            body: {
+                bounds: this.bounds(),
+                options: {
+                    maxZoom: 18,
+                    padding: {
+                        top: 20,
+                        bottom: 20,
+                        left: 20,
+                        right: 20
+                    },
+                    speed: Infinity,
+                }
+            }
         })
     }
 
@@ -314,6 +380,7 @@ export default class COT {
      * Consistent feature manipulation between add & update
      */
     static style(
+        atlas: Atlas,
         type: string,
         properties: Feature["properties"]
     ): Feature["properties"] {
@@ -379,8 +446,8 @@ export default class COT {
                     properties.icon = properties.icon.replace(/.png$/, '');
                 }
 
-                const mapStore = useMapStore();
-                if (mapStore.map && !mapStore.map.hasImage(properties.icon)) {
+
+                if (!atlas.db.images.has(properties.icon)) {
                     console.warn(`No Icon for: ${properties.icon} fallback to ${properties.type}`);
                     properties.icon = `${properties.type}`;
                 }

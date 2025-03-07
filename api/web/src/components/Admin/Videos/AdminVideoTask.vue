@@ -125,7 +125,7 @@ import {
     TablerAlert,
     TablerLoading
 } from '@tak-ps/vue-tabler';
-import Status from '../../util/Status.vue';
+import Status from '../../util/StatusDot.vue';
 import {
     IconRefresh,
     IconCircleArrowLeft,

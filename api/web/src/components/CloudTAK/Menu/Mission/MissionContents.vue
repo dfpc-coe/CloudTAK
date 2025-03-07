@@ -40,6 +40,7 @@
 
         <TablerNone
             v-else-if='!mission.contents.length'
+            label='Files'
             :create='false'
         />
         <template v-else>
@@ -127,7 +128,7 @@ import {
     IconDownload,
 } from '@tabler/icons-vue';
 import UploadImport from '../../util/UploadImport.vue';
-import Status from '../../../util/Status.vue';
+import Status from '../../../util/StatusDot.vue';
 import {
     TablerIconButton,
     TablerLoading,

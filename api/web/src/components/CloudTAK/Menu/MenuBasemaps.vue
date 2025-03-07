@@ -121,7 +121,7 @@
                                 <template #dropdown>
                                     <div clas='col-12'>
                                         <div
-                                            v-if='(!basemap.username && profile && profile.system_admin) || basemap.username'
+                                            v-if='(!basemap.username && isSystemAdmin) || basemap.username'
                                             class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2 py-2'
                                             @click.stop.prevent='editModal = basemap'
                                         >
@@ -183,7 +183,7 @@
 </template>
 
 <script setup lang='ts'>
-import { onMounted, ref, computed, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import MenuItem from '../util/MenuItem.vue';
 import type { BasemapList, Basemap } from '../../../types.ts';
 import { std, stdurl } from '../../../std.ts';
@@ -212,9 +212,9 @@ import {
     IconCircleArrowLeft,
 } from '@tabler/icons-vue'
 import { useMapStore } from '../../../stores/map.ts';
-import { useProfileStore } from '../../../stores/profile.ts';
 const mapStore = useMapStore();
-const profileStore = useProfileStore();
+
+const isSystemAdmin = ref<boolean>(false);
 
 const error = ref<Error | undefined>();
 const loading = ref(true);
@@ -235,9 +235,8 @@ const list = ref<BasemapList>({
 
 onMounted(async () => {
     await fetchList();
+    isSystemAdmin.value = await mapStore.worker.profile.isSystemAdmin();
 });
-
-const profile = computed(() => profileStore.profile);
 
 watch(editModal, async () => {
     await fetchList();

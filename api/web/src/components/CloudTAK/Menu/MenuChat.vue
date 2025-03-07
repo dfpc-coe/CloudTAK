@@ -65,8 +65,8 @@ import {
     IconRefresh,
 } from '@tabler/icons-vue'
 import MenuTemplate from '../util/MenuTemplate.vue';
-import { useConnectionStore } from '/src/stores/connection.ts';
-const connectionStore = useConnectionStore();
+import { useMapStore } from '../../../stores/map.ts';
+const mapStore = useMapStore();
 import { useProfileStore } from '/src/stores/profile.ts';
 const profileStore = useProfileStore();
 
@@ -117,7 +117,7 @@ export default {
 
             if (!single) throw new Error('Error sending Chat - Contact is not defined');
 
-            connectionStore.sendCOT({
+            await mapStore.worker.conn.sendCOT({
                 chatroom: single.sender_callsign,
                 to: {
                     uid: single.sender_uid,

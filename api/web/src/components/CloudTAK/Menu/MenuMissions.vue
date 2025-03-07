@@ -34,7 +34,7 @@
 
             <ChannelInfo />
 
-            <EmptyInfo v-if='profileStore.hasNoChannels' />
+            <EmptyInfo v-if='mapStore.hasNoChannels' />
 
             <TablerNone
                 v-if='!list.length'
@@ -104,7 +104,7 @@
                         </div>
                         <div class='col-auto ms-auto align-items-center d-flex'>
                             <IconAccessPoint
-                                v-if='cotStore.subscriptions.has(mission.guid)'
+                                v-if='subscribed.has(mission.guid)'
                                 v-tooltip='"Subscribed"'
                                 :size='32'
                                 stroke='1'
@@ -137,7 +137,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import MissionCreate from './Mission/MissionCreate.vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import { useRouter } from 'vue-router';
@@ -148,8 +148,8 @@ import {
     TablerAlert,
     TablerModal
 } from '@tak-ps/vue-tabler';
-import type { Mission } from '../../../../src/types.ts';
-import { std, stdurl } from '../../../../src/std.ts';
+import type { Mission } from '../../../types.ts';
+import { std, stdurl } from '../../../std.ts';
 import {
     IconPlus,
     IconLock,
@@ -158,14 +158,11 @@ import {
     IconRefresh,
 } from '@tabler/icons-vue';
 import ChannelInfo from '../util/ChannelInfo.vue';
-import { useProfileStore } from '../../../../src/stores/profile.ts';
+import { useMapStore } from '../../../stores/map.ts';
 import EmptyInfo from '../util/EmptyInfo.vue';
-import { useMapStore } from '../../../../src/stores/map.ts';
-import { useCOTStore } from '../../../../src/stores/cots.ts';
-import Subscription from '../../../../src/stores/base/mission.ts';
+import Subscription from '../../../base/subscription.ts';
+
 const mapStore = useMapStore();
-const cotStore = useCOTStore();
-const profileStore = useProfileStore();
 
 const error = ref<Error | undefined>();
 const create = ref(false)
@@ -179,19 +176,37 @@ const list = ref<Array<Mission>>([]);
 
 onMounted(async () => {
     await fetchMissions();
+    await generateFilteredList()
 });
 
-const filteredList = computed((): Array<Mission> => {
-    return list.value.filter((mission) => {
-        return mission.name.toLowerCase()
-            .includes(paging.value.filter.toLowerCase());
-    }).sort((a) => {
-        return !cotStore.subscriptions.has(a.guid) ? 1 : -1;
-    })
+const subscribed = ref<Set<string>>(new Set())
+const filteredList = ref<Array<Mission>>([]);
+
+watch(paging.value, async () => {
+    generateFilteredList();
 });
+
+async function generateFilteredList() {
+    const filtered = [];
+
+    subscribed.value = await mapStore.worker.db.subscriptionListUid();
+
+    for (const mission of list.value) {
+        if (!mission.name.toLowerCase().includes(paging.value.filter.toLowerCase())) {
+            continue;
+        }
+        filtered.push(mission);
+    }
+
+    filtered.sort((a) => {
+        return !subscribed.value.has(a.guid) ? 1 : -1;
+    })
+
+    filteredList.value = filtered;
+}
 
 async function openMission(mission: Mission, usePassword: boolean) {
-    if (mission.passwordProtected && cotStore.subscriptions.has(mission.guid)) {
+    if (mission.passwordProtected && subscribed.value.has(mission.guid)) {
         const o = mapStore.getOverlayByMode('mission', mission.guid);
 
         let fragment = `/menu/missions/${mission.guid}`;

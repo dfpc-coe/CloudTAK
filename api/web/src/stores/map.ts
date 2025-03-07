@@ -8,37 +8,44 @@
 */
 
 import { defineStore } from 'pinia'
-import type { Position } from "geojson";
-import COT from './base/cot.ts';
-import Subscription from './base/mission.ts';
+import * as Comlink from 'comlink';
+import AtlasWorker from '../workers/atlas.ts?worker&url';
+import COT from '../base/cot.ts';
+import { WorkerMessage }from '../base/events.ts';
 import Overlay from './base/overlay.ts';
 import { std, stdurl } from '../std.js';
 import mapgl from 'maplibre-gl'
 import * as terraDraw from 'terra-draw';
 import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
+import type Atlas from '../workers/atlas.ts';
+import { CloudTAKTransferHandler } from '../workers/atlas.ts';
 
 import type { ProfileOverlay, Basemap, APIList } from '../types.ts';
-import { coordEach } from '@turf/meta';
-import { distance } from '@turf/distance';
 import type { Feature } from 'geojson';
-import type {
-    LngLat,
-    Point,
-    MapMouseEvent,
-    MapGeoJSONFeature
-} from 'maplibre-gl';
-import { useCOTStore } from './cots.js'
+import type { LngLat, Point, MapMouseEvent, MapGeoJSONFeature } from 'maplibre-gl';
+
+export type TAKNotification = {
+    type: string;
+    name: string;
+    body: string;
+    url: string;
+}
 
 export const useMapStore = defineStore('cloudtak', {
     state: (): {
         _map?: mapgl.Map;
         _draw?: terraDraw.TerraDraw;
+        channel: BroadcastChannel;
+        worker: Comlink.Remote<Atlas>;
         edit: COT | undefined;
         mission: string | undefined;
+        notifications: Array<TAKNotification>;
         container?: HTMLElement;
         hasTerrain: boolean;
+        hasNoChannels: boolean;
         isTerrainEnabled: boolean;
         isLoaded: boolean;
+        isOpen: boolean;
         bearing: number;
         selected: Map<string, COT>;
         drawOptions: {
@@ -60,9 +67,24 @@ export const useMapStore = defineStore('cloudtak', {
         },
         overlays: Array<Overlay>
     } => {
+        const worker = Comlink.wrap<Atlas>(new Worker(AtlasWorker, {
+            type: 'module'
+        }));
+
+        new CloudTAKTransferHandler(
+            worker,
+            Comlink.transferHandlers,
+            new BroadcastChannel('sync')
+        );
+
         return {
+            worker,
+            channel: new BroadcastChannel("cloudtak"),
+            notifications: [],
             hasTerrain: false,
+            hasNoChannels: false,
             isTerrainEnabled: false,
+            isOpen: false,
             isLoaded: false,
             bearing: 0,
             mission: undefined,
@@ -100,6 +122,8 @@ export const useMapStore = defineStore('cloudtak', {
     },
     actions: {
         destroy: function() {
+            this.channel.close();
+
             if (this._map) {
                 try {
                     this._map.remove();
@@ -119,8 +143,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             await overlay.delete();
             if (overlay.mode === 'mission' && overlay.mode_id) {
-                const cotStore = useCOTStore();
-                cotStore.subscriptions.delete(overlay.mode_id);
+                await this.worker.db.subscriptionDelete(overlay.mode_id);
             }
         },
         getOverlayById(id: number): Overlay | null {
@@ -189,22 +212,22 @@ export const useMapStore = defineStore('cloudtak', {
             const oStore = this.map.getSource(String(overlay.id));
             if (!oStore) return false
 
-            const cotStore = useCOTStore();
-
-            let sub = cotStore.subscriptions.get(guid);
+            let sub = await this.worker.db.subscriptionGet(guid);
 
             if (!sub) {
-                sub = await Subscription.load(guid, overlay.token || undefined);
-                cotStore.subscriptions.set(guid, sub)
+                sub = await this.worker.db.subscriptionLoad(guid, overlay.token || undefined)
             }
 
             // @ts-expect-error Source.setData is not defined
-            oStore.setData(sub.collection());
+            oStore.setData(await sub.collection());
 
             return true;
         },
-        init: function(container: HTMLElement) {
+        init: async function(container: HTMLElement) {
             this.container = container;
+
+            await this.worker.init(localStorage.token);
+
 
             const init: mapgl.MapOptions = {
                 container: this.container,
@@ -241,7 +264,40 @@ export const useMapStore = defineStore('cloudtak', {
 
             if (!init.style || typeof init.style === 'string') throw new Error('init.style must be an object');
 
-            this._map = new mapgl.Map(init);
+            const map = new mapgl.Map(init);
+
+            this._map = map;
+
+            this.channel.onmessage = (event) => {
+                let msg;
+                try {
+                    msg = JSON.parse(event.data)
+
+                    if (!msg.type) return;
+                } catch (err) {
+                    console.error(`Failed to parse event: ${event.data}`, err);
+                }
+
+                if (msg.type === WorkerMessage.Map_FlyTo) {
+                    if (msg.body.options.speed === null) {
+                        msg.body.options.speed = Infinity;
+                    }
+
+                    map.fitBounds(msg.body.bounds, msg.body.options);
+                } else if (msg.type === WorkerMessage.Connection_Open) {
+                    this.isOpen = true;
+                } else if (msg.type === WorkerMessage.Connection_Close) {
+                    this.isOpen = false;
+                } else if (msg.type === WorkerMessage.Channels_None) {
+                    this.hasNoChannels = true;
+                } else if (msg.type === WorkerMessage.Channels_List) {
+                    this.hasNoChannels = false;
+                } else if (msg.type === WorkerMessage.Notification) {
+                    this.notifications.push(msg.body as TAKNotification);
+                } else {
+                    console.error('Unknown Event:', msg);
+                }
+            }
         },
         initOverlays: async function() {
             if (!this.map) throw new Error('Cannot initLayers before map has loaded');
@@ -252,7 +308,7 @@ export const useMapStore = defineStore('cloudtak', {
                 this.bearing = map.getBearing()
             })
 
-            map.on('click', (e: MapMouseEvent) => {
+            map.on('click', async (e: MapMouseEvent) => {
                 if (this.draw.getMode() !== 'static') return;
 
                 if (this.radial.mode) this.radial.mode = undefined;
@@ -281,8 +337,7 @@ export const useMapStore = defineStore('cloudtak', {
 
                 // MultiSelect Mode
                 if (e.originalEvent.ctrlKey && features.length) {
-                    const cotStore = useCOTStore();
-                    const cot = cotStore.get(features[0].properties.id, {
+                    const cot = await this.worker.db.get(features[0].properties.id, {
                         mission: true
                     });
 
@@ -450,9 +505,8 @@ export const useMapStore = defineStore('cloudtak', {
             this.radial.cot = feat;
             this.radial.mode = opts.mode;
         },
-        initDraw: function() {
-            const cotStore = useCOTStore();
-
+        initDraw: async function() {
+            /** TODO This is jacked due to no await support
             const toCustom = (event: terraDraw.TerraDrawMouseEvent): Position | undefined => {
                 let closest: {
                     dist: number
@@ -460,7 +514,7 @@ export const useMapStore = defineStore('cloudtak', {
                     coord: Position
                 } | undefined = undefined;
 
-                cotStore.filter((cot) => {
+                this.worker.db.filter((cot) => {
                     coordEach(cot.geometry, (coord: Position) => {
                         const dist = distance([event.lng, event.lat], coord);
 
@@ -487,6 +541,7 @@ export const useMapStore = defineStore('cloudtak', {
                     return;
                 }
             }
+            */
 
             this._draw = new terraDraw.TerraDraw({
                 adapter: new TerraDrawMapLibreGLAdapter({
@@ -505,12 +560,16 @@ export const useMapStore = defineStore('cloudtak', {
                     })()
                 },
                 modes: [
-                    new terraDraw.TerraDrawPointMode(),
+                    new terraDraw.TerraDrawPointMode({
+                        editable: true
+                    }),
                     new terraDraw.TerraDrawLineStringMode({
-                        snapping: { toCustom }
+                        editable: true
+                        // snapping: { toCustom }
                     }),
                     new terraDraw.TerraDrawPolygonMode({
-                        snapping: { toCustom }
+                        editable: true
+                        // snapping: { toCustom }
                     }),
                     new terraDraw.TerraDrawAngledRectangleMode(),
                     new terraDraw.TerraDrawFreehandMode(),
@@ -539,7 +598,7 @@ export const useMapStore = defineStore('cloudtak', {
                             },
                             point: {
                                 feature: {
-                                    draggable: true
+                                    draggable: true,
                                 }
                             }
                         }

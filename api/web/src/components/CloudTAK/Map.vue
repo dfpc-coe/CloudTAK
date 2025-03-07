@@ -9,7 +9,7 @@
             style='width: 100%;'
         />
 
-        <Loading v-if='loading || !mapStore.isLoaded' />
+        <MapLoading v-if='loading || !mapStore.isLoaded' />
 
         <template v-if='mapStore.isLoaded && !loading'>
             <WarnConfiguration
@@ -235,7 +235,7 @@
                                 class='hover-button'
                             />
                             <span
-                                v-if='profileStore.notifications.length'
+                                v-if='mapStore.notifications.length'
                                 class='badge bg-red mb-2'
                             />
                             <span
@@ -246,7 +246,7 @@
                     </template>
                     <template #dropdown>
                         <TablerNone
-                            v-if='!profileStore.notifications.length'
+                            v-if='!mapStore.notifications.length'
                             label='New Notifications'
                             :create='false'
                         />
@@ -254,13 +254,13 @@
                             <div class='col-12 d-flex py-2 px-2'>
                                 <div
                                     class='ms-auto cursor-pointer'
-                                    @click='profileStore.clearNotifications'
+                                    @click='mapStore.notifications.splice(0, mapStore.notifications.length)'
                                 >
                                     Clear All
                                 </div>
                             </div>
                             <div
-                                v-for='n of profileStore.notifications'
+                                v-for='n of mapStore.notifications'
                                 class='col-12 px-2 py-2'
                             >
                                 <div
@@ -461,9 +461,11 @@ import DrawOverlay from './util/DrawOverlay.vue';
 import WarnChannels from './util/WarnChannels.vue';
 import SearchBox from './util/SearchBox.vue';
 import WarnConfiguration from './util/WarnConfiguration.vue';
-import Status from '../util/Status.vue';
+import Status from '../util/StatusDot.vue';
 import CoordInput from './CoordInput.vue';
+import type { GeoJSONStoreFeatures } from 'terra-draw'
 import type { MapGeoJSONFeature, GeoJSONSource, LngLatLike } from 'maplibre-gl';
+import type { Polygon } from 'geojson';
 import { std, stdurl } from '../..//std.ts';
 import type { IconsetList, Feature } from '../../types.ts';
 import CloudTAKFeatView from './FeatView.vue';
@@ -492,27 +494,23 @@ import {
 } from '@tabler/icons-vue';
 import SelectFeats from './util/SelectFeats.vue';
 import MultipleSelect from './util/MultipleSelect.vue';
-import SideMenu from './Menu.vue';
+import SideMenu from './MainMenu.vue';
 import {
     TablerIconButton,
     TablerDropdown,
     TablerModal,
     TablerNone,
 } from '@tak-ps/vue-tabler';
-import Loading from './Loading.vue';
+import MapLoading from './MapLoading.vue';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import RadialMenu from './RadialMenu/RadialMenu.vue';
 import { useMapStore } from '../../stores/map.ts';
 import { useVideoStore } from '../../stores/videos.ts';
 import { useProfileStore } from '../../stores/profile.ts';
-import { useCOTStore } from '../../stores/cots.ts';
-import { useConnectionStore } from '../../stores/connection.ts';
 import UploadImport from './util/UploadImport.vue'
 import { coordEach } from '@turf/meta';
 const profileStore = useProfileStore();
-const cotStore = useCOTStore();
 const mapStore = useMapStore();
-const connectionStore = useConnectionStore();
 const videoStore = useVideoStore();
 const router = useRouter();
 const route = useRoute();
@@ -608,13 +606,9 @@ onMounted(async () => {
 
     await mountMap();
 
-    await Promise.all([
-        profileStore.loadChannels(),
-        cotStore.loadArchive()
-    ]);
-
-    warnChannels.value = profileStore.hasNoChannels;
-    warnConfiguration.value = profileStore.hasNoConfiguration;
+    // TODO these are no longer reactive, does it matter?
+    warnChannels.value = await mapStore.worker.profile.hasNoChannels();
+    warnConfiguration.value = await mapStore.worker.profile.hasNoConfiguration();
 
     loading.value = false;
 
@@ -663,9 +657,6 @@ onMounted(async () => {
             }
         }
     });
-
-    if (!profileStore.profile) throw new Error('Profile did not load correctly');
-    connectionStore.connectSocket(profileStore.profile.username);
 });
 
 onBeforeUnmount(() => {
@@ -673,9 +664,6 @@ onBeforeUnmount(() => {
         window.clearInterval(timer.value);
     }
 
-    profileStore.destroy();
-    connectionStore.destroy();
-    cotStore.$reset();
     mapStore.destroy();
 });
 
@@ -724,13 +712,14 @@ function setLocation() {
     mapStore.map.once('click', async (e) => {
         mapStore.map.getCanvas().style.cursor = ''
         mode.value = 'Default';
-        await profileStore.update({
+
+        await mapStore.worker.profile.update({
             tak_loc: {
                 type: 'Point',
                 coordinates: [e.lngLat.lng, e.lngLat.lat]
             }
         })
-        profileStore.CoT();
+
         await updateCOT();
     });
 }
@@ -769,7 +758,7 @@ async function handleRadial(event: string): Promise<void> {
         router.push(`/cot/${mapStore.radial.cot.properties.id}`);
         closeRadial()
     } else if (event === 'cot:play') {
-        videoStore.add(mapStore.radial.cot.properties.id);
+        await videoStore.add(mapStore.radial.cot.properties.id);
         closeRadial()
     } else if (event === 'cot:delete') {
         const cot = mapStore.radial.cot;
@@ -779,20 +768,19 @@ async function handleRadial(event: string): Promise<void> {
             router.push('/');
         }
 
-        await cotStore.delete(String(cot.id))
+        await mapStore.worker.db.remove(String(cot.id))
         await updateCOT();
     } else if (event === 'cot:lock') {
         locked.value.push(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
         closeRadial()
     } else if (event === 'cot:edit') {
-        editGeometry(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
+        await editGeometry(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
         closeRadial()
     } else if (event === 'feat:view') {
         selectFeat(mapStore.radial.cot as MapGeoJSONFeature);
         closeRadial()
     } else if (event === 'context:new') {
-        // @ts-expect-error MapLibreFeature vs Feature
-        await cotStore.add(mapStore.radial.cot);
+        await mapStore.worker.db.add(mapStore.radial.cot);
         updateCOT();
         closeRadial()
     } else if (event === 'context:info') {
@@ -805,10 +793,10 @@ async function handleRadial(event: string): Promise<void> {
     }
 }
 
-function editGeometry(featid: string) {
+async function editGeometry(featid: string) {
     if (!mapStore.draw) throw new Error('Drawing Tools haven\'t loaded');
 
-    const cot = cotStore.get(featid, { mission: true });
+    const cot = await mapStore.worker.db.get(featid, { mission: true });
     if (!cot) return;
 
     try {
@@ -837,11 +825,10 @@ function editGeometry(featid: string) {
             }
         });
 
-        cotStore.hidden.add(cot.id);
+        await mapStore.worker.db.hide(cot.id);
         updateCOT();
 
-        // @ts-expect-error Cast Feature to GeoJSONStoreFeature
-        const errorStatus = mapStore.draw.addFeatures([feat]).filter((status) => {
+        const errorStatus = mapStore.draw.addFeatures([feat as GeoJSONStoreFeatures]).filter((status) => {
             return !status.valid;
         });
 
@@ -851,7 +838,7 @@ function editGeometry(featid: string) {
 
         mapStore.draw.selectFeature(cot.id);
     } catch (err) {
-        cotStore.hidden.delete(cot.id);
+        await mapStore.worker.db.unhide(cot.id);
         mapStore.draw.setMode('static');
         updateCOT();
         mapStore.drawOptions.mode = 'static';
@@ -863,7 +850,7 @@ function editGeometry(featid: string) {
 
 async function updateCOT() {
     try {
-        const diff = cotStore.diff();
+        const diff = await mapStore.worker.db.diff();
 
         if (
             (diff.add && diff.add.length)
@@ -874,10 +861,10 @@ async function updateCOT() {
             if (source) source.updateData(diff);
         }
 
-        if (locked.value.length && cotStore.has(locked.value[locked.value.length - 1])) {
+        if (locked.value.length && await mapStore.worker.db.has(locked.value[locked.value.length - 1])) {
             let featid = locked.value[locked.value.length - 1];
             if (featid) {
-                const feat = cotStore.get(featid);
+                const feat = await mapStore.worker.db.get(featid);
                 if (feat && feat.geometry.type === "Point") {
                     const flyTo = {
                         center: feat.properties.center as LngLatLike,
@@ -897,35 +884,38 @@ async function updateCOT() {
     }
 }
 
-function mountMap(): Promise<void> {
-    return new Promise((resolve) => {
-        if (!mapRef.value) throw new Error('Map Element could not be found - Please refresh the page and try again');
-        mapStore.init(mapRef.value);
+async function mountMap(): Promise<void> {
+    if (!mapRef.value) throw new Error('Map Element could not be found - Please refresh the page and try again');
+    await mapStore.init(mapRef.value);
 
+    // Eventually make a sprite URL part of the overlay so KMLs can load a sprite package & add paging support
+    const iconsets = await std('/api/iconset') as IconsetList;
+    for (const iconset of iconsets.items) {
+        mapStore.map.addSprite(iconset.uid, String(stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=${iconset.uid}&alt=true`)))
+    }
+
+    return new Promise((resolve) => {
         mapStore.map.once('idle', async () => {
             if (profileStore.profile && profileStore.profile.display_projection === 'globe') {
                 mapStore.map.setProjection({ type: "globe" });
             }
 
-            // Eventually make a sprite URL part of the overlay so KMLs can load a sprite package & add paging support
-            const iconsets = await std('/api/iconset') as IconsetList;
-            for (const iconset of iconsets.items) {
-                mapStore.map.addSprite(iconset.uid, String(stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=${iconset.uid}&alt=true`)))
-            }
+            await mapStore.worker.db.updateImages(mapStore.map.listImages());
 
             await mapStore.initOverlays();
-            mapStore.initDraw();
+            await mapStore.initDraw();
 
-            cotStore.add(profileStore.CoT());
-
+            // Deselect event is for editing existing features
             mapStore.draw.on('deselect', async () => {
                 if (!mapStore.edit) return;
 
-                // @ts-expect-error There is currently no getFeature API
-                const feat = mapStore.draw._store.store[mapStore.edit.id];
+                const feat = mapStore.draw.getSnapshotFeature(mapStore.edit.id);
+
+                if (!feat) throw new Error('Could not find underlying marker');
+
                 delete feat.properties.center;
 
-                cotStore.hidden.delete(mapStore.edit.id);
+                await mapStore.worker.db.unhide(mapStore.edit.id);
 
                 mapStore.edit = undefined
 
@@ -933,32 +923,35 @@ function mountMap(): Promise<void> {
                 mapStore.drawOptions.mode = 'static';
                 mapStore.draw.stop();
 
-                cotStore.cots.delete(feat.id);
-                cotStore.add(feat);
+                await mapStore.worker.db.add(feat as Feature);
+
                 await updateCOT();
             })
 
+            // Finish event is for creating new features
             mapStore.draw.on('finish', async (id, context) => {
+                if (!mapStore.draw) throw new Error('Drawing Tools haven\'t loaded');
+
                 if (context.action === "draw") {
                     if (mapStore.draw.getMode() === 'select' || mapStore.edit) {
                         return;
                     } else if (mapStore.draw.getMode() === 'freehand') {
-                        // @ts-expect-error There is currently no getFeature API
-                        const geometry = mapStore.draw._store.store[id].geometry;
+                        const feat = mapStore.draw.getSnapshotFeature(id);
+                        if (!feat) throw new Error('Could not find underlying marker');
                         mapStore.draw.removeFeatures([id]);
                         mapStore.draw.setMode('static');
                         mapStore.drawOptions.mode = 'static';
                         mapStore.draw.stop();
 
-                        cotStore.touching(geometry).forEach((feat) => {
+                        (await mapStore.worker.db.touching(feat.geometry as Polygon)).forEach((feat) => {
                             mapStore.selected.set(feat.id, feat);
                         })
 
                         return;
                     }
 
-                    // @ts-expect-error There is currently no getFeature API
-                    const geometry = mapStore.draw._store.store[id].geometry;
+                    const storeFeat = mapStore.draw.getSnapshotFeature(id);
+                    if (!storeFeat) throw new Error('Could not find underlying marker');
 
                     const now = new Date();
                     const feat: Feature = {
@@ -976,7 +969,7 @@ function mountMap(): Promise<void> {
                             stale: new Date(now.getTime() + 3600).toISOString(),
                             center: [0,0]
                         },
-                        geometry
+                        geometry: JSON.parse(JSON.stringify(storeFeat.geometry))
                     };
 
                     if (
@@ -997,12 +990,10 @@ function mountMap(): Promise<void> {
                     mapStore.draw.setMode('static');
                     mapStore.drawOptions.mode = 'static';
                     mapStore.draw.stop();
-                    await cotStore.add(feat);
+                    await mapStore.worker.db.add(feat);
                     await updateCOT();
                 }
             });
-
-            profileStore.setupTimer();
 
             timer.value = setInterval(async () => {
                 if (!mapStore.map) return;
