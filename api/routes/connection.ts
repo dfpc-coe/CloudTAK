@@ -1,4 +1,5 @@
 import Err from '@openaddresses/batch-error';
+import S3 from '../lib/aws/s3.js';
 import { sql, and, inArray } from 'drizzle-orm';
 import Config from '../lib/config.js';
 import Auth, { AuthResourceAccess } from '../lib/auth.js';
@@ -277,11 +278,13 @@ export default async function router(schema: Schema, config: Config) {
                 where: sql`connection = ${req.params.connectionid}`
             }) > 0) throw new Err(400, null, 'Connection has active Data Syncs - Delete Syncs before deleting Connection');
 
-            await config.models.Connection.delete(req.params.connectionid);
+            await S3.del(`connection/${String(req.params.connectionid)}/`, { recurse: true });
 
             await config.models.ConnectionToken.delete(sql`
                 connection = ${req.params.connectionid}
             `);
+
+            await config.models.Connection.delete(req.params.connectionid);
 
             config.conns.delete(req.params.connectionid);
 
