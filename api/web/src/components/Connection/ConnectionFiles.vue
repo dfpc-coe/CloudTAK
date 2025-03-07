@@ -2,7 +2,7 @@
     <div>
         <div class='card-header d-flex'>
             <h3 class='card-title'>
-                Data Assets
+                Connection Assets
             </h3>
 
             <div class='ms-auto btn-list'>
