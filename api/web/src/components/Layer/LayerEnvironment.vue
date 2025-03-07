@@ -8,7 +8,7 @@
                 v-if='disabled'
                 class='ms-auto btn-list'
             >
-                <template v-if='!raw && disabled'>
+                <template v-if='disabled'>
                     <TablerIconButton
                         title='Raw View'
                         @click='raw = true'
@@ -61,8 +61,15 @@
             v-else
             class='col'
         >
-            <template v-if='raw'>
+            <template v-if='raw && disabled'>
                 <pre v-text='environment' />
+            </template>
+            <template v-else-if='raw && !disabled'>
+                <TablerInput
+                    :rows='20'
+                    :modelValue='JSON.stringify(environment, null, 4)'
+                    @update:modelValue='environment = JSON.parse($event)'
+                />
             </template>
             <TablerAlert
                 v-else-if='!props.capabilities'
@@ -115,7 +122,6 @@
                 class='col-12 px-2 py-2 d-flex'
             >
                 <button
-                    v-if='!editing'
                     class='btn'
                     @click='reload'
                 >
@@ -140,6 +146,7 @@ import { useRoute } from 'vue-router';
 import { std } from '/src/std.ts';
 import {
     TablerNone,
+    TablerInput,
     TablerAlert,
     TablerLoading,
     TablerIconButton,

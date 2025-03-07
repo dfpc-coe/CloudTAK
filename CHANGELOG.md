@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v7.5.0 - 2025-03-07
+
+- :rocket: Introduce a backup editing path to Layer Env if the capabilities object fails to populate
+
 ### v7.4.0 - 2025-03-06
 
 - :rocket: Introduce paging on the Video Lease Menu to surface leases that exceed the default limit
