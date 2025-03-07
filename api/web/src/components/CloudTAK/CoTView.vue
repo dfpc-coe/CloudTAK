@@ -386,7 +386,7 @@
 
             <div
                 v-if='cot.properties.remarks !== undefined'
-                class='col-12 py-2'
+                class='col-12 py-2 px-2'
             >
                 <label class='subheader mx-2'>Remarks</label>
                 <CopyField

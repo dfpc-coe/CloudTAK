@@ -70,7 +70,18 @@
                                         :key='prop'
                                     >
                                         <td v-text='prop' />
-                                        <td v-text='feat.properties[prop]' />
+                                        <td>
+                                            <a
+                                                v-if='typeof feat.properties[prop] === "string" && feat.properties[prop].startsWith("http")'
+                                                :href='feat.properties[prop]'
+                                                target='_blank'
+                                                v-text='feat.properties[prop]'
+                                            />
+                                            <span
+                                                v-else
+                                                v-text='feat.properties[prop]'
+                                            />
+                                        </td>
                                     </tr>
                                 </template>
                             </tbody>
