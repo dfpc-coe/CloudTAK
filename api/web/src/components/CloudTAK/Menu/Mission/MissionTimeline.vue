@@ -120,7 +120,7 @@ import MenuTemplate from '../../util/MenuTemplate.vue';
 
 const props = defineProps<{
     mission: Mission,
-    token: string
+    token?: string
 }>();
 
 const error = ref<Error | undefined>();

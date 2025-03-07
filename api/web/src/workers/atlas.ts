@@ -38,22 +38,30 @@ export class CloudTAKTransferHandler {
         mission: Mission,
         role: MissionRole,
         token?: string,
+        feats: Array<Feature>,
         logs: Array<MissionLog>
     }> = {
         canHandle: (obj): obj is Subscription => {
             return obj instanceof Subscription;
         },
         serialize: (subscription: Subscription) => {
+            const feats = [];
+            for (const cot of subscription.cots.values()) {
+                feats.push(cot.as_feature());
+            }
+
             return [{
                 mission: subscription.meta,
                 role: subscription.role,
                 logs: subscription.logs,
+                feats: feats
             }, []]
         },
         deserialize: (ser: {
             mission: Mission,
             role: MissionRole,
             token?: string,
+            feats: Array<Feature>,
             logs: Array<MissionLog>
         }) => {
             const sub = new Subscription(
@@ -66,6 +74,14 @@ export class CloudTAKTransferHandler {
                     remote: this.sync ? this.sync : null
                 }
             );
+
+            for (const feat of ser.feats) {
+                const cot = new COT(this.atlas, feat, feat.origin, {
+                    remote: this.sync ? this.sync : null
+                });
+
+                sub.cots.set(cot.id, cot);
+            }
 
             return sub;
         }
