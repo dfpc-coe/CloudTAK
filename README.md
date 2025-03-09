@@ -112,7 +112,7 @@ npx deploy create etl-tasks
 From the root directory, install the deploy dependencies
 
 ```sh
-npm install
+npm install --legacy-peer-deps
 ```
 
 ### 3. Building Docker Images & Pushing to ECR
@@ -130,10 +130,6 @@ call will be issued.
 ### Deployment
 
 From the root directory, install the deploy dependencies
-
-```sh
-npm install
-```
 
 Deployment to AWS is handled via AWS Cloudformation. The template can be found in the `./cloudformation`
 directory. The deployment itself is performed by [Deploy](https://github.com/openaddresses/deploy) which
