@@ -69,7 +69,7 @@
                             </div>
                         </div>
                         <div class='text-center text-muted mt-3'>
-                            Don't have account yet? <a href='mailto:nicholas.ingalls@state.co.us'>Contact Us</a>
+                            Don't have an account yet? <a href='https://cotak.gov/pages/sign-up'>Sign Up</a>
                         </div>
                     </div>
                 </div>
