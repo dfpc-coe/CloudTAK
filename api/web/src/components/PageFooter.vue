@@ -27,7 +27,7 @@
                             <a
                                 href='.'
                                 class='link-secondary'
-                            >Static of Colorado</a>
+                            >State of Colorado</a>
                             - MIT License
                         </li>
                     </ul>
