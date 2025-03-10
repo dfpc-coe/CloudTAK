@@ -31,7 +31,7 @@
                             - <a 
                                 href='https://github.com/dfpc-coe/CloudTAK/blob/main/LICENSE'
                                 class='link-secondary'  
-                             >AGPL-3.0 license</a>
+                            >AGPL-3.0 license</a>
                         </li>
                     </ul>
                 </div>
