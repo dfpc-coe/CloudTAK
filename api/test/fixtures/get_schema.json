@@ -84,6 +84,11 @@
         "query": false,
         "res": true
     },
+    "GET /config/login": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /config/group": {
         "body": false,
         "query": false,
