@@ -130,7 +130,7 @@
                         />
                     </div>
                     <IconFocus2
-                        v-if='!mapStore.radial.cot && !locked.length'
+                        v-if='!mapStore.radial.cot && !mapStore.locked.length'
                         v-tooltip='"Get Location"'
                         role='button'
                         tabindex='0'
@@ -151,7 +151,7 @@
                         stroke='1'
                         class='cursor-pointer hover-button'
                         style='margin: 5px 8px'
-                        @click='locked.splice(0, locked.length)'
+                        @click='mapStore.locked.splice(0, mapStore.locked.length)'
                     />
 
                     <div
@@ -464,7 +464,7 @@ import WarnConfiguration from './util/WarnConfiguration.vue';
 import Status from '../util/StatusDot.vue';
 import CoordInput from './CoordInput.vue';
 import type { GeoJSONStoreFeatures } from 'terra-draw'
-import type { MapGeoJSONFeature, GeoJSONSource, LngLatLike } from 'maplibre-gl';
+import type { MapGeoJSONFeature, LngLatLike } from 'maplibre-gl';
 import { std, stdurl } from '../..//std.ts';
 import type { IconsetList } from '../../types.ts';
 import CloudTAKFeatView from './FeatView.vue';
@@ -531,10 +531,6 @@ const pointInput = ref<boolean>(false);
 const feat = ref()        // Show the Feat Viewer sidebar
 
 
-// Lock the map view to a given CoT - The last element is the currently locked value
-// this is an array so that things like the radial menu can temporarily lock state but remember the previous lock value when they are closed
-const locked = ref<Array<string>>([])
-
 const live_loc_denied = ref(false)   // User denied live location services
 const upload = ref({
     shown: false,
@@ -579,15 +575,15 @@ watch(mapStore.radial, () => {
         mapStore.map.dragPan.disable();
 
         const id = mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id;
-        if (!locked.value.includes(id)) {
-            locked.value.push(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
+        if (!mapStore.locked.includes(id)) {
+            mapStore.locked.push(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
         }
     } else {
         mapStore.map.scrollZoom.enable();
         mapStore.map.touchZoomRotate.enableRotation();
         mapStore.map.dragRotate.enable();
         mapStore.map.dragPan.enable();
-        locked.value.pop();
+        mapStore.locked.pop();
     }
 })
 
@@ -770,7 +766,7 @@ async function handleRadial(event: string): Promise<void> {
         await mapStore.worker.db.remove(String(cot.id))
         await mapStore.updateCOT();
     } else if (event === 'cot:lock') {
-        locked.value.push(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
+        mapStore.locked.push(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
         closeRadial()
     } else if (event === 'cot:edit') {
         await editGeometry(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
@@ -870,7 +866,7 @@ async function mountMap(): Promise<void> {
 
             timer.value = setInterval(async () => {
                 if (!mapStore.map) return;
-                await updateCOT();
+                await mapStore.updateCOT();
             }, 500);
 
             return resolve();

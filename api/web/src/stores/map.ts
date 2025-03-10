@@ -21,9 +21,9 @@ import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 import type Atlas from '../workers/atlas.ts';
 import { CloudTAKTransferHandler } from '../workers/atlas.ts';
 
-import type { ProfileOverlay, Basemap, APIList } from '../types.ts';
-import type { Feature, Polygon, Position } from 'geojson';
-import type { LngLat, Point, MapMouseEvent, MapGeoJSONFeature } from 'maplibre-gl';
+import type { ProfileOverlay, Basemap, APIList, Feature } from '../types.ts';
+import type { Polygon, Position } from 'geojson';
+import type { LngLat, LngLatLike, Point, MapMouseEvent, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl';
 
 export type TAKNotification = {
     type: string;
@@ -37,6 +37,11 @@ export const useMapStore = defineStore('cloudtak', {
         _map?: mapgl.Map;
         _draw?: terraDraw.TerraDraw;
         channel: BroadcastChannel;
+
+        // Lock the map view to a given CoT - The last element is the currently locked value
+        // this is an array so that things like the radial menu can temporarily lock state but remember the previous lock value when they are closed
+        locked: Array<string>;
+
         worker: Comlink.Remote<Atlas>;
         edit: COT | undefined;
         mission: string | undefined;
@@ -78,10 +83,10 @@ export const useMapStore = defineStore('cloudtak', {
             Comlink.transferHandlers,
             new BroadcastChannel('sync')
         );
-
         return {
             worker,
             channel: new BroadcastChannel("cloudtak"),
+            locked: [],
             notifications: [],
             hasTerrain: false,
             hasNoChannels: false,
@@ -216,8 +221,8 @@ export const useMapStore = defineStore('cloudtak', {
                     if (source) source.updateData(diff);
                 }
 
-                if (locked.value.length && await this.worker.db.has(locked.value[locked.value.length - 1])) {
-                    const featid = locked.value[locked.value.length - 1];
+                if (this.locked.length && await this.worker.db.has(this.locked[this.locked.length - 1])) {
+                    const featid = this.locked[this.locked.length - 1];
                     if (featid) {
                         const feat = await this.worker.db.get(featid);
                         if (feat && feat.geometry.type === "Point") {
@@ -423,6 +428,7 @@ export const useMapStore = defineStore('cloudtak', {
                 this.radialClick({
                     id: window.crypto.randomUUID(),
                     type: 'Feature',
+                    path: '/',
                     properties: {
                         callsign: 'New Feature',
                         archived: true,
@@ -648,7 +654,7 @@ export const useMapStore = defineStore('cloudtak', {
             draw.on('deselect', async () => {
                 if (!this.edit) return;
 
-                const feat = draw.getSnapshotFeature(edit.id);
+                const feat = draw.getSnapshotFeature(this.edit.id);
 
                 if (!feat) throw new Error('Could not find underlying marker');
 
