@@ -105,11 +105,10 @@ export default {
             }
         },
         PMTilesApiMap: {
-           Type: 'AWS::ApiGatewayV2::ApiMapping',
+           Type: 'AWS::ApiGateway::BasePathMapping',
            Properties: {
                DomainName: cf.ref('PMTilesApiDomain'),
-               ApiId: cf.ref('PMTilesLambdaAPI'),
-               Stage: cf.ref('PMtilesLambdaAPIStage')
+               RestApiId: cf.ref('PMTilesLambdaAPI'),
             }
         },
         PMTilesLambdaAPI: {
