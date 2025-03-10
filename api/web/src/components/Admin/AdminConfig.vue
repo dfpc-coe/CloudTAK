@@ -41,16 +41,19 @@
                             <TablerInput
                                 v-model='config["login::signup"]'
                                 :disabled='!edit'
+                                :error='(config["login::signup"] && config["login::signup"].startsWith("http")) ? "" : "Invalid URL"'
                                 label='TAK Server Signup Link'
                             />
                             <TablerInput
                                 v-model='config["login::forgot"]'
                                 :disabled='!edit'
+                                :error='(config["login::forgot"] && config["login::forgot"].startsWith("http")) ? "" : "Invalid URL"'
                                 label='TAK Server Password Reset Link'
                             />
                             <TablerInput
                                 v-model='config["login::logo"]'
                                 :disabled='!edit'
+                                :error='(config["login::logo"] && config["login::logo"].startsWith("data:image/png;base64,")) ? "" : "Must start with: data:image/png;base64,"'
                                 label='Base64 Encoded Login Logo'
                             />
                         </div>
@@ -277,6 +280,10 @@ export default {
             'provider::url': '',
             'provider::secret': '',
             'provider::client': '',
+
+            'login::logo': '',
+            'login::forgot': '',
+            'login::signup': '',
         }
 
         for (const group of groups) {
