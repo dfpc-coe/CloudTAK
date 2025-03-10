@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v7.6.1 - 2025-03-10
+
+- :rocket: @chriselsen Update License information in CloudTAK Footer
+
 ### v7.6.0 - 2025-03-07
 
 - :tada: Introduce file storage at the connection level
