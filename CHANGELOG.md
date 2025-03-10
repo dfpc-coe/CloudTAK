@@ -12,6 +12,17 @@
 
 ### Pending Release
 
+### v7.7.0 - 2025-03-10
+
+- :rocket: @chriselsen Fix verbage on login page
+- :rocket: Add ability to specify a custom signup URL on login page
+- :rocket: Add ability to specify a custom reset password URL on login page
+- :rocket: Add ability to specify a custom logo on login page
+
+### v7.6.1 - 2025-03-10
+
+- :rocket: @chriselsen Update License information in CloudTAK Footer
+
 ### v7.6.0 - 2025-03-07
 
 - :tada: Introduce file storage at the connection level

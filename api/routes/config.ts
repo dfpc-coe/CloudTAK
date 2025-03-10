@@ -62,6 +62,10 @@ export default async function router(schema: Schema, config: Config) {
             'provider::url': Type.Optional(Type.String()),
             'provider::secret': Type.Optional(Type.String()),
             'provider::client': Type.Optional(Type.String()),
+
+            'login::signup': Type.Optional(Type.String()),
+            'login::forgot': Type.Optional(Type.String()),
+            'login::logo': Type.Optional(Type.String()),
         }),
         res: Type.Any()
     }, async (req, res) => {
@@ -81,6 +85,41 @@ export default async function router(schema: Schema, config: Config) {
                 if (k.status === 'rejected') return;
                 return final[k.value.key] = String(k.value.value);
             });
+
+            res.json(final);
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/config/login', {
+        name: 'Login Config',
+        group: 'Config',
+        description: 'Return Login Config',
+        res: Type.Object({
+            logo: Type.Optional(Type.String()),
+            signup: Type.Optional(Type.String()),
+            forgot: Type.Optional(Type.String()),
+        })
+    }, async (req, res) => {
+        try {
+            const keys = [
+                'login::logo',
+                'login::signup',
+                'login::forgot',
+            ];
+
+            const final: Record<string, string> = {};
+            (await Promise.allSettled(keys.map((key) => {
+                return config.models.Setting.from(key);
+            }))).forEach((k) => {
+                if (k.status === 'rejected') return;
+                return final[k.value.key.replace('login::', '')] = String(k.value.value);
+            });
+
+            for (let login of keys) {
+                login = login.replace('login::', '')
+            }
 
             res.json(final);
         } catch (err) {

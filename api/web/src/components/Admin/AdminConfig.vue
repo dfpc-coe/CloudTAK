@@ -24,6 +24,44 @@
             <div class='card-body row'>
                 <div
                     class='col-lg-12 hover-light py-2 cursor-pointer'
+                    @click='opened.has("login") ? opened.delete("login") : opened.add("login")'
+                >
+                    <IconChevronDown v-if='opened.has("login")' />
+                    <IconChevronRight v-else />
+
+                    <span class='mx-2 user-select-none'>Login Page</span>
+                </div>
+
+                <div
+                    v-if='opened.has("login")'
+                    class='col-lg-12 py-2 border rounded'
+                >
+                    <div class='row'>
+                        <div class='col-lg-12'>
+                            <TablerInput
+                                v-model='config["login::signup"]'
+                                :disabled='!edit'
+                                :error='(config["login::signup"] && config["login::signup"].startsWith("http")) ? "" : "Invalid URL"'
+                                label='TAK Server Signup Link'
+                            />
+                            <TablerInput
+                                v-model='config["login::forgot"]'
+                                :disabled='!edit'
+                                :error='(config["login::forgot"] && config["login::forgot"].startsWith("http")) ? "" : "Invalid URL"'
+                                label='TAK Server Password Reset Link'
+                            />
+                            <TablerInput
+                                v-model='config["login::logo"]'
+                                :disabled='!edit'
+                                :error='(config["login::logo"] && config["login::logo"].startsWith("data:image/png;base64,")) ? "" : "Must start with: data:image/png;base64,"'
+                                label='Base64 Encoded Login Logo'
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    class='col-lg-12 hover-light py-2 cursor-pointer'
                     @click='opened.has("agol") ? opened.delete("agol") : opened.add("agol")'
                 >
                     <IconChevronDown v-if='opened.has("agol")' />
@@ -242,6 +280,10 @@ export default {
             'provider::url': '',
             'provider::secret': '',
             'provider::client': '',
+
+            'login::logo': '',
+            'login::forgot': '',
+            'login::signup': '',
         }
 
         for (const group of groups) {
