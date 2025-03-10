@@ -36,7 +36,7 @@ export default cf.merge(
                 Default: 'false'
             },
             HostedURL: {
-                Description: 'URL of domain/subdomain at which the API is hosted ie: "map.example.com"',
+                Description: 'Hostname at which the API is hosted ie: "map.example.com"',
                 Type: 'String'
             },
             SSLCertificateIdentifier: {
