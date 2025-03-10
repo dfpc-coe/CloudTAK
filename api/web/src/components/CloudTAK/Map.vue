@@ -465,9 +465,8 @@ import Status from '../util/StatusDot.vue';
 import CoordInput from './CoordInput.vue';
 import type { GeoJSONStoreFeatures } from 'terra-draw'
 import type { MapGeoJSONFeature, GeoJSONSource, LngLatLike } from 'maplibre-gl';
-import type { Polygon } from 'geojson';
 import { std, stdurl } from '../..//std.ts';
-import type { IconsetList, Feature } from '../../types.ts';
+import type { IconsetList } from '../../types.ts';
 import CloudTAKFeatView from './FeatView.vue';
 import {
     IconSearch,
@@ -720,7 +719,7 @@ function setLocation() {
             }
         })
 
-        await updateCOT();
+        await mapStore.updateCOT();
     });
 }
 
@@ -769,7 +768,7 @@ async function handleRadial(event: string): Promise<void> {
         }
 
         await mapStore.worker.db.remove(String(cot.id))
-        await updateCOT();
+        await mapStore.updateCOT();
     } else if (event === 'cot:lock') {
         locked.value.push(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
         closeRadial()
@@ -781,7 +780,7 @@ async function handleRadial(event: string): Promise<void> {
         closeRadial()
     } else if (event === 'context:new') {
         await mapStore.worker.db.add(mapStore.radial.cot);
-        updateCOT();
+        mapStore.updateCOT();
         closeRadial()
     } else if (event === 'context:info') {
         // @ts-expect-error Figure out geometry.coordinates type
@@ -826,7 +825,7 @@ async function editGeometry(featid: string) {
         });
 
         await mapStore.worker.db.hide(cot.id);
-        updateCOT();
+        mapStore.updateCOT();
 
         const errorStatus = mapStore.draw.addFeatures([feat as GeoJSONStoreFeatures]).filter((status) => {
             return !status.valid;
@@ -840,47 +839,11 @@ async function editGeometry(featid: string) {
     } catch (err) {
         await mapStore.worker.db.unhide(cot.id);
         mapStore.draw.setMode('static');
-        updateCOT();
+        mapStore.updateCOT();
         mapStore.drawOptions.mode = 'static';
         mapStore.draw.stop();
 
         emit('err', err);
-    }
-}
-
-async function updateCOT() {
-    try {
-        const diff = await mapStore.worker.db.diff();
-
-        if (
-            (diff.add && diff.add.length)
-            || (diff.remove && diff.remove.length)
-            || (diff.update && diff.update.length)
-        ) {
-            const source = mapStore.map.getSource('-1') as GeoJSONSource
-            if (source) source.updateData(diff);
-        }
-
-        if (locked.value.length && await mapStore.worker.db.has(locked.value[locked.value.length - 1])) {
-            let featid = locked.value[locked.value.length - 1];
-            if (featid) {
-                const feat = await mapStore.worker.db.get(featid);
-                if (feat && feat.geometry.type === "Point") {
-                    const flyTo = {
-                        center: feat.properties.center as LngLatLike,
-                        speed: Infinity
-                    };
-                    mapStore.map.flyTo(flyTo);
-
-                    if (mapStore.radial.mode) {
-                        mapStore.radial.x = mapStore.container ? mapStore.container.clientWidth / 2 : 0;
-                        mapStore.radial.y = mapStore.container ? mapStore.container.clientHeight / 2 : 0;
-                    }
-                }
-            }
-        }
-    } catch (err) {
-        console.error(err);
     }
 }
 
@@ -904,96 +867,6 @@ async function mountMap(): Promise<void> {
 
             await mapStore.initOverlays();
             await mapStore.initDraw();
-
-            // Deselect event is for editing existing features
-            mapStore.draw.on('deselect', async () => {
-                if (!mapStore.edit) return;
-
-                const feat = mapStore.draw.getSnapshotFeature(mapStore.edit.id);
-
-                if (!feat) throw new Error('Could not find underlying marker');
-
-                delete feat.properties.center;
-
-                await mapStore.worker.db.unhide(mapStore.edit.id);
-
-                mapStore.edit = undefined
-
-                mapStore.draw.setMode('static');
-                mapStore.drawOptions.mode = 'static';
-                mapStore.draw.stop();
-
-                await mapStore.worker.db.add(feat as Feature);
-
-                await updateCOT();
-            })
-
-            // Finish event is for creating new features
-            mapStore.draw.on('finish', async (id, context) => {
-                if (!mapStore.draw) throw new Error('Drawing Tools haven\'t loaded');
-
-                if (context.action === "draw") {
-                    if (mapStore.draw.getMode() === 'select' || mapStore.edit) {
-                        return;
-                    } else if (mapStore.draw.getMode() === 'freehand') {
-                        const feat = mapStore.draw.getSnapshotFeature(id);
-                        if (!feat) throw new Error('Could not find underlying marker');
-                        mapStore.draw.removeFeatures([id]);
-                        mapStore.draw.setMode('static');
-                        mapStore.drawOptions.mode = 'static';
-                        mapStore.draw.stop();
-
-                        (await mapStore.worker.db.touching(feat.geometry as Polygon)).forEach((feat) => {
-                            mapStore.selected.set(feat.id, feat);
-                        })
-
-                        return;
-                    }
-
-                    const storeFeat = mapStore.draw.getSnapshotFeature(id);
-                    if (!storeFeat) throw new Error('Could not find underlying marker');
-
-                    const now = new Date();
-                    const feat: Feature = {
-                        id: String(id),
-                        type: 'Feature',
-                        path: '/',
-                        properties: {
-                            id: String(id),
-                            type: 'u-d-p',
-                            how: 'h-g-i-g-o',
-                            archived: true,
-                            callsign: 'New Feature',
-                            time: now.toISOString(),
-                            start: now.toISOString(),
-                            stale: new Date(now.getTime() + 3600).toISOString(),
-                            center: [0,0]
-                        },
-                        geometry: JSON.parse(JSON.stringify(storeFeat.geometry))
-                    };
-
-                    if (
-                        mapStore.draw.getMode() === 'polygon'
-                        || mapStore.draw.getMode() === 'angled-rectangle'
-                        || mapStore.draw.getMode() === 'sector'
-                    ) {
-                        feat.properties.type = 'u-d-f';
-                    } else if (mapStore.draw.getMode() === 'linestring') {
-                        feat.properties.type = 'u-d-f';
-                    } else if (mapStore.draw.getMode() === 'point') {
-                        feat.properties.type = mapStore.drawOptions.pointMode || 'u-d-p';
-                        feat.properties["marker-opacity"] = 1;
-                        feat.properties["marker-color"] = '#00FF00';
-                    }
-
-                    mapStore.draw.removeFeatures([id]);
-                    mapStore.draw.setMode('static');
-                    mapStore.drawOptions.mode = 'static';
-                    mapStore.draw.stop();
-                    await mapStore.worker.db.add(feat);
-                    await updateCOT();
-                }
-            });
 
             timer.value = setInterval(async () => {
                 if (!mapStore.map) return;
