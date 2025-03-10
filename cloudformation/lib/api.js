@@ -552,11 +552,11 @@ export default {
         }
     },
     Outputs: {
-        API: {
-            Description: 'API ELB',
-            Value: cf.join(['http://', cf.getAtt('ELB', 'DNSName')])
+        APIURLCNAME: {
+            Description: 'Hosted API CNAME target (API ELB)',
+            Value: cf.join([cf.getAtt('ELB', 'DNSName'), '.'])
         },
-        HostedURL: {
+        APIURL: {
             Description: 'Hosted API Location',
             Export: {
                 Name: cf.join([cf.stackName, '-hosted'])
