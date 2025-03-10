@@ -8,6 +8,7 @@
 */
 
 import { defineStore } from 'pinia'
+import { distance } from '@turf/distance';
 import * as Comlink from 'comlink';
 import AtlasWorker from '../workers/atlas.ts?worker&url';
 import COT from '../base/cot.ts';
@@ -21,7 +22,7 @@ import type Atlas from '../workers/atlas.ts';
 import { CloudTAKTransferHandler } from '../workers/atlas.ts';
 
 import type { ProfileOverlay, Basemap, APIList } from '../types.ts';
-import type { Feature } from 'geojson';
+import type { Feature, Polygon, Position } from 'geojson';
 import type { LngLat, Point, MapMouseEvent, MapGeoJSONFeature } from 'maplibre-gl';
 
 export type TAKNotification = {
@@ -200,6 +201,42 @@ export const useMapStore = defineStore('cloudtak', {
             this.map.removeSource('-2');
 
             this.isTerrainEnabled = false;
+        },
+
+        updateCOT: async function(): Promise<void> {
+            try {
+                const diff = await this.worker.db.diff();
+
+                if (
+                    (diff.add && diff.add.length)
+                    || (diff.remove && diff.remove.length)
+                    || (diff.update && diff.update.length)
+                ) {
+                    const source = this.map.getSource('-1') as GeoJSONSource
+                    if (source) source.updateData(diff);
+                }
+
+                if (locked.value.length && await this.worker.db.has(locked.value[locked.value.length - 1])) {
+                    const featid = locked.value[locked.value.length - 1];
+                    if (featid) {
+                        const feat = await this.worker.db.get(featid);
+                        if (feat && feat.geometry.type === "Point") {
+                            const flyTo = {
+                                center: feat.properties.center as LngLatLike,
+                                speed: Infinity
+                            };
+                            this.map.flyTo(flyTo);
+
+                            if (this.radial.mode) {
+                                this.radial.x = this.container ? this.container.clientWidth / 2 : 0;
+                                this.radial.y = this.container ? this.container.clientHeight / 2 : 0;
+                            }
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error(err);
+            }
         },
 
         /**
@@ -519,15 +556,14 @@ export const useMapStore = defineStore('cloudtak', {
             const toCustom = (event: terraDraw.TerraDrawMouseEvent): Position | undefined => {
                 let closest: {
                     dist: number
-                    cot: COT | undefined
                     coord: Position
                 } | undefined = undefined;
 
-                for (const coord in this.drawOptions.snapping) {
+                for (const coord of this.drawOptions.snapping.values()) {
                     const dist = distance([event.lng, event.lat], coord);
 
                     if (!closest || (dist < closest.dist)) {
-                        closest = { dist, cot, coord }
+                        closest = { dist, coord }
                     }
                 }
 
@@ -535,9 +571,7 @@ export const useMapStore = defineStore('cloudtak', {
                     // Base Threshold / Math.pow(decayFactor, zoomLevel)
                     const threshold = 1000 / Math.pow(2, this.map.getZoom());
 
-                    // @ts-expect-error Somehow getting assigned a never value
                     if (closest.dist < threshold) {
-                        // @ts-expect-error Somehow getting assigned a never value
                         return closest.coord;
                     }
 
@@ -547,7 +581,7 @@ export const useMapStore = defineStore('cloudtak', {
                 }
             }
 
-            this._draw = new terraDraw.TerraDraw({
+            const draw = new terraDraw.TerraDraw({
                 adapter: new TerraDrawMapLibreGLAdapter({
                     map: this.map,
                     // @ts-expect-error TS is complaining
@@ -609,6 +643,97 @@ export const useMapStore = defineStore('cloudtak', {
                     })
                 ]
             });
+
+            // Deselect event is for editing existing features
+            draw.on('deselect', async () => {
+                if (!this.edit) return;
+
+                const feat = draw.getSnapshotFeature(edit.id);
+
+                if (!feat) throw new Error('Could not find underlying marker');
+
+                delete feat.properties.center;
+
+                await this.worker.db.unhide(this.edit.id);
+
+                this.edit = undefined
+
+                draw.setMode('static');
+                this.drawOptions.mode = 'static';
+                draw.stop();
+
+                await this.worker.db.add(feat as Feature);
+
+                await this.updateCOT();
+            })
+
+            // Finish event is for creating new features
+            draw.on('finish', async (id, context) => {
+                if (context.action === "draw") {
+                    if (draw.getMode() === 'select' || this.edit) {
+                        return;
+                    } else if (draw.getMode() === 'freehand') {
+                        const feat = draw.getSnapshotFeature(id);
+                        if (!feat) throw new Error('Could not find underlying marker');
+                        draw.removeFeatures([id]);
+                        draw.setMode('static');
+                        this.drawOptions.mode = 'static';
+                        draw.stop();
+
+                        (await this.worker.db.touching(feat.geometry as Polygon)).forEach((feat) => {
+                            this.selected.set(feat.id, feat);
+                        })
+
+                        return;
+                    }
+
+                    const storeFeat = draw.getSnapshotFeature(id);
+                    if (!storeFeat) throw new Error('Could not find underlying marker');
+
+                    const now = new Date();
+                    const feat: Feature = {
+                        id: String(id),
+                        type: 'Feature',
+                        path: '/',
+                        properties: {
+                            id: String(id),
+                            type: 'u-d-p',
+                            how: 'h-g-i-g-o',
+                            archived: true,
+                            callsign: 'New Feature',
+                            time: now.toISOString(),
+                            start: now.toISOString(),
+                            stale: new Date(now.getTime() + 3600).toISOString(),
+                            center: [0,0]
+                        },
+                        geometry: JSON.parse(JSON.stringify(storeFeat.geometry))
+                    };
+
+                    if (
+                        draw.getMode() === 'polygon'
+                        || draw.getMode() === 'angled-rectangle'
+                        || draw.getMode() === 'sector'
+                    ) {
+                        feat.properties.type = 'u-d-f';
+                    } else if (draw.getMode() === 'linestring') {
+                        feat.properties.type = 'u-d-f';
+                    } else if (draw.getMode() === 'point') {
+                        feat.properties.type = this.drawOptions.pointMode || 'u-d-p';
+                        feat.properties["marker-opacity"] = 1;
+                        feat.properties["marker-color"] = '#00FF00';
+                    }
+
+                    draw.removeFeatures([id]);
+                    draw.setMode('static');
+                    this.drawOptions.mode = 'static';
+                    draw.stop();
+                    await this.worker.db.add(feat);
+                    await this.updateCOT();
+                }
+            });
+
+
+            this._draw = draw;
             this.isLoaded = true;
         }
     },

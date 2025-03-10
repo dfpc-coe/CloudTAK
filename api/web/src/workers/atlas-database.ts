@@ -9,7 +9,7 @@ import type Atlas from './atlas.ts';
 import Subscription from '../base/subscription.ts';
 import { coordEach } from '@turf/meta'
 import COT, { OriginMode } from '../base/cot.ts';
-import type { GeoJSONSourceDiff } from 'maplibre-gl';
+import type { GeoJSONSourceDiff, LngLatLike } from 'maplibre-gl';
 import { booleanWithin } from '@turf/boolean-within';
 import type { Polygon } from 'geojson';
 import type { Feature, APIList } from '../types.ts';
@@ -116,13 +116,13 @@ export default class AtlasDatabase {
      * so that vertex snapping can take place when editing
      */
     async snapping(bboxarr: [number, number][]): Promise<Set<[number, number]>> {
-        const bounds = new LngLatBounds(bboxarr);
+        const bounds = new LngLatBounds(bboxarr as [LngLatLike, LngLatLike]);
         const coords = new Set<[number, number]>();
 
         for (const cot of this.cots.values()) {
             coordEach(cot.geometry, (coord) => {
-                if (bounds.contains(coord)) {
-                    coords.add(coord.slice(0, 2));
+                if (bounds.contains(coord as LngLatLike)) {
+                    coords.add(coord.slice(0, 2) as [number, number]);
                 }
             });
         }

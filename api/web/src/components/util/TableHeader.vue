@@ -2,8 +2,8 @@
     <thead>
         <tr>
             <th
-                v-for='h in shown'
-                :key='h'
+                v-for='s in shown'
+                :key='s'
             >
                 <div class='d-flex'>
                     <span
@@ -31,7 +31,7 @@
                         />
                     </span>
 
-                    <template v-if='shown[shown.length - 1] === h'>
+                    <template v-if='shown[shown.length - 1] === s'>
                         <div class='ms-auto'>
                             <TablerDropdown>
                                 <IconSettings
