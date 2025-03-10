@@ -3,9 +3,11 @@
 */
 
 import { std, stdurl } from '../std.ts';
+import { LngLatBounds } from 'maplibre-gl'
 import jsonata from 'jsonata';
 import type Atlas from './atlas.ts';
 import Subscription from '../base/subscription.ts';
+import { coordEach } from '@turf/meta'
 import COT, { OriginMode } from '../base/cot.ts';
 import type { GeoJSONSourceDiff } from 'maplibre-gl';
 import { booleanWithin } from '@turf/boolean-within';
@@ -107,6 +109,25 @@ export default class AtlasDatabase {
         for (const image of images) {
             this.images.add(image);
         }
+    }
+
+    /**
+     * Return a Set of coordinates within the given Map bounds
+     * so that vertex snapping can take place when editing
+     */
+    async snapping(bboxarr: [number, number][]): Promise<Set<[number, number]>> {
+        const bounds = new LngLatBounds(bboxarr);
+        const coords = new Set<[number, number]>();
+
+        for (const cot of this.cots.values()) {
+            coordEach(cot.geometry, (coord) => {
+                if (bounds.contains(coord)) {
+                    coords.add(coord.slice(0, 2));
+                }
+            });
+        }
+
+        return coords;
     }
 
     /**
