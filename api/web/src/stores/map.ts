@@ -51,6 +51,7 @@ export const useMapStore = defineStore('cloudtak', {
         drawOptions: {
             mode: string;
             pointMode: string;
+            snapping: Set<[number, number]>;
         },
         select: {
             mode?: string;
@@ -96,7 +97,8 @@ export const useMapStore = defineStore('cloudtak', {
             },
             drawOptions: {
                 mode: 'static',
-                pointMode: 'u-d-p'
+                pointMode: 'u-d-p',
+                snapping: new Set()
             },
             radial: {
                 mode: undefined,
@@ -308,6 +310,14 @@ export const useMapStore = defineStore('cloudtak', {
                 this.bearing = map.getBearing()
             })
 
+            map.on('moveend', async () => {
+                if (this.drawOptions.mode !== 'static') {
+                    this.drawOptions.snapping = await this.worker.db.snapping(this.map.getBounds().toArray());
+                } else {
+                    this.drawOptions.snapping.clear();
+                }
+            });
+
             map.on('click', async (e: MapMouseEvent) => {
                 if (this.draw.getMode() !== 'static') return;
 
@@ -506,7 +516,6 @@ export const useMapStore = defineStore('cloudtak', {
             this.radial.mode = opts.mode;
         },
         initDraw: async function() {
-            /** TODO This is jacked due to no await support
             const toCustom = (event: terraDraw.TerraDrawMouseEvent): Position | undefined => {
                 let closest: {
                     dist: number
@@ -514,17 +523,13 @@ export const useMapStore = defineStore('cloudtak', {
                     coord: Position
                 } | undefined = undefined;
 
-                this.worker.db.filter((cot) => {
-                    coordEach(cot.geometry, (coord: Position) => {
-                        const dist = distance([event.lng, event.lat], coord);
+                for (const coord in this.drawOptions.snapping) {
+                    const dist = distance([event.lng, event.lat], coord);
 
-                        if (!closest || (dist < closest.dist)) {
-                            closest = { dist, cot, coord }
-                        }
-                    });
-
-                    return false;
-                }, { mission: true})
+                    if (!closest || (dist < closest.dist)) {
+                        closest = { dist, cot, coord }
+                    }
+                }
 
                 if (closest) {
                     // Base Threshold / Math.pow(decayFactor, zoomLevel)
@@ -541,7 +546,6 @@ export const useMapStore = defineStore('cloudtak', {
                     return;
                 }
             }
-            */
 
             this._draw = new terraDraw.TerraDraw({
                 adapter: new TerraDrawMapLibreGLAdapter({
@@ -564,12 +568,12 @@ export const useMapStore = defineStore('cloudtak', {
                         editable: true
                     }),
                     new terraDraw.TerraDrawLineStringMode({
-                        editable: true
-                        // snapping: { toCustom }
+                        editable: true,
+                        snapping: { toCustom }
                     }),
                     new terraDraw.TerraDrawPolygonMode({
-                        editable: true
-                        // snapping: { toCustom }
+                        editable: true,
+                        snapping: { toCustom }
                     }),
                     new terraDraw.TerraDrawAngledRectangleMode(),
                     new terraDraw.TerraDrawFreehandMode(),
