@@ -25,10 +25,13 @@
                         <li class='list-inline-item'>
                             Copyright © 2025
                             <a
-                                href='.'
+                                href='https://www.colorado.gov/'
                                 class='link-secondary'
                             >State of Colorado</a>
-                            - MIT License
+                            - <a 
+                                href='https://github.com/dfpc-coe/CloudTAK/blob/main/LICENSE'
+                                class='link-secondary'  
+                             >AGPL-3.0 license</a>
                         </li>
                     </ul>
                 </div>
