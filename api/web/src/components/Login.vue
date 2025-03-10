@@ -14,7 +14,7 @@
                                     style='margin-bottom: 24px;'
                                 >
                                     <img
-                                        src='/logo.png'
+                                        :src='config && config.logo ? config.logo : "/logo.png"'
                                         style='height: 150px;'
                                         alt='CloudTAK System Logo'
                                     >
@@ -43,8 +43,9 @@
                                             </label>
                                             <span class='ms-auto'>
                                                 <a
+                                                    v-if='config && config.forgot'
                                                     class='cursor-pointer'
-                                                    @click='external("https://cotak.gov/forgot-password")'
+                                                    :href='config.forgot'
                                                 >Forgot Password</a>
                                             </span>
                                         </div>
@@ -68,8 +69,8 @@
                                 </template>
                             </div>
                         </div>
-                        <div class='text-center text-muted mt-3'>
-                            Don't have account yet? <a href='mailto:nicholas.ingalls@state.co.us'>Contact Us</a>
+                        <div v-if='config && config.signup' class='text-center text-muted mt-3'>
+                            Don't have an account yet? <a :href='config.signup'>Sign Up</a>
                         </div>
                     </div>
                 </div>
@@ -79,8 +80,8 @@
 </template>
 
 <script setup lang='ts'>
-import type { Login_Create, Login_CreateRes } from '../types.ts'
-import { ref } from 'vue';
+import type { Login_Create, Login_CreateRes, LoginConfig } from '../types.ts'
+import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router'
 import { std } from '../std.ts';
 import {
@@ -94,14 +95,15 @@ const route = useRoute();
 const router = useRouter();
 
 const loading = ref(false);
+const config = ref<LoginConfig | undefined>();
 const body = ref<Login_Create>({
     username: '',
     password: ''
 });
 
-function external(url: string) {
-    window.location.assign(url);
-}
+onMounted(async () => {
+    config.value = await std('/api/config/login') as LoginConfig;
+})
 
 async function createLogin() {
     loading.value = true;

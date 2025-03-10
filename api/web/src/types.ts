@@ -64,6 +64,7 @@ export type Server_Update = paths["/server"]["patch"]["requestBody"]["content"][
 export type Server = paths["/server"]["get"]["responses"]["200"]["content"]["application/json"]
 
 export type Login = paths["/login"]["get"]["responses"]["200"]["content"]["application/json"]
+export type LoginConfig = paths["/config/login"]["get"]["responses"]["200"]["content"]["application/json"]
 export type Login_Create = paths["/login"]["post"]["requestBody"]["content"]["application/json"]
 export type Login_CreateRes = paths["/login"]["post"]["responses"]["200"]["content"]["application/json"]
 
