@@ -67,8 +67,8 @@
             <template v-else-if='raw && !disabled'>
                 <TablerInput
                     :rows='20'
-                    :modelValue='JSON.stringify(environment, null, 4)'
-                    @update:modelValue='environment = JSON.parse($event)'
+                    :model-value='JSON.stringify(environment, null, 4)'
+                    @update:model-value='environment = JSON.parse($event)'
                 />
             </template>
             <TablerAlert

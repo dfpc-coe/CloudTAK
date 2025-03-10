@@ -150,9 +150,9 @@
             <template v-else-if='mode === "lease"'>
                 <div class='col-12 px-2'>
                     <TablerInput
+                        v-model='leasePaging.filter'
                         icon='search'
                         placeholder='Lease Search'
-                        v-model='leasePaging.filter'
                     />
                 </div>
                 <TablerLoading
