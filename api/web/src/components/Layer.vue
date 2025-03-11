@@ -357,7 +357,7 @@ import {
 const route = useRoute();
 const router = useRouter();
 
-const mode = ref(route.name.includes('outgoing') ? 'outgoing' : 'incoming');
+const mode = ref(String(route.name).includes('outgoing') ? 'outgoing' : 'incoming');
 const softAlert = ref(false);
 const loading = ref({
     layer: true,

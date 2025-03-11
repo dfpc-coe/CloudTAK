@@ -1,6 +1,6 @@
 <template>
     <div class='row g-2 mx-2 my-2'>
-        <div class='col-12 mb-3' >
+        <div class='col-12 mb-3'>
             <div
                 class='btn-group w-100'
                 role='group'

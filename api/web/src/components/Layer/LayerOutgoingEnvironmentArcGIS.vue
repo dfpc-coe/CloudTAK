@@ -169,8 +169,8 @@
             </div>
 
             <TablerInput
-                :label='`ArcGIS ${mode} Layer URL`'
                 v-model='environment[`ARCGIS_${mode.toUpperCase()}_URL`]'
+                :label='`ArcGIS ${mode} Layer URL`'
                 :disabled='disabled'
             />
         </div>
@@ -183,14 +183,16 @@
                             class='cursor-pointer btn btn-secondary'
                             :disabled='!environment.ARCGIS_PORTAL || !environment.ARCGIS_USERNAME || !environment.ARCGIS_PASSWORD'
                             @click='esriView = true'
-                        >Connect</button>
+                        >
+                            Connect
+                        </button>
                     </div>
                 </div>
             </template>
             <template v-else>
                 <EsriPortal
-                    :disabled='disabled'
                     :key='mode'
+                    :disabled='disabled'
                     :url='environment.ARCGIS_PORTAL'
                     :readonly='true'
                     :pane='false'
@@ -208,20 +210,13 @@
 <script setup>
 import { ref, watch } from 'vue';
 import {
-    TablerIconButton,
-    TablerDelete,
     TablerInput,
-    TablerNone,
 } from '@tak-ps/vue-tabler';
 import EsriPortal from './../util/EsriPortal.vue';
 import {
-    IconPlus,
     IconPoint,
     IconLine,
     IconPolygon,
-    IconSquareChevronRight,
-    IconChevronDown,
-    IconFilter,
 } from '@tabler/icons-vue'
 
 const props = defineProps({
@@ -249,9 +244,9 @@ if (props.modelValue.ARCGIS_PORTAL && props.modelValue.ARCGIS_PORTAL.includes('a
 const esriView = ref(false);
 const environment = ref(props.modelValue);
 
-if (!environment.ARCGIS_POINTS_URL) environment.ARCGIS_POINTS_URL = '';
-if (!environment.ARCGIS_LINES_URL) environment.ARCGIS_LINES_URL = '';
-if (!environment.ARCGIS_POLYS_URL) environment.ARCGIS_POLYS_URL = '';
+if (!environment.value.ARCGIS_POINTS_URL) environment.value.ARCGIS_POINTS_URL = '';
+if (!environment.value.ARCGIS_LINES_URL) environment.value.ARCGIS_LINES_URL = '';
+if (!environment.value.ARCGIS_POLYS_URL) environment.value.ARCGIS_POLYS_URL = '';
 
 watch(type, () => {
     delete environment.value.ARCGIS_PORTAL;
