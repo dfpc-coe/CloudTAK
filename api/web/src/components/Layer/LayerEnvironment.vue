@@ -77,7 +77,7 @@
                 :err='new Error("Layer failed to return an input schema on the Capabilities object")'
             />
             <template v-else-if='direction === "incoming" && props.capabilities.name === "etl-arcgis"'>
-                <LayerEnvironmentArcGIS
+                <LayerEnvironmentIncomingArcGIS
                     v-model='environment'
                     :disabled='disabled'
                 />
@@ -152,7 +152,7 @@ import {
     TablerIconButton,
     TablerTimeZone,
 } from '@tak-ps/vue-tabler';
-import LayerEnvironmentArcGIS from './LayerEnvironmentArcGIS.vue';
+import LayerEnvironmentIncomingArcGIS from './LayerEnvironmentIncomingArcGIS.vue';
 import Schema from './utils/Schema.vue';
 import {
     IconX,
