@@ -105,7 +105,7 @@
                         >
                             <div class='card-header d-flex align-items-center'>
                                 <TablerLoading
-                                    inline='true'
+                                    :inline='true'
                                     desc='Layer is updating'
                                 />
                                 <div class='ms-auto btn-list'>
@@ -371,8 +371,13 @@ const capabilities = ref<ETLLayerTaskCapabilities | undefined>(undefined);
 const alerts = ref<ETLLayerAlertList | undefined>(undefined);
 const looping = ref<ReturnType<typeof setInterval> | undefined>(undefined);
 
-watch(stack.value, async () => {
-    if (stack.value && stack.value.status.includes("_COMPLETE")) {
+watch(stack, async (newStack, oldStack) => {
+    if (
+        oldStack
+        && newStack
+        && newStack.status.includes("_COMPLETE")
+        && !oldStack.status.includes("_COMPLETE")
+    ) {
         loading.value.layer = true;
         await fetch()
         loading.value.layer = false;
