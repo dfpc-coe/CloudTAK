@@ -76,7 +76,7 @@
                 title='Missing Capabilities'
                 :err='new Error("Layer failed to return an input schema on the Capabilities object")'
             />
-            <template v-else-if='props.capabilities[direction].schema.input.display === "arcgis"'>
+            <template v-else-if='direction === "incoming" && props.capabilities.name === "etl-arcgis"'>
                 <LayerEnvironmentArcGIS
                     v-model='environment'
                     :disabled='disabled'

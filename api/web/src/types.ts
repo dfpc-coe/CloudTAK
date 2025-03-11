@@ -116,6 +116,9 @@ export type ETLConnectionAssetList = paths["/connection/{:connectionid}/asset"][
 export type ETLAgency = paths["/agency/{:agencyid}"]["get"]["responses"]["200"]["content"]["application/json"]
 
 export type ETLLayer = paths["/connection/{:connectionid}/layer/{:layerid}"]["get"]["responses"]["200"]["content"]["application/json"]
+export type ETLLayerAlertList = paths["/connection/{:connectionid}/layer/{:layerid}/alert"]["get"]["responses"]["200"]["content"]["application/json"]
+export type ETLLayerTask = paths["/connection/{:connectionid}/layer/{:layerid}/task"]["get"]["responses"]["200"]["content"]["application/json"]
+export type ETLLayerTaskCapabilities = paths["/connection/{:connectionid}/layer/{:layerid}/task/capabilities"]["get"]["responses"]["200"]["content"]["application/json"]
 export type ETLLayerIncoming = paths["/connection/{:connectionid}/layer/{:layerid}/incoming"]["post"]["responses"]["200"]["content"]["application/json"]
 
 export type ETLData = paths["/connection/{:connectionid}/data/{:dataid}"]["get"]["responses"]["200"]["content"]["application/json"]

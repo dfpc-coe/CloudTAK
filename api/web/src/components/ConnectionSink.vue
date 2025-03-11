@@ -173,6 +173,7 @@ import EsriPortal from './util/EsriPortal.vue';
 import {
     TablerNone,
     TablerBreadCrumb,
+    TablerIconButton,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 

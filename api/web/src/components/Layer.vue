@@ -13,7 +13,7 @@
         </div>
 
         <TablerLoading
-            v-if='loading.layer'
+            v-if='loading.layer || !layer || !alerts || !stack'
             class='text-white'
             desc='Loading Layer'
         />
@@ -325,10 +325,11 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { ref, watch, onMounted, onUnmounted } from 'vue';
+import type { ETLLayer, ETLLayerTask, ETLLayerTaskCapabilities, ETLLayerAlertList } from '../types.ts';
+import { std, stdurl } from '../std.ts';
 import { useRoute, useRouter } from 'vue-router';
-import { std, stdurl } from '/src/std.ts';
 import PageFooter from './PageFooter.vue';
 import LayerStatus from './Layer/utils/Status.vue';
 import timeDiff from '../timediff.ts';
@@ -364,14 +365,14 @@ const loading = ref({
     outgoing: false,
     stack: true
 });
-const stack = ref({})
-const layer = ref({})
-const capabilities = ref();
-const alerts = ref({})
-const looping = ref(false);
+const stack = ref<ETLLayerTask | undefined>(undefined)
+const layer = ref<ETLLayer | undefined>(undefined)
+const capabilities = ref<ETLLayerTaskCapabilities | undefined>(undefined);
+const alerts = ref<ETLLayerAlertList | undefined>(undefined);
+const looping = ref<ReturnType<typeof setInterval> | undefined>(undefined);
 
 watch(stack.value, async () => {
-    if (stack.value.status.includes("_COMPLETE")) {
+    if (stack.value && stack.value.status.includes("_COMPLETE")) {
         loading.value.layer = true;
         await fetch()
         loading.value.layer = false;
@@ -433,7 +434,7 @@ async function createIncoming() {
 async function fetch() {
     const url = stdurl(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}`);
     url.searchParams.append('alarms', 'true');
-    layer.value = await std(url);
+    layer.value = await std(url) as ETLLayer;
 }
 
 async function cancelUpdate() {
@@ -442,7 +443,7 @@ async function cancelUpdate() {
     });
 }
 
-async function deleteConfig(direction) {
+async function deleteConfig(direction: string) {
     loading.value.layer = true;
 
     await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/${direction}`, {
@@ -459,13 +460,13 @@ async function deleteConfig(direction) {
 
 async function fetchStatus(load = false) {
     loading.value.stack = load;
-    stack.value = await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/task`);
+    stack.value = await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/task`) as ETLLayerTask;
     loading.value.stack = false;
 }
 
 async function fetchCapabilities() {
     try {
-        capabilities.value = await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/task/capabilities`);
+        capabilities.value = await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/task/capabilities`) as ETLLayerTaskCapabilities;
         softAlert.value = false
     } catch (err) {
         softAlert.value = true;
@@ -474,6 +475,6 @@ async function fetchCapabilities() {
 }
 
 async function fetchAlerts() {
-    alerts.value = await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/alert`);
+    alerts.value = await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/alert`) as ETLLayerAlertList;
 }
 </script>
