@@ -12,7 +12,9 @@ import Config from '../lib/config.js';
 import Schedule from '../lib/schedule.js';
 import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
+import type { InferInsertModel } from 'drizzle-orm';;
 import { StandardResponse, LayerResponse, LayerIncomingResponse, LayerOutgoingResponse } from '../lib/types.js';
+import { LayerIncoming, LayerOutgoing } from '../lib/schema.js';
 import DataMission from '../lib/data-mission.js';
 import { MAX_LAYERS_IN_DATA_SYNC } from '../lib/data-mission.js';
 import { Layer_Config } from '../lib/models/Layer.js';
@@ -389,10 +391,18 @@ export default async function router(schema: Schema, config: Config) {
                 if (!status.endsWith('_COMPLETE')) throw new Err(400, null, 'Layer is still Deploying, Wait for Deploy to succeed before updating')
             }
 
-            const incoming = await config.models.LayerIncoming.commit(layer.id, {
+            const updated: InferInsertModel<typeof LayerIncoming> = {
+                // @ts-expect-error Inference expects a Date and not an SQL blob
                 updated: sql`Now()`,
                 ...req.body
-            });
+            }
+
+            // Ephemeral storage stores cached password, if the env changes, the ephemeral storage should be cleared
+            if (req.body.environment) {
+                updated.ephemeral = {};
+            }
+
+            const incoming = await config.models.LayerIncoming.commit(layer.id, updated)
 
             if (changed) {
                 try {
@@ -568,10 +578,18 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'Layer does not have outgoing config');
             }
 
-            const outgoing = await config.models.LayerOutgoing.commit(layer.id, {
+            const updated: InferInsertModel<typeof LayerOutgoing> = {
+                // @ts-expect-error Inference expects a Date and not an SQL blob
                 updated: sql`Now()`,
                 ...req.body
-            });
+            }
+
+            // Ephemeral storage stores cached password, if the env changes, the ephemeral storage should be cleared
+            if (req.body.environment) {
+                updated.ephemeral = {};
+            }
+
+            const outgoing = await config.models.LayerOutgoing.commit(layer.id, updated);
 
             await config.cacher.del(`layer-${req.params.layerid}`);
 
