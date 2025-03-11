@@ -113,6 +113,7 @@ export type ETLConnection = paths["/connection/{:connectionid}"]["get"]["respons
 export type ETLConnectionSink = paths["/connection/{:connectionid}/sink/{:sinkid}"]["get"]["responses"]["200"]["content"]["application/json"]
 
 export type ETLConnectionAssetList = paths["/connection/{:connectionid}/asset"]["get"]["responses"]["200"]["content"]["application/json"]
+export type ETLAgencyList = paths["/agency"]["get"]["responses"]["200"]["content"]["application/json"]
 export type ETLAgency = paths["/agency/{:agencyid}"]["get"]["responses"]["200"]["content"]["application/json"]
 
 export type ETLLayer = paths["/connection/{:connectionid}/layer/{:layerid}"]["get"]["responses"]["200"]["content"]["application/json"]
