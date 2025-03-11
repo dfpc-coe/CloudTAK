@@ -105,10 +105,10 @@ export default {
             }
         },
         PMTilesApiMap: {
-            Type: 'AWS::ApiGateway::BasePathMapping',
-            Properties: {
-                DomainName: cf.ref('PMTilesApiDomain'),
-                RestApiId: cf.ref('PMTilesLambdaAPI')
+           Type: 'AWS::ApiGateway::BasePathMapping',
+           Properties: {
+               DomainName: cf.ref('PMTilesApiDomain'),
+               RestApiId: cf.ref('PMTilesLambdaAPI'),
             }
         },
         PMTilesLambdaAPI: {
@@ -198,6 +198,13 @@ export default {
             Value: cf.join(['https://tiles.', cf.ref('HostedURL')]),
             Export: {
                 Name: cf.join([cf.stackName, '-pmtiles-api'])
+            }
+        },
+        PMTilesAPICNAME: {
+            Description: 'PMTiles API CNAME target',
+            Value: cf.join([ cf.getAtt('PMTilesApiDomain', 'RegionalDomainName'), '.']),
+            Export: {
+                Name: cf.join([cf.stackName, '-pmtiles-api-cname-target'])
             }
         }
     }
