@@ -109,8 +109,8 @@
             </div>
         </template>
 
-        <div class='col-12'>
-            <div class='d-flex justify-content-center pb-4'>
+        <div class='col-12 pb-4'>
+            <div class='d-flex justify-content-center'>
                 <div class='btn-list'>
                     <div
                         class='btn-group'
@@ -167,16 +167,23 @@
                     </div>
                 </div>
             </div>
+
+            <TablerInput
+                :label='`ArcGIS ${mode} Layer URL`'
+                v-model='environment[`ARCGIS_${mode.toUpperCase()}_URL`]'
+                :disabled='disabled'
+            />
         </div>
 
         <div class='col-md-12 mt-3'>
             <template v-if='!esriView'>
                 <div class='d-flex'>
                     <div class='ms-auto'>
-                        <a
+                        <button
                             class='cursor-pointer btn btn-secondary'
+                            :disabled='!environment.ARCGIS_PORTAL || !environment.ARCGIS_USERNAME || !environment.ARCGIS_PASSWORD'
                             @click='esriView = true'
-                        >Connect</a>
+                        >Connect</button>
                     </div>
                 </div>
             </template>
@@ -191,7 +198,6 @@
                     :password='environment.ARCGIS_PASSWORD'
                     :layer='environment[`ARCGIS_${mode.toUpperCase()}_URL`]'
                     @layer='environment[`ARCGIS_${mode.toUpperCase()}_URL`] = $event'
-                    @token='processToken($event)'
                     @close='esriView = false'
                 />
             </template>
@@ -243,8 +249,11 @@ if (props.modelValue.ARCGIS_PORTAL && props.modelValue.ARCGIS_PORTAL.includes('a
 const esriView = ref(false);
 const environment = ref(props.modelValue);
 
+if (!environment.ARCGIS_POINTS_URL) environment.ARCGIS_POINTS_URL = '';
+if (!environment.ARCGIS_LINES_URL) environment.ARCGIS_LINES_URL = '';
+if (!environment.ARCGIS_POLYS_URL) environment.ARCGIS_POLYS_URL = '';
+
 watch(type, () => {
-    delete environment.value.ARCGIS_URL;
     delete environment.value.ARCGIS_PORTAL;
     delete environment.value.ARCGIS_USERNAME;
     delete environment.value.ARCGIS_PASSWORD;
@@ -261,11 +270,4 @@ watch(props.modelValue, () => {
 watch(environment, () => {
     emit('update:modelValue', environment.value);
 });
-
-function processToken(token) {
-    if (!token) return;
-
-    environment.value.ARCGIS_TOKEN = token.token;
-    environment.value.ARCGIS_EXPIRES = token.expires;
-}
 </script>
