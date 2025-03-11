@@ -1,9 +1,6 @@
 <template>
     <div class='row g-2 mx-2 my-2'>
-        <div
-            v-if='!disabled'
-            class='col-12 mb-3'
-        >
+        <div class='col-12 mb-3' >
             <div
                 class='btn-group w-100'
                 role='group'
@@ -14,6 +11,7 @@
                     class='btn-check'
                     name='esri-type'
                     autocomplete='off'
+                    :disabled='disabled'
                     :checked='type === "agol"'
                     @click='type = "agol"'
                 >
@@ -29,6 +27,7 @@
                     class='btn-check'
                     name='esri-type'
                     autocomplete='off'
+                    :disabled='disabled'
                     :checked='type === "portal"'
                     @click='type = "portal"'
                 >
@@ -44,6 +43,7 @@
                     class='btn-check'
                     name='esri-type'
                     autocomplete='off'
+                    :disabled='disabled'
                     :checked='type === "server"'
                     @click='type = "server"'
                 >
@@ -251,7 +251,6 @@
                     :password='environment.ARCGIS_PASSWORD'
                     :layer='environment.ARCGIS_URL'
                     @layer='environment.ARCGIS_URL = $event'
-                    @token='processToken($event)'
                     @close='esriView = false'
                 />
             </template>
@@ -349,12 +348,6 @@ export default {
     methods: {
         connect: function() {
             this.esriView = true;
-        },
-        processToken: function(token) {
-            if (!token) return;
-
-            this.environment.ARCGIS_TOKEN = token.token;
-            this.environment.ARCGIS_EXPIRES = token.expires;
         }
     }
 }
