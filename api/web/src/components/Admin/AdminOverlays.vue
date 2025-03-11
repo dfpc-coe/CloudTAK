@@ -31,6 +31,7 @@
                 <div class='col-md-6'>
                     <TablerInput
                         v-model='paging.filter'
+                        icon='search'
                         label='Name Filter'
                         placeholder='Filter...'
                     />
