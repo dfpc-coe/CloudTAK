@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v7.8.0 - 2025-03-10
+
+- :rocket: @chriselsen Update outputs related to PMTiles API
+
 ### v7.7.0 - 2025-03-10
 
 - :rocket: @chriselsen Fix verbage on login page
