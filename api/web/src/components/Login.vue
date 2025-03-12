@@ -80,7 +80,10 @@
                                 </template>
                             </div>
                         </div>
-                        <div v-if='config && config.signup' class='text-center text-muted mt-3'>
+                        <div
+                            v-if='config && config.signup'
+                            class='text-center text-muted mt-3'
+                        >
                             Don't have an account yet? <a :href='config.signup'>Sign Up</a>
                         </div>
                     </div>

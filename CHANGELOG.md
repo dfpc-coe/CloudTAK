@@ -12,6 +12,17 @@
 
 ### Pending Release
 
+### v7.10.0 - 2025-03-12
+
+- :bug: Fix DataSync limitation checks on LayerIncoming API
+- :tada: Add supoort for Duplex/Read/Write channels during Machine User creation when using COTAK API
+- :rocket: Rewrite AgenctySelect & Machine User Creation in TS
+
+### v7.9.0 - 2025-03-11
+
+- :bug: Invalidate Layer Ephemeral Cache when making changes to Layer Environment
+- :rocket: Add ephemeral Layer Outgoing API endpoints to match Layer Incoming
+
 ### v7.8.0 - 2025-03-10
 
 - :rocket: @chriselsen Update outputs related to PMTiles API

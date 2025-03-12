@@ -2,6 +2,7 @@
     <div class='modal-body'>
         <TablerInput
             v-model='filter'
+            icon='search'
             label='Channel Selection'
             placeholder='Filter Channels...'
         />
