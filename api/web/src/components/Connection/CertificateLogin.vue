@@ -8,6 +8,7 @@
             <template v-else>
                 <div class='col-12'>
                     <TablerInput
+                        icon='user'
                         v-model='body.username'
                         label='Username'
                         @keyup.enter='generate'
@@ -15,6 +16,7 @@
                 </div>
                 <div class='col-12 mt-3'>
                     <TablerInput
+                        icon='lock'
                         v-model='body.password'
                         label='Password'
                         type='password'

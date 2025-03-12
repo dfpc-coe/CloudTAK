@@ -22,6 +22,7 @@
                 <div class='col-md-12 px-2'>
                     <TablerInput
                         v-model='paging.filter'
+                        icon='search'
                         placeholder='Filter...'
                     />
                 </div>
