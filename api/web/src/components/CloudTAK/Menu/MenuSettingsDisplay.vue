@@ -1,11 +1,10 @@
 <template>
-    <MenuTemplate name='Display Preferences'>
+    <MenuTemplate
+        name='Display Preferences'
+        :loading='loading'
+    >
         <div class='mx-2'>
-            <TablerLoading v-if='loading' />
-            <div
-                v-else
-                class='col-12'
-            >
+            <div class='col-12' >
                 <TablerEnum
                     v-model='profile.display_stale'
                     label='Remove Stale Elements'
@@ -85,53 +84,44 @@
     </MenuTemplate>
 </template>
 
-<script>
+<script setup>
+import { useRouter } from 'vue-router';
+import { ref, computed, unref, onMounted } from 'vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import { std } from '/src/std.ts';
 import {
     TablerEnum,
     TablerLoading
 } from '@tak-ps/vue-tabler';
-import { useProfileStore } from '/src/stores/profile.ts';
-const profileStore = useProfileStore();
+import { useMapStore } from '/src/stores/map.ts';
+const mapStore = useMapStore();
 
-export default {
-    name: 'CloudTAKSettings',
-    components: {
-        TablerEnum,
-        TablerLoading,
-        MenuTemplate,
-    },
-    data: function() {
-        return {
-            loading: false,
-            profile: {},
-            profileSchema: {}
-        }
-    },
-    computed: {
-        tak_groups: function() {
-            return this.profileSchema.properties.tak_group.anyOf.map((a) => { return a.const });
-        },
-        tak_roles: function() {
-            return this.profileSchema.properties.tak_role.anyOf.map((a) => { return a.const });
-        }
-    },
-    mounted: async function() {
-        this.loading = true;
-        await this.fetchProfileSchema();
-        await profileStore.load();
-        this.profile = JSON.parse(JSON.stringify(profileStore.profile));
-        this.loading = false;
-    },
-    methods: {
-        fetchProfileSchema: async function() {
-            this.profileSchema = (await std('/api/schema?method=PATCH&url=/profile')).body
-        },
-        updateProfile: async function() {
-            await profileStore.update(this.profile);
-            this.$router.push("/menu/settings");
-        }
-    }
+const router = useRouter();
+const loading = ref(false);
+const profile = ref({});
+const profileSchema = ref({});
+
+const tak_groups = computed(() => {
+    return this.profileSchema.properties.tak_group.anyOf.map((a) => { return a.const });
+})
+
+const tak_roles = computed(() => {
+    return this.profileSchema.properties.tak_role.anyOf.map((a) => { return a.const });
+})
+
+onMounted(async () => {
+    loading.value = true;
+    await fetchProfileSchema();
+    profile.value = await mapStore.worker.profile.load();
+    loading.value = false;
+});
+
+async function fetchProfileSchema() {
+    profileSchema.value = (await std('/api/schema?method=PATCH&url=/profile')).body
+}
+
+async function updateProfile() {
+    await mapStore.worker.profile.update(unref(profile.value));
+    router.push("/menu/settings");
 }
 </script>
