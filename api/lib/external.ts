@@ -36,7 +36,7 @@ export const Channel = Type.Object({
 enum ChannelAccessEnum {
     write = 'write',
     read = 'read',
-    dupex = 'dupex'
+    duplex = 'duplex'
 }
 
 export const ChannelAccess = Type.Enum(ChannelAccessEnum);
