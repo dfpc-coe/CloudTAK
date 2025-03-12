@@ -8,7 +8,7 @@
                 v-if='disabled'
                 class='ms-auto btn-list'
             >
-                <template v-if='disabled'>
+                <template v-if='disabled && !raw'>
                     <TablerIconButton
                         title='Raw View'
                         @click='raw = true'
@@ -76,8 +76,14 @@
                 title='Missing Capabilities'
                 :err='new Error("Layer failed to return an input schema on the Capabilities object")'
             />
-            <template v-else-if='props.capabilities[direction].schema.input.display === "arcgis"'>
-                <LayerEnvironmentArcGIS
+            <template v-else-if='direction === "incoming" && props.capabilities.name === "etl-arcgis"'>
+                <LayerIncomingEnvironmentArcGIS
+                    v-model='environment'
+                    :disabled='disabled'
+                />
+            </template>
+            <template v-else-if='direction === "outgoing" && props.capabilities.name === "etl-arcgis"'>
+                <LayerOutgoingEnvironmentArcGIS
                     v-model='environment'
                     :disabled='disabled'
                 />
@@ -152,7 +158,8 @@ import {
     TablerIconButton,
     TablerTimeZone,
 } from '@tak-ps/vue-tabler';
-import LayerEnvironmentArcGIS from './LayerEnvironmentArcGIS.vue';
+import LayerIncomingEnvironmentArcGIS from './LayerIncomingEnvironmentArcGIS.vue';
+import LayerOutgoingEnvironmentArcGIS from './LayerOutgoingEnvironmentArcGIS.vue';
 import Schema from './utils/Schema.vue';
 import {
     IconX,

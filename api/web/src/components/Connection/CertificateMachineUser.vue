@@ -4,24 +4,37 @@
             <TablerLoading v-if='loading.gen' />
             <template v-else>
                 <div
-                    v-for='(channel, it) in selected'
+                    v-for='(sel, it) in selected'
                     class='card my-2'
                 >
                     <div class='col-12 d-flex align-items-center px-2 py-2'>
-                        <div v-text='channel.rdn' />
-                        <div class='ms-auto'>
-                            <IconTrash
-                                v-tooltip='"Remove Channel"'
-                                :size='32'
-                                stroke='1'
-                                class='cursor-pointer'
-                                @click='selected.splice(it, 1)'
+                        <div v-text='sel.channel.rdn' />
+                        <div class='ms-auto btn-list'>
+                            <TablerEnum
+                                v-model='sel.access'
+                                default='Duplex'
+                                :options='[
+                                    "Read",
+                                    "Write",
+                                    "Duplex"
+                                ]'
                             />
+
+                            <TablerIconButton
+                                title='Remove Channel'
+                                @click='selected.splice(it, 1)'
+                            >
+                                <IconTrash
+                                    :size='32'
+                                    stroke='1'
+                                />
+                            </TablerIconButton>
                         </div>
                     </div>
                 </div>
                 <div class='col-12 mb-2'>
                     <TablerInput
+                        icon='search'
                         v-model='paging.filter'
                         placeholder='Channels Filter...'
                         @keyup.enter='generate'
@@ -71,113 +84,121 @@
     </div>
 </template>
 
-<script>
-import { std, stdurl } from '/src/std.ts';
+<script setup lang='ts'>
+import { ref, watch, computed, onMounted } from 'vue';
+import type { ETLConnection, ETLLdapChannelList, ETLLdapChannel, ETLLdapUser } from '../../types.ts';
+import { std, stdurl } from '../../std.ts';
 import {
     TablerNone,
+    TablerEnum,
     TablerInput,
-    TablerLoading
+    TablerLoading,
+    TablerIconButton
 } from '@tak-ps/vue-tabler';
 import {
     IconTrash
 } from '@tabler/icons-vue';
 
-export default {
-    name: 'CertificateMachineUser',
-    components: {
-        IconTrash,
-        TablerNone,
-        TablerInput,
-        TablerLoading
-    },
-    props: {
-        connection: Object
-    },
-    emits: [
-        'integration',
-    ],
-    data: function() {
-        return {
-            loading: {
-                gen: false,
-                channels: true
-            },
-            paging: {
-                filter: ''
-            },
-            channels: [],
-            selected: []
-        }
-    },
-    computed: {
-        filteredChannels: function() {
-            return this.channels.filter((ch) => {
-                for (const sel of this.selected) {
-                    if (ch.id === sel.id) return false;
-                }
+const props = defineProps<{
+    connection: ETLConnection
+}>();
 
-                return true;
-            })
-        }
-    },
-    watch: {
-        'connection.agency': async function() {
-            await this.listChannels();
-        },
-        paging: {
-            deep: true,
-            handler: async function() {
-                await this.listChannels();
-            }
-        }
-    },
-    mounted: async function() {
-        await this.listChannels();
-    },
-    methods: {
-        push: async function(channel) {
-            this.paging.filter = '';
+const emit = defineEmits([ 'integration' ]);
 
-            for (const ch of this.selected) {
-                if (ch.id === channel.id) return;
-            }
-            this.selected.push(channel);
-        },
-        listChannels: async function() {
-            this.loading.channels = true;
+const loading = ref({
+    gen: false,
+    channels: true
+});
 
-            try {
-                const url = stdurl('/api/ldap/channel');
-                if (this.connection.agency) {
-                    url.searchParams.append('agency', this.connection.agency);
-                }
-                url.searchParams.append('filter', this.paging.filter);
-                this.channels = (await std(url)).items;
-            } catch (err) {
-                this.loading.channels = false;
-                throw err;
-            }
-            this.loading.channels = false;
-        },
-        generate: async function() {
-            this.loading.gen = true;
-            const url = stdurl('/api/ldap/user');
-            const res = await std(url, {
-                method: 'POST',
-                body: {
-                    name: this.connection.name,
-                    description: this.connection.description,
-                    agency_id: this.connection.agency,
-                    channels: this.selected.map((s) => { return s.id })
-                }
-            })
+const paging = ref({
+    filter: ''
+});
 
-            this.loading.gen = true;
-            this.$emit('integration', {
-                'certs': res.auth,
-                'integrationId': res.integrationId
-            });
+const channels = ref<ETLLdapChannelList>({
+    total: 0,
+    items: []
+});
+
+const selected = ref<Array<{
+    access: string
+    channel: ETLLdapChannel
+}>>([]);
+
+const filteredChannels = computed(() => {
+    return channels.value.items.filter((ch) => {
+        for (const sel of selected.value) {
+            if (ch.id === sel.channel.id) return false;
         }
+
+        return true;
+    })
+});
+
+watch(props.connection, async (newConnection, oldConnection) => {
+    if (newConnection.agency !== oldConnection.agency) {
+        await listChannels();
     }
+});
+
+watch(paging.value, async () => {
+    await listChannels();
+});
+
+onMounted(async () => {
+    await listChannels();
+});
+
+function push(channel: ETLLdapChannel) {
+    paging.value.filter = '';
+
+    for (const sel of selected.value) {
+        if (sel.channel.id === channel.id) return;
+    }
+    selected.value.push({
+        access: 'Duplex',
+        channel
+    });
+}
+
+async function listChannels() {
+    loading.value.channels = true;
+
+    try {
+        const url = stdurl('/api/ldap/channel');
+        if (props.connection.agency) {
+            url.searchParams.append('agency', String(props.connection.agency));
+        }
+        url.searchParams.append('filter', paging.value.filter);
+        channels.value = await std(url) as ETLLdapChannelList
+    } catch (err) {
+        loading.value.channels = false;
+        throw err;
+    }
+    loading.value.channels = false;
+}
+
+async function generate() {
+    loading.value.gen = true;
+    const url = stdurl('/api/ldap/user');
+    const res = await std(url, {
+        method: 'POST',
+        body: {
+            name: props.connection.name,
+            description: props.connection.description,
+            agency_id: props.connection.agency,
+            channels: selected.value.map((s) => {
+                return {
+                    id: s.channel.id,
+                    access: s.access.toLowerCase()
+                }
+            })
+        }
+    }) as ETLLdapUser
+
+    loading.value.gen = true;
+    emit('integration', {
+        'certs': res.auth,
+        'integrationId': res.integrationId
+    });
 }
 </script>

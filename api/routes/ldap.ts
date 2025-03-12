@@ -4,7 +4,7 @@ import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
-import { Channel } from '../lib/external.js';
+import { Channel, ChannelAccess } from '../lib/external.js';
 import TAKAPI, {
     APIAuthPassword,
 } from '../lib/tak-api.js';
@@ -48,7 +48,10 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.String(),
             description: Type.String(),
             agency_id: Type.Union([Type.Integer(), Type.Null()]),
-            channels: Type.Array(Type.Integer(), {
+            channels: Type.Array(Type.Object({
+                id: Type.Integer(),
+                access: ChannelAccess
+            }), {
                 minItems: 1
             })
         }),
@@ -85,7 +88,8 @@ export default async function router(schema: Schema, config: Config) {
             for (const channel of req.body.channels) {
                 await config.external.attachMachineUser(profile.id, {
                     machine_id: user.id,
-                    channel_id: channel
+                    channel_id: channel.id,
+                    access: channel.access
                 })
             }
 
