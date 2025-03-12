@@ -108,6 +108,8 @@ export type SearchReverse = paths["/search/reverse/{:longitude}/{:latitude}"]["g
 
 // Below are CloudTAK ETL Specific Data Types
 
+export type ETLChannelList = paths["/ldap/channel"]["get"]["responses"]["200"]["content"]["application/json"]
+
 export type ETLConnectionList = paths["/connection"]["get"]["responses"]["200"]["content"]["application/json"]
 export type ETLConnection = paths["/connection/{:connectionid}"]["get"]["responses"]["200"]["content"]["application/json"]
 export type ETLConnectionSink = paths["/connection/{:connectionid}/sink/{:sinkid}"]["get"]["responses"]["200"]["content"]["application/json"]
