@@ -11,7 +11,7 @@ import Alarm from '../lib/aws/alarm.js';
 import Config from '../lib/config.js';
 import Schedule from '../lib/schedule.js';
 import { Param } from '@openaddresses/batch-generic';
-import { sql } from 'drizzle-orm';
+import { sql, eq } from 'drizzle-orm';
 import type { InferInsertModel } from 'drizzle-orm';;
 import { StandardResponse, LayerResponse, LayerIncomingResponse, LayerOutgoingResponse } from '../lib/types.js';
 import { LayerIncoming, LayerOutgoing } from '../lib/schema.js';
@@ -252,8 +252,8 @@ export default async function router(schema: Schema, config: Config) {
 
             if (req.body.data) {
                 const data = await config.models.Data.from(req.body.data);
-                if (data.mission_diff && parseInt(String(await config.models.Layer.count({
-                    where: sql`data = ${req.body.data}`
+                if (data.mission_diff && parseInt(String(await config.models.LayerIncoming.count({
+                    where: eq(LayerIncoming.data, req.body.data)
                 }))) + 1 > MAX_LAYERS_IN_DATA_SYNC) {
                     throw new Err(400, null, `Only ${MAX_LAYERS_IN_DATA_SYNC} layers can be added to a DataSync with Mission Diff Enabled`)
                 }
@@ -352,8 +352,8 @@ export default async function router(schema: Schema, config: Config) {
 
                 const modifier = layer.incoming.data === req.body.data ? 0 : 1;
 
-                if (data.mission_diff && parseInt(String(await config.models.Layer.count({
-                    where: sql`data = ${req.body.data}`
+                if (data.mission_diff && parseInt(String(await config.models.LayerIncoming.count({
+                    where: eq(LayerIncoming.data, req.body.data)
                 }))) + modifier > MAX_LAYERS_IN_DATA_SYNC) {
                     throw new Err(400, null, `Only ${MAX_LAYERS_IN_DATA_SYNC} layers can be added to a DataSync with Mission Diff Enabled`)
                 }
