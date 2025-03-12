@@ -85,7 +85,7 @@
 
 <script setup lang='ts'>
 import { ref, watch, computed, onMounted } from 'vue';
-import type { ETLConnection, ETLChannelList } from '../../types.ts';
+import type { ETLConnection, ETLLdapChannelList, ETLLdapChannel, ETLLdapUser } from '../../types.ts';
 import { std, stdurl } from '../../std.ts';
 import {
     TablerNone,
@@ -113,12 +113,12 @@ const paging = ref({
     filter: ''
 });
 
-const channels = ref<ETLChannelList>({
+const channels = ref<ETLLdapChannelList>({
     total: 0,
     items: []
 });
 
-const selected = ref([]);
+const selected = ref<Array<ETLLdapChannel>>([]);
 
 const filteredChannels = computed(() => {
     return channels.value.items.filter((ch) => {
@@ -144,7 +144,7 @@ onMounted(async () => {
     await listChannels();
 });
 
-function push(channel) {
+function push(channel: ETLLdapChannel) {
     paging.value.filter = '';
 
     for (const ch of selected.value) {
@@ -159,10 +159,10 @@ async function listChannels() {
     try {
         const url = stdurl('/api/ldap/channel');
         if (props.connection.agency) {
-            url.searchParams.append('agency', props.connection.agency);
+            url.searchParams.append('agency', String(props.connection.agency));
         }
         url.searchParams.append('filter', paging.value.filter);
-        channels.value = await std(url) as ETLChannelList
+        channels.value = await std(url) as ETLLdapChannelList
     } catch (err) {
         loading.value.channels = false;
         throw err;
@@ -181,7 +181,7 @@ async function generate() {
             agency_id: props.connection.agency,
             channels: selected.value.map((s) => { return s.id })
         }
-    })
+    }) as ETLLdapUser
 
     loading.value.gen = true;
     emit('integration', {

@@ -106,12 +106,11 @@ import { useProfileStore } from '../../stores/profile.ts';
 
 const profileStore = useProfileStore();
 
-const props = defineProps({
-    modelValue: Number,
-    disabled: {
-        type: Boolean,
-        default: false
-    }
+const props = withDefaults(defineProps<{
+    modelValue: number,
+    disable: boolean
+}>(), {
+    disable: false
 });
 
 const emit = defineEmits([ 'update:modelValue' ]);
@@ -146,8 +145,10 @@ watchDebounced(filter, async function() {
     await listData()
 }, { debounce: 500 })
 
-watch(props.modelValue, async () => {
-    if (props.modelValue) await fetch();
+watch(props, async (newProps, oldProps) => {
+    if (newProps.modelValue !== oldProps.modelValue) {
+        await fetch();
+    }
 })
 
 onMounted(async () => {
@@ -166,7 +167,7 @@ async function listData() {
     url.searchParams.append('filter', filter.value);
     const data = await std(url) as ETLAgencyList;
 
-    if (!profileStore.profile.system_admin && data.total === 1) {
+    if (profileStore.profile && !profileStore.profile.system_admin && data.total === 1) {
         selected.value = data.items[0];
     }
 
