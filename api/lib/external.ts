@@ -33,6 +33,14 @@ export const Channel = Type.Object({
     description: Type.Any()
 });
 
+enum ChannelAccessEnum {
+    write = 'write',
+    read = 'read',
+    dupex = 'dupex'
+}
+
+export const ChannelAccess = Type.Enum(ChannelAccessEnum);
+
 export default class ExternalProvider {
     config: Config;
     provider: Static<typeof ExternalProviderConfig>;
@@ -164,12 +172,15 @@ export default class ExternalProvider {
     async attachMachineUser(uid: number, body: {
         machine_id: number;
         channel_id: number;
+        access: ChannelAccessEnum;
     }): Promise<void> {
         const creds = await this.auth();
 
         const url = new URL(`api/v1/proxy/channels/${body.channel_id}/machine-users/attach/${body.machine_id}`, this.provider.url);
         url.searchParams.append('proxy_user_id', String(uid));
+        
         url.searchParams.append('sync', 'true')
+        url.searchParams.append('access_type', body.access)
 
         const userres = await fetch(url, {
             method: 'GET',
