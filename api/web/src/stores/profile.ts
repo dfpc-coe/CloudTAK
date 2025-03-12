@@ -15,9 +15,6 @@ export const useProfileStore = defineStore('profile', {
         }
     },
     actions: {
-        load: async function(): Promise<void> {
-            this.profile = await std('/api/profile') as Profile;
-        },
         loadChannels: async function(): Promise<Array<Group>> {
             const url = stdurl('/api/marti/group');
             url.searchParams.append('useCache', 'true');
