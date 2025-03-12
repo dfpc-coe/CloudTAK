@@ -3,7 +3,7 @@
         <div class='d-flex align-items-center'>
             <label class='mx-1 mb-1'>Connection Agency</label>
             <div
-                v-if='profileStore.profile.system_admin'
+                v-if='profileStore.profile && profileStore.profile.system_admin'
                 class='ms-auto'
             >
                 <TablerToggle

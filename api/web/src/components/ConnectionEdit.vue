@@ -98,13 +98,15 @@
                                                     <span class='mx-3'>Certificate Uploaded</span>
 
                                                     <div class='ms-auto'>
-                                                        <IconTrash
-                                                            v-tooltip='"Remove Certificate"'
-                                                            :size='32'
-                                                            stroke='1'
-                                                            class='cursor-pointer'
+                                                        <TablerIconButton
+                                                            title='Remove Certificate'
                                                             @click='marti({ key: "", cert: ""})'
-                                                        />
+                                                        >
+                                                            <IconTrash
+                                                                :size='32'
+                                                                stroke='1'
+                                                            />
+                                                        </TablerIconButton>
                                                     </div>
                                                 </div>
                                             </template>
@@ -272,6 +274,7 @@ import {
 } from '@tabler/icons-vue';
 import {
     TablerLoading,
+    TablerIconButton,
     TablerBreadCrumb,
     TablerDelete,
     TablerInput
@@ -286,6 +289,7 @@ export default {
         AgencySelect,
         TablerDelete,
         TablerBreadCrumb,
+        TablerIconButton,
         CertificateP12,
         CertificateRaw,
         CertificateLogin,
