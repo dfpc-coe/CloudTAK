@@ -4,18 +4,19 @@
             <TablerLoading v-if='loading.gen' />
             <template v-else>
                 <div
-                    v-for='(channel, it) in selected'
+                    v-for='(sel, it) in selected'
                     class='card my-2'
                 >
                     <div class='col-12 d-flex align-items-center px-2 py-2'>
-                        <div v-text='channel.rdn' />
+                        <div v-text='sel.channel.rdn' />
                         <div class='ms-auto btn-list'>
                             <TablerEnum
-                                default='Read-Write'
+                                v-model='sel.access'
+                                default='Duplex'
                                 :options='[
                                     "Read",
                                     "Write",
-                                    "Read-Write"
+                                    "Duplex"
                                 ]'
                             />
 
@@ -118,12 +119,15 @@ const channels = ref<ETLLdapChannelList>({
     items: []
 });
 
-const selected = ref<Array<ETLLdapChannel>>([]);
+const selected = ref<Array<{
+    access: string
+    channel: ETLLdapChannel
+}>>([]);
 
 const filteredChannels = computed(() => {
     return channels.value.items.filter((ch) => {
         for (const sel of selected.value) {
-            if (ch.id === sel.id) return false;
+            if (ch.id === sel.channel.id) return false;
         }
 
         return true;
@@ -147,10 +151,13 @@ onMounted(async () => {
 function push(channel: ETLLdapChannel) {
     paging.value.filter = '';
 
-    for (const ch of selected.value) {
-        if (ch.id === channel.id) return;
+    for (const sel of selected.value) {
+        if (sel.channel.id === channel.id) return;
     }
-    selected.value.push(channel);
+    selected.value.push({
+        access: 'Duplex',
+        channel
+    });
 }
 
 async function listChannels() {
@@ -179,7 +186,12 @@ async function generate() {
             name: props.connection.name,
             description: props.connection.description,
             agency_id: props.connection.agency,
-            channels: selected.value.map((s) => { return s.id })
+            channels: selected.value.map((s) => {
+                return {
+                    id: s.channel.id,
+                    access: s.access.toLowerCase()
+                }
+            })
         }
     }) as ETLLdapUser
 

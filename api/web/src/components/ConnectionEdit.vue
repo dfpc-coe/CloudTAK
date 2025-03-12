@@ -324,7 +324,7 @@ export default {
         isNextReady: function() {
             return this.connection.name.trim().length > 0
                 && this.connection.description.trim().length > 0
-                && ![null, undefined].includes(this.connection.agency)
+                && this.connection.agency !== undefined
         },
         isReady: function() {
             return this.connection.auth.cert.trim().length && this.connection.auth.key.trim().length

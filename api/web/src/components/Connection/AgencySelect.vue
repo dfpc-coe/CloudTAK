@@ -130,7 +130,7 @@ const list =  ref<ETLAgencyList>({
 
 watch(selected, () => {
     if (!noAgency.value) {
-        emit('update:modelValue', selected.value ? selected.value.id : null);
+        emit('update:modelValue', selected.value ? selected.value.id : undefined);
     }
 });
 
