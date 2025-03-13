@@ -392,6 +392,39 @@
                             "py-2 px-3 hover-dark": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
+                        @click='router.push("/menu/debugger")'
+                    >
+                        <IconBug
+                            v-tooltip='{
+                                content: "Debugger",
+                                placement: "left",
+                            }'
+                            :tabindex='compact ? 0 : undefined'
+                            title='COT Debugger'
+                            :class='{ "mx-2": compact }'
+                            :size='32'
+                            stroke='1'
+                        />
+                        <span
+                            v-if='!compact'
+                            class='mx-2'
+                            style='font-size: 18px;'
+                        >COT Debugger</span>
+                        <span
+                            v-if='!compact'
+                            class='ms-auto badge border border-red bg-red text-white'
+                        >
+                            Admin
+                        </span>
+                    </div>
+                    <div
+                        v-if='profile && profile.system_admin'
+                        role='menuitem'
+                        class='cursor-pointer col-12 d-flex align-items-center'
+                        :class='{
+                            "py-2 px-3 hover-dark": !compact,
+                            "py-1 px-2 hover-button": compact
+                        }'
                         @click='router.push("/admin")'
                     >
                         <IconServerCog
@@ -478,6 +511,7 @@
 <script setup lang='ts'>
 import { computed } from 'vue';
 import {
+    IconBug,
     IconMap,
     IconUser,
     IconFiles,
