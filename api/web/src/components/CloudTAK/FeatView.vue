@@ -1,20 +1,20 @@
 <template>
     <div
-        class='position-absolute end-0 bottom-0 text-white bg-dark overflow-auto'
+        class='position-absolute end-0 bottom-0 text-white bg-dark'
         style='z-index: 1; width: 400px; top: 56px;'
     >
         <div
-            class='col-12 border-light border-bottom d-flex'
+            class='col-12 border-light border-bottom sticky-top'
             style='border-radius: 0px;'
         >
-            <div class='col-auto card-header row mx-1 my-2'>
+            <div class='col-12 card-header px-1 py-2'>
                 <div
                     class='card-title mx-2 text-truncate'
                     style='width: 280px'
                     v-text='feat.properties?.name || "No Name"'
                 />
             </div>
-            <div class='col-auto btn-list my-2 ms-auto d-flex align-items-center mx-2'>
+            <div class='col-12 btn-list my-2 d-flex align-items-center mx-2'>
                 <TablerIconButton
                     title='Zoom To'
                     @click='zoomTo'
@@ -24,30 +24,36 @@
                         stroke='1'
                     />
                 </TablerIconButton>
-                <TablerIconButton
-                    v-if='mode === "default"'
-                    title='Raw View'
-                    @click='mode = "raw"'
+                <div
+                    class='ms-auto'
+                    style='margin-right: 14px;'
                 >
-                    <IconCode
-                        :size='32'
-                        stroke='1'
-                    />
-                </TablerIconButton>
-                <TablerIconButton
-                    v-if='mode === "raw"'
-                    title='Default View'
-                    @click='mode = "default"'
-                >
-                    <IconX
-                        :size='32'
-                        stroke='1'
-                    />
-                </TablerIconButton>
+                    <TablerIconButton
+                        v-if='mode === "default"'
+                        title='Raw View'
+                        @click='mode = "raw"'
+                    >
+                        <IconCode
+                            :size='32'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
+
+                    <TablerIconButton
+                        v-if='mode === "raw"'
+                        title='Default View'
+                        @click='mode = "default"'
+                    >
+                        <IconX
+                            :size='32'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
+                </div>
             </div>
         </div>
 
-        <div class='col-12'>
+        <div class='col-12 overflow-auto'>
             <template v-if='mode === "default"'>
                 <div class='col-12 px-3 py-2'>
                     <Coordinate v-model='center' />
@@ -97,7 +103,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed } from 'vue';
+import { ref, computed, toRaw } from 'vue';
 import { useMapStore } from '../../stores/map.ts';
 import type { LngLatLike } from 'maplibre-gl';
 import type { Feature } from 'geojson';

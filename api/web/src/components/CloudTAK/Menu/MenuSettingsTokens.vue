@@ -48,9 +48,10 @@
     />
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted } from 'vue'
 import MenuTemplate from '../util/MenuTemplate.vue';
-import { std } from '/src/std.ts';
+import { std } from '../../std.ts';
 import TokenModal from './Settings/TokenModal.vue';
 import {
     IconPlus,
@@ -58,35 +59,21 @@ import {
     IconRobot,
 } from '@tabler/icons-vue';
 
-export default {
-    name: 'ProfileTokens',
-    components: {
-        MenuTemplate,
-        TokenModal,
-        IconPlus,
-        IconRobot,
-        IconRefresh,
-    },
-    data: function() {
-        return {
-            loading: true,
-            token: false,
-            tokens: {
-                total: 0,
-                items: []
-            }
-        }
-    },
-    mounted: async function() {
-        await this.fetch();
-    },
-    methods: {
-        fetch: async function() {
-            this.token = false;
-            this.loading = true;
-            this.tokens = await std('/api/token');
-            this.loading = false;
-        },
-    }
+const loading = ref(true);
+const token = ref(false);
+const tokens = ref({
+    total: 0,
+    items: []
+});
+
+onMounted(async () => {
+    await this.fetch();
+});
+
+async function fetch() {
+    token.value = false;
+    loading.value = true;
+    tokens.value = await std('/api/token');
+    loading.value = false;
 }
 </script>
