@@ -44,7 +44,7 @@ export default class COTQuery {
 
         const res: any = xmljs.xml2js(await this.history(uid, opts), { compact: true });
 
-        if (!Object.keys(res.events).length) return feats;
+        if (!Object.keys(res).length || !Object.keys(res.events).length) return feats;
         if (!res.events.event || (Array.isArray(res.events.event) && !res.events.event.length)) return feats;
 
         for (const event of Array.isArray(res.events.event) ? res.events.event : [res.events.event] ) {
@@ -71,6 +71,8 @@ export default class COTQuery {
         }, true);
 
         const body = await res.text();
+
+        console.error(body);
 
         return body;
     }
