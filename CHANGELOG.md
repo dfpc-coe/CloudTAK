@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v7.11.0 - 2025-03-13
+
+- :rocket: Add debug menu for searching historic COT data
+
 ### v7.10.0 - 2025-03-12
 
 - :bug: Fix DataSync limitation checks on LayerIncoming API
