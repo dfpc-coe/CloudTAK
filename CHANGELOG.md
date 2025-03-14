@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v7.12.0 - 2025-03-14
+
+- :bug: Improved Environment editing fallback when Capabilities isn't populated
+- :rocket: Validate JSON before saving on env editor
+- :rocket: Apply defaults to Env in frontend
+
 ### v7.11.0 - 2025-03-13
 
 - :rocket: Add debug menu for searching historic COT data
