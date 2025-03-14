@@ -14,7 +14,7 @@ Testing locally can be done either running the server directly (recommended for 
 by running the provided Docker Compose services (recommended for limited testing)
 
 Note that for full functionality, CloudTAK needs to be deployed into an AWS environment and that
-many of the services it provides will initiate AWS API calls with no graceful fallback.
+m@ny of the services it provides will initiate AWS API calls with no graceful fallback.
 
 ### Docker Compose
 
