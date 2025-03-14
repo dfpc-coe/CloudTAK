@@ -110,7 +110,7 @@ async function updateProfile() {
 
     p.tak_group = p.tak_group.replace(/\s-\s.*$/, '') as Profile["tak_group"];
 
-    await mapStore.db.profile.update({
+    await mapStore.worker.profile.update({
         tak_callsign: p.tak_callsign,
         tak_role: p.tak_role,
         tak_group: p.tak_group.replace(/\s-\s.*$/, '') as Profile["tak_group"],

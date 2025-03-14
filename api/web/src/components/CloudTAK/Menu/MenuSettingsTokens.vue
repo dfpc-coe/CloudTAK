@@ -5,20 +5,24 @@
         :none='!tokens.items.length'
     >
         <template #buttons>
-            <IconPlus
-                v-tooltip='"New Token"'
-                :size='32'
-                stroke='1'
-                class='cursor-pointer'
+            <TablerIconButton
+                title='New Token'
                 @click='token={}'
-            />
-            <IconRefresh
-                v-tooltip='"Refresh"'
-                :size='32'
-                stroke='1'
-                class='cursor-pointer'
+            >
+                <IconPlus
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
+            <TablerIconButton
+                title='Refresh'
                 @click='fetch'
-            />
+            >
+                <IconRefresh
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
         </template>
         <template #default>
             <div
@@ -32,7 +36,7 @@
                     stroke='1'
                 />
                 <span
-                    class='mx-2'
+                    class='mx-2 user-select-none'
                     style='font-size: 18px;'
                     v-text='t.name'
                 />
@@ -51,7 +55,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import MenuTemplate from '../util/MenuTemplate.vue';
-import { std } from '../../std.ts';
+import { std } from '../../../std.ts';
 import TokenModal from './Settings/TokenModal.vue';
 import {
     IconPlus,
@@ -67,7 +71,7 @@ const tokens = ref({
 });
 
 onMounted(async () => {
-    await this.fetch();
+    await fetch();
 });
 
 async function fetch() {

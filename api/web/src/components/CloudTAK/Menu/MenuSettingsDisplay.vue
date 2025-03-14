@@ -86,7 +86,7 @@
 
 <script setup>
 import { useRouter } from 'vue-router';
-import { ref, computed, toRaw, onMounted } from 'vue';
+import { ref, toRaw, onMounted } from 'vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import { std } from '/src/std.ts';
 import {
@@ -100,14 +100,6 @@ const loading = ref(false);
 const profile = ref({});
 const profileSchema = ref({});
 
-const tak_groups = computed(() => {
-    return profileSchema.value.properties.tak_group.anyOf.map((a) => { return a.const });
-})
-
-const tak_roles = computed(() => {
-    return profileSchema.value.properties.tak_role.anyOf.map((a) => { return a.const });
-})
-
 onMounted(async () => {
     loading.value = true;
     await fetchProfileSchema();
@@ -120,6 +112,7 @@ async function fetchProfileSchema() {
 }
 
 async function updateProfile() {
+    console.error(toRaw(profile));
     await mapStore.worker.profile.update(toRaw(profile.value));
     router.push("/menu/settings");
 }
