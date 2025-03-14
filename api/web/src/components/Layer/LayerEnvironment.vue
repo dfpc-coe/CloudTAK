@@ -61,13 +61,13 @@
             v-else
             class='col'
         >
-            <template v-if='raw && disabled'>
-                <pre v-text='environment' />
-            </template>
-            <template v-else-if='raw && !disabled'>
-                <TablerInput
+            <template v-if='raw'>
+                <CopyField
                     :rows='20'
-                    :model-value='JSON.stringify(environment, null, 4)'
+                    :edit='true'
+                    :hover='true'
+                    :validate='validateJSON'
+                    :modelValue='JSON.stringify(environment, null, 4)'
                     @update:model-value='environment = JSON.parse($event)'
                 />
             </template>
@@ -124,7 +124,7 @@
             </div>
 
             <div
-                v-if='!disabled'
+                v-if='!disabled || raw'
                 class='col-12 px-2 py-2 d-flex'
             >
                 <button
@@ -158,6 +158,7 @@ import {
     TablerIconButton,
     TablerTimeZone,
 } from '@tak-ps/vue-tabler';
+import CopyField from '../CloudTAK/util/CopyField.vue';
 import LayerIncomingEnvironmentArcGIS from './LayerIncomingEnvironmentArcGIS.vue';
 import LayerOutgoingEnvironmentArcGIS from './LayerOutgoingEnvironmentArcGIS.vue';
 import Schema from './utils/Schema.vue';
@@ -197,6 +198,16 @@ const loading = ref({
 onMounted(async () => {
     await reload();
 });
+
+async function validateJSON(text) {
+    try {
+        JSON.parse(text);
+    } catch (err) {
+        return err instanceof Error ? err.message : String(err);
+    }
+
+    return true;
+}
 
 function hasDateTime() {
     if (!props.capabilities) return false;
