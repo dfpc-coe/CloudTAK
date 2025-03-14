@@ -47,8 +47,8 @@
                     <template v-else>
                         <div class='col-12 pb-2'>
                             <TablerInput
-                                icon='search'
                                 v-model='filter'
+                                icon='search'
                                 placeholder='Agency Filter...'
                             />
                         </div>
@@ -65,16 +65,19 @@
                         />
                         <template v-else>
                             <div
-                                :key='agency.id'
                                 v-for='agency in list.items'
+                                :key='agency.id'
                                 class='hover-light px-2 py-2 cursor-pointer row rounded col-12'
                                 @click='selected = agency'
                             >
                                 <div class='d-flex align-items-center'>
-                                    <IconHome :size='32' stroke='1' />
+                                    <IconHome
+                                        :size='32'
+                                        stroke='1'
+                                    />
                                     <span
-                                        v-text='agency.name'
                                         class='mx-2'
+                                        v-text='agency.name'
                                     />
                                 </div>
                             </div>

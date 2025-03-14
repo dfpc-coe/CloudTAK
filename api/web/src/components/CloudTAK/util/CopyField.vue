@@ -176,7 +176,7 @@ const infoboxRef = useTemplateRef<HTMLElement>('infobox');
 const markdown = computed(() => {
     return String(props.modelValue || '')
         .replace(/\n/g, '</br>')
-        .replace(/(http(s)?:\/\/[a-z-]+[:.].*?(?=[\s\"]))/g, '[$1]($1)')
+        .replace(/(http(s)?:\/\/[a-z-]+[:.].*?(?=[\s"]))/g, '[$1]($1)')
         .trim()
 });
 
