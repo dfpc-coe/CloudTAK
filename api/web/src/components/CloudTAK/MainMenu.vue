@@ -418,7 +418,7 @@
                         </span>
                     </div>
                     <div
-                        v-if='profile && profile.system_admin'
+                        v-if='isSystemAdmin'
                         role='menuitem'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{

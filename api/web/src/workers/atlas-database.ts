@@ -140,7 +140,7 @@ export default class AtlasDatabase {
         diff.remove = [];
         diff.update = [];
 
-        const profile = atlas.profile.load();
+        const profile = await this.atlas.profile.load();
         const display_stale = profile.display_stale || 'Immediate';
 
         for (const cot of this.cots.values()) {

@@ -7,7 +7,6 @@ import { bbox } from '@turf/bbox'
 import type { Map, LngLatBoundsLike, LayerSpecification, VectorTileSource, RasterTileSource, GeoJSONSource } from 'maplibre-gl'
 import cotStyles from '../utils/styles.ts'
 import { std, stdurl } from '../../std.js';
-import { useProfileStore } from '../profile.js';
 import { useMapStore } from '../map.js';
 
 /**
@@ -41,33 +40,46 @@ export default class Overlay {
         map: Map,
         body: ProfileOverlay_Create,
         opts: {
+            skipSave: boolean;
             clickable?: Array<{ id: string; type: string }>;
             before?: string;
         } = {}
     ): Promise<Overlay> {
-        let ov = await std('/api/profile/overlay', {
-            method: 'POST',
-            body
-        }) as ProfileOverlay;
+        if (opts.skipSave !== true) {
+            let ov = await std('/api/profile/overlay', {
+                method: 'POST',
+                body
+            }) as ProfileOverlay;
 
-        if (ov.styles && ov.styles.length) {
-            for (const layer of ov.styles) {
-                const l = layer as LayerSpecification;
-                l.id = `${ov.id}-${l.id}`;
-                // @ts-expect-error Special case Background Layer type
-                l.source = String(ov.id);
+            if (ov.styles && ov.styles.length) {
+                for (const layer of ov.styles) {
+                    const l = layer as LayerSpecification;
+                    l.id = `${ov.id}-${l.id}`;
+                    // @ts-expect-error Special case Background Layer type
+                    l.source = String(ov.id);
+                }
             }
+
+            ov = await std(`/api/profile/overlay/${ov.id}`, {
+                method: 'PATCH',
+                body: ov
+            }) as ProfileOverlay;
+
+            const overlay = new Overlay(map, ov, opts);
+
+            await overlay.init(opts);
+
+            return overlay;
+        } else {
+            const overlay = new Overlay(map, body, opts);
+
+            await overlay.init(opts);
+
+            return overlay;
         }
-
-        ov = await std(`/api/profile/overlay/${ov.id}`, {
-            method: 'PATCH',
-            body: ov
-        }) as ProfileOverlay;
-
-        return new Overlay(map, ov, opts);
     }
 
-    static internal(
+    static async internal(
         map: Map,
         body: {
             id: number;
@@ -75,9 +87,9 @@ export default class Overlay {
             name: string;
             styles?: Array<LayerSpecification>;
             clickable?: Array<{ id: string; type: string }>;
-        },
+        }
     ): Overlay {
-        const overlay = new Overlay(map, {
+        const overlay = await Overlay.create(map, {
             ...body,
             visible: true,
             opacity: 1,
@@ -91,6 +103,7 @@ export default class Overlay {
             styles: body.styles || [],
             pos: 3,
         }, {
+            skipSave: true,
             clickable: body.clickable,
             internal: true
         });
@@ -100,13 +113,15 @@ export default class Overlay {
 
     static async load(map: Map, id: number): Promise<Overlay> {
         const overlay = await std(`/api/profile/overlay/${id}`);
-        return new Overlay(map, overlay as ProfileOverlay);
+        await Overlay.create(map, overlay as ProfileOverlay, {
+            skipSave: true
+        });
+
+        return overlay;
     }
 
     constructor(map: Map, overlay: ProfileOverlay, opts: {
-        clickable?: Array<{ id: string; type: string }>;
         internal?: boolean;
-        before?: string;
     } = {}) {
         this._destroyed = false;
         this._internal = opts.internal || false;
@@ -127,8 +142,6 @@ export default class Overlay {
         this.url = overlay.url;
         this.styles = overlay.styles as Array<LayerSpecification>;
         this.token = overlay.token;
-
-        this.init(opts);
     }
 
     healthy(): boolean {
@@ -166,7 +179,7 @@ export default class Overlay {
         }
     }
 
-    init(opts: {
+    async init(opts: {
         clickable?: Array<{ id: string; type: string }>;
         before?: string;
     } = {}) {
@@ -200,11 +213,11 @@ export default class Overlay {
             }
         }
 
-        const profileStore = useProfileStore();
-        const display_text = profileStore.profile ? profileStore.profile.display_text : 'Medium';
+        const profile = await mapStore.worker.profile.load();
+
         let size = 8
-        if (display_text === 'Small') size = 4;
-        if (display_text === 'Large') size = 16;
+        if (profile.display_text === 'Small') size = 4;
+        if (profile.display_text === 'Large') size = 16;
 
         if (!this.styles.length && this.type === 'raster') {
             this.styles = [{

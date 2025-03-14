@@ -122,9 +122,16 @@ export default class AtlasProfile {
 
     async load(): Promise<Profile> {
         if (!this.profile) {
-            this.profile = await std('/api/profile', {
+            const profile = await std('/api/profile', {
                 token: this.atlas.token
             }) as Profile;
+
+            this.atlas.postMessage({
+                type: WorkerMessage.Profile_Callsign,
+                body: { callsign: profile.tak_callsign }
+            });
+
+            this.profile = profile;
         }
 
         return this.profile;
@@ -157,12 +164,17 @@ export default class AtlasProfile {
             await this.CoT();
         }
 
+        if (body.tak_callsign) {
+            this.atlas.postMessage({
+                type: WorkerMessage.Profile_Callsign,
+                body: { callsign: body.tak_callsign }
+            });
+        }
+
         if (body.display_projection) {
             this.atlas.postMessage({
                 type: WorkerMessage.Map_Projection,
-                body: {
-                    type: body.display_projection
-                }
+                body: { type: body.display_projection }
             });
         }
 

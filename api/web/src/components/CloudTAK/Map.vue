@@ -25,7 +25,6 @@
                 v-if='mapStore.drawOptions.mode !== "static"'
             />
             <div
-                v-else-if='profileStore.profile'
                 class='position-absolute bottom-0 begin-0 text-white'
                 style='
                     z-index: 1;
@@ -40,7 +39,7 @@
                     style='height: 40px'
                 >
                     <Status
-                        v-if='profileStore.live_loc'
+                        v-if='mapStore.location === LocationState.Live'
                         v-tooltip='"Using Live Location"'
                         class='mx-2 my-2'
                         status='success'
@@ -54,7 +53,7 @@
                         @click='setLocation'
                     >
                         <IconLocationOff
-                            v-if='!profileStore.profile.tak_loc'
+                            v-if='mapStore.location === LocationState.Denied'
                             title='Set Your Location Button (No Location currently set)'
                             :size='20'
                             stroke='1'
@@ -71,7 +70,7 @@
                         style='line-height: 40px; width: calc(100% - 40px);'
                         class='h-100 cursor-pointer text-center px-2 text-truncate subheader text-white hover-button'
                         @click='toLocation'
-                        v-text='profileStore.profile.tak_callsign'
+                        v-text='mapStore.callsign'
                     />
                 </div>
             </div>
@@ -503,7 +502,7 @@ import {
 import MapLoading from './MapLoading.vue';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import RadialMenu from './RadialMenu/RadialMenu.vue';
-import { useMapStore } from '../../stores/map.ts';
+import { useMapStore, LocationState } from '../../stores/map.ts';
 import { useVideoStore } from '../../stores/videos.ts';
 import { useProfileStore } from '../../stores/profile.ts';
 import UploadImport from './util/UploadImport.vue'

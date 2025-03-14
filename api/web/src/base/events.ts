@@ -4,6 +4,8 @@ export enum WorkerMessage {
     Map_FlyTo = 'cloudtak:map:flyto',
     Map_Projection = 'cloudtak:map:projection',
 
+    Profile_Callsign = 'cloudtak:profile:callsign',
+
     Channels_None = 'channels:none',
     Channels_List = 'channels:list',
 

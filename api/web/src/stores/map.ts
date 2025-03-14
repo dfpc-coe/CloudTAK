@@ -25,11 +25,12 @@ import type { ProfileOverlay, Basemap, APIList, Feature } from '../types.ts';
 import type { Polygon, Position } from 'geojson';
 import type { LngLat, LngLatLike, Point, MapMouseEvent, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl';
 
-export type TAKNotification = {
-    type: string;
-    name: string;
-    body: string;
-    url: string;
+export type TAKNotification = { type: string; name: string; body: string; url: string; }
+export enum LocationState {
+    Loading,
+    Disabled,
+    Preset,
+    Live
 }
 
 export const useMapStore = defineStore('cloudtak', {
@@ -41,6 +42,9 @@ export const useMapStore = defineStore('cloudtak', {
         // Lock the map view to a given CoT - The last element is the currently locked value
         // this is an array so that things like the radial menu can temporarily lock state but remember the previous lock value when they are closed
         locked: Array<string>;
+
+        callsign: 'Unknown';
+        location: LocationState;
 
         worker: Comlink.Remote<Atlas>;
         edit: COT | undefined;
@@ -83,8 +87,11 @@ export const useMapStore = defineStore('cloudtak', {
             Comlink.transferHandlers,
             new BroadcastChannel('sync')
         );
+
         return {
             worker,
+            callsign: 'Unknown',
+            location: LocationState.Loading,
             channel: new BroadcastChannel("cloudtak"),
             locked: [],
             notifications: [],
@@ -328,8 +335,9 @@ export const useMapStore = defineStore('cloudtak', {
                     }
 
                     map.fitBounds(msg.body.bounds, msg.body.options);
+                } else if (msg.type === WorkerMessage.Profile_Callsign) {
+                    this.callsign = msg.body.callsign;
                 } else if (msg.type === WorkerMessage.Map_Projection) {
-console.error('PROJETION', msg.body);
                     map.setProjection(msg.body);
                 } else if (msg.type === WorkerMessage.Connection_Open) {
                     this.isOpen = true;
@@ -485,13 +493,16 @@ console.error('PROJETION', msg.body);
             }
 
             for (const item of items) {
-                this.overlays.push(new Overlay(
+                this.overlays.push(await Overlay.create(
                     map,
-                    item as ProfileOverlay
+                    item as ProfileOverlay,
+                    {
+                        skipSave: true
+                    }
                 ));
             }
 
-            this.overlays.push(Overlay.internal(map, {
+            this.overlays.push(await Overlay.internal(map, {
                 id: -1,
                 name: 'CoT Icons',
                 type: 'geojson',
