@@ -68,7 +68,7 @@
                     :edit='true'
                     :hover='true'
                     :validate='validateJSON'
-                    :modelValue='JSON.stringify(environment, null, 4)'
+                    :model-value='JSON.stringify(environment, null, 4)'
                     @update:model-value='environment = JSON.parse($event)'
                 />
             </template>
@@ -153,7 +153,6 @@ import { useRoute } from 'vue-router';
 import { std } from '/src/std.ts';
 import {
     TablerNone,
-    TablerInput,
     TablerAlert,
     TablerLoading,
     TablerIconButton,
