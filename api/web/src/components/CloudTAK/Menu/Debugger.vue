@@ -36,8 +36,8 @@
             />
             <template v-else>
                 <div
-                    key='fit'
                     v-for='(feature, fit) in history.features'
+                    key='fit'
                 >
                     <div
                         class='row hover-dark px-2 py-2 cursor-pointer user-select-none'
@@ -64,7 +64,7 @@
                     <div v-if='opened.has(fit)'>
                         <CopyField
                             mode='pre'
-                            :modelValue='JSON.stringify(feature, null, 4)'
+                            :model-value='JSON.stringify(feature, null, 4)'
                         />
                     </div>
                 </div>
