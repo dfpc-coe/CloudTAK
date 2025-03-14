@@ -103,7 +103,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, toRaw } from 'vue';
+import { ref, computed } from 'vue';
 import { useMapStore } from '../../stores/map.ts';
 import type { LngLatLike } from 'maplibre-gl';
 import type { Feature } from 'geojson';

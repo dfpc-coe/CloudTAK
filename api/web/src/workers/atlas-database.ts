@@ -133,17 +133,15 @@ export default class AtlasDatabase {
     /**
      * Generate a GeoJSONDiff on existing COT Features
      */
-    diff(): GeoJSONSourceDiff {
+    async diff(): Promise<GeoJSONSourceDiff> {
         const now = +new Date();
         const diff: GeoJSONSourceDiff = {};
         diff.add = [];
         diff.remove = [];
         diff.update = [];
 
-        // TODO
-        //const profileStore = useProfileStore();
-        //const display_stale = profileStore.profile ? profileStore.profile.display_stale : 'Immediate';
-        const display_stale: string = 'Immediate';
+        const profile = atlas.profile.load();
+        const display_stale = profile.display_stale || 'Immediate';
 
         for (const cot of this.cots.values()) {
             const render = cot.as_rendered();
