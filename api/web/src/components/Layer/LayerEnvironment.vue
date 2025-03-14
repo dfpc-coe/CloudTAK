@@ -199,7 +199,7 @@ onMounted(async () => {
     await reload();
 });
 
-async function validateJSON(text) {
+function validateJSON(text) {
     try {
         JSON.parse(text);
     } catch (err) {
@@ -221,6 +221,9 @@ function hasDateTime() {
 }
 
 async function reload() {
+    raw.value = false;
+    disabled.value = true;
+
     environment.value = JSON.parse(JSON.stringify(props.layer[direction.value].environment));
 
     if (direction.value === 'incoming')  {
