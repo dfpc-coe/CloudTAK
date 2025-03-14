@@ -8,11 +8,11 @@
                 <div class='d-flex'>
                     <span
                         class='cursor-pointer'
-                        @click='updateSort(h.name)'
-                        v-text='h.name'
+                        @click='updateSort(s.name)'
+                        v-text='s.name'
                     />
                     <span
-                        v-if='h.name === sort'
+                        v-if='s.name === sort'
                         class='ms-auto'
                     >
                         <IconChevronDown
