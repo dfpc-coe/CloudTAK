@@ -25,6 +25,7 @@
         "@turf/meta": "^7.2.0",
         "@turf/point-on-feature": "^7.0.0",
         "@vueuse/core": "^13.0.0",
+        "ajv": "^8.17.1",
         "autosize": "^6.0.1",
         "bootstrap": "^5.2.3",
         "core-js": "^3.6.4",
