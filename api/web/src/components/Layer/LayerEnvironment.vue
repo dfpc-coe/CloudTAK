@@ -19,6 +19,7 @@
                         />
                     </TablerIconButton>
                     <TablerIconButton
+                        v-if='props.capabilities'
                         title='Edit'
                         @click='disabled = false'
                     >
