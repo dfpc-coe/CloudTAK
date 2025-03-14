@@ -34,8 +34,8 @@
                 </div>
                 <div class='col-12 mb-2'>
                     <TablerInput
-                        icon='search'
                         v-model='paging.filter'
+                        icon='search'
                         placeholder='Channels Filter...'
                         @keyup.enter='generate'
                     />

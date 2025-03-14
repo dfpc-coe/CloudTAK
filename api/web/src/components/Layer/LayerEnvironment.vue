@@ -19,6 +19,7 @@
                         />
                     </TablerIconButton>
                     <TablerIconButton
+                        v-if='props.capabilities'
                         title='Edit'
                         @click='disabled = false'
                     >
@@ -61,12 +62,12 @@
             v-else
             class='col'
         >
-            <template v-if='raw && disabled'>
-                <pre v-text='environment' />
-            </template>
-            <template v-else-if='raw && !disabled'>
-                <TablerInput
+            <template v-if='raw'>
+                <CopyField
                     :rows='20'
+                    :edit='true'
+                    :hover='true'
+                    :validate='validateJSON'
                     :model-value='JSON.stringify(environment, null, 4)'
                     @update:model-value='environment = JSON.parse($event)'
                 />
@@ -124,7 +125,7 @@
             </div>
 
             <div
-                v-if='!disabled'
+                v-if='!disabled || raw'
                 class='col-12 px-2 py-2 d-flex'
             >
                 <button
@@ -152,12 +153,13 @@ import { useRoute } from 'vue-router';
 import { std } from '/src/std.ts';
 import {
     TablerNone,
-    TablerInput,
     TablerAlert,
     TablerLoading,
     TablerIconButton,
     TablerTimeZone,
 } from '@tak-ps/vue-tabler';
+import CopyField from '../CloudTAK/util/CopyField.vue';
+import TypeValidator from '../../type.ts';
 import LayerIncomingEnvironmentArcGIS from './LayerIncomingEnvironmentArcGIS.vue';
 import LayerOutgoingEnvironmentArcGIS from './LayerOutgoingEnvironmentArcGIS.vue';
 import Schema from './utils/Schema.vue';
@@ -198,6 +200,16 @@ onMounted(async () => {
     await reload();
 });
 
+function validateJSON(text) {
+    try {
+        JSON.parse(text);
+    } catch (err) {
+        return err instanceof Error ? err.message : String(err);
+    }
+
+    return true;
+}
+
 function hasDateTime() {
     if (!props.capabilities) return false;
 
@@ -210,7 +222,18 @@ function hasDateTime() {
 }
 
 async function reload() {
+    raw.value = false;
+    disabled.value = true;
+
     environment.value = JSON.parse(JSON.stringify(props.layer[direction.value].environment));
+
+    if (props.capabilities && props.capabilities[direction.value] && props.capabilities[direction.value].schema && props.capabilities[direction.value].schema.input) {
+        try {
+            TypeValidator.type(props.capabilities[direction.value].schema.input, environment.value);
+        } catch (err) {
+            console.error(err);
+        }
+    }
 
     if (direction.value === 'incoming')  {
         const cnf = JSON.parse(JSON.stringify(props.layer[direction.value].config));
