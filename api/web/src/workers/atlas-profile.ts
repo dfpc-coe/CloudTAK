@@ -157,6 +157,15 @@ export default class AtlasProfile {
             await this.CoT();
         }
 
+        if (body.display_projection) {
+            this.atlas.postMessage({
+                type: WorkerMessage.Map_Projection,
+                body: {
+                    type: body.display_projection
+                }
+            });
+        }
+
         this.profile = await std('/api/profile', {
             method: 'PATCH',
             token: this.atlas.token,
