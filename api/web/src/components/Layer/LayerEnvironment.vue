@@ -159,6 +159,7 @@ import {
     TablerTimeZone,
 } from '@tak-ps/vue-tabler';
 import CopyField from '../CloudTAK/util/CopyField.vue';
+import TypeValidator from '../../type.ts';
 import LayerIncomingEnvironmentArcGIS from './LayerIncomingEnvironmentArcGIS.vue';
 import LayerOutgoingEnvironmentArcGIS from './LayerOutgoingEnvironmentArcGIS.vue';
 import Schema from './utils/Schema.vue';
@@ -225,6 +226,14 @@ async function reload() {
     disabled.value = true;
 
     environment.value = JSON.parse(JSON.stringify(props.layer[direction.value].environment));
+
+    if (props.capabilities && props.capabilities[direction.value] && props.capabilities[direction.value].schema && props.capabilities[direction.value].schema.input) {
+        try {
+            TypeValidator.type(props.capabilities[direction.value].schema.input, environment.value);
+        } catch (err) {
+            console.error(err);
+        }
+    }
 
     if (direction.value === 'incoming')  {
         const cnf = JSON.parse(JSON.stringify(props.layer[direction.value].config));
