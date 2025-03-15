@@ -1,8 +1,10 @@
 import COT, { OriginMode } from './cot.ts'
-import { std, stdurl } from '../../std.ts';
-import { useCOTStore } from '../cots.ts';
+import { std, stdurl } from '../std.ts';
+import { useMapStore } from '../stores/map.ts';
 import { bbox } from '@turf/bbox';
-import type { Feature } from '../../types.ts';
+import type { Remote } from 'comlink';
+import type Atlas from '../workers/atlas.ts';
+import type { Feature } from '../types.ts';
 import type {
     BBox,
     FeatureCollection
@@ -16,7 +18,7 @@ import type {
     MissionLogList,
     MissionLayerList,
     MissionSubscriptions
-} from '../../types.ts';
+} from '../types.ts';
 
 export default class Subscription {
     meta: Mission;
@@ -25,25 +27,35 @@ export default class Subscription {
     logs: Array<MissionLog>;
     cots: Map<string, COT>;
 
+    _remote: BroadcastChannel | null;
+    _atlas: Atlas | Remote<Atlas>;
+
     // Should features be automatically added
     auto: boolean;
 
     constructor(
+        atlas: Atlas | Remote<Atlas>,
         mission: Mission,
         role: MissionRole,
         logs: Array<MissionLog>,
-        token?: string
+        opts?: {
+            token?: string,
+            remote?: BroadcastChannel | null
+        }
     ) {
+        this._atlas = atlas;
+        this._remote = (opts && opts.remote !== undefined) ? opts.remote : null;
+
         this.meta = mission;
         this.role = role;
         this.logs = logs;
-        this.token = token;
+        if (opts && opts.token) this.token = opts.token;
         this.cots = new Map();
 
         this.auto = false;
     }
 
-    collection(raw = false): FeatureCollection {
+    async collection(raw = false): Promise<FeatureCollection> {
         return {
             type: 'FeatureCollection',
             features: Array.from(this.cots.values()).map((f: COT) => {
@@ -56,15 +68,15 @@ export default class Subscription {
         }
     }
 
-    bounds(): BBox {
-        return bbox(this.collection());
+    async bounds(): Promise<BBox> {
+        return bbox(await this.collection());
     }
 
     async delete(): Promise<void> {
-        const cotStore = useCOTStore();
+        const mapStore = useMapStore();
 
         await Subscription.delete(this.meta.guid, this.token);
-        cotStore.subscriptions.delete(this.meta.guid);
+        mapStore.worker.db.subscriptionDelete(this.meta.guid);
     }
 
     async updateLogs(): Promise<void> {
@@ -76,28 +88,46 @@ export default class Subscription {
         return Subscription.headers(this.token);
     }
 
-    static async load(guid: string, token?: string): Promise<Subscription> {
+    static async load(
+        atlas: Atlas,
+        guid: string,
+        token?: string
+    ): Promise<Subscription> {
         const url = stdurl('/api/marti/missions/' + encodeURIComponent(guid));
         url.searchParams.append('logs', 'true');
 
-        const mission = await this.fetch(guid, token, { logs: true });
+        const mission = await std(url, {
+            headers: Subscription.headers(token),
+            token: atlas.token
+        }) as Mission;
 
         const logs = mission.logs || [] as Array<MissionLog>;
         delete mission.logs;
 
         const role = await std('/api/marti/missions/' + encodeURIComponent(guid) + '/role', {
-            headers: Subscription.headers(token)
+            headers: Subscription.headers(token),
+            token: atlas.token
         }) as MissionRole;
 
-        const sub = new Subscription(mission, role, logs, token);
+        const sub = new Subscription(
+            atlas,
+            mission,
+            role,
+            logs,
+            { token }
+        );
 
-        const fc = await this.featList(guid, token);
+        const fc = await std('/api/marti/missions/' + encodeURIComponent(guid) + '/cot', {
+            headers: Subscription.headers(token),
+            token: atlas.token
+        }) as FeatureCollection;
 
         for (const feat of fc.features) {
-            const cot = new COT(feat as Feature, {
+            const cot = new COT(atlas, feat as Feature, {
                 mode: OriginMode.MISSION,
                 mode_id: guid
             });
+
             sub.cots.set(String(cot.id), cot);
         }
 

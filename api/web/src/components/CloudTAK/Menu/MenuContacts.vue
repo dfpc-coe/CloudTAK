@@ -25,7 +25,7 @@
                 />
             </div>
 
-            <EmptyInfo v-if='hasNoChannels' />
+            <EmptyInfo v-if='mapStore.hasNoChannels' />
 
             <TablerLoading v-if='loading' />
             <TablerAlert
@@ -66,12 +66,11 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, onMounted } from 'vue';
-import { std, stdurl } from '../../../../src/std.ts';
-import type { ContactList } from '../../../../src/types.ts';
-import { useProfileStore } from '../../../..//src/stores/profile.ts';
-import { useCOTStore } from '../../../../src/stores/cots.ts';
-const cotStore = useCOTStore();
+import { ref, watch, onMounted } from 'vue';
+import { std, stdurl } from '../../../std.ts';
+import type { ContactList } from '../../../types.ts';
+import { useMapStore } from '../../../stores/map.ts';
+const mapStore = useMapStore();
 import MenuTemplate from '../util/MenuTemplate.vue';
 import {
     IconRefresh
@@ -86,7 +85,6 @@ import {
 import Contact from '../util/Contact.vue';
 import EmptyInfo from '../util/EmptyInfo.vue';
 
-const profileStore = useProfileStore();
 const error = ref<Error | undefined>();
 const loading = ref(true);
 const contacts = ref<ContactList>([])
@@ -94,32 +92,32 @@ const paging = ref({
     filter: ''
 });
 
-const hasNoChannels = profileStore.hasNoChannels;
-
-const visibleActiveContacts = computed(() => {
-    return contacts.value.filter((contact) => {
-        return contact.callsign;
-    }).filter((contact) => {
-        return cotStore.cots.has(contact.uid);
-    }).filter((contact) => {
-        return contact.callsign.toLowerCase().includes(paging.value.filter.toLowerCase());
-    })
-});
-
-const visibleOfflineContacts = computed(() => {
-    return contacts.value.filter((contact) => {
-        return contact.callsign;
-    }).filter((contact) => {
-        return !cotStore.cots.has(contact.uid);
-    }).filter((contact) => {
-        return contact.callsign.toLowerCase().includes(paging.value.filter.toLowerCase());
-    })
-})
+const visibleActiveContacts = ref<ContactList>([]);
+const visibleOfflineContacts = ref<ContactList>([]);
 
 onMounted(async () => {
     await fetchList();
+    await updateContacts();
 });
 
+watch(paging.value, async () => {
+    await updateContacts();
+});
+
+async function updateContacts() {
+    visibleActiveContacts.value = [];
+    visibleOfflineContacts.value = [];
+
+    for (const contact of contacts.value) {
+        if (!contact.callsign.toLowerCase().includes(paging.value.filter.toLowerCase())) continue;
+
+        if (await mapStore.worker.db.has(contact.uid)) {
+            visibleActiveContacts.value.push(contact);
+        } else {
+            visibleOfflineContacts.value.push(contact);
+        }
+    }
+}
 
 async function fetchList() {
     loading.value = true;

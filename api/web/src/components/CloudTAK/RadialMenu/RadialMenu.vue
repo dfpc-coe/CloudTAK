@@ -125,14 +125,13 @@
 </template>
 
 <script>
-import { OriginMode } from '../../../../src/stores/base/cot.ts';
+import { OriginMode } from '../../../base/cot.ts';
 import RadialMenu from './RadialMenu.js';
 import './RadialMenu.css';
-import { useMapStore } from '../../../../src/stores/map.ts';
-import { useCOTStore } from '../../../../src/stores/cots.ts';
+import { useMapStore } from '../../../stores/map.ts';
 import { mapState, mapActions } from 'pinia'
 
-const cotStore = useCOTStore();
+const mapStore = useMapStore();
 
 export default {
     name: 'RadialMenu',
@@ -155,8 +154,8 @@ export default {
     unmounted: function() {
         this.$emit('close')
     },
-    mounted: function() {
-        this.genMenuItems();
+    mounted: async function() {
+        await this.genMenuItems();
 
         this.$nextTick(() => {
             this.menu = new RadialMenu({
@@ -173,23 +172,25 @@ export default {
     },
     methods: {
         ...mapActions(useMapStore, ['radialClick']),
-        genMenuItems: function() {
+        genMenuItems: async function() {
             this.menuItems.splice(0, this.menuItems.length);
             if (this.radial.mode === 'cot') {
                 if (this.radial.cot && this.radial.cot.properties) {
-                    const cot = cotStore.get(this.radial.cot.properties.id, {
+                    const cot = await mapStore.worker.db.get(this.radial.cot.properties.id, {
                         mission: true
                     });
 
-                    if (cot.origin.mode === OriginMode.CONNECTION) {
+                    if (!cot) throw new Error('Could not find marker');
+
+                    if (await cot.origin.mode === OriginMode.CONNECTION) {
                         this.menuItems.push({ id: 'edit', icon: '#radial-pencil' })
                         this.menuItems.push({ id: 'delete', icon: '#radial-trash' })
 
-                        if (cot.geometry.type === 'Point') {
+                        if (await cot.geometry.type === 'Point') {
                             this.menuItems.push({ id: 'lock', icon: '#radial-lock' })
                         }
-                    } else if (cot.origin.mode === OriginMode.MISSION && cot.origin.mode_id) {
-                        const sub = cotStore.subscriptions.get(cot.origin.mode_id);
+                    } else if (await cot.origin.mode === OriginMode.MISSION && await cot.origin.mode_id) {
+                        const sub = await mapStore.worker.db.subscriptions.get(await cot.origin.mode_id);
 
                         if (sub.role && sub.role.permissions.includes("MISSION_WRITE")) {
                             this.menuItems.push({ id: 'edit', icon: '#radial-pencil' })
@@ -197,7 +198,7 @@ export default {
                         }
                     }
 
-                    if (cot.properties.video) {
+                    if (await cot.properties.video) {
                         this.menuItems.push({ id: 'play', icon: '#radial-play' })
                     }
                 }

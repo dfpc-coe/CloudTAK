@@ -6,7 +6,7 @@ export function stdurl(url: string | URL): URL {
         url = new URL(url);
     } catch (err) {
         if (err instanceof TypeError) {
-            url = new URL((process.env.API_URL || window.location.origin) + url);
+            url = new URL((process.env.API_URL || self.location.origin) + url);
         } else {
             throw err;
         }
@@ -31,6 +31,7 @@ export function stdurl(url: string | URL): URL {
 export async function std(
     url: string | URL,
     opts: {
+        token?: string;
         download?: boolean | string;
         headers?: Record<string, string>;
         body?: unknown;
@@ -47,8 +48,10 @@ export async function std(
         opts.headers['Content-Type'] = 'application/json';
     }
 
-    if (localStorage.token && !opts.headers.Authorization) {
+    if (!isWebWorker() && localStorage.token && !opts.headers.Authorization) {
         opts.headers['Authorization'] = 'Bearer ' + localStorage.token;
+    } else if (opts.token) {
+        opts.headers['Authorization'] = 'Bearer ' + opts.token
     }
 
     const res = await fetch(url, opts as RequestInit);
@@ -67,13 +70,15 @@ export async function std(
         err.body = bdy;
         throw err;
     } else if (res.status === 401) {
-        delete localStorage.token;
+        if (!isWebWorker()) {
+            delete localStorage.token;
+        }
         throw new Error('401');
     }
 
     const ContentType = res.headers.get('Content-Type');
     const ContentDisposition = res.headers.get('Content-Disposition');
-        
+
     if (opts.download) {
         let name = 'download';
         if (typeof opts.download === 'string') {
@@ -107,6 +112,11 @@ export function humanSeconds(seconds: number): string {
         if (date.getUTCMilliseconds() !== 0) str.push(date.getUTCMilliseconds() + " ms");
         return str.join(', ');
 }
+
+function isWebWorker() {
+    return typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope;
+}
+
 
 export function stdclick($router: Router, event: MouseEvent | KeyboardEvent, path: string) {
     if (event.ctrlKey === true) {

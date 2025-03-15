@@ -109,7 +109,7 @@
                             v-for='connection in connections.videoConnections'
                             :key='connection.uuid'
                             class='d-flex align-items-center px-3 py-2 hover-dark cursor-pointer'
-                            @click='addVideo(connection)'
+                            @click='videoStore.addConnection(connection)'
                         >
                             <span class='me-1'>
                                 <IconVideo
@@ -238,9 +238,9 @@ import MenuTemplate from '../util/MenuTemplate.vue';
 import VideoLeaseModal from './Videos/VideoLeaseModal.vue';
 import Feature from '../util/Feature.vue';
 import { std, stdurl } from '../../../std.ts';
-import COT from '../../../../src/stores/base/cot.ts'
+import COT from '../../../base/cot.ts';
 import type { VideoLease, VideoLeaseList, VideoConnectionList } from '../../../types.ts';
-import { useCOTStore } from '../../../stores/cots.ts';
+import { useMapStore } from '../../../stores/map.ts';
 import { useVideoStore } from '../../../stores/videos.ts';
 import {
     TablerNone,
@@ -259,9 +259,9 @@ import {
     IconServer2,
 } from '@tabler/icons-vue';
 
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 
-const cotStore = useCOTStore();
+const mapStore = useMapStore();
 const videoStore = useVideoStore();
 
 const leasePaging = ref({
@@ -280,6 +280,7 @@ const loading = ref({
 const lease = ref();
 const leases = ref<VideoLeaseList>({ total: 0, items: [] });
 const connections = ref<VideoConnectionList>({ videoConnections: [] });
+const videos = ref<Set<COT>>(new Set())
 
 watch(leasePaging.value, async () => {
     await fetchLeases();
@@ -288,18 +289,13 @@ watch(leasePaging.value, async () => {
 onMounted(async () => {
     await fetchConnections();
     await fetchLeases();
-    loading.value.main = false;
-});
 
-const videos = computed(() => {
-    return cotStore.filter((cot: COT) => {
-        return !!(cot.properties && cot.properties.video);
-    }, {
+    videos.value = await mapStore.worker.db.filter('properties.video', {
         mission: true
     })
-});
 
-const addVideo = videoStore.addConnection;
+    loading.value.main = false;
+});
 
 function expired(expiration: string | null): boolean {
     if (!expiration) return false;

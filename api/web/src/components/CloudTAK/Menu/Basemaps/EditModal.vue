@@ -121,7 +121,7 @@
                             v-model='scope'
                             required
                             label='Access Scope'
-                            :disabled='(props.basemap.id && !profileStore.profile.system_admin)'
+                            :disabled='(props.basemap.id && !isSystemAdmin)'
                             :options='["user", "server"]'
                         />
                     </div>
@@ -225,7 +225,7 @@ import {
     TablerEnum,
     TablerInput
 } from '@tak-ps/vue-tabler';
-import { useProfileStore } from '../../../../stores/profile.ts';
+import { useMapStore } from '../../../../stores/map.ts';
 
 const emit = defineEmits(['close']);
 
@@ -235,7 +235,7 @@ const props = defineProps({
     }
 });
 
-const profileStore = useProfileStore();
+const mapStore = useMapStore();
 
 const loading = ref(false);
 
@@ -255,6 +255,8 @@ const errors = ref({
 
 const scope = ref(props.basemap.id ? (props.basemap.username ? 'user' : 'server') : 'user')
 
+const isSystemAdmin = ref(false);
+
 const editing = ref({
     name: '',
     url: '',
@@ -268,6 +270,8 @@ const editing = ref({
 })
 
 onMounted(async () => {
+    isSystemAdmin.value = await mapStore.worker.profile.isSystemAdmin();
+
     if (props.basemap.id) {
         await fetch();
     }

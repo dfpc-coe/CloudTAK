@@ -115,7 +115,7 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { std, stdurl } from '../../../../src/std.ts';
 import type { Import, ImportBatch } from '../../../../src/types.ts';
-import Status from '../../util/Status.vue';
+import Status from '../../util/StatusDot.vue';
 import timeDiff from '../../../timediff.ts';
 import {
     TablerNone,

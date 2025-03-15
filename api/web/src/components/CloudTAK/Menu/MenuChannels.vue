@@ -2,7 +2,7 @@
     <MenuTemplate name='Channels'>
         <template #buttons>
             <TablerIconButton
-                v-if='!loading && hasChannelsOn'
+                v-if='!loading && !mapStore.hasNoChannels'
                 title='All Channels On'
                 @click='setAllStatus(true)'
             >
@@ -12,7 +12,7 @@
                 />
             </TablerIconButton>
             <TablerIconButton
-                v-if='!loading && !hasChannelsOn'
+                v-if='!loading && mapStore.hasNoChannels'
                 title='All Channels Off'
                 @click='setAllStatus(false)'
             >
@@ -45,7 +45,7 @@
                 />
             </div>
 
-            <EmptyInfo v-if='profileStore.hasNoChannels' />
+            <EmptyInfo v-if='mapStore.hasNoChannels' />
 
             <TablerLoading v-if='loading' />
             <TablerAlert
@@ -146,9 +146,9 @@ import {
     IconEyePlus,
     IconEyeOff,
 } from '@tabler/icons-vue';
-import { useProfileStore } from '../../../../src/stores/profile.ts';
-import { useCOTStore } from '../../../../src/stores/cots.ts';
-const cotStore = useCOTStore();
+import { useProfileStore } from '../../../stores/profile.ts';
+import { useMapStore } from '../../../stores/map.ts';
+const mapStore = useMapStore();
 const profileStore = useProfileStore();
 
 const error = ref<Error | undefined>();
@@ -160,12 +160,6 @@ const paging = ref({
 
 onMounted(async () => {
     await refresh();
-});
-
-const hasChannelsOn = computed<boolean>(() => {
-    return profileStore.channels.some((ch) => {
-        return !ch.active;
-    })
 });
 
 const processChannels = computed<Record<string, Group>>(() => {
@@ -212,7 +206,7 @@ async function setAllStatus(active=true) {
         return ch;
     });
 
-    await cotStore.clear({
+    await mapStore.worker.db.clear({
         ignoreArchived: true,
         skipNetwork: false
     })
@@ -230,7 +224,7 @@ async function setStatus(channel: Group, active=false) {
         return ch;
     });
 
-    await cotStore.clear({
+    await mapStore.worker.db.clear({
         ignoreArchived: true,
         skipNetwork: false
     })

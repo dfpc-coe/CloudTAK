@@ -5,20 +5,24 @@
         :none='!tokens.items.length'
     >
         <template #buttons>
-            <IconPlus
-                v-tooltip='"New Token"'
-                :size='32'
-                stroke='1'
-                class='cursor-pointer'
+            <TablerIconButton
+                title='New Token'
                 @click='token={}'
-            />
-            <IconRefresh
-                v-tooltip='"Refresh"'
-                :size='32'
-                stroke='1'
-                class='cursor-pointer'
+            >
+                <IconPlus
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
+            <TablerIconButton
+                title='Refresh'
                 @click='fetch'
-            />
+            >
+                <IconRefresh
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
         </template>
         <template #default>
             <div
@@ -32,7 +36,7 @@
                     stroke='1'
                 />
                 <span
-                    class='mx-2'
+                    class='mx-2 user-select-none'
                     style='font-size: 18px;'
                     v-text='t.name'
                 />
@@ -48,9 +52,10 @@
     />
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted } from 'vue'
 import MenuTemplate from '../util/MenuTemplate.vue';
-import { std } from '/src/std.ts';
+import { std } from '../../../std.ts';
 import TokenModal from './Settings/TokenModal.vue';
 import {
     IconPlus,
@@ -58,35 +63,21 @@ import {
     IconRobot,
 } from '@tabler/icons-vue';
 
-export default {
-    name: 'ProfileTokens',
-    components: {
-        MenuTemplate,
-        TokenModal,
-        IconPlus,
-        IconRobot,
-        IconRefresh,
-    },
-    data: function() {
-        return {
-            loading: true,
-            token: false,
-            tokens: {
-                total: 0,
-                items: []
-            }
-        }
-    },
-    mounted: async function() {
-        await this.fetch();
-    },
-    methods: {
-        fetch: async function() {
-            this.token = false;
-            this.loading = true;
-            this.tokens = await std('/api/token');
-            this.loading = false;
-        },
-    }
+const loading = ref(true);
+const token = ref(false);
+const tokens = ref({
+    total: 0,
+    items: []
+});
+
+onMounted(async () => {
+    await fetch();
+});
+
+async function fetch() {
+    token.value = false;
+    loading.value = true;
+    tokens.value = await std('/api/token');
+    loading.value = false;
 }
 </script>
