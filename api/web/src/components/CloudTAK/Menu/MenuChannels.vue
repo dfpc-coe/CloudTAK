@@ -1,8 +1,9 @@
 <template>
     <MenuTemplate name='Channels'>
         <template #buttons>
+            <span v-text='!loading && mapStore.hasNoChannels'/>
             <TablerIconButton
-                v-if='!loading && !mapStore.hasNoChannels'
+                v-if='!loading && mapStore.hasNoChannels'
                 title='All Channels On'
                 @click='setAllStatus(true)'
             >
@@ -12,7 +13,7 @@
                 />
             </TablerIconButton>
             <TablerIconButton
-                v-if='!loading && mapStore.hasNoChannels'
+                v-if='!loading && !mapStore.hasNoChannels'
                 title='All Channels Off'
                 @click='setAllStatus(false)'
             >
