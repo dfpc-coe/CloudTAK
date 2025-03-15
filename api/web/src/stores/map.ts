@@ -279,6 +279,48 @@ export const useMapStore = defineStore('cloudtak', {
 
             await this.worker.init(localStorage.token);
 
+            if ("geolocation" in navigator) {
+                const status = await navigator.permissions
+                    .query({ name: "geolocation" })
+
+                console.log(`geolocation permission state is ${status.state}`);
+                status.onchange = () => {
+                    console.log(`geolocation permission state has changed to ${permissionStatus.state}`);
+                };
+
+                navigator.geolocation.watchPosition((position) => {
+                    if (position.coords.accuracy <= 50) {
+                        this.channel.postMessage(JSON.stringify({
+                            type: WorkerMessage.Profile_Location,
+                            body: {
+                                accuracy: position.coords.accuracy,
+                                coordinates: [ position.coords.longitude, position.coords.latitude ]
+                            }
+                        }))
+                    }
+                }, (err) => {
+                    if (err.code === 0) {
+                        live_loc_denied.value = true;
+                    } else if (!err.code) {
+                        emit('err', err);
+                    }
+                },{
+                    maximumAge: 0,
+                    timeout: 1500,
+                    enableHighAccuracy: true
+                });
+            } else {
+                console.error('Browser does not appear to support Geolocation');
+            }
+
+            if ('Notification' in navigator && Notification) {
+                const status = await navigator.permissions
+                    .query({ name: "notifications" })
+
+                if (status !== 'granted') {
+                    Notification.requestPermission()
+                }
+            }
 
             const init: mapgl.MapOptions = {
                 container: this.container,

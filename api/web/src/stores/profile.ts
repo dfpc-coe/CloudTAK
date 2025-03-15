@@ -4,12 +4,10 @@ import type { Group, Profile, Profile_Update } from '../types.ts';
 
 export const useProfileStore = defineStore('profile', {
     state: (): {
-        live_loc: number[] | undefined,
         channels: Array<Group>;
         profile: Profile | null;
     } => {
         return {
-            live_loc: undefined,
             channels: [],
             profile: null,
         }
