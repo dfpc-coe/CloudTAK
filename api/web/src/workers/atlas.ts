@@ -7,6 +7,7 @@ import { WorkerMessage } from '../base/events.ts';
 import Subscription from '../base/subscription.ts';
 import * as Comlink from 'comlink';
 import AtlasProfile from './atlas-profile.ts';
+import type { LiveLocation } from './atlas-profile.ts';
 import AtlasDatabase from './atlas-database.ts';
 import AtlasConnection from './atlas-connection.ts';
 import type { Remote, TransferHandler } from 'comlink';
@@ -65,7 +66,7 @@ export class CloudTAKTransferHandler {
             logs: Array<MissionLog>
         }) => {
             const sub = new Subscription(
-                this.atlas, 
+                this.atlas,
                 ser.mission,
                 ser.role,
                 ser.logs,
@@ -144,6 +145,23 @@ export default class Atlas {
         this.channel = new BroadcastChannel('cloudtak');
         this.sync = new BroadcastChannel('sync');
         this.token = '';
+
+
+        this.channel.onmessage = (event) => {
+            let msg;
+            try {
+                msg = JSON.parse(event.data)
+
+                if (!msg.type) return;
+            } catch (err) {
+                console.error(`Failed to parse event: ${event.data}`, err);
+            }
+
+            if (msg.type === WorkerMessage.Profile_Location) {
+                this.profile.live_loc = msg.body as LiveLocation;
+            }
+        }
+
     }
 
     async postMessage(msg: {

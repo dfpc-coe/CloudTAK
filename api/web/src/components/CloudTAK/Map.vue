@@ -606,30 +606,6 @@ onMounted(async () => {
 
     loading.value = false;
 
-    if ('Notification' in window && Notification && Notification.permission !== 'granted') {
-        Notification.requestPermission()
-    }
-
-    if (("geolocation" in navigator)) {
-        navigator.geolocation.watchPosition((position) => {
-            if (position.coords.accuracy <= 50) {
-                profileStore.live_loc = [ position.coords.longitude, position.coords.latitude ]
-            }
-        }, (err) => {
-            if (err.code === 0) {
-                live_loc_denied.value = true;
-            } else if (!err.code) {
-                emit('err', err);
-            }
-        },{
-            maximumAge: 0,
-            timeout: 1500,
-            enableHighAccuracy: true
-        });
-    } else {
-        console.error('geolocation object not found on navigator');
-    }
-
     window.addEventListener('dragover', (e) => {
         e.preventDefault();
 

@@ -5,6 +5,7 @@ export enum WorkerMessage {
     Map_Projection = 'cloudtak:map:projection',
 
     Profile_Callsign = 'cloudtak:profile:callsign',
+    Profile_Location = 'cloudtak:profile:location',
 
     Channels_None = 'channels:none',
     Channels_List = 'channels:list',

@@ -11,13 +11,18 @@ export type TAKNotification = {
     url: string;
 }
 
+export type LiveLocation = {
+    accuracy: number | undefined
+    coordinates: number[]
+}
+
 export default class AtlasProfile {
     atlas: Atlas;
 
+    // Interval for reporting location to TAK Server
     timerSelf: ReturnType<typeof setInterval> | undefined;
 
-    // Interval for reporting location to TAK Server
-    live_loc: number[] | undefined;
+    live_loc: LiveLocation;
     channels: Array<Group>;
     profile: Profile | null;
 
@@ -25,9 +30,13 @@ export default class AtlasProfile {
         this.atlas = atlas;
 
         this.timerSelf = undefined;
-        this.live_loc = undefined;
+        this.live_loc = {
+            accuracy: undefined,
+            coordinates: [0, 0]
+        };
         this.channels = [];
         this.profile = null;
+
     }
 
     async init(): Promise<string> {
