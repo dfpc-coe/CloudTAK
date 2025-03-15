@@ -162,6 +162,56 @@ export default class AtlasProfile {
         return this.profile;
     }
 
+    async setChannel(name: string, active: boolean): Promise<Array<Group>> {
+        this.channels.forEach((ch) => {
+            if (ch.name === name) ch.active = active;
+            return ch;
+        });
+
+        await this.atlas.db.clear({
+            ignoreArchived: true,
+            skipNetwork: false
+        })
+
+        return await this.updateChannels(this.channels);        
+    }
+
+    async setAllChannels(active: boolean): Promise<Array<Group>> {
+        this.channels.forEach((ch) => {
+            ch.active = active;
+        });
+
+        await this.atlas.db.clear({
+            ignoreArchived: true,
+            skipNetwork: false
+        })
+
+        return await this.updateChannels(this.channels); 
+    }
+
+    async updateChannels(channels: Array<Group>): Promise<Array<Group>> {
+        this.channels = channels;
+
+        this.postChannelStatus();
+
+        const url = stdurl('/api/marti/group');
+        await std(url, {
+            method: 'PUT',
+            token: this.atlas.token,
+            body: this.channels
+        });
+
+        return this.channels;
+    }
+
+    postChannelStatus(): void {
+        if (this.hasNoChannels()) {
+            this.atlas.postMessage({ type: WorkerMessage.Channels_None });
+        } else {
+            this.atlas.postMessage({ type: WorkerMessage.Channels_List });
+        }
+    }
+
     async loadChannels(): Promise<Array<Group>> {
         const url = stdurl('/api/marti/group');
         url.searchParams.append('useCache', 'true');
@@ -171,11 +221,7 @@ export default class AtlasProfile {
             data: Group[]
         }).data
 
-        if (this.hasNoChannels()) {
-            this.atlas.postMessage({ type: WorkerMessage.Channels_None });
-        } else {
-            this.atlas.postMessage({ type: WorkerMessage.Channels_List });
-        }
+        this.postChannelStatus();
 
         return this.channels
     }
