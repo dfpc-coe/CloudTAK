@@ -25,7 +25,7 @@
             <TablerIconButton
                 v-if='!loading'
                 title='Refresh'
-                @click='profileStore.loadChannels'
+                @click='refresh'
             >
                 <IconRefresh
                     :size='32'
@@ -126,7 +126,6 @@
 
 <script setup lang='ts'>
 import { ref, computed, onMounted } from 'vue';
-import { std, stdurl } from '../../../../src/std.ts';
 import type { Group } from '../../../../src/types.ts';
 import {
     TablerNone,
@@ -146,10 +145,8 @@ import {
     IconEyePlus,
     IconEyeOff,
 } from '@tabler/icons-vue';
-import { useProfileStore } from '../../../stores/profile.ts';
 import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();
-const profileStore = useProfileStore();
 
 const error = ref<Error | undefined>();
 const loading = ref(true);
@@ -158,41 +155,43 @@ const paging = ref({
     filter: ''
 });
 
+const channels = ref<Array<Group>>([]);
+
 onMounted(async () => {
     await refresh();
 });
 
 const processChannels = computed<Record<string, Group>>(() => {
-    const channels: Record<string, Group> = {};
+    const filteredChannels: Record<string, Group> = {};
 
-    JSON.parse(JSON.stringify(profileStore.channels))
+    JSON.parse(JSON.stringify(channels.value))
         .sort((a: Group, b: Group) => {
             return (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0);
         }).forEach((channel: Group) => {
-            if (channels[channel.name]) {
+            if (filteredChannels[channel.name]) {
                 // @ts-expect-error Type as an array eventually
-                channels[channel.name].direction.push(channel.direction);
+                filteredChannels[channel.name].direction.push(channel.direction);
             } else {
                 // @ts-expect-error Type as an array eventually
                 channel.direction = [channel.direction];
-                channels[channel.name] = channel;
+                filteredChannels[channel.name] = channel;
             }
         })
 
-    for (const key of Object.keys(channels)) {
+    for (const key of Object.keys(filteredChannels)) {
         if (!key.toLowerCase().includes(paging.value.filter.toLowerCase())) {
-            delete channels[key];
+            delete filteredChannels[key];
         }
     }
 
-    return channels;
+    return filteredChannels;
 });
 
 async function refresh() {
     loading.value = true;
 
     try {
-        await profileStore.loadChannels();
+        channels.value = await mapStore.worker.profile.loadChannels();
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }
@@ -201,38 +200,22 @@ async function refresh() {
 }
 
 async function setAllStatus(active=true) {
-    profileStore.channels = profileStore.channels.map((ch) => {
+    // Updating the API takes a perceptable amount of time so
+    // we update the UI state to provide immediate feedback
+    channels.value.forEach((ch) => {
         ch.active = active;
-        return ch;
-    });
-
-    await mapStore.worker.db.clear({
-        ignoreArchived: true,
-        skipNetwork: false
     })
 
-    const url = stdurl('/api/marti/group');
-    await std(url, {
-        method: 'PUT',
-        body: profileStore.channels
-    });
+    channels.value = await mapStore.worker.profile.setAllChannels(active);
 }
 
 async function setStatus(channel: Group, active=false) {
-    profileStore.channels = profileStore.channels.map((ch) => {
-        if (ch.name === channel.name) ch.active = active;
-        return ch;
-    });
-
-    await mapStore.worker.db.clear({
-        ignoreArchived: true,
-        skipNetwork: false
+    channels.value.forEach((ch) => {
+        if (ch.name === channel.name) {
+            ch.active = active;
+        }
     })
 
-    const url = stdurl('/api/marti/group');
-    await std(url, {
-        method: 'PUT',
-        body: profileStore.channels
-    });
+    channels.value = await mapStore.worker.profile.setChannel(channel.name, active);
 }
 </script>

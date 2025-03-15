@@ -347,10 +347,10 @@ export default class AtlasDatabase {
     /**
      * Empty the store
      */
-    clear(opts = {
+    async clear(opts = {
         ignoreArchived: false,
         skipNetwork: false
-    }): void {
+    }): Promise<void> {
         for (const feat of this.cots.values()) {
             if (opts.ignoreArchived && feat.properties.archived) continue;
 
