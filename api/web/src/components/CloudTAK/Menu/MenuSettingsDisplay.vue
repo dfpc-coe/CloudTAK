@@ -4,7 +4,7 @@
         :loading='loading'
     >
         <div class='mx-2'>
-            <div class='col-12' >
+            <div class='col-12'>
                 <TablerEnum
                     v-model='profile.display_stale'
                     label='Remove Stale Elements'

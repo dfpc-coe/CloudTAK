@@ -38,32 +38,56 @@
                     class='d-flex align-items-center'
                     style='height: 40px'
                 >
-                    <Status
-                        v-if='mapStore.location === LocationState.Live'
-                        v-tooltip='"Using Live Location"'
-                        class='mx-2 my-2'
-                        status='success'
-                        :dark='true'
-                    />
                     <div
-                        v-else
-                        v-tooltip='"Set Location"'
-                        class='hover-button h-100 px-2 d-flex align-items-center cursor-pointer'
+                        class='hover-button h-100 d-flex align-items-center'
                         style='width: 40px;'
-                        @click='setLocation'
                     >
-                        <IconLocationOff
-                            v-if='mapStore.location === LocationState.Denied'
-                            title='Set Your Location Button (No Location currently set)'
+                        <TablerIconButton
+                            v-if='
+                                (mapStore.radial.cot && mapStore.locked.length >= 2)
+                                    || (!mapStore.radial.cot && mapStore.locked >= 1)
+                            '
+                            title='Map is locked to marker - Click to Unlock'
+                            @click='mapStore.locked.splice(0, mapStore.locked.length)'
+                        >
+                            <IconLockAccess
+                                color='#83b7e8'
+                                :size='20'
+                                stroke='1'
+                                style='margin: 5px 8px'
+                            />
+                        </TablerIconButton>
+                        <IconLocation
+                            v-else-if='mapStore.location === LocationState.Live'
+                            title='Live Location'
+                            style='margin: 5px 8px'
                             :size='20'
                             stroke='1'
                         />
-                        <IconLocation
+                        <TablerIconButton
+                            v-else-if='mapStore.location === LocationState.Preset'
+                            title='Update Your Location Button'
+                            @click='setLocation'
+                        >
+                            <IconLocationPin
+                                title='Preset Location'
+                                style='margin: 5px 8px'
+                                :size='20'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
+                        <TablerIconButton
                             v-else
                             title='Set Your Location Button'
-                            :size='20'
-                            stroke='1'
-                        />
+                            @click='setLocation'
+                        >
+                            <IconLocationOff
+                                title='Set Your Location Button (No Location currently set)'
+                                style='margin: 5px 8px'
+                                :size='20'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
                     </div>
                     <div
                         v-tooltip='"Zoom To Location"'
@@ -128,31 +152,6 @@
                             v-text='humanBearing'
                         />
                     </div>
-                    <IconFocus2
-                        v-if='!mapStore.radial.cot && !mapStore.locked.length'
-                        v-tooltip='"Get Location"'
-                        role='button'
-                        tabindex='0'
-                        title='Get Your Location button'
-                        :size='40'
-                        stroke='1'
-                        class='cursor-pointer hover-button'
-                        style='margin: 5px 8px'
-                        @click='getLocation'
-                    />
-                    <IconLockAccess
-                        v-else-if='!mapStore.radial.cot'
-                        role='button'
-                        color='#83b7e8'
-                        tabindex='0'
-                        title='Map is locked to marker'
-                        :size='40'
-                        stroke='1'
-                        class='cursor-pointer hover-button'
-                        style='margin: 5px 8px'
-                        @click='mapStore.locked.splice(0, mapStore.locked.length)'
-                    />
-
                     <div
                         v-if='!mobileDetected'
                     >
@@ -460,7 +459,6 @@ import DrawOverlay from './util/DrawOverlay.vue';
 import WarnChannels from './util/WarnChannels.vue';
 import SearchBox from './util/SearchBox.vue';
 import WarnConfiguration from './util/WarnConfiguration.vue';
-import Status from '../util/StatusDot.vue';
 import CoordInput from './CoordInput.vue';
 import type { GeoJSONStoreFeatures } from 'terra-draw'
 import type { MapGeoJSONFeature, LngLatLike } from 'maplibre-gl';
@@ -471,11 +469,11 @@ import {
     IconSearch,
     IconMessage,
     IconLocationOff,
+    IconLocationPin,
     IconLocation,
     IconMenu2,
     IconPlus,
     IconMinus,
-    IconFocus2,
     IconLockAccess,
     IconPencil,
     IconLasso,
@@ -499,15 +497,14 @@ import {
     TablerModal,
     TablerNone,
 } from '@tak-ps/vue-tabler';
+import { LocationState } from '../../base/events.ts';
 import MapLoading from './MapLoading.vue';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import RadialMenu from './RadialMenu/RadialMenu.vue';
-import { useMapStore, LocationState } from '../../stores/map.ts';
+import { useMapStore } from '../../stores/map.ts';
 import { useVideoStore } from '../../stores/videos.ts';
-import { useProfileStore } from '../../stores/profile.ts';
 import UploadImport from './util/UploadImport.vue'
 import { coordEach } from '@turf/meta';
-const profileStore = useProfileStore();
 const mapStore = useMapStore();
 const videoStore = useVideoStore();
 const router = useRouter();
@@ -529,8 +526,6 @@ const searchBoxShown = ref(false);
 const pointInput = ref<boolean>(false);
 const feat = ref()        // Show the Feat Viewer sidebar
 
-
-const live_loc_denied = ref(false)   // User denied live location services
 const upload = ref({
     shown: false,
     dragging: false
@@ -660,19 +655,16 @@ function closeRadial() {
     mapStore.radial.cot = undefined;
 }
 
-function toLocation() {
-    if (profileStore.live_loc) {
+async function toLocation() {
+    const location = await mapStore.worker.profile.location;
+
+    if ([LocationState.Preset, LocationState.Live].includes(location.source)) {
         mapStore.map.flyTo({
-            center: profileStore.live_loc as LngLatLike,
+            center: location.coordinates as LngLatLike,
             zoom: 14
         });
-    } else if (!profileStore.profile || !profileStore.profile.tak_loc) {
+    } else {
         throw new Error('No Location Set or Location could not be retrieved');
-    } else if (profileStore.profile && profileStore.profile.tak_loc) {
-        mapStore.map.flyTo({
-            center: profileStore.profile.tak_loc.coordinates as LngLatLike,
-            zoom: 14
-        });
     }
 }
 
@@ -698,19 +690,6 @@ function fileUpload(event: string) {
     upload.value.shown = false;
     const imp = JSON.parse(event) as { id: string };
     router.push(`/menu/imports/${imp.id}`)
-}
-
-function getLocation() {
-    if (profileStore.profile || !profileStore.live_loc) {
-        throw new Error('No Location Determined');
-    } else if (live_loc_denied.value) {
-        throw new Error('Cannot navigate to your position as you denied location services');
-    }
-
-    mapStore.map.flyTo({
-        center: profileStore.live_loc as LngLatLike,
-        zoom: 14
-    });
 }
 
 function startDraw(type: string) {
@@ -830,7 +809,9 @@ async function mountMap(): Promise<void> {
 
     return new Promise((resolve) => {
         mapStore.map.once('idle', async () => {
-            if (profileStore.profile && profileStore.profile.display_projection === 'globe') {
+            const profile = await mapStore.worker.profile.load();
+
+            if (profile.display_projection === 'globe') {
                 mapStore.map.setProjection({ type: "globe" });
             }
 

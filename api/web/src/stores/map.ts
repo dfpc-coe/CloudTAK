@@ -12,7 +12,7 @@ import { distance } from '@turf/distance';
 import * as Comlink from 'comlink';
 import AtlasWorker from '../workers/atlas.ts?worker&url';
 import COT from '../base/cot.ts';
-import { WorkerMessage }from '../base/events.ts';
+import { WorkerMessage, LocationState }from '../base/events.ts';
 import Overlay from './base/overlay.ts';
 import { std, stdurl } from '../std.js';
 import mapgl from 'maplibre-gl'
@@ -26,12 +26,6 @@ import type { Polygon, Position } from 'geojson';
 import type { LngLat, LngLatLike, Point, MapMouseEvent, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl';
 
 export type TAKNotification = { type: string; name: string; body: string; url: string; }
-export enum LocationState {
-    Loading,
-    Disabled,
-    Preset,
-    Live
-}
 
 export const useMapStore = defineStore('cloudtak', {
     state: (): {
@@ -291,7 +285,7 @@ export const useMapStore = defineStore('cloudtak', {
                 navigator.geolocation.watchPosition((position) => {
                     if (position.coords.accuracy <= 50) {
                         this.channel.postMessage(JSON.stringify({
-                            type: WorkerMessage.Profile_Location,
+                            type: WorkerMessage.Profile_Location_Coordinates,
                             body: {
                                 accuracy: position.coords.accuracy,
                                 coordinates: [ position.coords.longitude, position.coords.latitude ]
@@ -377,6 +371,8 @@ export const useMapStore = defineStore('cloudtak', {
                     }
 
                     map.fitBounds(msg.body.bounds, msg.body.options);
+                } else if (msg.type === WorkerMessage.Profile_Location_Source) {
+                    this.location = msg.body.source as LocationState;
                 } else if (msg.type === WorkerMessage.Profile_Callsign) {
                     this.callsign = msg.body.callsign;
                 } else if (msg.type === WorkerMessage.Map_Projection) {
@@ -395,6 +391,10 @@ export const useMapStore = defineStore('cloudtak', {
                     console.error('Unknown Event:', msg);
                 }
             }
+
+            // If we missed the Profile_Location_Source make sure it gets synced
+            const loc = await this.worker.profile.location;
+            this.location = loc.source;
         },
         initOverlays: async function() {
             if (!this.map) throw new Error('Cannot initLayers before map has loaded');
