@@ -1,7 +1,7 @@
 import { toRaw } from 'vue';
 import type Atlas from './atlas.ts';
 import { std, stdurl } from '../std.ts';
-import { WorkerMessage } from '../base/events.ts'
+import { WorkerMessage, LocationState } from '../base/events.ts'
 import type { Feature, Group, Profile, Profile_Update } from '../types.ts';
 
 export type TAKNotification = {
@@ -11,7 +11,8 @@ export type TAKNotification = {
     url: string;
 }
 
-export type LiveLocation = {
+export type ProfileLocation = {
+    source: LocationState
     accuracy: number | undefined
     coordinates: number[]
 }
@@ -22,7 +23,8 @@ export default class AtlasProfile {
     // Interval for reporting location to TAK Server
     timerSelf: ReturnType<typeof setInterval> | undefined;
 
-    live_loc: LiveLocation;
+    location: ProfileLocation;
+
     channels: Array<Group>;
     profile: Profile | null;
 
@@ -30,10 +32,13 @@ export default class AtlasProfile {
         this.atlas = atlas;
 
         this.timerSelf = undefined;
-        this.live_loc = {
+
+        this.location = {
+            source: LocationState.Disabled,
             accuracy: undefined,
             coordinates: [0, 0]
         };
+
         this.channels = [];
         this.profile = null;
 
@@ -96,8 +101,8 @@ export default class AtlasProfile {
         }
 
         this.timerSelf = setInterval(async () => {
-            if (this.live_loc) {
-                await this.CoT(this.live_loc);
+            if (this.location.accuracy) {
+                await this.CoT(this.location.coordinates);
             } else if (this.profile && this.profile.tak_loc) {
                 await this.CoT();
             }
@@ -143,6 +148,17 @@ export default class AtlasProfile {
             this.profile = profile;
         }
 
+        if (this.profile.tak_loc && this.location.source === LocationState.Disabled) {
+            this.location.source = LocationState.Preset;
+            this.location.accuracy = undefined;
+            this.location.coordinates = this.profile.tak_loc.coordinates;
+
+            this.atlas.postMessage({
+                type: WorkerMessage.Profile_Location_Source,
+                body: { source: LocationState.Preset }
+            });
+        }
+
         return this.profile;
     }
 
@@ -182,8 +198,8 @@ export default class AtlasProfile {
 
         if (body.display_projection) {
             this.atlas.postMessage({
-                type: WorkerMessage.Map_Projection,
-                body: { type: body.display_projection }
+                type: WorkerMessage.Projection_Location_Accuracy,
+                body: { source: this.location.source }
             });
         }
 

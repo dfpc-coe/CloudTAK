@@ -284,6 +284,8 @@ export default class Overlay {
             })
 
             mapStore.map.on('mousemove', click.id, (e) => {
+                if (mapStore.drawOptions.mode !== 'static') return;
+
                 if (this.type === 'vector' && e.features) {
                     const newIds = e.features.map(f => String(f.id));
 

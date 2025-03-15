@@ -3,11 +3,11 @@
 */
 
 import COT from '../base/cot.ts';
-import { WorkerMessage } from '../base/events.ts';
+import { WorkerMessage, LocationState } from '../base/events.ts';
 import Subscription from '../base/subscription.ts';
 import * as Comlink from 'comlink';
 import AtlasProfile from './atlas-profile.ts';
-import type { LiveLocation } from './atlas-profile.ts';
+import type { ProfileLocation } from './atlas-profile.ts';
 import AtlasDatabase from './atlas-database.ts';
 import AtlasConnection from './atlas-connection.ts';
 import type { Remote, TransferHandler } from 'comlink';
@@ -146,7 +146,6 @@ export default class Atlas {
         this.sync = new BroadcastChannel('sync');
         this.token = '';
 
-
         this.channel.onmessage = (event) => {
             let msg;
             try {
@@ -157,11 +156,20 @@ export default class Atlas {
                 console.error(`Failed to parse event: ${event.data}`, err);
             }
 
-            if (msg.type === WorkerMessage.Profile_Location) {
-                this.profile.live_loc = msg.body as LiveLocation;
+            if (msg.type === WorkerMessage.Profile_Location_Coordinates) {
+                this.channel.postMessage({
+                    type: WorkerMessage.Profile_Location_Source,
+                    body: {
+                        source: LocationState.Live
+                    }
+                })            
+
+                this.profile.location = {
+                    source: LocationState.Live,
+                    ...msg.body
+                } as ProfileLocation;
             }
         }
-
     }
 
     async postMessage(msg: {
