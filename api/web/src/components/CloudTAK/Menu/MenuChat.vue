@@ -55,8 +55,10 @@
     </MenuTemplate>
 </template>
 
-<script>
-import { std } from '/src/std.ts';
+<script setup>
+import { ref, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
+import { std } from '../../../std.ts';
 import {
     TablerIconButton,
     TablerInput,
@@ -67,80 +69,72 @@ import {
 import MenuTemplate from '../util/MenuTemplate.vue';
 import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();
-import { useProfileStore } from '/src/stores/profile.ts';
-const profileStore = useProfileStore();
 
-export default {
-    name: 'CloudTAKChat',
-    components: {
-        TablerInput,
-        TablerIconButton,
-        IconRefresh,
-        MenuTemplate
-    },
-    data: function() {
-        return {
-            id: `ANDROID-CloudTAK-${profileStore.profile.username}`,
-            loading: false,
-            name: this.$route.params.chatroom === 'new' ? this.$route.query.callsign : this.$route.params.chatroom,
-            chats: {
-                total: 0,
-                items: []
-            },
-            message: '',
+const route = useRoute();
+
+const id = ref('')
+const loading = ref(true),
+const name = ref(route.params.chatroom === 'new' ? route.query.callsign : route.params.chatroom);
+const chats = ref({
+    total: 0,
+    items: []
+});
+
+const message = ref('');
+
+onMounted(async () => {
+    const profile = await mapStore.worker.profile.load();
+    id.value = `ANDROID-CloudTAK-${profile.username}`
+
+    await fetchChats();
+});
+
+async function sendMessage() {
+    if (!message.value.trim().length) return;
+    const chat = {
+        sender_uid: id.value,
+        message: message.value
+    };
+    chats.value.items.push(chat)
+    message.value = ''
+
+    let single;
+    if (route.query.uid && route.query.callsign) {
+        single = {
+            sender_uid: route.query.uid,
+            sender_callsign: route.query.callsign
         }
-    },
-    mounted: async function() {
-        await this.fetchChats();
-    },
-    methods: {
-        sendMessage: async function() {
-            if (!this.message.trim().length) return;
-            const chat = {
-                sender_uid: this.id,
-                message: this.message
-            };
-            this.chats.items.push(chat)
-            this.message = ''
-
-            let single;
-            if (this.$route.query.uid && this.$route.query.callsign) {
-                single = {
-                    sender_uid: this.$route.query.uid,
-                    sender_callsign: this.$route.query.callsign
-                }
-            } else {
-                single = this.chats.items.filter((chat) => {
-                    return chat.sender_uid !== this.id
-                })[0];
-            }
-
-            if (!single) throw new Error('Error sending Chat - Contact is not defined');
-
-            await mapStore.worker.conn.sendCOT({
-                chatroom: single.sender_callsign,
-                to: {
-                    uid: single.sender_uid,
-                    callsign: single.sender_callsign
-                },
-                from: {
-                    uid: this.id,
-                    callsign: profileStore.profile.tak_callsign
-                },
-                message: chat.message
-            }, 'chat');
-        },
-        fetchChats: async function() {
-            this.loading = true;
-
-            if (this.$route.params.chatroom === 'new') {
-                await std(`/api/profile/chat/${encodeURIComponent(this.$route.query.uid)}`);
-            } else {
-                this.chats = await std(`/api/profile/chat/${encodeURIComponent(this.$route.params.chatroom)}`);
-            }
-
-            this.loading = false;
-        }
+    } else {
+        single = chats.value.items.filter((chat) => {
+            return chat.sender_uid !== id.value
+        })[0];
     }
+
+    if (!single) throw new Error('Error sending Chat - Contact is not defined');
+
+    await mapStore.worker.conn.sendCOT({
+        chatroom: single.sender_callsign,
+        to: {
+            uid: single.sender_uid,
+            callsign: single.sender_callsign
+        },
+        from: {
+            uid: id.value,
+            callsign: profileStore.profile.tak_callsign
+        },
+        message: chat.message
+    }, 'chat');
+}
+
+async function fetchChats() {
+    loading.value = true;
+
+    if (route.params.chatroom === 'new') {
+        await std(`/api/profile/chat/${encodeURIComponent(route.query.uid)}`);
+    } else {
+        chats.value = await std(`/api/profile/chat/${encodeURIComponent(route.params.chatroom)}`);
+    }
+
+    loading.value = false;
 }
 </script>
