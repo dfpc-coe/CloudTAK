@@ -1,7 +1,7 @@
 <template>
     <MenuTemplate name='Channels'>
         <template #buttons>
-            <span v-text='!loading && mapStore.hasNoChannels'/>
+            <span v-text='!loading && mapStore.hasNoChannels' />
             <TablerIconButton
                 v-if='!loading && mapStore.hasNoChannels'
                 title='All Channels On'
