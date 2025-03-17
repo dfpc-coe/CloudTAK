@@ -17,6 +17,7 @@ test('GET: api/server - Admin', async (t) => {
             }
         }, true);
 
+        delete res.body.version;
         delete res.body.created;
         delete res.body.updated;
 
@@ -45,6 +46,7 @@ test('GET: api/server - User', async (t) => {
             }
         }, true);
 
+        delete res.body.version;
         delete res.body.created;
         delete res.body.updated;
 
