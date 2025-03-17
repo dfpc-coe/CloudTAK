@@ -230,13 +230,13 @@
                             v-text='path.path'
                         />
                         <div
-                            v-if='element.id === "cots"'
+                            v-if='props.element.id === "cots"'
                             class='ms-auto'
                         >
                             <TablerDelete
                                 :size='20'
                                 displaytype='icon'
-                                @click='deletePath(element, path.path)'
+                                @click='deletePath(props.element, path.path)'
                             />
                         </div>
                     </template>
@@ -246,7 +246,8 @@
     </template>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted } from 'vue';
 import {
     TablerDelete,
     TablerLoading,
@@ -254,7 +255,7 @@ import {
 import Contact from '../../util/Contact.vue';
 import Feature from '../../util/Feature.vue';
 import ContactPuck from '../../util/ContactPuck.vue';
-import { std, stdurl } from  '/src/std.ts'
+import { std, stdurl } from  '../../../../std.ts'
 import DeleteModal from './DeleteModal.vue';
 import {
     IconMapPin,
@@ -266,137 +267,125 @@ import {
 import { useMapStore } from '../../../../stores/map.ts';
 const mapStore = useMapStore();
 
-export default {
-    name: 'TreeCots',
-    components: {
-        ContactPuck,
-        Feature,
-        Contact,
-        TablerLoading,
-        TablerDelete,
-        DeleteModal,
-        IconTrash,
-        IconMapPin,
-        IconChevronRight,
-        IconChevronDown,
-        IconFolder,
+const props = defineProps({
+    element: Object
+});
+
+const loading = ref(false);
+const deleteMarkerModal = ref({
+    shown: false,
+    marker: null
+});
+const paths = ref([]);
+const treeState = ref({
+    teams: {
+        _: false
     },
-    props: {
-        element: Object
+    markers: {
+        _: false
     },
-    data: function() {
-        return {
-            loading: false,
-            deleteMarkerModal: {
-                shown: false,
-                marker: null
-            },
-            paths: [],
-            treeState: {
-                teams: {
-                    _: false
-                },
-                markers: {
-                    _: false
-                },
-                paths: {
-                    _: false
-                }
-            },
+    paths: {
+        _: false
+    }
+});
+
+onMounted(async () => {
+    paths.value = await mapStore.worker.db.paths();
+});
+
+async function pathFeatures(path) {
+    return await mapStore.worker.db.pathFeatures(path);
+};
+
+async function deleteMarkers(marker) {
+    if (!deleteMarkerModal.value.shown) {
+        deleteMarkerModal.value.shown = true;
+        deleteMarkerModal.value.marker = marker;
+        return;
+    } else {
+        deleteMarkerModal.value.shown = false;
+    }
+
+    loading.value = true;
+
+    if (marker) {
+        treeState.value.markers[marker] = false;
+    }
+
+    for (const feat of await mapStore.worker.db.markerFeatures(marker)) {
+        await mapStore.worker.db.delete(feat.id);
+    }
+
+    loading.value = false;
+}
+
+async function deleteFeatures(path) {
+    loading.value = true;
+
+    if (path) {
+        treeState.value.paths[path] = false;
+    }
+
+    for (const feat of await mapStore.worker.db.pathFeatures(path)) {
+        await mapStore.worker.db.delete(feat.id);
+    }
+
+    if (path) {
+        const url = stdurl('/api/profile/feature');
+        url.searchParams.append('path', path);
+        await std(url, {
+            method: 'DELETE'
+        });
+    }
+
+    loading.value = false;
+}
+
+async function markerFeatures(marker) {
+    return mapStore.worker.db.markerFeatures(marker);
+}
+
+async function contacts(group) {
+    const contacts = await mapStore.worker.db.contacts(group);
+    return contacts;
+}
+
+async function deletePath(layer, path) {
+    if (layer.id !== 'cots') return;
+
+    loading.value = true;
+
+    try {
+        await mapStore.worker.db.deletePath(path);
+    } catch (err) {
+        loading.value = false;
+        throw err;
+    }
+
+    loading.value = false;
+}
+
+async function markers() {
+    const markers = await mapStore.worker.db.markers();
+
+    for (const marker of markers) {
+        if (treeState.value.markers[marker] === undefined) {
+            treeState.value.markers[marker] = false;
         }
-    },
-    mounted: async () => {
-        this.paths = await mapStore.worker.db.paths();
-    },
-    methods: {
-        pathFeatures: async function(path) {
-            return await mapStore.worker.db.pathFeatures(path);
-        },
-        deleteMarkers: async function(marker) {
-            if (!this.deleteMarkerModal.shown) {
-                this.deleteMarkerModal.shown = true;
-                this.deleteMarkerModal.marker = marker;
-                return;
-            } else {
-                this.deleteMarkerModal.shown = false;
-            }
+    }
 
-            this.loading = true;
+    return markers;
+}
 
-            if (marker) {
-                this.treeState.markers[marker] = false;
-            }
+async function groups() {
+    const groups = await mapStore.worker.db.groups();
 
-            for (const feat of await mapStore.worker.db.markerFeatures(marker)) {
-                await mapStore.worker.db.delete(feat.id);
-            }
+    for (const group of groups) {
+        if (treeState.value.teams[group] === undefined) {
+            treeState.value.teams[group] = false;
+        }
+    }
 
-            this.loading = false;
-        },
-        deleteFeatures: async function(path) {
-            this.loading = true;
-
-            if (path) {
-                this.treeState.paths[path] = false;
-            }
-
-            for (const feat of await mapStore.worker.db.pathFeatures(path)) {
-                await mapStore.worker.db.delete(feat.id);
-            }
-
-            if (path) {
-                const url = stdurl('/api/profile/feature');
-                url.searchParams.append('path', path);
-                await std(url, {
-                    method: 'DELETE'
-                });
-            }
-
-            this.loading = false;
-        },
-        markerFeatures: async function(marker) {
-            return mapStore.worker.db.markerFeatures(marker);
-        },
-        contacts: async function(group) {
-            const contacts = await mapStore.worker.db.contacts(group);
-            return contacts;
-        },
-        deletePath: async function(layer, path) {
-            if (layer.id !== 'cots') return;
-
-            this.loading = true;
-
-            try {
-                await mapStore.worker.db.deletePath(path);
-            } catch (err) {
-                this.loading = false;
-                throw err;
-            }
-
-            this.loading = false;
-        },
-        markers: async function() {
-            const markers = await mapStore.worker.db.markers();
-
-            for (const marker of markers) {
-                if (this.treeState.markers[marker] === undefined) {
-                    this.treeState.markers[marker] = false;
-                }
-            }
-
-            return markers;
-        },
-        groups: async function() {
-            const groups = await mapStore.worker.db.groups();
-
-            for (const group of groups) {
-                if (this.treeState.teams[group] === undefined) {
-                    this.treeState.teams[group] = false;
-                }
-            }
-
-            return groups;
-        },
-    },
+    return groups;
 }
 </script>
