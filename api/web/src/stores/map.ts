@@ -499,15 +499,21 @@ export const useMapStore = defineStore('cloudtak', {
             map.on('contextmenu', (e) => {
                 if (this.edit) return;
 
+                const id = window.crypto.randomUUID();
                 this.radialClick({
-                    id: window.crypto.randomUUID(),
+                    id,
                     type: 'Feature',
                     path: '/',
                     properties: {
+                        id,
                         callsign: 'New Feature',
                         archived: true,
                         type: 'u-d-p',
                         how: 'm-g',
+                        time: new Date().toISOString(),
+                        start: new Date().toISOString(),
+                        stale: new Date(Date.now() + 2 * (60 * 60 * 1000)).toISOString(),
+                        center: [ e.lngLat.lng, e.lngLat.lat ],
                         'marker-color': '#00ff00',
                         'marker-opacity': 1
                     },

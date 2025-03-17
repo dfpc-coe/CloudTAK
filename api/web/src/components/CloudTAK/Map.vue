@@ -452,7 +452,7 @@
 </template>
 
 <script setup lang='ts'>
-import {ref, watch, computed, onMounted, onBeforeUnmount, useTemplateRef } from 'vue';
+import {ref, watch, computed, toRaw, onMounted, onBeforeUnmount, useTemplateRef } from 'vue';
 import {useRoute, useRouter } from 'vue-router';
 import CoTVideo from './util/Video.vue';
 import DrawOverlay from './util/DrawOverlay.vue';
@@ -462,8 +462,8 @@ import WarnConfiguration from './util/WarnConfiguration.vue';
 import CoordInput from './CoordInput.vue';
 import type { GeoJSONStoreFeatures } from 'terra-draw'
 import type { MapGeoJSONFeature, LngLatLike } from 'maplibre-gl';
-import { std, stdurl } from '../..//std.ts';
-import type { IconsetList } from '../../types.ts';
+import { std, stdurl } from '../../std.ts';
+import type { IconsetList, Feature } from '../../types.ts';
 import CloudTAKFeatView from './FeatView.vue';
 import {
     IconSearch,
@@ -729,7 +729,7 @@ async function handleRadial(event: string): Promise<void> {
         selectFeat(mapStore.radial.cot as MapGeoJSONFeature);
         closeRadial()
     } else if (event === 'context:new') {
-        await mapStore.worker.db.add(mapStore.radial.cot);
+        await mapStore.worker.db.add(toRaw(mapStore.radial.cot as Feature));
         mapStore.updateCOT();
         closeRadial()
     } else if (event === 'context:info') {

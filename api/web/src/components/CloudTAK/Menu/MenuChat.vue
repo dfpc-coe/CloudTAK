@@ -74,7 +74,7 @@ const route = useRoute();
 
 const id = ref('')
 const callsign = ref('');
-const loading = ref(true),
+const loading = ref(true);
 const name = ref(route.params.chatroom === 'new' ? route.query.callsign : route.params.chatroom);
 const chats = ref({
     total: 0,
