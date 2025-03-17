@@ -7,22 +7,22 @@
             <div class='row align-items-center g-4'>
                 <div class='col-lg'>
                     <div class='container-tight'>
+                        <div
+                            class='text-center'
+                            style='margin-bottom: 24px;'
+                        >
+                            <img
+                                class='d-none d-md-inline'
+                                style='
+                                    height: 150px;
+                                '
+                                src='/CloudTAKLogoText.svg'
+                                alt='CloudTAK System Logo'
+                            >
+                        </div>
                         <div class='card card-md'>
                             <div class='card-body'>
-                                <div
-                                    class='text-center'
-                                    style='margin-bottom: 24px;'
-                                >
-                                    <img
-                                        src='/logo.png'
-                                        style='height: 150px;'
-                                        alt='CloudTAK System Logo'
-                                    >
-                                </div>
                                 <h2 class='h2 text-center mb-4'>
-                                    Welcome to CloudTAK
-                                </h2>
-                                <h2 class='h4 text-center mb-4'>
                                     Initial Server Configuration
                                 </h2>
                                 <TablerLoading v-if='loading' />
