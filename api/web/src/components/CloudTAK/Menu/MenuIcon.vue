@@ -67,8 +67,10 @@
     />
 </template>
 
-<script>
-import { std, stdurl } from '/src/std.ts';
+<script setup>
+import { ref, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { std, stdurl } from '../../std.ts';
 import {
     TablerDelete,
     TablerLoading
@@ -78,63 +80,52 @@ import {
 } from '@tabler/icons-vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import IconEditModal from './Icon/EditModal.vue';
-import { mapState } from 'pinia';
-import { useProfileStore } from '/src/stores/profile.ts';
 
-export default {
-    name: 'CloudTAKIcon',
-    data: function() {
-        return {
-            loading: true,
-            editModal: false,
-            iconset: {},
-            icon: {
-                id: false
-            }
-        }
-    },
-    mounted: async function() {
-        await this.refresh();
-    },
-    computed: {
-        ...mapState(useProfileStore, ['profile'])
-    },
-    methods: {
-        refresh: async function() {
-            this.editModal = false;
-            this.loading = true;
-            await this.fetchIconset();
-            await this.fetch();
-            this.loading = false;
-        },
-        iconurl: function() {
-            const url = stdurl(`/api/iconset/${this.icon.iconset}/icon/${encodeURIComponent(this.icon.name)}/raw`);
-            url.searchParams.append('token', localStorage.token);
-            return String(url);
-        },
-        fetch: async function() {
-            const url = stdurl(`/api/iconset/${this.$route.params.iconset}/icon/${encodeURIComponent(this.$route.params.icon)}`);
-            this.icon = await std(url);
-        },
-        fetchIconset: async function() {
-            const url = stdurl(`/api/iconset/${this.$route.params.iconset}`);
-            this.iconset = await std(url);
-        },
-        deleteIcon: async function() {
-            this.loading = true;
-            const url = stdurl(`/api/iconset/${this.$route.params.iconset}/icon/${encodeURIComponent(this.$route.params.icon)}`);
-            this.iconset = await std(url, {
-                method: 'DELETE'
-            });
-            this.$router.push(`/iconset/${this.$route.params.iconset}`);
-        }
-    },
-    components: {
-        MenuTemplate,
-        IconEditModal,
-        IconSettings,
-        TablerDelete,
-        TablerLoading
-    }
+const route = useRoute();
+const router = useRouter();
+
+const loading = ref(true);
+const editModal = ref(false);
+    
+const iconset = ref({});
+const icon = ref({
+    id: false
+});
+
+onMounted(async () => {
+    await refresh();
+});
+
+async function refresh() {
+    editModal.value = false;
+    loading.value = true;
+    await fetchIconset();
+    await fetch();
+    loading.value = false;
+}
+
+function iconurl() {
+    const url = stdurl(`/api/iconset/${icon.value.iconset}/icon/${encodeURIComponent(icon.value.name)}/raw`);
+    url.searchParams.append('token', localStorage.token);
+    return String(url);
+}
+
+async function fetch() {
+    const url = stdurl(`/api/iconset/${route.params.iconset}/icon/${encodeURIComponent(route.params.icon)}`);
+    icon.value = await std(url);
+}
+
+async function fetchIconset() {
+    const url = stdurl(`/api/iconset/${route.params.iconset}`);
+    iconset.value = await std(url);
+}
+
+async function deleteIcon() {
+    loading.value = true;
+    const url = stdurl(`/api/iconset/${route.params.iconset}/icon/${encodeURIComponent(route.params.icon)}`);
+    iconset.value = await std(url, {
+        method: 'DELETE'
+    });
+    router.push(`/iconset/${route.params.iconset}`);
 }
 </script>

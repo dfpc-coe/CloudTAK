@@ -62,7 +62,6 @@
 <script setup lang='ts'>
 import { ref, computed, onMounted } from 'vue';
 import { std, stdurl } from '../../../src/std.ts';
-import { useProfileStore } from '../../../src/stores/profile.ts';
 import type { Group } from '../../../src/types.ts';
 import {
     TablerLoading,
@@ -85,7 +84,6 @@ const emit = defineEmits([
     'update:modelValue'
 ]);
 
-const profile = useProfileStore();
 const filter = ref('');
 const loading = ref(true);
 const selected = ref<Set<string>>(new Set(props.modelValue))
@@ -125,7 +123,11 @@ async function fetch() {
             data: Group[]
         }).data;
     } else {
-        list = await profile.loadChannels();
+        const url = stdurl('/api/marti/group');
+        url.searchParams.append('useCache', 'true');
+        list = ((await std(url)) as {
+            data: Group[]
+        }).data
     }
 
     const channels: Record<string, Group> = {};

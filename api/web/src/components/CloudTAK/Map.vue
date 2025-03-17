@@ -45,7 +45,7 @@
                         <TablerIconButton
                             v-if='
                                 (mapStore.radial.cot && mapStore.locked.length >= 2)
-                                    || (!mapStore.radial.cot && mapStore.locked >= 1)
+                                    || (!mapStore.radial.cot && mapStore.locked.length >= 1)
                             '
                             title='Map is locked to marker - Click to Unlock'
                             @click='mapStore.locked.splice(0, mapStore.locked.length)'
