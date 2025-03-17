@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v7.13.0 - 2025-03-17
+
+- :tada: Rewrite of frontend to use WebWorker
+
 ### v7.12.0 - 2025-03-14
 
 - :bug: Improved Environment editing fallback when Capabilities isn't populated
