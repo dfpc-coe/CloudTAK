@@ -35,7 +35,7 @@
                 <div v-else />
 
                 <div
-                    class='modal-title d-flex mx-auto'
+                    class='modal-title d-flex mx-auto user-select-none'
                     v-text='name'
                 />
                 <div class='col-auto btn-list align-items-center'>

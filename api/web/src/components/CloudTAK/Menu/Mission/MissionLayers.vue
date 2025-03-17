@@ -103,7 +103,7 @@ import type {
     MissionRole,
     MissionLayer
 } from '../../../../types.ts';
-import Subscription from '../../../../../src/stores/base/mission.ts';
+import Subscription from '../../../../base/subscription.ts';
 import MenuTemplate from '../../util/MenuTemplate.vue';
 import MissionLayerTree from './MissionLayerTree.vue';
 import MissionLayerCreate from './MissionLayerCreate.vue';

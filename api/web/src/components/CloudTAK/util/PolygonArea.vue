@@ -32,7 +32,7 @@
 import { ref, computed } from 'vue';
 import { area } from '@turf/area';
 import CopyField from './CopyField.vue';
-import COT from '../../../stores/base/cot.ts';
+import COT from '../../../base/cot.ts';
 
 const props = defineProps({
     cot: {

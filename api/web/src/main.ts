@@ -28,43 +28,43 @@ const router = VueRouter.createRouter({
                 children: [{
                     path: 'settings',
                     name: 'home-menu-settings',
-                    component: () => import('./components/CloudTAK/Menu/Settings.vue')
+                    component: () => import('./components/CloudTAK/Menu/MenuSettings.vue')
                 },{
                     path: 'settings/tokens',
                     name: 'home-menu-settings-tokens',
-                    component: () => import('./components/CloudTAK/Menu/SettingsTokens.vue')
+                    component: () => import('./components/CloudTAK/Menu/MenuSettingsTokens.vue')
                 },{
                     path: 'settings/callsign',
                     name: 'home-menu-settings-callsign',
-                    component: () => import('./components/CloudTAK/Menu/SettingsCallsign.vue')
+                    component: () => import('./components/CloudTAK/Menu/MenuSettingsCallsign.vue')
                 },{
                     path: 'settings/display',
                     name: 'home-menu-settings-display',
-                    component: () => import('./components/CloudTAK/Menu/SettingsDisplay.vue')
+                    component: () => import('./components/CloudTAK/Menu/MenuSettingsDisplay.vue')
                 },{
                     path: 'imports',
                     name: 'home-menu-imports',
-                    component: () => import('./components/CloudTAK/Menu/Imports.vue')
+                    component: () => import('./components/CloudTAK/Menu/MenuImports.vue')
                 },{
                     path: 'files',
                     name: 'home-menu-files',
-                    component: () => import('./components/CloudTAK/Menu/Files.vue')
+                    component: () => import('./components/CloudTAK/Menu/MenuFiles.vue')
                 },{
                     path: 'packages',
                     name: 'home-menu-packages',
-                    component: () => import('./components/CloudTAK/Menu/Packages.vue')
+                    component: () => import('./components/CloudTAK/Menu/MenuPackages.vue')
                 },{
                     path: 'connections',
                     name: 'home-menu-connections',
-                    component: () => import('./components/CloudTAK/Menu/Connections.vue')
+                    component: () => import('./components/CloudTAK/Menu/MenuConnections.vue')
                 },{
                     path: 'videos',
                     name: 'home-menu-videos',
-                    component: () => import('./components/CloudTAK/Menu/Videos.vue')
+                    component: () => import('./components/CloudTAK/Menu/MenuVideos.vue')
                 },{
                     path: 'videos/remote/:connectionid',
                     name: 'home-menu-videos-remote-new',
-                    component: () => import('./components/CloudTAK/Menu/VideosRemote.vue')
+                    component: () => import('./components/CloudTAK/Menu/MenuVideosRemote.vue')
                 },{
                     path: 'debugger',
                     name: 'home-menu-debugger',
@@ -72,47 +72,47 @@ const router = VueRouter.createRouter({
                 },{
                     path: 'packages/:package',
                     name: 'home-menu-package',
-                    component: () => import('./components/CloudTAK/Menu/Package.vue')
+                    component: () => import('./components/CloudTAK/Menu/MenuPackage.vue')
                 },{
                     path: 'imports/:import',
                     name: 'home-menu-import',
-                    component: () => import('./components/CloudTAK/Menu/Import.vue')
+                    component: () => import('./components/CloudTAK/Menu/MenuImport.vue')
                 },{
                     path: 'basemaps',
                     name: 'home-menu-basemaps',
-                    component: () => import('./components/CloudTAK/Menu/Basemaps.vue')
+                    component: () => import('./components/CloudTAK/Menu/MenuBasemaps.vue')
                 },{
                     path: 'iconsets',
                     name: 'home-menu-iconsets',
-                    component: () => import('./components/CloudTAK/Menu/Iconsets.vue')
+                    component: () => import('./components/CloudTAK/Menu/MenuIconsets.vue')
                 },{
                     path: 'iconset/:iconset',
                     name: 'home-menu-iconset',
-                    component: () => import('./components/CloudTAK/Menu/Iconset.vue')
+                    component: () => import('./components/CloudTAK/Menu/MenuIconset.vue')
                 },{
                     path: 'iconset/:iconset/:icon',
                     name: 'home-menu-iconset-icon',
-                    component: () => import('./components/CloudTAK/Menu/Icon.vue')
+                    component: () => import('./components/CloudTAK/Menu/MenuIcon.vue')
                 },{
                     path: 'overlays',
                     name: 'home-menu-overlays',
-                    component: () => import('./components/CloudTAK/Menu/Overlays.vue')
+                    component: () => import('./components/CloudTAK/Menu/MenuOverlays.vue')
                 },{
                     path: 'datas',
                     name: 'home-menu-datas',
-                    component: () => import('./components/CloudTAK/Menu/OverlayExplorer.vue')
+                    component: () => import('./components/CloudTAK/Menu/MenuOverlayExplorer.vue')
                 },{
                     path: 'contacts',
                     name: 'home-menu-contacts',
-                    component: () => import('./components/CloudTAK/Menu/Contacts.vue')
+                    component: () => import('./components/CloudTAK/Menu/MenuContacts.vue')
                 },{
                     path: 'missions',
                     name: 'home-menu-missions',
-                    component: () => import('./components/CloudTAK/Menu/Missions.vue')
+                    component: () => import('./components/CloudTAK/Menu/MenuMissions.vue')
                 },{
                     path: 'missions/:mission',
                     name: 'home-menu-mission',
-                    component: () => import('./components/CloudTAK/Menu/Mission.vue'),
+                    component: () => import('./components/CloudTAK/Menu/MenuMission.vue'),
                     children: [{
                         path: '',
                         name: 'home-menu-mission-default',
@@ -147,15 +147,15 @@ const router = VueRouter.createRouter({
                 },{
                     path: 'channels',
                     name: 'home-menu-channels',
-                    component: () => import('./components/CloudTAK/Menu/Channels.vue')
+                    component: () => import('./components/CloudTAK/Menu/MenuChannels.vue')
                 },{
                     path: 'chats',
                     name: 'home-menu-chats',
-                    component: () => import('./components/CloudTAK/Menu/Chats.vue')
+                    component: () => import('./components/CloudTAK/Menu/MenuChats.vue')
                 },{
                     path: 'chats/:chatroom',
                     name: 'home-menu-chat',
-                    component: () => import('./components/CloudTAK/Menu/Chat.vue')
+                    component: () => import('./components/CloudTAK/Menu/MenuChat.vue')
                 }]
             }]
         },
@@ -289,7 +289,7 @@ const router = VueRouter.createRouter({
         {
             path: '/admin',
             name: 'admin',
-            component: () => import('./components/Admin.vue'),
+            component: () => import('./components/ServerAdmin.vue'),
             children: [{
                 path: '',
                 name: 'admin-default',
@@ -393,7 +393,7 @@ const router = VueRouter.createRouter({
             }]
         },
 
-        { path: '/:catchAll(.*)', name: 'lost', component: () => import('./components/Lost.vue') },
+        { path: '/:catchAll(.*)', name: 'lost', component: () => import('./components/LostUser.vue') },
     ]
 });
 

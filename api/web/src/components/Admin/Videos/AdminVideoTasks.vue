@@ -89,7 +89,7 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { std, stdurl } from '../../../../src/std.ts';
 import type { VideoServerList, VideoServer } from '../../../../src/types.ts';
-import Status from '../../util/Status.vue';
+import Status from '../../util/StatusDot.vue';
 import {
     TablerIconButton,
     TablerNone,

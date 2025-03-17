@@ -375,7 +375,7 @@ import CopyField from '../../util/CopyField.vue';
 import { ref, watch, onMounted } from 'vue';
 import type { VideoLease, VideoLeaseResponse, VideoLeaseProtocols } from '../../../../types.ts';
 import GroupSelect from '../../../util/GroupSelect.vue';
-import { useProfileStore } from '../../../../stores/profile.ts';
+import { useMapStore } from '../../../../stores/map.ts';
 import {
     IconRefresh,
     IconPencil,
@@ -412,13 +412,9 @@ const protocols = ref<VideoLeaseProtocols>({});
 
 const channels = ref<string[]>([]);
 
-const profileStore = useProfileStore();
+const mapStore = useMapStore();
 
 const durations = ref<Array<string>>(["16 Hours", "12 Hours", "6 Hours", "1 Hour"]);
-
-if (profileStore.profile && profileStore.profile.system_admin) {
-    durations.value.push('Permanent');
-}
 
 const shared = ref(false);
 
@@ -443,6 +439,10 @@ const editLease = ref<{
 });
 
 onMounted(async () => {
+    if (await mapStore.worker.profile.isSystemAdmin()) {
+        durations.value.push('Permanent');
+    }
+
     if (props.lease.id) {
         editLease.value = {
             ...props.lease,
