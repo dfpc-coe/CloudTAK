@@ -42,6 +42,7 @@ export default class AtlasProfile {
 
         this.channels = [];
         this.profile = null;
+        this.server = null;
 
     }
 
@@ -281,7 +282,7 @@ export default class AtlasProfile {
     }
 
     async CoT(coords?: number[]): Promise<void> {
-        if (!this.profile) throw new Error('Profile must be loaded before CoT is called');
+        if (!this.profile || !this.server) throw new Error('Profile must be loaded before CoT is called');
 
         const feat: Feature = {
             id: this.uid(),
@@ -310,8 +311,7 @@ export default class AtlasProfile {
                     device: navigator.userAgent,
                     platform: 'CloudTAK',
                     os: navigator.platform,
-                    //TODO Use versions
-                    version: '1.0.0'
+                    version: this.server.version
                 }
             },
             geometry: coords

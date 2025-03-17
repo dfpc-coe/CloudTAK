@@ -436,7 +436,7 @@ export default class AtlasDatabase {
             this.atlas.postMessage({
                 type: WorkerMessage.Mission_Change_Feature,
                 body: {
-                    guid: updateGuid
+                    guid: mission_guid
                 }
             });
         } else {

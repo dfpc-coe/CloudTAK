@@ -7489,7 +7489,7 @@ export interface paths {
                         agency_id: number | null;
                         channels: {
                             id: number;
-                            access: "write" | "read" | "dupex";
+                            access: "write" | "read" | "duplex";
                         }[];
                     };
                 };
@@ -12560,6 +12560,7 @@ export interface paths {
                             status: string;
                             created: string;
                             updated: string;
+                            version: string;
                             name: string;
                             url: string;
                             api: string;
@@ -12617,6 +12618,7 @@ export interface paths {
                             status: string;
                             created: string;
                             updated: string;
+                            version: string;
                             name: string;
                             url: string;
                             api: string;
