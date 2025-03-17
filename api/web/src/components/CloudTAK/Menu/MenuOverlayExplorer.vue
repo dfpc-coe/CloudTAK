@@ -81,7 +81,7 @@ import {
     IconUser,
     IconRefresh
 } from '@tabler/icons-vue'
-import Overlay from '../../../stores/base/overlay.ts';
+import Overlay from '../../../base/overlay.ts';
 import { useMapStore } from '../../../stores/map.ts';
 
 const mapStore = useMapStore();

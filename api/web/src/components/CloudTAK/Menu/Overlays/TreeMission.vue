@@ -18,7 +18,7 @@ import { ref, onMounted } from 'vue';
 import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
-import Overlay from '../../../../stores/base/overlay.ts'
+import Overlay from '../../../../base/overlay.ts'
 import Subscription from '../../../../base/subscription.ts'
 import MissionLayers from '../Mission/MissionLayers.vue';
 import { useMapStore } from '../../../../stores/map.ts';

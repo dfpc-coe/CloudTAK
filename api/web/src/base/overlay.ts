@@ -1,13 +1,13 @@
 import type {
     ProfileOverlay,
     ProfileOverlay_Create
-} from '../../types.ts';
+} from '../types.ts';
 import type { FeatureCollection } from 'geojson';
 import { bbox } from '@turf/bbox'
 import type { Map, LngLatBoundsLike, LayerSpecification, VectorTileSource, RasterTileSource, GeoJSONSource } from 'maplibre-gl'
-import cotStyles from '../utils/styles.ts'
-import { std, stdurl } from '../../std.js';
-import { useMapStore } from '../map.js';
+import cotStyles from './utils/styles.ts'
+import { std, stdurl } from '../std.js';
+import { useMapStore } from '../stores/map.js';
 
 /**
  * @class
@@ -88,7 +88,7 @@ export default class Overlay {
             styles?: Array<LayerSpecification>;
             clickable?: Array<{ id: string; type: string }>;
         }
-    ): Overlay {
+    ): Promise<Overlay> {
         const overlay = await Overlay.create(map, {
             ...body,
             visible: true,
@@ -138,7 +138,7 @@ export default class Overlay {
         this.opacity = overlay.opacity;
         this.visible = overlay.visible;
         this.mode = overlay.mode;
-        this.mode_id = overlay.mode_id;
+        this.mode_id = overlay.mode_id || null;
         this.url = overlay.url;
         this.styles = overlay.styles as Array<LayerSpecification>;
         this.token = overlay.token;

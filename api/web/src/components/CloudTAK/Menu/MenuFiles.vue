@@ -12,6 +12,10 @@
         </template>
         <template #default>
             <TablerLoading v-if='loading' />
+            <TablerAlert
+                v-else-if='error'
+                :err='error'
+            />
             <TablerNone
                 v-else-if='!list.assets.length'
                 label='Imports'
@@ -98,8 +102,10 @@
     </MenuTemplate>
 </template>
 
-<script>
-import { std, stdurl } from '/src/std.ts';
+<script setup>
+import { useRouter } from 'vue-router';
+import { ref, onMounted, watch } from 'vue';
+import { std, stdurl } from '../../../std.ts';
 import {
     TablerDelete,
     TablerIconButton,
@@ -117,119 +123,94 @@ import {
     IconRefresh,
 } from '@tabler/icons-vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
-import timeDiff from '../../../timediff.ts';
 import { useMapStore } from '/src/stores/map.ts';
-import Overlay from '/src/stores/base/overlay.ts';
+import Overlay from '../../../base/overlay.ts';
 const mapStore = useMapStore();
 
-export default {
-    name: 'CloudTAKImports',
-    components: {
-        TablerNone,
-        TablerPager,
-        TablerLoading,
-        TablerBytes,
-        TablerEpoch,
-        TablerDelete,
-        TablerIconButton,
-        IconMapPlus,
-        IconMapOff,
-        IconTransform,
-        IconDownload,
-        IconRefresh,
-        MenuTemplate,
-    },
-    data: function() {
-        return {
-            err: false,
-            loading: true,
-            paging: {
-                limit: 20,
-                page: 0
-            },
-            list: {
-                assets: []
-            }
-        }
-    },
-    watch: {
-        paging: {
-            deep: true,
-            handler: async function() {
-                await this.fetchList()
-            }
-        }
-    },
-    mounted: async function() {
-        await this.fetchList();
-    },
-    methods: {
-        timeDiff(update) {
-            return timeDiff(update)
-        },
-        createOverlay: async function(asset) {
-            const url = stdurl(`/api/profile/asset/${encodeURIComponent(asset.visualized)}/tile`);
+const router = useRouter();
+const error = ref(undefined);
+const loading = ref(true);
+const transform = ref({});
 
-            this.loading = true;
-            const res = await std(url);
+const paging = ref({
+    limit: 20,
+    page: 0
+});
 
-            if (new URL(res.tiles[0]).pathname.endsWith('.mvt')) {
-                await mapStore.overlays.push(await Overlay.create(mapStore.map, {
-                    url,
-                    name: asset.name,
-                    mode: 'profile',
-                    mode_id: asset.name,
-                    type: 'vector',
-                }));
-            } else {
-                await mapStore.overlays.push(await Overlay.create(mapStore.map, {
-                    url: url,
-                    name: asset.name,
-                    mode: 'profile',
-                    mode_id: asset.name,
-                    type: 'raster',
-                }));
-            }
+const list = ref({
+    assets: []
+});
 
-            this.loading = false;
-            this.$emit('mode', 'overlays');
+watch(paging.value, async () => {
+    await fetchList()
+});
 
-            this.$router.push('/menu/overlays');
-        },
-        downloadAsset: async function(asset) {
-            const url = stdurl(`/api/profile/asset/${asset.name}`);
-            url.searchParams.append('token', localStorage.token);
-            window.open(url, "_blank")
-        },
-        fetchList: async function() {
-            this.upload = false;
+onMounted(async () => {
+    await fetchList();
+});
 
-            try {
-                this.loading = true;
-                this.err = false;
-                this.list = await std(`/api/profile/asset`);
-                this.loading = false;
-            } catch (err) {
-                this.err = err;
-            }
-        },
-        deleteAsset: async function(asset) {
-            this.loading = true;
-            await std(`/api/profile/asset/${asset.name}`, {
-                method: 'DELETE'
-            });
+async function createOverlay(asset) {
+    const url = stdurl(`/api/profile/asset/${encodeURIComponent(asset.visualized)}/tile`);
 
-            await this.fetchList();
-        },
-        initTransform: function(asset) {
-            if (!asset) {
-                this.transform.asset = {};
-                this.transform.shown = false;
-            } else {
-                this.transform.asset = asset;
-                this.transform.shown = true;
-            }
-        },
+    loading.value = true;
+    const res = await std(url);
+
+    if (new URL(res.tiles[0]).pathname.endsWith('.mvt')) {
+        await mapStore.overlays.push(await Overlay.create(mapStore.map, {
+            url,
+            name: asset.name,
+            mode: 'profile',
+            mode_id: asset.name,
+            type: 'vector',
+        }));
+    } else {
+        await mapStore.overlays.push(await Overlay.create(mapStore.map, {
+            url: url,
+            name: asset.name,
+            mode: 'profile',
+            mode_id: asset.name,
+            type: 'raster',
+        }));
+    }
+
+    loading.value = false;
+
+    router.push('/menu/overlays');
+}
+
+async function downloadAsset(asset) {
+    const url = stdurl(`/api/profile/asset/${asset.name}`);
+    url.searchParams.append('token', localStorage.token);
+    window.open(url, "_blank")
+}
+
+async function fetchList() {
+    try {
+        loading.value = true;
+        error.value = undefined;
+        list.value = await std(`/api/profile/asset`);
+        loading.value = false;
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    }
+}
+
+async function deleteAsset(asset) {
+    loading.value = true;
+    await std(`/api/profile/asset/${asset.name}`, {
+        method: 'DELETE'
+    });
+
+    await fetchList();
+}
+
+async function initTransform(asset) {
+    if (!asset) {
+        transform.value.asset = {};
+        transform.value.shown = false;
+    } else {
+        transform.value.asset = asset;
+        transform.value.shown = true;
     }
 }
 </script>

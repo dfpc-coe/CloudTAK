@@ -13,7 +13,7 @@ import * as Comlink from 'comlink';
 import AtlasWorker from '../workers/atlas.ts?worker&url';
 import COT from '../base/cot.ts';
 import { WorkerMessage, LocationState }from '../base/events.ts';
-import Overlay from './base/overlay.ts';
+import Overlay from '../base/overlay.ts';
 import { std, stdurl } from '../std.js';
 import mapgl from 'maplibre-gl'
 import * as terraDraw from 'terra-draw';
@@ -37,8 +37,13 @@ export const useMapStore = defineStore('cloudtak', {
         // this is an array so that things like the radial menu can temporarily lock state but remember the previous lock value when they are closed
         locked: Array<string>;
 
-        callsign: 'Unknown';
+        callsign: string;
         location: LocationState;
+
+        permissions: {
+            location: boolean;
+            notification: boolean;
+        }
 
         worker: Comlink.Remote<Atlas>;
         edit: COT | undefined;
@@ -97,6 +102,10 @@ export const useMapStore = defineStore('cloudtak', {
             bearing: 0,
             mission: undefined,
             edit: undefined,
+            permissions: {
+                location: false,
+                notification: false
+            },
             select: {
                 mode: undefined,
                 feats: [],
@@ -277,9 +286,9 @@ export const useMapStore = defineStore('cloudtak', {
                 const status = await navigator.permissions
                     .query({ name: "geolocation" })
 
-                console.log(`geolocation permission state is ${status.state}`);
+                this.permissions.location = status.state === 'granted' ? true : false
                 status.onchange = () => {
-                    console.log(`geolocation permission state has changed to ${permissionStatus.state}`);
+                    this.permissions.location = status.state === 'granted' ? true : false
                 };
 
                 navigator.geolocation.watchPosition((position) => {
@@ -293,10 +302,8 @@ export const useMapStore = defineStore('cloudtak', {
                         }))
                     }
                 }, (err) => {
-                    if (err.code === 0) {
-                        live_loc_denied.value = true;
-                    } else if (!err.code) {
-                        emit('err', err);
+                    if (err.code !== 0) {
+                        console.error('Location Error', err);
                     }
                 },{
                     maximumAge: 0,
@@ -307,13 +314,25 @@ export const useMapStore = defineStore('cloudtak', {
                 console.error('Browser does not appear to support Geolocation');
             }
 
-            if ('Notification' in navigator && Notification) {
+            if (Notification) {
                 const status = await navigator.permissions
                     .query({ name: "notifications" })
 
-                if (status !== 'granted') {
+                this.permissions.notification = status.state === 'granted' ? true : false
+
+                if (!this.permissions.notification) {
                     Notification.requestPermission()
                 }
+
+                status.onchange = () => {
+                    this.permissions.notification = status.state === 'granted' ? true : false
+
+                    if (!this.permissions.notification) {
+                        Notification.requestPermission()
+                    }
+                };
+            } else {
+                console.error('Browser does not appear to support Notifications');
             }
 
             const init: mapgl.MapOptions = {
