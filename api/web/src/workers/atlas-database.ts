@@ -531,7 +531,7 @@ export default class AtlasDatabase {
         return Array.from(groups);
     }
 
-    pathFeatures(path: string, store?: Map<string, COT>): Array<COT> {
+    pathFeatures(path: string, store?: Map<string, COT>): Set<COT> {
         if (!store) store = this.cots;
 
         const feats: Set<COT> = new Set();
@@ -542,7 +542,7 @@ export default class AtlasDatabase {
             }
         }
 
-        return Array.from(feats);
+        return feats;
     }
 
     markers(store?: Map<string, COT>): Array<string> {
@@ -558,7 +558,7 @@ export default class AtlasDatabase {
         return Array.from(markers);
     }
 
-    markerFeatures(marker: string, store?: Map<string, COT>): Array<COT> {
+    markerFeatures(marker: string, store?: Map<string, COT>): Set<COT> {
         if (!store) store = this.cots;
 
         const feats: Set<COT> = new Set();
@@ -572,10 +572,10 @@ export default class AtlasDatabase {
             }
         }
 
-        return Array.from(feats);
+        return feats;
     }
 
-    contacts(group?: string, store?: Map<string, COT>): Array<COT> {
+    contacts(group?: string, store?: Map<string, COT>): Set<COT> {
         if (!store) store = this.cots;
 
         const contacts: Set<COT> = new Set();
@@ -592,6 +592,6 @@ export default class AtlasDatabase {
             })
         }
 
-        return list;
+        return new Set(list);
     }
 }

@@ -498,22 +498,20 @@
                 </div>
                 <div
                     v-else-if='["home", "home-menu"].includes(String(route.name))'
-                    class='d-flex justify-content-center'
                 >
-                    <StatusDot
-                        class='mx-2 mt-2 mb-1'
-                        :status='mapStore.isOpen ? "success" : "fail"'
-                        :dark='true'
-                    />
-                </div>
-                <div
-                    v-else-if='["home", "home-menu"].includes(String(route.name))'
-                    class='d-flex justify-content-center pb-1'
-                >
-                    <div
-                        class='subheader text-white'
-                        v-text='version'
-                    />
+                    <div class='d-flex justify-content-center'>
+                        <StatusDot
+                            class='mx-2 mt-2 mb-1'
+                            :status='mapStore.isOpen ? "success" : "fail"'
+                            :dark='true'
+                        />
+                    </div>
+                    <div class='d-flex justify-content-center mb-1'>
+                        <div
+                            class='subheader text-white'
+                            v-text='version'
+                        />
+                    </div>
                 </div>
             </div>
         </div>
