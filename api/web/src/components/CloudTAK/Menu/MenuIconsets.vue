@@ -96,7 +96,7 @@
                             </h3>
                         </div>
 
-                        <div class='col-12 px-2'>
+                        <div class='col-12 px-2 pb-2'>
                             <TablerInput
                                 v-model='paging.filter'
                                 placeholder='Filter'

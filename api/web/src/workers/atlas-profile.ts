@@ -59,19 +59,24 @@ export default class AtlasProfile {
         }
     }
 
-    username(): string {
-        if (!this.profile) return '';
-        return this.profile.username;
+    async username(): Promise<string> {
+        const profile = await this.load();
+        return profile.username;
     }
 
-    isSystemAdmin(): boolean {
-        if (!this.profile) return false;
-        return this.profile.system_admin;
+    async callsign(): Promise<string> {
+        const profile = await this.load();
+        return profile.tak_callsign;
     }
 
-    isAgencyAdmin(): boolean {
-        if (!this.profile) return false;
-        return this.profile.agency_admin.length > 0;
+    async isSystemAdmin(): Promise<boolean> {
+        const profile = await this.load();
+        return profile.system_admin;
+    }
+
+    async isAgencyAdmin(): Promise<boolean> {
+        const profile = await this.load();
+        return profile.agency_admin.length > 0;
     }
 
     hasNoConfiguration(): boolean {

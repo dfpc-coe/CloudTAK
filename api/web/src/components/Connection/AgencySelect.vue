@@ -3,7 +3,7 @@
         <div class='d-flex align-items-center'>
             <label class='mx-1 mb-1'>Connection Agency</label>
             <div
-                v-if='profileStore.profile && profileStore.profile.system_admin'
+                v-if='isSystemAdmin'
                 class='ms-auto'
             >
                 <TablerToggle
@@ -92,7 +92,7 @@
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
 import { std, stdurl } from '../../std.ts';
-import type { ETLAgencyList, ETLAgency } from '../../types.ts';
+import type { Profile, ETLAgencyList, ETLAgency } from '../../types.ts';
 import { watchDebounced } from '@vueuse/core'
 import {
     IconTrash,
@@ -105,9 +105,6 @@ import {
     TablerInput,
     TablerNone,
 } from '@tak-ps/vue-tabler';
-import { useProfileStore } from '../../stores/profile.ts';
-
-const profileStore = useProfileStore();
 
 const props = withDefaults(defineProps<{
     modelValue: number,
@@ -125,6 +122,7 @@ const loading = ref({
 });
 const filter = ref('');
 const selected = ref<ETLAgency | undefined>(undefined);
+const isSystemAdmin = ref(false);
 
 const list =  ref<ETLAgencyList>({
     total: 0,
@@ -155,6 +153,9 @@ watch(props, async (newProps, oldProps) => {
 })
 
 onMounted(async () => {
+    const profile = await std('/api/profile') as Profile;
+    isSystemAdmin.value = profile.system_admin;
+
     if (props.modelValue) await fetch();
     await listData();
     loading.value.main = false;
@@ -170,7 +171,7 @@ async function listData() {
     url.searchParams.append('filter', filter.value);
     const data = await std(url) as ETLAgencyList;
 
-    if (profileStore.profile && !profileStore.profile.system_admin && data.total === 1) {
+    if (!isSystemAdmin.value && data.total === 1) {
         selected.value = data.items[0];
     }
 

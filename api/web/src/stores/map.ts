@@ -395,6 +395,8 @@ export const useMapStore = defineStore('cloudtak', {
             // If we missed the Profile_Location_Source make sure it gets synced
             const loc = await this.worker.profile.location;
             this.location = loc.source;
+
+            this.callsign = await this.worker.profile.callsign()
         },
         initOverlays: async function() {
             if (!this.map) throw new Error('Cannot initLayers before map has loaded');

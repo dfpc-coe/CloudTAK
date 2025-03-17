@@ -73,6 +73,7 @@ const mapStore = useMapStore();
 const route = useRoute();
 
 const id = ref('')
+const callsign = ref('');
 const loading = ref(true),
 const name = ref(route.params.chatroom === 'new' ? route.query.callsign : route.params.chatroom);
 const chats = ref({
@@ -85,6 +86,7 @@ const message = ref('');
 onMounted(async () => {
     const profile = await mapStore.worker.profile.load();
     id.value = `ANDROID-CloudTAK-${profile.username}`
+    callsign.value = profile.tak_callsign;
 
     await fetchChats();
 });
@@ -120,7 +122,7 @@ async function sendMessage() {
         },
         from: {
             uid: id.value,
-            callsign: profileStore.profile.tak_callsign
+            callsign: callsign.value
         },
         message: chat.message
     }, 'chat');
