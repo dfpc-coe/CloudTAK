@@ -406,6 +406,8 @@ export const useMapStore = defineStore('cloudtak', {
                     this.hasNoChannels = false;
                 } else if (msg.type === WorkerMessage.Notification) {
                     this.notifications.push(msg.body as TAKNotification);
+                } else if (msg.type === WorkerMessage.Mission_Change_Feature) {
+                    this.loadMission(msg.body.guid);
                 } else {
                     console.error('Unknown Event:', msg);
                 }

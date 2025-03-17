@@ -58,6 +58,7 @@ export const ServerResponse = Type.Object({
     status: Type.String(),
     created: Type.String(),
     updated: Type.String(),
+    version: Type.String(),
     name: Type.String(),
     url: Type.String(),
     api: Type.String(),

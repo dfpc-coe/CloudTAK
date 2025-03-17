@@ -160,14 +160,10 @@ const shareFeat = computed<Feature | undefined>(() => {
 
 
 onMounted(async () => {
-    await getServer();
-    await fetch();
     profile.value = await mapStore.worker.profile.load();
+    server.value = await mapStore.worker.profile.loadServer();
+    await fetch();
 });
-
-async function getServer() {
-    server.value = await std('/api/server') as Server;
-}
 
 function downloadFile(): string {
     if (!pkg.value) return '';

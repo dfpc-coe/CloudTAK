@@ -9,6 +9,7 @@ import type Atlas from './atlas.ts';
 import Subscription from '../base/subscription.ts';
 import { coordEach } from '@turf/meta'
 import COT, { OriginMode } from '../base/cot.ts';
+import { WorkerMessage } from '../base/events.ts';
 import type { GeoJSONSourceDiff, LngLatLike } from 'maplibre-gl';
 import { booleanWithin } from '@turf/boolean-within';
 import type { Polygon } from 'geojson';
@@ -31,6 +32,7 @@ export default class AtlasDatabase {
     images: Set<string>;
 
     pending: Map<string, COT>;
+    pendingHidden: Set<string>;
     pendingUnhide: Set<string>;
     pendingDelete: Set<string>;
 
@@ -48,6 +50,7 @@ export default class AtlasDatabase {
 
         this.pending = new Map();
         this.pendingUnhide = new Set();
+        this.pendingHidden = new Set();
         this.pendingDelete = new Set();
 
         this.subscriptions = new Map();
@@ -56,7 +59,7 @@ export default class AtlasDatabase {
     }
 
     async hide(id: string): Promise<void> {
-        this.hidden.add(id);
+        this.pendingHidden.add(id);
     }
 
     async unhide(id: string): Promise<void> {
@@ -148,9 +151,10 @@ export default class AtlasDatabase {
             const stale = new Date(cot.properties.stale).getTime();
 
 
-            if (this.hidden.has(String(cot.id))) {
-                // TODO check if hidden already
+            if (this.pendingHidden.has(String(cot.id))) {
+                this.hidden.add(cot.id);
                 diff.remove.push(String(cot.id))
+                this.pendingHidden.delete(cot.id);
             } else if (
                 !['Never'].includes(display_stale)
                 && !cot.properties.archived
@@ -383,9 +387,12 @@ export default class AtlasDatabase {
             }
 
             if (updateGuid) {
-                // TODO Update COTS
-                //const mapStore = useMapStore();
-                //await mapStore.loadMission(updateGuid);
+                this.atlas.postMessage({
+                    type: WorkerMessage.Mission_Change_Feature,
+                    body: {
+                        guid: updateGuid
+                    }
+                });
             }
         } else if (task.properties.type === 't-x-m-c-l' && task.properties.mission && task.properties.mission.guid) {
             const sub = this.subscriptions.get(task.properties.mission.guid);
@@ -426,9 +433,12 @@ export default class AtlasDatabase {
 
             sub.cots.set(String(cot.id), cot);
 
-            // TODO UPDATE COTS
-            //const mapStore = useMapStore();
-            //await mapStore.loadMission(mission_guid);
+            this.atlas.postMessage({
+                type: WorkerMessage.Mission_Change_Feature,
+                body: {
+                    guid: updateGuid
+                }
+            });
         } else {
             let is_mission_cot: COT | undefined;
             for (const value of this.subscriptions.values()) {
