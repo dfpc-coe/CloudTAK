@@ -150,7 +150,7 @@ import {
     IconChevronDown,
 } from '@tabler/icons-vue';
 import GroupSelect from '../../../util/GroupSelectModal.vue';
-import Overlay from '../../../../stores/base/overlay.ts';
+import Overlay from '../../../../base/overlay.ts';
 import {
     TablerAlert,
     TablerInput,

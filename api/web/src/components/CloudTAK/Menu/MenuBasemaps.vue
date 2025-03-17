@@ -187,7 +187,7 @@ import { onMounted, ref, watch } from 'vue';
 import MenuItem from '../util/MenuItem.vue';
 import type { BasemapList, Basemap } from '../../../types.ts';
 import { std, stdurl } from '../../../std.ts';
-import Overlay from '../../../stores/base/overlay.ts';
+import Overlay from '../../../base/overlay.ts';
 import BasemapEditModal from './Basemaps/EditModal.vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import Share from '../util/Share.vue';

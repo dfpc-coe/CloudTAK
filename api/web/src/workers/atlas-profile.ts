@@ -249,7 +249,7 @@ export default class AtlasProfile {
 
         if (body.display_projection) {
             this.atlas.postMessage({
-                type: WorkerMessage.Projection_Location_Accuracy,
+                type: WorkerMessage.Profile_Location_Source,
                 body: { source: this.location.source }
             });
         }
