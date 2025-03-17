@@ -10,23 +10,23 @@
     <TablerLoading v-if='loading' />
     <template v-else>
         <div
-            v-if='groups().length'
+            v-if='groups.length'
             class='ms-3'
         >
             <div class='align-items-center px-3 py-2 me-2 hover-button'>
                 <IconChevronRight
-                    v-if='!treeState.teams._'
+                    v-if='!treeState.groups._shown'
                     :size='20'
                     stroke='1'
                     class='cursor-pointer'
-                    @click='treeState.teams._ = true'
+                    @click='treeState.groups._shown = true'
                 />
                 <IconChevronDown
-                    v-else-if='treeState.teams._'
+                    v-else-if='treeState.groups._shown'
                     :size='20'
                     stroke='1'
                     class='cursor-pointer'
-                    @click='treeState.teams._ = false'
+                    @click='treeState.groups._shown = false'
                 />
                 <ContactPuck
                     class='mx-2'
@@ -35,26 +35,27 @@
                 /> Teams
             </div>
 
-            <template v-if='treeState.teams._'>
+            <template v-if='treeState.groups._shown'>
                 <div
-                    v-for='group in groups()'
+                    v-for='group in groups'
                     class='ms-3'
                 >
                     <div class='d-flex align-items-center px-3 py-2 me-2 hover-button'>
                         <IconChevronRight
-                            v-if='!treeState.teams[group]'
+                            v-if='!treeState.groups[group]._shown'
                             :size='20'
                             stroke='1'
                             class='cursor-pointer'
-                            @click='treeState.teams[group] = true'
+                            @click='treeState.groups[group]._loading = treeState.groups[group]._shown = true'
                         />
                         <IconChevronDown
-                            v-else-if='treeState.teams[group]'
+                            v-else
                             :size='20'
                             stroke='1'
                             class='cursor-pointer'
-                            @click='treeState.teams[group] = false'
+                            @click='treeState.groups[group]._shown = false'
                         />
+
                         <ContactPuck
                             class='mx-2'
                             :compact='true'
@@ -62,9 +63,13 @@
                         /><span v-text='`${group} Team`' />
                     </div>
 
-                    <template v-if='treeState.teams[group]'>
+                    <TablerLoading
+                        v-if='treeState.groups[group]._loading'
+                        :compact='true'
+                    />
+                    <template v-else-if='treeState.groups[group]._shown'>
                         <div
-                            v-for='contact in contacts(group)'
+                            v-for='contact in contacts[group].values()'
                             class='ms-3 d-flex align-items-center hover-button px-3 py-2 me-2'
                         >
                             <Contact
@@ -86,23 +91,23 @@
         </div>
 
         <div
-            v-if='markers().length'
+            v-if='markers.length'
             class='ms-3'
         >
             <div class='d-flex align-items-center px-3 py-2 me-2 hover-button'>
                 <IconChevronRight
-                    v-if='!treeState.markers._'
+                    v-if='!treeState.markers._shown'
                     :size='20'
                     stroke='1'
                     class='cursor-pointer'
-                    @click='treeState.markers._ = true'
+                    @click='treeState.markers._shown = true'
                 />
                 <IconChevronDown
-                    v-else-if='treeState.markers._'
+                    v-else-if='treeState.markers._shown'
                     :size='20'
                     stroke='1'
                     class='cursor-pointer'
-                    @click='treeState.markers._ = false'
+                    @click='treeState.markers._shown = false'
                 />
                 <IconMapPin
                     :size='20'
@@ -122,25 +127,25 @@
                 </div>
             </div>
 
-            <template v-if='treeState.markers._'>
+            <template v-if='treeState.markers._shown'>
                 <div
-                    v-for='marker in markers()'
+                    v-for='marker in markers'
                     class='ms-3'
                 >
                     <div class='d-flex align-items-center px-3 py-2 me-2 hover-button'>
                         <IconChevronRight
-                            v-if='!treeState.markers[marker]'
+                            v-if='!treeState.markers[marker]._shown'
                             :size='20'
                             stroke='1'
                             class='cursor-pointer'
-                            @click='treeState.markers[marker] = true'
+                            @click='treeState.markers[marker]._loading = treeState.markers[marker]._shown = true'
                         />
                         <IconChevronDown
-                            v-else-if='treeState.markers[marker]'
+                            v-else
                             :size='20'
                             stroke='1'
                             class='cursor-pointer'
-                            @click='treeState.markers[marker] = false'
+                            @click='treeState.markers[marker]._shown = false'
                         />
                         <IconFolder
                             class='mx-2'
@@ -158,11 +163,15 @@
                         </div>
                     </div>
 
-                    <template v-if='treeState.markers[marker]'>
+                    <TablerLoading
+                        v-if='treeState.markers[marker]._loading'
+                        :compact='true'
+                    />
+                    <template v-if='treeState.markers[marker]._shown'>
                         <div class='ms-3'>
                             <div class='ms-3'>
                                 <Feature
-                                    v-for='cot of markerFeatures(marker)'
+                                    v-for='cot of markers[marker]'
                                     :key='cot.id'
                                     :feature='cot'
                                 />
@@ -179,18 +188,18 @@
         >
             <div class='d-flex align-items-center px-3 py-2 me-2 hover-button'>
                 <IconChevronRight
-                    v-if='!treeState.paths._'
+                    v-if='!treeState.paths._shown'
                     :size='20'
                     stroke='1'
                     class='cursor-pointer'
-                    @click='treeState.paths._ = true'
+                    @click='treeState.paths._loading = treeState.paths._shown = true'
                 />
                 <IconChevronDown
-                    v-else-if='treeState.paths._'
+                    v-else-if='treeState.paths._shown'
                     :size='20'
                     stroke='1'
                     class='cursor-pointer'
-                    @click='treeState.paths._ = false'
+                    @click='treeState.paths._shown = false'
                 />
                 <IconFolder
                     class='mx-2'
@@ -208,36 +217,58 @@
                 </div>
             </div>
 
-            <template v-if='treeState.paths._'>
-                <div v-for='path in paths'>
+            <TablerLoading
+                v-if='treeState.paths._loading'
+                :compact='true'
+            />
+            <template v-else-if='treeState.paths._shown'>
+                <div
+                    v-for='path in paths'
+                    class='ms-3'
+                >
                     <template v-if='path.path === "/"'>
-                        <div class='ms-3'>
-                            <Feature
-                                v-for='cot of pathFeatures(path.path)'
-                                :key='cot.id'
-                                :feature='cot'
-                            />
-                        </div>
+                        <Feature
+                            v-for='cot of pathFeatures(path.path)'
+                            :key='cot.id'
+                            :feature='cot'
+                        />
                     </template>
                     <template v-else>
-                        <IconFolder
-                            :size='20'
-                            :stroke='2'
-                            class='ms-3'
-                        />
-                        <span
-                            class='mx-2'
-                            v-text='path.path'
-                        />
-                        <div
-                            v-if='props.element.id === "cots"'
-                            class='ms-auto'
-                        >
-                            <TablerDelete
+                        <div class='ms-3'>
+                            <IconChevronRight
+                                v-if='!treeState.paths[path]._shown'
                                 :size='20'
-                                displaytype='icon'
-                                @click='deletePath(props.element, path.path)'
+                                stroke='1'
+                                class='cursor-pointer'
+                                @click='treeState.paths[path]._shown = true'
                             />
+                            <IconChevronDown
+                                v-else-if='treeState.paths[path]._shown'
+                                :size='20'
+                                stroke='1'
+                                class='cursor-pointer'
+                                @click='treeState.paths[path]._shown = false'
+                            />
+
+                            <IconFolder
+                                :size='20'
+                                :stroke='2'
+                                class='mx-2'
+                            />
+                            <span
+                                class='mx-2'
+                                v-text='path.path'
+                            />
+                            <div
+                                v-if='props.element.id === "cots"'
+                                class='ms-auto'
+                            >
+                                <TablerDelete
+                                    :size='20'
+                                    displaytype='icon'
+                                    @click='deletePath(props.element, path.path)'
+                                />
+                            </div>
                         </div>
                     </template>
                 </div>
@@ -247,7 +278,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import {
     TablerDelete,
     TablerLoading,
@@ -271,31 +302,87 @@ const props = defineProps({
     element: Object
 });
 
-const loading = ref(false);
+const loading = ref(true);
 const deleteMarkerModal = ref({
     shown: false,
     marker: null
 });
+
+const contacts = ref({});
+const markers = ref([]);
+const groups = ref([]);
 const paths = ref([]);
+
+const rebuilding = ref(false);
 const treeState = ref({
-    teams: {
-        _: false
+    groups: {
+        _shown: false,
+        _loading: false
     },
     markers: {
-        _: false
+        _shown: false,
+        _loading: false
     },
     paths: {
-        _: false
+        _shown: false,
+        _loading: false
     }
 });
 
 onMounted(async () => {
-    paths.value = await mapStore.worker.db.paths();
+    loading.value = true;
+
+    await refresh();
+
+    loading.value = false;
 });
 
-async function pathFeatures(path) {
-    return await mapStore.worker.db.pathFeatures(path);
-};
+watch(treeState.value, async () => {
+    if (rebuilding.value) return;
+    await refresh()
+});
+
+async function refresh() {
+    rebuilding.value = true;
+    paths.value = await mapStore.worker.db.paths();
+    groups.value = await mapStore.worker.db.groups();
+    markers.value = await mapStore.worker.db.markers();
+
+    for (const marker of markers.value) {
+        if (treeState.value.markers[marker] === undefined) {
+            treeState.value.markers[marker] = { _shown: false, _loading: false };
+        }
+
+        if (treeState.value.markers[marker]._shown) {
+            markers.value[marker] = await mapStore.worker.db.markerFeatures(marker);
+        }
+        treeState.value.markers[marker]._loading = false;
+    }
+
+    for (const path of paths.value) {
+        if (!treeState.value.paths[path]) {
+            treeState.value.paths[path] = { _shown: false, _loading: false };
+        }
+
+        if (treeState.value.paths[path]._shown) {
+            paths.value[path] = await mapStore.worker.db.pathFeatures(path);
+        }
+        treeState.value.paths[path]._loading = false;
+    }
+
+    for (const group of groups.value) {
+        if (treeState.value.groups[group] === undefined) {
+            treeState.value.groups[group] = { _shown: false, _loading: false };
+        }
+
+        if (treeState.value.groups[group]._shown) {
+            contacts.value[group] = await mapStore.worker.db.contacts(group);
+        }
+        treeState.value.groups[group]._loading = false;
+    }
+
+    rebuilding.value = false;
+}
 
 async function deleteMarkers(marker) {
     if (!deleteMarkerModal.value.shown) {
@@ -341,15 +428,6 @@ async function deleteFeatures(path) {
     loading.value = false;
 }
 
-async function markerFeatures(marker) {
-    return mapStore.worker.db.markerFeatures(marker);
-}
-
-async function contacts(group) {
-    const contacts = await mapStore.worker.db.contacts(group);
-    return contacts;
-}
-
 async function deletePath(layer, path) {
     if (layer.id !== 'cots') return;
 
@@ -363,29 +441,5 @@ async function deletePath(layer, path) {
     }
 
     loading.value = false;
-}
-
-async function markers() {
-    const markers = await mapStore.worker.db.markers();
-
-    for (const marker of markers) {
-        if (treeState.value.markers[marker] === undefined) {
-            treeState.value.markers[marker] = false;
-        }
-    }
-
-    return markers;
-}
-
-async function groups() {
-    const groups = await mapStore.worker.db.groups();
-
-    for (const group of groups) {
-        if (treeState.value.teams[group] === undefined) {
-            treeState.value.teams[group] = false;
-        }
-    }
-
-    return groups;
 }
 </script>
