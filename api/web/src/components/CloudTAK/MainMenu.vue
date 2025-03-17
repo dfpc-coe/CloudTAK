@@ -506,7 +506,10 @@
                         :dark='true'
                     />
                 </div>
-                <div class='d-flex justify-content-center pb-1'>
+                <div
+                    v-else-if='["home", "home-menu"].includes(String(route.name))'
+                    class='d-flex justify-content-center pb-1'
+                >
                     <div
                         class='subheader text-white'
                         v-text='version'
