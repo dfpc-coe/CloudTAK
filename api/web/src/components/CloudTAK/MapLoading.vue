@@ -1,7 +1,7 @@
 <template>
     <TablerModal>
         <div
-            class='modal-body bg-white rounded'
+            class='modal-body bg-white rounded user-select-none'
         >
             <div
                 class='text-center'
