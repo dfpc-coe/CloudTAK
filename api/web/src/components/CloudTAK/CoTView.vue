@@ -282,7 +282,7 @@
         >
             <div class='row g-0'>
                 <div
-                    v-if='mission'
+                    v-if='subscription'
                     class='col-12'
                 >
                     <div class='d-flex align-items-center py-2 px-2 my-2 mx-2 rounded bg-gray-500'>
@@ -293,8 +293,8 @@
                         <span class='ms-2'>From:</span>
                         <a
                             class='mx-2 cursor-pointer'
-                            @click='router.push(`/menu/missions/${mission.meta.guid}`)'
-                            v-text='mission.meta.name'
+                            @click='router.push(`/menu/missions/${subscription.meta.guid}`)'
+                            v-text='subscription.meta.name'
                         />
                     </div>
                 </div>
@@ -314,11 +314,11 @@
                     />
                 </div>
                 <div
-                    v-if='profile && center.length > 2'
+                    v-if='center.length > 2'
                     class='col-md-4 pt-2'
                 >
                     <Elevation
-                        :unit='profile.display_elevation'
+                        :unit='units.display_elevation'
                         :elevation='cot.properties.center[2]'
                     />
                 </div>
@@ -331,7 +331,7 @@
                 </div>
 
                 <div
-                    v-if='profile && cot.properties.speed !== undefined && !isNaN(cot.properties.speed)'
+                    v-if='cot.properties.speed !== undefined && !isNaN(cot.properties.speed)'
                     class='pt-2'
                     :class='{
                         "col-md-6": cot.properties.course,
@@ -339,7 +339,7 @@
                     }'
                 >
                     <Speed
-                        :unit='profile.display_speed'
+                        :unit='units.display_speed'
                         :speed='cot.properties.speed'
                         class='py-2'
                     />
@@ -386,7 +386,7 @@
 
             <div
                 v-if='cot.properties.remarks !== undefined'
-                class='col-12 py-2'
+                class='col-12 py-2 px-2'
             >
                 <label class='subheader mx-2'>Remarks</label>
                 <CopyField
@@ -394,7 +394,6 @@
                     :rows='10'
                     :edit='cot.is_editable'
                     :hover='cot.is_editable'
-                    class='mx-1'
                 />
             </div>
 
@@ -582,11 +581,41 @@
             </div>
 
             <div
-                v-if='cot.properties.takv && cot.properties.takv && Object.keys(cot.properties.takv).length'
+                v-if='
+                    cot.properties.takv
+                        && cot.properties.takv
+                        && Object.keys(cot.properties.takv).length
+                '
                 class='col-12 px-1 pb-2'
             >
-                <label class='subheader px-2'>Metadata</label>
-                <div class='table-responsive rounded mx-2 py-2 px-2'>
+                <div class='col-12 d-flex align-items-center'>
+                    <TablerIconButton
+                        v-if='!chevrons.has("metadata")'
+                        title='Open Metadata'
+                        @click='chevrons.add("metadata")'
+                    >
+                        <IconChevronRight
+                            :size='24'
+                            stroke='1'
+                        />
+                    </TablerIconbutton>
+
+                    <TablerIconButton
+                        v-else
+                        title='Close Metadata'
+                        @click='chevrons.delete("metadata")'
+                    >
+                        <IconChevronDown
+                            :size='24'
+                            stroke='1'
+                        />
+                    </TablerIconbutton>
+                    <label class='subheader'>Metadata</label>
+                </div>
+                <div
+                    v-if='chevrons.has("metadata")'
+                    class='table-responsive rounded mx-2 py-2 px-2'
+                >
                     <table class='table card-table table-hover table-vcenter datatable'>
                         <thead>
                             <tr>
@@ -612,7 +641,7 @@
             <div class='overflow-auto'>
                 <Share
                     style='height: 70vh'
-                    :feats='[cot]'
+                    :feats='[cot.as_feature()]'
                     @done='mode = "default"'
                     @cancel='mode = "default"'
                 />
@@ -644,10 +673,10 @@
 <script setup lang='ts'>
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
-import type COT from '../../../src/stores/base/cot.ts';
-import type { COTType } from '../../../src/types.ts';
-import { OriginMode } from '../../../src/stores/base/cot.ts'
-import Mission from '../../../src/stores/base/mission.ts'
+import type COT from '../../base/cot.ts';
+import type { COTType } from '../../types.ts';
+import { OriginMode } from '../../base/cot.ts'
+import Subscription from '../../base/subscription.ts'
 import {
     TablerNone,
     TablerInput,
@@ -680,6 +709,8 @@ import {
     IconStarFilled,
     IconMessage,
     IconDotsVertical,
+    IconChevronRight,
+    IconChevronDown,
     IconAmbulance,
     IconPlayerPlay,
     IconShare2,
@@ -690,40 +721,39 @@ import {
     IconPaperclip,
 } from '@tabler/icons-vue';
 import Subscriptions from './util/Subscriptions.vue';
-import timediff from '../../../src/timediff.ts';
-import { std } from '../../../src/std.ts';
-import { useCOTStore } from '../../../src/stores/cots.ts';
-const cotStore = useCOTStore();
-import { useProfileStore } from '../../../src/stores/profile.ts';
-import { useVideoStore } from '../../../src/stores/videos.ts';
+import timediff from '../../timediff.ts';
+import { std } from '../../std.ts';
+import { useMapStore } from '../../stores/map.ts';
+import { useVideoStore } from '../../stores/videos.ts';
 
-const profileStore = useProfileStore();
+const mapStore = useMapStore();
+
 const videoStore = useVideoStore();
 const route = useRoute();
 const router = useRouter();
 
-const cot = ref<COT | undefined>(cotStore.get(String(route.params.uid), {
-    mission: true
-}))
+const cot = ref<COT | undefined>(undefined);
 
-const mission = ref<Mission | undefined>();
+const subscription = ref<Subscription | undefined>();
 
-if (cot.value && cot.value.origin.mode === OriginMode.MISSION && cot.value.origin.mode_id) {
-    mission.value = cotStore.subscriptions.get(cot.value.origin.mode_id);
-}
+const units = ref({
+    display_speed: 'mi/h',
+    display_elevation: 'feet'
+});
 
+const chevrons = ref<Set<string>>(new Set());
 const username = ref<string | undefined>();
 const type = ref<COTType | undefined>();
 const mode = ref('default');
 const interval = ref<ReturnType<typeof setInterval> | undefined>();
 const time = ref('relative');
 
-watch(cot, () => {
+watch(cot, async () => {
     if (cot.value) {
         if (cot.value.origin.mode === OriginMode.MISSION && cot.value.origin.mode_id) {
-            mission.value = cotStore.subscriptions.get(cot.value.origin.mode_id);
+            subscription.value = await mapStore.worker.db.subscriptionGet(cot.value.origin.mode_id);
         } else {
-            mission.value = undefined;
+            subscription.value = undefined;
         }
     }
 });
@@ -736,6 +766,12 @@ watch(route, async () => {
 onMounted(async () => {
     await load_cot();
 
+    const profile = await mapStore.worker.profile.load();
+    if (profile) {
+        units.value.display_speed = profile.display_speed;
+        units.value.display_elevation = profile.display_elevation;
+    }
+
     if (!cot.value) {
         interval.value = setInterval(async () => {
             await load_cot();
@@ -746,8 +782,6 @@ onMounted(async () => {
         }, 1000)
     }
 });
-
-const profile = profileStore.profile;
 
 const hasBattery = computed(() => {
     return cot.value && cot.value.properties.status && cot.value.properties.status.battery && !isNaN(parseInt(cot.value.properties.status.battery))
@@ -765,11 +799,17 @@ const center = computed(() => {
 async function load_cot() {
     username.value = undefined;
 
-    cot.value = cotStore.get(String(route.params.uid), {
+    const baseCOT = (await mapStore.worker.db.get(String(route.params.uid), {
         mission: true
-    })
+    }))
 
-    if (cot.value) {
+    if (baseCOT && baseCOT.origin.mode === OriginMode.MISSION && baseCOT.origin.mode_id) {
+        subscription.value = await mapStore.worker.db.subscriptionGet(baseCOT.origin.mode_id);
+    }
+
+    if (baseCOT) {
+        cot.value = baseCOT.as_proxy();
+
         if (cot.value.is_skittle) {
             username.value = await cot.value.username()
         } else {
@@ -815,7 +855,7 @@ function addAttachment(hash: string) {
 
 async function deleteCOT() {
     if (!cot.value) return;
-    await cotStore.delete(cot.value.id);
+    await mapStore.worker.db.remove(cot.value.id);
     router.push('/');
 }
 </script>

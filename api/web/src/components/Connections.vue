@@ -119,7 +119,7 @@ import { ref, onMounted, watch } from 'vue';
 import type { ETLConnectionList } from '../types.ts'
 import { std, stdurl } from '../std.ts';
 import PageFooter from './PageFooter.vue';
-import ConnectionStatus from './Connection/Status.vue';
+import ConnectionStatus from './Connection/StatusDot.vue';
 import AgencyBadge from './Connection/AgencyBadge.vue';
 import timeDiff from '../timediff.ts';
 import {

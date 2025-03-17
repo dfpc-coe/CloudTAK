@@ -9,7 +9,7 @@
             style='width: 100%;'
         />
 
-        <Loading v-if='loading || !mapStore.isLoaded' />
+        <MapLoading v-if='loading || !mapStore.isLoaded' />
 
         <template v-if='mapStore.isLoaded && !loading'>
             <WarnConfiguration
@@ -25,7 +25,6 @@
                 v-if='mapStore.drawOptions.mode !== "static"'
             />
             <div
-                v-else-if='profileStore.profile'
                 class='position-absolute bottom-0 begin-0 text-white'
                 style='
                     z-index: 1;
@@ -39,39 +38,63 @@
                     class='d-flex align-items-center'
                     style='height: 40px'
                 >
-                    <Status
-                        v-if='profileStore.live_loc'
-                        v-tooltip='"Using Live Location"'
-                        class='mx-2 my-2'
-                        status='success'
-                        :dark='true'
-                    />
                     <div
-                        v-else
-                        v-tooltip='"Set Location"'
-                        class='hover-button h-100 px-2 d-flex align-items-center cursor-pointer'
+                        class='hover-button h-100 d-flex align-items-center'
                         style='width: 40px;'
-                        @click='setLocation'
                     >
-                        <IconLocationOff
-                            v-if='!profileStore.profile.tak_loc'
-                            title='Set Your Location Button (No Location currently set)'
+                        <TablerIconButton
+                            v-if='
+                                (mapStore.radial.cot && mapStore.locked.length >= 2)
+                                    || (!mapStore.radial.cot && mapStore.locked.length >= 1)
+                            '
+                            title='Map is locked to marker - Click to Unlock'
+                            @click='mapStore.locked.splice(0, mapStore.locked.length)'
+                        >
+                            <IconLockAccess
+                                color='#83b7e8'
+                                :size='20'
+                                stroke='1'
+                                style='margin: 5px 8px'
+                            />
+                        </TablerIconButton>
+                        <IconLocation
+                            v-else-if='mapStore.location === LocationState.Live'
+                            title='Live Location'
+                            style='margin: 5px 8px'
                             :size='20'
                             stroke='1'
                         />
-                        <IconLocation
+                        <TablerIconButton
+                            v-else-if='mapStore.location === LocationState.Preset'
+                            title='Update Your Location Button'
+                            @click='setLocation'
+                        >
+                            <IconLocationPin
+                                title='Preset Location'
+                                style='margin: 5px 8px'
+                                :size='20'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
+                        <TablerIconButton
                             v-else
                             title='Set Your Location Button'
-                            :size='20'
-                            stroke='1'
-                        />
+                            @click='setLocation'
+                        >
+                            <IconLocationOff
+                                title='Set Your Location Button (No Location currently set)'
+                                style='margin: 5px 8px'
+                                :size='20'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
                     </div>
                     <div
                         v-tooltip='"Zoom To Location"'
                         style='line-height: 40px; width: calc(100% - 40px);'
                         class='h-100 cursor-pointer text-center px-2 text-truncate subheader text-white hover-button'
                         @click='toLocation'
-                        v-text='profileStore.profile.tak_callsign'
+                        v-text='mapStore.callsign'
                     />
                 </div>
             </div>
@@ -129,31 +152,6 @@
                             v-text='humanBearing'
                         />
                     </div>
-                    <IconFocus2
-                        v-if='!mapStore.radial.cot && !locked.length'
-                        v-tooltip='"Get Location"'
-                        role='button'
-                        tabindex='0'
-                        title='Get Your Location button'
-                        :size='40'
-                        stroke='1'
-                        class='cursor-pointer hover-button'
-                        style='margin: 5px 8px'
-                        @click='getLocation'
-                    />
-                    <IconLockAccess
-                        v-else-if='!mapStore.radial.cot'
-                        role='button'
-                        color='#83b7e8'
-                        tabindex='0'
-                        title='Map is locked to marker'
-                        :size='40'
-                        stroke='1'
-                        class='cursor-pointer hover-button'
-                        style='margin: 5px 8px'
-                        @click='locked.splice(0, locked.length)'
-                    />
-
                     <div
                         v-if='!mobileDetected'
                     >
@@ -235,7 +233,7 @@
                                 class='hover-button'
                             />
                             <span
-                                v-if='profileStore.notifications.length'
+                                v-if='mapStore.notifications.length'
                                 class='badge bg-red mb-2'
                             />
                             <span
@@ -246,7 +244,7 @@
                     </template>
                     <template #dropdown>
                         <TablerNone
-                            v-if='!profileStore.notifications.length'
+                            v-if='!mapStore.notifications.length'
                             label='New Notifications'
                             :create='false'
                         />
@@ -254,13 +252,13 @@
                             <div class='col-12 d-flex py-2 px-2'>
                                 <div
                                     class='ms-auto cursor-pointer'
-                                    @click='profileStore.clearNotifications'
+                                    @click='mapStore.notifications.splice(0, mapStore.notifications.length)'
                                 >
                                     Clear All
                                 </div>
                             </div>
                             <div
-                                v-for='n of profileStore.notifications'
+                                v-for='n of mapStore.notifications'
                                 class='col-12 px-2 py-2'
                             >
                                 <div
@@ -454,28 +452,28 @@
 </template>
 
 <script setup lang='ts'>
-import {ref, watch, computed, onMounted, onBeforeUnmount, useTemplateRef } from 'vue';
+import {ref, watch, computed, toRaw, onMounted, onBeforeUnmount, useTemplateRef } from 'vue';
 import {useRoute, useRouter } from 'vue-router';
 import CoTVideo from './util/Video.vue';
 import DrawOverlay from './util/DrawOverlay.vue';
 import WarnChannels from './util/WarnChannels.vue';
 import SearchBox from './util/SearchBox.vue';
 import WarnConfiguration from './util/WarnConfiguration.vue';
-import Status from '../util/Status.vue';
 import CoordInput from './CoordInput.vue';
-import type { MapGeoJSONFeature, GeoJSONSource, LngLatLike } from 'maplibre-gl';
-import { std, stdurl } from '../..//std.ts';
+import type { GeoJSONStoreFeatures } from 'terra-draw'
+import type { MapGeoJSONFeature, LngLatLike } from 'maplibre-gl';
+import { std, stdurl } from '../../std.ts';
 import type { IconsetList, Feature } from '../../types.ts';
 import CloudTAKFeatView from './FeatView.vue';
 import {
     IconSearch,
     IconMessage,
     IconLocationOff,
+    IconLocationPin,
     IconLocation,
     IconMenu2,
     IconPlus,
     IconMinus,
-    IconFocus2,
     IconLockAccess,
     IconPencil,
     IconLasso,
@@ -492,27 +490,22 @@ import {
 } from '@tabler/icons-vue';
 import SelectFeats from './util/SelectFeats.vue';
 import MultipleSelect from './util/MultipleSelect.vue';
-import SideMenu from './Menu.vue';
+import SideMenu from './MainMenu.vue';
 import {
     TablerIconButton,
     TablerDropdown,
     TablerModal,
     TablerNone,
 } from '@tak-ps/vue-tabler';
-import Loading from './Loading.vue';
+import { LocationState } from '../../base/events.ts';
+import MapLoading from './MapLoading.vue';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import RadialMenu from './RadialMenu/RadialMenu.vue';
 import { useMapStore } from '../../stores/map.ts';
 import { useVideoStore } from '../../stores/videos.ts';
-import { useProfileStore } from '../../stores/profile.ts';
-import { useCOTStore } from '../../stores/cots.ts';
-import { useConnectionStore } from '../../stores/connection.ts';
 import UploadImport from './util/UploadImport.vue'
 import { coordEach } from '@turf/meta';
-const profileStore = useProfileStore();
-const cotStore = useCOTStore();
 const mapStore = useMapStore();
-const connectionStore = useConnectionStore();
 const videoStore = useVideoStore();
 const router = useRouter();
 const route = useRoute();
@@ -533,12 +526,6 @@ const searchBoxShown = ref(false);
 const pointInput = ref<boolean>(false);
 const feat = ref()        // Show the Feat Viewer sidebar
 
-
-// Lock the map view to a given CoT - The last element is the currently locked value
-// this is an array so that things like the radial menu can temporarily lock state but remember the previous lock value when they are closed
-const locked = ref<Array<string>>([])
-
-const live_loc_denied = ref(false)   // User denied live location services
 const upload = ref({
     shown: false,
     dragging: false
@@ -582,15 +569,15 @@ watch(mapStore.radial, () => {
         mapStore.map.dragPan.disable();
 
         const id = mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id;
-        if (!locked.value.includes(id)) {
-            locked.value.push(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
+        if (!mapStore.locked.includes(id)) {
+            mapStore.locked.push(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
         }
     } else {
         mapStore.map.scrollZoom.enable();
         mapStore.map.touchZoomRotate.enableRotation();
         mapStore.map.dragRotate.enable();
         mapStore.map.dragPan.enable();
-        locked.value.pop();
+        mapStore.locked.pop();
     }
 })
 
@@ -608,39 +595,11 @@ onMounted(async () => {
 
     await mountMap();
 
-    await Promise.all([
-        profileStore.loadChannels(),
-        cotStore.loadArchive()
-    ]);
-
-    warnChannels.value = profileStore.hasNoChannels;
-    warnConfiguration.value = profileStore.hasNoConfiguration;
+    // TODO these are no longer reactive, does it matter?
+    warnChannels.value = await mapStore.worker.profile.hasNoChannels();
+    warnConfiguration.value = await mapStore.worker.profile.hasNoConfiguration();
 
     loading.value = false;
-
-    if ('Notification' in window && Notification && Notification.permission !== 'granted') {
-        Notification.requestPermission()
-    }
-
-    if (("geolocation" in navigator)) {
-        navigator.geolocation.watchPosition((position) => {
-            if (position.coords.accuracy <= 50) {
-                profileStore.live_loc = [ position.coords.longitude, position.coords.latitude ]
-            }
-        }, (err) => {
-            if (err.code === 0) {
-                live_loc_denied.value = true;
-            } else if (!err.code) {
-                emit('err', err);
-            }
-        },{
-            maximumAge: 0,
-            timeout: 1500,
-            enableHighAccuracy: true
-        });
-    } else {
-        console.error('geolocation object not found on navigator');
-    }
 
     window.addEventListener('dragover', (e) => {
         e.preventDefault();
@@ -663,9 +622,6 @@ onMounted(async () => {
             }
         }
     });
-
-    if (!profileStore.profile) throw new Error('Profile did not load correctly');
-    connectionStore.connectSocket(profileStore.profile.username);
 });
 
 onBeforeUnmount(() => {
@@ -673,9 +629,6 @@ onBeforeUnmount(() => {
         window.clearInterval(timer.value);
     }
 
-    profileStore.destroy();
-    connectionStore.destroy();
-    cotStore.$reset();
     mapStore.destroy();
 });
 
@@ -702,19 +655,16 @@ function closeRadial() {
     mapStore.radial.cot = undefined;
 }
 
-function toLocation() {
-    if (profileStore.live_loc) {
+async function toLocation() {
+    const location = await mapStore.worker.profile.location;
+
+    if ([LocationState.Preset, LocationState.Live].includes(location.source)) {
         mapStore.map.flyTo({
-            center: profileStore.live_loc as LngLatLike,
+            center: location.coordinates as LngLatLike,
             zoom: 14
         });
-    } else if (!profileStore.profile || !profileStore.profile.tak_loc) {
+    } else {
         throw new Error('No Location Set or Location could not be retrieved');
-    } else if (profileStore.profile && profileStore.profile.tak_loc) {
-        mapStore.map.flyTo({
-            center: profileStore.profile.tak_loc.coordinates as LngLatLike,
-            zoom: 14
-        });
     }
 }
 
@@ -724,14 +674,15 @@ function setLocation() {
     mapStore.map.once('click', async (e) => {
         mapStore.map.getCanvas().style.cursor = ''
         mode.value = 'Default';
-        await profileStore.update({
+
+        await mapStore.worker.profile.update({
             tak_loc: {
                 type: 'Point',
                 coordinates: [e.lngLat.lng, e.lngLat.lat]
             }
         })
-        profileStore.CoT();
-        await updateCOT();
+
+        await mapStore.updateCOT();
     });
 }
 
@@ -739,19 +690,6 @@ function fileUpload(event: string) {
     upload.value.shown = false;
     const imp = JSON.parse(event) as { id: string };
     router.push(`/menu/imports/${imp.id}`)
-}
-
-function getLocation() {
-    if (profileStore.profile || !profileStore.live_loc) {
-        throw new Error('No Location Determined');
-    } else if (live_loc_denied.value) {
-        throw new Error('Cannot navigate to your position as you denied location services');
-    }
-
-    mapStore.map.flyTo({
-        center: profileStore.live_loc as LngLatLike,
-        zoom: 14
-    });
 }
 
 function startDraw(type: string) {
@@ -769,7 +707,7 @@ async function handleRadial(event: string): Promise<void> {
         router.push(`/cot/${mapStore.radial.cot.properties.id}`);
         closeRadial()
     } else if (event === 'cot:play') {
-        videoStore.add(mapStore.radial.cot.properties.id);
+        await videoStore.add(mapStore.radial.cot.properties.id);
         closeRadial()
     } else if (event === 'cot:delete') {
         const cot = mapStore.radial.cot;
@@ -779,21 +717,20 @@ async function handleRadial(event: string): Promise<void> {
             router.push('/');
         }
 
-        await cotStore.delete(String(cot.id))
-        await updateCOT();
+        await mapStore.worker.db.remove(String(cot.id))
+        await mapStore.updateCOT();
     } else if (event === 'cot:lock') {
-        locked.value.push(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
+        mapStore.locked.push(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
         closeRadial()
     } else if (event === 'cot:edit') {
-        editGeometry(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
+        await editGeometry(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
         closeRadial()
     } else if (event === 'feat:view') {
         selectFeat(mapStore.radial.cot as MapGeoJSONFeature);
         closeRadial()
     } else if (event === 'context:new') {
-        // @ts-expect-error MapLibreFeature vs Feature
-        await cotStore.add(mapStore.radial.cot);
-        updateCOT();
+        await mapStore.worker.db.add(toRaw(mapStore.radial.cot as Feature));
+        mapStore.updateCOT();
         closeRadial()
     } else if (event === 'context:info') {
         // @ts-expect-error Figure out geometry.coordinates type
@@ -805,10 +742,10 @@ async function handleRadial(event: string): Promise<void> {
     }
 }
 
-function editGeometry(featid: string) {
+async function editGeometry(featid: string) {
     if (!mapStore.draw) throw new Error('Drawing Tools haven\'t loaded');
 
-    const cot = cotStore.get(featid, { mission: true });
+    const cot = await mapStore.worker.db.get(featid, { mission: true });
     if (!cot) return;
 
     try {
@@ -837,11 +774,10 @@ function editGeometry(featid: string) {
             }
         });
 
-        cotStore.hidden.add(cot.id);
-        updateCOT();
+        await mapStore.worker.db.hide(cot.id);
+        mapStore.updateCOT();
 
-        // @ts-expect-error Cast Feature to GeoJSONStoreFeature
-        const errorStatus = mapStore.draw.addFeatures([feat]).filter((status) => {
+        const errorStatus = mapStore.draw.addFeatures([feat as GeoJSONStoreFeatures]).filter((status) => {
             return !status.valid;
         });
 
@@ -851,9 +787,9 @@ function editGeometry(featid: string) {
 
         mapStore.draw.selectFeature(cot.id);
     } catch (err) {
-        cotStore.hidden.delete(cot.id);
+        await mapStore.worker.db.unhide(cot.id);
         mapStore.draw.setMode('static');
-        updateCOT();
+        mapStore.updateCOT();
         mapStore.drawOptions.mode = 'static';
         mapStore.draw.stop();
 
@@ -861,152 +797,32 @@ function editGeometry(featid: string) {
     }
 }
 
-async function updateCOT() {
-    try {
-        const diff = cotStore.diff();
+async function mountMap(): Promise<void> {
+    if (!mapRef.value) throw new Error('Map Element could not be found - Please refresh the page and try again');
+    await mapStore.init(mapRef.value);
 
-        if (
-            (diff.add && diff.add.length)
-            || (diff.remove && diff.remove.length)
-            || (diff.update && diff.update.length)
-        ) {
-            const source = mapStore.map.getSource('-1') as GeoJSONSource
-            if (source) source.updateData(diff);
-        }
-
-        if (locked.value.length && cotStore.has(locked.value[locked.value.length - 1])) {
-            let featid = locked.value[locked.value.length - 1];
-            if (featid) {
-                const feat = cotStore.get(featid);
-                if (feat && feat.geometry.type === "Point") {
-                    const flyTo = {
-                        center: feat.properties.center as LngLatLike,
-                        speed: Infinity
-                    };
-                    mapStore.map.flyTo(flyTo);
-
-                    if (mapStore.radial.mode) {
-                        mapStore.radial.x = mapStore.container ? mapStore.container.clientWidth / 2 : 0;
-                        mapStore.radial.y = mapStore.container ? mapStore.container.clientHeight / 2 : 0;
-                    }
-                }
-            }
-        }
-    } catch (err) {
-        console.error(err);
+    // Eventually make a sprite URL part of the overlay so KMLs can load a sprite package & add paging support
+    const iconsets = await std('/api/iconset') as IconsetList;
+    for (const iconset of iconsets.items) {
+        mapStore.map.addSprite(iconset.uid, String(stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=${iconset.uid}&alt=true`)))
     }
-}
 
-function mountMap(): Promise<void> {
     return new Promise((resolve) => {
-        if (!mapRef.value) throw new Error('Map Element could not be found - Please refresh the page and try again');
-        mapStore.init(mapRef.value);
-
         mapStore.map.once('idle', async () => {
-            if (profileStore.profile && profileStore.profile.display_projection === 'globe') {
+            const profile = await mapStore.worker.profile.load();
+
+            if (profile.display_projection === 'globe') {
                 mapStore.map.setProjection({ type: "globe" });
             }
 
-            // Eventually make a sprite URL part of the overlay so KMLs can load a sprite package & add paging support
-            const iconsets = await std('/api/iconset') as IconsetList;
-            for (const iconset of iconsets.items) {
-                mapStore.map.addSprite(iconset.uid, String(stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=${iconset.uid}&alt=true`)))
-            }
+            await mapStore.worker.db.updateImages(mapStore.map.listImages());
 
             await mapStore.initOverlays();
-            mapStore.initDraw();
-
-            cotStore.add(profileStore.CoT());
-
-            mapStore.draw.on('deselect', async () => {
-                if (!mapStore.edit) return;
-
-                // @ts-expect-error There is currently no getFeature API
-                const feat = mapStore.draw._store.store[mapStore.edit.id];
-                delete feat.properties.center;
-
-                cotStore.hidden.delete(mapStore.edit.id);
-
-                mapStore.edit = undefined
-
-                mapStore.draw.setMode('static');
-                mapStore.drawOptions.mode = 'static';
-                mapStore.draw.stop();
-
-                cotStore.cots.delete(feat.id);
-                cotStore.add(feat);
-                await updateCOT();
-            })
-
-            mapStore.draw.on('finish', async (id, context) => {
-                if (context.action === "draw") {
-                    if (mapStore.draw.getMode() === 'select' || mapStore.edit) {
-                        return;
-                    } else if (mapStore.draw.getMode() === 'freehand') {
-                        // @ts-expect-error There is currently no getFeature API
-                        const geometry = mapStore.draw._store.store[id].geometry;
-                        mapStore.draw.removeFeatures([id]);
-                        mapStore.draw.setMode('static');
-                        mapStore.drawOptions.mode = 'static';
-                        mapStore.draw.stop();
-
-                        cotStore.touching(geometry).forEach((feat) => {
-                            mapStore.selected.set(feat.id, feat);
-                        })
-
-                        return;
-                    }
-
-                    // @ts-expect-error There is currently no getFeature API
-                    const geometry = mapStore.draw._store.store[id].geometry;
-
-                    const now = new Date();
-                    const feat: Feature = {
-                        id: String(id),
-                        type: 'Feature',
-                        path: '/',
-                        properties: {
-                            id: String(id),
-                            type: 'u-d-p',
-                            how: 'h-g-i-g-o',
-                            archived: true,
-                            callsign: 'New Feature',
-                            time: now.toISOString(),
-                            start: now.toISOString(),
-                            stale: new Date(now.getTime() + 3600).toISOString(),
-                            center: [0,0]
-                        },
-                        geometry
-                    };
-
-                    if (
-                        mapStore.draw.getMode() === 'polygon'
-                        || mapStore.draw.getMode() === 'angled-rectangle'
-                        || mapStore.draw.getMode() === 'sector'
-                    ) {
-                        feat.properties.type = 'u-d-f';
-                    } else if (mapStore.draw.getMode() === 'linestring') {
-                        feat.properties.type = 'u-d-f';
-                    } else if (mapStore.draw.getMode() === 'point') {
-                        feat.properties.type = mapStore.drawOptions.pointMode || 'u-d-p';
-                        feat.properties["marker-opacity"] = 1;
-                        feat.properties["marker-color"] = '#00FF00';
-                    }
-
-                    mapStore.draw.removeFeatures([id]);
-                    mapStore.draw.setMode('static');
-                    mapStore.drawOptions.mode = 'static';
-                    mapStore.draw.stop();
-                    await cotStore.add(feat);
-                    await updateCOT();
-                }
-            });
-
-            profileStore.setupTimer();
+            await mapStore.initDraw();
 
             timer.value = setInterval(async () => {
                 if (!mapStore.map) return;
-                await updateCOT();
+                await mapStore.updateCOT();
             }, 500);
 
             return resolve();

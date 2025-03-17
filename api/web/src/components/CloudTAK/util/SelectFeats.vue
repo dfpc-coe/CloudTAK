@@ -35,7 +35,7 @@
                     <DisplayFeature
                         :feature='select'
                         delete-action='emit'
-                        @delete='selected.delete(select.properties.id)'
+                        @delete='selected.delete(select.id)'
                     />
                 </div>
             </div>
@@ -137,8 +137,8 @@
 <script setup lang='ts'>
 import { ref } from 'vue';
 import DisplayFeature from './Feature.vue';
-import COT from '../../../../src/stores/base/cot.ts';
-import { useCOTStore } from '../../../../src/stores/cots.ts';
+import COT from '../../../base/cot.ts';
+import { useMapStore } from '../../../stores/map.ts';
 import {
     IconPackageExport,
     IconDotsVertical,
@@ -157,7 +157,7 @@ import Share from './Share.vue';
 import ShareToMission from './ShareToMission.vue';
 import ShareToPackage from './ShareToPackage.vue';
 
-const cotStore = useCOTStore();
+const mapStore = useMapStore();
 
 const props = defineProps<{
     selected: Map<string, COT>
@@ -177,7 +177,7 @@ async function deleteFeatures() {
     loading.value = true;
 
     for (const id of props.selected.keys()) {
-        await cotStore.delete(id);
+        await mapStore.worker.db.remove(id);
     }
 
     props.selected.clear()

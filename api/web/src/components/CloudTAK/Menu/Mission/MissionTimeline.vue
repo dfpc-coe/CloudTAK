@@ -103,7 +103,7 @@
 
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue';
-import Subscription from '../../../../stores/base/mission.ts';
+import Subscription from '../../../../base/subscription.ts';
 import type { Mission, MissionChanges } from '../../../../types.ts';
 import {
     IconSquarePlus,
@@ -120,7 +120,7 @@ import MenuTemplate from '../../util/MenuTemplate.vue';
 
 const props = defineProps<{
     mission: Mission,
-    token: string
+    token?: string
 }>();
 
 const error = ref<Error | undefined>();

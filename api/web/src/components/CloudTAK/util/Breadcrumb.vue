@@ -39,8 +39,8 @@
 
 <script setup lang='ts'>
 import { ref } from 'vue';
-import { std, stdurl } from '../../../../src/std.ts';
-import type { FeatureCollection } from '../../../../src/types.ts';
+import { std, stdurl } from '../../../std.ts';
+import type { FeatureCollection } from '../../../types.ts';
 import {
     IconRoute
 } from '@tabler/icons-vue';
@@ -49,9 +49,9 @@ import {
     TablerButton,
     TablerLoading
 } from '@tak-ps/vue-tabler';
-import { useCOTStore } from '../../../../src/stores/cots.ts';
+import { useMapStore } from '../../../stores/map.ts';
 
-const cotStore = useCOTStore();
+const mapStore = useMapStore();
 
 const props = defineProps<{
     uid: string
@@ -73,7 +73,7 @@ async function loadBreadcrumb() {
         const crumb = await std(url) as FeatureCollection;
 
         for (const feat of crumb.features) {
-            cotStore.add(feat)
+            await mapStore.worker.db.add(feat)
         }
 
         loading.value = false;

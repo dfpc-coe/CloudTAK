@@ -1,4 +1,5 @@
 import type { paths } from './derived-types.js';
+import type { Origin } from './base/cot.ts'
 
 /*
  * This file exports more human managable types from the
@@ -86,6 +87,7 @@ export type Basemap = paths["/basemap/{:basemapid}"]["patch"]["responses"]["200"
 export type BasemapList = paths["/basemap"]["get"]["responses"]["200"]["content"]["application/json"]
 
 export type Feature = paths["/profile/feature/{:id}"]["get"]["responses"]["200"]["content"]["application/json"] & {
+    origin?: Origin
     properties: {
         'id': string;
         'icon-opacity'?: number;

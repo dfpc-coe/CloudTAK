@@ -130,7 +130,6 @@ import {
     IconSettings,
 } from '@tabler/icons-vue';
 import Loading from './components/Loading.vue';
-import { useProfileStore } from './stores/profile.ts';
 import {
     TablerError
 } from '@tak-ps/vue-tabler';
@@ -234,12 +233,7 @@ export default defineComponent({
         refreshLogin: async function() {
             this.loading = true;
 
-            const success = await this.getLogin();
-
-            if (success) {
-                const profileStore = useProfileStore();
-                await profileStore.load();
-            }
+            await this.getLogin();
 
             this.loading = false;
         },

@@ -224,7 +224,7 @@ import {
     IconAccessPoint,
     IconAccessPointOff,
 } from '@tabler/icons-vue'
-import ConnectionStatus from './Connection/Status.vue';
+import ConnectionStatus from './Connection/StatusDot.vue';
 
 const route = useRoute();
 const router = useRouter();

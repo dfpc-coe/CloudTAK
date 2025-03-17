@@ -1,8 +1,19 @@
 <template>
     <div
-        class='page page-center cloudtak-gradient'
+        class='page page-center cloudtak-gradient position-relative'
         style='overflow: auto;'
     >
+        <img
+            class='position-absolute d-none d-md-inline'
+            style='
+                height: 48px;
+                bottom: 24px;
+                left: 24px;
+            '
+            src='/CloudTAKLogoText.svg'
+            alt='CloudTAK Logo'
+        >
+
         <div class='container container-normal py-4'>
             <div class='row align-items-center g-4'>
                 <div class='col-lg'>

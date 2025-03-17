@@ -227,6 +227,7 @@ const errors = ref<Record<string, string>>({
 
 const server = ref<Server>({
     id: 0,
+    version: '',
     created: new Date().toISOString(),
     updated: new Date().toISOString(),
     status: 'unconfigured',

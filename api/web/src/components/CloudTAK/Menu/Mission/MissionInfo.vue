@@ -8,7 +8,7 @@
         <div class='my-2'>
             <div class='row g-0 mx-2'>
                 <div class='col-12'>
-                    <div class='datagrid-title'>
+                    <div class='datagrid-title user-select-none'>
                         Created
                     </div>
                     <div
@@ -17,7 +17,7 @@
                     />
                 </div>
                 <div class='col-6'>
-                    <div class='datagrid-title'>
+                    <div class='datagrid-title user-select-none'>
                         Subscribers
                     </div>
 
@@ -32,7 +32,7 @@
                     />
                 </div>
                 <div class='col-6'>
-                    <div class='datagrid-title'>
+                    <div class='datagrid-title user-select-none'>
                         Contents
                     </div>
                     <div
@@ -41,7 +41,7 @@
                     />
                 </div>
                 <div class='col-12'>
-                    <div class='datagrid-title'>
+                    <div class='datagrid-title user-select-none'>
                         Groups (Channels)
                     </div>
                     <div
@@ -52,7 +52,7 @@
                     </div>
                 </div>
                 <div class='col-12'>
-                    <div class='datagrid-title'>
+                    <div class='datagrid-title user-select-none'>
                         Keywords
                     </div>
                     <div
@@ -68,7 +68,7 @@
                     </div>
                 </div>
                 <div class='col-12'>
-                    <div class='datagrid-title'>
+                    <div class='datagrid-title user-select-none'>
                         Description
                     </div>
                     <div
@@ -77,7 +77,7 @@
                     />
                 </div>
                 <div class='col-12'>
-                    <div class='datagrid-title'>
+                    <div class='datagrid-title user-select-none'>
                         Subscription
                     </div>
                     <button
@@ -132,12 +132,12 @@
 <script setup lang='ts'>
 import { ref, computed, onMounted } from 'vue';
 import type { MissionSubscriptions } from '../../../../types.ts'
-import Subscription from '../../../../stores/base/mission.ts';
+import Subscription from '../../../../base/subscription.ts';
 import {
     TablerLoading,
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../../util/MenuTemplate.vue';
-import Overlay from '../../../../stores/base/overlay.ts';
+import Overlay from '../../../../base/overlay.ts';
 import { useMapStore } from '../../../../stores/map.ts';
 const mapStore = useMapStore();
 

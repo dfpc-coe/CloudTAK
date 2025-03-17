@@ -53,8 +53,8 @@ import {
     TablerEnum,
     TablerLoading
 } from '@tak-ps/vue-tabler';
-import { useProfileStore } from '../../../../src/stores/profile.ts';
-const profileStore = useProfileStore();
+import { useMapStore } from '../../../../src/stores/map.ts';
+const mapStore = useMapStore();
 
 const props = defineProps({
     mode: {
@@ -90,8 +90,8 @@ const tak_groups = computed(() => {
 onMounted(async () => {
     loading.value = true;
     await fetchConfig();
-    await profileStore.load();
-    const p = JSON.parse(JSON.stringify(profileStore.profile));
+
+    const p = await mapStore.worker.profile.load();
 
     if (config.value.groups[p.tak_group]) {
         p.tak_group = `${p.tak_group} - ${config.value.groups[p.tak_group]}`;
@@ -110,7 +110,7 @@ async function updateProfile() {
 
     p.tak_group = p.tak_group.replace(/\s-\s.*$/, '') as Profile["tak_group"];
 
-    await profileStore.update({
+    await mapStore.worker.profile.update({
         tak_callsign: p.tak_callsign,
         tak_role: p.tak_role,
         tak_group: p.tak_group.replace(/\s-\s.*$/, '') as Profile["tak_group"],

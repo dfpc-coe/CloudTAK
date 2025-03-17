@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import { Static, Type } from '@sinclair/typebox'
 import { X509Certificate } from 'crypto';
 import Schema from '@openaddresses/batch-schema';
@@ -10,6 +11,8 @@ import TAKAPI, {
     APIAuthCertificate,
     APIAuthPassword
 } from '../lib/tak-api.js';
+
+const pkg = JSON.parse(String(fs.readFileSync(new URL('../package.json', import.meta.url))));
 
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/server', {
@@ -24,6 +27,7 @@ export default async function router(schema: Schema, config: Config) {
                     id: 1,
                     status: 'unconfigured',
                     name: 'Default Server',
+                    version: pkg.version,
                     created: new Date().toISOString(),
                     updated: new Date().toISOString(),
                     url: '',
@@ -42,6 +46,7 @@ export default async function router(schema: Schema, config: Config) {
                 if (user.access === AuthUserAccess.ADMIN) {
                     const response: Static<typeof ServerResponse> = {
                             status: 'configured',
+                            version: pkg.version,
                             ...config.server,
                             auth
                     };
@@ -56,6 +61,7 @@ export default async function router(schema: Schema, config: Config) {
                     res.json({
                         id: config.server.id,
                         status: 'configured',
+                        version: pkg.version,
                         name: config.server.name,
                         created: config.server.created,
                         updated: config.server.updated,
@@ -139,6 +145,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const response: Static<typeof ServerResponse> = {
                 status: 'configured',
+                version: pkg.version,
                 ...config.server,
                 auth
             };

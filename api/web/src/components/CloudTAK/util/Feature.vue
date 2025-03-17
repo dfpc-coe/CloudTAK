@@ -92,7 +92,7 @@
 </template>
 
 <script setup lang='ts'>
-import { computed, useTemplateRef, watch } from 'vue';
+import { ref, onMounted, useTemplateRef, watch } from 'vue';
 import Contact from './Contact.vue';
 import {
     TablerDelete
@@ -105,9 +105,7 @@ import {
     IconCone,
     IconPolygon,
 } from '@tabler/icons-vue';
-import { useCOTStore } from '../../../../src/stores/cots.ts';
-const cotStore = useCOTStore();
-import { useMapStore } from '../../../../src/stores/map.ts';
+import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();
 
 const props = defineProps({
@@ -135,16 +133,17 @@ const props = defineProps({
 
 const emit = defineEmits(['delete']);
 
-const isZoomable = computed(() => {
-    const cot = cotStore.get(props.feature.id, {
+const isZoomable = ref(false);
+
+const canvas = useTemplateRef<HTMLCanvasElement>('imgCanvas');
+
+onMounted(async () => {
+    const cot = await mapStore.worker.db.get(props.feature.id, {
         mission: true
     })
 
-    if (cot) return true;
-    return false;
-});
-
-const canvas = useTemplateRef<HTMLCanvasElement>('imgCanvas');
+    isZoomable.value = cot ? true : false;
+})
 
 watch(canvas, async () => {
     if (!canvas.value) return;
@@ -177,7 +176,7 @@ watch(canvas, async () => {
 
 async function deleteCOT() {
     if (props.deleteAction === 'delete') {
-        await cotStore.delete(props.feature.id);
+        await mapStore.worker.db.remove(props.feature.id);
     } else {
         emit('delete');
     }
@@ -186,7 +185,7 @@ async function deleteCOT() {
 async function flyTo() {
     if (!isZoomable.value) return;
 
-    const cot = cotStore.get(props.feature.id, {
+    const cot = await mapStore.worker.db.get(props.feature.id, {
         mission: true
     });
 

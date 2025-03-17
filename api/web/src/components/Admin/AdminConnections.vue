@@ -104,7 +104,7 @@ import {
     IconRefresh,
     IconPlus,
 } from '@tabler/icons-vue'
-import Status from '../Connection/Status.vue';
+import Status from '../Connection/StatusDot.vue';
 
 export default {
     name: 'LayerAdmin',
