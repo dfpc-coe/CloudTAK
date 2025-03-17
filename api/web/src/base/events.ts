@@ -13,6 +13,8 @@ export enum WorkerMessage {
 
     Connection_Open = 'connection:open',
     Connection_Close = 'connection:close',
+
+    Mission_Change_Feature = 'mission:change:feature',
 }
 
 export enum LocationState {

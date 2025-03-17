@@ -2,7 +2,7 @@ import { toRaw } from 'vue';
 import type Atlas from './atlas.ts';
 import { std, stdurl } from '../std.ts';
 import { WorkerMessage, LocationState } from '../base/events.ts'
-import type { Feature, Group, Profile, Profile_Update } from '../types.ts';
+import type { Feature, Group, Server, Profile, Profile_Update } from '../types.ts';
 
 export type TAKNotification = {
     type: string;
@@ -27,6 +27,7 @@ export default class AtlasProfile {
 
     channels: Array<Group>;
     profile: Profile | null;
+    server: Server | null;
 
     constructor(atlas: Atlas) {
         this.atlas = atlas;
@@ -49,6 +50,7 @@ export default class AtlasProfile {
 
         await Promise.all([
             this.load(),
+            this.loadServer(),
             this.loadChannels()
         ])
 
@@ -137,6 +139,16 @@ export default class AtlasProfile {
             };
 
         }
+    }
+
+    async loadServer(): Promise<Server> {
+        if (!this.server) {
+            this.server = await std('/api/server', {
+                token: this.atlas.token
+            }) as Server;
+        }
+
+        return this.server;
     }
 
     async load(): Promise<Profile> {

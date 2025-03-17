@@ -496,11 +496,20 @@
                         />
                     </div>
                 </div>
-                <div v-else-if='["home", "home-menu"].includes(String(route.name))'>
+                <div
+                    v-else-if='["home", "home-menu"].includes(String(route.name))'
+                    class='d-flex justify-content-center'
+                >
                     <StatusDot
-                        class='mx-2 my-2'
+                        class='mx-2 mt-2 mb-1'
                         :status='mapStore.isOpen ? "success" : "fail"'
                         :dark='true'
+                    />
+                </div>
+                <div class='d-flex justify-content-center pb-1'>
+                    <div
+                        class='subheader text-white'
+                        v-text='version'
                     />
                 </div>
             </div>
@@ -536,6 +545,7 @@ const route = useRoute();
 const router = useRouter();
 
 const mapStore = useMapStore();
+const version = ref('');
 const username = ref<string>('Username')
 const isSystemAdmin = ref<boolean>(false)
 const isAgencyAdmin = ref<boolean>(false)
@@ -545,6 +555,7 @@ defineProps({
 })
 
 onMounted(async () => {
+    version.value = (await mapStore.worker.profile.loadServer()).version;
     username.value = await mapStore.worker.profile.username();
     isSystemAdmin.value = await mapStore.worker.profile.isSystemAdmin();
     isAgencyAdmin.value = await mapStore.worker.profile.isAgencyAdmin();
