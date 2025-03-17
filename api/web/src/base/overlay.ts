@@ -38,9 +38,10 @@ export default class Overlay {
 
     static async create(
         map: Map,
-        body: ProfileOverlay_Create,
+        body: ProfileOverlay | ProfileOverlay_Create,
         opts: {
-            skipSave: boolean;
+            internal?: boolean;
+            skipSave?: boolean;
             clickable?: Array<{ id: string; type: string }>;
             before?: string;
         } = {}
@@ -65,13 +66,17 @@ export default class Overlay {
                 body: ov
             }) as ProfileOverlay;
 
-            const overlay = new Overlay(map, ov, opts);
+            const overlay = new Overlay(map, ov, {
+                internal: opts.internal
+            });
 
             await overlay.init(opts);
 
             return overlay;
         } else {
-            const overlay = new Overlay(map, body, opts);
+            const overlay = new Overlay(map, body as ProfileOverlay, {
+                internal: opts.internal
+            });
 
             await overlay.init(opts);
 
@@ -97,9 +102,9 @@ export default class Overlay {
             url: '',
             created: new Date().toISOString(),
             updated: new Date().toISOString(),
-            token: null,
+            token: undefined,
             mode: 'internal',
-            mode_id: null,
+            mode_id: undefined,
             styles: body.styles || [],
             pos: 3,
         }, {
@@ -112,12 +117,13 @@ export default class Overlay {
     }
 
     static async load(map: Map, id: number): Promise<Overlay> {
-        const overlay = await std(`/api/profile/overlay/${id}`);
-        await Overlay.create(map, overlay as ProfileOverlay, {
+        const remote = await std(`/api/profile/overlay/${id}`) as ProfileOverlay;
+
+        const ov = await Overlay.create(map, remote, {
             skipSave: true
         });
 
-        return overlay;
+        return ov;
     }
 
     constructor(map: Map, overlay: ProfileOverlay, opts: {
