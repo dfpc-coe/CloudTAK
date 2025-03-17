@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v7.14.0 - 2025-03-17
+
+- :rocket: Show CloudTAK Logo instead of COTAK on configure page
+
 ### v7.13.0 - 2025-03-17
 
 - :tada: Rewrite of frontend to use WebWorker
