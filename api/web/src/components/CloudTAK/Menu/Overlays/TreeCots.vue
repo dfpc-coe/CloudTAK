@@ -363,6 +363,15 @@ async function refresh() {
     const remoteGroups = await mapStore.worker.db.groups();
     const remoteMarkers = await mapStore.worker.db.markers();
 
+    for (const marker of Object.keys(treeState.value.markers)) {
+        if (marker.startsWith('_')) continue;
+
+        if (!remoteMarkers.includes(marker)) {
+            delete treeState.value.markers[marker];
+            delete markers.value[marker];
+        }
+    }
+
     for (const marker of remoteMarkers) {
         markers.value[marker] = new Set();
 
@@ -375,6 +384,15 @@ async function refresh() {
         }
 
         treeState.value.markers[marker]._loading = false;
+    }
+
+    for (const path of Object.keys(treeState.value.paths)) {
+        if (marker.startsWith('_')) continue;
+
+        if (!remotePaths.includes(ath)) {
+            delete treeState.value.paths[path];
+            delete paths.value[path];
+        }
     }
 
     for (const path of remotePaths) {
