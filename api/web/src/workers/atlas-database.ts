@@ -292,7 +292,7 @@ export default class AtlasDatabase {
         const cots = await this.filter(filter, opts);
 
         const all = [];
-        for (const cot in cots) {
+        for (const cot of cots.values()) {
             all.push(this.remove(cot.id));
         }
 
