@@ -236,7 +236,7 @@
                         </template>
                     </template>
                     <template v-else>
-                        <div class='ms-3'>
+                        <div class='d-flex align-items-center py-2 ps-2 ms-2 hover-button'>
                             <IconChevronRight
                                 v-if='!treeState.paths[path]._shown'
                                 :size='20'
@@ -259,7 +259,7 @@
                             />
                             <span
                                 class='mx-2'
-                                v-text='path'
+                                v-text='path.replace(/(^\/|\/$)/g, "")'
                             />
                             <div
                                 v-if='props.element.id === "cots"'
@@ -271,6 +271,19 @@
                                     @click='deletePath(props.element, path)'
                                 />
                             </div>
+                        </div>
+                        <div class='ms-3' >
+                            <TablerLoading
+                                v-if='treeState.paths[path]._loading'
+                                :compact='true'
+                            />
+                            <template v-else>
+                                <Feature
+                                    v-for='cot of paths[path]'
+                                    :key='cot.id'
+                                    :feature='cot'
+                                />
+                            </template>
                         </div>
                     </template>
                 </div>
@@ -343,7 +356,9 @@ watch(treeState.value, async () => {
 
 async function refresh() {
     rebuilding.value = true;
-    const remotePaths = (await mapStore.worker.db.paths()).map(p => p.path);
+    const remotePaths = (await mapStore.worker.db.paths()).map(p => p.path).sort((a, b) => {
+        return a === '/' ? 1 : -1;
+    });
     const remoteGroups = await mapStore.worker.db.groups();
     const remoteMarkers = await mapStore.worker.db.markers();
 
@@ -439,6 +454,7 @@ async function deleteFeatures(path) {
         });
     }
 
+    await refresh();
     loading.value = false;
 }
 
@@ -454,6 +470,7 @@ async function deletePath(layer, path) {
         throw err;
     }
 
+    await refresh();
     loading.value = false;
 }
 </script>
