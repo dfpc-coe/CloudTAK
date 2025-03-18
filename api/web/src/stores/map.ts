@@ -21,7 +21,7 @@ import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 import type Atlas from '../workers/atlas.ts';
 import { CloudTAKTransferHandler } from '../workers/atlas.ts';
 
-import type { ProfileOverlay, Basemap, APIList, Feature } from '../types.ts';
+import type { ProfileOverlay, Basemap, APIList, Feature, IconsetList } from '../types.ts';
 import type { Polygon, Position } from 'geojson';
 import type { LngLat, LngLatLike, Point, MapMouseEvent, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl';
 
@@ -335,6 +335,20 @@ export const useMapStore = defineStore('cloudtak', {
                 console.error('Browser does not appear to support Notifications');
             }
 
+            const sprite = [{
+                id: 'default',
+                url: String(stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=default`))
+            }]
+
+            // Eventually make a sprite URL part of the overlay so KMLs can load a sprite package & add paging support
+            const iconsets = await std('/api/iconset?limit=100') as IconsetList;
+            for (const iconset of iconsets.items) {
+                sprite.push({
+                    id: iconset.uid,
+                    url: String(stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=${iconset.uid}&alt=true`))
+                });
+            }
+
             const init: mapgl.MapOptions = {
                 container: this.container,
                 hash: true,
@@ -348,10 +362,7 @@ export const useMapStore = defineStore('cloudtak', {
                 style: {
                     version: 8,
                     glyphs: String(stdurl('/fonts')) + '/{fontstack}/{range}.pbf',
-                    sprite: [{
-                        id: 'default',
-                        url: String(stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=default`))
-                    }],
+                    sprite,
                     sources: {
                         '-1': {
                             type: 'geojson',
