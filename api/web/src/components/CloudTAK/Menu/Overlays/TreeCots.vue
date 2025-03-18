@@ -356,7 +356,7 @@ watch(treeState.value, async () => {
 
 async function refresh() {
     rebuilding.value = true;
-    const remotePaths = (await mapStore.worker.db.paths()).map(p => p.path).sort((a, b) => {
+    const remotePaths = (await mapStore.worker.db.paths()).map(p => p.path).sort((a) => {
         return a === '/' ? 1 : -1;
     });
     const remoteGroups = await mapStore.worker.db.groups();
