@@ -139,6 +139,7 @@ const props = defineProps({
 
 const emit = defineEmits(['delete']);
 
+const isDeleted = ref(false);
 const isZoomable = ref(false);
 
 const canvas = useTemplateRef<HTMLCanvasElement>('imgCanvas');
@@ -181,6 +182,8 @@ watch(canvas, async () => {
 })
 
 async function deleteCOT() {
+    isDeleted.value = true;
+
     if (props.deleteAction === 'delete') {
         await mapStore.worker.db.remove(props.feature.id);
     } else {
@@ -189,7 +192,7 @@ async function deleteCOT() {
 }
 
 async function flyTo() {
-    if (!isZoomable.value) return;
+    if (!isZoomable.value || isDeleted.value) return;
 
     const cot = await mapStore.worker.db.get(props.feature.id, {
         mission: true
