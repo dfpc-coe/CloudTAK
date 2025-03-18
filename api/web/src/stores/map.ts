@@ -782,9 +782,10 @@ export const useMapStore = defineStore('cloudtak', {
                         this.drawOptions.mode = 'static';
                         draw.stop();
 
-                        (await this.worker.db.touching(feat.geometry as Polygon)).forEach((feat) => {
-                            this.selected.set(feat.id, feat);
-                        })
+                        const touching = await this.worker.db.touching(feat.geometry as Polygon);
+                        for (const cot of touching.values()) {
+                            this.selected.set(cot.id, cot);
+                        }
 
                         return;
                     }
