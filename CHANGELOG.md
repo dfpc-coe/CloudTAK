@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v7.16.0 - 2025-03-18
+
+- :rocket: Move default iconset loading into initial Map Config Payload
+
 ### v7.15.0 - 2025-03-18
 
 - :tada: Introduce initial Features menu for more intuitive personal features management
