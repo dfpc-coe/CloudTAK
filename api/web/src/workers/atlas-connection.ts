@@ -4,7 +4,7 @@
 
 import { stdurl } from '../std.ts';
 import type Atlas from './atlas.ts';
-import { WorkerMessage } from '../base/events.ts';
+import { WorkerMessageType } from '../base/events.ts';
 import type { Feature } from '../types.ts';
 
 export default class AtlasConnection {
@@ -40,7 +40,7 @@ export default class AtlasConnection {
         this.ws = new WebSocket(url);
 
         this.ws.addEventListener('open', () => {
-            this.atlas.postMessage({ type: WorkerMessage.Connection_Open });
+            this.atlas.postMessage({ type: WorkerMessageType.Connection_Open });
             this.isOpen = true;
         });
 
@@ -54,7 +54,7 @@ export default class AtlasConnection {
                 this.connect(connection);
             }
 
-            this.atlas.postMessage({ type: WorkerMessage.Connection_Close });
+            this.atlas.postMessage({ type: WorkerMessageType.Connection_Close });
             this.isOpen = false;
         });
 
@@ -89,7 +89,7 @@ export default class AtlasConnection {
                 const chat = (body.data as Feature).properties;
                 if (chat.chat) {
                     self.postMessage({
-                        type: WorkerMessage.Notification,
+                        type: WorkerMessageType.Notification,
                         body: {
                             type: 'Chat',
                             name: `${chat.chat.senderCallsign} to ${chat.chat.chatroom} says:`,

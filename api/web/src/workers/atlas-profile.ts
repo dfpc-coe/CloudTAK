@@ -1,7 +1,7 @@
 import { toRaw } from 'vue';
 import type Atlas from './atlas.ts';
 import { std, stdurl } from '../std.ts';
-import { WorkerMessage, LocationState } from '../base/events.ts'
+import { WorkerMessageType, LocationState } from '../base/events.ts'
 import type { Feature, Group, Server, Profile, Profile_Update } from '../types.ts';
 
 export type TAKNotification = {
@@ -125,7 +125,7 @@ export default class AtlasProfile {
 
     pushNotification(notification: TAKNotification): void {
         this.atlas.postMessage({
-            type: WorkerMessage.Notification,
+            type: WorkerMessageType.Notification,
             body: notification
         });
 
@@ -159,7 +159,7 @@ export default class AtlasProfile {
             }) as Profile;
 
             this.atlas.postMessage({
-                type: WorkerMessage.Profile_Callsign,
+                type: WorkerMessageType.Profile_Callsign,
                 body: { callsign: profile.tak_callsign }
             });
 
@@ -172,7 +172,7 @@ export default class AtlasProfile {
             this.location.coordinates = this.profile.tak_loc.coordinates;
 
             this.atlas.postMessage({
-                type: WorkerMessage.Profile_Location_Source,
+                type: WorkerMessageType.Profile_Location_Source,
                 body: { source: LocationState.Preset }
             });
         }
@@ -224,9 +224,9 @@ export default class AtlasProfile {
 
     postChannelStatus(): void {
         if (this.hasNoChannels()) {
-            this.atlas.postMessage({ type: WorkerMessage.Channels_None });
+            this.atlas.postMessage({ type: WorkerMessageType.Channels_None });
         } else {
-            this.atlas.postMessage({ type: WorkerMessage.Channels_List });
+            this.atlas.postMessage({ type: WorkerMessageType.Channels_List });
         }
     }
 
@@ -255,14 +255,14 @@ export default class AtlasProfile {
 
         if (body.tak_callsign) {
             this.atlas.postMessage({
-                type: WorkerMessage.Profile_Callsign,
+                type: WorkerMessageType.Profile_Callsign,
                 body: { callsign: body.tak_callsign }
             });
         }
 
         if (body.display_projection) {
             this.atlas.postMessage({
-                type: WorkerMessage.Profile_Location_Source,
+                type: WorkerMessageType.Profile_Location_Source,
                 body: { source: this.location.source }
             });
         }

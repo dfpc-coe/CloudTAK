@@ -1,7 +1,7 @@
 import { std } from '../std.ts';
 import { bbox } from '@turf/bbox'
 import { isEqual } from '@react-hookz/deep-equal';
-import { WorkerMessage } from'./events.ts'
+import { WorkerMessageType } from'./events.ts'
 import type { Remote } from 'comlink';
 import type Atlas from '../workers/atlas.ts';
 import pointOnFeature from '@turf/point-on-feature';
@@ -359,7 +359,7 @@ export default class COT {
 
     async flyTo(): Promise<void> {
         await this._atlas.postMessage({
-            type: WorkerMessage.Map_FlyTo,
+            type: WorkerMessageType.Map_FlyTo,
             body: {
                 bounds: this.bounds(),
                 options: {
