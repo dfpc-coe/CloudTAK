@@ -40,6 +40,7 @@
                 >
                     <div
                         role='menuitem'
+                        :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
@@ -67,6 +68,7 @@
                     </div>
                     <div
                         role='menuitem'
+                        :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
@@ -94,6 +96,7 @@
                     </div>
                     <div
                         role='menuitem'
+                        :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
@@ -121,6 +124,7 @@
                     </div>
                     <div
                         role='menuitem'
+                        :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
@@ -148,6 +152,7 @@
                     </div>
                     <div
                         role='menuitem'
+                        :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
@@ -175,6 +180,7 @@
                     </div>
                     <div
                         role='menuitem'
+                        :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
@@ -202,6 +208,7 @@
                     </div>
                     <div
                         role='menuitem'
+                        :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
@@ -229,6 +236,7 @@
                     </div>
                     <div
                         role='menuitem'
+                        :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
@@ -256,6 +264,7 @@
                     </div>
                     <div
                         role='menuitem'
+                        :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
@@ -283,6 +292,7 @@
                     </div>
                     <div
                         role='menuitem'
+                        :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
@@ -310,6 +320,7 @@
                     </div>
                     <div
                         role='menuitem'
+                        :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
@@ -337,6 +348,7 @@
                     </div>
                     <div
                         role='menuitem'
+                        :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
@@ -366,6 +378,7 @@
                     <div
                         v-if='isAgencyAdmin || isSystemAdmin'
                         role='menuitem'
+                        :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
@@ -400,6 +413,7 @@
                     <div
                         v-if='isSystemAdmin'
                         role='menuitem'
+                        :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
@@ -434,6 +448,7 @@
                     <div
                         v-if='isSystemAdmin'
                         role='menuitem'
+                        :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
@@ -467,6 +482,7 @@
                     </div>
                     <div
                         role='menuitem'
+                        :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
