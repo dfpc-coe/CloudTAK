@@ -531,13 +531,15 @@ export default class AtlasDatabase {
         return Array.from(groups);
     }
 
-    pathFeatures(path: string, store?: Map<string, COT>): Set<COT> {
+    pathFeatures(path?: string, store?: Map<string, COT>): Set<COT> {
         if (!store) store = this.cots;
 
         const feats: Set<COT> = new Set();
 
         for (const value of store.values()) {
-            if (value.path === path && value.properties.archived) {
+            if (path && value.path === path && value.properties.archived) {
+                feats.add(value);
+            } else if (!path && value.properties.archived) {
                 feats.add(value);
             }
         }

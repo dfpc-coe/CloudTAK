@@ -4,23 +4,32 @@
         :loading='loading || !mapStore.isLoaded'
     >
         <template #default>
-            <TreeCots
-                :element='overlay'
+            <Feature
+                v-for='cot of cots.values()'
+                :key='cot.id'
+                :feature='cot'
             />
         </template>
     </MenuTemplate>
 </template>
 
 <script setup lang='ts'>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import COT from '../../../base/cot.ts';
 import MenuTemplate from '../util/MenuTemplate.vue';
-import TreeCots from './Overlays/TreeCots.vue';
-import { useMapStore } from '../../../../src/stores/map.ts';
+import Feature from '../util/Feature.vue';
+import { useMapStore } from '../../../stores/map.ts';
 
 const mapStore = useMapStore();
-const router = useRouter();
 
-const loading = ref(false);
+const cots = ref<Set<COT>>(new Set());
+const loading = ref(true);
+
+onMounted(async () => {
+    cots.value = await mapStore.worker.db.pathFeatures();
+
+    loading.value = false
+});
 
 </script>
