@@ -2,7 +2,7 @@
 * ConnectionStore - Maintain the WebSocket connection with CloudTAK Server
 */
 
-import { std, stdurl } from '../std.ts';
+import { std } from '../std.ts';
 import { LngLatBounds } from 'maplibre-gl'
 import jsonata from 'jsonata';
 import type Atlas from './atlas.ts';

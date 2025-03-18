@@ -301,7 +301,6 @@ import {
 import Contact from '../../util/Contact.vue';
 import Feature from '../../util/Feature.vue';
 import ContactPuck from '../../util/ContactPuck.vue';
-import { std, stdurl } from  '../../../../std.ts'
 import DeleteModal from './DeleteModal.vue';
 import {
     IconMapPin,
@@ -387,9 +386,9 @@ async function refresh() {
     }
 
     for (const path of Object.keys(treeState.value.paths)) {
-        if (marker.startsWith('_')) continue;
+        if (path.startsWith('_')) continue;
 
-        if (!remotePaths.includes(ath)) {
+        if (!remotePaths.includes(path)) {
             delete treeState.value.paths[path];
             delete paths.value[path];
         }
