@@ -462,8 +462,7 @@ import WarnConfiguration from './util/WarnConfiguration.vue';
 import CoordInput from './CoordInput.vue';
 import type { GeoJSONStoreFeatures } from 'terra-draw'
 import type { MapGeoJSONFeature, LngLatLike } from 'maplibre-gl';
-import { std, stdurl } from '../../std.ts';
-import type { IconsetList, Feature } from '../../types.ts';
+import type { Feature } from '../../types.ts';
 import CloudTAKFeatView from './FeatView.vue';
 import {
     IconSearch,
@@ -800,12 +799,6 @@ async function editGeometry(featid: string) {
 async function mountMap(): Promise<void> {
     if (!mapRef.value) throw new Error('Map Element could not be found - Please refresh the page and try again');
     await mapStore.init(mapRef.value);
-
-    // Eventually make a sprite URL part of the overlay so KMLs can load a sprite package & add paging support
-    const iconsets = await std('/api/iconset') as IconsetList;
-    for (const iconset of iconsets.items) {
-        mapStore.map.addSprite(iconset.uid, String(stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=${iconset.uid}&alt=true`)))
-    }
 
     return new Promise((resolve) => {
         mapStore.map.once('idle', async () => {
