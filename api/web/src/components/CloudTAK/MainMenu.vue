@@ -46,6 +46,7 @@
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/features")'
+                        @keyup.enter='router.push("/menu/features")'
                     >
                         <IconMapPin
                             v-tooltip='{
@@ -72,6 +73,7 @@
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/overlays")'
+                        @keyup.enter='router.push("/menu/overlays")'
                     >
                         <IconBoxMultiple
                             v-tooltip='{
@@ -98,6 +100,7 @@
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/contacts")'
+                        @keyup.enter='router.push("/menu/contacts")'
                     >
                         <IconUsers
                             v-tooltip='{
@@ -124,6 +127,7 @@
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/basemaps")'
+                        @keyup.enter='router.push("/menu/basemaps")'
                     >
                         <IconMap
                             v-tooltip='{
@@ -150,6 +154,7 @@
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/missions")'
+                        @keyup.enter='router.push("/menu/missions")'
                     >
                         <IconAmbulance
                             v-tooltip='{
@@ -176,6 +181,7 @@
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/packages")'
+                        @keyup.enter='router.push("/menu/packages")'
                     >
                         <IconPackages
                             v-tooltip='{
@@ -202,6 +208,7 @@
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/channels")'
+                        @keyup.enter='router.push("/menu/channels")'
                     >
                         <IconAffiliate
                             v-tooltip='{
@@ -228,6 +235,7 @@
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/videos")'
+                        @keyup.enter='router.push("/menu/videos")'
                     >
                         <IconVideo
                             v-tooltip='{
@@ -254,6 +262,7 @@
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/chats")'
+                        @keyup.enter='router.push("/menu/chats")'
                     >
                         <IconMessage
                             v-tooltip='{
@@ -280,6 +289,7 @@
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/files")'
+                        @keyup.enter='router.push("/menu/files")'
                     >
                         <IconFiles
                             v-tooltip='{
@@ -306,6 +316,7 @@
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/imports")'
+                        @keyup.enter='router.push("/menu/imports")'
                     >
                         <IconFileImport
                             v-tooltip='{
@@ -332,6 +343,7 @@
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/iconsets")'
+                        @keyup.enter='router.push("/menu/iconsets")'
                     >
                         <IconPhoto
                             v-tooltip='{
@@ -360,6 +372,7 @@
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/connections")'
+                        @keyup.enter='router.push("/menu/connections")'
                     >
                         <IconNetwork
                             v-tooltip='{
@@ -393,6 +406,7 @@
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/debugger")'
+                        @keyup.enter='router.push("/menu/debugger")'
                     >
                         <IconBug
                             v-tooltip='{
@@ -426,6 +440,7 @@
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/admin")'
+                        @keyup.enter='router.push("/admin")'
                     >
                         <IconServerCog
                             v-tooltip='{
@@ -458,6 +473,7 @@
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/settings")'
+                        @keyup.enter='router.push("/menu/settings")'
                     >
                         <IconSettings
                             v-tooltip='{
@@ -512,6 +528,7 @@
                         style='width: 40px;'
                         class='py-2 px-2 ms-auto d-flex hover-dark cursor-pointer'
                         @click.stop.prevent='logout'
+                        @keyup.enter='logout'
                     >
                         <IconLogout
                             v-tooltip='"Logout"'
