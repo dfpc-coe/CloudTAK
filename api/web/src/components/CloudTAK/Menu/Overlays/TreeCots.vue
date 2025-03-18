@@ -401,13 +401,14 @@ async function deleteMarkers(marker) {
     loading.value = true;
 
     if (marker) {
-        treeState.value.markers[marker] = false;
+        treeState.value.markers[marker]._loading = true;
     }
 
     for (const feat of await mapStore.worker.db.markerFeatures(marker)) {
         await mapStore.worker.db.delete(feat.id);
     }
 
+    await refresh();
     loading.value = false;
 }
 
@@ -415,7 +416,7 @@ async function deleteFeatures(path) {
     loading.value = true;
 
     if (path) {
-        treeState.value.paths[path] = false;
+        treeState.value.paths[path]._loading = false;
     }
 
     for (const feat of await mapStore.worker.db.pathFeatures(path)) {
