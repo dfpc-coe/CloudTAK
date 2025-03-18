@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v7.15.0 - 2025-03-18
+
+- :tada: Introduce initial Features menu for more intuitive personal features management
+- :rocket: Rewrite COT Tree explorer to use async background calls
+
 ### v7.14.0 - 2025-03-17
 
 - :rocket: Show CloudTAK Logo instead of COTAK on configure page
