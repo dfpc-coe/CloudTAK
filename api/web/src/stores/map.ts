@@ -293,13 +293,13 @@ export const useMapStore = defineStore('cloudtak', {
 
                 navigator.geolocation.watchPosition((position) => {
                     if (position.coords.accuracy <= 50) {
-                        this.channel.postMessage(JSON.stringify({
+                        this.channel.postMessage({
                             type: WorkerMessage.Profile_Location_Coordinates,
                             body: {
                                 accuracy: position.coords.accuracy,
                                 coordinates: [ position.coords.longitude, position.coords.latitude ]
                             }
-                        }))
+                        })
                     }
                 }, (err) => {
                     if (err.code !== 0) {
@@ -385,16 +385,8 @@ export const useMapStore = defineStore('cloudtak', {
 
             this._map = map;
 
-            this.channel.onmessage = (event) => {
-                let msg;
-                try {
-                    msg = JSON.parse(event.data)
-
-                    if (!msg.type) return;
-                } catch (err) {
-                    console.error(`Failed to parse event: ${event.data}`, err);
-                }
-
+            this.channel.onmessage = (msg) => {
+                if (!msg || !msg.type) return;
                 if (msg.type === WorkerMessage.Map_FlyTo) {
                     if (msg.body.options.speed === null) {
                         msg.body.options.speed = Infinity;

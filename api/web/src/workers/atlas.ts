@@ -146,23 +146,16 @@ export default class Atlas {
         this.sync = new BroadcastChannel('sync');
         this.token = '';
 
-        this.channel.onmessage = (event) => {
-            let msg;
-            try {
-                msg = JSON.parse(event.data)
-
-                if (!msg.type) return;
-            } catch (err) {
-                console.error(`Failed to parse event: ${event.data}`, err);
-            }
+        this.channel.onmessage = (msg) => {
+            if (!msg || !msg.type) return;
 
             if (msg.type === WorkerMessage.Profile_Location_Coordinates) {
-                this.channel.postMessage({
+                this.postMessage({
                     type: WorkerMessage.Profile_Location_Source,
                     body: {
                         source: LocationState.Live
                     }
-                })            
+                })
 
                 this.profile.location = {
                     source: LocationState.Live,
@@ -176,7 +169,7 @@ export default class Atlas {
         type: WorkerMessage,
         body?: object
     }): Promise<void> {
-        return this.channel.postMessage(JSON.stringify(msg));
+        return this.channel.postMessage(msg);
     }
 
     async init(authToken: string) {
