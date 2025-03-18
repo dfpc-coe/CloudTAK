@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v7.17.0 - 2025-03-18
+
+- :bug: Update Lasso mode to expect a Set
+
 ### v7.16.0 - 2025-03-18
 
 - :rocket: Move default iconset loading into initial Map Config Payload
