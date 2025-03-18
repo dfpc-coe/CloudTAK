@@ -268,7 +268,7 @@
                                 <TablerDelete
                                     :size='20'
                                     displaytype='icon'
-                                    @click='deletePath(props.element, path)'
+                                    @click='deleteFeatures(path)'
                                 />
                             </div>
                         </div>
@@ -425,10 +425,14 @@ async function deleteMarkers(marker) {
 
     if (marker) {
         treeState.value.markers[marker]._loading = true;
-    }
-
-    for (const feat of await mapStore.worker.db.markerFeatures(marker)) {
-        await mapStore.worker.db.delete(feat.id);
+        await mapStore.worker.db.filterDelete(`
+            ($exists(properties.archived) = false or ($exists(properties.archived) and properties.archived = false)) and properties.type = ${marker}
+        `);
+    } else {
+        treeState.value.markers._loading = true;
+        await mapStore.worker.db.filterDelete(`
+            ($exists(properties.archived) = false or ($exists(properties.archived) and properties.archived = false))
+        `);
     }
 
     await refresh();
@@ -439,35 +443,23 @@ async function deleteFeatures(path) {
     loading.value = true;
 
     if (path) {
-        treeState.value.paths[path]._loading = false;
-    }
+        treeState.value.paths[path]._loading = true;
 
-    for (const feat of await mapStore.worker.db.pathFeatures(path)) {
-        await mapStore.worker.db.delete(feat.id);
-    }
+        await mapStore.worker.db.filterDelete(`
+            $exists(properties.archived)
+            and $exists(path)
+            and properties.archived = true
+            and path = ${path}
+        `);
+    } else {
+        treeState.value.paths._loading = true;
 
-    if (path) {
-        const url = stdurl('/api/profile/feature');
-        url.searchParams.append('path', path);
-        await std(url, {
-            method: 'DELETE'
-        });
-    }
-
-    await refresh();
-    loading.value = false;
-}
-
-async function deletePath(layer, path) {
-    if (layer.id !== 'cots') return;
-
-    loading.value = true;
-
-    try {
-        await mapStore.worker.db.deletePath(path);
-    } catch (err) {
-        loading.value = false;
-        throw err;
+        await mapStore.worker.db.filterDelete(`
+            $exists(properties.archived)
+            and $exists(path)
+            and properties.archived = true
+            and path = ${path}
+        `);
     }
 
     await refresh();

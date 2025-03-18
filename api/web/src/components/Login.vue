@@ -4,7 +4,8 @@
         style='overflow: auto;'
     >
         <img
-            class='position-absolute d-none d-md-inline'
+            class='position-absolute d-none d-md-inline user-select-none'
+            draggable='false'
             style='
                 height: 48px;
                 bottom: 24px;
@@ -27,6 +28,8 @@
                                     <img
                                         :src='config && config.logo ? config.logo : "/logo.png"'
                                         style='height: 150px;'
+                                        draggable='false'
+                                        class='user-select-none'
                                         alt='CloudTAK System Logo'
                                     >
                                 </div>
