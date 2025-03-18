@@ -21,7 +21,7 @@ import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 import type Atlas from '../workers/atlas.ts';
 import { CloudTAKTransferHandler } from '../workers/atlas.ts';
 
-import type { ProfileOverlay, Basemap, APIList, Feature } from '../types.ts';
+import type { ProfileOverlay, Basemap, APIList, Feature, IconsetList } from '../types.ts';
 import type { Polygon, Position } from 'geojson';
 import type { LngLat, LngLatLike, Point, MapMouseEvent, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl';
 
