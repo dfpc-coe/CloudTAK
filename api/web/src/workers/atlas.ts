@@ -3,7 +3,8 @@
 */
 
 import COT from '../base/cot.ts';
-import { WorkerMessage, LocationState } from '../base/events.ts';
+import { WorkerMessageType, LocationState } from '../base/events.ts';
+import type { WorkerMessage } from '../base/events.ts';
 import Subscription from '../base/subscription.ts';
 import * as Comlink from 'comlink';
 import AtlasProfile from './atlas-profile.ts';
@@ -146,23 +147,17 @@ export default class Atlas {
         this.sync = new BroadcastChannel('sync');
         this.token = '';
 
-        this.channel.onmessage = (event) => {
-            let msg;
-            try {
-                msg = JSON.parse(event.data)
+        this.channel.onmessage = (event: MessageEvent<WorkerMessage>) => {
+            const msg = event.data;
+            if (!msg || !msg.type) return;
 
-                if (!msg.type) return;
-            } catch (err) {
-                console.error(`Failed to parse event: ${event.data}`, err);
-            }
-
-            if (msg.type === WorkerMessage.Profile_Location_Coordinates) {
-                this.channel.postMessage({
-                    type: WorkerMessage.Profile_Location_Source,
+            if (msg.type === WorkerMessageType.Profile_Location_Coordinates) {
+                this.postMessage({
+                    type: WorkerMessageType.Profile_Location_Source,
                     body: {
                         source: LocationState.Live
                     }
-                })            
+                })
 
                 this.profile.location = {
                     source: LocationState.Live,
@@ -172,11 +167,8 @@ export default class Atlas {
         }
     }
 
-    async postMessage(msg: {
-        type: WorkerMessage,
-        body?: object
-    }): Promise<void> {
-        return this.channel.postMessage(JSON.stringify(msg));
+    async postMessage(msg: WorkerMessage): Promise<void> {
+        return this.channel.postMessage(msg);
     }
 
     async init(authToken: string) {

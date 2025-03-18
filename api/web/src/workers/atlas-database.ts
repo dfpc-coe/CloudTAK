@@ -9,7 +9,7 @@ import type Atlas from './atlas.ts';
 import Subscription from '../base/subscription.ts';
 import { coordEach } from '@turf/meta'
 import COT, { OriginMode } from '../base/cot.ts';
-import { WorkerMessage } from '../base/events.ts';
+import { WorkerMessageType } from '../base/events.ts';
 import type { GeoJSONSourceDiff, LngLatLike } from 'maplibre-gl';
 import { booleanWithin } from '@turf/boolean-within';
 import type { Polygon } from 'geojson';
@@ -404,7 +404,7 @@ export default class AtlasDatabase {
 
             if (updateGuid) {
                 this.atlas.postMessage({
-                    type: WorkerMessage.Mission_Change_Feature,
+                    type: WorkerMessageType.Mission_Change_Feature,
                     body: {
                         guid: updateGuid
                     }
@@ -450,7 +450,7 @@ export default class AtlasDatabase {
             sub.cots.set(String(cot.id), cot);
 
             this.atlas.postMessage({
-                type: WorkerMessage.Mission_Change_Feature,
+                type: WorkerMessageType.Mission_Change_Feature,
                 body: {
                     guid: mission_guid
                 }
