@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v7.18.0 - 2025-03-18
+
+- :rocket: Use Structured Clone on UI BroadcastChannel messages
+
 ### v7.17.0 - 2025-03-18
 
 - :bug: Update Lasso mode to expect a Set
