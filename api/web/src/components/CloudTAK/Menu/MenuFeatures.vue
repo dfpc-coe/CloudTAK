@@ -15,7 +15,6 @@
 
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
 import COT from '../../../base/cot.ts';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import Feature from '../util/Feature.vue';
