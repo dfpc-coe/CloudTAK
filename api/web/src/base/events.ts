@@ -1,4 +1,4 @@
-export enum WorkerMessage {
+export enum WorkerMessageType {
     Notification = 'cloudtak:notification',
 
     Map_FlyTo = 'cloudtak:map:flyto',
@@ -15,6 +15,13 @@ export enum WorkerMessage {
     Connection_Close = 'connection:close',
 
     Mission_Change_Feature = 'mission:change:feature',
+}
+
+export type WorkerMessage = {
+    type: WorkerMessageType,
+    // TODO Strongly type this
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    body?: any
 }
 
 export enum LocationState {
