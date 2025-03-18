@@ -272,7 +272,7 @@
                                 />
                             </div>
                         </div>
-                        <div class='ms-3' >
+                        <div class='ms-3'>
                             <TablerLoading
                                 v-if='treeState.paths[path]._loading'
                                 :compact='true'
