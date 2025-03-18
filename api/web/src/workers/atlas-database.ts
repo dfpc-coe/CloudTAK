@@ -318,12 +318,12 @@ export default class AtlasDatabase {
     /**
      * Return CoTs touching a given polygon
      */
-    async touching(poly: Polygon): Promise<COT[]> {
-        const within: COT[] = [];
+    async touching(poly: Polygon): Promise<Set<COT>> {
+        const within: Set<COT> = new Set();
 
         for (const cot of this.cots.values()) {
             if (booleanWithin(cot.as_feature(), poly)) {
-                within.push(cot)
+                within.add(cot)
             }
         }
 
