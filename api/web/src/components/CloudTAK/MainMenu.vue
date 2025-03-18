@@ -40,20 +40,22 @@
                 >
                     <div
                         role='menuitem'
+                        :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
-                        @click='router.push("/menu/settings")'
+                        @click='router.push("/menu/features")'
+                        @keyup.enter='router.push("/menu/features")'
                     >
-                        <IconSettings
+                        <IconMapPin
                             v-tooltip='{
-                                content: "Display Settings",
+                                content: "Your Features",
                                 placement: "left",
                             }'
                             :tabindex='compact ? 0 : undefined'
-                            title='Open Settings Panel'
+                            title='Open Features Panel'
                             :class='{ "mx-2": compact }'
                             :size='32'
                             stroke='1'
@@ -62,16 +64,18 @@
                             v-if='!compact'
                             class='mx-2'
                             style='font-size: 18px;'
-                        >Settings</span>
+                        >Your Features</span>
                     </div>
                     <div
                         role='menuitem'
+                        :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/overlays")'
+                        @keyup.enter='router.push("/menu/overlays")'
                     >
                         <IconBoxMultiple
                             v-tooltip='{
@@ -92,12 +96,14 @@
                     </div>
                     <div
                         role='menuitem'
+                        :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/contacts")'
+                        @keyup.enter='router.push("/menu/contacts")'
                     >
                         <IconUsers
                             v-tooltip='{
@@ -118,12 +124,14 @@
                     </div>
                     <div
                         role='menuitem'
+                        :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/basemaps")'
+                        @keyup.enter='router.push("/menu/basemaps")'
                     >
                         <IconMap
                             v-tooltip='{
@@ -144,12 +152,14 @@
                     </div>
                     <div
                         role='menuitem'
+                        :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/missions")'
+                        @keyup.enter='router.push("/menu/missions")'
                     >
                         <IconAmbulance
                             v-tooltip='{
@@ -170,12 +180,14 @@
                     </div>
                     <div
                         role='menuitem'
+                        :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/packages")'
+                        @keyup.enter='router.push("/menu/packages")'
                     >
                         <IconPackages
                             v-tooltip='{
@@ -196,12 +208,14 @@
                     </div>
                     <div
                         role='menuitem'
+                        :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/channels")'
+                        @keyup.enter='router.push("/menu/channels")'
                     >
                         <IconAffiliate
                             v-tooltip='{
@@ -222,12 +236,14 @@
                     </div>
                     <div
                         role='menuitem'
+                        :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/videos")'
+                        @keyup.enter='router.push("/menu/videos")'
                     >
                         <IconVideo
                             v-tooltip='{
@@ -248,12 +264,14 @@
                     </div>
                     <div
                         role='menuitem'
+                        :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/chats")'
+                        @keyup.enter='router.push("/menu/chats")'
                     >
                         <IconMessage
                             v-tooltip='{
@@ -274,12 +292,14 @@
                     </div>
                     <div
                         role='menuitem'
+                        :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/files")'
+                        @keyup.enter='router.push("/menu/files")'
                     >
                         <IconFiles
                             v-tooltip='{
@@ -300,12 +320,14 @@
                     </div>
                     <div
                         role='menuitem'
+                        :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/imports")'
+                        @keyup.enter='router.push("/menu/imports")'
                     >
                         <IconFileImport
                             v-tooltip='{
@@ -326,12 +348,14 @@
                     </div>
                     <div
                         role='menuitem'
+                        :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/iconsets")'
+                        @keyup.enter='router.push("/menu/iconsets")'
                     >
                         <IconPhoto
                             v-tooltip='{
@@ -354,12 +378,14 @@
                     <div
                         v-if='isAgencyAdmin || isSystemAdmin'
                         role='menuitem'
+                        :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/connections")'
+                        @keyup.enter='router.push("/menu/connections")'
                     >
                         <IconNetwork
                             v-tooltip='{
@@ -387,12 +413,14 @@
                     <div
                         v-if='isSystemAdmin'
                         role='menuitem'
+                        :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/debugger")'
+                        @keyup.enter='router.push("/menu/debugger")'
                     >
                         <IconBug
                             v-tooltip='{
@@ -420,12 +448,14 @@
                     <div
                         v-if='isSystemAdmin'
                         role='menuitem'
+                        :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
                             "py-2 px-3 hover-dark": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/admin")'
+                        @keyup.enter='router.push("/admin")'
                     >
                         <IconServerCog
                             v-tooltip='{
@@ -449,6 +479,34 @@
                         >
                             Admin
                         </span>
+                    </div>
+                    <div
+                        role='menuitem'
+                        :tabindex='compact ? undefined : 0'
+                        class='cursor-pointer col-12 d-flex align-items-center'
+                        :class='{
+                            "py-2 px-3 hover-dark": !compact,
+                            "py-1 px-2 hover-button": compact
+                        }'
+                        @click='router.push("/menu/settings")'
+                        @keyup.enter='router.push("/menu/settings")'
+                    >
+                        <IconSettings
+                            v-tooltip='{
+                                content: "Display Settings",
+                                placement: "left",
+                            }'
+                            :tabindex='compact ? 0 : undefined'
+                            title='Open Settings Panel'
+                            :class='{ "mx-2": compact }'
+                            :size='32'
+                            stroke='1'
+                        />
+                        <span
+                            v-if='!compact'
+                            class='mx-2'
+                            style='font-size: 18px;'
+                        >Settings</span>
                     </div>
                 </div>
             </template>
@@ -486,6 +544,7 @@
                         style='width: 40px;'
                         class='py-2 px-2 ms-auto d-flex hover-dark cursor-pointer'
                         @click.stop.prevent='logout'
+                        @keyup.enter='logout'
                     >
                         <IconLogout
                             v-tooltip='"Logout"'
@@ -498,19 +557,20 @@
                 </div>
                 <div
                     v-else-if='["home", "home-menu"].includes(String(route.name))'
-                    class='d-flex justify-content-center'
                 >
-                    <StatusDot
-                        class='mx-2 mt-2 mb-1'
-                        :status='mapStore.isOpen ? "success" : "fail"'
-                        :dark='true'
-                    />
-                </div>
-                <div class='d-flex justify-content-center pb-1'>
-                    <div
-                        class='subheader text-white'
-                        v-text='version'
-                    />
+                    <div class='d-flex justify-content-center'>
+                        <StatusDot
+                            class='mx-2 mt-2 mb-1'
+                            :status='mapStore.isOpen ? "success" : "fail"'
+                            :dark='true'
+                        />
+                    </div>
+                    <div class='d-flex justify-content-center mb-1'>
+                        <div
+                            class='subheader text-white'
+                            v-text='version'
+                        />
+                    </div>
                 </div>
             </div>
         </div>
@@ -527,6 +587,7 @@ import {
     IconUsers,
     IconVideo,
     IconPhoto,
+    IconMapPin,
     IconLogout,
     IconMessage,
     IconNetwork,

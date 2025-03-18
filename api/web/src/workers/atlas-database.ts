@@ -2,7 +2,7 @@
 * ConnectionStore - Maintain the WebSocket connection with CloudTAK Server
 */
 
-import { std, stdurl } from '../std.ts';
+import { std } from '../std.ts';
 import { LngLatBounds } from 'maplibre-gl'
 import jsonata from 'jsonata';
 import type Atlas from './atlas.ts';
@@ -283,6 +283,22 @@ export default class AtlasDatabase {
         }
     }
 
+    async filterDelete(
+        filter: string,
+        opts: {
+            mission?: boolean,
+        } = {}
+    ): Promise<void> {
+        const cots = await this.filter(filter, opts);
+
+        const all = [];
+        for (const cot of cots.values()) {
+            all.push(this.remove(cot.id));
+        }
+
+        await Promise.allSettled(all);
+    }
+
     async paths(store?: Map<string, COT>): Promise<Array<NestedArray>> {
         if (!store) store = this.cots;
 
@@ -493,26 +509,6 @@ export default class AtlasDatabase {
         return;
     }
 
-    async deletePath(
-        path: string,
-        store?: Map<string, COT>
-    ): Promise<void> {
-        if (!store) store = this.cots;
-
-        const url = stdurl('/api/profile/feature')
-        url.searchParams.append('path', path);
-        await std(url, {
-            token: this.atlas.token,
-            method: 'DELETE'
-        });
-
-        for (const [key, value] of store) {
-            if (value.path && value.path.startsWith(path)) {
-                this.remove(key, true);
-            }
-        }
-    }
-
     /**
      * Returns if the CoT is present in the store given the ID
      */
@@ -531,18 +527,20 @@ export default class AtlasDatabase {
         return Array.from(groups);
     }
 
-    pathFeatures(path: string, store?: Map<string, COT>): Array<COT> {
+    pathFeatures(path?: string, store?: Map<string, COT>): Set<COT> {
         if (!store) store = this.cots;
 
         const feats: Set<COT> = new Set();
 
         for (const value of store.values()) {
-            if (value.path === path && value.properties.archived) {
+            if (path && value.path === path && value.properties.archived) {
+                feats.add(value);
+            } else if (!path && value.properties.archived) {
                 feats.add(value);
             }
         }
 
-        return Array.from(feats);
+        return feats;
     }
 
     markers(store?: Map<string, COT>): Array<string> {
@@ -558,7 +556,7 @@ export default class AtlasDatabase {
         return Array.from(markers);
     }
 
-    markerFeatures(marker: string, store?: Map<string, COT>): Array<COT> {
+    markerFeatures(marker: string, store?: Map<string, COT>): Set<COT> {
         if (!store) store = this.cots;
 
         const feats: Set<COT> = new Set();
@@ -572,10 +570,10 @@ export default class AtlasDatabase {
             }
         }
 
-        return Array.from(feats);
+        return feats;
     }
 
-    contacts(group?: string, store?: Map<string, COT>): Array<COT> {
+    contacts(group?: string, store?: Map<string, COT>): Set<COT> {
         if (!store) store = this.cots;
 
         const contacts: Set<COT> = new Set();
@@ -592,6 +590,6 @@ export default class AtlasDatabase {
             })
         }
 
-        return list;
+        return new Set(list);
     }
 }
