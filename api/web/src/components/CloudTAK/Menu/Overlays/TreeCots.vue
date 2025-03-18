@@ -356,6 +356,7 @@ watch(treeState.value, async () => {
 
 async function refresh() {
     rebuilding.value = true;
+
     const remotePaths = (await mapStore.worker.db.paths()).map(p => p.path).sort((a) => {
         return a === '/' ? 1 : -1;
     });
@@ -372,6 +373,7 @@ async function refresh() {
         if (treeState.value.markers[marker]._shown) {
             markers.value[marker] = await mapStore.worker.db.markerFeatures(marker);
         }
+
         treeState.value.markers[marker]._loading = false;
     }
 
@@ -426,13 +428,15 @@ async function deleteMarkers(marker) {
     if (marker) {
         treeState.value.markers[marker]._loading = true;
         await mapStore.worker.db.filterDelete(`
-            ($exists(properties.archived) = false or ($exists(properties.archived) and properties.archived = false)) and properties.type = ${marker}
+            ($exists(properties.archived) = false or ($exists(properties.archived) and properties.archived = false)) and properties.type = '${marker}'
         `);
+        treeState.value.markers[marker]._loading = false;
     } else {
         treeState.value.markers._loading = true;
         await mapStore.worker.db.filterDelete(`
             ($exists(properties.archived) = false or ($exists(properties.archived) and properties.archived = false))
         `);
+        treeState.value.markers._loading = false;
     }
 
     await refresh();
@@ -449,8 +453,10 @@ async function deleteFeatures(path) {
             $exists(properties.archived)
             and $exists(path)
             and properties.archived = true
-            and path = ${path}
+            and path = '${path}'
         `);
+
+        treeState.value.paths[path]._loading = false;
     } else {
         treeState.value.paths._loading = true;
 
@@ -458,8 +464,9 @@ async function deleteFeatures(path) {
             $exists(properties.archived)
             and $exists(path)
             and properties.archived = true
-            and path = ${path}
         `);
+
+        treeState.value.paths._loading = false;
     }
 
     await refresh();
