@@ -29,6 +29,11 @@
                 width='20'
                 height='20'
             />
+            <IconPointFilled
+                v-else-if='feature.properties && feature.properties.type === "u-d-p"'
+                :size='20'
+                :color='feature.properties["marker-color"]'
+            />
             <!-- Icons are in order of most preferred display => Least-->
             <IconVideo
                 v-else-if='feature.properties && feature.properties.type === "b-m-p-s-p-loc"'
@@ -99,6 +104,7 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     IconVideo,
+    IconPointFilled,
     IconMapPin,
     IconTrash,
     IconLine,
