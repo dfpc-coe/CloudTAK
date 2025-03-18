@@ -12,7 +12,8 @@ import { distance } from '@turf/distance';
 import * as Comlink from 'comlink';
 import AtlasWorker from '../workers/atlas.ts?worker&url';
 import COT from '../base/cot.ts';
-import { WorkerMessage, LocationState }from '../base/events.ts';
+import { WorkerMessageType, LocationState }from '../base/events.ts';
+import type { WorkerMessage }from '../base/events.ts';
 import Overlay from '../base/overlay.ts';
 import { std, stdurl } from '../std.js';
 import mapgl from 'maplibre-gl'
@@ -293,13 +294,13 @@ export const useMapStore = defineStore('cloudtak', {
 
                 navigator.geolocation.watchPosition((position) => {
                     if (position.coords.accuracy <= 50) {
-                        this.channel.postMessage(JSON.stringify({
-                            type: WorkerMessage.Profile_Location_Coordinates,
+                        this.channel.postMessage({
+                            type: WorkerMessageType.Profile_Location_Coordinates,
                             body: {
                                 accuracy: position.coords.accuracy,
                                 coordinates: [ position.coords.longitude, position.coords.latitude ]
                             }
-                        }))
+                        })
                     }
                 }, (err) => {
                     if (err.code !== 0) {
@@ -385,39 +386,33 @@ export const useMapStore = defineStore('cloudtak', {
 
             this._map = map;
 
-            this.channel.onmessage = (event) => {
-                let msg;
-                try {
-                    msg = JSON.parse(event.data)
+            this.channel.onmessage = (event: MessageEvent<WorkerMessage>) => {
+                const msg = event.data;
 
-                    if (!msg.type) return;
-                } catch (err) {
-                    console.error(`Failed to parse event: ${event.data}`, err);
-                }
-
-                if (msg.type === WorkerMessage.Map_FlyTo) {
+                if (!msg || !msg.type) return;
+                if (msg.type === WorkerMessageType.Map_FlyTo) {
                     if (msg.body.options.speed === null) {
                         msg.body.options.speed = Infinity;
                     }
 
                     map.fitBounds(msg.body.bounds, msg.body.options);
-                } else if (msg.type === WorkerMessage.Profile_Location_Source) {
+                } else if (msg.type === WorkerMessageType.Profile_Location_Source) {
                     this.location = msg.body.source as LocationState;
-                } else if (msg.type === WorkerMessage.Profile_Callsign) {
+                } else if (msg.type === WorkerMessageType.Profile_Callsign) {
                     this.callsign = msg.body.callsign;
-                } else if (msg.type === WorkerMessage.Map_Projection) {
+                } else if (msg.type === WorkerMessageType.Map_Projection) {
                     map.setProjection(msg.body);
-                } else if (msg.type === WorkerMessage.Connection_Open) {
+                } else if (msg.type === WorkerMessageType.Connection_Open) {
                     this.isOpen = true;
-                } else if (msg.type === WorkerMessage.Connection_Close) {
+                } else if (msg.type === WorkerMessageType.Connection_Close) {
                     this.isOpen = false;
-                } else if (msg.type === WorkerMessage.Channels_None) {
+                } else if (msg.type === WorkerMessageType.Channels_None) {
                     this.hasNoChannels = true;
-                } else if (msg.type === WorkerMessage.Channels_List) {
+                } else if (msg.type === WorkerMessageType.Channels_List) {
                     this.hasNoChannels = false;
-                } else if (msg.type === WorkerMessage.Notification) {
+                } else if (msg.type === WorkerMessageType.Notification) {
                     this.notifications.push(msg.body as TAKNotification);
-                } else if (msg.type === WorkerMessage.Mission_Change_Feature) {
+                } else if (msg.type === WorkerMessageType.Mission_Change_Feature) {
                     this.loadMission(msg.body.guid);
                 } else {
                     console.error('Unknown Event:', msg);
