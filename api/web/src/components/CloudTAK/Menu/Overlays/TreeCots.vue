@@ -363,13 +363,21 @@ async function refresh() {
     for (const path of remotePaths) {
         paths.value[path] = new Set();
 
-        if (!treeState.value.paths[path]) {
+        if (treeState.value.paths[path] === undefined) {
             treeState.value.paths[path] = { _shown: false, _loading: false };
         }
+    }
 
+    if (treeState.value.paths._shown && !treeState.value.paths['/']._shown) {
+        treeState.value.paths['/']._loading = true;
+        treeState.value.paths['/']._shown = true;
+    }
+
+    for (const path of remotePaths) {
         if (treeState.value.paths[path]._shown) {
             paths.value[path] = await mapStore.worker.db.pathFeatures(path);
         }
+
         treeState.value.paths[path]._loading = false;
     }
 
