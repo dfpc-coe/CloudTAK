@@ -283,6 +283,22 @@ export default class AtlasDatabase {
         }
     }
 
+    async filterDelete(
+        filter: string,
+        opts: {
+            mission?: boolean,
+        } = {}
+    ): Promise<void> {
+        const cots = await this.filter(filter, opts);
+
+        const all = [];
+        for (const cot in cots) {
+            all.push(this.remove(cot.id));
+        }
+
+        await Promise.allSettled(all);
+    }
+
     async paths(store?: Map<string, COT>): Promise<Array<NestedArray>> {
         if (!store) store = this.cots;
 
@@ -491,26 +507,6 @@ export default class AtlasDatabase {
         }
 
         return;
-    }
-
-    async deletePath(
-        path: string,
-        store?: Map<string, COT>
-    ): Promise<void> {
-        if (!store) store = this.cots;
-
-        const url = stdurl('/api/profile/feature')
-        url.searchParams.append('path', path);
-        await std(url, {
-            token: this.atlas.token,
-            method: 'DELETE'
-        });
-
-        for (const [key, value] of store) {
-            if (value.path && value.path.startsWith(path)) {
-                this.remove(key, true);
-            }
-        }
     }
 
     /**
