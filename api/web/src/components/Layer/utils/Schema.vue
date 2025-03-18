@@ -265,14 +265,12 @@ export default {
 
         if (this.schema.type === 'object' && this.schema.properties) {
             for (const key in this.schema.properties) {
-                if (!this.schema.properties[key].default) {
-                    if (!this.data[key] && this.schema.properties[key].type === 'array') {
-                        this.data[key] = [];
-                    } else if (!this.data[key] && this.schema.properties[key].type === 'boolean') {
-                        this.data[key] = false;
-                    } else if (!this.data[key] && this.schema.properties[key].type === 'string') {
-                        this.data[key] = '';
-                    }
+                if (!this.data[key] && this.schema.properties[key].type === 'array') {
+                    this.data[key] = this.schema.properties[key].default || [];
+                } else if (!this.data[key] && this.schema.properties[key].type === 'boolean') {
+                    this.data[key] = this.schema.properties[key].default || false;
+                } else if (!this.data[key] && this.schema.properties[key].type === 'string') {
+                    this.data[key] = this.schema.properties[key].default || '';
                 }
             }
         }
