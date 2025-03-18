@@ -63,6 +63,7 @@ import { std } from '../../std.ts';
 import QueryWeather from './Query/Weather.vue';
 import QueryReverse from './Query/Reverse.vue';
 import {
+    TablerAlert,
     TablerLoading,
     TablerIconButton
 } from '@tak-ps/vue-tabler';

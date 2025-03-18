@@ -43,7 +43,7 @@
                     <template v-for='file of files'>
                         <div class='col-4 px-2 py-2'>
                             <img
-                                v-if='[".png", ".jpg"].includes(file.ext)'
+                                v-if='[".png", ".jpg", "jpeg", "webp"].includes(file.ext)'
                                 :src='downloadAssetUrl(file)'
                                 :size='24'
                                 stroke='1'

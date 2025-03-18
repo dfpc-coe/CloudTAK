@@ -1,94 +1,101 @@
 <template>
-    <Contact
-        v-if='feature.properties.group'
-        class='px-2 py-2'
-        :button-chat='false'
-        :compact='compact'
-        :contact='{
-            "uid": feature.id,
-            "callsign": feature.properties.callsign,
-            "team": feature.properties.group.name,
-            "notes": ""
-        }'
-    />
-    <div
-        v-else
-        class='d-flex align-items-center px-3 py-2'
-        :class='{
-            "cursor-pointer": isZoomable,
-            "cursor-default": !isZoomable,
-            "hover-button": hover,
-            "py-2": !compact
-        }'
-        @click='flyTo'
-    >
-        <span class='me-2'>
-            <canvas
-                v-if='feature.properties.icon'
-                ref='imgCanvas'
-                width='20'
-                height='20'
-            />
-            <!-- Icons are in order of most preferred display => Least-->
-            <IconVideo
-                v-else-if='feature.properties && feature.properties.type === "b-m-p-s-p-loc"'
-                :size='20'
-                :color='feature.properties.stroke || "white"'
-                stroke='1'
-            />
-            <IconLine
-                v-else-if='feature.geometry && feature.geometry.type === "LineString"'
-                :size='20'
-                :color='feature.properties.stroke || "white"'
-                stroke='1'
-            />
-            <IconCone
-                v-else-if='feature.properties && feature.properties.sensor'
-                :size='20'
-                :color='feature.properties.stroke || "white"'
-                stroke='1'
-            />
-            <IconPolygon
-                v-else-if='feature.geometry && feature.geometry.type === "Polygon"'
-                :size='20'
-                :color='feature.properties.fill || "white"'
-                stroke='1'
-            />
-            <IconMapPin
-                v-else
-                :size='20'
-                stroke='1'
-            />
-        </span>
-        <div
-            class='text-truncate user-select-none'
-            :style='
-                deleteButton
-                    ? "width: calc(100% - 60px);"
-                    : "width: 100%;"
-            '
-            v-text='feature.properties.callsign || feature.properties.name || "Unnamed"'
+    <template v-if='!isDeleted'>
+        <Contact
+            v-if='feature.properties.group'
+            class='px-2 py-2'
+            :button-chat='false'
+            :compact='compact'
+            :contact='{
+                "uid": feature.id,
+                "callsign": feature.properties.callsign,
+                "team": feature.properties.group.name,
+                "notes": ""
+            }'
         />
-
         <div
-            v-if='deleteButton'
-            class='ms-auto btn-list hover-button-hidden'
+            v-else
+            class='d-flex align-items-center px-3 py-2'
+            :class='{
+                "cursor-pointer": isZoomable,
+                "cursor-default": !isZoomable,
+                "hover-button": hover,
+                "py-2": !compact
+            }'
+            @click='flyTo'
         >
-            <TablerDelete
-                v-if='deleteAction === "delete"'
-                :size='20'
-                displaytype='icon'
-                @delete='deleteCOT'
+            <span class='me-2'>
+                <canvas
+                    v-if='feature.properties.icon'
+                    ref='imgCanvas'
+                    width='20'
+                    height='20'
+                />
+                <IconPointFilled
+                    v-else-if='feature.properties && feature.properties.type === "u-d-p"'
+                    :size='20'
+                    :color='feature.properties["marker-color"]'
+                />
+                <!-- Icons are in order of most preferred display => Least-->
+                <IconVideo
+                    v-else-if='feature.properties && feature.properties.type === "b-m-p-s-p-loc"'
+                    :size='20'
+                    :color='feature.properties.stroke || "white"'
+                    stroke='1'
+                />
+                <IconLine
+                    v-else-if='feature.geometry && feature.geometry.type === "LineString"'
+                    :size='20'
+                    :color='feature.properties.stroke || "white"'
+                    stroke='1'
+                />
+                <IconCone
+                    v-else-if='feature.properties && feature.properties.sensor'
+                    :size='20'
+                    :color='feature.properties.stroke || "white"'
+                    stroke='1'
+                />
+                <IconPolygon
+                    v-else-if='feature.geometry && feature.geometry.type === "Polygon"'
+                    :size='20'
+                    :color='feature.properties.fill || "white"'
+                    stroke='1'
+                />
+                <IconMapPin
+                    v-else
+                    :size='20'
+                    stroke='1'
+                />
+            </span>
+            <div
+                class='text-truncate user-select-none'
+                :style='
+                    deleteButton
+                        ? "width: calc(100% - 60px);"
+                        : "width: 100%;"
+                '
+                v-text='feature.properties.callsign || feature.properties.name || "Unnamed"'
             />
-            <IconTrash
-                v-else
-                :size='20'
-                class='cursor-pointer'
-                stroke='1'
-                @click='deleteCOT'
-            />
+
+            <div
+                v-if='deleteButton'
+                class='ms-auto btn-list hover-button-hidden'
+            >
+                <TablerDelete
+                    v-if='deleteAction === "delete"'
+                    :size='20'
+                    displaytype='icon'
+                    @delete='deleteCOT'
+                />
+                <IconTrash
+                    v-else
+                    :size='20'
+                    class='cursor-pointer'
+                    stroke='1'
+                    @click='deleteCOT'
+                />
+            </div>
         </div>
-    </div>
+    </template>
 </template>
 
 <script setup lang='ts'>
@@ -99,6 +106,7 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     IconVideo,
+    IconPointFilled,
     IconMapPin,
     IconTrash,
     IconLine,
@@ -133,6 +141,8 @@ const props = defineProps({
 
 const emit = defineEmits(['delete']);
 
+const isDeleted = ref(false);
+const isDeleting = ref(false);
 const isZoomable = ref(false);
 
 const canvas = useTemplateRef<HTMLCanvasElement>('imgCanvas');
@@ -176,14 +186,19 @@ watch(canvas, async () => {
 
 async function deleteCOT() {
     if (props.deleteAction === 'delete') {
+        isDeleting.value = true;
+
         await mapStore.worker.db.remove(props.feature.id);
+
+        isDeleting.value = false;
+        isDeleted.value = true;
     } else {
         emit('delete');
     }
 }
 
 async function flyTo() {
-    if (!isZoomable.value) return;
+    if (!isZoomable.value || isDeleting.value || isDeleted.value) return;
 
     const cot = await mapStore.worker.db.get(props.feature.id, {
         mission: true
