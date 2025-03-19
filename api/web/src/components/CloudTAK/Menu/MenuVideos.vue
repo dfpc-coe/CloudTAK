@@ -228,6 +228,7 @@
     <VideoLeaseModal
         v-if='lease'
         :lease='lease'
+        :isSystemAdmin='isSystemAdmin'
         @close='lease = false'
         @refresh='fetchLeases'
     />
@@ -278,6 +279,7 @@ const loading = ref({
     leases: true
 });
 const lease = ref();
+const isSystemAdmin = ref(false);
 const leases = ref<VideoLeaseList>({ total: 0, items: [] });
 const connections = ref<VideoConnectionList>({ videoConnections: [] });
 const videos = ref<Set<COT>>(new Set())
@@ -287,6 +289,10 @@ watch(leasePaging.value, async () => {
 });
 
 onMounted(async () => {
+    if (await mapStore.worker.profile.isSystemAdmin()) {
+        isSystemAdmin.value = true;
+    }
+
     await fetchConnections();
     await fetchLeases();
 

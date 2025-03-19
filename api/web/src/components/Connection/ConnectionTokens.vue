@@ -24,12 +24,12 @@
         </div>
 
         <div style='min-height: 20vh; margin-bottom: 61px'>
+            <TablerLoading v-if='loading' />
             <TablerNone
-                v-if='!tokens.items.length'
+                v-else-if='!tokens.items.length'
                 :create='false'
                 label='Tokens'
             />
-            <TablerLoading v-else-if='loading' />
             <div
                 v-else
                 class='table-responsive'
