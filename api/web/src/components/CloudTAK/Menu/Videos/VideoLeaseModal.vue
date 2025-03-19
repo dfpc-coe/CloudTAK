@@ -372,10 +372,9 @@
 <script setup lang='ts'>
 import { std } from '../../../../std.ts';
 import CopyField from '../../util/CopyField.vue';
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch, onMounted, withDefaults } from 'vue';
 import type { VideoLease, VideoLeaseResponse, VideoLeaseProtocols } from '../../../../types.ts';
 import GroupSelect from '../../../util/GroupSelect.vue';
-import { useMapStore } from '../../../../stores/map.ts';
 import {
     IconRefresh,
     IconPencil,
@@ -397,9 +396,12 @@ import {
     TablerDelete
 } from '@tak-ps/vue-tabler'
 
-const props = defineProps<{
-    lease: VideoLease
-}>();
+const props = withDefaults(defineProps<{
+    lease: VideoLease,
+    isSystemAdmin: boolean
+}>(), {
+    isSystemAdmin: false
+});
 
 const emit = defineEmits([ 'close', 'refresh' ])
 
@@ -411,8 +413,6 @@ const wizard = ref(0);
 const protocols = ref<VideoLeaseProtocols>({});
 
 const channels = ref<string[]>([]);
-
-const mapStore = useMapStore();
 
 const durations = ref<Array<string>>(["16 Hours", "12 Hours", "6 Hours", "1 Hour"]);
 
@@ -439,7 +439,7 @@ const editLease = ref<{
 });
 
 onMounted(async () => {
-    if (await mapStore.worker.profile.isSystemAdmin()) {
+    if (props.isSystemAdmin) {
         durations.value.push('Permanent');
     }
 
