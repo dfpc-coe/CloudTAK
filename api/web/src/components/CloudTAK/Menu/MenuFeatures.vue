@@ -25,7 +25,7 @@
                     <IconFolder
                         class='mx-2'
                         :size='20'
-                        :stroke='2'
+                        stroke='2'
                     />
                     <span v-text='path.name.replace(/(^\/|\/$)/g, "")'/>
                 </div>
@@ -95,6 +95,7 @@ onMounted(async () => {
             return {
                 name: path,
                 opened: false,
+                loading: false,
                 cots: new Set()
             }
         });
