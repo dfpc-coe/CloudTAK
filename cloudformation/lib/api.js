@@ -164,10 +164,12 @@ export default {
                                 'sqs:SendMessageBatch',
                                 'sqs:ChangeMessageVisibility',
                                 'sqs:GetQueueUrl',
-                                'sqs:GetQueueAttributes'
+                                'sqs:GetQueueAttributes',
+                                'sqs:DeleteMessage'
                             ],
                             Resource: [
-                                cf.join(['arn:', cf.partition, ':sqs:', cf.region, ':', cf.accountId, ':', cf.getAtt('HookQueue', 'QueueName')])
+                                cf.join(['arn:', cf.partition, ':sqs:', cf.region, ':', cf.accountId, ':', cf.getAtt('HookQueue', 'QueueName')]),
+                                cf.join(['arn:', cf.partition, ':sqs:', cf.region, ':', cf.accountId, ':coe-etl-', cf.ref('Environment'), '-layer-*'])
                             ]
                         },{
                             Effect: 'Allow',
