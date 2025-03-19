@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v7.18.1 - 2025-03-19
+
+- :bug: Apply SQS Write Permissions to layer-* for outgoing COTs
+
 ### v7.18.0 - 2025-03-18
 
 - :rocket: Use Structured Clone on UI BroadcastChannel messages
