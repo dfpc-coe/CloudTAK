@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v7.18.2 - 2025-03-19
+
+- :bug: Video Lease Modal in Admin Page Broken: #547
+
 ### v7.18.1 - 2025-03-19
 
 - :bug: Apply SQS Write Permissions to layer-* for outgoing COTs
