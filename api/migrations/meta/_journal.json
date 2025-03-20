@@ -652,6 +652,20 @@
       "when": 1738724273479,
       "tag": "0092_late_toad_men",
       "breakpoints": true
+    },
+    {
+      "idx": 93,
+      "version": "7",
+      "when": 1742487900663,
+      "tag": "0093_wild_spectrum",
+      "breakpoints": true
+    },
+    {
+      "idx": 94,
+      "version": "7",
+      "when": 1742493516316,
+      "tag": "0094_striped_maginty",
+      "breakpoints": true
     }
   ]
 }

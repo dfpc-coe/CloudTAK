@@ -102,7 +102,7 @@
     <VideoLeaseModal
         v-if='modal'
         :lease='modal'
-        :isSystemAdmin='true'
+        :is-system-admin='true'
         @close='modal = undefined'
         @refresh='fetchList'
     />

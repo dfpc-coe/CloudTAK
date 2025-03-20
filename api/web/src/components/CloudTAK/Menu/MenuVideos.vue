@@ -176,10 +176,8 @@
                 >
                     <div class='row g-0 w-100'>
                         <div class='d-flex align-items-center w-100'>
-                            <IconVideo
-                                :size='32'
-                                stroke='1'
-                            />
+                            <VideoLeaseSourceType :source-type='l.source_type' />
+                        
                             <span
                                 class='mx-2'
                                 v-text='l.name'
@@ -228,7 +226,7 @@
     <VideoLeaseModal
         v-if='lease'
         :lease='lease'
-        :isSystemAdmin='isSystemAdmin'
+        :is-system-admin='isSystemAdmin'
         @close='lease = false'
         @refresh='fetchLeases'
     />
@@ -240,6 +238,7 @@ import VideoLeaseModal from './Videos/VideoLeaseModal.vue';
 import Feature from '../util/Feature.vue';
 import { std, stdurl } from '../../../std.ts';
 import COT from '../../../base/cot.ts';
+import VideoLeaseSourceType from '../util/VideoLeaseSourceType.vue';
 import type { VideoLease, VideoLeaseList, VideoConnectionList } from '../../../types.ts';
 import { useMapStore } from '../../../stores/map.ts';
 import { useVideoStore } from '../../../stores/videos.ts';
@@ -314,9 +313,9 @@ async function fetchLeases(): Promise<void> {
         loading.value.leases = true;
         error.value = undefined;
         const url = stdurl('/api/video/lease');
-        url.searchParams.append('filter', leasePaging.value.filter); 
-        url.searchParams.append('limit', String(leasePaging.value.limit)); 
-        url.searchParams.append('page', String(leasePaging.value.page)); 
+        url.searchParams.append('filter', leasePaging.value.filter);
+        url.searchParams.append('limit', String(leasePaging.value.limit));
+        url.searchParams.append('page', String(leasePaging.value.page));
         leases.value = await std(url) as VideoLeaseList
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
@@ -349,7 +348,6 @@ async function deleteLease(lease: VideoLease): Promise<void> {
         await fetchLeases();
     } catch (err) {
         loading.value.main = false;
-
         throw err;
     }
 }
