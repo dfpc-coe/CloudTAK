@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v7.20.2 - 2025-03-20
+
+- :bug: Ensure `skipSave` is respected in Atlas Database Worker `add()`
+- :bug: Ensure `VideoLease.source_type` & `VideoLease.source_model` are used on creation
+
 ### v7.20.1 - 2025-03-20
 
 - :bug: Remove empty SG policy to ensure CloudFormation Drift errors don't alarm
