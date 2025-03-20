@@ -124,7 +124,35 @@
                         v-model='editLease.name'
                         description='The human readable name of the Lease'
                         :disabled='disabled'
-                        label='Lease Name'
+                        label='Name'
+                    />
+                </div>
+                <div class='col-12 col-md-6'>
+                    <TablerEnum
+                        v-model='editLease.source_type'
+                        default='unknown'
+                        :options='[
+                            "unknown",
+                            "fixed",
+                            "vehicle",
+                            "screenshare",
+                            "personal",
+                            "rotor",
+                            "fixedwing",
+                            "uas-rotor",
+                            "uas-fixedwing"
+                        ]'
+                        :disabled='disabled'
+                        label='Source Type'
+                        description='The type of sensor that is broadcasting'
+                    />
+                </div>
+                <div class='col-12 col-md-6'>
+                    <TablerInput
+                        v-model='editLease.source_model'
+                        :disabled='disabled'
+                        label='Source Model'
+                        description='Model Information about the sensor or source'
                     />
                 </div>
                 <div class='col-12'>
@@ -133,7 +161,7 @@
                         v-model='editLease.duration'
                         :options='durations'
                         :disabled='disabled'
-                        label='Lease Duration'
+                        label='Duration'
                         description='Leases remain active on the server for the duration specified. Once the lease expires the lease can be renewed without the Lease URL changing'
                     />
                 </div>
@@ -178,7 +206,7 @@
                     class='col-12'
                 >
                     <div class='col-12 d-flex align-items-center mb-1'>
-                        <label>Lease Expiration</label>
+                        <label>Expiration</label>
 
                         <div class='ms-auto'>
                             <span
@@ -436,6 +464,8 @@ const editLease = ref<{
     name: '',
     duration: '16 Hours',
     channel: null,
+    source_type: 'unknown',
+    source_model: '',
     stream_user: '',
     stream_pass: '',
     read_user: '',
@@ -537,7 +567,9 @@ async function saveLease() {
                     secure: secure.value,
                     channel: channels.value.length ? channels.value[0] : null,
                     duration: editLease.value.duration === 'Permanent' ? undefined : parseInt(editLease.value.duration.split(' ')[0]) * 60 * 60,
-                    permanent: editLease.value.duration === 'Permanent' ? true : false
+                    permanent: editLease.value.duration === 'Permanent' ? true : false,
+                    source_type: editLease.value.source_type,
+                    source_model: editLease.value.source_model,
                 }
             });
         } else {
@@ -548,7 +580,9 @@ async function saveLease() {
                     secure: secure.value,
                     channel: channels.value.length ? channels.value[0] : null,
                     duration: editLease.value.duration === 'Permanent' ? undefined : parseInt(editLease.value.duration.split(' ')[0]) * 60 * 60,
-                    permanent: editLease.value.duration === 'Permanent' ? true : false
+                    permanent: editLease.value.duration === 'Permanent' ? true : false,
+                    source_type: editLease.value.source_type,
+                    source_model: editLease.value.source_model,
                 }
             })) as VideoLeaseResponse).lease.id;
         }
