@@ -177,20 +177,24 @@
                     v-if='editLease.expiration !== undefined'
                     class='col-12'
                 >
-                    <label>Lease Expiration</label>
+                    <div class='col-12 d-flex align-items-center mb-1'>
+                        <label>Lease Expiration</label>
 
-                    <span v-text='editLease.expiration' />
+                        <div class='ms-auto'>
+                            <span
+                                v-if='expired(editLease.expiration)'
+                                class='badge bg-red text-white mt-2'
+                            >Expired</span>
+                            <span
+                                v-else-if='editLease.expiration === null'
+                                class='badge bg-blue text-white mt-2'
+                            >Permanent</span>
+                        </div>
+                    </div>
+
                     <div class='col-12'>
-                        <span
-                            v-if='expired(editLease.expiration)'
-                            class='badge bg-red text-white mt-2'
-                        >Expired</span>
-                        <span
-                            v-else-if='editLease.expiration === null'
-                            class='badge bg-blue text-white mt-2'
-                        >Permanent</span>
                         <CopyField
-                            v-else-if='editLease.expiration'
+                            v-if='editLease.expiration'
                             :model-value='editLease.expiration'
                         />
                     </div>
