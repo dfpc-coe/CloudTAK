@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v7.19.0 - 2025-03-20
+
+- :tada: `UI` Support Path Trees in Feature View Menu
+
 ### v7.18.2 - 2025-03-19
 
 - :bug: Video Lease Modal in Admin Page Broken: #547
