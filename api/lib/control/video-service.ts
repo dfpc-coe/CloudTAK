@@ -379,7 +379,8 @@ export default class VideoServiceControl {
         source_type?: VideoLease_SourceType;
         source_model?: string;
         path: string;
-        username: string;
+        username?: string;
+        connection?: number;
         secure: boolean;
         channel?: string | null;
         proxy?: string | null;
@@ -388,6 +389,10 @@ export default class VideoServiceControl {
         if (!video.configured) throw new Err(400, null, 'Media Integration is not configured');
 
         const headers = this.headers(video.username, video.password);
+
+        if (opts.username && opts.connection) {
+            throw new Err(400, null, 'Either username or connection must be set but not both');
+        }
 
         const lease = await this.config.models.VideoLease.generate({
             name: opts.name,
@@ -460,13 +465,22 @@ export default class VideoServiceControl {
     async from(
         leaseid: string,
         opts: {
-            username: string
+            connection?: number
+            username?: string
             admin: boolean
         }
     ): Promise<Static<typeof VideoLeaseResponse>> {
         const lease = await this.config.models.VideoLease.from(leaseid);
 
-        if (!opts.admin) {
+        if (opts.admin) return lease;
+
+        if (lease.connection && !opts.connection) {
+            throw new Err(400, null, 'Lease must be edited in the context of a Connection');
+        } else if (lease.username && !opts.username) {
+            throw new Err(400, null, 'Lease must be edited in the context of the CloudTAK Map');
+        }
+
+        if (lease.username) {
             const profile = await this.config.models.Profile.from(opts.username);
             const api = await TAKAPI.init(new URL(String(this.config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
             const groups = (await api.Group.list({ useCache: true }))
@@ -475,6 +489,8 @@ export default class VideoServiceControl {
             if (lease.username !== opts.username && (!lease.channel || !groups.includes(lease.channel))) {
                 throw new Err(400, null, 'You can only access a lease you created or that is assigned to a channel you are in');
             }
+        } else if (lease.connection !== opts.connection) {
+            throw new Err(400, null, 'Connections can only access leases created in the context of the connection');
         }
 
         return lease;
