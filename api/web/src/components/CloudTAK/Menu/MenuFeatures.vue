@@ -5,8 +5,8 @@
     >
         <template #default>
             <template
-                :key='path'
                 v-for='path of paths'
+                :key='path'
             >
                 <div
                     class='d-flex align-items-center px-3 py-2 me-2 hover-button cursor-pointer user-select-none'
@@ -27,13 +27,13 @@
                         :size='20'
                         stroke='2'
                     />
-                    <span v-text='path.name.replace(/(^\/|\/$)/g, "")'/>
+                    <span v-text='path.name.replace(/(^\/|\/$)/g, "")' />
                 </div>
                 <div
                     v-if='path.opened'
                     class='ms-2'
                 >
-                    <TablerLoading v-if='path.loading'/>
+                    <TablerLoading v-if='path.loading' />
                     <template v-else>
                         <Feature
                             v-for='cot of path.cots.values()'

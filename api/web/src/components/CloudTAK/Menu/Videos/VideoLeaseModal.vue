@@ -13,6 +13,23 @@
                 v-text='`Configuration Wizard Step #${wizard}`'
             />
             <div
+                v-else-if='disabled'
+                class='d-flex align-items-center'
+            >
+                <VideoLeaseSourceType :source-type='editLease.source_type' />
+                <div class='row mx-2'>
+                    <span
+                        class='modal-title'
+                        v-text='editLease.name'
+                    />
+                    <span
+                        v-if='editLease.source_model'
+                        class='subheader'
+                        v-text='editLease.source_model'
+                    />
+                </div>
+            </div>
+            <div
                 v-else
                 class='modal-title'
                 v-text='editLease.id ? "Edit Lease" : "New Lease"'
@@ -115,120 +132,9 @@
                 </div>
             </div>
         </template>
-        <template v-else>
-            <div
-                class='modal-body row g-2'
-            >
-                <div class='col-12'>
-                    <TablerInput
-                        v-model='editLease.name'
-                        description='The human readable name of the Lease'
-                        :disabled='disabled'
-                        label='Name'
-                    />
-                </div>
-                <div class='col-12 col-md-6'>
-                    <TablerEnum
-                        v-model='editLease.source_type'
-                        default='unknown'
-                        :options='[
-                            "unknown",
-                            "fixed",
-                            "vehicle",
-                            "screenshare",
-                            "personal",
-                            "rotor",
-                            "fixedwing",
-                            "uas-rotor",
-                            "uas-fixedwing"
-                        ]'
-                        :disabled='disabled'
-                        label='Source Type'
-                        description='The type of sensor that is broadcasting'
-                    />
-                </div>
-                <div class='col-12 col-md-6'>
-                    <TablerInput
-                        v-model='editLease.source_model'
-                        :disabled='disabled'
-                        label='Source Model'
-                        description='Model Information about the sensor or source'
-                    />
-                </div>
-                <div class='col-12'>
-                    <TablerEnum
-                        v-if='!editLease.id'
-                        v-model='editLease.duration'
-                        :options='durations'
-                        :disabled='disabled'
-                        label='Duration'
-                        description='Leases remain active on the server for the duration specified. Once the lease expires the lease can be renewed without the Lease URL changing'
-                    />
-                </div>
-                <div class='col-12'>
-                    <TablerToggle
-                        v-model='secure'
-                        label='Read/Write Security'
-                        :disabled='disabled'
-                        description='Create a seperate Read/Write user to ensure unauthorized users cannot publish to a stream'
-                    />
-                </div>
-                <div class='col-12'>
-                    <TablerToggle
-                        v-model='shared'
-                        description='By default only the user that created a Lease can manage it. If you are operating as part of an agency, turn on Lease Sharing to allow all users in your Channel to manage the lease'
-                        :disabled='disabled'
-                        label='Shared Lease'
-                    />
-                </div>
-                <div
-                    v-if='shared'
-                    class='col-12'
-                >
-                    <GroupSelect
-                        v-if='!disabled'
-                        v-model='channels'
-                        :limit='1'
-                    />
-                    <div
-                        v-else
-                        class='border border-white rounded px-2 py-2'
-                    >
-                        <IconAffiliate
-                            :size='24'
-                            stroke='1'
-                        /> <span v-text='editLease.channel' />
-                    </div>
-                </div>
-
-                <div
-                    v-if='editLease.expiration !== undefined'
-                    class='col-12'
-                >
-                    <div class='col-12 d-flex align-items-center mb-1'>
-                        <label>Expiration</label>
-
-                        <div class='ms-auto'>
-                            <span
-                                v-if='expired(editLease.expiration)'
-                                class='badge bg-red text-white mt-2'
-                            >Expired</span>
-                            <span
-                                v-else-if='editLease.expiration === null'
-                                class='badge bg-blue text-white mt-2'
-                            >Permanent</span>
-                        </div>
-                    </div>
-
-                    <div class='col-12'>
-                        <CopyField
-                            v-if='editLease.expiration'
-                            :model-value='editLease.expiration'
-                        />
-                    </div>
-                </div>
-
-                <template v-if='disabled && Object.keys(protocols).length'>
+        <template v-else-if='disabled'>
+            <div class='modal-body'>
+                <template v-if='Object.keys(protocols).length'>
                     <div class='col-12 d-flex align-items-center pt-4'>
                         <div class='subheader'>
                             Video Streaming Protocols
@@ -370,6 +276,120 @@
                     </template>
                 </template>
             </div>
+        </template>
+        <template v-else>
+            <div
+                class='modal-body row g-2'
+            >
+                <div class='col-12'>
+                    <TablerInput
+                        v-model='editLease.name'
+                        description='The human readable name of the Lease'
+                        :disabled='disabled'
+                        label='Name'
+                    />
+                </div>
+                <div class='col-12 col-md-6'>
+                    <TablerEnum
+                        v-model='editLease.source_type'
+                        default='unknown'
+                        :options='[
+                            "unknown",
+                            "fixed",
+                            "vehicle",
+                            "screenshare",
+                            "personal",
+                            "rotor",
+                            "fixedwing",
+                            "uas-rotor",
+                            "uas-fixedwing"
+                        ]'
+                        :disabled='disabled'
+                        label='Source Type'
+                        description='The type of sensor that is broadcasting'
+                    />
+                </div>
+                <div class='col-12 col-md-6'>
+                    <TablerInput
+                        v-model='editLease.source_model'
+                        :disabled='disabled'
+                        label='Source Model'
+                        description='Model Information about the sensor or source'
+                    />
+                </div>
+                <div class='col-12'>
+                    <TablerEnum
+                        v-if='!editLease.id'
+                        v-model='editLease.duration'
+                        :options='durations'
+                        :disabled='disabled'
+                        label='Duration'
+                        description='Leases remain active on the server for the duration specified. Once the lease expires the lease can be renewed without the Lease URL changing'
+                    />
+                </div>
+                <div class='col-12'>
+                    <TablerToggle
+                        v-model='secure'
+                        label='Read/Write Security'
+                        :disabled='disabled'
+                        description='Create a seperate Read/Write user to ensure unauthorized users cannot publish to a stream'
+                    />
+                </div>
+                <div class='col-12'>
+                    <TablerToggle
+                        v-model='shared'
+                        description='By default only the user that created a Lease can manage it. If you are operating as part of an agency, turn on Lease Sharing to allow all users in your Channel to manage the lease'
+                        :disabled='disabled'
+                        label='Shared Lease'
+                    />
+                </div>
+                <div
+                    v-if='shared'
+                    class='col-12'
+                >
+                    <GroupSelect
+                        v-if='!disabled'
+                        v-model='channels'
+                        :limit='1'
+                    />
+                    <div
+                        v-else
+                        class='border border-white rounded px-2 py-2'
+                    >
+                        <IconAffiliate
+                            :size='24'
+                            stroke='1'
+                        /> <span v-text='editLease.channel' />
+                    </div>
+                </div>
+
+                <div
+                    v-if='editLease.expiration !== undefined'
+                    class='col-12'
+                >
+                    <div class='col-12 d-flex align-items-center mb-1'>
+                        <label>Expiration</label>
+
+                        <div class='ms-auto'>
+                            <span
+                                v-if='expired(editLease.expiration)'
+                                class='badge bg-red text-white mt-2'
+                            >Expired</span>
+                            <span
+                                v-else-if='editLease.expiration === null'
+                                class='badge bg-blue text-white mt-2'
+                            >Permanent</span>
+                        </div>
+                    </div>
+
+                    <div class='col-12'>
+                        <CopyField
+                            v-if='editLease.expiration'
+                            :model-value='editLease.expiration'
+                        />
+                    </div>
+                </div>
+            </div>
             <div class='modal-footer'>
                 <button
                     v-if='protocols.rtsp && !expired(editLease.expiration)'
@@ -406,6 +426,7 @@ import { std } from '../../../../std.ts';
 import CopyField from '../../util/CopyField.vue';
 import { ref, watch, onMounted, withDefaults } from 'vue';
 import type { VideoLease, VideoLeaseResponse, VideoLeaseProtocols } from '../../../../types.ts';
+import VideoLeaseSourceType from '../../util/VideoLeaseSourceType.vue'
 import GroupSelect from '../../../util/GroupSelect.vue';
 import {
     IconRefresh,
@@ -455,6 +476,8 @@ const editLease = ref<{
     name: string
     duration: string
     channel: string | null
+    source_type: string
+    source_model: string
     expiration?: string | null
     stream_user: string | null
     stream_pass: string | null
