@@ -66,7 +66,9 @@ export const VideoLease = pgTable('video_lease', {
     name: text().notNull(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    username: text().notNull().references(() => Profile.username),
+
+    username: text().references(() => Profile.username),
+    connection: integer().references(() => Connection.id),
 
     source_type: text().$type<VideoLease_SourceType>().notNull().default(VideoLease_SourceType.UNKNOWN),
     source_model: text().notNull().default(''),
@@ -85,13 +87,6 @@ export const VideoLease = pgTable('video_lease', {
 
     // Optional Proxy Mode
     proxy: text().default(sql`null`),
-});
-
-export const VideoLeasePermissions = pgTable('video_lease_permission', {
-    id: serial().primaryKey(),
-    lease: integer().references(() => VideoLease.id),
-
-    layer: integer().references(() => Layer.id),
 });
 
 export const ProfileFeature = pgTable('profile_features', {

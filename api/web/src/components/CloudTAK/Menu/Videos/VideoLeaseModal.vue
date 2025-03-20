@@ -133,9 +133,9 @@
             </div>
         </template>
         <template v-else-if='disabled'>
-            <div class='modal-body'>
+            <div class='modal-body row'>
                 <template v-if='Object.keys(protocols).length'>
-                    <div class='col-12 d-flex align-items-center pt-4'>
+                    <div class='col-12 d-flex align-items-center'>
                         <div class='subheader'>
                             Video Streaming Protocols
                         </div>
@@ -238,13 +238,13 @@
                             </div>
                         </template>
                         <template v-else-if='secure && mode === "read"'>
-                            <div class='col-md-6'>
+                            <div class='col-12 col-md-6'>
                                 <CopyField
                                     label='Read Username'
                                     :model-value='editLease.read_user || ""'
                                 />
                             </div>
-                            <div class='col-md-6'>
+                            <div class='col-12 col-md-6'>
                                 <CopyField
                                     label='Read Password'
                                     :model-value='editLease.read_pass || ""'
