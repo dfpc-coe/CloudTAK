@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v7.20.1 - 2025-03-20
+
+- :bug: Remove empty SG policy to ensure CloudFormation Drift errors don't alarm
+
 ### v7.20.0 - 2025-03-20
 
 - :rocket: `UI` Improvements to Video Lease Manager
