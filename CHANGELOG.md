@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v7.20.0 - 2025-03-20
+
+- :rocket: `UI` Improvements to Video Lease Manager
+- :bug: `UI` Fix `Notififcation` check in Safari
+
 ### v7.19.0 - 2025-03-20
 
 - :tada: `UI` Support Path Trees in Feature View Menu
