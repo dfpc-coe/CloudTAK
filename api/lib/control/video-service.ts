@@ -2,6 +2,7 @@ import Err from '@openaddresses/batch-error';
 import Config from '../config.js';
 import { Type, Static } from '@sinclair/typebox';
 import { VideoLeaseResponse } from '../types.js';
+import { VideoLease_SourceType } from '../enums.js';
 import fetch from '../fetch.js';
 import TAKAPI, { APIAuthCertificate } from '../tak-api.js';
 
@@ -375,6 +376,8 @@ export default class VideoServiceControl {
         name: string;
         ephemeral: boolean;
         expiration: string | null;
+        source_type?: VideoLease_SourceType;
+        source_model?: string;
         path: string;
         username: string;
         secure: boolean;
@@ -483,7 +486,9 @@ export default class VideoServiceControl {
             name?: string,
             channel?: string | null,
             secure?: boolean,
-            expiration: string | null
+            expiration: string | null,
+            source_type?: VideoLease_SourceType,
+            source_model?: string
         },
         opts: {
             username: string;
