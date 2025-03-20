@@ -315,7 +315,7 @@ export const useMapStore = defineStore('cloudtak', {
                 console.error('Browser does not appear to support Geolocation');
             }
 
-            if (Notification) {
+            if ('Notification' in window) {
                 const status = await navigator.permissions
                     .query({ name: "notifications" })
 
