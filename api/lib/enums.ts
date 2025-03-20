@@ -18,6 +18,18 @@ export class toEnum {
     }
 }
 
+export enum VideoLease_SourceType {
+    UNKNOWN = 'unknown',
+    FIXED = 'fixed',
+    VEHICLE = 'vehicle',
+    SCREENSHARE = 'screenshare',
+    PERSONAL = 'personal',
+    ROTOR = 'rotor',
+    FIXEDWING = 'fixedwing',
+    UAS_ROTOR = 'uas-rotor',
+    UAS_FIXEDWING = 'uas-fixedwing'
+}
+
 export enum Profile_Projection {
     MERCATOR = 'mercator',
     GLOBE = 'globe',

@@ -8,6 +8,7 @@ import { sql } from 'drizzle-orm';
 import { Token } from '../lib/schema.js';
 import { randomUUID } from 'node:crypto';
 import { StandardResponse, VideoLeaseResponse } from '../lib/types.js';
+import { VideoLease_SourceType } from '../lib/enums.js';
 import ECSVideoControl, { Protocols } from '../lib/control/video-service.js';
 import * as Default from '../lib/limits.js';
 import TAKAPI, { APIAuthCertificate } from '../lib/tak-api.js';
@@ -133,6 +134,8 @@ export default async function router(schema: Schema, config: Config) {
                 default: false,
                 description: 'Increase stream security by enforcing a seperate read and write username/password'
             }),
+            source_type: Type.Optional(Type.Enum(VideoLease_SourceType)),
+            source_model: Type.Optional(Type.String()),
             channel: Type.Optional(Type.Union([Type.String(), Type.Null()])),
             path: Type.Optional(Type.String()),
             proxy: Type.Optional(Type.String())
@@ -158,6 +161,8 @@ export default async function router(schema: Schema, config: Config) {
                 ephemeral: req.body.ephemeral,
                 channel: req.body.channel,
                 expiration: req.body.permanent ? null : moment().add(req.body.duration, 'seconds').toISOString(),
+                source_type: req.body.source_type,
+                source_model: req.body.source_model,
                 path: req.body.path || randomUUID(),
                 secure: req.body.secure,
                 username: user.email,
@@ -187,6 +192,8 @@ export default async function router(schema: Schema, config: Config) {
                 default: 60 * 60,
                 description: 'Duration in Seconds'
             }),
+            source_type: Type.Optional(Type.Enum(VideoLease_SourceType)),
+            source_model: Type.Optional(Type.String()),
             channel: Type.Optional(Type.Union([Type.String(), Type.Null()])),
             secure: Type.Optional(Type.Boolean()),
             permanent: Type.Boolean({
@@ -213,6 +220,8 @@ export default async function router(schema: Schema, config: Config) {
                 channel: req.body.channel ? req.body.channel : null,
                 secure: req.body.secure,
                 expiration: req.body.permanent ? null : moment().add(req.body.duration, 'seconds').toISOString(),
+                source_type: req.body.source_type,
+                source_model: req.body.source_model,
             }, {
                 username: user.email,
                 admin: user.access === AuthUserAccess.ADMIN
