@@ -89,7 +89,7 @@ export const VideoLease = pgTable('video_lease', {
 
 export const VideoLeasePermissions = pgTable('video_lease_permission', {
     id: serial().primaryKey(),
-    lease: text().references(() => VideoLease.id),
+    lease: integer().references(() => VideoLease.id),
 
     layer: integer().references(() => Layer.id),
 });

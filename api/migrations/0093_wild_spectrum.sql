@@ -1,6 +1,6 @@
 CREATE TABLE "video_lease_permission" (
 	"id" serial PRIMARY KEY NOT NULL,
-	"lease" text,
+	"lease" integer,
 	"layer" integer
 );
 --> statement-breakpoint
