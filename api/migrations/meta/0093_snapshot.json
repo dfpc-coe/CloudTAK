@@ -2482,64 +2482,6 @@
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
-    },
-    "public.video_lease_permission": {
-      "name": "video_lease_permission",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "lease": {
-          "name": "lease",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "layer": {
-          "name": "layer",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "video_lease_permission_lease_video_lease_id_fk": {
-          "name": "video_lease_permission_lease_video_lease_id_fk",
-          "tableFrom": "video_lease_permission",
-          "tableTo": "video_lease",
-          "columnsFrom": [
-            "lease"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "video_lease_permission_layer_layers_id_fk": {
-          "name": "video_lease_permission_layer_layers_id_fk",
-          "tableFrom": "video_lease_permission",
-          "tableTo": "layers",
-          "columnsFrom": [
-            "layer"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
     }
   },
   "enums": {},
