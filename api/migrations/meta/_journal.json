@@ -659,6 +659,13 @@
       "when": 1742487900663,
       "tag": "0093_wild_spectrum",
       "breakpoints": true
+    },
+    {
+      "idx": 94,
+      "version": "7",
+      "when": 1742493516316,
+      "tag": "0094_striped_maginty",
+      "breakpoints": true
     }
   ]
 }
