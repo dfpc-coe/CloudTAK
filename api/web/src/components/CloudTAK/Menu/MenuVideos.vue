@@ -176,46 +176,8 @@
                 >
                     <div class='row g-0 w-100'>
                         <div class='d-flex align-items-center w-100'>
-                            <IconCar
-                                v-if='l.source_type === "vehicle"'
-                                title='Vehicle'
-                                :size='32' stroke='1'
-                            />
-                            <IconWalk
-                                v-else-if='l.source_type === "personal"'
-                                title='Body Camera'
-                                :size='32' stroke='1'
-                            />
-                            <IconDrone
-                                v-else-if='l.source_type === "uas-rotor"'
-                                title='UAS Rotorcraft'
-                                :size='32' stroke='1'
-                            />
-                            <IconHelicopter
-                                v-else-if='l.source_type === "rotor"'
-                                title='Manned Rotorcraft'
-                                :size='32' stroke='1'
-                            />
-                            <IconPlane
-                                v-else-if='l.source_type === "fixedwing"'
-                                title='Fixed Wing'
-                                :size='32' stroke='1'
-                            />
-                            <IconPlane
-                                v-else-if='l.source_type === "uas-fixedwing"'
-                                title='UAS Fixed Wing'
-                                :size='32' stroke='1'
-                            />
-                            <IconDeviceDesktop
-                                v-else-if='l.source_type === "screenshare"'
-                                title='Screenshare'
-                                :size='32' stroke='1'
-                            />
-                            <IconVideo
-                                v-else
-                                title='Unknonw Source'
-                                :size='32' stroke='1'
-                            />
+                            <VideoLeaseSourceType :source-type='l.source_type' />
+                        
                             <span
                                 class='mx-2'
                                 v-text='l.name'
@@ -264,7 +226,7 @@
     <VideoLeaseModal
         v-if='lease'
         :lease='lease'
-        :isSystemAdmin='isSystemAdmin'
+        :is-system-admin='isSystemAdmin'
         @close='lease = false'
         @refresh='fetchLeases'
     />
@@ -276,6 +238,7 @@ import VideoLeaseModal from './Videos/VideoLeaseModal.vue';
 import Feature from '../util/Feature.vue';
 import { std, stdurl } from '../../../std.ts';
 import COT from '../../../base/cot.ts';
+import VideoLeaseSourceType from '../util/VideoLeaseSourceType.vue';
 import type { VideoLease, VideoLeaseList, VideoConnectionList } from '../../../types.ts';
 import { useMapStore } from '../../../stores/map.ts';
 import { useVideoStore } from '../../../stores/videos.ts';
@@ -291,12 +254,6 @@ import {
 import {
     IconPlus,
     IconVideo,
-    IconCar,
-    IconWalk,
-    IconDrone,
-    IconPlane,
-    IconHelicopter,
-    IconDeviceDesktop,
     IconPencil,
     IconRefresh,
     IconServer2,
