@@ -9,7 +9,7 @@ import { Layer_Config } from './models/Layer.js';
 import {
     Layer_Priority,
     Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Text, Profile_Projection,
-    Basemap_Type, Basemap_Format, Basemap_Style,
+    Basemap_Type, Basemap_Format, Basemap_Style, VideoLease_SourceType
 } from  './enums.js';
 import { json, boolean, uuid, numeric, integer, timestamp, pgTable, serial, varchar, text, unique, index } from 'drizzle-orm/pg-core';
 
@@ -68,6 +68,9 @@ export const VideoLease = pgTable('video_lease', {
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     username: text().notNull().references(() => Profile.username),
 
+    source_type: text().$type<VideoLease_SourceType>().notNull().default(VideoLease_SourceType.UNKNOWN),
+    source_model: text().notNull().default(''),
+
     ephemeral: boolean().notNull().default(false),
     channel: text().default(sql`null`),
 
@@ -82,6 +85,13 @@ export const VideoLease = pgTable('video_lease', {
 
     // Optional Proxy Mode
     proxy: text().default(sql`null`),
+});
+
+export const VideoLeasePermissions = pgTable('video_lease_permission', {
+    id: serial().primaryKey(),
+    lease: text().references(() => VideoLease.id),
+
+    layer: integer().references(() => Layer.id),
 });
 
 export const ProfileFeature = pgTable('profile_features', {

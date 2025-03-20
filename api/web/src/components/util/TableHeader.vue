@@ -5,7 +5,7 @@
                 v-for='s in shown'
                 :key='s'
             >
-                <div class='d-flex'>
+                <div class='d-flex align-items-center'>
                     <span
                         class='cursor-pointer'
                         @click='updateSort(s.name)'
