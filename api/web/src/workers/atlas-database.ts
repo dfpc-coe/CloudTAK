@@ -339,9 +339,7 @@ export default class AtlasDatabase {
         }) as APIList<Feature>;
 
         for (const a of archive.items) {
-            this.add(a, undefined, {
-                skipSave: true
-            });
+            this.add(a, undefined, { skipSave: true });
         }
     }
 
@@ -445,7 +443,7 @@ export default class AtlasDatabase {
             const cot = new COT(this.atlas, feat, {
                 mode: OriginMode.MISSION,
                 mode_id: mission_guid
-            });
+            }, opts);
 
             sub.cots.set(String(cot.id), cot);
 
@@ -475,7 +473,9 @@ export default class AtlasDatabase {
                     geometry: feat.geometry
                 }, { skipSave: opts.skipSave })
             } else {
-                new COT(this.atlas, feat);
+                new COT(this.atlas, feat, {
+                    mode: OriginMode.CONNECTION
+                }, opts);
             }
         }
     }

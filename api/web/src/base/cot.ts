@@ -94,7 +94,7 @@ export default class COT {
             atlas.db.pending.set(this.id, this);
         }
 
-        if (!opts || (opts && opts.skipSave !== false)) {
+        if (!opts || (opts && opts.skipSave !== true)) {
             this.save();
         }
 
