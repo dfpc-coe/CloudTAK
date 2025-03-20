@@ -6,8 +6,6 @@
             left: ${video ? video.x : 60}px;
             top: ${video ? video.y : 0}px;
         `'
-        :width='video.width'
-        :height='video.height'
     >
         <div class='d-flex align-items-center px-2 py-2'>
             <div
