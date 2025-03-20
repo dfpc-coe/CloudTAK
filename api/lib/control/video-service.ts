@@ -399,6 +399,8 @@ export default class VideoServiceControl {
             expiration: opts.expiration,
             ephemeral: opts.ephemeral,
             path: opts.path,
+            source_type: opts.source_type,
+            source_model: opts.source_model,
             username: opts.username,
             channel: opts.channel,
             proxy: opts.proxy
