@@ -19,6 +19,9 @@
         "dev": "tsx watch --ignore web/ index.ts --noevents --nosinks --unsafe",
         "prod": "NODE_OPTIONS='--max-old-space-size=6144' node dist/index.js"
     },
+    "engines": {
+        "node": ">= 22"
+    },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/dfpc-coe/CloudTAK.git"
