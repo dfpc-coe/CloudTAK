@@ -3,6 +3,9 @@
     "version": "0.0.0",
     "type": "module",
     "private": true,
+    "engines": {
+        "node": ">= 22"
+    },
     "scripts": {
         "lint": "eslint src/",
         "check": "tsc --noEmit src/index.ts",

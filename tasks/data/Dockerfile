@@ -8,7 +8,7 @@ RUN apt-get update \
     && apt-get install -y build-essential curl cmake autoconf libtool software-properties-common git libsqlite3-dev \
     && apt-get install -y python3 python3-pip python3-dev python3-setuptools
 
-RUN export NODEV='22.9.0' \
+RUN export NODEV='22.14.0' \
     && curl "https://nodejs.org/dist/v${NODEV}/node-v${NODEV}-linux-x64.tar.gz" | tar -xzv > /dev/null \
     && cp ./node-v${NODEV}-linux-x64/bin/node /usr/bin/ \
     && ./node-v${NODEV}-linux-x64/bin/npm install -g npm
@@ -33,11 +33,6 @@ COPY --from=0 /usr/local/bin/tile-join /usr/local/bin/
 
 RUN apt-get update \
     && apt-get install -y curl gdal-bin
-
-RUN export NODEV='22.9.0' \
-    && curl "https://nodejs.org/dist/v${NODEV}/node-v${NODEV}-linux-x64.tar.gz" | tar -xzv > /dev/null \
-    && cp ./node-v${NODEV}-linux-x64/bin/node /usr/bin/ \
-    && ./node-v${NODEV}-linux-x64/bin/npm install -g npm
 
 COPY ./ $HOME/task
 WORKDIR $HOME/task
