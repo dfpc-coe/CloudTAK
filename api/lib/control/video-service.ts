@@ -509,7 +509,8 @@ export default class VideoServiceControl {
             source_model?: string
         },
         opts: {
-            username: string;
+            connection?: number;
+            username?: string;
             admin: boolean;
         }
     ): Promise<Static<typeof VideoLeaseResponse>> {
@@ -577,17 +578,30 @@ export default class VideoServiceControl {
     async delete(
         leaseid: string,
         opts: {
-            username: string;
+            username?: string;
+            connection?: number;
             admin: boolean;
         }
     ): Promise<void> {
         const video = await this.settings();
+
+        if (!opts.username && !opts.connection) {
+            throw new Err(400, null, 'Either connection or username config must be provided');
+        } else if (opts.username && opts.connection)  {
+            throw new Err(400, null, 'connection and username cannot both be provided');
+        }
 
         if (!video.configured) throw new Err(400, null, 'Media Integration is not configured');
 
         const headers = this.headers(video.username, video.password);
 
         const lease = await this.from(leaseid, opts);
+
+        if (opts.connection && lease.connection !== opts.connection) {
+            throw new Err(400, null, `Lease does not belong to connection ${opts.connection}`);
+        } else if (opts.username && lease.username !== opts.username) {
+            throw new Err(400, null, `Lease does not belong to user ${opts.username}`);
+        }
 
         await this.config.models.VideoLease.delete(leaseid);
 
