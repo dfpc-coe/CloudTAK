@@ -3,6 +3,9 @@
     "version": "0.0.0",
     "type": "module",
     "private": true,
+    "engines": {
+        "node": ">= 22"
+    },
     "scripts": {
         "check": "tsc --noEmit --watch",
         "lint": "eslint src",
