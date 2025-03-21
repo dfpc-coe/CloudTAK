@@ -384,6 +384,31 @@
         "query": false,
         "res": true
     },
+    "GET /connection/:connectionid/video/lease": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /connection/:connectionid/video/lease/:lease": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /connection/:connectionid/video/lease": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /connection/:connectionid/video/lease/:lease": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /connection/:connectionid/video/lease/:lease": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /connection": {
         "body": false,
         "query": true,
