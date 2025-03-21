@@ -44,7 +44,7 @@
             />
         </div>
 
-        <div style='min-height: 20vh; margin-bottom: 61px'>
+        <div style='min-height: 20vh; margin-bottom: 60px'>
             <TablerAlert
                 v-if='err'
                 title='ETL Server Error'
@@ -81,7 +81,7 @@
             </div>
             <div
                 class='position-absolute bottom-0 w-100'
-                style='height: 61px;'
+                style='height: 60px;'
             >
                 <TableFooter
                     :limit='paging.limit'

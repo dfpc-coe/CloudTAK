@@ -274,6 +274,10 @@ const router = VueRouter.createRouter({
                 name: 'connection-datas',
                 component: () => import('./components/Connection/ConnectionData.vue')
             },{
+                path: 'video',
+                name: 'connection-videos',
+                component: () => import('./components/Connection/ConnectionVideos.vue')
+            },{
                 path: 'sink',
                 name: 'connection-sinks',
                 component: () => import('./components/Connection/ConnectionSink.vue')

@@ -2,33 +2,32 @@
     <div>
         <div class='card-header'>
             <h3 class='card-title'>
-                API Tokens
+                Video
             </h3>
 
             <div class='ms-auto btn-list'>
-                <IconPlus
-                    v-tooltip='"New Token"'
-                    :size='32'
-                    stroke='1'
-                    class='cursor-pointer'
-                    @click='token = true'
-                />
-                <IconRefresh
-                    v-tooltip='"Refresh"'
-                    :size='32'
-                    stroke='1'
-                    class='cursor-pointer'
+                <TablerIconButton
+                    title='Refresh'
                     @click='fetch'
-                />
+                >
+                    <IconRefresh
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
             </div>
         </div>
 
         <div style='min-height: 20vh; margin-bottom: 60px'>
             <TablerLoading v-if='loading' />
+            <TablerAlert
+                v-else-if='error'
+                :err='error'
+            />
             <TablerNone
-                v-else-if='!list.items.length'
+                v-else-if='list.total === 0'
                 :create='false'
-                label='Tokens'
+                label='Videos'
             />
             <div
                 v-else
@@ -44,13 +43,12 @@
                     </thead>
                     <tbody>
                         <tr
-                            v-for='t in list.items'
-                            :key='t.id'
-                            @click='token = t'
+                            v-for='lease in list.items'
+                            :key='lease.id'
                         >
-                            <td v-text='t.name' />
-                            <td><TablerEpoch :date='+new Date(t.created)' /></td>
-                            <td><TablerEpoch :date='+new Date(t.updated)' /></td>
+                            <td v-text='lease.name' />
+                            <td><TablerEpoch :date='+new Date(lease.created)' /></td>
+                            <td><TablerEpoch :date='+new Date(lease.updated)' /></td>
                         </tr>
                     </tbody>
                 </table>
@@ -66,37 +64,29 @@
                 @page='paging.page = $event'
             />
         </div>
-
-        <TokenModal
-            v-if='token'
-            :token='token'
-            @close='token = undefined'
-            @refresh='fetch'
-        />
     </div>
 </template>
 
 <script setup lang='ts'>
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch, onMounted } from 'vue'
 import { useRoute } from 'vue-router';
 import { std, stdurl } from '../../std.ts';
-import type { ETLConnectionTokenList, ETLConnectionToken } from '../../types.ts';
-import TokenModal from './TokenModal.vue';
+import type { ETLConnectionVideoLeaseList } from '../../types.ts';
 import TableFooter from '../util/TableFooter.vue';
 import {
-    IconPlus,
     IconRefresh,
 } from '@tabler/icons-vue';
 import {
     TablerEpoch,
+    TablerAlert,
     TablerLoading,
+    TablerIconButton,
     TablerNone,
 } from '@tak-ps/vue-tabler';
 
 const route = useRoute();
 
 const loading = ref(true);
-const token = ref<ETLConnectionToken | true | undefined>();
 const error = ref<Error | undefined>();
 const paging = ref({
     filter: '',
@@ -104,7 +94,7 @@ const paging = ref({
     page: 0
 });
 
-const list = ref<ETLConnectionTokenList> ({
+const list = ref<ETLConnectionVideoLeaseList>({
     total: 0,
     items: []
 });
@@ -118,16 +108,15 @@ onMounted(async () => {
 });
 
 async function fetch() {
-    token.value = undefined;
-    error.value = undefined;
     loading.value = true;
+    error.value = undefined;
 
     try {
-        const url = stdurl(`/api/connection/${route.params.connectionid}/token`);
+        const url = stdurl(`/api/connection/${route.params.connectionid}/video/lease`);
         url.searchParams.append('limit', String(paging.value.limit));
         url.searchParams.append('page', String(paging.value.page));
         url.searchParams.append('filter', paging.value.filter);
-        list.value = await std(url) as ETLConnectionTokenList;
+        list.value = await std(url) as ETLConnectionVideoLeaseList;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     } finally {

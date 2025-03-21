@@ -191,6 +191,19 @@
                                                 role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
+                                                    "active": route.name === "connection-videos",
+                                                    "cursor-pointer": route.name !== "connection-videos"
+                                                }'
+                                                @click='router.push(`/connection/${route.params.connectionid}/video`)'
+                                            ><IconVideo
+                                                :size='32'
+                                                stroke='1'
+                                            /><span class='mx-3'>Videos</span></span>
+                                            <span
+                                                tabindex='0'
+                                                role='menuitem'
+                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
+                                                :class='{
                                                     "active": route.name === "connection-tokens",
                                                     "cursor-pointer": route.name !== "connection-tokens"
                                                 }'
@@ -229,6 +242,7 @@ import timeDiff from '../timediff.ts';
 import {
     IconFiles,
     IconRobot,
+    IconVideo,
     IconRefresh,
     IconDatabase,
     IconOutbound,

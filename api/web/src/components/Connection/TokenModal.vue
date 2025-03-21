@@ -59,7 +59,7 @@
 </template>
 
 <script>
-import { std } from '/src/std.ts';
+import { std } from '../../std.ts';
 import {
     TablerModal,
     TablerInput,
@@ -75,7 +75,7 @@ export default {
     },
     props: {
         token: {
-            type: Object,
+            type: [Object, Boolean],
             required: true
         }
     },
@@ -84,19 +84,18 @@ export default {
         'refresh'
     ],
     data: function() {
-        if (this.token.id) {
-            return {
-                code: false,
-                editToken: JSON.parse(JSON.stringify(this.token))
-            }
-        } else {
+        if (this.token === true) {
             return {
                 code: false,
                 editToken: {
                     name: ''
                 }
             }
-
+        } else {
+            return {
+                code: false,
+                editToken: JSON.parse(JSON.stringify(this.token))
+            }
         }
     },
     methods: {
