@@ -11,14 +11,13 @@ import { StandardResponse, VideoLeaseResponse } from '../lib/types.js';
 import { VideoLease_SourceType } from '../lib/enums.js';
 import ECSVideoControl, { Protocols } from '../lib/control/video-service.js';
 import * as Default from '../lib/limits.js';
-import TAKAPI, { APIAuthCertificate } from '../lib/tak-api.js';
 
 export default async function router(schema: Schema, config: Config) {
     const videoControl = new ECSVideoControl(config);
 
     await schema.get('/connection/:connectionid/video/lease', {
         name: 'List Leases',
-        group: 'VideoLease',
+        group: 'ConnectionVideoLease',
         description: 'List all video leases',
         params: Type.Object({
             connectionid: Type.Integer({ minimum: 1 }),
@@ -36,11 +35,16 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            const { connection } = await Auth.is_connection(config, req, {
+            const { connection, layer } = await Auth.is_connection(config, req, {
                 resources: [
-                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                    { access: AuthResourceAccess.LAYER, id: undefined }
                 ]
             }, req.params.connectionid);
+
+            if (layer && layer.connection !== connection.id) {
+                throw new Err(400, null, 'Layer does not belong to this connection');
+            }
 
             res.json(await config.models.VideoLease.list({
                 limit: req.query.limit,
@@ -57,12 +61,12 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-/*
-    await schema.get('/video/lease/:lease', {
+    await schema.get('/connection/:connectionid/video/lease/:lease', {
         name: 'Get Lease',
-        group: 'VideoLease',
+        group: 'ConnectionVideoLease',
         description: 'Get a single Video Lease',
         params: Type.Object({
+            connectionid: Type.Integer({ minimum: 1 }),
             lease: Type.String()
         }),
         res: Type.Object({
@@ -71,11 +75,20 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req);
+            const { profile, connection, layer } = await Auth.is_connection(config, req, {
+                resources: [
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                    { access: AuthResourceAccess.LAYER, id: undefined }
+                ]
+            }, req.params.connectionid);
+
+            if (layer && layer.connection !== connection.id) {
+                throw new Err(400, null, 'Layer does not belong to this connection');
+            }
 
             const lease = await videoControl.from(req.params.lease, {
-                username: user.email,
-                admin: user.access === AuthUserAccess.ADMIN
+                connection: req.params.connectionid,
+                admin: profile ? profile.system_admin : false
             });
 
             res.json({
@@ -87,17 +100,16 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.post('/video/lease', {
+    await schema.post('/connection/:connectionid/video/lease', {
         name: 'Create Lease',
-        group: 'VideoLease',
+        group: 'ConnectionVideoLease',
         description: 'Create a new video Lease',
+        params: Type.Object({
+            connectionid: Type.Integer({ minimum: 1 }),
+        }),
         body: Type.Object({
             name: Type.String({
                 description: 'Human readable name'
-            }),
-            ephemeral: Type.Boolean({
-                description: 'CloudTAK View lease - hidden in streaming list',
-                default: false
             }),
             duration: Type.Integer({
                 minimum: 0,
@@ -115,7 +127,6 @@ export default async function router(schema: Schema, config: Config) {
             source_type: Type.Optional(Type.Enum(VideoLease_SourceType)),
             source_model: Type.Optional(Type.String()),
             channel: Type.Optional(Type.Union([Type.String(), Type.Null()])),
-            path: Type.Optional(Type.String()),
             proxy: Type.Optional(Type.String())
         }),
         res: Type.Object({
@@ -124,26 +135,31 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req);
+            const { connection, layer, profile } = await Auth.is_connection(config, req, {
+                resources: [
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                    { access: AuthResourceAccess.LAYER, id: undefined }
+                ]
+            }, req.params.connectionid);
 
-            if (user.access !== AuthUserAccess.ADMIN && req.body.duration > 60 * 60 * 24) {
+            if (layer && layer.connection !== connection.id) {
+                throw new Err(400, null, 'Layer does not belong to this connection');
+            }
+
+            if ((!profile || !profile.system_admin) && req.body.duration > 60 * 60 * 24) {
                 throw new Err(400, null, 'Only Administrators can request a lease > 24 hours')
-            } else if (user.access !== AuthUserAccess.ADMIN && req.body.permanent) {
-                throw new Err(400, null, 'Only Administrators can request permanent leases')
-            } else if (user.access !== AuthUserAccess.ADMIN && req.body.path) {
-                throw new Err(400, null, 'Only Administrators can request custom paths in leases')
             }
 
             const lease = await videoControl.generate({
                 name: req.body.name,
-                ephemeral: req.body.ephemeral,
                 channel: req.body.channel,
                 expiration: req.body.permanent ? null : moment().add(req.body.duration, 'seconds').toISOString(),
+                ephemeral: false,
                 source_type: req.body.source_type,
                 source_model: req.body.source_model,
-                path: req.body.path || randomUUID(),
+                path: randomUUID(),
                 secure: req.body.secure,
-                username: user.email,
+                connection: req.params.connectionid,
                 proxy: req.body.proxy
             })
 
@@ -156,11 +172,12 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.patch('/video/lease/:lease', {
+    await schema.patch('/connection/:connectionid/video/lease/:lease', {
         name: 'Update Lease',
-        group: 'VideoLease',
+        group: 'ConnectionVideoLease',
         description: 'Update a video Lease',
         params: Type.Object({
+            connectionid: Type.Integer({ minimum: 1 }),
             lease: Type.String()
         }),
         body: Type.Object({
@@ -185,11 +202,20 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req);
+            const { connection, layer, profile } = await Auth.is_connection(config, req, {
+                resources: [
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                    { access: AuthResourceAccess.LAYER, id: undefined }
+                ]
+            }, req.params.connectionid);
 
-            if (user.access !== AuthUserAccess.ADMIN && req.body.duration && req.body.duration > 60 * 60 * 24) {
+            if (layer && layer.connection !== connection.id) {
+                throw new Err(400, null, 'Layer does not belong to this connection');
+            }
+
+            if ((!profile || !profile.system_admin) && req.body.duration && req.body.duration > 60 * 60 * 24) {
                 throw new Err(400, null, 'Only Administrators can request a lease > 24 hours')
-            } else if (user.access !== AuthUserAccess.ADMIN && req.body.permanent) {
+            } else if ((!profile || !profile.system_admin) && req.body.permanent) {
                 throw new Err(400, null, 'Only Administrators can request permanent leases')
             }
 
@@ -201,8 +227,8 @@ export default async function router(schema: Schema, config: Config) {
                 source_type: req.body.source_type,
                 source_model: req.body.source_model,
             }, {
-                username: user.email,
-                admin: user.access === AuthUserAccess.ADMIN
+                connection: req.params.connectionid,
+                admin: profile ? profile.system_admin : false
             });
 
             res.json({
@@ -214,21 +240,31 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.delete('/video/lease/:lease', {
+    await schema.delete('/connection/:connectionid/video/lease/:lease', {
         name: 'Delete Lease',
-        group: 'VideoLease',
+        group: 'ConnectionVideoLease',
         description: 'Delete a video Lease',
         params: Type.Object({
+            connectionid: Type.Integer({ minimum: 1 }),
             lease: Type.String()
         }),
         res: StandardResponse
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req);
+            const { connection, layer, profile } = await Auth.is_connection(config, req, {
+                resources: [
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                    { access: AuthResourceAccess.LAYER, id: undefined }
+                ]
+            }, req.params.connectionid);
+
+            if (layer && layer.connection !== connection.id) {
+                throw new Err(400, null, 'Layer does not belong to this connection');
+            }
 
             await videoControl.delete(req.params.lease, {
-                username: user.email,
-                admin: user.access === AuthUserAccess.ADMIN
+                connection: req.params.connectionid,
+                admin: profile ? profile.system_admin : false
             });
 
             res.json({
@@ -239,5 +275,4 @@ export default async function router(schema: Schema, config: Config) {
              Err.respond(err, res);
         }
     });
-*/
 }

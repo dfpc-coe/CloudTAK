@@ -6,20 +6,24 @@
             </h3>
 
             <div class='ms-auto btn-list'>
-                <IconPlus
-                    v-tooltip='"New Token"'
-                    :size='32'
-                    stroke='1'
-                    class='cursor-pointer'
+                <TablerIconButton
+                    title='New Token'
                     @click='token = true'
-                />
-                <IconRefresh
-                    v-tooltip='"Refresh"'
-                    :size='32'
-                    stroke='1'
-                    class='cursor-pointer'
+                >
+                    <IconPlus
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+                <TablerIconButton
+                    title='Refresh'
                     @click='fetch'
-                />
+                >
+                    <IconRefresh
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
             </div>
         </div>
 
@@ -90,6 +94,7 @@ import {
 import {
     TablerEpoch,
     TablerLoading,
+    TablerIconButton,
     TablerNone,
 } from '@tak-ps/vue-tabler';
 
