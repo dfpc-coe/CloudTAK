@@ -34,7 +34,7 @@
                     v-text='contact.callsign'
                 />
                 <div
-                    class='text-truncate subheader'
+                    class='text-truncate subheader user-select-none'
                     v-text='contact.notes.trim()'
                 />
             </div>
@@ -110,9 +110,11 @@ export default {
             return cot.properties.contact && cot.properties.contact.endpoint;
         },
         flyTo: async function(contact) {
-            if (!this.buttonZoom || !this.isZoomable(contact)) return;
+            if (!this.buttonZoom || !await this.isZoomable(contact)) return;
 
             const cot = await mapStore.worker.db.get(contact.uid);
+            if (!cot) return;
+
             cot.flyTo();
         }
     }
