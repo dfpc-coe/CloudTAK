@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v7.21.0 - 2025-03-21
+
+- :tada: Expose Video Lease API to connection/layers
+
 ### v7.20.2 - 2025-03-20
 
 - :bug: Ensure `skipSave` is respected in Atlas Database Worker `add()`
