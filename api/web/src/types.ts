@@ -118,6 +118,11 @@ export type ETLConnectionList = paths["/connection"]["get"]["responses"]["200"][
 export type ETLConnection = paths["/connection/{:connectionid}"]["get"]["responses"]["200"]["content"]["application/json"]
 export type ETLConnectionSink = paths["/connection/{:connectionid}/sink/{:sinkid}"]["get"]["responses"]["200"]["content"]["application/json"]
 
+export type ETLConnectionVideoLeaseList = paths["/connection/{:connectionid}/video/lease"]["get"]["responses"]["200"]["content"]["application/json"];
+
+export type ETLConnectionToken = paths["/connection/{:connectionid}/token"]["get"]["responses"]["200"]["content"]["application/json"]["items"][0]
+export type ETLConnectionTokenList = paths["/connection/{:connectionid}/token"]["get"]["responses"]["200"]["content"]["application/json"]
+
 export type ETLConnectionAssetList = paths["/connection/{:connectionid}/asset"]["get"]["responses"]["200"]["content"]["application/json"]
 export type ETLAgencyList = paths["/agency"]["get"]["responses"]["200"]["content"]["application/json"]
 export type ETLAgency = paths["/agency/{:agencyid}"]["get"]["responses"]["200"]["content"]["application/json"]
