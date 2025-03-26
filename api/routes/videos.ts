@@ -113,7 +113,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             await Auth.as_user(config, req, { admin: true });
 
-            res.json(await videoControl.path(req.params.path));
+            res.json(await videoControl.pathConfig(req.params.path));
         } catch (err) {
             Err.respond(err, res);
         }
