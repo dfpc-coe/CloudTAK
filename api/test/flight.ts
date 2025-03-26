@@ -1,7 +1,8 @@
 process.env.StackName = 'test';
 
 import assert from 'assert';
-import CP from 'node:child_process'
+import CP from 'node:child_process';
+import MockTAKServer from './tak-server.js'
 import jwt from 'jsonwebtoken';
 import fs from 'fs';
 import api from '../index.js';
@@ -227,12 +228,12 @@ export default class Flight {
 
             this.config.models.Server.generate({
                 name: 'Test Runner',
-                url: 'ssl://tak.example.com',
+                url: 'ssl://localhost',
                 auth: {
                     cert: 'cert-123',
                     key: 'key-123'
                 },
-                api: 'http://tak-api.example.com'
+                api: 'https://localhost'
             });
 
             this.srv = await api(this.config);
@@ -270,10 +271,29 @@ export default class Flight {
 
     connection() {
         test(`Creating Connection`, async (t) => {
-            CP.execSync(`openssl genrsa -out /tmp/cloudtak-test-private.key 2048`);
-            CP.execSync(`openssl req -x509 -new -days 365 -subj "/DC=org/DC=CloudTAKTest/DC=users/UID=123456+CN=John Doe" -key /tmp/cloudtak-test-private.key -out /tmp/cloudtak-test-certificate.cert`);
+            const tak = new MockTAKServer();
 
-            await this.fetch('/api/connection', {
+            CP.execSync(`
+                openssl req \
+                    -newkey rsa:4096 \
+                    -keyout /tmp/cloudtak-test-alice.key \
+                    -out /tmp/cloudtak-test-alice.csr \
+                    -nodes \
+                    -subj "/CN=Alice"
+            `);
+
+            CP.execSync(`
+               openssl x509 \
+                    -req \
+                    -in /tmp/cloudtak-test-alice.csr \
+                    -CA ${tak.keys.cert} \
+                    -CAkey ${tak.keys.key} \
+                    -out /tmp/cloudtak-test-alice.cert \
+                    -set_serial 01 \
+                    -days 365
+            `);
+
+            const conn = await this.fetch('/api/connection', {
                 method: 'POST',
                 auth: {
                     bearer: this.token.admin
@@ -282,12 +302,34 @@ export default class Flight {
                     name: 'Test Connection',
                     description: 'Connection created by Flight Test Runner',
                     auth: {
-                        key: String(fs.readFileSync('/tmp/cloudtak-test-private.key')),
-                        cert: String(fs.readFileSync('/tmp/cloudtak-test-certificate.cert'))
+                        key: String(fs.readFileSync('/tmp/cloudtak-test-alice.key')),
+                        cert: String(fs.readFileSync('/tmp/cloudtak-test-alice.cert'))
                     }
                 }
             }, true);
 
+            delete conn.body.certificate.validFrom;
+            delete conn.body.certificate.validTo;
+            delete conn.body.created;
+            delete conn.body.updated;
+
+            t.deepEquals(conn.body, {
+                status: 'dead',                                                                                                       
+                certificate: {                                                                                                        
+                    subject: 'CN=Alice'                                                                                                 
+                },                                                                                                                    
+                id: 1,                                                                                                                
+                agency: 0,                                                                                                            
+                name: 'Test Connection', 
+                description: 'Connection created by Flight Test Runner',
+                enabled: true  
+            });
+
+            await new Promise((resolve) => {
+                setTimeout(resolve, 1000);
+            })
+
+            await tak.close();
             t.end();
        })
     }

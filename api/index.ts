@@ -255,5 +255,9 @@ export default async function server(config: Config) {
                 wss.emit('connection', ws, request);
             });
         });
+
+        srv.on('close', async () => {
+             await config.conns.close();
+        });
     });
 }

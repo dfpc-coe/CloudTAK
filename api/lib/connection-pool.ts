@@ -29,6 +29,10 @@ export class ConnectionClient {
         this.initial = true;
         this.ephemeral = ephemeral;
     }
+
+    destroy(): void {
+        this.tak.destroy()
+    }
 }
 
 /**
@@ -39,6 +43,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
     config: Config;
     sinks: Sinks;
     importControl: ImportControl;
+    closed: boolean;
 
     constructor(config: Config) {
         super();
@@ -47,6 +52,14 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         this.importControl = new ImportControl(config);
 
         this.sinks = new Sinks(config);
+    }
+
+    async close(): Promise<void> {
+        this.closed = true;
+
+        for (const conn of this.values()) {
+            conn.destroy();
+        }
     }
 
     async subscription(connection: number | string, name: string): Promise<{
@@ -211,7 +224,12 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         return connClient;
     }
 
-    async retry(connClient: ConnectionClient) {
+    async retry(connClient: ConnectionClient): Promise<void> {
+        if (this.closed) {
+            console.log('ok - ConnectionPool has been closed - not retrying');
+            return;
+        }
+
         const retryms = Math.min(connClient.retry * 1000, 15000);
         if (connClient.retry <= 15) connClient.retry++
         console.log(`not ok - ${connClient.config.uid()} - ${connClient.config.name} - retrying in ${retryms}ms`)
