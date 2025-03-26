@@ -12,6 +12,14 @@
 
 ### Pending Release
 
+### v7.22.0 - 2025-03-26
+
+- :arrow_up: Update all Core Deps
+- :arrow_up: Pin min required NodeJS version to v22 in all Package Files
+- :tada: Rewrite of Contacts pane to be more awesome and show what colours are what teams
+- :rocket: Allow searching contacts in Contacts Menu
+- :white_check_mark: Start to sketch out what testing Connections looks like
+
 ### v7.21.0 - 2025-03-21
 
 - :tada: Expose Video Lease API to connection/layers
