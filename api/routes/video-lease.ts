@@ -130,6 +130,10 @@ export default async function router(schema: Schema, config: Config) {
                 default: false,
                 description: 'System Admins can create non-expiring leases'
             }),
+            recording: Type.Boolean({
+                default: false,
+                description: 'Record streams to disk'
+            }),
             secure: Type.Boolean({
                 default: false,
                 description: 'Increase stream security by enforcing a seperate read and write username/password'
@@ -196,6 +200,9 @@ export default async function router(schema: Schema, config: Config) {
             source_model: Type.Optional(Type.String()),
             channel: Type.Optional(Type.Union([Type.String(), Type.Null()])),
             secure: Type.Optional(Type.Boolean()),
+            recording: Type.Boolean({
+                description: 'Record streams to disk'
+            }),
             permanent: Type.Boolean({
                 default: false,
                 description: 'System Admins can create non-expiring leases'
