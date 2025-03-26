@@ -1,6 +1,6 @@
 <template>
     <span
-        v-tooltip='props.status'
+        v-tooltip='props.title || props.status'
         class='status-indicator status-indicator-animated'
         :class='{
             "status-yellow": ["running", "pending"].includes(normalizeStatus),
@@ -20,6 +20,7 @@
 <script setup lang='ts'>
 import { computed } from 'vue';
 const props = defineProps<{
+    title?: string,
     status: string,
     dark?: boolean
 }>();

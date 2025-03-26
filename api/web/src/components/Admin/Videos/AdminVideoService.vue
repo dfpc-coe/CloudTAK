@@ -42,8 +42,8 @@
 
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue';
-import type { VideoService } from '../../../../src/types.ts';
-import { std, stdurl } from '../../../../src/std.ts';
+import type { VideoService } from '../../../types.ts';
+import { std, stdurl } from '../../../std.ts';
 import VideoConfig from './VideoConfig.vue';
 import {
     IconPencil,
