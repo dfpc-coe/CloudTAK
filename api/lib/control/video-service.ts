@@ -99,7 +99,7 @@ export const PathConfig = Type.Object({
     record: Type.Boolean(),
 });
 
-export const PathListConfig = Type.Object({
+export const PathListItem = Type.Object({
     name: Type.String(),
     confName: Type.String(),
     source: Type.Union([
@@ -120,17 +120,17 @@ export const PathListConfig = Type.Object({
     }))
 })
 
-export const PathsListConfig = Type.Object({
+export const PathsList = Type.Object({
     pageCount: Type.Integer(),
     itemCount: Type.Integer(),
-    items: Type.Array(PathListConfig)
+    items: Type.Array(PathListItem)
 })
 
 export const Configuration = Type.Object({
     configured: Type.Boolean(),
     url: Type.Optional(Type.String()),
     config: Type.Optional(VideoConfig),
-    paths: Type.Optional(Type.Array(PathListConfig))
+    paths: Type.Optional(Type.Array(PathListItem))
 });
 
 export default class VideoServiceControl {
@@ -222,7 +222,7 @@ export default class VideoServiceControl {
         const resPaths = await fetch(urlPaths, { headers })
         if (!resPaths.ok) throw new Err(500, null, await resPaths.text())
 
-        const paths = await resPaths.typed(PathsListConfig);
+        const paths = await resPaths.typed(PathsList);
 
         return {
             configured: video.configured,
@@ -527,7 +527,7 @@ export default class VideoServiceControl {
         }
 
         try {
-            await this.path(lease.path);
+            await this.pathConfig(lease.path);
         } catch (err) {
             if (err instanceof Err && err.status === 404) {
                 const url = new URL(`/v3/config/paths/add/${lease.path}`, video.url);
@@ -554,7 +554,28 @@ export default class VideoServiceControl {
         return lease;
     }
 
-    async path(pathid: string): Promise<Static<typeof PathConfig>> {
+    async path(pathid: string): Promise<Static<typeof PathListItem>> {
+        const video = await this.settings();
+        if (!video.configured) throw new Err(400, null, 'Media Integration is not configured');
+
+        const headers = this.headers(video.username, video.password);
+
+        const url = new URL(`/v3/paths/get/${pathid}`, video.url);
+        url.port = '9997';
+
+        const res = await fetch(url, {
+            method: 'GET',
+            headers,
+        });
+
+        if (res.ok) {
+            return await res.typed(PathListItem);
+        } else {
+            throw new Err(res.status, new Error(await res.text()), 'Media Server Error');
+        }
+    }
+
+    async pathConfig(pathid: string): Promise<Static<typeof PathConfig>> {
         const video = await this.settings();
         if (!video.configured) throw new Err(400, null, 'Media Integration is not configured');
 
