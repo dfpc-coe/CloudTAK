@@ -381,6 +381,8 @@ export default class VideoServiceControl {
         path: string;
         username?: string;
         connection?: number;
+        recording: boolean;
+        publish: boolean;
         secure: boolean;
         channel?: string | null;
         proxy?: string | null;
@@ -399,6 +401,8 @@ export default class VideoServiceControl {
             expiration: opts.expiration,
             ephemeral: opts.ephemeral,
             path: opts.path,
+            recording: opts.recording,
+            publish: opts.publish,
             source_type: opts.source_type,
             source_model: opts.source_model,
             username: opts.username,
@@ -442,10 +446,16 @@ export default class VideoServiceControl {
                 method: 'POST',
                 headers,
                 body: JSON.stringify({
-                    name: opts.path,
-                    source: opts.proxy,
-                    sourceOnDemand: true
-                }),
+                    name: lease.path,
+                    source: lease.proxy,
+                    sourceOnDemand: true,
+                    record: lease.recording,
+                    recordPath: '/opt/mediamtx/recordings/%path/%Y-%m-%d_%H-%M-%S-%f',
+                    recordFormat: 'fmp4',
+                    recordPartDuration: '1s',
+                    recordSegmentDuration: '1h',
+                    recordDeleteAfter: '7d'
+                })
             })
 
             if (!res.ok) throw new Err(500, null, await res.text())
@@ -454,7 +464,13 @@ export default class VideoServiceControl {
                 method: 'POST',
                 headers,
                 body: JSON.stringify({
-                    name: opts.path
+                    name: lease.path,
+                    record: lease.recording,
+                    recordPath: '/opt/mediamtx/recordings/%path/%Y-%m-%d_%H-%M-%S-%f',
+                    recordFormat: 'fmp4',
+                    recordPartDuration: '1s',
+                    recordSegmentDuration: '1h',
+                    recordDeleteAfter: '7d'
                 }),
             })
 
@@ -505,6 +521,8 @@ export default class VideoServiceControl {
             channel?: string | null,
             secure?: boolean,
             expiration: string | null,
+            recording: boolean,
+            publish: boolean,
             source_type?: VideoLease_SourceType,
             source_model?: string
         },
@@ -526,30 +544,27 @@ export default class VideoServiceControl {
             await this.updateSecure(lease, body.secure);
         }
 
-        try {
-            await this.pathConfig(lease.path);
-        } catch (err) {
-            if (err instanceof Err && err.status === 404) {
-                const url = new URL(`/v3/config/paths/add/${lease.path}`, video.url);
-                url.port = '9997';
+        const url = new URL(`/v3/config/paths/add/${lease.path}`, video.url);
+        url.port = '9997';
 
-                const headers = this.headers(video.username, video.password);
-                headers.append('Content-Type', 'application/json');
+        const headers = this.headers(video.username, video.password);
+        headers.append('Content-Type', 'application/json');
 
-                const res = await fetch(url, {
-                    method: 'POST',
-                    headers,
-                    body: JSON.stringify({
-                        name: lease.path
-                    }),
-                })
+        const res = await fetch(url, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+                name: lease.path,
+                record: lease.recording,
+                recordPath: '/opt/mediamtx/recordings/%path/%Y-%m-%d_%H-%M-%S-%f',
+                recordFormat: 'fmp4',
+                recordPartDuration: '1s',
+                recordSegmentDuration: '1h',
+                recordDeleteAfter: '7d'
+            }),
+        })
 
-                if (!res.ok) throw new Err(500, null, await res.text())
-            } else {
-                throw err;
-            }
-        }
-
+        if (!res.ok) throw new Err(500, null, await res.text())
 
         return lease;
     }
