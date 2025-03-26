@@ -255,5 +255,11 @@ export default async function server(config: Config) {
                 wss.emit('connection', ws, request);
             });
         });
+
+        srv.on('close', async () => {
+            await config.conns.close();
+            // Doesn't currently exit cleanly by itself
+            process.exit(0)
+        });
     });
 }

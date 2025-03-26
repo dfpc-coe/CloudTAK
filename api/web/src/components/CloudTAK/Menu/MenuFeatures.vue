@@ -47,6 +47,8 @@
             <Feature
                 v-for='cot of cots.values()'
                 :key='cot.id'
+                :deleteButton='true'
+                :infoButton='true'
                 :feature='cot'
             />
         </template>

@@ -154,8 +154,8 @@ export default class Config {
 
             server = await models.Server.generate({
                 name: 'Default Server',
-                url: 'ssl://ops.example.com:8089',
-                api: 'https://ops.example.com:8443'
+                url: 'ssl://localhost:8089',
+                api: 'https://localhost:8443'
             });
         }
 
