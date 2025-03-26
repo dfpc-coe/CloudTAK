@@ -257,7 +257,9 @@ export default async function server(config: Config) {
         });
 
         srv.on('close', async () => {
-             await config.conns.close();
+            await config.conns.close();
+            // Doesn't currently exit cleanly by itself
+            process.exit(0)
         });
     });
 }
