@@ -68,44 +68,54 @@
             </span>
             <div
                 class='text-truncate user-select-none'
-                :style='
-                    deleteButton
-                        ? "width: calc(100% - 60px);"
-                        : "width: 100%;"
-                '
+                :style='`width: ${textWidth};`'
                 v-text='feature.properties.callsign || feature.properties.name || "Unnamed"'
             />
 
-            <div
-                v-if='deleteButton'
-                class='ms-auto btn-list hover-button-hidden'
-            >
+            <div class='ms-auto btn-list hover-button-hidden'>
+                <TablerIconButton
+                    v-if='infoButton'
+                    title='View Info'
+                    @click.stop.prevent='router.push(`/cot/${feature.id}`)'
+                >
+                    <IconListDetails
+                        :size='20'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+
                 <TablerDelete
-                    v-if='deleteAction === "delete"'
+                    v-if='deleteButton && deleteAction === "delete"'
                     :size='20'
                     displaytype='icon'
                     @delete='deleteCOT'
                 />
-                <IconTrash
-                    v-else
-                    :size='20'
-                    class='cursor-pointer'
-                    stroke='1'
-                    @click='deleteCOT'
-                />
+                <TablerIconButton
+                    v-else-if='deleteButton'
+                    title='Remove'
+                    @click.stop.prevent='deleteCOT'
+                >
+                    <IconTrash
+                        :size='20'
+                        stroke='1'
+                    />
+                </TablerIconButton>
             </div>
         </div>
     </template>
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted, useTemplateRef, watch } from 'vue';
+import { useRouter } from 'vue-router';
+import { ref, onMounted, computed, useTemplateRef, watch } from 'vue';
 import Contact from './Contact.vue';
 import {
-    TablerDelete
+    TablerDelete,
+    TablerIconButton
 } from '@tak-ps/vue-tabler';
 import {
     IconVideo,
+    IconListDetails,
     IconPointFilled,
     IconMapPin,
     IconTrash,
@@ -129,6 +139,10 @@ const props = defineProps({
         type: String,
         default: 'delete' //emit or delete
     },
+    infoButton: {
+        type: Boolean,
+        default: false
+    },
     hover: {
         type: Boolean,
         default: true
@@ -139,6 +153,7 @@ const props = defineProps({
     }
 });
 
+const router = useRouter();
 const emit = defineEmits(['delete']);
 
 const isDeleted = ref(false);
@@ -154,6 +169,15 @@ onMounted(async () => {
 
     isZoomable.value = cot ? true : false;
 })
+
+const textWidth = computed(() => {
+    let width = `calc(100%`;
+
+    if (props.deleteButton) width = width + '- 60px';
+    if (props.infoButton) width = width + '- 60px';
+
+    return width + ')'
+});
 
 watch(canvas, async () => {
     if (!canvas.value) return;
