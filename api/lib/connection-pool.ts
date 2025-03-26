@@ -48,6 +48,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
     constructor(config: Config) {
         super();
 
+        this.closed = false;
         this.config = config;
         this.importControl = new ImportControl(config);
 
@@ -60,6 +61,8 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         for (const conn of this.values()) {
             conn.destroy();
         }
+
+        this.clear();
     }
 
     async subscription(connection: number | string, name: string): Promise<{

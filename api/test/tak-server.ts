@@ -1,4 +1,4 @@
-import { MockAgent, setGlobalDispatcher } from 'undici';
+import { MockAgent, /*setGlobalDispatcher */ } from 'undici';
 import CP from 'node:child_process'
 import tls from 'node:tls'
 import fs from 'node:fs'
@@ -54,7 +54,7 @@ export default class MockTAKServer {
         //});
     }
 
-    async close() {
+    async close(): Promise<void> {
         await this.mockAgent.close();
 
         return new Promise((resolve) => {
