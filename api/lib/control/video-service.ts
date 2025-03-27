@@ -118,7 +118,14 @@ export const PathListItem = Type.Object({
         type: Type.String(),
         id: Type.String()
     }))
-})
+});
+
+export const Recording = Type.Object({
+    name: Type.String(),
+    segmenets: Type.Array(Type.Object({
+        start: Type.String()
+    }))
+});
 
 export const PathsList = Type.Object({
     pageCount: Type.Integer(),
@@ -135,9 +142,18 @@ export const Configuration = Type.Object({
 
 export default class VideoServiceControl {
     config: Config;
+    recording: Record<string, string>;
 
     constructor(config: Config) {
         this.config = config;
+
+        this.recording = {
+            recordPath: '/opt/mediamtx/recordings/%path/%Y-%m-%d_%H-%M-%S-%f',
+            recordFormat: 'fmp4',
+            recordPartDuration: '1s',
+            recordSegmentDuration: '1h',
+            recordDeleteAfter: '7d'
+        }
     }
 
     async settings(): Promise<{
@@ -450,11 +466,6 @@ export default class VideoServiceControl {
                     source: lease.proxy,
                     sourceOnDemand: true,
                     record: lease.recording,
-                    recordPath: '/opt/mediamtx/recordings/%path/%Y-%m-%d_%H-%M-%S-%f',
-                    recordFormat: 'fmp4',
-                    recordPartDuration: '1s',
-                    recordSegmentDuration: '1h',
-                    recordDeleteAfter: '7d'
                 })
             })
 
@@ -466,11 +477,7 @@ export default class VideoServiceControl {
                 body: JSON.stringify({
                     name: lease.path,
                     record: lease.recording,
-                    recordPath: '/opt/mediamtx/recordings/%path/%Y-%m-%d_%H-%M-%S-%f',
-                    recordFormat: 'fmp4',
-                    recordPartDuration: '1s',
-                    recordSegmentDuration: '1h',
-                    recordDeleteAfter: '7d'
+                    ...this.recording
                 }),
             })
 
@@ -544,28 +551,49 @@ export default class VideoServiceControl {
             await this.updateSecure(lease, body.secure);
         }
 
-        const url = new URL(`/v3/config/paths/add/${lease.path}`, video.url);
-        url.port = '9997';
+        try {
+            await this.path(lease.path);
 
-        const headers = this.headers(video.username, video.password);
-        headers.append('Content-Type', 'application/json');
+            const url = new URL(`/v3/config/paths/add/${lease.path}`, video.url);
+            url.port = '9997';
 
-        const res = await fetch(url, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify({
-                name: lease.path,
-                record: lease.recording,
-                recordPath: '/opt/mediamtx/recordings/%path/%Y-%m-%d_%H-%M-%S-%f',
-                recordFormat: 'fmp4',
-                recordPartDuration: '1s',
-                recordSegmentDuration: '1h',
-                recordDeleteAfter: '7d'
-            }),
-        })
+            const headers = this.headers(video.username, video.password);
+            headers.append('Content-Type', 'application/json');
 
-        if (!res.ok) throw new Err(500, null, await res.text())
+            const res = await fetch(url, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({
+                    name: lease.path,
+                    record: lease.recording,
+                    ...this.recording
+                }),
+            })
 
+            if (!res.ok) throw new Err(500, null, await res.text())
+        } catch (err) {
+            if (err instanceof Err && err.status === 404) {
+                const url = new URL(`/v3/config/paths/add/${lease.path}`, video.url);
+                url.port = '9997';
+
+                const headers = this.headers(video.username, video.password);
+                headers.append('Content-Type', 'application/json');
+
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify({
+                        name: lease.path,
+                        record: lease.recording,
+                        ...this.recording
+                    }),
+                })
+
+                if (!res.ok) throw new Err(500, null, await res.text())
+            } else {
+                throw err;
+            }
+        }
         return lease;
     }
 
@@ -585,6 +613,27 @@ export default class VideoServiceControl {
 
         if (res.ok) {
             return await res.typed(PathListItem);
+        } else {
+            throw new Err(res.status, new Error(await res.text()), 'Media Server Error');
+        }
+    }
+
+    async recordings(config: Static<typeof PathConfig>): Promise<Static<typeof Recording>> {
+        const video = await this.settings();
+        if (!video.configured) throw new Err(400, null, 'Media Integration is not configured');
+
+        const headers = this.headers(video.username, video.password);
+
+        const url = new URL(`/v3/recordings/get/${config.name}`, video.url);
+        url.port = '9997';
+
+        const res = await fetch(url, {
+            method: 'GET',
+            headers,
+        });
+
+        if (res.ok) {
+            return await res.typed(Recording);
         } else {
             throw new Err(res.status, new Error(await res.text()), 'Media Server Error');
         }

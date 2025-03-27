@@ -611,6 +611,8 @@ async function saveLease() {
                     channel: channels.value.length ? channels.value[0] : null,
                     duration: editLease.value.duration === 'Permanent' ? undefined : parseInt(editLease.value.duration.split(' ')[0]) * 60 * 60,
                     permanent: editLease.value.duration === 'Permanent' ? true : false,
+                    recording: editLease.value.recording,
+                    publish: editLease.value.publish,
                     source_type: editLease.value.source_type,
                     source_model: editLease.value.source_model,
                 }
@@ -624,6 +626,8 @@ async function saveLease() {
                     channel: channels.value.length ? channels.value[0] : null,
                     duration: editLease.value.duration === 'Permanent' ? undefined : parseInt(editLease.value.duration.split(' ')[0]) * 60 * 60,
                     permanent: editLease.value.duration === 'Permanent' ? true : false,
+                    recording: editLease.value.recording,
+                    publish: editLease.value.publish,
                     source_type: editLease.value.source_type,
                     source_model: editLease.value.source_model,
                 }
