@@ -25,7 +25,7 @@ export default class GDALTranslate {
         const run = cp.execSync(`gdal_translate ${input} ${output}`, { env });
         console.error(run);
 
-        const runadd = cp.execSync(`gdaladdo -r cubic ${output} 2 4 8 16 32 64 128`);
+        const runadd = cp.execSync(`gdaladdo -r cubic ${output}`);
 
         return output;
     }
