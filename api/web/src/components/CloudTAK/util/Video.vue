@@ -69,8 +69,8 @@
                 <video
                     :id='id'
                     class='video-js vjs-default-skin'
-                    controls='true'
-                    autoplay='true'
+                    :controls='true'
+                    :autoplay='true'
                 >
                     <source
                         type='application/x-mpegURL'
@@ -168,7 +168,7 @@ onMounted(async () => {
     if (!error.value && videoProtocols.value && videoProtocols.value.hls) {
         nextTick(() => {
             player.value = videojs(id, {
-                fluid: true
+                fluid: true,
             });
         });
     }

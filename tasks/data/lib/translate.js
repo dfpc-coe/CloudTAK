@@ -5,7 +5,7 @@ import cp from 'node:child_process';
 export default class GDALTranslate {
     static register() {
         return {
-            inputs: ['.pdf']
+            inputs: ['.pdf', '.tif']
         };
     }
 
@@ -25,8 +25,7 @@ export default class GDALTranslate {
         const run = cp.execSync(`gdal_translate ${input} ${output}`, { env });
         console.error(run);
 
-        const runadd = cp.execSync(`gdaladdo ${output} 2 4 8 16 32 64 128`);
-        console.error(runadd);
+        const runadd = cp.execSync(`gdaladdo -r cubic ${output} 2 4 8 16 32 64 128`);
 
         return output;
     }
