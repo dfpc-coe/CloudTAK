@@ -17,7 +17,6 @@ process.env.ETL_ID = 'nicholas.ingalls@state.co.us';
 process.env.ETL_TYPE = 'profile';
 process.env.ETL_TOKEN = 'token-123';
 
-
 for (const fixturename of await fsp.readdir(new URL('./fixtures/', import.meta.url))) {
     test(`Fixture Tests: ${fixturename}`, async (t) => {
         process.env.ETL_TASK = JSON.stringify({
@@ -57,7 +56,7 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/', import.meta.u
 
                 const feats = String(body).split('\n')
                     .map(JSON.parse)
-                
+
                 t.ok(feats.length > 0);
 
                 feats.forEach((f) => {

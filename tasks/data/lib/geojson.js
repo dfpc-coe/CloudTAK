@@ -1,4 +1,3 @@
-import os from 'node:os';
 import path from 'node:path';
 
 export default class GeoJSON {
@@ -8,12 +7,12 @@ export default class GeoJSON {
         };
     }
 
-    constructor(etl) {
-        this.etl = etl;
+    constructor(task) {
+        this.task = task;
     }
 
     async convert() {
         console.error('ok - converted to GeoJSON');
-        return path.resolve(os.tmpdir(), this.etl.task.asset);
+        return path.resolve(this.task.temp, this.task.etl.task.asset);
     }
 }
