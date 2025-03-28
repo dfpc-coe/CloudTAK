@@ -1,3 +1,4 @@
+import os from 'node:os';
 import fs from 'node:fs';
 import S3 from '@aws-sdk/client-s3';
 import { pipeline } from 'node:stream/promises';
@@ -40,7 +41,7 @@ export default class Task {
     constructor() {
         if (!process.env.AWS_REGION) process.env.AWS_REGION = 'us-east-1';
 
-        this.temp = fs.mkdtempSync('cloudtak-');
+        this.temp = fs.mkdtempSync(path.resolve(os.tmpdir(), 'cloudtak-'));
 
         this.etl = {
             api: process.env.TAK_ETL_URL || '',
