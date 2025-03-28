@@ -1,8 +1,15 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import spritesmith from 'spritesmith';
+import Sharp from 'sharp';
+import Vinyl from 'vinyl'
+import { glob } from 'glob'
 import StreamZip from 'node-stream-zip';
 import { kml } from '@tmcw/togeojson';
 import { DOMParser } from '@xmldom/xmldom';
+import { promisify } from 'node:util';
+
+const SpriteSmith = promisify(spritesmith.run);
 
 export default class KML {
     static register() {
@@ -45,8 +52,10 @@ export default class KML {
 
         for (const feat of converted) {
             if (feat.properties.icon && !icons.has(feat.properties.icon)) {
-                console.error(path.resolve(this.task.temp, 'doc.kml'));
-                icons.set(feat.properties.icon, new Buffer());
+                const search = await glob(path.resolve(this.task.temp, '**/' + feat.properties.icon));
+                if (!search.length) continue
+
+                icons.set(feat.properties.icon, await fs.readFile(search[0]));
             }
         }
 
@@ -57,6 +66,32 @@ export default class KML {
         await fs.writeFile(output, converted.map((feat) => {
             return JSON.stringify(feat);
         }).join('\n'));
+
+        const src = [];
+        for (const [ name, icon ] of icons.entries()) {
+            const contents = await (Sharp(icon)
+                .resize(32, 32, {
+                    fit: 'contain',
+                    background: {r: 0, g: 0, b: 0, alpha: 0}
+                })
+                .png()
+                .toBuffer())
+
+            src.push(new Vinyl({
+                path: name,
+                contents
+            }))
+        }
+
+        const doc = await SpriteSmith({ src });
+
+        const coords = {};
+        for (const key in doc.coordinates) {
+            coords[key.replace(/.png/, '')] = {
+                ...doc.coordinates[key],
+                pixelRatio: 1
+            }
+        }
 
         return output;
     }
