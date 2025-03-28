@@ -286,20 +286,27 @@ async function requestLease(): Promise<void> {
         url.searchParams.append('url', video.value.url)
         active.value = await std(url);
 
-        const { lease, protocols } = await std('/api/video/lease', {
-            method: 'POST',
-            body:  {
-                name: 'Temporary Lease',
-                ephemeral: true,
-                duration: 1 * 60 * 60,
-                proxy: video.value.url
-            }
-        }) as VideoLeaseResponse
+        if (active.value.metadata) {
+            videoProtocols.value = active.value.metadata.protocols;
+            loading.value = false;
+        } else if (active.valueleaseable) {
+            const { lease, protocols } = await std('/api/video/lease', {
+                method: 'POST',
+                body:  {
+                    name: 'Temporary Lease',
+                    ephemeral: true,
+                    duration: 1 * 60 * 60,
+                    proxy: video.value.url
+                }
+            }) as VideoLeaseResponse
 
-        videoLease.value = lease;
-        videoProtocols.value = protocols;
+            videoLease.value = lease;
+            videoProtocols.value = protocols;
 
-        loading.value = false;
+            loading.value = false;
+        } else if (!active.leasable) {
+            error.value = new Error(active.message || 'Could not start stream');
+        }
 
         if (!error.value && videoProtocols.value && videoProtocols.value.hls) {
             nextTick(() => {

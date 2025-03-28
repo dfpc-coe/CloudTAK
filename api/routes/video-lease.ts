@@ -40,6 +40,7 @@ export default async function router(schema: Schema, config: Config) {
                 watchers: Type.Integer(),
                 source_type: Type.Enum(VideoLease_SourceType),
                 source_model: Type.String(),
+                protocols: Protocols
             }))
         })
     }, async (req, res) => {
@@ -68,20 +69,38 @@ export default async function router(schema: Schema, config: Config) {
                 })
             } else {
                 const lease = await config.models.VideoLease.from(eq(VideoLease.path, uuid[0]));
-
                 const path = await videoControl.path(lease.path);
 
-                res.json({
-                    leasable: false,
-                    metadata: {
-                        name: lease.name,
-                        username: lease.username,
-                        active: path.ready,
-                        watchers: path.readers.length,
-                        source_type: lease.source_type,
-                        source_model: lease.source_model || ''
-                    }
-                });
+                const base = {
+                    name: lease.name,
+                    username: lease.username,
+                    active: path.ready,
+                    watchers: path.readers.length,
+                    source_type: lease.source_type,
+                    source_model: lease.source_model || ''
+                };
+
+                const protocols = await videoControl.protocols(lease)
+
+                if (!lease.read_user && !lease.read_pass) {
+                    res.json({
+                        leasable: false,
+                        metadata: {
+                            ...base,
+                            protocols
+                        }
+                    });
+                } else {
+                    // TODO Check Username & Password
+
+                    res.json({
+                        leasable: false,
+                        metadata: {
+                            ...base,
+                            protocols
+                        }
+                    });
+                }
             }
         } catch (err) {
              Err.respond(err, res);
