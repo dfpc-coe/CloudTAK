@@ -9,14 +9,12 @@
     >
         <div class='d-flex align-items-center px-2 py-2'>
             <div
-                :draggable='true'
-                @dragstart='dragStart'
+                ref='drag-handle'
+                class='cursor-pointer'
             >
                 <IconGripVertical
-                    ref='drag-handle'
                     :size='24'
                     stroke='1'
-                    class='cursor-pointer'
                 />
             </div>
 
@@ -117,6 +115,7 @@ const props = defineProps({
 });
 
 const container = useTemplateRef<HTMLElement>('container');
+const dragHandle = useTemplateRef<HTMLElement>('drag-handle');
 
 const emit = defineEmits(['close']);
 
@@ -128,6 +127,10 @@ const video = ref(videoStore.videos.get(props.uid));
 const videoLease = ref<VideoLeaseResponse["lease"] | undefined>();
 const videoProtocols = ref<VideoLeaseResponse["protocols"] | undefined>();
 const observer = ref<ResizeObserver | undefined>();
+const lastPosition = ref({
+    top: 0,
+    left: 0
+})
 
 onUnmounted(async () => {
     if (observer.value) {
@@ -144,25 +147,26 @@ onUnmounted(async () => {
 onMounted(async () => {
     await requestLease();
 
-    document.body.addEventListener('dragover', (event) => {
-        if (video.value && video.value) {
-            video.value.x = event.clientX;
-            video.value.y = event.clientY;
-        }
+    observer.value = new ResizeObserver((entries) => {
+        if (!entries.length) return;
 
-        event.preventDefault();
-        return false;
-    }, false);
-
-    observer.value = new ResizeObserver(() => {
-        if (video.value && video.value &&  container.value) {
-            video.value.height = container.value.clientHeight;
-            video.value.width = container.value.clientWidth;
-        }
+        window.requestAnimationFrame(() => {        
+            if (video.value && video.value && container.value) {
+                video.value.height = entries[0].contentRect.height;
+                video.value.width = entries[0].contentRect.width;
+            }
+        });
     })
 
     if (container.value) {
+        container.value.style.height = video.value.height;
+        container.value.style.width = video.value.width;
+
         observer.value.observe(container.value);
+    }
+
+    if (dragHandle.value) {
+        dragHandle.value.addEventListener('mousedown', dragStart);
     }
 
     if (!error.value && videoProtocols.value && videoProtocols.value.hls) {
@@ -175,10 +179,43 @@ onMounted(async () => {
 });
 
 function dragStart(event: DragEvent) {
-    if (!event.dataTransfer) return;
-    event.dataTransfer.effectAllowed = 'move';
-    event.dataTransfer.setData("text/plain", id);
-    event.dataTransfer.setDragImage(new Image(), 0, 0)
+    if (!container.value || !dragHandle.value) return;
+
+    lastPosition.value.left = event.clientX;
+    lastPosition.value.top = event.clientY;
+
+    console.error(event.clientX, event.clientY);
+
+    dragHandle.value.classList.add('dragging');
+
+    container.value.addEventListener('mousemove', dragMove);
+    container.value.addEventListener('mouseleave', dragEnd);
+    container.value.addEventListener('mouseup', dragEnd);
+}
+
+function dragMove(event: DragEvent) {
+    if (!container.value || !dragHandle.value) return;
+
+
+    const dragElRect = container.value.getBoundingClientRect();
+
+    video.value.x = dragElRect.left + event.clientX - lastPosition.value.left;
+    video.value.y = dragElRect.top + event.clientY - lastPosition.value.top;
+
+    lastPosition.value.left = event.clientX;
+    lastPosition.value.top = event.clientY;
+
+    window.getSelection().removeAllRanges();
+}
+
+function dragEnd(event: DragEvent) {
+    if (!container.value || !dragHandle.value) return;
+
+    container.value.removeEventListener('mousemove', dragMove);
+    container.value.removeEventListener('mouseleave', dragEnd);
+    container.value.removeEventListener('mouseup', dragEnd);
+
+    dragHandle.value.classList.remove('dragging');
 }
 
 async function deleteLease(): Promise<void> {
@@ -220,6 +257,10 @@ async function requestLease(): Promise<void> {
 </script>
 
 <style>
+.dragging {
+    cursor: move !important;
+}
+
 .resizable-content {
     min-height: 300px;
     min-width: 400px;
