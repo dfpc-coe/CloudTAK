@@ -156,6 +156,19 @@ export default class VideoServiceControl {
         }
     }
 
+    async url(): Promise<URL | null> {
+        try {
+            const url = await this.config.models.Setting.from('media::url');
+            return new URL(url.value);
+        } catch (err) {
+            if (err instanceof Error && err.message.includes('Not Found')) {
+                return null;
+            } else {
+                throw new Err(500, err instanceof Error ? err : new Error(String(err)), 'Media Service Configuration Error');
+            }
+        }
+    }
+
     async settings(): Promise<{
         configured: boolean;
         url?: string;
