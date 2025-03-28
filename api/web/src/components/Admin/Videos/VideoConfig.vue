@@ -227,7 +227,10 @@
                                 :title='path.ready ? "Streaming" : "Not Streaming"'
                                 :status='path.ready ? "success" : "fail"'
                             />
-                            <span class='mx-2' v-text='path.name' />
+                            <span
+                                class='mx-2'
+                                v-text='path.name'
+                            />
 
                             <div class='ms-auto'>
                                 <IconUsersGroup

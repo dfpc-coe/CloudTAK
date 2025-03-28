@@ -149,7 +149,7 @@ onMounted(async () => {
         });
     })
 
-    if (container.value) {
+    if (container.value && video.value) {
         container.value.style.top = video.value.y + 'px';
         container.value.style.left = video.value.x + 'px';
 
@@ -174,7 +174,7 @@ onMounted(async () => {
     }
 });
 
-function dragStart(event: DragEvent) {
+function dragStart(event: MouseEvent) {
     if (!container.value || !dragHandle.value) return;
 
     lastPosition.value.left = event.clientX;
@@ -187,8 +187,8 @@ function dragStart(event: DragEvent) {
     container.value.addEventListener('mouseup', dragEnd);
 }
 
-function dragMove(event: DragEvent) {
-    if (!container.value || !dragHandle.value) return;
+function dragMove(event: MouseEvent) {
+    if (!container.value || !dragHandle.value || !video.value) return;
 
 
     const dragElRect = container.value.getBoundingClientRect();
@@ -201,11 +201,9 @@ function dragMove(event: DragEvent) {
 
     container.value.style.top = video.value.y + 'px';
     container.value.style.left = video.value.x + 'px';
-
-    window.getSelection().removeAllRanges();
 }
 
-function dragEnd(event: DragEvent) {
+function dragEnd() {
     if (!container.value || !dragHandle.value) return;
 
     container.value.removeEventListener('mousemove', dragMove);
