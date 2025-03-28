@@ -2,10 +2,6 @@
     <div
         ref='container'
         class='position-absolute bg-dark rounded border resizable-content text-white'
-        :style='`
-            left: ${video ? video.x : 60}px;
-            top: ${video ? video.y : 0}px;
-        `'
     >
         <div class='d-flex align-items-center px-2 py-2'>
             <div
@@ -57,7 +53,7 @@
                     </TablerButton>
                 </div>
             </template>
-            <template v-else-if='!videoProtocols || !videoProtocols.hls'>
+            <template v-else-if='!video || !videoProtocols || !videoProtocols.hls'>
                 <TablerNone
                     label='HLS Streaming Protocol'
                     :create='false'
@@ -99,8 +95,8 @@ import {
     TablerButton,
     TablerIconButton,
 } from '@tak-ps/vue-tabler';
-const videoStore = useVideoStore();
 
+const videoStore = useVideoStore();
 const id = `video-${(Math.random() + 1).toString(36).substring(7)}`;
 
 const props = defineProps({
@@ -127,10 +123,7 @@ const video = ref(videoStore.videos.get(props.uid));
 const videoLease = ref<VideoLeaseResponse["lease"] | undefined>();
 const videoProtocols = ref<VideoLeaseResponse["protocols"] | undefined>();
 const observer = ref<ResizeObserver | undefined>();
-const lastPosition = ref({
-    top: 0,
-    left: 0
-})
+const lastPosition = ref({ top: 0, left: 0 })
 
 onUnmounted(async () => {
     if (observer.value) {
@@ -145,12 +138,10 @@ onUnmounted(async () => {
 });
 
 onMounted(async () => {
-    await requestLease();
-
     observer.value = new ResizeObserver((entries) => {
         if (!entries.length) return;
 
-        window.requestAnimationFrame(() => {        
+        window.requestAnimationFrame(() => {
             if (video.value && video.value && container.value) {
                 video.value.height = entries[0].contentRect.height;
                 video.value.width = entries[0].contentRect.width;
@@ -159,8 +150,11 @@ onMounted(async () => {
     })
 
     if (container.value) {
-        container.value.style.height = video.value.height;
-        container.value.style.width = video.value.width;
+        container.value.style.top = video.value.y + 'px';
+        container.value.style.left = video.value.x + 'px';
+
+        container.value.style.height = video.value.height + 'px';
+        container.value.style.width = video.value.width + 'px';
 
         observer.value.observe(container.value);
     }
@@ -169,10 +163,12 @@ onMounted(async () => {
         dragHandle.value.addEventListener('mousedown', dragStart);
     }
 
+    await requestLease();
+
     if (!error.value && videoProtocols.value && videoProtocols.value.hls) {
         nextTick(() => {
             player.value = videojs(id, {
-                fluid: true,
+                fill: true,
             });
         });
     }
@@ -183,8 +179,6 @@ function dragStart(event: DragEvent) {
 
     lastPosition.value.left = event.clientX;
     lastPosition.value.top = event.clientY;
-
-    console.error(event.clientX, event.clientY);
 
     dragHandle.value.classList.add('dragging');
 
@@ -204,6 +198,9 @@ function dragMove(event: DragEvent) {
 
     lastPosition.value.left = event.clientX;
     lastPosition.value.top = event.clientY;
+
+    container.value.style.top = video.value.y + 'px';
+    container.value.style.left = video.value.x + 'px';
 
     window.getSelection().removeAllRanges();
 }
