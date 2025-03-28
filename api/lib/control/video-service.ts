@@ -6,6 +6,12 @@ import { VideoLease_SourceType } from '../enums.js';
 import fetch from '../fetch.js';
 import TAKAPI, { APIAuthCertificate } from '../tak-api.js';
 
+export enum ProtocolPopulation {
+    TEMPLATE,
+    WRITE,
+    READ
+}
+
 export const Protocols = Type.Object({
     rtmp: Type.Optional(Type.Object({
         name: Type.String(),
@@ -261,7 +267,10 @@ export default class VideoServiceControl {
         };
     }
 
-    async protocols(lease: Static<typeof VideoLeaseResponse>): Promise<Static<typeof Protocols>> {
+    async protocols(
+        lease: Static<typeof VideoLeaseResponse>,
+        populated = ProtocolPopulation.TEMPLATE
+    ): Promise<Static<typeof Protocols>> {
         const protocols: Static<typeof Protocols> = {};
         const c = await this.configuration();
 
@@ -289,7 +298,13 @@ export default class VideoServiceControl {
             }
 
             if (lease.stream_user && lease.read_user) {
-                protocols.rtmp.url = `${protocols.rtmp.url}?user={{username}}&pass={{password}}`;
+                if (population === ProtocolPopulation.TEMPLATE) {
+                    protocols.rtmp.url = `${protocols.rtmp.url}?user={{username}}&pass={{password}}`;
+                } else if (population === ProtocolPopulation.READ) {
+                    protocols.rtmp.url = `${protocols.rtmp.url}?user=${lease.read_user}&pass=${lease.read_pass}`;
+                } else if (population === ProtocolPopulation.WRITE) {
+                    protocols.rtmp.url = `${protocols.rtmp.url}?user=${lease.stream_user}&pass=${lease.stream_pass}`;
+                }
             }
 
         }
@@ -300,9 +315,21 @@ export default class VideoServiceControl {
             url.port = c.config.srtAddress.replace(':', '');
 
             if (lease.stream_user && lease.read_user) {
-                protocols.srt = {
-                    name: 'Secure Reliable Transport (SRT)',
-                    url: String(url) + `?streamid={{mode}}:${lease.path}:{{username}}:{{password}}`
+                if (population === ProtocolPopulation.READ) {
+                    protocols.srt = {
+                        name: 'Secure Reliable Transport (SRT)',
+                        url: String(url) + `?streamid={{mode}}:${lease.path}:${read_user}}:${read_pass}`
+                    }
+                } else if (population === ProtocolPopulation.WRITE) {
+                    protocols.srt = {
+                        name: 'Secure Reliable Transport (SRT)',
+                        url: String(url) + `?streamid={{mode}}:${lease.path}:${stream_user}}:${stream_pass}`
+                    }
+                } else {
+                    protocols.srt = {
+                        name: 'Secure Reliable Transport (SRT)',
+                        url: String(url) + `?streamid={{mode}}:${lease.path}:{{username}}:{{password}}`
+                    }
                 }
             } else {
                 protocols.srt = {
