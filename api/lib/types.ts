@@ -41,6 +41,14 @@ export const StandardResponse = Type.Object({
     message: Type.String()
 });
 
+export const PaletteResponse = createSelectSchema(schemas.Palette, {
+    uuid: Type.String(),
+});
+
+export const PaletteFeatureResponse = createSelectSchema(schemas.PaletteFeature, {
+    uuid: Type.String(),
+});
+
 export const VideoResponse = Type.Object({
     id: Type.String(),
     version: Type.Integer(),
