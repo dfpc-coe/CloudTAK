@@ -318,12 +318,12 @@ export default class VideoServiceControl {
                 if (populated === ProtocolPopulation.READ) {
                     protocols.srt = {
                         name: 'Secure Reliable Transport (SRT)',
-                        url: String(url) + `?streamid={{mode}}:${lease.path}:${read_user}}:${read_pass}`
+                        url: String(url) + `?streamid={{mode}}:${lease.path}:${lease.read_user}}:${lease.read_pass}`
                     }
                 } else if (populated === ProtocolPopulation.WRITE) {
                     protocols.srt = {
                         name: 'Secure Reliable Transport (SRT)',
-                        url: String(url) + `?streamid={{mode}}:${lease.path}:${stream_user}}:${stream_pass}`
+                        url: String(url) + `?streamid={{mode}}:${lease.path}:${lease.stream_user}}:${lease.stream_pass}`
                     }
                 } else {
                     protocols.srt = {

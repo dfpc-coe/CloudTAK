@@ -30,7 +30,7 @@ export const Palette = pgTable('palette', {
 
 export const PaletteFeature = pgTable('palette', {
     uuid: uuid().primaryKey().default(sql`gen_random_uuid()`),
-    pallete: text().notNull().references(() => Pallete.uuid),
+    pallete: text().notNull().references(() => Palette.uuid),
     type: text().$type<BasicGeometryType>().notNull(),
     style: json().notNull().default({})
 });
@@ -56,7 +56,7 @@ export const Profile = pgTable('profile', {
     display_distance: text().$type<Profile_Distance>().notNull().default(Profile_Distance.MILE),
     display_elevation: text().$type<Profile_Elevation>().notNull().default(Profile_Elevation.FEET),
     display_speed: text().$type<Profile_Speed>().notNull().default(Profile_Speed.MPH),
-    display_projection: text().$type<Profile_Projection>().notnull().default(Profile_Projection.globe),
+    display_projection: text().$type<Profile_Projection>().notNull().default(Profile_Projection.GLOBE),
     display_text: text().$type<Profile_Text>().notNull().default(Profile_Text.Medium),
     system_admin: boolean().notNull().default(false),
     agency_admin: json().notNull().$type<Array<number>>().default([])
