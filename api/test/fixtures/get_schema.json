@@ -1094,6 +1094,11 @@
         "query": false,
         "res": true
     },
+    "GET /video/active": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
     "GET /video/lease": {
         "body": false,
         "query": true,
