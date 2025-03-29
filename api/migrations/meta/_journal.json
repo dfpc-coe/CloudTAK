@@ -666,6 +666,13 @@
       "when": 1742493516316,
       "tag": "0094_striped_maginty",
       "breakpoints": true
+    },
+    {
+      "idx": 95,
+      "version": "7",
+      "when": 1743021753034,
+      "tag": "0095_silent_electro",
+      "breakpoints": true
     }
   ]
 }

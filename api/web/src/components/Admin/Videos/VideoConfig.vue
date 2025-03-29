@@ -208,11 +208,11 @@
         </div>
 
         <template v-if='disabled'>
-            <div class='row g-0 px-2'>
+            <div class='row g-0 py-3'>
                 <label class='subheader mx-2'>Server Paths</label>
-                <div class='col-12 border rounded px-2 py-2'>
+                <div class='col-12 border rounded mx-2'>
                     <TablerNone
-                        v-if='service.paths.length === 0'
+                        v-if='(service.paths || []).length === 0'
                         :create='false'
                         :compact='true'
                         label='Server Paths'
@@ -220,10 +220,28 @@
                     <template v-else>
                         <div
                             v-for='path in service.paths'
-                            class='hover-light px-2 py-2 cursor-pointer'
+                            class='hover-light px-2 py-2 cursor-pointer d-flex align-items-center'
                             @click='pathid = path.name'
                         >
-                            <span v-text='path.name' />
+                            <StatusDot
+                                :title='path.ready ? "Streaming" : "Not Streaming"'
+                                :status='path.ready ? "success" : "fail"'
+                            />
+                            <span
+                                class='mx-2'
+                                v-text='path.name'
+                            />
+
+                            <div class='ms-auto'>
+                                <IconUsersGroup
+                                    :size='32'
+                                    stroke='1'
+                                />
+                                <span
+                                    class='mx-2'
+                                    v-text='`${path.readers.length} Viewers`'
+                                />
+                            </div>
                         </div>
                     </template>
                 </div>
@@ -234,58 +252,48 @@
     <VideoConfigPath
         v-if='pathid'
         :pathid='pathid'
-        @close='pathid = false'
+        @close='pathid = undefined'
     />
 </template>
 
-<script>
-import { std } from '/src/std.ts';
+<script setup lang='ts'>
+import { ref } from 'vue';
+import { std } from '../../../std.ts';
+import type { VideoService } from '../../../types.ts';
 import VideoConfigPath from './VideoConfigPath.vue';
+import StatusDot from '../../util/StatusDot.vue';
 import {
     TablerNone,
     TablerInput,
     TablerLoading,
     TablerToggle
 } from '@tak-ps/vue-tabler';
+import {
+    IconUsersGroup
+} from '@tabler/icons-vue'
 
-export default {
-    name: 'VideoConfig',
-    components: {
-        TablerNone,
-        TablerInput,
-        TablerLoading,
-        TablerToggle,
-        VideoConfigPath
-    },
-    props: {
-        service: Object,
-        disabled: {
-            type: Boolean,
-            default: true
-        }
-    },
-    emits: [
-        'cancel'
-    ],
-    data: function() {
-        return {
-            loading: false,
-            pathid: false,
-            config: JSON.parse(JSON.stringify(this.service.config))
-        }
-    },
-    methods: {
-        saveConfig: async function() {
-            this.loading = true;
+const props = withDefaults(defineProps<{
+    service: VideoService,
+    disabled: boolean
+}>(), {
+    disabled: true
+})
 
-            await std('/api/video/service', {
-                method: 'PATCH',
-                body: this.config
-            });
+const emit = defineEmits([ 'cancel' ]);
 
-            this.loading = false;
-            this.$emit('cancel');
-        },
-    }
+const loading = ref(false);
+const pathid = ref<string | undefined>();
+const config = ref(JSON.parse(JSON.stringify(props.service.config)))
+
+async function saveConfig() {
+    loading.value = true;
+
+    await std('/api/video/service', {
+        method: 'PATCH',
+        body: config.value
+    });
+
+    loading.value = false;
+    emit('cancel');
 }
 </script>

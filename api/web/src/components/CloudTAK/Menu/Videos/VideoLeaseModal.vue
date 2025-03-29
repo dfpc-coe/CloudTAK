@@ -329,6 +329,22 @@
                 </div>
                 <div class='col-12'>
                     <TablerToggle
+                        v-model='editLease.publish'
+                        label='Publish to TAK Server'
+                        :disabled='disabled'
+                        description='Publish the non-geolocated Video Stream to the Video Manager'
+                    />
+                </div>
+                <div class='col-12'>
+                    <TablerToggle
+                        v-model='editLease.recording'
+                        label='Record Stream'
+                        :disabled='disabled'
+                        description='Record stream when it is broadcasting'
+                    />
+                </div>
+                <div class='col-12'>
+                    <TablerToggle
                         v-model='secure'
                         label='Read/Write Security'
                         :disabled='disabled'
@@ -475,6 +491,8 @@ const editLease = ref<{
     id?: number
     name: string
     duration: string
+    recording: boolean
+    publish: boolean
     channel: string | null
     source_type: string
     source_model: string
@@ -487,6 +505,8 @@ const editLease = ref<{
     name: '',
     duration: '16 Hours',
     channel: null,
+    recording: false,
+    publish: false,
     source_type: 'unknown',
     source_model: '',
     stream_user: '',
@@ -591,6 +611,8 @@ async function saveLease() {
                     channel: channels.value.length ? channels.value[0] : null,
                     duration: editLease.value.duration === 'Permanent' ? undefined : parseInt(editLease.value.duration.split(' ')[0]) * 60 * 60,
                     permanent: editLease.value.duration === 'Permanent' ? true : false,
+                    recording: editLease.value.recording,
+                    publish: editLease.value.publish,
                     source_type: editLease.value.source_type,
                     source_model: editLease.value.source_model,
                 }
@@ -604,6 +626,8 @@ async function saveLease() {
                     channel: channels.value.length ? channels.value[0] : null,
                     duration: editLease.value.duration === 'Permanent' ? undefined : parseInt(editLease.value.duration.split(' ')[0]) * 60 * 60,
                     permanent: editLease.value.duration === 'Permanent' ? true : false,
+                    recording: editLease.value.recording,
+                    publish: editLease.value.publish,
                     source_type: editLease.value.source_type,
                     source_model: editLease.value.source_model,
                 }

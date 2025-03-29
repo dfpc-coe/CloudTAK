@@ -5,7 +5,7 @@ import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import EC2 from '../lib/aws/ec2.js';
 import ECSVideo from '../lib/aws/ecs-video.js';
-import ECSVideoControl, { Configuration, VideoConfigUpdate, PathConfig } from '../lib/control/video-service.js';
+import ECSVideoControl, { Configuration, VideoConfigUpdate, PathConfig, PathListItem } from '../lib/control/video-service.js';
 import { StandardResponse, VideoResponse } from '../lib/types.js';
 
 export default async function router(schema: Schema, config: Config) {
@@ -108,12 +108,18 @@ export default async function router(schema: Schema, config: Config) {
         params: Type.Object({
             path: Type.String()
         }),
-        res: PathConfig
+        res: Type.Object({
+            config: PathConfig,
+            path: PathListItem
+        })
     }, async (req, res) => {
         try {
             await Auth.as_user(config, req, { admin: true });
 
-            res.json(await videoControl.path(req.params.path));
+            res.json({
+                path: await videoControl.path(req.params.path),
+                config: await videoControl.pathConfig(req.params.path)
+            });
         } catch (err) {
             Err.respond(err, res);
         }

@@ -6,6 +6,12 @@ import { VideoLease_SourceType } from '../enums.js';
 import fetch from '../fetch.js';
 import TAKAPI, { APIAuthCertificate } from '../tak-api.js';
 
+export enum ProtocolPopulation {
+    TEMPLATE,
+    WRITE,
+    READ
+}
+
 export const Protocols = Type.Object({
     rtmp: Type.Optional(Type.Object({
         name: Type.String(),
@@ -99,7 +105,7 @@ export const PathConfig = Type.Object({
     record: Type.Boolean(),
 });
 
-export const PathListConfig = Type.Object({
+export const PathListItem = Type.Object({
     name: Type.String(),
     confName: Type.String(),
     source: Type.Union([
@@ -118,26 +124,55 @@ export const PathListConfig = Type.Object({
         type: Type.String(),
         id: Type.String()
     }))
-})
+});
 
-export const PathsListConfig = Type.Object({
+export const Recording = Type.Object({
+    name: Type.String(),
+    segmenets: Type.Array(Type.Object({
+        start: Type.String()
+    }))
+});
+
+export const PathsList = Type.Object({
     pageCount: Type.Integer(),
     itemCount: Type.Integer(),
-    items: Type.Array(PathListConfig)
+    items: Type.Array(PathListItem)
 })
 
 export const Configuration = Type.Object({
     configured: Type.Boolean(),
     url: Type.Optional(Type.String()),
     config: Type.Optional(VideoConfig),
-    paths: Type.Optional(Type.Array(PathListConfig))
+    paths: Type.Optional(Type.Array(PathListItem))
 });
 
 export default class VideoServiceControl {
     config: Config;
+    recording: Record<string, string>;
 
     constructor(config: Config) {
         this.config = config;
+
+        this.recording = {
+            recordPath: '/opt/mediamtx/recordings/%path/%Y-%m-%d_%H-%M-%S-%f',
+            recordFormat: 'fmp4',
+            recordPartDuration: '1s',
+            recordSegmentDuration: '1h',
+            recordDeleteAfter: '7d'
+        }
+    }
+
+    async url(): Promise<URL | null> {
+        try {
+            const url = await this.config.models.Setting.from('media::url');
+            return new URL(url.value);
+        } catch (err) {
+            if (err instanceof Error && err.message.includes('Not Found')) {
+                return null;
+            } else {
+                throw new Err(500, err instanceof Error ? err : new Error(String(err)), 'Media Service Configuration Error');
+            }
+        }
     }
 
     async settings(): Promise<{
@@ -222,7 +257,7 @@ export default class VideoServiceControl {
         const resPaths = await fetch(urlPaths, { headers })
         if (!resPaths.ok) throw new Err(500, null, await resPaths.text())
 
-        const paths = await resPaths.typed(PathsListConfig);
+        const paths = await resPaths.typed(PathsList);
 
         return {
             configured: video.configured,
@@ -232,7 +267,10 @@ export default class VideoServiceControl {
         };
     }
 
-    async protocols(lease: Static<typeof VideoLeaseResponse>): Promise<Static<typeof Protocols>> {
+    async protocols(
+        lease: Static<typeof VideoLeaseResponse>,
+        populated = ProtocolPopulation.TEMPLATE
+    ): Promise<Static<typeof Protocols>> {
         const protocols: Static<typeof Protocols> = {};
         const c = await this.configuration();
 
@@ -260,7 +298,13 @@ export default class VideoServiceControl {
             }
 
             if (lease.stream_user && lease.read_user) {
-                protocols.rtmp.url = `${protocols.rtmp.url}?user={{username}}&pass={{password}}`;
+                if (populated === ProtocolPopulation.TEMPLATE) {
+                    protocols.rtmp.url = `${protocols.rtmp.url}?user={{username}}&pass={{password}}`;
+                } else if (populated === ProtocolPopulation.READ) {
+                    protocols.rtmp.url = `${protocols.rtmp.url}?user=${lease.read_user}&pass=${lease.read_pass}`;
+                } else if (populated === ProtocolPopulation.WRITE) {
+                    protocols.rtmp.url = `${protocols.rtmp.url}?user=${lease.stream_user}&pass=${lease.stream_pass}`;
+                }
             }
 
         }
@@ -271,9 +315,21 @@ export default class VideoServiceControl {
             url.port = c.config.srtAddress.replace(':', '');
 
             if (lease.stream_user && lease.read_user) {
-                protocols.srt = {
-                    name: 'Secure Reliable Transport (SRT)',
-                    url: String(url) + `?streamid={{mode}}:${lease.path}:{{username}}:{{password}}`
+                if (populated === ProtocolPopulation.READ) {
+                    protocols.srt = {
+                        name: 'Secure Reliable Transport (SRT)',
+                        url: String(url) + `?streamid={{mode}}:${lease.path}:${read_user}}:${read_pass}`
+                    }
+                } else if (populated === ProtocolPopulation.WRITE) {
+                    protocols.srt = {
+                        name: 'Secure Reliable Transport (SRT)',
+                        url: String(url) + `?streamid={{mode}}:${lease.path}:${stream_user}}:${stream_pass}`
+                    }
+                } else {
+                    protocols.srt = {
+                        name: 'Secure Reliable Transport (SRT)',
+                        url: String(url) + `?streamid={{mode}}:${lease.path}:{{username}}:{{password}}`
+                    }
                 }
             } else {
                 protocols.srt = {
@@ -381,6 +437,8 @@ export default class VideoServiceControl {
         path: string;
         username?: string;
         connection?: number;
+        recording: boolean;
+        publish: boolean;
         secure: boolean;
         channel?: string | null;
         proxy?: string | null;
@@ -399,6 +457,8 @@ export default class VideoServiceControl {
             expiration: opts.expiration,
             ephemeral: opts.ephemeral,
             path: opts.path,
+            recording: opts.recording,
+            publish: opts.publish,
             source_type: opts.source_type,
             source_model: opts.source_model,
             username: opts.username,
@@ -442,10 +502,11 @@ export default class VideoServiceControl {
                 method: 'POST',
                 headers,
                 body: JSON.stringify({
-                    name: opts.path,
-                    source: opts.proxy,
-                    sourceOnDemand: true
-                }),
+                    name: lease.path,
+                    source: lease.proxy,
+                    sourceOnDemand: true,
+                    record: lease.recording,
+                })
             })
 
             if (!res.ok) throw new Err(500, null, await res.text())
@@ -454,7 +515,9 @@ export default class VideoServiceControl {
                 method: 'POST',
                 headers,
                 body: JSON.stringify({
-                    name: opts.path
+                    name: lease.path,
+                    record: lease.recording,
+                    ...this.recording
                 }),
             })
 
@@ -505,6 +568,8 @@ export default class VideoServiceControl {
             channel?: string | null,
             secure?: boolean,
             expiration: string | null,
+            recording: boolean,
+            publish: boolean,
             source_type?: VideoLease_SourceType,
             source_model?: string
         },
@@ -528,6 +593,24 @@ export default class VideoServiceControl {
 
         try {
             await this.path(lease.path);
+
+            const url = new URL(`/v3/config/paths/add/${lease.path}`, video.url);
+            url.port = '9997';
+
+            const headers = this.headers(video.username, video.password);
+            headers.append('Content-Type', 'application/json');
+
+            const res = await fetch(url, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({
+                    name: lease.path,
+                    record: lease.recording,
+                    ...this.recording
+                }),
+            })
+
+            if (!res.ok) throw new Err(500, null, await res.text())
         } catch (err) {
             if (err instanceof Err && err.status === 404) {
                 const url = new URL(`/v3/config/paths/add/${lease.path}`, video.url);
@@ -540,7 +623,9 @@ export default class VideoServiceControl {
                     method: 'POST',
                     headers,
                     body: JSON.stringify({
-                        name: lease.path
+                        name: lease.path,
+                        record: lease.recording,
+                        ...this.recording
                     }),
                 })
 
@@ -549,12 +634,52 @@ export default class VideoServiceControl {
                 throw err;
             }
         }
-
-
         return lease;
     }
 
-    async path(pathid: string): Promise<Static<typeof PathConfig>> {
+    async path(pathid: string): Promise<Static<typeof PathListItem>> {
+        const video = await this.settings();
+        if (!video.configured) throw new Err(400, null, 'Media Integration is not configured');
+
+        const headers = this.headers(video.username, video.password);
+
+        const url = new URL(`/v3/paths/get/${pathid}`, video.url);
+        url.port = '9997';
+
+        const res = await fetch(url, {
+            method: 'GET',
+            headers,
+        });
+
+        if (res.ok) {
+            return await res.typed(PathListItem);
+        } else {
+            throw new Err(res.status, new Error(await res.text()), 'Media Server Error');
+        }
+    }
+
+    async recordings(config: Static<typeof PathConfig>): Promise<Static<typeof Recording>> {
+        const video = await this.settings();
+        if (!video.configured) throw new Err(400, null, 'Media Integration is not configured');
+
+        const headers = this.headers(video.username, video.password);
+
+        const url = new URL(`/v3/recordings/get/${config.name}`, video.url);
+        url.port = '9997';
+
+        const res = await fetch(url, {
+            method: 'GET',
+            headers,
+        });
+
+        if (res.ok) {
+            return await res.typed(Recording);
+        } else {
+            throw new Err(res.status, new Error(await res.text()), 'Media Server Error');
+        }
+    }
+
+    async pathConfig(pathid: string): Promise<Static<typeof PathConfig>> {
         const video = await this.settings();
         if (!video.configured) throw new Err(400, null, 'Media Integration is not configured');
 
