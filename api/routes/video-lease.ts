@@ -11,7 +11,7 @@ import { StandardResponse, VideoLeaseResponse } from '../lib/types.js';
 import { VideoLease_SourceType } from '../lib/enums.js';
 import { VideoLease } from '../lib/schema.js'
 import { eq } from 'drizzle-orm';
-import ECSVideoControl, { Protocols, PathConfig, PathListItem } from '../lib/control/video-service.js';
+import ECSVideoControl, { Protocols, PathConfig, PathListItem, ProtocolPopulation } from '../lib/control/video-service.js';
 import * as Default from '../lib/limits.js';
 import TAKAPI, { APIAuthCertificate } from '../lib/tak-api.js';
 
@@ -80,7 +80,7 @@ export default async function router(schema: Schema, config: Config) {
                     source_model: lease.source_model || ''
                 };
 
-                const protocols = await videoControl.protocols(lease)
+                const protocols = await videoControl.protocols(lease, ProtocolPopulation.READ)
 
                 if (!lease.read_user && !lease.read_pass) {
                     res.json({
