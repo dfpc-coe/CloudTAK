@@ -17,7 +17,6 @@ process.env.ETL_ID = 'nicholas.ingalls@state.co.us';
 process.env.ETL_TYPE = 'profile';
 process.env.ETL_TOKEN = 'token-123';
 
-
 for (const fixturename of await fsp.readdir(new URL('./fixtures/', import.meta.url))) {
     test(`Fixture Tests: ${fixturename}`, async (t) => {
         process.env.ETL_TASK = JSON.stringify({
@@ -25,6 +24,8 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/', import.meta.u
         });
 
         const task = new Task();
+
+        const { name } = path.parse(fixturename);
 
         Sinon.stub(S3Client.prototype, 'send').callsFake((command) => {
             if (command instanceof GetObjectCommand) {
@@ -42,7 +43,7 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/', import.meta.u
 
                 t.deepEquals(command.input, {
                     Bucket: 'example-bucket',
-                    Key: 'profile/nicholas.ingalls@state.co.us/sample.pmtiles'
+                    Key: `profile/nicholas.ingalls@state.co.us/${name}.pmtiles`
                 });
             } else if (command instanceof PutObjectCommand && command.input.Key.endsWith('.geojsonld')) {
                 const body = command.input.Body;
@@ -50,18 +51,29 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/', import.meta.u
 
                 t.deepEquals(command.input, {
                     Bucket: 'example-bucket',
-                    Key: 'profile/nicholas.ingalls@state.co.us/sample.geojsonld'
+                    Key: `profile/nicholas.ingalls@state.co.us/${name}.geojsonld`
                 });
 
-                t.equals(JSON.parse(String(body)).type, 'Feature')
+                const feats = String(body).split('\n')
+                    .map(JSON.parse)
+
+                t.ok(feats.length > 0);
+
+                feats.forEach((f) => {
+                    t.equals(f.type, 'Feature')
+                });
             } else {
                 test.fail('Unexpected Command');
             }
         });
 
-        await task.control();
+        try {
+            await task.control();
 
-        await task.reporter();
+            await task.reporter();
+        } catch (err) {
+            t.error(err);
+        }
 
         Sinon.restore();
 

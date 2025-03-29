@@ -81,7 +81,7 @@
                                 class='mx-2'
                                 :compact='true'
                                 :contact='{ "team": team }'
-                            /> <span v-text='config.groups[team] ? config.groups[team] : team'/>
+                            /> <span v-text='config.groups[team] ? config.groups[team] : team' />
                         </div>
                         <template v-if='opened.has(team)'>
                             <div

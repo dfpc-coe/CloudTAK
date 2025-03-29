@@ -165,9 +165,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
             }
 
             if (!ephemeral && !this.config.nosinks) {
-                await this.sinks.cots(conn, cots.filter((cot) => {
-                    return cot.is_atom();
-                }));
+                await this.sinks.cots(conn, cots);
             }
         } catch (err) {
             console.error('Error', err);

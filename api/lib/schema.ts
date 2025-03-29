@@ -73,6 +73,10 @@ export const VideoLease = pgTable('video_lease', {
     source_type: text().$type<VideoLease_SourceType>().notNull().default(VideoLease_SourceType.UNKNOWN),
     source_model: text().notNull().default(''),
 
+    // Publish to the TAK Server Video Config API
+    publish: boolean().notNull().default(false),
+    recording: boolean().notNull().default(false),
+
     ephemeral: boolean().notNull().default(false),
     channel: text().default(sql`null`),
 

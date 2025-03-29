@@ -19,7 +19,7 @@
             v-else
             class='modal-body row'
         >
-            <pre v-text='path' />
+            <pre v-text='path.path' />
         </div>
     </TablerModal>
 </template>

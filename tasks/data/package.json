@@ -19,17 +19,21 @@
     "dependencies": {
         "@aws-sdk/client-s3": "^3.303.0",
         "@aws-sdk/lib-storage": "^3.456.0",
-        "@tmcw/togeojson": "^5.5.0",
+        "@tmcw/togeojson": "^7.0.0",
         "@xmldom/xmldom": "^0.9.2",
         "geojson-precision": "^1.0.0",
+        "glob": "^11.0.1",
         "jsonwebtoken": "^9.0.0",
         "node-stream-zip": "^1.15.0",
-        "undici": "^7.1.0"
+        "sharp": "^0.33.5",
+        "spritesmith": "^3.5.1",
+        "undici": "^7.1.0",
+        "vinyl": "^3.0.0"
     },
     "devDependencies": {
         "eslint": "^9.0.0",
         "eslint-plugin-n": "^17.10.2",
-        "sinon": "^19.0.0",
+        "sinon": "^20.0.0",
         "tape": "^5.8.1"
     }
 }
