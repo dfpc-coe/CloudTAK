@@ -289,7 +289,7 @@ async function requestLease(): Promise<void> {
         if (active.value.metadata) {
             videoProtocols.value = active.value.metadata.protocols;
             loading.value = false;
-        } else if (active.valueleaseable) {
+        } else if (active.value.leaseable) {
             const { lease, protocols } = await std('/api/video/lease', {
                 method: 'POST',
                 body:  {
@@ -304,8 +304,8 @@ async function requestLease(): Promise<void> {
             videoProtocols.value = protocols;
 
             loading.value = false;
-        } else if (!active.leasable) {
-            error.value = new Error(active.message || 'Could not start stream');
+        } else if (!active.value.leasable) {
+            error.value = new Error(active.value.message || 'Could not start stream');
         }
 
         if (!error.value && videoProtocols.value && videoProtocols.value.hls) {

@@ -298,11 +298,11 @@ export default class VideoServiceControl {
             }
 
             if (lease.stream_user && lease.read_user) {
-                if (population === ProtocolPopulation.TEMPLATE) {
+                if (populated === ProtocolPopulation.TEMPLATE) {
                     protocols.rtmp.url = `${protocols.rtmp.url}?user={{username}}&pass={{password}}`;
-                } else if (population === ProtocolPopulation.READ) {
+                } else if (populated === ProtocolPopulation.READ) {
                     protocols.rtmp.url = `${protocols.rtmp.url}?user=${lease.read_user}&pass=${lease.read_pass}`;
-                } else if (population === ProtocolPopulation.WRITE) {
+                } else if (populated === ProtocolPopulation.WRITE) {
                     protocols.rtmp.url = `${protocols.rtmp.url}?user=${lease.stream_user}&pass=${lease.stream_pass}`;
                 }
             }
@@ -315,12 +315,12 @@ export default class VideoServiceControl {
             url.port = c.config.srtAddress.replace(':', '');
 
             if (lease.stream_user && lease.read_user) {
-                if (population === ProtocolPopulation.READ) {
+                if (populated === ProtocolPopulation.READ) {
                     protocols.srt = {
                         name: 'Secure Reliable Transport (SRT)',
                         url: String(url) + `?streamid={{mode}}:${lease.path}:${read_user}}:${read_pass}`
                     }
-                } else if (population === ProtocolPopulation.WRITE) {
+                } else if (populated === ProtocolPopulation.WRITE) {
                     protocols.srt = {
                         name: 'Secure Reliable Transport (SRT)',
                         url: String(url) + `?streamid={{mode}}:${lease.path}:${stream_user}}:${stream_pass}`

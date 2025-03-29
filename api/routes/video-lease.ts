@@ -45,7 +45,7 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req);
+            await Auth.as_user(config, req);
 
             const requested = new URL(req.query.url);
 
@@ -57,7 +57,7 @@ export default async function router(schema: Schema, config: Config) {
                     leasable: false,
                     message: 'CloudTAK does not have a media server configured'
                 })
-            } else if (url.hostname !== requested.hostname || !uuid[0]) {
+            } else if (url.hostname !== requested.hostname) {
                 res.json({
                     leasable: true,
                     message: 'CloudTAK has a media server provisioned and can attempt to serve the stream'
@@ -91,7 +91,12 @@ export default async function router(schema: Schema, config: Config) {
                         }
                     });
                 } else {
-                    // TODO Check Username & Password
+                    if (
+                        !req.query.url.includes(lease.read_user)
+                        || !req.query.url.includes(lease.read_pass)
+                    ) {
+                        throw new Err(400, null, 'Invalid Access credentials');
+                    }
 
                     res.json({
                         leasable: false,
