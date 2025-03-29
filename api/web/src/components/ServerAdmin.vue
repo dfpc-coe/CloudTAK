@@ -85,6 +85,19 @@
                                                 :size='32'
                                                 stroke='1'
                                             /><span class='mx-3'>Basemaps &amp; Overlays</span></span>
+                                            <span
+                                                tabindex='0'
+                                                role='menuitem'
+                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
+                                                :class='{
+                                                    "active": String($route.name).startsWith("admin-palette"),
+                                                    "cursor-pointer": !String($route.name).startsWith("admin-palette")
+                                                }'
+                                                @click='$router.push(`/admin/palette`)'
+                                            ><IconBrush
+                                                :size='32'
+                                                stroke='1'
+                                            /><span class='mx-3'>Draw Palette</span></span>
                                         </div>
                                         <h4 class='subheader user-select-none py-2 my-0'>
                                             ETL Settings
@@ -219,6 +232,7 @@ import {
     TablerLoading,
 } from '@tak-ps/vue-tabler'
 import {
+    IconBrush,
     IconNetwork,
     IconTemplate,
     IconVideo,
