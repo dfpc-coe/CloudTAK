@@ -18,6 +18,12 @@ export class toEnum {
     }
 }
 
+export enum BasicGeometryType {
+    POINT = 'Point',
+    LINESTRING = 'LineString',
+    POLYGON = 'Polygon'
+}
+
 export enum VideoLease_SourceType {
     UNKNOWN = 'unknown',
     FIXED = 'fixed',
