@@ -3,19 +3,20 @@ import Config from '../lib/config.js';
 import { sql } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import { Type } from '@sinclair/typebox'
+import { Palette } from '../lib/schema.js';
 import { PaletteResponse } from '../lib/types.js';
 import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/palette', {
         name: 'List Palettes',
-        group: 'BaseMap',
+        group: 'Palette',
         description: 'List Palette',
         query: Type.Object({
             limit: Default.Limit,
             page: Default.Page,
             order: Default.Order,
-            sort: Type.String({ default: 'created', enum: Object.keys(Basemap) }),
+            sort: Type.String({ default: 'created', enum: Object.keys(Palette) }),
             filter: Default.Filter,
         }),
         res: Type.Object({
@@ -31,8 +32,6 @@ export default async function router(schema: Schema, config: Config) {
                 sort: req.query.sort,
                 where: sql`
                     name ~* ${req.query.filter}
-                    AND (username IS NULL OR username = ${user.email})
-                    AND ${scope}
                 `
             });
 

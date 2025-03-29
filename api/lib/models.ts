@@ -20,6 +20,9 @@ export default class Models {
 
     Setting: Setting;
 
+    Palette: Modeler<typeof pgtypes.Palette>;
+    PaletteFeature: Modeler<typeof pgtypes.PaletteFeature>;
+
     Profile: Modeler<typeof pgtypes.Profile>;
     ProfileChat: ProfileChat;
     ProfileInterest: Modeler<typeof pgtypes.ProfileInterest>;
@@ -51,6 +54,10 @@ export default class Models {
         this.Token = new Modeler(pg, pgtypes.Token);
         this.Setting = new Setting(pg);
         this.Server = new Modeler(pg, pgtypes.Server);
+
+        this.Palette = new Modeler(pg, pgtypes.Palette);
+        this.PaletteFeature = new Modeler(pg, pgtypes.PaletteFeature);
+
         this.Profile = new Modeler(pg, pgtypes.Profile);
         this.ProfileInterest = new Modeler(pg, pgtypes.ProfileInterest);
         this.ProfileFeature = new Modeler(pg, pgtypes.ProfileFeature);
