@@ -30,7 +30,7 @@ export const Palette = pgTable('palette', {
 
 export const PaletteFeature = pgTable('palette_feature', {
     uuid: uuid().primaryKey().default(sql`gen_random_uuid()`),
-    pallete: text().notNull().references(() => Palette.uuid),
+    pallete: uuid().notNull().references(() => Palette.uuid),
     type: text().$type<BasicGeometryType>().notNull(),
     style: json().notNull().default({})
 });

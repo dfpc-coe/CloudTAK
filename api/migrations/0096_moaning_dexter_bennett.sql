@@ -5,7 +5,7 @@ CREATE TABLE "palette" (
 --> statement-breakpoint
 CREATE TABLE "palette_feature" (
 	"uuid" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"pallete" text NOT NULL,
+	"pallete" uuid NOT NULL,
 	"type" text NOT NULL,
 	"style" json DEFAULT '{}'::json NOT NULL
 );
