@@ -9,7 +9,7 @@ import { Layer_Config } from './models/Layer.js';
 import {
     Layer_Priority,
     Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Text, Profile_Projection,
-    Basemap_Type, Basemap_Format, Basemap_Style, VideoLease_SourceType
+    Basemap_Type, Basemap_Format, Basemap_Style, VideoLease_SourceType, BasicGeometryType
 } from  './enums.js';
 import { json, boolean, uuid, numeric, integer, timestamp, pgTable, serial, varchar, text, unique, index } from 'drizzle-orm/pg-core';
 
@@ -20,6 +20,19 @@ export const SpatialRefSys = pgTable('spatial_ref_sys', {
     auth_srid: integer(),
     srtext: varchar({ length: 2048 }),
     proj4text: varchar({ length: 2048 })
+});
+
+
+export const Palette = pgTable('palette', {
+    uuid: uuid().primaryKey().default(sql`gen_random_uuid()`),
+    name: text().notNull()
+});
+
+export const PaletteFeature = pgTable('palette', {
+    uuid: uuid().primaryKey().default(sql`gen_random_uuid()`),
+    pallete: text().notNull().references(() => Pallete.uuid),
+    type: text().$type<BasicGeometryType>().notNull(),
+    style: json().notNull().default({})
 });
 
 /** ==== END ==== */
@@ -43,7 +56,7 @@ export const Profile = pgTable('profile', {
     display_distance: text().$type<Profile_Distance>().notNull().default(Profile_Distance.MILE),
     display_elevation: text().$type<Profile_Elevation>().notNull().default(Profile_Elevation.FEET),
     display_speed: text().$type<Profile_Speed>().notNull().default(Profile_Speed.MPH),
-    display_projection: text().$type<Profile_Projection>().notNull().default(Profile_Projection.GLOBE),
+    display_projection: text().$type<profile_projection>().notnull().default(profile_projection.globe),
     display_text: text().$type<Profile_Text>().notNull().default(Profile_Text.Medium),
     system_admin: boolean().notNull().default(false),
     agency_admin: json().notNull().$type<Array<number>>().default([])
