@@ -12,6 +12,14 @@
 
 ### Pending Release
 
+### v7.23.0 - 2025-03-28
+
+- :tada: Allow looking up a lease to avoid having to use the Media Server twice
+- :tada: Allow setting up recording on a stream
+- :rocket: Ensure height/width of Video Player are retained when dragging
+- :rocket: Rewrite dragging to avoid file icon while dragging
+- :rocket: Video player now fills all available space in div avoiding a mind-the-gap situation
+
 ### v7.22.0 - 2025-03-26
 
 - :arrow_up: Update all Core Deps
