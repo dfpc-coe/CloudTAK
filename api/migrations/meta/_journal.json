@@ -680,6 +680,13 @@
       "when": 1743215159537,
       "tag": "0096_last_stranger",
       "breakpoints": true
+    },
+    {
+      "idx": 97,
+      "version": "7",
+      "when": 1743216847771,
+      "tag": "0097_small_deathbird",
+      "breakpoints": true
     }
   ]
 }
