@@ -1,7 +1,10 @@
 <template>
     <div>
         <div class='card-header'>
-            <h1 class='card-title' v-text='route.params.palette === "new" ? "New Palette": palette.name'/>
+            <h1
+                class='card-title'
+                v-text='route.params.palette === "new" ? "New Palette": palette.name'
+            />
 
             <div class='ms-auto btn-list'>
                 <TablerIconButton
@@ -43,8 +46,8 @@
                 <div class='row g-2'>
                     <div class='col-12'>
                         <TablerInput
-                            label='Name'
                             v-model='palette.name'
+                            label='Name'
                         />
                     </div>
                     <div class='col-12 d-flex'>
@@ -52,7 +55,9 @@
                             <button
                                 class='btn btn-primary'
                                 @click='savePalette'
-                            >Save</button>
+                            >
+                                Save
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -71,12 +76,11 @@
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { std, stdurl, stdclick } from '../../../src/std.ts';
-import type { PaletteFeatureList, Palette } from '../../../src/types.ts';
+import { std } from '../../../src/std.ts';
+import type { Palette } from '../../../src/types.ts';
 import {
     TablerNone,
     TablerInput,
-    TablerEnum,
     TablerAlert,
     TablerDelete,
     TablerIconButton,
@@ -97,7 +101,7 @@ const loading = ref(true);
 const palette = ref<Palette>({
     uuid: crypto.randomUUID(),
     name: '',
-    features: new Array()
+    features: []
 });
 
 onMounted(async () => {
@@ -129,10 +133,10 @@ async function savePalette() {
 
             disabled.value = true;
         }
-    } catch (err) {
-        throw err;
-    } finally {
         loading.value = false;
+    } catch (err) {
+        loading.value = false;
+        throw err;
     }
 }
 
@@ -146,9 +150,8 @@ async function deletePalette() {
 
         router.push('/admin/palette');
     } catch (err) {
-        throw err;
-    } finally {
         loading.value = false;
+        throw err;
     }
 }
 

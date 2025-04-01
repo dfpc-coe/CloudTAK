@@ -1,6 +1,6 @@
 import Err from '@openaddresses/batch-error'
 import Modeler, { GenericList, GenericListInput } from '@openaddresses/batch-generic';
-import { Static, Type } from '@sinclair/typebox'
+import { Static } from '@sinclair/typebox'
 import { PaletteResponse } from '../types.js'
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { Palette, PaletteFeature } from '../schema.js';
@@ -17,7 +17,7 @@ export default class PaletteModel extends Modeler<typeof Palette> {
         const SubTable = this.pool
             .select({
                 uuid: PaletteFeature.palette,
-                features: sql`JSON_AGG(profile_feature.*)`
+                features: sql`JSON_AGG(palette_feature.*)`.as('features')
             })
             .from(PaletteFeature)
             .groupBy(PaletteFeature.palette)
@@ -26,7 +26,7 @@ export default class PaletteModel extends Modeler<typeof Palette> {
         const pgres = await this.pool
             .select({
                 palette: Palette,
-                features: sql`COALESCE(${SubTable.features}, '[]'::JSON)`
+                features: sql`COALESCE(${SubTable.features}, '[]'::JSON)`.as('features')
             })
             .from(Palette)
             .leftJoin(SubTable, eq(Palette.uuid, SubTable.uuid))
@@ -48,7 +48,7 @@ export default class PaletteModel extends Modeler<typeof Palette> {
         const SubTable = this.pool
             .select({
                 uuid: PaletteFeature.palette,
-                features: sql`JSON_AGG(profile_feature.*)`
+                features: sql`JSON_AGG(palette_feature.*)`.as('features')
             })
             .from(PaletteFeature)
             .groupBy(PaletteFeature.palette)
@@ -58,7 +58,7 @@ export default class PaletteModel extends Modeler<typeof Palette> {
             .select({
                 count: sql<string>`count(*) OVER()`.as('count'),
                 palette: Palette,
-                features: sql`COALESCE(${SubTable.features}, '[]'::JSON)`
+                features: sql`COALESCE(${SubTable.features}, '[]'::JSON)`.as('features')
             })
             .from(Palette)
             .leftJoin(SubTable, eq(Palette.uuid, SubTable.uuid))
