@@ -360,6 +360,18 @@ const router = VueRouter.createRouter({
                 name: 'admin-user',
                 component: () => import('./components/Admin/AdminUser.vue')
             },{
+                path: 'palette',
+                name: 'admin-palettes',
+                component: () => import('./components/Admin/AdminPalettes.vue')
+            },{
+                path: 'palette/:palette',
+                name: 'admin-palette',
+                component: () => import('./components/Admin/AdminPalette.vue')
+            },{
+                path: 'palette/:palette/feature/:feature',
+                name: 'admin-palette-feature',
+                component: () => import('./components/Admin/AdminPaletteFeature.vue')
+            },{
                 path: 'tasks',
                 name: 'admin-tasks',
                 component: () => import('./components/Admin/AdminTasks.vue'),

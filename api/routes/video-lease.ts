@@ -35,7 +35,7 @@ export default async function router(schema: Schema, config: Config) {
             message: Type.Optional(Type.String()),
             metadata: Type.Optional(Type.Object({
                 name: Type.String(),
-                username: Type.String(),
+                username: Type.Union([Type.Null(), Type.String()]),
                 active: Type.Boolean(),
                 watchers: Type.Integer(),
                 source_type: Type.Enum(VideoLease_SourceType),
@@ -62,7 +62,7 @@ export default async function router(schema: Schema, config: Config) {
                     leasable: true,
                     message: 'CloudTAK has a media server provisioned and can attempt to serve the stream'
                 })
-            } else if (!uuid[0]) {
+            } else if (!uuid || !uuid[0]) {
                 res.json({
                     leasable: true,
                     message: 'CloudTAK could not parse a UUID from the provided stream'
@@ -90,7 +90,7 @@ export default async function router(schema: Schema, config: Config) {
                             protocols
                         }
                     });
-                } else {
+                } else if (lease.read_user && lease.read_pass) {
                     if (
                         !req.query.url.includes(lease.read_user)
                         || !req.query.url.includes(lease.read_pass)
@@ -105,6 +105,8 @@ export default async function router(schema: Schema, config: Config) {
                             protocols
                         }
                     });
+                } else {
+                    throw new Err(400, null, 'Clould not determine lease state');
                 }
             }
         } catch (err) {
@@ -204,8 +206,8 @@ export default async function router(schema: Schema, config: Config) {
                 res.json({
                     lease,
                     protocols,
-                    path: await videoControl.path(req.params.path),
-                    config: await videoControl.pathConfig(req.params.path),
+                    path: await videoControl.path(lease.path),
+                    config: await videoControl.pathConfig(lease.path),
                 });
             } catch (err) {
                 console.error(err);
