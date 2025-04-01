@@ -369,7 +369,7 @@ const router = VueRouter.createRouter({
                 component: () => import('./components/Admin/AdminPalette.vue')
             },{
                 path: 'palette/:palette/feature/:feature',
-                name: 'admin-palette',
+                name: 'admin-palette-feature',
                 component: () => import('./components/Admin/AdminPaletteFeature.vue')
             },{
                 path: 'tasks',

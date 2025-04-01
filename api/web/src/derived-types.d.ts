@@ -10849,6 +10849,440 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/palette": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Palette */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort: "uuid" | "name" | "created" | "updated" | "enableRLS";
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                uuid: string;
+                                name: string;
+                                created: string;
+                                updated: string;
+                                features: {
+                                    uuid: string;
+                                    created: string;
+                                    updated: string;
+                                    name: string;
+                                    palette: string;
+                                    type: string;
+                                    style: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                                }[];
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create a new editing Palette */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            uuid: string;
+                            name: string;
+                            created: string;
+                            updated: string;
+                            features: {
+                                uuid: string;
+                                created: string;
+                                updated: string;
+                                name: string;
+                                palette: string;
+                                type: string;
+                                style: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/palette/{:palette}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Palette */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            uuid: string;
+                            name: string;
+                            created: string;
+                            updated: string;
+                            features: {
+                                uuid: string;
+                                created: string;
+                                updated: string;
+                                name: string;
+                                palette: string;
+                                type: string;
+                                style: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /** Delete an editing Palette */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update properties of a Palette */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            uuid: string;
+                            name: string;
+                            created: string;
+                            updated: string;
+                            features: {
+                                uuid: string;
+                                created: string;
+                                updated: string;
+                                name: string;
+                                palette: string;
+                                type: string;
+                                style: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/palette/{:palette}/feature": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Palette Features */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort: "uuid" | "name" | "created" | "updated" | "enableRLS";
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                uuid: string;
+                                created: string;
+                                updated: string;
+                                name: string;
+                                palette: string;
+                                type: string;
+                                style: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create a new editing Palette Feature */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        type: "Point" | "LineString" | "Polygon";
+                        name: string;
+                        style: {
+                            "marker-color"?: string;
+                            "marker-opacity"?: string;
+                            icon?: string;
+                            stroke?: string;
+                            "stroke-style"?: string;
+                            "stroke-opacity"?: string;
+                            "stroke-width"?: string;
+                            fill?: string;
+                            "fill-opacity"?: string;
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            uuid: string;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            palette: string;
+                            type: string;
+                            style: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/palette/{:palette}/feature/{:feature}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Palette Feature */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            uuid: string;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            palette: string;
+                            type: string;
+                            style: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /** Delete an editing Palette */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update properties of a Palette Feature */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        type?: "Point" | "LineString" | "Polygon";
+                        name?: string;
+                        style?: {
+                            "marker-color"?: string;
+                            "marker-opacity"?: string;
+                            icon?: string;
+                            stroke?: string;
+                            "stroke-style"?: string;
+                            "stroke-opacity"?: string;
+                            "stroke-width"?: string;
+                            fill?: string;
+                            "fill-opacity"?: string;
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            uuid: string;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            palette: string;
+                            type: string;
+                            style: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
     "/profile/asset": {
         parameters: {
             query?: never;
@@ -13716,6 +14150,84 @@ export interface paths {
         };
         trace?: never;
     };
+    "/video/active": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         *                 Return information about an active lease given read credentials
+         *
+         *                 If a user has a valid read URL, the API endpoint will allow an authenticated user
+         *                 to get metadata to agument the video stream itself
+         *              */
+        get: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    url: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @description If a lease request is made, is it likely to succeed */
+                            leasable: boolean;
+                            message?: string;
+                            metadata?: {
+                                name: string;
+                                username: null | string;
+                                active: boolean;
+                                watchers: number;
+                                source_type: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
+                                source_model: string;
+                                protocols: {
+                                    rtmp?: {
+                                        name: string;
+                                        url: string;
+                                    };
+                                    rtsp?: {
+                                        name: string;
+                                        url: string;
+                                    };
+                                    webrtc?: {
+                                        name: string;
+                                        url: string;
+                                    };
+                                    hls?: {
+                                        name: string;
+                                        url: string;
+                                    };
+                                    srt?: {
+                                        name: string;
+                                        url: string;
+                                    };
+                                };
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/video/lease": {
         parameters: {
             query?: never;
@@ -13829,7 +14341,6 @@ export interface paths {
                         source_type?: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
                         source_model?: string;
                         channel?: string | null;
-                        path?: string;
                         proxy?: string;
                     };
                 };
@@ -13940,6 +14451,33 @@ export interface paths {
                                 read_user: string | null;
                                 read_pass: string | null;
                                 proxy: (null | string) | null;
+                            };
+                            config?: {
+                                name: string;
+                                source: string;
+                                sourceFingerprint: string;
+                                sourceOnDemand: boolean;
+                                sourceOnDemandStartTimeout: string;
+                                sourceOnDemandCloseAfter: string;
+                                maxReaders: number;
+                                record: boolean;
+                            };
+                            path?: {
+                                name: string;
+                                confName: string;
+                                source: {
+                                    id: string;
+                                    type: string;
+                                } | null;
+                                ready: boolean;
+                                readyTime: string | null;
+                                tracks: string[];
+                                bytesReceived: number;
+                                bytesSent: number;
+                                readers: {
+                                    type: string;
+                                    id: string;
+                                }[];
                             };
                             protocols: {
                                 rtmp?: {
@@ -14378,14 +14916,33 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            name: string;
-                            source: string;
-                            sourceFingerprint: string;
-                            sourceOnDemand: boolean;
-                            sourceOnDemandStartTimeout: string;
-                            sourceOnDemandCloseAfter: string;
-                            maxReaders: number;
-                            record: boolean;
+                            config: {
+                                name: string;
+                                source: string;
+                                sourceFingerprint: string;
+                                sourceOnDemand: boolean;
+                                sourceOnDemandStartTimeout: string;
+                                sourceOnDemandCloseAfter: string;
+                                maxReaders: number;
+                                record: boolean;
+                            };
+                            path: {
+                                name: string;
+                                confName: string;
+                                source: {
+                                    id: string;
+                                    type: string;
+                                } | null;
+                                ready: boolean;
+                                readyTime: string | null;
+                                tracks: string[];
+                                bytesReceived: number;
+                                bytesSent: number;
+                                readers: {
+                                    type: string;
+                                    id: string;
+                                }[];
+                            };
                         };
                     };
                 };

@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm';
 import { Static } from '@sinclair/typebox'
 import type { StyleContainer } from './style.js';
+import type { PaletteFeatureStyle } from './palette.js';
 import { Polygon, Point } from 'geojson';
 import { geometry, GeometryType } from '@openaddresses/batch-generic';
 import { ConnectionAuth } from './connection-config.js';
@@ -37,7 +38,7 @@ export const PaletteFeature = pgTable('palette_feature', {
     name: text().notNull(),
     palette: uuid().notNull().references(() => Palette.uuid),
     type: text().$type<BasicGeometryType>().notNull(),
-    style: json().notNull().default({})
+    style: json().$type<Static<typeof PaletteFeatureStyle>>().notNull().default({})
 });
 
 /** ==== END ==== */
