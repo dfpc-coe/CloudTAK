@@ -121,6 +121,7 @@ export default class Lambda {
                 Type: 'AWS::Lambda::EventSourceMapping',
                 Properties: {
                     Enabled: 'True',
+                    BatchSize: 1,
                     EventSourceArn:  cf.getAtt('OutgoingQueue', 'Arn'),
                     FunctionName: cf.ref('ETLFunction')
                 }
