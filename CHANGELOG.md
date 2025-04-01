@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v7.24.0 - 2025-04-01
+
+- :bug: Ensure snapping works without moving the map to refresh snap coordinates in draw mode
+- :tada: Introduce Palette support on the backend
+
 ### v7.23.0 - 2025-03-28
 
 - :tada: Allow looking up a lease to avoid having to use the Media Server twice
