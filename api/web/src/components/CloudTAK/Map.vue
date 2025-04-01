@@ -503,7 +503,6 @@ import RadialMenu from './RadialMenu/RadialMenu.vue';
 import { useMapStore } from '../../stores/map.ts';
 import { useVideoStore } from '../../stores/videos.ts';
 import UploadImport from './util/UploadImport.vue'
-import { coordEach } from '@turf/meta';
 const mapStore = useMapStore();
 const videoStore = useVideoStore();
 const router = useRouter();
@@ -726,7 +725,7 @@ async function handleRadial(event: string): Promise<void> {
         mapStore.locked.push(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
         closeRadial()
     } else if (event === 'cot:edit') {
-        await editGeometry(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
+        await mapStore.editGeometry(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
         closeRadial()
     } else if (event === 'feat:view') {
         selectFeat(mapStore.radial.cot as MapGeoJSONFeature);
@@ -742,61 +741,6 @@ async function handleRadial(event: string): Promise<void> {
     } else {
         closeRadial()
         throw new Error(`Unimplemented Radial Action: ${event}`);
-    }
-}
-
-async function editGeometry(featid: string) {
-    if (!mapStore.draw) throw new Error('Drawing Tools haven\'t loaded');
-
-    const cot = await mapStore.worker.db.get(featid, { mission: true });
-    if (!cot) return;
-
-    try {
-        mapStore.edit = cot;
-        mapStore.draw.start();
-        mapStore.draw.setMode('select');
-        mapStore.drawOptions.mode = 'select';
-
-        const feat = cot.as_feature({ clone: true });
-        if (feat.geometry.type === 'Polygon') {
-            feat.properties.mode = 'polygon';
-        } else if (feat.geometry.type === 'LineString') {
-            feat.properties.mode = 'linestring';
-        } else if (feat.geometry.type === 'Point') {
-            feat.properties.mode = 'point';
-        }
-
-        coordEach(feat, (coord) => {
-            if (coord.length > 2) {
-                coord.splice(2, coord.length - 2);
-            }
-
-            // Ensure precision is within bounds
-            for (let i = 0; i < coord.length; i++) {
-                coord[i] = Math.round(coord[i] * Math.pow(10, 9)) / Math.pow(10, 9);
-            }
-        });
-
-        await mapStore.worker.db.hide(cot.id);
-        mapStore.updateCOT();
-
-        const errorStatus = mapStore.draw.addFeatures([feat as GeoJSONStoreFeatures]).filter((status) => {
-            return !status.valid;
-        });
-
-        if (errorStatus.length) {
-            throw new Error('Error editing this feature: ' + errorStatus[0].reason)
-        }
-
-        mapStore.draw.selectFeature(cot.id);
-    } catch (err) {
-        await mapStore.worker.db.unhide(cot.id);
-        mapStore.draw.setMode('static');
-        mapStore.updateCOT();
-        mapStore.drawOptions.mode = 'static';
-        mapStore.draw.stop();
-
-        emit('err', err);
     }
 }
 
