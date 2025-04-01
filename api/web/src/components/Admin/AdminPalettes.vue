@@ -107,7 +107,6 @@ import TableFooter from '../util/TableFooter.vue'
 import {
     TablerNone,
     TablerInput,
-    TablerEnum,
     TablerAlert,
     TablerIconButton,
     TablerLoading
@@ -143,14 +142,14 @@ watch(paging.value, async () => {
 });
 
 onMounted(async () => {
-    await listBasemapSchema();
+    await listPaletteSchema();
     await fetchList();
 });
 
-async function listBasemapSchema() {
+async function listPaletteSchema() {
     const schema = await std('/api/schema?method=GET&url=/palette');
 
-    const defaults: Array<keyof Basemap> = ['name'];
+    const defaults: Array<keyof Palette> = ['name'];
     header.value = defaults.map((h) => {
         return { name: h, display: true };
     });
