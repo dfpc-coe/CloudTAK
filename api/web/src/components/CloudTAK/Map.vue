@@ -691,9 +691,13 @@ function fileUpload(event: string) {
     router.push(`/menu/imports/${imp.id}`)
 }
 
-function startDraw(type: string) {
+async function startDraw(type: string) {
     if (!mapStore.draw) throw new Error('Drawing Tools haven\'t loaded');
+
+    mapStore.drawOptions.snapping = await mapStore.worker.db.snapping(this.map.getBounds().toArray());
+
     mapStore.draw.start();
+
     mapStore.draw.setMode(type);
     mapStore.drawOptions.mode = type;
 }
