@@ -8,6 +8,7 @@
 */
 
 import { defineStore } from 'pinia'
+import { coordEach } from '@turf/meta';
 import { distance } from '@turf/distance';
 import * as Comlink from 'comlink';
 import AtlasWorker from '../workers/atlas.ts?worker&url';
@@ -840,6 +841,59 @@ export const useMapStore = defineStore('cloudtak', {
 
             this._draw = draw;
             this.isLoaded = true;
+        },
+        editGeometry: async function (featid: string): Promise<void> {
+            const cot = await this.worker.db.get(featid, { mission: true });
+
+            if (!cot) return;
+
+            try {
+                this.edit = cot;
+                this.draw.start();
+                this.draw.setMode('select');
+                this.drawOptions.mode = 'select';
+
+                const feat = cot.as_feature({ clone: true });
+                if (feat.geometry.type === 'Polygon') {
+                    feat.properties.mode = 'polygon';
+                } else if (feat.geometry.type === 'LineString') {
+                    feat.properties.mode = 'linestring';
+                } else if (feat.geometry.type === 'Point') {
+                    feat.properties.mode = 'point';
+                }
+
+                coordEach(feat, (coord) => {
+                    if (coord.length > 2) {
+                        coord.splice(2, coord.length - 2);
+                    }
+
+                    // Ensure precision is within bounds
+                    for (let i = 0; i < coord.length; i++) {
+                        coord[i] = Math.round(coord[i] * Math.pow(10, 9)) / Math.pow(10, 9);
+                    }
+                });
+
+                await this.worker.db.hide(cot.id);
+                this.updateCOT();
+
+                const errorStatus = this.draw.addFeatures([feat as GeoJSONStoreFeatures]).filter((status) => {
+                    return !status.valid;
+                });
+
+                if (errorStatus.length) {
+                    throw new Error('Error editing this feature: ' + errorStatus[0].reason)
+                }
+
+                this.draw.selectFeature(cot.id);
+            } catch (err) {
+                await this.worker.db.unhide(cot.id);
+                this.draw.setMode('static');
+                this.updateCOT();
+                this.drawOptions.mode = 'static';
+                this.draw.stop();
+
+                throw err;
+            }
         }
     },
 })
