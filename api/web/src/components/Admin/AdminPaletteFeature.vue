@@ -17,17 +17,8 @@
             </h1>
 
             <div class='ms-auto btn-list'>
-                <TablerIconButton
-                    v-if='disabled'
-                    title='Add Palette Feature'
-                    @click='router.push(`/admin/palette/${route.params.palette}/feature/new`)'
-                >
-                    <IconPlus
-                        :size='32'
-                        stroke='1'
-                    />
-                </TablerIconButton>
                 <TablerDelete
+                    v-if='route.params.feature !== "new"'
                     displaytype='icon'
                     @delete='deletePaletteFeature'
                 />
@@ -79,8 +70,8 @@
                             :edit='true'
                             :hover='true'
                             :validate='validateJSON'
-                            :model-value='JSON.stringify(environment, null, 4)'
-                            @update:model-value='environment = JSON.parse($event)'
+                            :model-value='JSON.stringify(paletteFeature.style, null, 4)'
+                            @update:model-value='paletteFeature.style = JSON.parse($event)'
                         />
                     </div>
                 </div>
@@ -104,10 +95,9 @@
 import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import CopyField from '../CloudTAK/util/CopyField.vue';
-import { std, stdurl, stdclick } from '../../../src/std.ts';
+import { std } from '../../../src/std.ts';
 import type { Palette, PaletteFeature } from '../../../src/types.ts';
 import {
-    TablerNone,
     TablerInput,
     TablerEnum,
     TablerAlert,
@@ -116,7 +106,6 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
-    IconPlus,
     IconPencil,
     IconCircleArrowLeft,
 } from '@tabler/icons-vue'
@@ -129,13 +118,13 @@ const disabled = ref(true);
 const loading = ref(true);
 
 const palette = ref<Palette | undefined>();
-const paletteFeature = ref<Palette>({
+const paletteFeature = ref<PaletteFeature>({
     uuid: crypto.randomUUID(),
     type: 'Point',
     name: '',
     created: new Date().toISOString(),
     updated: new Date().toISOString(),
-    palette: route.params.palette,
+    palette: String(route.params.palette),
     style: {}
 });
 
@@ -151,7 +140,7 @@ onMounted(async () => {
     }
 });
 
-function validateJSON(text) {
+function validateJSON(text: string) {
     try {
         JSON.parse(text);
     } catch (err) {
@@ -166,7 +155,7 @@ async function savePaletteFeature() {
 
     try {
         if (route.params.feature === "new") {
-            palette.value = await std(`/api/palette/${route.params.palette}/feature`, {
+            paletteFeature.value = await std(`/api/palette/${route.params.palette}/feature`, {
                 method: 'POST',
                 body: paletteFeature.value
             }) as PaletteFeature
@@ -175,7 +164,7 @@ async function savePaletteFeature() {
 
             router.push(`/admin/palette/${route.params.palette}`);
         } else {
-            palette.value = await std(`/api/palette/${route.params.palette}/feature/${route.params.feature}`, {
+            paletteFeature.value = await std(`/api/palette/${route.params.palette}/feature/${route.params.feature}`, {
                 method: 'PATCH',
                 body: paletteFeature.value
             }) as PaletteFeature
@@ -198,15 +187,14 @@ async function deletePaletteFeature() {
 
         router.push(`/admin/palette/${route.params.palette}`);
     } catch (err) {
-        throw err;
-    } finally {
         loading.value = false;
+        throw err;
     }
 }
 
 async function fetchPalette() {
     try {
-        palette.value = await std(`/api/palette/${route.params.palette}`) as PaletteList;
+        palette.value = await std(`/api/palette/${route.params.palette}`) as Palette;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }

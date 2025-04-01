@@ -95,7 +95,10 @@
                         <IconPolygon
                             v-else-if='feature.type === "Polygon"'
                         />
-                        <span v-text='feature.name'/>
+                        <span
+                            class='mx-2'
+                            v-text='feature.name'
+                        />
                     </div>
                 </template>
             </template>
@@ -134,6 +137,8 @@ const loading = ref(true);
 
 const palette = ref<Palette>({
     uuid: crypto.randomUUID(),
+    created: new Date().toISOString(),
+    updated: new Date().toISOString(),
     name: '',
     features: []
 });
@@ -192,7 +197,7 @@ async function deletePalette() {
 async function fetchPalette() {
     loading.value = true;
     try {
-        palette.value = await std(`/api/palette/${route.params.palette}`) as PaletteList;
+        palette.value = await std(`/api/palette/${route.params.palette}`) as Palette;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     } finally {
