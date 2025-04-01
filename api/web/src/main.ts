@@ -361,6 +361,10 @@ const router = VueRouter.createRouter({
                 component: () => import('./components/Admin/AdminUser.vue')
             },{
                 path: 'palette',
+                name: 'admin-palettes',
+                component: () => import('./components/Admin/AdminPalettes.vue')
+            },{
+                path: 'palette/:palette',
                 name: 'admin-palette',
                 component: () => import('./components/Admin/AdminPalette.vue')
             },{
