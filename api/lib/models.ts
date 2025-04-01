@@ -2,6 +2,7 @@ import Modeler, { Pool } from '@openaddresses/batch-generic';
 import Data from './models/Data.js';
 import Layer from './models/Layer.js';
 import Basemap from './models/Basemap.js';
+import Palette from './models/Palette.js';
 import Setting from './models/Setting.js';
 import ProfileChat from './models/ProfileChat.js';
 import Icon from './models/Icon.js';
@@ -20,7 +21,7 @@ export default class Models {
 
     Setting: Setting;
 
-    Palette: Modeler<typeof pgtypes.Palette>;
+    Palette: Palette;
     PaletteFeature: Modeler<typeof pgtypes.PaletteFeature>;
 
     Profile: Modeler<typeof pgtypes.Profile>;
@@ -55,7 +56,7 @@ export default class Models {
         this.Setting = new Setting(pg);
         this.Server = new Modeler(pg, pgtypes.Server);
 
-        this.Palette = new Modeler(pg, pgtypes.Palette);
+        this.Palette = new Palette(pg);
         this.PaletteFeature = new Modeler(pg, pgtypes.PaletteFeature);
 
         this.Profile = new Modeler(pg, pgtypes.Profile);

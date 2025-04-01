@@ -5,9 +5,9 @@ CREATE TABLE "palette" (
 --> statement-breakpoint
 CREATE TABLE "palette_feature" (
 	"uuid" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"pallete" uuid NOT NULL,
+	"palette" uuid NOT NULL,
 	"type" text NOT NULL,
 	"style" json DEFAULT '{}'::json NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "palette_feature" ADD CONSTRAINT "palette_feature_pallete_palette_uuid_fk" FOREIGN KEY ("pallete") REFERENCES "public"."palette"("uuid") ON DELETE no action ON UPDATE no action;
+ALTER TABLE "palette_feature" ADD CONSTRAINT "palette_feature_palette_palette_uuid_fk" FOREIGN KEY ("palette") REFERENCES "public"."palette"("uuid") ON DELETE no action ON UPDATE no action;
