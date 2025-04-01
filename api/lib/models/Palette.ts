@@ -1,9 +1,11 @@
 import Err from '@openaddresses/batch-error'
 import Modeler, { GenericList, GenericListInput } from '@openaddresses/batch-generic';
 import { Static, Type } from '@sinclair/typebox'
+import { PaletteResponse } from '../types.js'
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import { Palette } from '../schema.js';
-import { sql, eq, asc, desc } from 'drizzle-orm';
+import { Palette, PaletteFeature } from '../schema.js';
+import type { SQL } from 'drizzle-orm';
+import { is, sql, eq, asc, desc } from 'drizzle-orm';
 
 export default class PaletteModel extends Modeler<typeof Palette> {
     constructor(
