@@ -4,8 +4,7 @@ import { Static, Type } from '@sinclair/typebox'
 import { PaletteResponse } from '../types.js'
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { Palette, PaletteFeature } from '../schema.js';
-import type { SQL } from 'drizzle-orm';
-import { is, sql, eq, asc, desc } from 'drizzle-orm';
+import { SQL, is, sql, eq, asc, desc } from 'drizzle-orm';
 
 export default class PaletteModel extends Modeler<typeof Palette> {
     constructor(
@@ -20,6 +19,7 @@ export default class PaletteModel extends Modeler<typeof Palette> {
                 uuid: PaletteFeature.palette,
                 features: sql`JSON_AGG(profile_feature.*)`
             })
+            .from(PaletteFeature)
             .groupBy(PaletteFeature.palette)
             .as('features');
 
@@ -50,14 +50,18 @@ export default class PaletteModel extends Modeler<typeof Palette> {
                 uuid: PaletteFeature.palette,
                 features: sql`JSON_AGG(profile_feature.*)`
             })
+            .from(PaletteFeature)
             .groupBy(PaletteFeature.palette)
             .as('features');
 
         const pgres = await this.pool
             .select({
+                count: sql<string>`count(*) OVER()`.as('count'),
                 palette: Palette,
                 features: sql`COALESCE(${SubTable.features}, '[]'::JSON)`
             })
+            .from(Palette)
+            .leftJoin(SubTable, eq(Palette.uuid, SubTable.uuid))
             .where(query.where)
             .orderBy(orderBy)
             .limit(query.limit || 10)
