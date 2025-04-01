@@ -704,6 +704,7 @@ export const useMapStore = defineStore('cloudtak', {
                     }),
                     new terraDraw.TerraDrawPolygonMode({
                         editable: true,
+                        showCoordinatePoints: true,
                         snapping: { toCustom }
                     }),
                     new terraDraw.TerraDrawAngledRectangleMode(),
@@ -715,6 +716,7 @@ export const useMapStore = defineStore('cloudtak', {
                                 feature: {
                                     draggable: true,
                                     coordinates: {
+                                        snappable: true,
                                         deletable: true,
                                         midpoints: {
                                             draggable: true
@@ -727,6 +729,7 @@ export const useMapStore = defineStore('cloudtak', {
                                 feature: {
                                     draggable: true,
                                     coordinates: {
+                                        snappable: true,
                                         deletable: true,
                                         midpoints: {
                                             draggable: true

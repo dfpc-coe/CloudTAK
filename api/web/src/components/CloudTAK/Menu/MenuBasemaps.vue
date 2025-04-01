@@ -289,7 +289,7 @@ async function setBasemap(basemap: Basemap) {
 }
 
 function download(basemap: Basemap) {
-    window.open(stdurl(`api/basemap/${basemap.id}?format=xml&download=true&token=${localStorage.token}`), '_blank');
+    window.open(stdurl(`/api/basemap/${basemap.id}?format=xml&download=true&token=${localStorage.token}`), '_blank');
 }
 
 function setCollection(name: string) {
