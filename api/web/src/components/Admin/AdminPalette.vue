@@ -3,8 +3,19 @@
         <div class='card-header'>
             <h1
                 class='card-title'
-                v-text='route.params.palette === "new" ? "New Palette": palette.name'
             />
+
+            <h1 class='card-title d-flex align-items-center'>
+                <TablerIconButton
+                    title='Back to List'
+                    @click='router.push(`/admin/palette`)'
+                >
+                    <IconCircleArrowLeft :size='32' stroke='1'/>
+                </TablerIconButton>
+
+
+                <span class='ms-2' v-text='route.params.palette === "new" ? "New Palette": palette.name'/>
+            </h1>
 
             <div class='ms-auto btn-list'>
                 <TablerIconButton
@@ -68,6 +79,25 @@
                     label='Palette Features'
                     :create='false'
                 />
+                <template v-else>
+                    <div
+                        :key='feature.uuid'
+                        v-for='feature of palette.features'
+                        class='hover-light px-2 py-2 cursor-pointer d-flex align-items-center rounded'
+                        @click='router.push(`/admin/palette/${route.params.palette}/feature/${feature.uuid}`)'
+                    >
+                        <IconPoint
+                            v-if='feature.type === "Point"'
+                        />
+                        <IconLine
+                            v-else-if='feature.type === "LineString"'
+                        />
+                        <IconPolygon
+                            v-else-if='feature.type === "Polygon"'
+                        />
+                        <span v-text='feature.name'/>
+                    </div>
+                </template>
             </template>
         </div>
     </div>
@@ -88,6 +118,10 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     IconPlus,
+    IconPoint,
+    IconCircleArrowLeft,
+    IconLine,
+    IconPolygon,
     IconPencil,
 } from '@tabler/icons-vue'
 
