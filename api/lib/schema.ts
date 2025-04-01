@@ -25,11 +25,16 @@ export const SpatialRefSys = pgTable('spatial_ref_sys', {
 
 export const Palette = pgTable('palette', {
     uuid: uuid().primaryKey().default(sql`gen_random_uuid()`),
-    name: text().notNull()
+    name: text().notNull(),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
 });
 
 export const PaletteFeature = pgTable('palette_feature', {
     uuid: uuid().primaryKey().default(sql`gen_random_uuid()`),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    name: text().notNull(),
     palette: uuid().notNull().references(() => Palette.uuid),
     type: text().$type<BasicGeometryType>().notNull(),
     style: json().notNull().default({})
