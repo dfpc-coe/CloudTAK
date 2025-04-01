@@ -4,8 +4,15 @@
             v-if='palette'
             class='card-header'
         >
-            <h1 class='card-title'>
-                <span v-text='palette.name' /> -
+            <h1 class='card-title d-flex align-items-center'>
+                <TablerIconButton
+                    title='Back to Palette'
+                    @click='router.push(`/admin/palette/${route.params.palette}`)'
+                >
+                    <IconCircleArrowLeft :size='32' stroke='1'/>
+                </TablerIconButton>
+
+                <span class='ms-2' v-text='palette.name + "&nbsp;-&nbsp;"' />
                 <span v-text='route.params.feature === "new" ? "New Feature": paletteFeature.name' />
             </h1>
 
@@ -59,7 +66,6 @@
                             v-model='paletteFeature.type'
                             label='Type'
                             :disabled='disabled'
-                            default='Point'
                             :options='[
                                 "Point",
                                 "LineString",
@@ -112,6 +118,7 @@ import {
 import {
     IconPlus,
     IconPencil,
+    IconCircleArrowLeft,
 } from '@tabler/icons-vue'
 
 const route = useRoute();
@@ -124,6 +131,7 @@ const loading = ref(true);
 const palette = ref<Palette | undefined>();
 const paletteFeature = ref<Palette>({
     uuid: crypto.randomUUID(),
+    type: 'Point',
     name: '',
     created: new Date().toISOString(),
     updated: new Date().toISOString(),
@@ -135,7 +143,8 @@ onMounted(async () => {
     await fetchPalette();
 
     if (route.params.feature !== "new") {
-
+        await fetchPaletteFeature();
+        loading.value = false;
     } else {
         disabled.value = false
         loading.value = false;
@@ -159,23 +168,23 @@ async function savePaletteFeature() {
         if (route.params.feature === "new") {
             palette.value = await std(`/api/palette/${route.params.palette}/feature`, {
                 method: 'POST',
-                body: palette.value
+                body: paletteFeature.value
             }) as PaletteFeature
 
             disabled.value = true;
-            router.push(`/admin/palette/${palette.value.uuid}`);
+
+            router.push(`/admin/palette/${route.params.palette}`);
         } else {
             palette.value = await std(`/api/palette/${route.params.palette}/feature/${route.params.feature}`, {
                 method: 'PATCH',
-                body: palette.value
+                body: paletteFeature.value
             }) as PaletteFeature
 
-            disabled.value = true;
+            router.push(`/admin/palette/${route.params.palette}`);
         }
     } catch (err) {
-        throw err;
-    } finally {
         loading.value = false;
+        throw err;
     }
 }
 
@@ -183,11 +192,11 @@ async function deletePaletteFeature() {
     loading.value = true;
 
     try {
-        await std(`/api/palette/${route.params.palette}`, {
+        await std(`/api/palette/${route.params.palette}/feature/${route.params.feature}`, {
             method: 'DELETE'
         })
 
-        router.push('/admin/palette');
+        router.push(`/admin/palette/${route.params.palette}`);
     } catch (err) {
         throw err;
     } finally {

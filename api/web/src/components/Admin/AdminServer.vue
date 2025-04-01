@@ -191,6 +191,7 @@ import { std } from '../../std.ts';
 import type { Server, Server_Update } from '../../types.ts';
 import Upload from '../util/UploadP12.vue';
 import {
+    TablerIconButton,
     TablerLoading,
     TablerInput
 } from '@tak-ps/vue-tabler';
