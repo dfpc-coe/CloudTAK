@@ -76,11 +76,11 @@ export default async function router(schema: Schema, config: Config) {
                 admin: true
             });
 
-            await config.models.Palette.generate({
+            const palette = await config.models.Palette.generate({
                 ...req.body,
             });
 
-            res.json(await config.models.Palette.augmented_from(req.params.palette));
+            res.json(await config.models.Palette.augmented_from(palette.uuid));
         } catch (err) {
              Err.respond(err, res);
         }

@@ -45,10 +45,19 @@ export const PaletteFeatureResponse = createSelectSchema(schemas.PaletteFeature,
     uuid: Type.String(),
 });
 
-export const PaletteResponse = createSelectSchema(schemas.Palette, {
+
+const Palette = createSelectSchema(schemas.Palette, {
     uuid: Type.String(),
-    features: Type.Array(PaletteFeatureResponse)
-});
+    created: Type.String(),
+    updated: Type.String(),
+})
+
+export const PaletteResponse = Type.Composite([
+    Palette,
+    Type.Object({
+        features: Type.Array(PaletteFeatureResponse)
+    })
+]);
 
 export const VideoResponse = Type.Object({
     id: Type.String(),
