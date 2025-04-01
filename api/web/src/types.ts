@@ -86,6 +86,10 @@ export type ConfigGroups = paths["/config/group"]["get"]["responses"]["200"]["co
 export type Basemap = paths["/basemap/{:basemapid}"]["patch"]["responses"]["200"]["content"]["application/json"]
 export type BasemapList = paths["/basemap"]["get"]["responses"]["200"]["content"]["application/json"]
 
+export type Palette = paths["/palette/{:palette}"]["get"]["responses"]["200"]["content"]["application/json"]
+export type PaletteList = paths["/palette"]["get"]["responses"]["200"]["content"]["application/json"]
+export type PaletteFeature = paths["/palette/{:palette}/feature/{:feature}"]["get"]["responses"]["200"]["content"]["application/json"]
+
 export type Feature = paths["/profile/feature/{:id}"]["get"]["responses"]["200"]["content"]["application/json"] & {
     origin?: Origin
     properties: {

@@ -6,7 +6,6 @@
         <div
             style='height: 40px;'
             class='d-flex align-items-center px-2 py-2'
-
         >
             <div
                 ref='drag-handle'
@@ -28,14 +27,14 @@
 
             <VideoLeaseSourceType
                 v-if='active && active.metadata'
-                :sourceType='active.metadata.source_type'
+                :source-type='active.metadata.source_type'
                 :size='24'
             />
 
             <div class='mx-2'>
                 <div
-                    v-text='title'
                     class='text-sm'
+                    v-text='title'
                 />
                 <div
                     v-if='active && active.metadata && active.metadata.source_model'
@@ -46,9 +45,15 @@
 
             <div class='btn-list ms-auto'>
                 <span v-if='active && active.metadata'>
-                    <IconUsersGroup :size='24' stroke='1'/>
-                    <span v-text='active.metadata.watchers + 1'/>
-                    <span class='ms-1' v-text='active.metadata.watchers + 1 > 1 ? "Watchers" : "Watcher"'/>
+                    <IconUsersGroup
+                        :size='24'
+                        stroke='1'
+                    />
+                    <span v-text='active.metadata.watchers + 1' />
+                    <span
+                        class='ms-1'
+                        v-text='active.metadata.watchers + 1 > 1 ? "Watchers" : "Watcher"'
+                    />
                 </span>
 
                 <TablerIconButton

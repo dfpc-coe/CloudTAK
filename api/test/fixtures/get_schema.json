@@ -879,6 +879,56 @@
         "query": false,
         "res": true
     },
+    "GET /palette": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /palette/:palette": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /palette": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /palette/:palette": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /palette/:palette": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /palette/:palette/feature": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /palette/:palette/feature/:feature": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /palette/:palette/feature": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /palette/:palette/feature/:feature": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /palette/:palette/feature/:feature": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /profile/asset": {
         "body": false,
         "query": false,
