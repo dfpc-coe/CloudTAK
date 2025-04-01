@@ -694,7 +694,7 @@ function fileUpload(event: string) {
 async function startDraw(type: string) {
     if (!mapStore.draw) throw new Error('Drawing Tools haven\'t loaded');
 
-    mapStore.drawOptions.snapping = await mapStore.worker.db.snapping(this.map.getBounds().toArray());
+    mapStore.drawOptions.snapping = await mapStore.worker.db.snapping(mapStore.map.getBounds().toArray());
 
     mapStore.draw.start();
 
