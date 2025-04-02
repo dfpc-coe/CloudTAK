@@ -600,11 +600,13 @@
                 '
                 class='col-12 px-1 pb-2'
             >
-                <div class='col-12 d-flex align-items-center'>
+                <div
+                    class='col-12 py-2 d-flex align-items-center hover-dark cursor-pointer user-select-none'
+                    @click='chevrons.has("metadata") ? chevrons.delete("metadata") : chevrons.add("metadata")'
+                >
                     <TablerIconButton
                         v-if='!chevrons.has("metadata")'
                         title='Open Metadata'
-                        @click='chevrons.add("metadata")'
                     >
                         <IconChevronRight
                             :size='24'
@@ -615,14 +617,13 @@
                     <TablerIconButton
                         v-else
                         title='Close Metadata'
-                        @click='chevrons.delete("metadata")'
                     >
                         <IconChevronDown
                             :size='24'
                             stroke='1'
                         />
                     </TablerIconbutton>
-                    <label class='subheader'>Metadata</label>
+                    <label class='subheader cursor-pointer'>Metadata</label>
                 </div>
                 <div
                     v-if='chevrons.has("metadata")'
