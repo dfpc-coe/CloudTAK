@@ -113,7 +113,7 @@ async function cloudtak_task(task) {
 
 function sha() {
     const git = CP.spawnSync('git', [
-        '--git-dir', new URL('.git', import.meta.url).pathname,
+        '--git-dir', new URL('../.git', import.meta.url).pathname,
         'rev-parse', 'HEAD'
     ]);
 
