@@ -2,7 +2,7 @@ import { createSelectSchema } from 'drizzle-typebox';
 import { Type } from '@sinclair/typebox'
 import * as schemas from './schema.js';
 import { TAKGroup, TAKRole } from './api/types.js';
-import { Profile_Projection } from './enums.js';
+import { Profile_Projection, Profile_Zoom, Profile_Stale, Profile_Distance, Profile_Elevation, Profile_Speed, Profile_Text } from './enums.js';
 import { AugmentedData } from './models/Data.js';
 import { AugmentedLayer, AugmentedLayerIncoming, AugmentedLayerOutgoing } from './models/Layer.js';
 import { Basemap_Format, Basemap_Style, Basemap_Type } from '../lib/enums.js';
@@ -121,11 +121,12 @@ export const ProfileResponse = Type.Object({
     }), Type.Null()]),
     tak_loc_freq: Type.Integer(),
     display_projection: Type.Enum(Profile_Projection),
-    display_stale: Type.String(),
-    display_text: Type.String(),
-    display_distance: Type.String(),
-    display_elevation: Type.String(),
-    display_speed: Type.String()
+    display_zoom: Type.Enum(Profile_Zoom),
+    display_stale: Type.Enum(Profile_Stale),
+    display_text: Type.Enum(Profile_Text),
+    display_distance: Type.Enum(Profile_Distance),
+    display_elevation: Type.Enum(Profile_Elevation),
+    display_speed: Type.Enum(Profile_Speed)
 });
 
 export const VideoLeaseResponse = createSelectSchema(schemas.VideoLease, {
