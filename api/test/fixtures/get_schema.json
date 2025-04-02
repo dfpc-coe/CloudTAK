@@ -549,12 +549,12 @@
         "query": true,
         "res": false
     },
-    "GET /icon/sprite:size?.json": {
+    "GET /icon/sprite{:size}.json": {
         "body": false,
         "query": true,
         "res": false
     },
-    "GET /icon/sprite:size?.png": {
+    "GET /icon/sprite{:size}.png": {
         "body": false,
         "query": true,
         "res": false

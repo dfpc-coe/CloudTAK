@@ -507,7 +507,7 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.get('/icon/sprite:size?.json', {
+    await schema.get('/icon/sprite{:size}.json', {
         name: 'CoT Type Sprites (json)',
         group: 'Icons',
         description: 'Get Spriteset JSON for CoT types',
@@ -556,7 +556,7 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.get('/icon/sprite:size?.png', {
+    await schema.get('/icon/sprite{:size}.png', {
         name: 'CoT Type Sprites',
         group: 'Icons',
         description: 'Return a sprite sheet for CoT Types',
