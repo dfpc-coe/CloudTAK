@@ -418,8 +418,6 @@ export const useMapStore = defineStore('cloudtak', {
                     this.notifications.push(msg.body as TAKNotification);
                 } else if (msg.type === WorkerMessageType.Mission_Change_Feature) {
                     this.loadMission(msg.body.guid);
-                } else {
-                    console.error('Unknown Event:', msg);
                 }
             }
 

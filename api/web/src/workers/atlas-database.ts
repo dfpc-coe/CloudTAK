@@ -341,6 +341,10 @@ export default class AtlasDatabase {
         for (const a of archive.items) {
             this.add(a, undefined, { skipSave: true });
         }
+
+        this.atlas.postMessage({
+            type: WorkerMessageType.Feature_Archived_Added,
+        });
     }
 
     /**
@@ -473,9 +477,15 @@ export default class AtlasDatabase {
                     geometry: feat.geometry
                 }, { skipSave: opts.skipSave })
             } else {
-                new COT(this.atlas, feat, {
+                const cot = new COT(this.atlas, feat, {
                     mode: OriginMode.CONNECTION
                 }, opts);
+
+                if (!opts.skipSave && cot.properties.archived) {
+                    this.atlas.postMessage({
+                        type: WorkerMessageType.Feature_Archived_Added,
+                    });
+                }
             }
         }
     }
