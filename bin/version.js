@@ -12,28 +12,10 @@ pkg_web.version = pkg_root.version;
 await fs.writeFile(new URL('../api/package.json', import.meta.url), JSON.stringify(pkg_api, null, 4));
 await fs.writeFile(new URL('../api/web/package.json', import.meta.url), JSON.stringify(pkg_web, null, 4));
 
-await new Promise((resolve, reject) => {
-    const $ = CP.exec(`
-            git commit -am "Update Version"
-        `, (err) => {
+CP.execSync(`
+        git commit -am "Update Version" && git push
+    `, (err) => {
 
-        if (err) return reject(err);
-        return resolve();
-    });
-
-    $.stdout.pipe(process.stdout);
-    $.stderr.pipe(process.stderr);
-});
-
-await new Promise((resolve, reject) => {
-    const $ = CP.exec(`
-            git push
-        `, (err) => {
-
-        if (err) return reject(err);
-        return resolve();
-    });
-
-    $.stdout.pipe(process.stdout);
-    $.stderr.pipe(process.stderr);
+    if (err) return reject(err);
+    return resolve();
 });
