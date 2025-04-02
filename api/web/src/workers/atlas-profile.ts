@@ -163,6 +163,11 @@ export default class AtlasProfile {
                 body: { callsign: profile.tak_callsign }
             });
 
+            this.atlas.postMessage({
+                type: WorkerMessageType.Profile_Display_Zoom,
+                body: { zoom: profile.display_zoom }
+            });
+
             this.profile = profile;
         }
 
@@ -257,6 +262,13 @@ export default class AtlasProfile {
             this.atlas.postMessage({
                 type: WorkerMessageType.Profile_Callsign,
                 body: { callsign: body.tak_callsign }
+            });
+        }
+
+        if (body.display_zoom) {
+            this.atlas.postMessage({
+                type: WorkerMessageType.Profile_Display_Zoom,
+                body: { zoom: body.display_zoom }
             });
         }
 

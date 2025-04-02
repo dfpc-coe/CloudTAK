@@ -29,6 +29,8 @@ export default class Sinks extends Map<string, typeof SinkInterface> {
         const newCOTs = [...cots];
         const oldCOTs = [...cots];
 
+
+
         for await (const layer of this.config.models.Layer.augmented_iter({
             where: sql`
                 layers.connection = ${conn.id}
@@ -39,10 +41,10 @@ export default class Sinks extends Map<string, typeof SinkInterface> {
             const arnPrefix = (await this.config.fetchArnPrefix()).split(':');
             const queue = `https://sqs.${arnPrefix[3]}.amazonaws.com/${arnPrefix[4]}/${this.config.StackName}-layer-${layer.id}-outgoing.fifo`;
 
-            do {
+            for (let i = 0; i < newCOTs.length; i+= 10) {
                 try {
                     await this.queue.submit(
-                        newCOTs.splice(0, 10).map((cot) => {
+                        newCOTs.slice(i, i + 10).map((cot) => {
                             return {
                                 Id: (Math.random() + 1).toString(36).substring(7),
                                 MessageGroupId: `${String(layer.id)}-${cot.uid()}`,
@@ -55,7 +57,7 @@ export default class Sinks extends Map<string, typeof SinkInterface> {
                 } catch (err) {
                     console.error(`Queue: `, queue, ':', err);
                 }
-            } while (newCOTs.length);
+            }
         }
 
         // OG Sink Implementation which will be phased out

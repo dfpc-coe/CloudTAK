@@ -153,7 +153,7 @@
                         />
                     </div>
                     <div
-                        v-if='!mobileDetected'
+                        v-if='displayZoom'
                     >
                         <IconPlus
                             v-tooltip='"Zoom In"'
@@ -541,6 +541,15 @@ const mobileDetected = computed(() => {
     || ( height.value <= 800 )
   );
 });
+
+const displayZoom = computed(() => {
+    if (mapStore.zoom === 'conditional') {
+        return mobileDetected;
+    } else {
+        return mapStore.zoom === 'always' ? true : false;
+    }
+})
+
 
 const humanBearing = computed(() => {
     if (mapStore.bearing < 0) {
