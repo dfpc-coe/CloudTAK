@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v7.27.0 - 2025-04-02
+
+- :bug: Fix scroll on Feature Sidebar
+
 ### v7.26.0 - 2025-04-02
 
 - :arrow_up: Update to Express@5
