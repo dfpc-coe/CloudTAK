@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v7.28.0 - 2025-04-02
+
+- :tada: Immediately add COTs to Atlas.Database.cots & introduce `pendingCreate` & `pendingUpdate` queues
+- :tada: Add search container for Feature Menu
+
 ### v7.27.0 - 2025-04-02
 
 - :bug: Fix scroll on Feature Sidebar
