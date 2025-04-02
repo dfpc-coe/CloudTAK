@@ -10,11 +10,17 @@
                     title='Back to List'
                     @click='router.push(`/admin/palette`)'
                 >
-                    <IconCircleArrowLeft :size='32' stroke='1'/>
+                    <IconCircleArrowLeft
+                        :size='32'
+                        stroke='1'
+                    />
                 </TablerIconButton>
 
 
-                <span class='ms-2' v-text='route.params.palette === "new" ? "New Palette": palette.name'/>
+                <span
+                    class='ms-2'
+                    v-text='route.params.palette === "new" ? "New Palette": palette.name'
+                />
             </h1>
 
             <div class='ms-auto btn-list'>
@@ -81,8 +87,8 @@
                 />
                 <template v-else>
                     <div
-                        :key='feature.uuid'
                         v-for='feature of palette.features'
+                        :key='feature.uuid'
                         class='hover-light px-2 py-2 cursor-pointer d-flex align-items-center rounded'
                         @click='router.push(`/admin/palette/${route.params.palette}/feature/${feature.uuid}`)'
                     >

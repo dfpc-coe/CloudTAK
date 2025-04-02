@@ -9,10 +9,16 @@
                     title='Back to Palette'
                     @click='router.push(`/admin/palette/${route.params.palette}`)'
                 >
-                    <IconCircleArrowLeft :size='32' stroke='1'/>
+                    <IconCircleArrowLeft
+                        :size='32'
+                        stroke='1'
+                    />
                 </TablerIconButton>
 
-                <span class='ms-2' v-text='palette.name + "&nbsp;-&nbsp;"' />
+                <span
+                    class='ms-2'
+                    v-text='palette.name + "&nbsp;-&nbsp;"'
+                />
                 <span v-text='route.params.feature === "new" ? "New Feature": paletteFeature.name' />
             </h1>
 
