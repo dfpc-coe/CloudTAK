@@ -1,4 +1,6 @@
 import fs from 'node:fs/promises';
+import CP from 'child_process';
+
 
 const pkg_root = JSON.parse(String(await fs.readFile(new URL('../package.json', import.meta.url))));
 const pkg_api = JSON.parse(String(await fs.readFile(new URL('../api/package.json', import.meta.url))));
@@ -9,3 +11,29 @@ pkg_web.version = pkg_root.version;
 
 await fs.writeFile(new URL('../api/package.json', import.meta.url), JSON.stringify(pkg_api, null, 4));
 await fs.writeFile(new URL('../api/web/package.json', import.meta.url), JSON.stringify(pkg_web, null, 4));
+
+await new Promise((resolve, reject) => {
+    const $ = CP.exec(`
+            git commit -am "Update Version"
+        `, (err) => {
+
+        if (err) return reject(err);
+        return resolve();
+    });
+
+    $.stdout.pipe(process.stdout);
+    $.stderr.pipe(process.stderr);
+});
+
+await new Promise((resolve, reject) => {
+    const $ = CP.exec(`
+            git push
+        `, (err) => {
+
+        if (err) return reject(err);
+        return resolve();
+    });
+
+    $.stdout.pipe(process.stdout);
+    $.stderr.pipe(process.stderr);
+});
