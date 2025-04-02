@@ -9,7 +9,7 @@ import { TAKGroup, TAKRole } from  './api/types.js';
 import { Layer_Config } from './models/Layer.js';
 import {
     Layer_Priority,
-    Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Text, Profile_Projection,
+    Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Text, Profile_Projection, Profile_Zoom,
     Basemap_Type, Basemap_Format, Basemap_Style, VideoLease_SourceType, BasicGeometryType
 } from  './enums.js';
 import { json, boolean, uuid, numeric, integer, timestamp, pgTable, serial, varchar, text, unique, index } from 'drizzle-orm/pg-core';
@@ -63,6 +63,7 @@ export const Profile = pgTable('profile', {
     display_elevation: text().$type<Profile_Elevation>().notNull().default(Profile_Elevation.FEET),
     display_speed: text().$type<Profile_Speed>().notNull().default(Profile_Speed.MPH),
     display_projection: text().$type<Profile_Projection>().notNull().default(Profile_Projection.GLOBE),
+    display_zoom: text().$type<Profile_Zoom>().notNull().default(Profile_Zoom.CONDITIONAL),
     display_text: text().$type<Profile_Text>().notNull().default(Profile_Text.Medium),
     system_admin: boolean().notNull().default(false),
     agency_admin: json().notNull().$type<Array<number>>().default([])
