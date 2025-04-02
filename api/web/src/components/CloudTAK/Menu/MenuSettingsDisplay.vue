@@ -102,7 +102,6 @@ import { useRouter } from 'vue-router';
 import { ref, toRaw, onMounted } from 'vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import type { Profile } from '../../../types.ts';
-import { std } from '../../../std.ts';
 import {
     TablerEnum,
 } from '@tak-ps/vue-tabler';
@@ -112,21 +111,16 @@ const mapStore = useMapStore();
 const router = useRouter();
 const loading = ref(false);
 const profile = ref<Profile | undefined>();
-const profileSchema = ref({});
 
 onMounted(async () => {
     loading.value = true;
-    await fetchProfileSchema();
     profile.value = await mapStore.worker.profile.load();
     loading.value = false;
 });
 
-async function fetchProfileSchema() {
-    profileSchema.value = (await std('/api/schema?method=PATCH&url=/profile')).body
-}
-
 async function updateProfile() {
-    console.error(toRaw(profile));
+    if (!profile.value) return;
+
     await mapStore.worker.profile.update(toRaw(profile.value));
     router.push("/menu/settings");
 }
