@@ -1,4 +1,3 @@
-import path from 'node:path';
 import fs from 'node:fs/promises';
 
 const pkg_root = JSON.parse(String(await fs.readFile(new URL('../package.json', import.meta.url))));
