@@ -18,15 +18,15 @@
         <template #default>
             <div class='mx-2 my-2'>
                 <TablerInput
-                    icon='search'
                     v-model='query.filter'
+                    icon='search'
                     placeholder='Search'
                 />
             </div>
             <TablerLoading
-            v-if='loading'
-                desc='Loading Features'
+                v-if='loading'
                 v-model='query.filter'
+                desc='Loading Features'
             />
             <TablerNone
                 v-if='cots.length === 0'
@@ -122,7 +122,11 @@ channel.onmessage = async (event: MessageEvent<WorkerMessage>) => {
     const msg = event.data;
     if (!msg || !msg.type) return;
 
+    console.error(msg.type);
+
     if (msg.type === WorkerMessageType.Feature_Archived_Added) {
+        await refresh();
+    } else if (msg.type === WorkerMessageType.Feature_Archived_Removed) {
         await refresh();
     }
 }
@@ -150,6 +154,7 @@ onBeforeUnmount(() => {
 })
 
 async function refresh(): Promise<void> {
+    console.error('REFRESH');
     cots.value = Array.from(await mapStore.worker.db
         .filter(`
             properties.archived
