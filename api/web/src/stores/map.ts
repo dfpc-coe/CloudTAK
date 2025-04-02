@@ -40,6 +40,7 @@ export const useMapStore = defineStore('cloudtak', {
         locked: Array<string>;
 
         callsign: string;
+        zoom: string;
         location: LocationState;
 
         permissions: {
@@ -94,6 +95,7 @@ export const useMapStore = defineStore('cloudtak', {
             callsign: 'Unknown',
             location: LocationState.Loading,
             channel: new BroadcastChannel("cloudtak"),
+            zoom: 'conditional',
             locked: [],
             notifications: [],
             hasTerrain: false,
@@ -356,8 +358,7 @@ export const useMapStore = defineStore('cloudtak', {
                 hash: true,
                 attributionControl: false,
                 fadeDuration: 0,
-                zoom: 8,
-                pitch: 0,
+                zoom: 8, pitch: 0,
                 bearing: 0,
                 maxPitch: 85,
                 center: [-105.91873757464982, 39.2473040734323],
@@ -401,6 +402,8 @@ export const useMapStore = defineStore('cloudtak', {
                     this.location = msg.body.source as LocationState;
                 } else if (msg.type === WorkerMessageType.Profile_Callsign) {
                     this.callsign = msg.body.callsign;
+                } else if (msg.type === WorkerMessageType.Profile_Display_Zoom) {
+                    this.zoom = msg.body.zoom;
                 } else if (msg.type === WorkerMessageType.Map_Projection) {
                     map.setProjection(msg.body);
                 } else if (msg.type === WorkerMessageType.Connection_Open) {
@@ -424,7 +427,9 @@ export const useMapStore = defineStore('cloudtak', {
             const loc = await this.worker.profile.location;
             this.location = loc.source;
 
-            this.callsign = await this.worker.profile.callsign()
+            const profile = await this.worker.profile.load()
+            this.callsign = profile.tak_callsign;
+            this.zoom = profile.display_zoom;
         },
         initOverlays: async function() {
             if (!this.map) throw new Error('Cannot initLayers before map has loaded');
