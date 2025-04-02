@@ -460,7 +460,6 @@ import WarnChannels from './util/WarnChannels.vue';
 import SearchBox from './util/SearchBox.vue';
 import WarnConfiguration from './util/WarnConfiguration.vue';
 import CoordInput from './CoordInput.vue';
-import type { GeoJSONStoreFeatures } from 'terra-draw'
 import type { MapGeoJSONFeature, LngLatLike } from 'maplibre-gl';
 import type { Feature } from '../../types.ts';
 import CloudTAKFeatView from './FeatView.vue';
