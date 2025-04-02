@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v7.26.0 - 2025-04-02
+
+- :arrow_up: Update to Express@5
+
 ### v7.25.1 - 2025-04-02
 
 - :bug: Allow updating `lambda:UpdateEventSourceMapping`
