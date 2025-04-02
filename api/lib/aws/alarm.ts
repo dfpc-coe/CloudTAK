@@ -17,18 +17,31 @@ export default class Alarm {
 
         try {
             const map: Map<number, string>  = new Map();
-            const res = await cw.send(new CloudWatch.DescribeAlarmsCommand({
-                AlarmNamePrefix: `${this.stack}-layer-`
-            }));
 
-            for (const alarm of (res.MetricAlarms || [])) {
+            const MetricAlarms = [];
+
+            let res;
+            do {
+                const req: CloudWatch.DescribeAlarmsCommandInput = {
+                    AlarmNamePrefix: `${this.stack}-layer-`
+                };
+
+                if (res && res.NextToken) req.NextToken = res.NextToken;
+                res = await cw.send(new CloudWatch.DescribeAlarmsCommand(req))
+
+                MetricAlarms.push(...(res.MetricAlarms || []));
+            } while (res.NextToken)
+
+            for (const alarm of (MetricAlarms || [])) {
                 let value = 'healthy';
                 if (alarm.StateValue === 'ALARM') value = 'alarm';
                 if (alarm.StateValue === 'INSUFFICIENT_DATA') value = 'unknown';
 
                 const layer = parseInt(String(alarm.AlarmName).replace(`${this.stack}-layer-`, ''));
 
-                map.set(layer, value);
+                if (!map.has(layer) || map.get(layer) === 'health' && value === 'alarm') {
+                    map.set(layer, value);
+                }
             }
 
             return map;
@@ -41,16 +54,34 @@ export default class Alarm {
         const cw = new CloudWatch.CloudWatchClient({ region: process.env.AWS_REGION });
 
         try {
-            const res = await cw.send(new CloudWatch.DescribeAlarmsCommand({
-                AlarmNames: [`${this.stack}-layer-${layer}`]
-            }));
+            const MetricAlarms = [];
 
-            if (!res.MetricAlarms || !res.MetricAlarms.length) return 'unknown';
+            let res;
+            do {
+                const req: CloudWatch.DescribeAlarmsCommandInput = {
+                    AlarmNames: [`${this.stack}-layer-${layer}`]
+                };
 
-            let value = 'healthy';
-            if (res.MetricAlarms[0].StateValue === 'ALARM') value = 'alarm';
-            if (res.MetricAlarms[0].StateValue === 'INSUFFICIENT_DATA') value = 'unknown';
-            return value;
+                if (res && res.NextToken) req.NextToken = res.NextToken;
+                res = await cw.send(new CloudWatch.DescribeAlarmsCommand(req))
+
+                MetricAlarms.push(...(res.MetricAlarms || []));
+            } while (res.NextToken)
+
+            if (!MetricAlarms.length) return 'unknown';
+
+            let final;
+            for (const alarm of (MetricAlarms || [])) {
+                let value = 'healthy';
+                if (alarm.StateValue === 'ALARM') value = 'alarm';
+                if (alarm.StateValue === 'INSUFFICIENT_DATA') value = 'unknown';
+
+                if (!final || final === 'health' && value === 'alarm') {
+                    final = value
+                }
+            }
+
+            return final || 'unknown';
         } catch (err) {
             throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to describe alarm');
         }

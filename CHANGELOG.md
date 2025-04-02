@@ -12,6 +12,502 @@
 
 ### Pending Release
 
+### v7.25.0 - 2025-04-02
+
+- :rocket: Allow editing directly from the CoT View
+
+### v7.24.0 - 2025-04-01
+
+- :bug: Ensure snapping works without moving the map to refresh snap coordinates in draw mode
+- :tada: Introduce Palette support on the backend
+
+### v7.23.0 - 2025-03-28
+
+- :tada: Allow looking up a lease to avoid having to use the Media Server twice
+- :tada: Allow setting up recording on a stream
+- :rocket: Ensure height/width of Video Player are retained when dragging
+- :rocket: Rewrite dragging to avoid file icon while dragging
+- :rocket: Video player now fills all available space in div avoiding a mind-the-gap situation
+
+### v7.22.0 - 2025-03-26
+
+- :arrow_up: Update all Core Deps
+- :arrow_up: Pin min required NodeJS version to v22 in all Package Files
+- :tada: Rewrite of Contacts pane to be more awesome and show what colours are what teams
+- :rocket: Allow searching contacts in Contacts Menu
+- :white_check_mark: Start to sketch out what testing Connections looks like
+
+### v7.21.0 - 2025-03-21
+
+- :tada: Expose Video Lease API to connection/layers
+
+### v7.20.2 - 2025-03-20
+
+- :bug: Ensure `skipSave` is respected in Atlas Database Worker `add()`
+- :bug: Ensure `VideoLease.source_type` & `VideoLease.source_model` are used on creation
+
+### v7.20.1 - 2025-03-20
+
+- :bug: Remove empty SG policy to ensure CloudFormation Drift errors don't alarm
+
+### v7.20.0 - 2025-03-20
+
+- :rocket: `UI` Improvements to Video Lease Manager
+- :bug: `UI` Fix `Notififcation` check in Safari
+
+### v7.19.0 - 2025-03-20
+
+- :tada: `UI` Support Path Trees in Feature View Menu
+
+### v7.18.2 - 2025-03-19
+
+- :bug: Video Lease Modal in Admin Page Broken: #547
+
+### v7.18.1 - 2025-03-19
+
+- :bug: Apply SQS Write Permissions to layer-* for outgoing COTs
+
+### v7.18.0 - 2025-03-18
+
+- :rocket: Use Structured Clone on UI BroadcastChannel messages
+
+### v7.17.0 - 2025-03-18
+
+- :bug: Update Lasso mode to expect a Set
+
+### v7.16.0 - 2025-03-18
+
+- :rocket: Move default iconset loading into initial Map Config Payload
+
+### v7.15.0 - 2025-03-18
+
+- :tada: Introduce initial Features menu for more intuitive personal features management
+- :rocket: Rewrite COT Tree explorer to use async background calls
+
+### v7.14.0 - 2025-03-17
+
+- :rocket: Show CloudTAK Logo instead of COTAK on configure page
+
+### v7.13.0 - 2025-03-17
+
+- :tada: Rewrite of frontend to use WebWorker
+
+### v7.12.0 - 2025-03-14
+
+- :bug: Improved Environment editing fallback when Capabilities isn't populated
+- :rocket: Validate JSON before saving on env editor
+- :rocket: Apply defaults to Env in frontend
+
+### v7.11.0 - 2025-03-13
+
+- :rocket: Add debug menu for searching historic COT data
+
+### v7.10.0 - 2025-03-12
+
+- :bug: Fix DataSync limitation checks on LayerIncoming API
+- :tada: Add supoort for Duplex/Read/Write channels during Machine User creation when using COTAK API
+- :rocket: Rewrite AgenctySelect & Machine User Creation in TS
+
+### v7.9.0 - 2025-03-11
+
+- :bug: Invalidate Layer Ephemeral Cache when making changes to Layer Environment
+- :rocket: Add ephemeral Layer Outgoing API endpoints to match Layer Incoming
+
+### v7.8.0 - 2025-03-10
+
+- :rocket: @chriselsen Update outputs related to PMTiles API
+
+### v7.7.0 - 2025-03-10
+
+- :rocket: @chriselsen Fix verbage on login page
+- :rocket: Add ability to specify a custom signup URL on login page
+- :rocket: Add ability to specify a custom reset password URL on login page
+- :rocket: Add ability to specify a custom logo on login page
+
+### v7.6.1 - 2025-03-10
+
+- :rocket: @chriselsen Update License information in CloudTAK Footer
+
+### v7.6.0 - 2025-03-07
+
+- :tada: Introduce file storage at the connection level
+
+### v7.5.0 - 2025-03-07
+
+- :rocket: Introduce a backup editing path to Layer Env if the capabilities object fails to populate
+
+### v7.4.0 - 2025-03-06
+
+- :rocket: Introduce paging on the Video Lease Menu to surface leases that exceed the default limit
+
+### v7.3.0 - 2025-03-05
+
+- :tada: Encode path in ProfileFeature database
+- :white_check_mark: Sketch out ProfileFeatures tests
+- :white_check_mark: Initial sketching out of NYC coverage
+
+### v7.2.0 - 2025-03-04
+
+- :tada: Implement a check when a file is uploaded via the DataPackage context to see if the upload is already in the DataPackage format and if so just pass it through instead of "double zipping" it
+- :rocket: If the upload is not a DataPackage, fall back to creating a new DataPackage in which this upload will be added as a file
+- :bug: Fix proper closing of the Zip reader Node-COT Library
+- :rocket: Automatically remove the source zip when the DataPackage is parsed.
+
+### v7.1.0 - 2025-02-27
+
+- :bug: Fix issue in ESRI Version Parsing
+- :arrow_up: Update DrizzleORM
+- :white_check_mark: Add basic ESRI test framework
+
+### v7.0.0 - 2025-02-26
+
+- :rocket: Remove custom AWS CloudWatch metrics as Connection Stability is fairly battletested at this point and costs were significant
+
+### v6.13.0 - 2025-02-26
+
+- :tada: Allow CRUD operations for managing TAK Server Video Connections
+
+### v6.12.1 - 2025-02-25
+
+- :rocket: Include version number in ESRI Errors
+
+### v6.12.0 - 2025-02-25
+
+- :bug: Fix issue where new outgoing layers and sinks couldn't live together
+
+### v6.11.0 - 2025-02-24
+
+- :rocket: Improvements to docker based hosting
+
+### v6.10.0 - 2025-02-12
+
+- :rocket: Add TileJSON generation support for ESRI Feature/Image/Map Services
+
+### v6.9.1 - 2025-02-12
+
+- :bug: Fix ArcGIS Geocoding API Suggest Endpoint
+
+### v6.9.0 - 2025-02-11
+
+- :rocket: Add `hover` feature state to clickable vector layers automatically
+- :arrow_up: Update Pinia@3
+
+### v6.8.2 - 2025-02-09
+
+- :bug: Allow creation of Lambda Event Sources
+
+### v6.8.1 - 2025-02-09
+
+- :bug: Allow removal of Lambda Event Sources
+
+### v6.8.0 - 2025-02-09
+
+- :tada: Implement final step in feeding new Outgoing Layers
+
+### v6.7.1 - 2025-02-07
+
+- :bug: Ensure `management` user is retained
+
+### v6.7.0 - 2025-02-07
+
+- :tada: Add support for User auth on MediaMTX Endpoints
+- :bug: Fix User filtering on Admin Page
+
+### v6.6.0 - 2025-02-05
+
+- :tada: Add support for ESRI ImageServer in Basemap Editor
+- :bug: Fix bug related to setting scope where scope would reset to User
+- :tada: Complete support for `collections`
+
+### v6.5.0 - 2025-02-03
+
+- :tada: Add the ability to export a MissionSync archive
+
+### v6.4.0 - 2025-02-03
+
+- :rocket: Call CloudWatch update when incoming/outgoing config are deleted
+- :rocket: Add additional permissions for EventSourceMapping
+- :rocket: Add ability to delete config from UI
+
+### v6.3.0 - 2025-01-31
+
+- :tada: Add Outgoing APIs
+
+### v6.2.0 - 2025-01-30
+
+- :tada: Sketch out outgoing Config
+
+### v6.1.0 - 2025-01-30
+
+- :rocket: Cacher no longer returns `any` type
+
+### v6.0.1 - 2025-01-30
+
+- :bug: Delete LayerIncoming if it exists when a layer is deleted
+
+### v6.0.0 - 2025-01-30
+
+Note that while the frontend & database have no breaking changes and will be migrated automatically, ALL ETLs LAYERS MUST BE UPDATED!
+
+- :information_source: ETLs must be updated to handle the new flow direction parameter on the `schema()` function
+- :rocket: Ephemeral API is now prefixed with `/incoming`
+- :rocket: Layer APIs return `incoming: { config }` which is optional
+- :rocket: Incoming config is now configured via the `/:layerid/incoming*` API Endpoints
+- :rocket: Database migration is performed automatically and no data loss will occur, the user must only ensure that layers are updated to `@tak-ps/etl@8.0.2` or higher
+- :bug: Add `alarms=false` default to all layers endpoint
+- :rocket Add graceful fallback if AWS Alarms API call fails
+
+### v5.48.2 - 2025-01-28
+
+- :bug: `API` Fix issue where Breadcrumb wouldn't load due to missing callsign
+
+### v5.48.1 - 2025-01-28
+
+- :bug: `API` Parsing errors can be dropped if there are no CoTs to submit to the TAK Server
+
+### v5.48.0 - 2025-01-28
+
+- :bug: `UI` Fix status of Layer Cron if no cron is specified
+- :bug: `UI` Turn off loading indicator if layer save fails
+
+### v5.47.0 - 2025-01-24
+
+- :bug: `UI` Fix feat/CoT side bar switcher
+- :rocket: Add Secure Username/Pass to VideoLease table
+- :bug: Fix webhook role name for creating SubStacks that use webhooks
+
+### v5.46.0 - 2025-01-21
+
+- :bug: `DevOps` Update `python3.8` Lambda as it is being sunset
+- :rocket: Add support for full suite of Profile Interest Areas
+- :rocket: Add initial Sensor Fusion Support
+- :tada: Significant refactor to AdminUser pane
+- :bug: Fix search in Data Package list
+
+### v5.45.0 - 2025-01-16
+
+- :tada: `UI` Allow Editing Coordinates
+- :bug: `UI` Fix bug in UTM calculations
+- :tada: `UI` Show Polygon Area when possible
+- :tada` `API` Add Fusion Tables
+
+### v5.44.0 - 2025-01-15
+
+- :rocket: Update Postgres to 17.2
+
+### v5.43.2 - 2025-01-09
+
+- :bug: Fix Connection filtering in CloudTAK Menu
+
+### v5.43.1 - 2025-01-09
+
+- :bug: Fix a bug where lease renewal wouldn't take place
+
+### v5.43.0 - 2025-01-08
+
+- :tada: Allow creating `keywords` on Mission Logs
+
+### v5.42.0 - 2025-01-05
+
+- :bug: Fix coordinate precision when editing features
+
+### v5.41.0 - 2025-01-05
+
+- :tada: Allow editing your own CoT's remarks
+- :rocket: Treat one's own location as a typical CoT
+
+### v5.40.0 - 2025-01-03
+
+- :bug: If a custom TAK Group name is not set the group:: prefix is shown to the user when it shouldn't be and is correctly rejected if selected by the PATCH Profile API
+
+### v5.39.0 - 2025-01-03
+
+- :bug: Allow non-email usernames as provided by a TAK Server
+
+### v5.38.0 - 2025-01-02
+
+- :rocket: Rewrite Connection Pane in TS
+- :rocket: Use `menu` & `menuitem` for accessibility
+- :rocket: Rewrite MissionContents in TS and remove a ton of unused cruft and fix a bunch of bugs around showing imports related to that mission
+- :tada: Update to latest node-cot which supports `strict:false` mode for automatically converting an invalid DataPackage into a valid one
+- :tada: Use the new `strict: false` mode for automatically importing default Iconsets on a newly provisioned server
+- :rocket: Move all the initial loading code to the `Bulldozer` class which runs on server startup
+
+### v5.37.0 - 2024-12-30
+
+- :tada: Add snapping feature when drawing Lines & Polys (thanks to adding the custom function hook @JamesLMilner with [TerraDraw](https://github.com/JamesLMilner/terra-draw/)
+- :bug: Fix display of layers on a given connection
+
+### v5.36.0 - 2024-12-29
+
+- :tada: `UI` Implement User Select dropdown
+- :rocket: `UI/API`Allow assigning System/Private scope to basemaps via Admin Basemaps console
+- :rocket: `UI` Allow assigning Username to Private Basemaps
+
+### v5.35.0 - 2024-12-29
+
+- :rocket: `UI` Migrate AdminServer to TS
+- :rocket: `UI` Better responsive behavior
+
+### v5.34.0 - 2024-12-27
+
+- :rocket: Fix style defaults in UI
+- :bug: Fix adding layers in UI
+- :tada: Add `title` field for Overlays
+
+### v5.33.0 - 2024-12-26
+
+- Move COTAK API Integration into optional config instead of on the Server Page
+
+### v5.32.0 - 2024-12-25
+
+- Converting a ton of the UI To typescript
+- Renaming `Basemap.group` => `Basemap.collection` and adding new `BasemapCollection` Table
+- Merge ETL Task & Registered task Admin UI into single Admin Page
+- Separate admin tabs out by type5
+
+### v5.31.0 - 2024-12-22
+
+- :rocket: Set groundwork for Basemap groups
+- :bug: Improved editing behavior
+
+### v5.30.0 - 2024-12-20
+
+- :tada: Globe projection is now surfaced as default map view
+- :rocket: Allow switching to mercator projection in display settings
+
+### v5.29.0 - 2024-12-18
+
+- :rocket: Page through AWS Alarms to support layers > AWS default page size
+- :bug: Allow multiple alarms for a given layer to influcence alarm state
+
+### v5.28.0 - 2024-12-18
+
+- :tada: Surface shared VideoLeases in API & UI
+
+### v5.27.0 - 2024-12-18
+
+- :rocket: Update Callsign Settings component to TS
+- :rocket: Move interval timers and current location to profile store
+- :rocket: Add `tak_loc_freq` field to UI and API
+
+### v5.26.0 - 2024-12-17
+
+- :bug: `API` Ensure `channel` is retained in VideoLease POST if set
+- :bug: `UI` Show lease expiration/permanence in VideoLease List & Modal
+
+### v5.25.0 - 2024-12-17
+
+- :tada: `API` Rewrite PMTiles in `express/batch-schema` to squash bugs, massively improve readability, and open the door to the ability to run it locally
+
+### v5.24.0 - 2024-12-13
+
+- :tada: `DevOps` Allow DockerCompose mode to use minio configured store
+
+### v5.23.0 - 2024-12-13
+
+- :rocket: `UI/API` Update ManagementURL in COTAK API (if configured) with Connection ID
+
+### v5.22.0 - 2024-12-11
+
+- :tada: `UI/API` Allow System Administrators to manage Video Leases
+- :rocket: `UI` Migrate Admin Video pages to TS
+
+### v5.21.0 - 2024-12-11
+
+- :bug: `UI` Allow editing Video Lease fields when creating a new lease
+- :bug: `UI` Fix duplicate locked entries being added to Locked Array
+- :tata: `UI` Add Breadcrumb Dropdown to select duration of breadcrumb to load
+
+### v5.20.0 - 2024-12-11
+
+- :rocket: `UI` Allow locking the map view to a CoT via the Radial Menu
+
+### v5.19.1 - 2024-12-10
+
+- :rocket: `UI` Ensure switching to Admin Component doesn't throw an error
+
+### v5.19.0 - 2024-12-10
+
+- :rocket: `UI` Update Main Map to TS
+
+### v5.18.4 - 2024-12-09
+
+- :bug: CoT property updates were being rendered but not updated in the underlying store
+
+### v5.18.3 - 2024-12-09
+
+- :bug: Return a 404 Response if CoT history endpoint returns nothing for a given UID
+
+### v5.18.2 - 2024-12-09
+
+- :bug: Fix issue with Row Editor Modal in Layer Environment
+- :rocket: Make Loading text white on Connection/Layer/Data
+
+### v5.18.1 - 2024-12-09
+
+- :bug: Fix bug where Connection wasn't cleaned up after the WebSocket was closed
+- :bug: Fix bug where path would result in `<dest/>` tag wasn't added
+
+### v5.18.0 - 2024-12-08
+
+- :tada: Allow setting CloudTAK Config values via Config
+
+### v5.17.2 - 2024-12-08
+
+- :bug: Fix `color` not being required in mission layer
+
+### v5.17.1 - 2024-12-06
+
+- :bug: Fix disablement of cron job from web UI
+
+### v5.17.0 - 2024-12-06
+
+- :tada: `UI` Add ability to query BreadCrumb for last hour for a given active user
+- :tada: `UI` Only show Edit fns on Radial for CoTs from Mission with edit role
+- :tada: `UI/API` Update Layer to support Webhooks & Cron style of deploys
+- :rocket: `UI` Migrate LayerConfig to TS
+- :rocket: `API` Add `VideoLease.channel` column for future use for channel management of leases
+- :rocket: `UI` Migrate Channel Menu to TS
+- :rocket: `UI` Add ability to turn all channels on/off from single button
+- :rocket: `API` Add `webhooks` field to Layer Template
+- :bug: `UI` Remove UI for Layer Query as the backend was removed
+- :bug: `API` Fix broken tests
+- :tada: `API` Add CoT history endpoints to profile & layer API base paths
+- :arrow_up: Update Drizzle to latest versions
+
+### v5.16.0 - 2024-12-02
+
+- :tada: `UI` Add filter support for Share Component
+
+### v5.15.0 - 2024-12-02
+
+- :tada: Update Overlay to use MissionLayerTree for displaying CoTs
+- :rocket: Update CoT Class to expose `flyTo` fn
+- :rocket: Update MissionLayer to TS
+
+### v5.14.0 - 2024-12-01
+
+- :rocket: Editing Fields for CoTView
+
+### v5.13.0 - 2024-12-01
+
+- :bug: Accidently versioned twice
+
+### v5.12.0 - 2024-12-01
+
+- :tada: `UI` Show Icon if available in `Feature.vue`
+
+### v5.11.0 - 2024-11-27
+
+- :rocket: `UI` Fully migrate Data Package Menu to TypeScript
+- :bug: `UI` Fix 404 when Data Package Hash differed from Data Package UID
+- :bug: `UI` Fix Package type definition to use Package instead of similiar (and current) Content
+
+### v5.10.0 - 2024-11-27
+
+- :rocket: `UI` Consistent CoT saving for archived CoTs
+
 ### v5.9.0 - 2024-11-26
 
 - :rocket: `UI` Allow CoT Marker to update itself via Proxy implementation

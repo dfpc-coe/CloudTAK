@@ -20,7 +20,7 @@
             >
                 <IconTrash
                     :size='32'
-                    :stroke='1'
+                    stroke='1'
                 /><span
                     class='mx-2'
                     v-text='label'
@@ -58,6 +58,7 @@ export default {
             default: 'button' // Or icon
         }
     },
+    emits: ['delete'],
     data: function() {
         return {
             loading: false,

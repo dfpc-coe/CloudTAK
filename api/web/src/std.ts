@@ -6,7 +6,7 @@ export function stdurl(url: string | URL): URL {
         url = new URL(url);
     } catch (err) {
         if (err instanceof TypeError) {
-            url = new URL((process.env.API_URL || window.location.origin) + url);
+            url = new URL((process.env.API_URL || self.location.origin) + url);
         } else {
             throw err;
         }
@@ -31,6 +31,7 @@ export function stdurl(url: string | URL): URL {
 export async function std(
     url: string | URL,
     opts: {
+        token?: string;
         download?: boolean | string;
         headers?: Record<string, string>;
         body?: unknown;
@@ -47,8 +48,10 @@ export async function std(
         opts.headers['Content-Type'] = 'application/json';
     }
 
-    if (localStorage.token && !opts.headers.Authorization) {
+    if (!isWebWorker() && localStorage.token && !opts.headers.Authorization) {
         opts.headers['Authorization'] = 'Bearer ' + localStorage.token;
+    } else if (opts.token) {
+        opts.headers['Authorization'] = 'Bearer ' + opts.token
     }
 
     const res = await fetch(url, opts as RequestInit);
@@ -67,14 +70,28 @@ export async function std(
         err.body = bdy;
         throw err;
     } else if (res.status === 401) {
-        delete localStorage.token;
+        if (!isWebWorker()) {
+            delete localStorage.token;
+        }
         throw new Error('401');
     }
 
     const ContentType = res.headers.get('Content-Type');
+    const ContentDisposition = res.headers.get('Content-Disposition');
 
     if (opts.download) {
-        const object = new File([await res.blob()], typeof opts.download === 'string' ? opts.download : 'download');
+        let name = 'download';
+        if (typeof opts.download === 'string') {
+            name = opts.download;
+        } else if (ContentDisposition) {
+            const regex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+            const matches = regex.exec(ContentDisposition);
+            if (matches && matches[1]) {
+                name = matches[1].replace(/['"]/g, '');
+            }
+        }
+
+        const object = new File([await res.blob()], name);
         const file = window.URL.createObjectURL(object);
         window.location.assign(file);
         return res;
@@ -85,7 +102,23 @@ export async function std(
     }
 }
 
-export function stdclick($router: Router, event: KeyboardEvent, path: string) {
+export function humanSeconds(seconds: number): string {
+        const date = new Date(seconds * 1000);
+        const str = [];
+        if (date.getUTCDate()-1 !== 0) str.push(date.getUTCDate()-1 + " days");
+        if (date.getUTCHours() !== 0 ) str.push(date.getUTCHours() + " hrs");
+        if (date.getUTCMinutes() !== 0) str.push(date.getUTCMinutes() + " mins");
+        if (date.getUTCSeconds() !== 0) str.push(date.getUTCSeconds() + " secs");
+        if (date.getUTCMilliseconds() !== 0) str.push(date.getUTCMilliseconds() + " ms");
+        return str.join(', ');
+}
+
+function isWebWorker() {
+    return typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope;
+}
+
+
+export function stdclick($router: Router, event: MouseEvent | KeyboardEvent, path: string) {
     if (event.ctrlKey === true) {
         const routeData = $router.resolve(path);
         window.open(routeData.href, '_blank');

@@ -1,6 +1,7 @@
 <template>
     <MenuTemplate
         name='Mission Subscribers'
+        :zindex='0'
         :back='false'
         :border='false'
         :none='!subscriptions.length'
@@ -46,7 +47,7 @@
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue';
 import type { Mission, MissionRole, MissionSubscriptions } from '../../../../../src/types.ts';
-import Subscription from '../../../../../src/stores/base/mission.ts';
+import Subscription from '../../../../base/subscription.ts';
 import {
     IconUserBolt,
     IconUserEdit,

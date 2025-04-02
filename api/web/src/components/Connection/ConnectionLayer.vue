@@ -9,7 +9,7 @@
                 <IconPlus
                     v-tooltip='"Create Layer"'
                     :size='32'
-                    :stroke='1'
+                    stroke='1'
                     class='cursor-pointer'
                     @click='$router.push(`/connection/${$route.params.connectionid}/layer/new`)'
                 />
@@ -17,14 +17,14 @@
                 <IconRefresh
                     v-tooltip='"Refresh"'
                     :size='32'
-                    :stroke='1'
+                    stroke='1'
                     class='cursor-pointer'
                     @click='listLayers'
                 />
             </div>
         </div>
 
-        <div style='min-height: 20vh; margin-bottom: 61px'>
+        <div style='min-height: 20vh; margin-bottom: 60px'>
             <TablerAlert
                 v-if='err'
                 title='ETL Server Error'
@@ -65,7 +65,7 @@
                                             v-if='layer.data'
                                             v-tooltip='`Pushing to Data Sync`'
                                             :size='32'
-                                            :stroke='1'
+                                            stroke='1'
                                             @click.stop.prevent='$router.push(`/connection/${$route.params.connectionid}/data/${layer.data}`)'
                                         />                                
                                     </div>
@@ -78,7 +78,7 @@
         </div>
         <div
             class='position-absolute bottom-0 w-100'
-            style='height: 61px;'
+            style='height: 60px;'
         >
             <TableFooter
                 :limit='paging.limit'
@@ -102,7 +102,7 @@ import {
     TablerAlert,
     TablerLoading
 } from '@tak-ps/vue-tabler'
-import LayerStatus from '../Layer/utils/Status.vue';
+import LayerStatus from '../Layer/utils/StatusDot.vue';
 
 export default {
     name: 'ConnectionLayers',
@@ -153,6 +153,7 @@ export default {
             this.loading = true;
             try {
                 const url = stdurl(`/api/connection/${this.$route.params.connectionid}/layer`);
+                url.searchParams.append('alarms', String(true));
                 url.searchParams.append('limit', this.paging.limit);
                 url.searchParams.append('page', this.paging.page);
                 url.searchParams.append('filter', this.paging.filter);

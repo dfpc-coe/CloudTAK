@@ -3,7 +3,7 @@ import Err from '@openaddresses/batch-error';
 import jwt from 'jsonwebtoken';
 import Config from './config.js';
 import { InferSelectModel } from 'drizzle-orm';
-import type { Profile, Connection } from './schema.js';
+import type { Profile, Connection, Layer } from './schema.js';
 
 export enum ResourceCreationScope {
     SERVER = 'server',
@@ -23,7 +23,7 @@ function castUserAccessEnum(str: string): AuthUserAccess | undefined {
 
 export type AuthResourceAccepted = {
     access: AuthResourceAccess;
-    id: string | number;
+    id: string | number | undefined;
 }
 
 export enum AuthResourceAccess {
@@ -60,6 +60,9 @@ export class AuthResource {
 export class AuthUser {
     access: AuthUserAccess;
     email: string;
+
+    // Username of admin doing the impersonating - if this value is populated the calling user is guarenteed to be an admin
+    impersonate?: string; 
 
     constructor(access: AuthUserAccess, email: string) {
         this.access = access;
@@ -121,7 +124,11 @@ export default class Auth {
             }
 
             if (!opts.anyResources && !opts.resources.some((r) => {
-                return r.access === auth_resource.access && r.id === auth_resource.id;
+                if (r.id) {
+                    return r.access === auth_resource.access && r.id === auth_resource.id;
+                } else {
+                    return r.access === auth_resource.access;
+                }
             })) {
                 throw new Err(403, null, 'Resource token cannot access this resource');
             }
@@ -136,6 +143,7 @@ export default class Auth {
     }, connectionid: number): Promise<{
         auth: AuthResource | AuthUser;
         connection: InferSelectModel<typeof Connection>;
+        layer?: InferSelectModel<typeof Layer>;
         profile?: InferSelectModel<typeof Profile>;
     }> {
         const auth = await this.is_auth(config, req, opts)
@@ -155,9 +163,17 @@ export default class Auth {
                 return { connection, profile, auth };
             }
         } else {
+            const auth_resource = auth as AuthResource;
+
             // If a resource token is used it's up to the caller to specify it is allowed via the resources array
             // is_auth will disallow resource tokens when no resource array is set
-            return { auth, connection };
+
+            if (auth_resource.access === AuthResourceAccess.LAYER) {
+                const layer = await config.models.Layer.from(auth_resource.id);
+                return { auth, connection, layer };
+            } else {
+                return { auth, connection };
+            }
         }
     }
 
@@ -190,6 +206,24 @@ export default class Auth {
         if (this.#is_user(auth)) throw new Err(401, null, 'Only a resource token can access this resource');
 
         return auth as AuthResource;
+    }
+
+    static async impersonate(
+        config: Config,
+        req: Request<any, any, any, any>,
+        impersonate: string
+    ): Promise<AuthUser> {
+        const adminUser = await this.as_user(config, req, { admin: true });
+
+        const imp = await config.models.Profile.from(impersonate);
+
+        let access = AuthUserAccess.USER
+        if (imp.agency_admin) access = AuthUserAccess.AGENCY;
+        if (imp.system_admin) access = AuthUserAccess.ADMIN;
+
+        const resolved = new AuthUser(access, impersonate);
+        resolved.impersonate = adminUser.email;
+        return resolved;
     }
 
     static async as_user(config: Config, req: Request<any, any, any, any>, opts: {
@@ -299,7 +333,7 @@ export function tokenParser(token: string, secret: string): AuthUser | AuthResou
             access: AuthUserAccess;
             email: string;
         } = {
-            email: decoded.email.toLowerCase(),
+            email: decoded.email,
             access
         };
 

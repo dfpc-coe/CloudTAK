@@ -6,30 +6,34 @@
             </h3>
 
             <div class='ms-auto btn-list'>
-                <IconPlus
-                    v-tooltip='"New Token"'
-                    :size='32'
-                    :stroke='1'
-                    class='cursor-pointer'
-                    @click='token={}'
-                />
-                <IconRefresh
-                    v-tooltip='"Refresh"'
-                    :size='32'
-                    :stroke='1'
-                    class='cursor-pointer'
+                <TablerIconButton
+                    title='New Token'
+                    @click='token = true'
+                >
+                    <IconPlus
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+                <TablerIconButton
+                    title='Refresh'
                     @click='fetch'
-                />
+                >
+                    <IconRefresh
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
             </div>
         </div>
 
-        <div style='min-height: 20vh; margin-bottom: 61px'>
+        <div style='min-height: 20vh; margin-bottom: 60px'>
+            <TablerLoading v-if='loading' />
             <TablerNone
-                v-if='!tokens.items.length'
+                v-else-if='!list.items.length'
                 :create='false'
                 label='Tokens'
             />
-            <TablerLoading v-else-if='loading' />
             <div
                 v-else
                 class='table-responsive'
@@ -44,7 +48,7 @@
                     </thead>
                     <tbody>
                         <tr
-                            v-for='t in tokens.items'
+                            v-for='t in list.items'
                             :key='t.id'
                             @click='token = t'
                         >
@@ -58,11 +62,11 @@
         </div>
         <div
             class='position-absolute bottom-0 w-100'
-            style='height: 61px;'
+            style='height: 60px;'
         >
             <TableFooter
                 :limit='paging.limit'
-                :total='tokens.total'
+                :total='list.total'
                 @page='paging.page = $event'
             />
         </div>
@@ -70,14 +74,17 @@
         <TokenModal
             v-if='token'
             :token='token'
-            @close='token = false'
+            @close='token = undefined'
             @refresh='fetch'
         />
     </div>
 </template>
 
-<script>
-import { std, stdurl } from '/src/std.ts';
+<script setup lang='ts'>
+import { ref, watch, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
+import { std, stdurl } from '../../std.ts';
+import type { ETLConnectionTokenList, ETLConnectionToken } from '../../types.ts';
 import TokenModal from './TokenModal.vue';
 import TableFooter from '../util/TableFooter.vue';
 import {
@@ -87,57 +94,49 @@ import {
 import {
     TablerEpoch,
     TablerLoading,
+    TablerIconButton,
     TablerNone,
 } from '@tak-ps/vue-tabler';
 
-export default {
-    name: 'ConnectionTokens',
-    components: {
-        TableFooter,
-        TokenModal,
-        TablerNone,
-        IconPlus,
-        IconRefresh,
-        TablerEpoch,
-        TablerLoading,
-    },
-    data: function() {
-        return {
-            loading: true,
-            token: false,
-            paging: {
-                filter: '',
-                limit: 10,
-                page: 0
-            },
-            tokens: {
-                total: 0,
-                items: []
-            }
-        }
-    },
-    watch: {
-        paging: {
-            deep: true,
-            handler: async function() {
-                await this.fetch();
-            },
-        }
-    },
-    mounted: async function() {
-        await this.fetch();
-    },
-    methods: {
-        fetch: async function() {
-            this.token = false;
-            this.loading = true;
-            const url = stdurl(`/api/connection/${this.$route.params.connectionid}/token`);
-            url.searchParams.append('limit', this.paging.limit);
-            url.searchParams.append('page', this.paging.page);
-            url.searchParams.append('filter', this.paging.filter);
-            this.tokens = await std(url);
-            this.loading = false;
-        },
+const route = useRoute();
+
+const loading = ref(true);
+const token = ref<ETLConnectionToken | true | undefined>();
+const error = ref<Error | undefined>();
+const paging = ref({
+    filter: '',
+    limit: 10,
+    page: 0
+});
+
+const list = ref<ETLConnectionTokenList> ({
+    total: 0,
+    items: []
+});
+
+watch(paging.value, async () => {
+    await fetch();
+});
+
+onMounted(async () => {
+    await fetch();
+});
+
+async function fetch() {
+    token.value = undefined;
+    error.value = undefined;
+    loading.value = true;
+
+    try {
+        const url = stdurl(`/api/connection/${route.params.connectionid}/token`);
+        url.searchParams.append('limit', String(paging.value.limit));
+        url.searchParams.append('page', String(paging.value.page));
+        url.searchParams.append('filter', paging.value.filter);
+        list.value = await std(url) as ETLConnectionTokenList;
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    } finally {
+        loading.value = false;
     }
 }
 </script>

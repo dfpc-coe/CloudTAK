@@ -12,6 +12,10 @@
         </div>
 
         <TablerLoading v-if='loading' />
+        <TablerAlert
+            v-else-if='error'
+            :err='error'
+        />
         <TablerNone
             v-else-if='!Object.keys(processChannels).length'
             :create='false'
@@ -29,13 +33,13 @@
                                 v-if='ch.active'
                                 v-tooltip='"User has Channel Enabled"'
                                 :size='32'
-                                :stroke='1'
+                                stroke='1'
                             />
                             <IconEyeOff
                                 v-else
                                 v-tooltip='"User has Channel Disabled"'
                                 :size='32'
-                                :stroke='1'
+                                stroke='1'
                             />
                             <span
                                 v-tooltip='"Show Details"'
@@ -49,19 +53,19 @@
                                     v-if='ch.direction.length === 2'
                                     v-tooltip='"Bi-Directional"'
                                     :size='32'
-                                    :stroke='1'
+                                    stroke='1'
                                 />
                                 <IconLocation
                                     v-else-if='ch.direction.includes("IN")'
                                     v-tooltip='"Location Sharing"'
                                     :size='32'
-                                    :stroke='1'
+                                    stroke='1'
                                 />
                                 <IconLocationOff
                                     v-else-if='ch.direction.includes("OUT")'
                                     v-tooltip='"No Location Sharing"'
                                     :size='32'
-                                    :stroke='1'
+                                    stroke='1'
                                 />
                             </div>
                         </div>
@@ -79,10 +83,13 @@
     </div>
 </template>
 
-<script>
-import { std, stdurl } from '/src/std.ts';
+<script setup lang='ts'>
+import { ref, computed, onMounted } from 'vue';
+import type { Group } from '../../../types.ts';
+import type COT from '../../../base/cot.ts';
 import {
     TablerNone,
+    TablerAlert,
     TablerInput,
     TablerLoading
 } from '@tak-ps/vue-tabler';
@@ -93,73 +100,52 @@ import {
     IconEyeOff,
 } from '@tabler/icons-vue';
 
-export default {
-    name: 'CloudTAKSubscriptions',
-    components: {
-        IconEye,
-        IconEyeOff,
-        IconLocation,
-        IconLocationOff,
-        TablerNone,
-        TablerInput,
-        TablerLoading,
-    },
-    props: {
-        uid: {
-            type: String,
-            required: true
-        }
-    },
-    data: function() {
-        return {
-            err: false,
-            loading: true,
-            shown: {},
-            channels: [],
-            paging: {
-                filter: ''
-            },
-        }
-    },
-    computed: {
-        processChannels: function() {
-            const channels = {};
+const props = defineProps<{
+    cot: COT
+}>();
 
-            JSON.parse(JSON.stringify(this.channels))
-                .sort((a, b) => {
-                    return (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0);
-                }).forEach((channel) => {
-                    if (channels[channel.name]) {
-                        channels[channel.name].direction.push(channel.direction);
-                    } else {
-                        channel.direction = [channel.direction];
-                        channels[channel.name] = channel;
-                    }
-                })
+const error = ref<Error | undefined>();
+const loading = ref(true)
+const shown = ref<Record<string, boolean>>({});
+const channels = ref<Group[]>([]);
+const paging = ref({
+    filter: ''
+});
 
-            for (const key of Object.keys(channels)) {
-                if (!key.toLowerCase().includes(this.paging.filter.toLowerCase())) {
-                    delete channels[key];
-                }
-            }
-
-            return channels;
-        }
-    },
-    mounted: async function() {
-        await this.refresh();
-    },
-    methods: {
-        refresh: async function() {
-            this.loading = true;
-            await this.fetchSubscriptions()
-            this.loading = false;
-        },
-        fetchSubscriptions: async function() {
-            const url = stdurl(`/api/marti/subscription/${this.uid}`);
-            const subs = await std(url, { method: 'GET' });
-            this.channels = subs.groups;
-        },
+onMounted(async () => {
+    try {
+        const sub = await props.cot.subscription();
+        channels.value = sub.groups.sort((a, b) => {
+            return (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0);
+        });
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
     }
-}
+
+    loading.value = false;
+});
+
+const processChannels = computed(() => {
+    const channelsFiltered: Record<string, Group> = {};
+
+    channels.value
+        .forEach((channel: Group) => {
+            if (channelsFiltered[channel.name]) {
+                // @ts-expect-error Change to string eventually
+                channelsFiltered[channel.name].direction.push(channel.direction);
+            } else {
+                // @ts-expect-error Change to string eventually
+                channel.direction = [channel.direction];
+                channelsFiltered[channel.name] = channel;
+            }
+        })
+
+    for (const key of Object.keys(channelsFiltered)) {
+        if (!key.toLowerCase().includes(paging.value.filter.toLowerCase())) {
+            delete channelsFiltered[key];
+        }
+    }
+
+    return channelsFiltered;
+});
 </script>

@@ -150,7 +150,7 @@ import {
     IconChevronDown,
 } from '@tabler/icons-vue';
 import GroupSelect from '../../../util/GroupSelectModal.vue';
-import Overlay from '../../../../stores/base/overlay.ts';
+import Overlay from '../../../../base/overlay.ts';
 import {
     TablerAlert,
     TablerInput,
@@ -201,9 +201,6 @@ async function createMission() {
             body
         }) as Mission;
 
-        if (!mapStore.map) throw new Error('Cannot subscribe before map is loaded');
-
-        // @ts-expect-error Map.Style is missing properties (probably a MapLibreGL@5 issue)
         const missionOverlay = await Overlay.create(mapStore.map, {
             name: res.name,
             url: `/mission/${encodeURIComponent(res.name)}`,

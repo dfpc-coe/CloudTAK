@@ -291,6 +291,8 @@ export interface paths {
                 query: {
                     /** @description No Description */
                     scope?: "server" | "user";
+                    /** @description No Description */
+                    impersonate?: boolean | string;
                     /** @description Limit the number of responses returned */
                     limit: number;
                     /** @description Iterate through "pages" of items based on the "limit" query param */
@@ -300,9 +302,11 @@ export interface paths {
                     /** @description No Description */
                     type?: "raster" | "raster-dem" | "vector";
                     /** @description No Description */
-                    sort: "id" | "created" | "updated" | "name" | "url" | "overlay" | "username" | "bounds" | "center" | "minzoom" | "maxzoom" | "format" | "style" | "styles" | "type";
+                    sort: "id" | "created" | "updated" | "name" | "title" | "url" | "overlay" | "username" | "bounds" | "center" | "minzoom" | "maxzoom" | "collection" | "format" | "style" | "styles" | "type" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
+                    /** @description Only show Basemaps belonging to a given collection */
+                    collection?: string;
                     /** @description No Description */
                     overlay: boolean;
                 };
@@ -320,16 +324,21 @@ export interface paths {
                     content: {
                         "application/json": {
                             total: number;
+                            collections: {
+                                name: string;
+                            }[];
                             items: {
                                 id: number;
                                 created: string;
                                 updated: string;
                                 name: string;
+                                title: string;
                                 url: string;
                                 overlay: boolean;
                                 username: string | null;
                                 minzoom: number;
                                 maxzoom: number;
+                                collection: (null | string) | null;
                                 format: string;
                                 style: string;
                                 styles: unknown[];
@@ -382,7 +391,10 @@ export interface paths {
         /** Register a new basemap */
         post: {
             parameters: {
-                query?: never;
+                query?: {
+                    /** @description Filter the given resource by a given username */
+                    impersonate?: string;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -392,6 +404,7 @@ export interface paths {
                     "application/json": {
                         /** @description Human readable name */
                         name: string;
+                        collection?: null | string;
                         /** @default user */
                         scope: "server" | "user";
                         url: string;
@@ -421,11 +434,13 @@ export interface paths {
                             created: string;
                             updated: string;
                             name: string;
+                            title: string;
                             url: string;
                             overlay: boolean;
                             username: string | null;
                             minzoom: number;
                             maxzoom: number;
+                            collection: (null | string) | null;
                             format: string;
                             style: string;
                             styles: unknown[];
@@ -478,11 +493,13 @@ export interface paths {
                             created: string;
                             updated: string;
                             name: string;
+                            title: string;
                             url: string;
                             overlay: boolean;
                             username: string | null;
                             minzoom: number;
                             maxzoom: number;
+                            collection: (null | string) | null;
                             format: string;
                             style: string;
                             styles: unknown[];
@@ -525,7 +542,10 @@ export interface paths {
         /** Update a basemap */
         patch: {
             parameters: {
-                query?: never;
+                query?: {
+                    /** @description Filter the given resource by a given username */
+                    impersonate?: string;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -535,6 +555,9 @@ export interface paths {
                     "application/json": {
                         /** @description Human readable name */
                         name?: string;
+                        collection?: null | string;
+                        /** @default user */
+                        scope: "server" | "user";
                         url?: string;
                         minzoom?: number;
                         maxzoom?: number;
@@ -560,11 +583,13 @@ export interface paths {
                             created: string;
                             updated: string;
                             name: string;
+                            title: string;
                             url: string;
                             overlay: boolean;
                             username: string | null;
                             minzoom: number;
                             maxzoom: number;
+                            collection: (null | string) | null;
                             format: string;
                             style: string;
                             styles: unknown[];
@@ -727,6 +752,12 @@ export interface paths {
                         "group::Teal"?: string;
                         "group::Dark Green"?: string;
                         "group::Brown"?: string;
+                        "provider::url"?: string;
+                        "provider::secret"?: string;
+                        "provider::client"?: string;
+                        "login::signup"?: string;
+                        "login::forgot"?: string;
+                        "login::logo"?: string;
                     };
                 };
             };
@@ -742,6 +773,46 @@ export interface paths {
                 };
             };
         };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/config/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return Login Config */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            logo?: string;
+                            signup?: string;
+                            forgot?: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -783,6 +854,135 @@ export interface paths {
         put?: never;
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connection/{:connectionid}/asset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Assets */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                /** @description The filename of the asset */
+                                name: string;
+                                visualized?: string;
+                                vectorized?: string;
+                                updated: number;
+                                /** @description AWS S3 generated ETag of the asset */
+                                etag: string;
+                                /** @description Size in bytes of the asset */
+                                size: number;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create a new asset */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connection/{:connectionid}/asset/{:asset}.{:ext}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get single raw asset */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /** Delete Asset */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
         options?: never;
         head?: never;
         patch?: never;
@@ -1167,7 +1367,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort?: "id" | "created" | "updated" | "name" | "description" | "auto_transform" | "mission_sync" | "mission_diff" | "mission_role" | "mission_token" | "mission_groups" | "assets" | "connection";
+                    sort?: "id" | "created" | "updated" | "name" | "description" | "auto_transform" | "mission_sync" | "mission_diff" | "mission_role" | "mission_token" | "mission_groups" | "assets" | "connection" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                 };
@@ -1414,7 +1614,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort?: "id" | "created" | "updated" | "layer" | "icon" | "priority" | "title" | "description" | "hidden";
+                    sort?: "id" | "created" | "updated" | "layer" | "icon" | "priority" | "title" | "description" | "hidden" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                 };
@@ -1624,6 +1824,8 @@ export interface paths {
                                 };
                                 contact?: {
                                     phone?: string;
+                                    name?: string;
+                                    callsign?: string;
                                     endpoint?: string;
                                 };
                                 shape?: {
@@ -1671,12 +1873,12 @@ export interface paths {
                                     sha256: string;
                                     sizeInBytes: number;
                                 };
-                                attachments?: string[];
                                 ackrequest?: {
                                     uid: string;
                                     ackrequested: boolean;
                                     tag: string;
                                 };
+                                attachments?: string[];
                                 sensor?: {
                                     elevation?: number;
                                     vfov?: number;
@@ -1852,6 +2054,8 @@ export interface paths {
                                         };
                                         contact?: {
                                             phone?: string;
+                                            name?: string;
+                                            callsign?: string;
                                             endpoint?: string;
                                         };
                                         shape?: {
@@ -1899,12 +2103,12 @@ export interface paths {
                                             sha256: string;
                                             sizeInBytes: number;
                                         };
-                                        attachments?: string[];
                                         ackrequest?: {
                                             uid: string;
                                             ackrequested: boolean;
                                             tag: string;
                                         };
+                                        attachments?: string[];
                                         sensor?: {
                                             elevation?: number;
                                             vfov?: number;
@@ -2038,7 +2242,557 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/connection/{:connectionid}/layer/{:layerid}/ephemeral": {
+    "/connection/{:connectionid}/layer/{:layerid}/cot/{:uid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Helper API to get latest COT by UID */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            /** @constant */
+                            type: "Feature";
+                            properties: {
+                                /** @default UNKNOWN */
+                                callsign: string;
+                                /** @default a-f-G */
+                                type: string;
+                                how: string;
+                                time: string;
+                                start: string;
+                                stale: string;
+                                center: number[];
+                                course?: number;
+                                slope?: number;
+                                speed?: number;
+                                "marker-color"?: string;
+                                "marker-opacity"?: number;
+                                stroke?: string;
+                                "stroke-opacity"?: number;
+                                "stroke-width"?: number;
+                                "stroke-style"?: string;
+                                fill?: string;
+                                "fill-opacity"?: number;
+                                metadata?: Record<string, never>;
+                                archived?: boolean;
+                                geofence?: {
+                                    elevationMonitored?: string;
+                                    minElevation?: string;
+                                    maxElevation?: string;
+                                    monitor?: string;
+                                    trigger?: string;
+                                    tracking?: string;
+                                    boundingSphere?: number;
+                                };
+                                contact?: {
+                                    phone?: string;
+                                    name?: string;
+                                    callsign?: string;
+                                    endpoint?: string;
+                                };
+                                shape?: {
+                                    ellipse?: {
+                                        major: number;
+                                        minor: number;
+                                        angle: number;
+                                    };
+                                };
+                                remarks?: string;
+                                mission?: {
+                                    type?: string;
+                                    tool?: string;
+                                    guid?: string;
+                                    name?: string;
+                                    authorUid?: string;
+                                    missionLayer?: {
+                                        name?: string;
+                                        parentUid?: string;
+                                        type?: string;
+                                        uid?: string;
+                                    };
+                                    missionChanges?: {
+                                        contentUid: string;
+                                        creatorUid: string;
+                                        isFederatedChange: string;
+                                        missionName: string;
+                                        timestamp: string;
+                                        type: string;
+                                        details: {
+                                            type: string;
+                                            callsign: string;
+                                            color: string;
+                                            lat: string;
+                                            lon: string;
+                                        };
+                                    }[];
+                                };
+                                fileshare?: {
+                                    filename: string;
+                                    name: string;
+                                    senderCallsign: string;
+                                    senderUid: string;
+                                    senderUrl: string;
+                                    sha256: string;
+                                    sizeInBytes: number;
+                                };
+                                ackrequest?: {
+                                    uid: string;
+                                    ackrequested: boolean;
+                                    tag: string;
+                                };
+                                attachments?: string[];
+                                sensor?: {
+                                    elevation?: number;
+                                    vfov?: number;
+                                    fov?: number;
+                                    roll?: number;
+                                    range?: number;
+                                    azimuth?: number;
+                                    north?: number;
+                                    fovBlue?: number;
+                                    fovAlpha?: number;
+                                    fovGreen?: number;
+                                    fovRed?: number;
+                                    strokeWeight?: number;
+                                    strokeColor?: number;
+                                    rangeLines?: number;
+                                    rangeLineStrokeWeight?: number;
+                                    rangeLineStrokeColor?: number;
+                                    displayMagneticReference?: number;
+                                    hideFov?: boolean;
+                                    type?: string;
+                                    version?: string;
+                                    model?: string;
+                                };
+                                video?: {
+                                    uid?: string;
+                                    sensor?: string;
+                                    spi?: string;
+                                    url?: string;
+                                    connection?: {
+                                        uid: string;
+                                        address: string;
+                                        networkTimeout?: number;
+                                        path?: string;
+                                        protocol?: string;
+                                        bufferTime?: number;
+                                        port?: number;
+                                        roverPort?: number;
+                                        rtspReliable?: number;
+                                        ignoreEmbeddedKLV?: boolean;
+                                        alias?: string;
+                                    };
+                                };
+                                links?: {
+                                    type?: string;
+                                    point?: string;
+                                    url?: string;
+                                    mime?: string;
+                                    remarks?: string;
+                                    uid?: string;
+                                    relation?: string;
+                                    production_time?: string;
+                                    parent_callsign?: string;
+                                }[];
+                                chat?: {
+                                    parent?: string;
+                                    groupOwner?: string;
+                                    messageId?: string;
+                                    chatroom: string;
+                                    id: string;
+                                    senderCallsign: string;
+                                    chatgrp: unknown;
+                                };
+                                track?: {
+                                    speed?: string;
+                                    course?: string;
+                                    slope?: string;
+                                    eCourse?: string;
+                                    eSpeed?: string;
+                                    eSlope?: string;
+                                };
+                                dest?: {
+                                    uid?: string;
+                                    callsign?: string;
+                                    mission?: string;
+                                    "mission-guid"?: string;
+                                    after?: string;
+                                    path?: string;
+                                } | {
+                                    uid?: string;
+                                    callsign?: string;
+                                    mission?: string;
+                                    "mission-guid"?: string;
+                                    after?: string;
+                                    path?: string;
+                                }[];
+                                icon?: string;
+                                droid?: string;
+                                takv?: {
+                                    device?: string;
+                                    platform?: string;
+                                    os?: string;
+                                    version?: string;
+                                };
+                                group?: {
+                                    name: string;
+                                    role: string;
+                                };
+                                status?: {
+                                    battery?: string;
+                                    readiness?: string;
+                                };
+                                precisionlocation?: {
+                                    geopointsrc?: string;
+                                    altsrc?: string;
+                                };
+                                flow?: Record<string, never>;
+                            };
+                            path?: string;
+                            geometry: {
+                                /** @constant */
+                                type: "Point";
+                                coordinates: number[];
+                            } | {
+                                /** @constant */
+                                type: "LineString";
+                                coordinates: number[][];
+                            } | {
+                                /** @constant */
+                                type: "Polygon";
+                                coordinates: number[][][];
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connection/{:connectionid}/layer/{:layerid}/cot/{:uid}/all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Helper API to list COT history */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description No Description */
+                    start?: string;
+                    /** @description No Description */
+                    end?: string;
+                    /** @description No Description */
+                    secago?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            type: string;
+                            features: {
+                                id: string;
+                                /** @constant */
+                                type: "Feature";
+                                properties: {
+                                    /** @default UNKNOWN */
+                                    callsign: string;
+                                    /** @default a-f-G */
+                                    type: string;
+                                    how: string;
+                                    time: string;
+                                    start: string;
+                                    stale: string;
+                                    center: number[];
+                                    course?: number;
+                                    slope?: number;
+                                    speed?: number;
+                                    "marker-color"?: string;
+                                    "marker-opacity"?: number;
+                                    stroke?: string;
+                                    "stroke-opacity"?: number;
+                                    "stroke-width"?: number;
+                                    "stroke-style"?: string;
+                                    fill?: string;
+                                    "fill-opacity"?: number;
+                                    metadata?: Record<string, never>;
+                                    archived?: boolean;
+                                    geofence?: {
+                                        elevationMonitored?: string;
+                                        minElevation?: string;
+                                        maxElevation?: string;
+                                        monitor?: string;
+                                        trigger?: string;
+                                        tracking?: string;
+                                        boundingSphere?: number;
+                                    };
+                                    contact?: {
+                                        phone?: string;
+                                        name?: string;
+                                        callsign?: string;
+                                        endpoint?: string;
+                                    };
+                                    shape?: {
+                                        ellipse?: {
+                                            major: number;
+                                            minor: number;
+                                            angle: number;
+                                        };
+                                    };
+                                    remarks?: string;
+                                    mission?: {
+                                        type?: string;
+                                        tool?: string;
+                                        guid?: string;
+                                        name?: string;
+                                        authorUid?: string;
+                                        missionLayer?: {
+                                            name?: string;
+                                            parentUid?: string;
+                                            type?: string;
+                                            uid?: string;
+                                        };
+                                        missionChanges?: {
+                                            contentUid: string;
+                                            creatorUid: string;
+                                            isFederatedChange: string;
+                                            missionName: string;
+                                            timestamp: string;
+                                            type: string;
+                                            details: {
+                                                type: string;
+                                                callsign: string;
+                                                color: string;
+                                                lat: string;
+                                                lon: string;
+                                            };
+                                        }[];
+                                    };
+                                    fileshare?: {
+                                        filename: string;
+                                        name: string;
+                                        senderCallsign: string;
+                                        senderUid: string;
+                                        senderUrl: string;
+                                        sha256: string;
+                                        sizeInBytes: number;
+                                    };
+                                    ackrequest?: {
+                                        uid: string;
+                                        ackrequested: boolean;
+                                        tag: string;
+                                    };
+                                    attachments?: string[];
+                                    sensor?: {
+                                        elevation?: number;
+                                        vfov?: number;
+                                        fov?: number;
+                                        roll?: number;
+                                        range?: number;
+                                        azimuth?: number;
+                                        north?: number;
+                                        fovBlue?: number;
+                                        fovAlpha?: number;
+                                        fovGreen?: number;
+                                        fovRed?: number;
+                                        strokeWeight?: number;
+                                        strokeColor?: number;
+                                        rangeLines?: number;
+                                        rangeLineStrokeWeight?: number;
+                                        rangeLineStrokeColor?: number;
+                                        displayMagneticReference?: number;
+                                        hideFov?: boolean;
+                                        type?: string;
+                                        version?: string;
+                                        model?: string;
+                                    };
+                                    video?: {
+                                        uid?: string;
+                                        sensor?: string;
+                                        spi?: string;
+                                        url?: string;
+                                        connection?: {
+                                            uid: string;
+                                            address: string;
+                                            networkTimeout?: number;
+                                            path?: string;
+                                            protocol?: string;
+                                            bufferTime?: number;
+                                            port?: number;
+                                            roverPort?: number;
+                                            rtspReliable?: number;
+                                            ignoreEmbeddedKLV?: boolean;
+                                            alias?: string;
+                                        };
+                                    };
+                                    links?: {
+                                        type?: string;
+                                        point?: string;
+                                        url?: string;
+                                        mime?: string;
+                                        remarks?: string;
+                                        uid?: string;
+                                        relation?: string;
+                                        production_time?: string;
+                                        parent_callsign?: string;
+                                    }[];
+                                    chat?: {
+                                        parent?: string;
+                                        groupOwner?: string;
+                                        messageId?: string;
+                                        chatroom: string;
+                                        id: string;
+                                        senderCallsign: string;
+                                        chatgrp: unknown;
+                                    };
+                                    track?: {
+                                        speed?: string;
+                                        course?: string;
+                                        slope?: string;
+                                        eCourse?: string;
+                                        eSpeed?: string;
+                                        eSlope?: string;
+                                    };
+                                    dest?: {
+                                        uid?: string;
+                                        callsign?: string;
+                                        mission?: string;
+                                        "mission-guid"?: string;
+                                        after?: string;
+                                        path?: string;
+                                    } | {
+                                        uid?: string;
+                                        callsign?: string;
+                                        mission?: string;
+                                        "mission-guid"?: string;
+                                        after?: string;
+                                        path?: string;
+                                    }[];
+                                    icon?: string;
+                                    droid?: string;
+                                    takv?: {
+                                        device?: string;
+                                        platform?: string;
+                                        os?: string;
+                                        version?: string;
+                                    };
+                                    group?: {
+                                        name: string;
+                                        role: string;
+                                    };
+                                    status?: {
+                                        battery?: string;
+                                        readiness?: string;
+                                    };
+                                    precisionlocation?: {
+                                        geopointsrc?: string;
+                                        altsrc?: string;
+                                    };
+                                    flow?: Record<string, never>;
+                                };
+                                path?: string;
+                                geometry: {
+                                    /** @constant */
+                                    type: "Point";
+                                    coordinates: number[];
+                                } | {
+                                    /** @constant */
+                                    type: "LineString";
+                                    coordinates: number[][];
+                                } | {
+                                    /** @constant */
+                                    type: "Polygon";
+                                    coordinates: number[][][];
+                                };
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connection/{:connectionid}/layer/{:layerid}/incoming/ephemeral": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Store ephemeral values */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": Record<string, never>;
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connection/{:connectionid}/layer/{:layerid}/outgoing/ephemeral": {
         parameters: {
             query?: never;
             header?: never;
@@ -2137,7 +2891,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort?: "id" | "created" | "updated" | "name" | "priority" | "alarm_period" | "alarm_evals" | "alarm_points" | "alarm_threshold" | "description" | "enabled" | "enabled_styles" | "styles" | "logging" | "stale" | "task" | "connection" | "cron" | "environment" | "ephemeral" | "config" | "memory" | "timeout" | "data" | "schema";
+                    sort?: "id" | "uuid" | "created" | "updated" | "name" | "enabled" | "description" | "priority" | "connection" | "logging" | "task" | "memory" | "timeout" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description No Description */
@@ -2167,9 +2921,226 @@ export interface paths {
                                 status?: string;
                                 created: string;
                                 updated: string;
+                                uuid: string;
                                 name: string;
                                 description: string;
                                 enabled: boolean;
+                                logging: boolean;
+                                task: string;
+                                connection: number;
+                                memory: number;
+                                timeout: number;
+                                priority: "high" | "low" | "off";
+                                incoming?: {
+                                    layer: number;
+                                    created: string;
+                                    updated: string;
+                                    config: {
+                                        timezone?: {
+                                            timezone: string;
+                                        };
+                                    };
+                                    cron: string | null;
+                                    webhooks: boolean;
+                                    alarm_period: number;
+                                    alarm_evals: number;
+                                    alarm_points: number;
+                                    alarm_threshold: number;
+                                    enabled_styles: boolean;
+                                    styles: {
+                                        line?: {
+                                            stroke?: string;
+                                            "stroke-style"?: string;
+                                            "stroke-opacity"?: string;
+                                            "stroke-width"?: string;
+                                            id?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                        };
+                                        point?: {
+                                            "marker-color"?: string;
+                                            "marker-opacity"?: string;
+                                            id?: string;
+                                            type?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                            icon?: string;
+                                        };
+                                        polygon?: {
+                                            stroke?: string;
+                                            "stroke-style"?: string;
+                                            "stroke-opacity"?: string;
+                                            "stroke-width"?: string;
+                                            fill?: string;
+                                            "fill-opacity"?: string;
+                                            id?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                        };
+                                        id?: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                        queries?: {
+                                            query: string;
+                                            id?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                            styles: {
+                                                id?: string;
+                                                remarks?: string;
+                                                callsign?: string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                                line?: {
+                                                    stroke?: string;
+                                                    "stroke-style"?: string;
+                                                    "stroke-opacity"?: string;
+                                                    "stroke-width"?: string;
+                                                    id?: string;
+                                                    remarks?: string;
+                                                    callsign?: string;
+                                                    links?: {
+                                                        remarks: string;
+                                                        url: string;
+                                                    }[];
+                                                };
+                                                point?: {
+                                                    "marker-color"?: string;
+                                                    "marker-opacity"?: string;
+                                                    id?: string;
+                                                    type?: string;
+                                                    remarks?: string;
+                                                    callsign?: string;
+                                                    links?: {
+                                                        remarks: string;
+                                                        url: string;
+                                                    }[];
+                                                    icon?: string;
+                                                };
+                                                polygon?: {
+                                                    stroke?: string;
+                                                    "stroke-style"?: string;
+                                                    "stroke-opacity"?: string;
+                                                    "stroke-width"?: string;
+                                                    fill?: string;
+                                                    "fill-opacity"?: string;
+                                                    id?: string;
+                                                    remarks?: string;
+                                                    callsign?: string;
+                                                    links?: {
+                                                        remarks: string;
+                                                        url: string;
+                                                    }[];
+                                                };
+                                            };
+                                        }[];
+                                    };
+                                    stale: number;
+                                    environment: unknown;
+                                    ephemeral: Record<string, never>;
+                                    data: number | null;
+                                };
+                                outgoing?: {
+                                    layer: number;
+                                    created: string;
+                                    updated: string;
+                                    environment: unknown;
+                                    ephemeral: Record<string, never>;
+                                };
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Register a new layer */
+        post: {
+            parameters: {
+                query: {
+                    /** @description Get Live Alarm state from CloudWatch */
+                    alarms: boolean;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Human readable name */
+                        name: string;
+                        priority?: "high" | "low" | "off";
+                        /** @description Human readable description */
+                        description: string;
+                        webhooks?: boolean;
+                        enabled?: boolean;
+                        task: string;
+                        logging: boolean;
+                        memory?: number;
+                        timeout?: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            status?: string;
+                            created: string;
+                            updated: string;
+                            uuid: string;
+                            name: string;
+                            description: string;
+                            enabled: boolean;
+                            logging: boolean;
+                            task: string;
+                            connection: number;
+                            memory: number;
+                            timeout: number;
+                            priority: "high" | "low" | "off";
+                            incoming?: {
+                                layer: number;
+                                created: string;
+                                updated: string;
+                                config: {
+                                    timezone?: {
+                                        timezone: string;
+                                    };
+                                };
+                                cron: string | null;
+                                webhooks: boolean;
+                                alarm_period: number;
+                                alarm_evals: number;
+                                alarm_points: number;
+                                alarm_threshold: number;
                                 enabled_styles: boolean;
                                 styles: {
                                     line?: {
@@ -2281,41 +3252,42 @@ export interface paths {
                                         };
                                     }[];
                                 };
-                                logging: boolean;
                                 stale: number;
-                                task: string;
-                                connection?: number;
-                                cron: string;
                                 environment: unknown;
                                 ephemeral: Record<string, never>;
-                                config: {
-                                    timezone?: {
-                                        timezone: string;
-                                    };
-                                };
-                                memory: number;
-                                timeout: number;
                                 data: number | null;
-                                schema: unknown;
-                                priority: "high" | "low" | "off";
-                                alarm_period: number;
-                                alarm_evals: number;
-                                alarm_points: number;
-                                alarm_threshold: number;
-                            }[];
+                            };
+                            outgoing?: {
+                                layer: number;
+                                created: string;
+                                updated: string;
+                                environment: unknown;
+                                ephemeral: Record<string, never>;
+                            };
                         };
                     };
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connection/{:connectionid}/layer/{:layerid}/incoming": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
         put?: never;
-        /** Register a new layer */
+        /** Register a new incoming layer config */
         post: {
             parameters: {
-                query: {
-                    /** @description Get Live Alarm state from CloudWatch */
-                    alarms: boolean;
-                };
+                query?: never;
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -2323,18 +3295,10 @@ export interface paths {
             requestBody: {
                 content: {
                     "application/json": {
-                        /** @description Human readable name */
-                        name: string;
-                        priority?: "high" | "low" | "off";
-                        /** @description Human readable description */
-                        description: string;
-                        enabled?: boolean;
-                        task: string;
-                        cron: string;
-                        logging: boolean;
+                        webhooks?: boolean;
+                        cron?: string;
                         stale?: number;
                         data?: number;
-                        schema?: unknown;
                         enabled_styles?: boolean;
                         styles?: {
                             line?: {
@@ -2446,8 +3410,6 @@ export interface paths {
                                 };
                             }[];
                         };
-                        memory?: number;
-                        timeout?: number;
                         config?: {
                             timezone?: {
                                 timezone: string;
@@ -2468,13 +3430,20 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            id: number;
-                            status?: string;
+                            layer: number;
                             created: string;
                             updated: string;
-                            name: string;
-                            description: string;
-                            enabled: boolean;
+                            config: {
+                                timezone?: {
+                                    timezone: string;
+                                };
+                            };
+                            cron: string | null;
+                            webhooks: boolean;
+                            alarm_period: number;
+                            alarm_evals: number;
+                            alarm_points: number;
+                            alarm_threshold: number;
                             enabled_styles: boolean;
                             styles: {
                                 line?: {
@@ -2586,36 +3555,423 @@ export interface paths {
                                     };
                                 }[];
                             };
-                            logging: boolean;
                             stale: number;
-                            task: string;
-                            connection?: number;
-                            cron: string;
                             environment: unknown;
                             ephemeral: Record<string, never>;
-                            config: {
-                                timezone?: {
-                                    timezone: string;
-                                };
-                            };
-                            memory: number;
-                            timeout: number;
                             data: number | null;
-                            schema: unknown;
-                            priority: "high" | "low" | "off";
-                            alarm_period: number;
-                            alarm_evals: number;
-                            alarm_points: number;
-                            alarm_threshold: number;
                         };
                     };
                 };
             };
         };
-        delete?: never;
+        /** Remove an incoming config from a layer */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
         options?: never;
         head?: never;
-        patch?: never;
+        /** Update an incoming layer configuration */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        webhooks?: boolean;
+                        cron?: string | null;
+                        enabled_styles?: boolean;
+                        styles?: {
+                            line?: {
+                                stroke?: string;
+                                "stroke-style"?: string;
+                                "stroke-opacity"?: string;
+                                "stroke-width"?: string;
+                                id?: string;
+                                remarks?: string;
+                                callsign?: string;
+                                links?: {
+                                    remarks: string;
+                                    url: string;
+                                }[];
+                            };
+                            point?: {
+                                "marker-color"?: string;
+                                "marker-opacity"?: string;
+                                id?: string;
+                                type?: string;
+                                remarks?: string;
+                                callsign?: string;
+                                links?: {
+                                    remarks: string;
+                                    url: string;
+                                }[];
+                                icon?: string;
+                            };
+                            polygon?: {
+                                stroke?: string;
+                                "stroke-style"?: string;
+                                "stroke-opacity"?: string;
+                                "stroke-width"?: string;
+                                fill?: string;
+                                "fill-opacity"?: string;
+                                id?: string;
+                                remarks?: string;
+                                callsign?: string;
+                                links?: {
+                                    remarks: string;
+                                    url: string;
+                                }[];
+                            };
+                            id?: string;
+                            remarks?: string;
+                            callsign?: string;
+                            links?: {
+                                remarks: string;
+                                url: string;
+                            }[];
+                            queries?: {
+                                query: string;
+                                id?: string;
+                                remarks?: string;
+                                callsign?: string;
+                                links?: {
+                                    remarks: string;
+                                    url: string;
+                                }[];
+                                styles: {
+                                    id?: string;
+                                    remarks?: string;
+                                    callsign?: string;
+                                    links?: {
+                                        remarks: string;
+                                        url: string;
+                                    }[];
+                                    line?: {
+                                        stroke?: string;
+                                        "stroke-style"?: string;
+                                        "stroke-opacity"?: string;
+                                        "stroke-width"?: string;
+                                        id?: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                    };
+                                    point?: {
+                                        "marker-color"?: string;
+                                        "marker-opacity"?: string;
+                                        id?: string;
+                                        type?: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                        icon?: string;
+                                    };
+                                    polygon?: {
+                                        stroke?: string;
+                                        "stroke-style"?: string;
+                                        "stroke-opacity"?: string;
+                                        "stroke-width"?: string;
+                                        fill?: string;
+                                        "fill-opacity"?: string;
+                                        id?: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                    };
+                                };
+                            }[];
+                        };
+                        stale?: number;
+                        data?: null | number;
+                        environment?: unknown;
+                        config?: {
+                            timezone?: {
+                                timezone: string;
+                            };
+                        };
+                        alarm_period?: number;
+                        alarm_evals?: number;
+                        alarm_points?: number;
+                        alarm_threshold?: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            layer: number;
+                            created: string;
+                            updated: string;
+                            config: {
+                                timezone?: {
+                                    timezone: string;
+                                };
+                            };
+                            cron: string | null;
+                            webhooks: boolean;
+                            alarm_period: number;
+                            alarm_evals: number;
+                            alarm_points: number;
+                            alarm_threshold: number;
+                            enabled_styles: boolean;
+                            styles: {
+                                line?: {
+                                    stroke?: string;
+                                    "stroke-style"?: string;
+                                    "stroke-opacity"?: string;
+                                    "stroke-width"?: string;
+                                    id?: string;
+                                    remarks?: string;
+                                    callsign?: string;
+                                    links?: {
+                                        remarks: string;
+                                        url: string;
+                                    }[];
+                                };
+                                point?: {
+                                    "marker-color"?: string;
+                                    "marker-opacity"?: string;
+                                    id?: string;
+                                    type?: string;
+                                    remarks?: string;
+                                    callsign?: string;
+                                    links?: {
+                                        remarks: string;
+                                        url: string;
+                                    }[];
+                                    icon?: string;
+                                };
+                                polygon?: {
+                                    stroke?: string;
+                                    "stroke-style"?: string;
+                                    "stroke-opacity"?: string;
+                                    "stroke-width"?: string;
+                                    fill?: string;
+                                    "fill-opacity"?: string;
+                                    id?: string;
+                                    remarks?: string;
+                                    callsign?: string;
+                                    links?: {
+                                        remarks: string;
+                                        url: string;
+                                    }[];
+                                };
+                                id?: string;
+                                remarks?: string;
+                                callsign?: string;
+                                links?: {
+                                    remarks: string;
+                                    url: string;
+                                }[];
+                                queries?: {
+                                    query: string;
+                                    id?: string;
+                                    remarks?: string;
+                                    callsign?: string;
+                                    links?: {
+                                        remarks: string;
+                                        url: string;
+                                    }[];
+                                    styles: {
+                                        id?: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                        line?: {
+                                            stroke?: string;
+                                            "stroke-style"?: string;
+                                            "stroke-opacity"?: string;
+                                            "stroke-width"?: string;
+                                            id?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                        };
+                                        point?: {
+                                            "marker-color"?: string;
+                                            "marker-opacity"?: string;
+                                            id?: string;
+                                            type?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                            icon?: string;
+                                        };
+                                        polygon?: {
+                                            stroke?: string;
+                                            "stroke-style"?: string;
+                                            "stroke-opacity"?: string;
+                                            "stroke-width"?: string;
+                                            fill?: string;
+                                            "fill-opacity"?: string;
+                                            id?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                        };
+                                    };
+                                }[];
+                            };
+                            stale: number;
+                            environment: unknown;
+                            ephemeral: Record<string, never>;
+                            data: number | null;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/connection/{:connectionid}/layer/{:layerid}/outgoing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Register a new incoming layer config */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            layer: number;
+                            created: string;
+                            updated: string;
+                            environment: unknown;
+                            ephemeral: Record<string, never>;
+                        };
+                    };
+                };
+            };
+        };
+        /** Remove an outgoing config from a layer */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update an outgoing layer configuration */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        environment?: unknown;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            layer: number;
+                            created: string;
+                            updated: string;
+                            environment: unknown;
+                            ephemeral: Record<string, never>;
+                        };
+                    };
+                };
+            };
+        };
         trace?: never;
     };
     "/connection/{:connectionid}/layer/{:layerid}": {
@@ -2649,69 +4005,38 @@ export interface paths {
                             status?: string;
                             created: string;
                             updated: string;
+                            uuid: string;
                             name: string;
                             description: string;
                             enabled: boolean;
-                            enabled_styles: boolean;
-                            styles: {
-                                line?: {
-                                    stroke?: string;
-                                    "stroke-style"?: string;
-                                    "stroke-opacity"?: string;
-                                    "stroke-width"?: string;
-                                    id?: string;
-                                    remarks?: string;
-                                    callsign?: string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
+                            logging: boolean;
+                            task: string;
+                            connection: number;
+                            memory: number;
+                            timeout: number;
+                            priority: "high" | "low" | "off";
+                            incoming?: {
+                                layer: number;
+                                created: string;
+                                updated: string;
+                                config: {
+                                    timezone?: {
+                                        timezone: string;
+                                    };
                                 };
-                                point?: {
-                                    "marker-color"?: string;
-                                    "marker-opacity"?: string;
-                                    id?: string;
-                                    type?: string;
-                                    remarks?: string;
-                                    callsign?: string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
-                                    icon?: string;
-                                };
-                                polygon?: {
-                                    stroke?: string;
-                                    "stroke-style"?: string;
-                                    "stroke-opacity"?: string;
-                                    "stroke-width"?: string;
-                                    fill?: string;
-                                    "fill-opacity"?: string;
-                                    id?: string;
-                                    remarks?: string;
-                                    callsign?: string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
-                                };
-                                id?: string;
-                                remarks?: string;
-                                callsign?: string;
-                                links?: {
-                                    remarks: string;
-                                    url: string;
-                                }[];
-                                queries?: {
-                                    query: string;
-                                    id?: string;
-                                    remarks?: string;
-                                    callsign?: string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
-                                    styles: {
+                                cron: string | null;
+                                webhooks: boolean;
+                                alarm_period: number;
+                                alarm_evals: number;
+                                alarm_points: number;
+                                alarm_threshold: number;
+                                enabled_styles: boolean;
+                                styles: {
+                                    line?: {
+                                        stroke?: string;
+                                        "stroke-style"?: string;
+                                        "stroke-opacity"?: string;
+                                        "stroke-width"?: string;
                                         id?: string;
                                         remarks?: string;
                                         callsign?: string;
@@ -2719,71 +4044,115 @@ export interface paths {
                                             remarks: string;
                                             url: string;
                                         }[];
-                                        line?: {
-                                            stroke?: string;
-                                            "stroke-style"?: string;
-                                            "stroke-opacity"?: string;
-                                            "stroke-width"?: string;
-                                            id?: string;
-                                            remarks?: string;
-                                            callsign?: string;
-                                            links?: {
-                                                remarks: string;
-                                                url: string;
-                                            }[];
-                                        };
-                                        point?: {
-                                            "marker-color"?: string;
-                                            "marker-opacity"?: string;
-                                            id?: string;
-                                            type?: string;
-                                            remarks?: string;
-                                            callsign?: string;
-                                            links?: {
-                                                remarks: string;
-                                                url: string;
-                                            }[];
-                                            icon?: string;
-                                        };
-                                        polygon?: {
-                                            stroke?: string;
-                                            "stroke-style"?: string;
-                                            "stroke-opacity"?: string;
-                                            "stroke-width"?: string;
-                                            fill?: string;
-                                            "fill-opacity"?: string;
-                                            id?: string;
-                                            remarks?: string;
-                                            callsign?: string;
-                                            links?: {
-                                                remarks: string;
-                                                url: string;
-                                            }[];
-                                        };
                                     };
-                                }[];
-                            };
-                            logging: boolean;
-                            stale: number;
-                            task: string;
-                            connection?: number;
-                            cron: string;
-                            environment: unknown;
-                            ephemeral: Record<string, never>;
-                            config: {
-                                timezone?: {
-                                    timezone: string;
+                                    point?: {
+                                        "marker-color"?: string;
+                                        "marker-opacity"?: string;
+                                        id?: string;
+                                        type?: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                        icon?: string;
+                                    };
+                                    polygon?: {
+                                        stroke?: string;
+                                        "stroke-style"?: string;
+                                        "stroke-opacity"?: string;
+                                        "stroke-width"?: string;
+                                        fill?: string;
+                                        "fill-opacity"?: string;
+                                        id?: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                    };
+                                    id?: string;
+                                    remarks?: string;
+                                    callsign?: string;
+                                    links?: {
+                                        remarks: string;
+                                        url: string;
+                                    }[];
+                                    queries?: {
+                                        query: string;
+                                        id?: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                        styles: {
+                                            id?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                            line?: {
+                                                stroke?: string;
+                                                "stroke-style"?: string;
+                                                "stroke-opacity"?: string;
+                                                "stroke-width"?: string;
+                                                id?: string;
+                                                remarks?: string;
+                                                callsign?: string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                            };
+                                            point?: {
+                                                "marker-color"?: string;
+                                                "marker-opacity"?: string;
+                                                id?: string;
+                                                type?: string;
+                                                remarks?: string;
+                                                callsign?: string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                                icon?: string;
+                                            };
+                                            polygon?: {
+                                                stroke?: string;
+                                                "stroke-style"?: string;
+                                                "stroke-opacity"?: string;
+                                                "stroke-width"?: string;
+                                                fill?: string;
+                                                "fill-opacity"?: string;
+                                                id?: string;
+                                                remarks?: string;
+                                                callsign?: string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                            };
+                                        };
+                                    }[];
                                 };
+                                stale: number;
+                                environment: unknown;
+                                ephemeral: Record<string, never>;
+                                data: number | null;
                             };
-                            memory: number;
-                            timeout: number;
-                            data: number | null;
-                            schema: unknown;
-                            priority: "high" | "low" | "off";
-                            alarm_period: number;
-                            alarm_evals: number;
-                            alarm_points: number;
-                            alarm_threshold: number;
+                            outgoing?: {
+                                layer: number;
+                                created: string;
+                                updated: string;
+                                environment: unknown;
+                                ephemeral: Record<string, never>;
+                            };
                         };
                     };
                 };
@@ -2836,78 +4205,53 @@ export interface paths {
                         priority?: "high" | "low" | "off";
                         /** @description Human readable description */
                         description?: string;
-                        cron?: string;
                         memory?: number;
                         timeout?: number;
                         enabled?: boolean;
-                        enabled_styles?: boolean;
                         task?: string;
-                        styles?: {
-                            line?: {
-                                stroke?: string;
-                                "stroke-style"?: string;
-                                "stroke-opacity"?: string;
-                                "stroke-width"?: string;
-                                id?: string;
-                                remarks?: string;
-                                callsign?: string;
-                                links?: {
-                                    remarks: string;
-                                    url: string;
-                                }[];
-                            };
-                            point?: {
-                                "marker-color"?: string;
-                                "marker-opacity"?: string;
-                                id?: string;
-                                type?: string;
-                                remarks?: string;
-                                callsign?: string;
-                                links?: {
-                                    remarks: string;
-                                    url: string;
-                                }[];
-                                icon?: string;
-                            };
-                            polygon?: {
-                                stroke?: string;
-                                "stroke-style"?: string;
-                                "stroke-opacity"?: string;
-                                "stroke-width"?: string;
-                                fill?: string;
-                                "fill-opacity"?: string;
-                                id?: string;
-                                remarks?: string;
-                                callsign?: string;
-                                links?: {
-                                    remarks: string;
-                                    url: string;
-                                }[];
-                            };
-                            id?: string;
-                            remarks?: string;
-                            callsign?: string;
-                            links?: {
-                                remarks: string;
-                                url: string;
-                            }[];
-                            queries?: {
-                                query: string;
-                                id?: string;
-                                remarks?: string;
-                                callsign?: string;
-                                links?: {
-                                    remarks: string;
-                                    url: string;
-                                }[];
+                        logging?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            status?: string;
+                            created: string;
+                            updated: string;
+                            uuid: string;
+                            name: string;
+                            description: string;
+                            enabled: boolean;
+                            logging: boolean;
+                            task: string;
+                            connection: number;
+                            memory: number;
+                            timeout: number;
+                            priority: "high" | "low" | "off";
+                            incoming?: {
+                                layer: number;
+                                created: string;
+                                updated: string;
+                                config: {
+                                    timezone?: {
+                                        timezone: string;
+                                    };
+                                };
+                                cron: string | null;
+                                webhooks: boolean;
+                                alarm_period: number;
+                                alarm_evals: number;
+                                alarm_points: number;
+                                alarm_threshold: number;
+                                enabled_styles: boolean;
                                 styles: {
-                                    id?: string;
-                                    remarks?: string;
-                                    callsign?: string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
                                     line?: {
                                         stroke?: string;
                                         "stroke-style"?: string;
@@ -2949,48 +4293,6 @@ export interface paths {
                                             url: string;
                                         }[];
                                     };
-                                };
-                            }[];
-                        };
-                        logging?: boolean;
-                        stale?: number;
-                        data?: null | number;
-                        environment?: unknown;
-                        config?: {
-                            timezone?: {
-                                timezone: string;
-                            };
-                        };
-                        schema?: unknown;
-                        alarm_period?: number;
-                        alarm_evals?: number;
-                        alarm_points?: number;
-                        alarm_threshold?: number;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: number;
-                            status?: string;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            description: string;
-                            enabled: boolean;
-                            enabled_styles: boolean;
-                            styles: {
-                                line?: {
-                                    stroke?: string;
-                                    "stroke-style"?: string;
-                                    "stroke-opacity"?: string;
-                                    "stroke-width"?: string;
                                     id?: string;
                                     remarks?: string;
                                     callsign?: string;
@@ -2998,52 +4300,8 @@ export interface paths {
                                         remarks: string;
                                         url: string;
                                     }[];
-                                };
-                                point?: {
-                                    "marker-color"?: string;
-                                    "marker-opacity"?: string;
-                                    id?: string;
-                                    type?: string;
-                                    remarks?: string;
-                                    callsign?: string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
-                                    icon?: string;
-                                };
-                                polygon?: {
-                                    stroke?: string;
-                                    "stroke-style"?: string;
-                                    "stroke-opacity"?: string;
-                                    "stroke-width"?: string;
-                                    fill?: string;
-                                    "fill-opacity"?: string;
-                                    id?: string;
-                                    remarks?: string;
-                                    callsign?: string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
-                                };
-                                id?: string;
-                                remarks?: string;
-                                callsign?: string;
-                                links?: {
-                                    remarks: string;
-                                    url: string;
-                                }[];
-                                queries?: {
-                                    query: string;
-                                    id?: string;
-                                    remarks?: string;
-                                    callsign?: string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
-                                    styles: {
+                                    queries?: {
+                                        query: string;
                                         id?: string;
                                         remarks?: string;
                                         callsign?: string;
@@ -3051,11 +4309,7 @@ export interface paths {
                                             remarks: string;
                                             url: string;
                                         }[];
-                                        line?: {
-                                            stroke?: string;
-                                            "stroke-style"?: string;
-                                            "stroke-opacity"?: string;
-                                            "stroke-width"?: string;
+                                        styles: {
                                             id?: string;
                                             remarks?: string;
                                             callsign?: string;
@@ -3063,59 +4317,62 @@ export interface paths {
                                                 remarks: string;
                                                 url: string;
                                             }[];
+                                            line?: {
+                                                stroke?: string;
+                                                "stroke-style"?: string;
+                                                "stroke-opacity"?: string;
+                                                "stroke-width"?: string;
+                                                id?: string;
+                                                remarks?: string;
+                                                callsign?: string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                            };
+                                            point?: {
+                                                "marker-color"?: string;
+                                                "marker-opacity"?: string;
+                                                id?: string;
+                                                type?: string;
+                                                remarks?: string;
+                                                callsign?: string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                                icon?: string;
+                                            };
+                                            polygon?: {
+                                                stroke?: string;
+                                                "stroke-style"?: string;
+                                                "stroke-opacity"?: string;
+                                                "stroke-width"?: string;
+                                                fill?: string;
+                                                "fill-opacity"?: string;
+                                                id?: string;
+                                                remarks?: string;
+                                                callsign?: string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                            };
                                         };
-                                        point?: {
-                                            "marker-color"?: string;
-                                            "marker-opacity"?: string;
-                                            id?: string;
-                                            type?: string;
-                                            remarks?: string;
-                                            callsign?: string;
-                                            links?: {
-                                                remarks: string;
-                                                url: string;
-                                            }[];
-                                            icon?: string;
-                                        };
-                                        polygon?: {
-                                            stroke?: string;
-                                            "stroke-style"?: string;
-                                            "stroke-opacity"?: string;
-                                            "stroke-width"?: string;
-                                            fill?: string;
-                                            "fill-opacity"?: string;
-                                            id?: string;
-                                            remarks?: string;
-                                            callsign?: string;
-                                            links?: {
-                                                remarks: string;
-                                                url: string;
-                                            }[];
-                                        };
-                                    };
-                                }[];
-                            };
-                            logging: boolean;
-                            stale: number;
-                            task: string;
-                            connection?: number;
-                            cron: string;
-                            environment: unknown;
-                            ephemeral: Record<string, never>;
-                            config: {
-                                timezone?: {
-                                    timezone: string;
+                                    }[];
                                 };
+                                stale: number;
+                                environment: unknown;
+                                ephemeral: Record<string, never>;
+                                data: number | null;
                             };
-                            memory: number;
-                            timeout: number;
-                            data: number | null;
-                            schema: unknown;
-                            priority: "high" | "low" | "off";
-                            alarm_period: number;
-                            alarm_evals: number;
-                            alarm_points: number;
-                            alarm_threshold: number;
+                            outgoing?: {
+                                layer: number;
+                                created: string;
+                                updated: string;
+                                environment: unknown;
+                                ephemeral: Record<string, never>;
+                            };
                         };
                     };
                 };
@@ -3180,7 +4437,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort?: "id" | "created" | "updated" | "name" | "enabled" | "connection" | "type" | "body" | "logging";
+                    sort?: "id" | "created" | "updated" | "name" | "enabled" | "connection" | "type" | "body" | "logging" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description No Description */
@@ -3208,7 +4465,7 @@ export interface paths {
                                 enabled: boolean;
                                 connection: number;
                                 type: string;
-                                body: unknown;
+                                body: Record<string, never>;
                                 logging: boolean;
                             }[];
                         };
@@ -3259,7 +4516,7 @@ export interface paths {
                             enabled: boolean;
                             connection: number;
                             type: string;
-                            body: unknown;
+                            body: Record<string, never>;
                             logging: boolean;
                         };
                     };
@@ -3303,7 +4560,7 @@ export interface paths {
                             enabled: boolean;
                             connection: number;
                             type: string;
-                            body: unknown;
+                            body: Record<string, never>;
                             logging: boolean;
                         };
                     };
@@ -3372,55 +4629,13 @@ export interface paths {
                             enabled: boolean;
                             connection: number;
                             type: string;
-                            body: unknown;
+                            body: Record<string, never>;
                             logging: boolean;
                         };
                     };
                 };
             };
         };
-        trace?: never;
-    };
-    "/connection/{:connectionid}/sink/{:sinkid}/stats": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Return Sink Success/Failure Stats */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            stats: {
-                                label: string;
-                                success: number;
-                                failure: number;
-                            }[];
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
         trace?: never;
     };
     "/connection/{:connectionid}/layer/{:layerid}/task": {
@@ -3586,20 +4801,17 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/connection/{:connectionid}/layer/{:layerid}/task/schema": {
+    "/connection/{:connectionid}/layer/{:layerid}/task/capabilities": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Get the JSONSchema for the expected environment variables */
+        /** Get the Capabilities object */
         get: {
             parameters: {
-                query: {
-                    /** @description No Description */
-                    type: "schema:output" | "schema:input";
-                };
+                query?: never;
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -3613,7 +4825,21 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            schema: unknown;
+                            name: string;
+                            version: string;
+                            incoming?: {
+                                invocation: ("manual" | "schedule" | "webhook")[];
+                                schema: {
+                                    input: unknown;
+                                    output: unknown;
+                                };
+                            };
+                            outgoing?: {
+                                schema: {
+                                    input: unknown;
+                                    output: unknown;
+                                };
+                            };
                         };
                     };
                 };
@@ -3645,7 +4871,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort?: "id" | "connection" | "name" | "token" | "created" | "updated";
+                    sort?: "id" | "connection" | "name" | "token" | "created" | "updated" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                 };
@@ -3786,6 +5012,367 @@ export interface paths {
         };
         trace?: never;
     };
+    "/connection/{:connectionid}/video/lease": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all video leases */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort?: "id" | "email" | "name" | "token" | "created" | "updated" | "enableRLS";
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: number;
+                                name: string;
+                                created: string;
+                                updated: string;
+                                username: string | null;
+                                connection: number | null;
+                                source_type: string;
+                                source_model: string;
+                                publish: boolean;
+                                recording: boolean;
+                                ephemeral: boolean;
+                                channel: (null | string) | null;
+                                expiration: (null | string) | null;
+                                path: string;
+                                stream_user: string | null;
+                                stream_pass: string | null;
+                                read_user: string | null;
+                                read_pass: string | null;
+                                proxy: (null | string) | null;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create a new video Lease */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Human readable name */
+                        name: string;
+                        /**
+                         * @description Duration in Seconds
+                         * @default 3600
+                         */
+                        duration: number;
+                        /**
+                         * @description System Admins can create non-expiring leases
+                         * @default false
+                         */
+                        permanent: boolean;
+                        /**
+                         * @description Record streams to disk
+                         * @default false
+                         */
+                        recording: boolean;
+                        /**
+                         * @description Publish stream URL to TAK Server Video Manager
+                         * @default false
+                         */
+                        publish: boolean;
+                        /**
+                         * @description Increase stream security by enforcing a seperate read and write username/password
+                         * @default false
+                         */
+                        secure: boolean;
+                        source_type?: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
+                        source_model?: string;
+                        channel?: string | null;
+                        proxy?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            lease: {
+                                id: number;
+                                name: string;
+                                created: string;
+                                updated: string;
+                                username: string | null;
+                                connection: number | null;
+                                source_type: string;
+                                source_model: string;
+                                publish: boolean;
+                                recording: boolean;
+                                ephemeral: boolean;
+                                channel: (null | string) | null;
+                                expiration: (null | string) | null;
+                                path: string;
+                                stream_user: string | null;
+                                stream_pass: string | null;
+                                read_user: string | null;
+                                read_pass: string | null;
+                                proxy: (null | string) | null;
+                            };
+                            protocols: {
+                                rtmp?: {
+                                    name: string;
+                                    url: string;
+                                };
+                                rtsp?: {
+                                    name: string;
+                                    url: string;
+                                };
+                                webrtc?: {
+                                    name: string;
+                                    url: string;
+                                };
+                                hls?: {
+                                    name: string;
+                                    url: string;
+                                };
+                                srt?: {
+                                    name: string;
+                                    url: string;
+                                };
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connection/{:connectionid}/video/lease/{:lease}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a single Video Lease */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            lease: {
+                                id: number;
+                                name: string;
+                                created: string;
+                                updated: string;
+                                username: string | null;
+                                connection: number | null;
+                                source_type: string;
+                                source_model: string;
+                                publish: boolean;
+                                recording: boolean;
+                                ephemeral: boolean;
+                                channel: (null | string) | null;
+                                expiration: (null | string) | null;
+                                path: string;
+                                stream_user: string | null;
+                                stream_pass: string | null;
+                                read_user: string | null;
+                                read_pass: string | null;
+                                proxy: (null | string) | null;
+                            };
+                            protocols: {
+                                rtmp?: {
+                                    name: string;
+                                    url: string;
+                                };
+                                rtsp?: {
+                                    name: string;
+                                    url: string;
+                                };
+                                webrtc?: {
+                                    name: string;
+                                    url: string;
+                                };
+                                hls?: {
+                                    name: string;
+                                    url: string;
+                                };
+                                srt?: {
+                                    name: string;
+                                    url: string;
+                                };
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /** Delete a video Lease */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update a video Lease */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name?: string;
+                        /**
+                         * @description Duration in Seconds
+                         * @default 3600
+                         */
+                        duration: number;
+                        source_type?: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
+                        source_model?: string;
+                        channel?: string | null;
+                        secure?: boolean;
+                        /**
+                         * @description System Admins can create non-expiring leases
+                         * @default false
+                         */
+                        permanent: boolean;
+                        /** @description Record streams to disk */
+                        recording: boolean;
+                        /** @description Publish stream URL to TAK Server Video Manager */
+                        publish: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            lease: {
+                                id: number;
+                                name: string;
+                                created: string;
+                                updated: string;
+                                username: string | null;
+                                connection: number | null;
+                                source_type: string;
+                                source_model: string;
+                                publish: boolean;
+                                recording: boolean;
+                                ephemeral: boolean;
+                                channel: (null | string) | null;
+                                expiration: (null | string) | null;
+                                path: string;
+                                stream_user: string | null;
+                                stream_pass: string | null;
+                                read_user: string | null;
+                                read_pass: string | null;
+                                proxy: (null | string) | null;
+                            };
+                            protocols: {
+                                rtmp?: {
+                                    name: string;
+                                    url: string;
+                                };
+                                rtsp?: {
+                                    name: string;
+                                    url: string;
+                                };
+                                webrtc?: {
+                                    name: string;
+                                    url: string;
+                                };
+                                hls?: {
+                                    name: string;
+                                    url: string;
+                                };
+                                srt?: {
+                                    name: string;
+                                    url: string;
+                                };
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
     "/connection": {
         parameters: {
             query?: never;
@@ -3804,7 +5391,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort?: "id" | "agency" | "created" | "updated" | "name" | "description" | "enabled" | "auth";
+                    sort?: "id" | "agency" | "created" | "updated" | "name" | "description" | "enabled" | "auth" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                 };
@@ -3868,7 +5455,8 @@ export interface paths {
                         description: string;
                         /** @default true */
                         enabled?: boolean;
-                        agency: null | number;
+                        agency?: null | number;
+                        integrationId?: number;
                         auth: {
                             key: string;
                             cert: string;
@@ -4080,17 +5668,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/connection/{:connectionid}/stats": {
+    "/error": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Return Conn Success/Failure Stats */
+        /** Let admins see errors coming out of the system */
         get: {
             parameters: {
-                query?: never;
+                query: {
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort?: "id" | "created" | "updated" | "username" | "message" | "trace" | "enableRLS";
+                    /** @description No Description */
+                    username?: string;
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -4104,9 +5705,14 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            stats: {
-                                label: string;
-                                success: number;
+                            total: number;
+                            items: {
+                                id: number;
+                                created: string;
+                                updated: string;
+                                username: string;
+                                message: string;
+                                trace: string | null;
                             }[];
                         };
                     };
@@ -4114,7 +5720,37 @@ export interface paths {
             };
         };
         put?: never;
-        post?: never;
+        /** Create a new error */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        message: string;
+                        trace?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -4531,10 +6167,12 @@ export interface paths {
                     limit: number;
                     /** @description Iterate through "pages" of items based on the "limit" query param */
                     page: number;
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort?: "id" | "created" | "updated" | "name" | "status" | "error" | "batch" | "result" | "username" | "mode" | "mode_id" | "config";
+                    sort?: "id" | "created" | "updated" | "name" | "status" | "error" | "batch" | "result" | "username" | "mode" | "mode_id" | "config" | "enableRLS";
                     /** @description No Description */
                     mode?: "Unknown" | "Mission" | "Package";
                     /** @description No Description */
@@ -4890,7 +6528,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort?: "uid" | "created" | "updated" | "version" | "name" | "username" | "default_group" | "default_friendly" | "default_hostile" | "default_neutral" | "default_unknown" | "skip_resize";
+                    sort?: "uid" | "created" | "updated" | "version" | "name" | "username" | "default_group" | "default_friendly" | "default_hostile" | "default_neutral" | "default_unknown" | "skip_resize" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                 };
@@ -5186,7 +6824,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort?: "id" | "created" | "updated" | "name" | "iconset" | "type2525b" | "data" | "data_alt" | "path";
+                    sort?: "id" | "created" | "updated" | "name" | "iconset" | "type2525b" | "data" | "data_alt" | "path" | "enableRLS";
                     /** @description No Description */
                     iconset?: string;
                     /** @description Filter results by a human readable name field */
@@ -5472,12 +7110,14 @@ export interface paths {
                 query: {
                     /** @description Limit the number of responses returned */
                     limit: number;
+                    /** @description Get Live Alarm state from CloudWatch */
+                    alarms: boolean;
                     /** @description Iterate through "pages" of items based on the "limit" query param */
                     page: number;
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort?: "id" | "created" | "updated" | "name" | "priority" | "alarm_period" | "alarm_evals" | "alarm_points" | "alarm_threshold" | "description" | "enabled" | "enabled_styles" | "styles" | "logging" | "stale" | "task" | "connection" | "cron" | "environment" | "ephemeral" | "config" | "memory" | "timeout" | "data" | "schema";
+                    sort?: "id" | "uuid" | "created" | "updated" | "name" | "enabled" | "description" | "priority" | "connection" | "logging" | "task" | "memory" | "timeout" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description No Description */
@@ -5512,9 +7152,228 @@ export interface paths {
                                 status?: string;
                                 created: string;
                                 updated: string;
+                                uuid: string;
                                 name: string;
                                 description: string;
                                 enabled: boolean;
+                                logging: boolean;
+                                task: string;
+                                connection: number;
+                                memory: number;
+                                timeout: number;
+                                priority: "high" | "low" | "off";
+                                incoming?: {
+                                    layer: number;
+                                    created: string;
+                                    updated: string;
+                                    config: {
+                                        timezone?: {
+                                            timezone: string;
+                                        };
+                                    };
+                                    cron: string | null;
+                                    webhooks: boolean;
+                                    alarm_period: number;
+                                    alarm_evals: number;
+                                    alarm_points: number;
+                                    alarm_threshold: number;
+                                    enabled_styles: boolean;
+                                    styles: {
+                                        line?: {
+                                            stroke?: string;
+                                            "stroke-style"?: string;
+                                            "stroke-opacity"?: string;
+                                            "stroke-width"?: string;
+                                            id?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                        };
+                                        point?: {
+                                            "marker-color"?: string;
+                                            "marker-opacity"?: string;
+                                            id?: string;
+                                            type?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                            icon?: string;
+                                        };
+                                        polygon?: {
+                                            stroke?: string;
+                                            "stroke-style"?: string;
+                                            "stroke-opacity"?: string;
+                                            "stroke-width"?: string;
+                                            fill?: string;
+                                            "fill-opacity"?: string;
+                                            id?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                        };
+                                        id?: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                        queries?: {
+                                            query: string;
+                                            id?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                            styles: {
+                                                id?: string;
+                                                remarks?: string;
+                                                callsign?: string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                                line?: {
+                                                    stroke?: string;
+                                                    "stroke-style"?: string;
+                                                    "stroke-opacity"?: string;
+                                                    "stroke-width"?: string;
+                                                    id?: string;
+                                                    remarks?: string;
+                                                    callsign?: string;
+                                                    links?: {
+                                                        remarks: string;
+                                                        url: string;
+                                                    }[];
+                                                };
+                                                point?: {
+                                                    "marker-color"?: string;
+                                                    "marker-opacity"?: string;
+                                                    id?: string;
+                                                    type?: string;
+                                                    remarks?: string;
+                                                    callsign?: string;
+                                                    links?: {
+                                                        remarks: string;
+                                                        url: string;
+                                                    }[];
+                                                    icon?: string;
+                                                };
+                                                polygon?: {
+                                                    stroke?: string;
+                                                    "stroke-style"?: string;
+                                                    "stroke-opacity"?: string;
+                                                    "stroke-width"?: string;
+                                                    fill?: string;
+                                                    "fill-opacity"?: string;
+                                                    id?: string;
+                                                    remarks?: string;
+                                                    callsign?: string;
+                                                    links?: {
+                                                        remarks: string;
+                                                        url: string;
+                                                    }[];
+                                                };
+                                            };
+                                        }[];
+                                    };
+                                    stale: number;
+                                    environment: unknown;
+                                    ephemeral: Record<string, never>;
+                                    data: number | null;
+                                };
+                                outgoing?: {
+                                    layer: number;
+                                    created: string;
+                                    updated: string;
+                                    environment: unknown;
+                                    ephemeral: Record<string, never>;
+                                };
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/layer/{:layerid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         *                 Events don't have the Connection ID but they have a valid data token
+         *                 This API allows a layer token to request the layer object and obtain the
+         *                 connection ID for subsequent calls
+         *              */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Get Live Alarm state from CloudWatch */
+                    alarms: boolean;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            status?: string;
+                            created: string;
+                            updated: string;
+                            uuid: string;
+                            name: string;
+                            description: string;
+                            enabled: boolean;
+                            logging: boolean;
+                            task: string;
+                            connection: number;
+                            memory: number;
+                            timeout: number;
+                            priority: "high" | "low" | "off";
+                            incoming?: {
+                                layer: number;
+                                created: string;
+                                updated: string;
+                                config: {
+                                    timezone?: {
+                                        timezone: string;
+                                    };
+                                };
+                                cron: string | null;
+                                webhooks: boolean;
+                                alarm_period: number;
+                                alarm_evals: number;
+                                alarm_points: number;
+                                alarm_threshold: number;
                                 enabled_styles: boolean;
                                 styles: {
                                     line?: {
@@ -5626,208 +7485,18 @@ export interface paths {
                                         };
                                     }[];
                                 };
-                                logging: boolean;
                                 stale: number;
-                                task: string;
-                                connection?: number;
-                                cron: string;
                                 environment: unknown;
                                 ephemeral: Record<string, never>;
-                                config: {
-                                    timezone?: {
-                                        timezone: string;
-                                    };
-                                };
-                                memory: number;
-                                timeout: number;
                                 data: number | null;
-                                schema: unknown;
-                                priority: "high" | "low" | "off";
-                                alarm_period: number;
-                                alarm_evals: number;
-                                alarm_points: number;
-                                alarm_threshold: number;
-                            }[];
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/layer/{:layerid}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         *                 Events don't have the Connection ID but they have a valid data token
-         *                 This API allows a layer token to request the layer object and obtain the
-         *                 connection ID for subsequent calls
-         *              */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: number;
-                            status?: string;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            description: string;
-                            enabled: boolean;
-                            enabled_styles: boolean;
-                            styles: {
-                                line?: {
-                                    stroke?: string;
-                                    "stroke-style"?: string;
-                                    "stroke-opacity"?: string;
-                                    "stroke-width"?: string;
-                                    id?: string;
-                                    remarks?: string;
-                                    callsign?: string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
-                                };
-                                point?: {
-                                    "marker-color"?: string;
-                                    "marker-opacity"?: string;
-                                    id?: string;
-                                    type?: string;
-                                    remarks?: string;
-                                    callsign?: string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
-                                    icon?: string;
-                                };
-                                polygon?: {
-                                    stroke?: string;
-                                    "stroke-style"?: string;
-                                    "stroke-opacity"?: string;
-                                    "stroke-width"?: string;
-                                    fill?: string;
-                                    "fill-opacity"?: string;
-                                    id?: string;
-                                    remarks?: string;
-                                    callsign?: string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
-                                };
-                                id?: string;
-                                remarks?: string;
-                                callsign?: string;
-                                links?: {
-                                    remarks: string;
-                                    url: string;
-                                }[];
-                                queries?: {
-                                    query: string;
-                                    id?: string;
-                                    remarks?: string;
-                                    callsign?: string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
-                                    styles: {
-                                        id?: string;
-                                        remarks?: string;
-                                        callsign?: string;
-                                        links?: {
-                                            remarks: string;
-                                            url: string;
-                                        }[];
-                                        line?: {
-                                            stroke?: string;
-                                            "stroke-style"?: string;
-                                            "stroke-opacity"?: string;
-                                            "stroke-width"?: string;
-                                            id?: string;
-                                            remarks?: string;
-                                            callsign?: string;
-                                            links?: {
-                                                remarks: string;
-                                                url: string;
-                                            }[];
-                                        };
-                                        point?: {
-                                            "marker-color"?: string;
-                                            "marker-opacity"?: string;
-                                            id?: string;
-                                            type?: string;
-                                            remarks?: string;
-                                            callsign?: string;
-                                            links?: {
-                                                remarks: string;
-                                                url: string;
-                                            }[];
-                                            icon?: string;
-                                        };
-                                        polygon?: {
-                                            stroke?: string;
-                                            "stroke-style"?: string;
-                                            "stroke-opacity"?: string;
-                                            "stroke-width"?: string;
-                                            fill?: string;
-                                            "fill-opacity"?: string;
-                                            id?: string;
-                                            remarks?: string;
-                                            callsign?: string;
-                                            links?: {
-                                                remarks: string;
-                                                url: string;
-                                            }[];
-                                        };
-                                    };
-                                }[];
                             };
-                            logging: boolean;
-                            stale: number;
-                            task: string;
-                            connection?: number;
-                            cron: string;
-                            environment: unknown;
-                            ephemeral: Record<string, never>;
-                            config: {
-                                timezone?: {
-                                    timezone: string;
-                                };
+                            outgoing?: {
+                                layer: number;
+                                created: string;
+                                updated: string;
+                                environment: unknown;
+                                ephemeral: Record<string, never>;
                             };
-                            memory: number;
-                            timeout: number;
-                            data: number | null;
-                            schema: unknown;
-                            priority: "high" | "low" | "off";
-                            alarm_period: number;
-                            alarm_evals: number;
-                            alarm_points: number;
-                            alarm_threshold: number;
                         };
                     };
                 };
@@ -5859,7 +7528,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort?: "id" | "created" | "updated" | "name" | "description" | "username" | "datasync" | "priority" | "enabled_styles" | "styles" | "logging" | "stale" | "task" | "cron" | "config" | "memory" | "timeout" | "alarm_period" | "alarm_evals" | "alarm_points" | "alarm_threshold";
+                    sort?: "id" | "created" | "updated" | "name" | "description" | "username" | "datasync" | "priority" | "enabled_styles" | "styles" | "logging" | "stale" | "task" | "cron" | "webhooks" | "config" | "memory" | "timeout" | "alarm_period" | "alarm_evals" | "alarm_points" | "alarm_threshold" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description No Description */
@@ -5893,7 +7562,8 @@ export interface paths {
                                 logging: boolean;
                                 stale: number;
                                 task: string;
-                                cron: string;
+                                cron: string | null;
+                                webhooks: boolean;
                                 config: unknown;
                                 memory: number;
                                 timeout: number;
@@ -5950,7 +7620,8 @@ export interface paths {
                             logging: boolean;
                             stale: number;
                             task: string;
-                            cron: string;
+                            cron: string | null;
+                            webhooks: boolean;
                             config: unknown;
                             memory: number;
                             timeout: number;
@@ -6006,7 +7677,8 @@ export interface paths {
                             logging: boolean;
                             stale: number;
                             task: string;
-                            cron: string;
+                            cron: string | null;
+                            webhooks: boolean;
                             config: unknown;
                             memory: number;
                             timeout: number;
@@ -6088,7 +7760,8 @@ export interface paths {
                             logging: boolean;
                             stale: number;
                             task: string;
-                            cron: string;
+                            cron: string | null;
+                            webhooks: boolean;
                             config: unknown;
                             memory: number;
                             timeout: number;
@@ -6175,7 +7848,10 @@ export interface paths {
                         name: string;
                         description: string;
                         agency_id: number | null;
-                        channels: number[];
+                        channels: {
+                            id: number;
+                            access: "write" | "read" | "duplex";
+                        }[];
                     };
                 };
             };
@@ -6187,8 +7863,11 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            cert: string;
-                            key: string;
+                            integrationId?: number;
+                            auth: {
+                                cert: string;
+                                key: string;
+                            };
                         };
                     };
                 };
@@ -6243,6 +7922,7 @@ export interface paths {
             requestBody: {
                 content: {
                     "application/json": {
+                        /** @description Case-Sensitive username, if an email, the client MUST lowercase */
                         username: string;
                         password: string;
                     };
@@ -6315,6 +7995,518 @@ export interface paths {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marti/cot/{:uid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Helper API to get latest COT by UID */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            /** @constant */
+                            type: "Feature";
+                            properties: {
+                                /** @default UNKNOWN */
+                                callsign: string;
+                                /** @default a-f-G */
+                                type: string;
+                                how: string;
+                                time: string;
+                                start: string;
+                                stale: string;
+                                center: number[];
+                                course?: number;
+                                slope?: number;
+                                speed?: number;
+                                "marker-color"?: string;
+                                "marker-opacity"?: number;
+                                stroke?: string;
+                                "stroke-opacity"?: number;
+                                "stroke-width"?: number;
+                                "stroke-style"?: string;
+                                fill?: string;
+                                "fill-opacity"?: number;
+                                metadata?: Record<string, never>;
+                                archived?: boolean;
+                                geofence?: {
+                                    elevationMonitored?: string;
+                                    minElevation?: string;
+                                    maxElevation?: string;
+                                    monitor?: string;
+                                    trigger?: string;
+                                    tracking?: string;
+                                    boundingSphere?: number;
+                                };
+                                contact?: {
+                                    phone?: string;
+                                    name?: string;
+                                    callsign?: string;
+                                    endpoint?: string;
+                                };
+                                shape?: {
+                                    ellipse?: {
+                                        major: number;
+                                        minor: number;
+                                        angle: number;
+                                    };
+                                };
+                                remarks?: string;
+                                mission?: {
+                                    type?: string;
+                                    tool?: string;
+                                    guid?: string;
+                                    name?: string;
+                                    authorUid?: string;
+                                    missionLayer?: {
+                                        name?: string;
+                                        parentUid?: string;
+                                        type?: string;
+                                        uid?: string;
+                                    };
+                                    missionChanges?: {
+                                        contentUid: string;
+                                        creatorUid: string;
+                                        isFederatedChange: string;
+                                        missionName: string;
+                                        timestamp: string;
+                                        type: string;
+                                        details: {
+                                            type: string;
+                                            callsign: string;
+                                            color: string;
+                                            lat: string;
+                                            lon: string;
+                                        };
+                                    }[];
+                                };
+                                fileshare?: {
+                                    filename: string;
+                                    name: string;
+                                    senderCallsign: string;
+                                    senderUid: string;
+                                    senderUrl: string;
+                                    sha256: string;
+                                    sizeInBytes: number;
+                                };
+                                ackrequest?: {
+                                    uid: string;
+                                    ackrequested: boolean;
+                                    tag: string;
+                                };
+                                attachments?: string[];
+                                sensor?: {
+                                    elevation?: number;
+                                    vfov?: number;
+                                    fov?: number;
+                                    roll?: number;
+                                    range?: number;
+                                    azimuth?: number;
+                                    north?: number;
+                                    fovBlue?: number;
+                                    fovAlpha?: number;
+                                    fovGreen?: number;
+                                    fovRed?: number;
+                                    strokeWeight?: number;
+                                    strokeColor?: number;
+                                    rangeLines?: number;
+                                    rangeLineStrokeWeight?: number;
+                                    rangeLineStrokeColor?: number;
+                                    displayMagneticReference?: number;
+                                    hideFov?: boolean;
+                                    type?: string;
+                                    version?: string;
+                                    model?: string;
+                                };
+                                video?: {
+                                    uid?: string;
+                                    sensor?: string;
+                                    spi?: string;
+                                    url?: string;
+                                    connection?: {
+                                        uid: string;
+                                        address: string;
+                                        networkTimeout?: number;
+                                        path?: string;
+                                        protocol?: string;
+                                        bufferTime?: number;
+                                        port?: number;
+                                        roverPort?: number;
+                                        rtspReliable?: number;
+                                        ignoreEmbeddedKLV?: boolean;
+                                        alias?: string;
+                                    };
+                                };
+                                links?: {
+                                    type?: string;
+                                    point?: string;
+                                    url?: string;
+                                    mime?: string;
+                                    remarks?: string;
+                                    uid?: string;
+                                    relation?: string;
+                                    production_time?: string;
+                                    parent_callsign?: string;
+                                }[];
+                                chat?: {
+                                    parent?: string;
+                                    groupOwner?: string;
+                                    messageId?: string;
+                                    chatroom: string;
+                                    id: string;
+                                    senderCallsign: string;
+                                    chatgrp: unknown;
+                                };
+                                track?: {
+                                    speed?: string;
+                                    course?: string;
+                                    slope?: string;
+                                    eCourse?: string;
+                                    eSpeed?: string;
+                                    eSlope?: string;
+                                };
+                                dest?: {
+                                    uid?: string;
+                                    callsign?: string;
+                                    mission?: string;
+                                    "mission-guid"?: string;
+                                    after?: string;
+                                    path?: string;
+                                } | {
+                                    uid?: string;
+                                    callsign?: string;
+                                    mission?: string;
+                                    "mission-guid"?: string;
+                                    after?: string;
+                                    path?: string;
+                                }[];
+                                icon?: string;
+                                droid?: string;
+                                takv?: {
+                                    device?: string;
+                                    platform?: string;
+                                    os?: string;
+                                    version?: string;
+                                };
+                                group?: {
+                                    name: string;
+                                    role: string;
+                                };
+                                status?: {
+                                    battery?: string;
+                                    readiness?: string;
+                                };
+                                precisionlocation?: {
+                                    geopointsrc?: string;
+                                    altsrc?: string;
+                                };
+                                flow?: Record<string, never>;
+                            };
+                            path?: string;
+                            geometry: {
+                                /** @constant */
+                                type: "Point";
+                                coordinates: number[];
+                            } | {
+                                /** @constant */
+                                type: "LineString";
+                                coordinates: number[][];
+                            } | {
+                                /** @constant */
+                                type: "Polygon";
+                                coordinates: number[][][];
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marti/cot/{:uid}/all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Helper API to list COT history */
+        get: {
+            parameters: {
+                query: {
+                    /** @description By default each historic point will be its own feature, if true this will attempt to join all points into a single Feature Collection at the cost of temporal attributes */
+                    track: boolean;
+                    /** @description No Description */
+                    start?: string;
+                    /** @description No Description */
+                    end?: string;
+                    /** @description No Description */
+                    secago?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            type: string;
+                            features: {
+                                id: string;
+                                /** @constant */
+                                type: "Feature";
+                                properties: {
+                                    /** @default UNKNOWN */
+                                    callsign: string;
+                                    /** @default a-f-G */
+                                    type: string;
+                                    how: string;
+                                    time: string;
+                                    start: string;
+                                    stale: string;
+                                    center: number[];
+                                    course?: number;
+                                    slope?: number;
+                                    speed?: number;
+                                    "marker-color"?: string;
+                                    "marker-opacity"?: number;
+                                    stroke?: string;
+                                    "stroke-opacity"?: number;
+                                    "stroke-width"?: number;
+                                    "stroke-style"?: string;
+                                    fill?: string;
+                                    "fill-opacity"?: number;
+                                    metadata?: Record<string, never>;
+                                    archived?: boolean;
+                                    geofence?: {
+                                        elevationMonitored?: string;
+                                        minElevation?: string;
+                                        maxElevation?: string;
+                                        monitor?: string;
+                                        trigger?: string;
+                                        tracking?: string;
+                                        boundingSphere?: number;
+                                    };
+                                    contact?: {
+                                        phone?: string;
+                                        name?: string;
+                                        callsign?: string;
+                                        endpoint?: string;
+                                    };
+                                    shape?: {
+                                        ellipse?: {
+                                            major: number;
+                                            minor: number;
+                                            angle: number;
+                                        };
+                                    };
+                                    remarks?: string;
+                                    mission?: {
+                                        type?: string;
+                                        tool?: string;
+                                        guid?: string;
+                                        name?: string;
+                                        authorUid?: string;
+                                        missionLayer?: {
+                                            name?: string;
+                                            parentUid?: string;
+                                            type?: string;
+                                            uid?: string;
+                                        };
+                                        missionChanges?: {
+                                            contentUid: string;
+                                            creatorUid: string;
+                                            isFederatedChange: string;
+                                            missionName: string;
+                                            timestamp: string;
+                                            type: string;
+                                            details: {
+                                                type: string;
+                                                callsign: string;
+                                                color: string;
+                                                lat: string;
+                                                lon: string;
+                                            };
+                                        }[];
+                                    };
+                                    fileshare?: {
+                                        filename: string;
+                                        name: string;
+                                        senderCallsign: string;
+                                        senderUid: string;
+                                        senderUrl: string;
+                                        sha256: string;
+                                        sizeInBytes: number;
+                                    };
+                                    ackrequest?: {
+                                        uid: string;
+                                        ackrequested: boolean;
+                                        tag: string;
+                                    };
+                                    attachments?: string[];
+                                    sensor?: {
+                                        elevation?: number;
+                                        vfov?: number;
+                                        fov?: number;
+                                        roll?: number;
+                                        range?: number;
+                                        azimuth?: number;
+                                        north?: number;
+                                        fovBlue?: number;
+                                        fovAlpha?: number;
+                                        fovGreen?: number;
+                                        fovRed?: number;
+                                        strokeWeight?: number;
+                                        strokeColor?: number;
+                                        rangeLines?: number;
+                                        rangeLineStrokeWeight?: number;
+                                        rangeLineStrokeColor?: number;
+                                        displayMagneticReference?: number;
+                                        hideFov?: boolean;
+                                        type?: string;
+                                        version?: string;
+                                        model?: string;
+                                    };
+                                    video?: {
+                                        uid?: string;
+                                        sensor?: string;
+                                        spi?: string;
+                                        url?: string;
+                                        connection?: {
+                                            uid: string;
+                                            address: string;
+                                            networkTimeout?: number;
+                                            path?: string;
+                                            protocol?: string;
+                                            bufferTime?: number;
+                                            port?: number;
+                                            roverPort?: number;
+                                            rtspReliable?: number;
+                                            ignoreEmbeddedKLV?: boolean;
+                                            alias?: string;
+                                        };
+                                    };
+                                    links?: {
+                                        type?: string;
+                                        point?: string;
+                                        url?: string;
+                                        mime?: string;
+                                        remarks?: string;
+                                        uid?: string;
+                                        relation?: string;
+                                        production_time?: string;
+                                        parent_callsign?: string;
+                                    }[];
+                                    chat?: {
+                                        parent?: string;
+                                        groupOwner?: string;
+                                        messageId?: string;
+                                        chatroom: string;
+                                        id: string;
+                                        senderCallsign: string;
+                                        chatgrp: unknown;
+                                    };
+                                    track?: {
+                                        speed?: string;
+                                        course?: string;
+                                        slope?: string;
+                                        eCourse?: string;
+                                        eSpeed?: string;
+                                        eSlope?: string;
+                                    };
+                                    dest?: {
+                                        uid?: string;
+                                        callsign?: string;
+                                        mission?: string;
+                                        "mission-guid"?: string;
+                                        after?: string;
+                                        path?: string;
+                                    } | {
+                                        uid?: string;
+                                        callsign?: string;
+                                        mission?: string;
+                                        "mission-guid"?: string;
+                                        after?: string;
+                                        path?: string;
+                                    }[];
+                                    icon?: string;
+                                    droid?: string;
+                                    takv?: {
+                                        device?: string;
+                                        platform?: string;
+                                        os?: string;
+                                        version?: string;
+                                    };
+                                    group?: {
+                                        name: string;
+                                        role: string;
+                                    };
+                                    status?: {
+                                        battery?: string;
+                                        readiness?: string;
+                                    };
+                                    precisionlocation?: {
+                                        geopointsrc?: string;
+                                        altsrc?: string;
+                                    };
+                                    flow?: Record<string, never>;
+                                };
+                                path?: string;
+                                geometry: {
+                                    /** @constant */
+                                    type: "Point";
+                                    coordinates: number[];
+                                } | {
+                                    /** @constant */
+                                    type: "LineString";
+                                    coordinates: number[][];
+                                } | {
+                                    /** @constant */
+                                    type: "Polygon";
+                                    coordinates: number[][][];
+                                };
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -6427,7 +8619,7 @@ export interface paths {
                                     details?: {
                                         type: string;
                                         callsign: string;
-                                        color: string;
+                                        color?: string;
                                         location: {
                                             lat: number;
                                             lon: number;
@@ -6489,7 +8681,7 @@ export interface paths {
                                     details?: {
                                         type: string;
                                         callsign: string;
-                                        color: string;
+                                        color?: string;
                                         location: {
                                             lat: number;
                                             lon: number;
@@ -6553,7 +8745,7 @@ export interface paths {
                                     details?: {
                                         type: string;
                                         callsign: string;
-                                        color: string;
+                                        color?: string;
                                         location: {
                                             lat: number;
                                             lon: number;
@@ -6700,6 +8892,7 @@ export interface paths {
                 content: {
                     "application/json": {
                         content: string;
+                        keywords?: string[];
                     };
                 };
             };
@@ -6752,6 +8945,7 @@ export interface paths {
                 content: {
                     "application/json": {
                         content: string;
+                        keywords?: string[];
                     };
                 };
             };
@@ -6864,10 +9058,10 @@ export interface paths {
                             name: string;
                             description: string;
                             chatRoom: string;
-                            baseLayer: string;
-                            bbox: string;
-                            path: string;
-                            classification: string;
+                            baseLayer?: string;
+                            bbox?: string;
+                            path?: string;
+                            classification?: string;
                             tool: string;
                             keywords: unknown[];
                             creatorUid: string;
@@ -6963,10 +9157,10 @@ export interface paths {
                             name: string;
                             description: string;
                             chatRoom: string;
-                            baseLayer: string;
-                            bbox: string;
-                            path: string;
-                            classification: string;
+                            baseLayer?: string;
+                            bbox?: string;
+                            path?: string;
+                            classification?: string;
                             tool: string;
                             keywords: unknown[];
                             creatorUid: string;
@@ -7080,7 +9274,221 @@ export interface paths {
                     content: {
                         "application/json": {
                             type: string;
-                            features: unknown[];
+                            features: {
+                                id: string;
+                                /** @constant */
+                                type: "Feature";
+                                properties: {
+                                    /** @default UNKNOWN */
+                                    callsign: string;
+                                    /** @default a-f-G */
+                                    type: string;
+                                    how: string;
+                                    time: string;
+                                    start: string;
+                                    stale: string;
+                                    center: number[];
+                                    course?: number;
+                                    slope?: number;
+                                    speed?: number;
+                                    "marker-color"?: string;
+                                    "marker-opacity"?: number;
+                                    stroke?: string;
+                                    "stroke-opacity"?: number;
+                                    "stroke-width"?: number;
+                                    "stroke-style"?: string;
+                                    fill?: string;
+                                    "fill-opacity"?: number;
+                                    metadata?: Record<string, never>;
+                                    archived?: boolean;
+                                    geofence?: {
+                                        elevationMonitored?: string;
+                                        minElevation?: string;
+                                        maxElevation?: string;
+                                        monitor?: string;
+                                        trigger?: string;
+                                        tracking?: string;
+                                        boundingSphere?: number;
+                                    };
+                                    contact?: {
+                                        phone?: string;
+                                        name?: string;
+                                        callsign?: string;
+                                        endpoint?: string;
+                                    };
+                                    shape?: {
+                                        ellipse?: {
+                                            major: number;
+                                            minor: number;
+                                            angle: number;
+                                        };
+                                    };
+                                    remarks?: string;
+                                    mission?: {
+                                        type?: string;
+                                        tool?: string;
+                                        guid?: string;
+                                        name?: string;
+                                        authorUid?: string;
+                                        missionLayer?: {
+                                            name?: string;
+                                            parentUid?: string;
+                                            type?: string;
+                                            uid?: string;
+                                        };
+                                        missionChanges?: {
+                                            contentUid: string;
+                                            creatorUid: string;
+                                            isFederatedChange: string;
+                                            missionName: string;
+                                            timestamp: string;
+                                            type: string;
+                                            details: {
+                                                type: string;
+                                                callsign: string;
+                                                color: string;
+                                                lat: string;
+                                                lon: string;
+                                            };
+                                        }[];
+                                    };
+                                    fileshare?: {
+                                        filename: string;
+                                        name: string;
+                                        senderCallsign: string;
+                                        senderUid: string;
+                                        senderUrl: string;
+                                        sha256: string;
+                                        sizeInBytes: number;
+                                    };
+                                    ackrequest?: {
+                                        uid: string;
+                                        ackrequested: boolean;
+                                        tag: string;
+                                    };
+                                    attachments?: string[];
+                                    sensor?: {
+                                        elevation?: number;
+                                        vfov?: number;
+                                        fov?: number;
+                                        roll?: number;
+                                        range?: number;
+                                        azimuth?: number;
+                                        north?: number;
+                                        fovBlue?: number;
+                                        fovAlpha?: number;
+                                        fovGreen?: number;
+                                        fovRed?: number;
+                                        strokeWeight?: number;
+                                        strokeColor?: number;
+                                        rangeLines?: number;
+                                        rangeLineStrokeWeight?: number;
+                                        rangeLineStrokeColor?: number;
+                                        displayMagneticReference?: number;
+                                        hideFov?: boolean;
+                                        type?: string;
+                                        version?: string;
+                                        model?: string;
+                                    };
+                                    video?: {
+                                        uid?: string;
+                                        sensor?: string;
+                                        spi?: string;
+                                        url?: string;
+                                        connection?: {
+                                            uid: string;
+                                            address: string;
+                                            networkTimeout?: number;
+                                            path?: string;
+                                            protocol?: string;
+                                            bufferTime?: number;
+                                            port?: number;
+                                            roverPort?: number;
+                                            rtspReliable?: number;
+                                            ignoreEmbeddedKLV?: boolean;
+                                            alias?: string;
+                                        };
+                                    };
+                                    links?: {
+                                        type?: string;
+                                        point?: string;
+                                        url?: string;
+                                        mime?: string;
+                                        remarks?: string;
+                                        uid?: string;
+                                        relation?: string;
+                                        production_time?: string;
+                                        parent_callsign?: string;
+                                    }[];
+                                    chat?: {
+                                        parent?: string;
+                                        groupOwner?: string;
+                                        messageId?: string;
+                                        chatroom: string;
+                                        id: string;
+                                        senderCallsign: string;
+                                        chatgrp: unknown;
+                                    };
+                                    track?: {
+                                        speed?: string;
+                                        course?: string;
+                                        slope?: string;
+                                        eCourse?: string;
+                                        eSpeed?: string;
+                                        eSlope?: string;
+                                    };
+                                    dest?: {
+                                        uid?: string;
+                                        callsign?: string;
+                                        mission?: string;
+                                        "mission-guid"?: string;
+                                        after?: string;
+                                        path?: string;
+                                    } | {
+                                        uid?: string;
+                                        callsign?: string;
+                                        mission?: string;
+                                        "mission-guid"?: string;
+                                        after?: string;
+                                        path?: string;
+                                    }[];
+                                    icon?: string;
+                                    droid?: string;
+                                    takv?: {
+                                        device?: string;
+                                        platform?: string;
+                                        os?: string;
+                                        version?: string;
+                                    };
+                                    group?: {
+                                        name: string;
+                                        role: string;
+                                    };
+                                    status?: {
+                                        battery?: string;
+                                        readiness?: string;
+                                    };
+                                    precisionlocation?: {
+                                        geopointsrc?: string;
+                                        altsrc?: string;
+                                    };
+                                    flow?: Record<string, never>;
+                                };
+                                path?: string;
+                                geometry: {
+                                    /** @constant */
+                                    type: "Point";
+                                    coordinates: number[];
+                                } | {
+                                    /** @constant */
+                                    type: "LineString";
+                                    coordinates: number[][];
+                                } | {
+                                    /** @constant */
+                                    type: "Polygon";
+                                    coordinates: number[][][];
+                                };
+                            }[];
                         };
                     };
                 };
@@ -7129,7 +9537,36 @@ export interface paths {
                         "application/json": {
                             version: string;
                             type: string;
-                            data: unknown;
+                            data: {
+                                isFederatedChange: boolean;
+                                type: string;
+                                missionName: string;
+                                timestamp: string;
+                                serverTime: string;
+                                creatorUid: string;
+                                contentUid?: string;
+                                details?: {
+                                    type: string;
+                                    callsign: string;
+                                    color?: string;
+                                    location: {
+                                        lat: number;
+                                        lon: number;
+                                    };
+                                };
+                                contentResource?: {
+                                    keywords: string[];
+                                    mimeType: string;
+                                    name: string;
+                                    hash: string;
+                                    submissionTime: string;
+                                    submitter: string;
+                                    uid: string;
+                                    creatorUid: string;
+                                    size: number;
+                                    expiration: number;
+                                };
+                            }[];
                             messages?: string[];
                             nodeId?: string;
                         };
@@ -7182,10 +9619,10 @@ export interface paths {
                                 name: string;
                                 description: string;
                                 chatRoom: string;
-                                baseLayer: string;
-                                bbox: string;
-                                path: string;
-                                classification: string;
+                                baseLayer?: string;
+                                bbox?: string;
+                                path?: string;
+                                classification?: string;
                                 tool: string;
                                 keywords: unknown[];
                                 creatorUid: string;
@@ -7237,6 +9674,43 @@ export interface paths {
                             nodeId?: string;
                         };
                     };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marti/missions/{:name}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a Mission Archive Zip */
+        get: {
+            parameters: {
+                query: {
+                    /** @description If set, the response will include a Content-Disposition Header */
+                    download: boolean;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
                 };
             };
         };
@@ -7654,7 +10128,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/marti/package/{:hash}": {
+    "/marti/package/{:uid}": {
         parameters: {
             query?: never;
             header?: never;
@@ -7959,7 +10433,73 @@ export interface paths {
             };
         };
         put?: never;
-        post?: never;
+        /** Helper API to create video streams */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        uuid?: string;
+                        /** @default true */
+                        active: boolean;
+                        alias: string;
+                        feeds: {
+                            uuid?: string;
+                            /** @default true */
+                            active: boolean;
+                            alias: string;
+                            url: string;
+                        }[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            uuid: string;
+                            active: boolean;
+                            alias: string;
+                            thumbnail: string | null;
+                            classification: string | null;
+                            feeds: {
+                                uuid: string;
+                                active: boolean;
+                                alias: string;
+                                url: string;
+                                order: number | null;
+                                macAddress: string;
+                                roverPort: string;
+                                ignoreEmbeddedKLV: string;
+                                source: string | null;
+                                networkTimeout: string;
+                                bufferTime: string;
+                                rtspReliable: string;
+                                thumbnail: string | null;
+                                classification: string | null;
+                                latitude: string | null;
+                                longitude: string | null;
+                                fov: string | null;
+                                heading: string | null;
+                                range: string | null;
+                                width: number | null;
+                                height: number | null;
+                                bitrate: number | null;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -8024,7 +10564,73 @@ export interface paths {
                 };
             };
         };
-        put?: never;
+        /** Helper API to update video streams */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        uuid?: string;
+                        /** @default true */
+                        active: boolean;
+                        alias: string;
+                        feeds: {
+                            uuid?: string;
+                            /** @default true */
+                            active: boolean;
+                            alias: string;
+                            url: string;
+                        }[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            uuid: string;
+                            active: boolean;
+                            alias: string;
+                            thumbnail: string | null;
+                            classification: string | null;
+                            feeds: {
+                                uuid: string;
+                                active: boolean;
+                                alias: string;
+                                url: string;
+                                order: number | null;
+                                macAddress: string;
+                                roverPort: string;
+                                ignoreEmbeddedKLV: string;
+                                source: string | null;
+                                networkTimeout: string;
+                                bufferTime: string;
+                                rtspReliable: string;
+                                thumbnail: string | null;
+                                classification: string | null;
+                                latitude: string | null;
+                                longitude: string | null;
+                                fov: string | null;
+                                heading: string | null;
+                                range: string | null;
+                                width: number | null;
+                                height: number | null;
+                                bitrate: number | null;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
         post?: never;
         /** Helper API to delete video stream */
         delete: {
@@ -8243,6 +10849,440 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/palette": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Palette */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort: "uuid" | "name" | "created" | "updated" | "enableRLS";
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                uuid: string;
+                                name: string;
+                                created: string;
+                                updated: string;
+                                features: {
+                                    uuid: string;
+                                    created: string;
+                                    updated: string;
+                                    name: string;
+                                    palette: string;
+                                    type: string;
+                                    style: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                                }[];
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create a new editing Palette */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            uuid: string;
+                            name: string;
+                            created: string;
+                            updated: string;
+                            features: {
+                                uuid: string;
+                                created: string;
+                                updated: string;
+                                name: string;
+                                palette: string;
+                                type: string;
+                                style: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/palette/{:palette}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Palette */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            uuid: string;
+                            name: string;
+                            created: string;
+                            updated: string;
+                            features: {
+                                uuid: string;
+                                created: string;
+                                updated: string;
+                                name: string;
+                                palette: string;
+                                type: string;
+                                style: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /** Delete an editing Palette */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update properties of a Palette */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            uuid: string;
+                            name: string;
+                            created: string;
+                            updated: string;
+                            features: {
+                                uuid: string;
+                                created: string;
+                                updated: string;
+                                name: string;
+                                palette: string;
+                                type: string;
+                                style: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/palette/{:palette}/feature": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Palette Features */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort: "uuid" | "name" | "created" | "updated" | "enableRLS";
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                uuid: string;
+                                created: string;
+                                updated: string;
+                                name: string;
+                                palette: string;
+                                type: string;
+                                style: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create a new editing Palette Feature */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        type: "Point" | "LineString" | "Polygon";
+                        name: string;
+                        style: {
+                            "marker-color"?: string;
+                            "marker-opacity"?: string;
+                            icon?: string;
+                            stroke?: string;
+                            "stroke-style"?: string;
+                            "stroke-opacity"?: string;
+                            "stroke-width"?: string;
+                            fill?: string;
+                            "fill-opacity"?: string;
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            uuid: string;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            palette: string;
+                            type: string;
+                            style: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/palette/{:palette}/feature/{:feature}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Palette Feature */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            uuid: string;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            palette: string;
+                            type: string;
+                            style: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /** Delete an editing Palette */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update properties of a Palette Feature */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        type?: "Point" | "LineString" | "Polygon";
+                        name?: string;
+                        style?: {
+                            "marker-color"?: string;
+                            "marker-opacity"?: string;
+                            icon?: string;
+                            stroke?: string;
+                            "stroke-style"?: string;
+                            "stroke-opacity"?: string;
+                            "stroke-width"?: string;
+                            fill?: string;
+                            "fill-opacity"?: string;
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            uuid: string;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            palette: string;
+                            type: string;
+                            style: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
     "/profile/asset": {
         parameters: {
             query?: never;
@@ -8449,7 +11489,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort?: "id" | "username" | "chatroom" | "sender_callsign" | "sender_uid" | "created" | "updated" | "message_id" | "message";
+                    sort?: "id" | "username" | "chatroom" | "sender_callsign" | "sender_uid" | "created" | "updated" | "message_id" | "message" | "enableRLS";
                 };
                 header?: never;
                 path?: never;
@@ -8551,6 +11591,8 @@ export interface paths {
                                     };
                                     contact?: {
                                         phone?: string;
+                                        name?: string;
+                                        callsign?: string;
                                         endpoint?: string;
                                     };
                                     shape?: {
@@ -8787,6 +11829,8 @@ export interface paths {
                             };
                             contact?: {
                                 phone?: string;
+                                name?: string;
+                                callsign?: string;
                                 endpoint?: string;
                             };
                             shape?: {
@@ -9009,6 +12053,8 @@ export interface paths {
                                 };
                                 contact?: {
                                     phone?: string;
+                                    name?: string;
+                                    callsign?: string;
                                     endpoint?: string;
                                 };
                                 shape?: {
@@ -9286,6 +12332,8 @@ export interface paths {
                                 };
                                 contact?: {
                                     phone?: string;
+                                    name?: string;
+                                    callsign?: string;
                                     endpoint?: string;
                                 };
                                 shape?: {
@@ -9498,6 +12546,176 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/profile/interest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         *                 Return a list of Profile AOIs
+         *              */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort?: "id" | "name" | "username" | "bounds" | "created" | "updated" | "enableRLS";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: number;
+                                name: string;
+                                username: string;
+                                bounds: unknown | null;
+                                created: string;
+                                updated: string;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /**
+         *                 Create a new Profile AOI
+         *              */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name: string;
+                        bounds: number[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            name: string;
+                            username: string;
+                            bounds: unknown | null;
+                            created: string;
+                            updated: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/profile/interest/{:interestid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         *                 Delete a Profile AOI
+         *              */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /**
+         *                 Create a new Profile AOI
+         *              */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name?: string;
+                        bounds?: number[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            name: string;
+                            username: string;
+                            bounds: unknown | null;
+                            created: string;
+                            updated: string;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
     "/profile/overlay": {
         parameters: {
             query?: never;
@@ -9521,7 +12739,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort?: "id" | "name" | "username" | "created" | "updated" | "pos" | "type" | "opacity" | "visible" | "token" | "styles" | "mode" | "mode_id" | "url";
+                    sort?: "id" | "name" | "username" | "created" | "updated" | "pos" | "type" | "opacity" | "visible" | "token" | "styles" | "mode" | "mode_id" | "url" | "enableRLS";
                 };
                 header?: never;
                 path?: never;
@@ -9788,6 +13006,7 @@ export interface paths {
                             system_admin: boolean;
                             agency_admin: number[];
                             tak_callsign: string;
+                            tak_remarks: string;
                             tak_group: "White" | "Yellow" | "Orange" | "Magenta" | "Red" | "Maroon" | "Purple" | "Dark Blue" | "Blue" | "Cyan" | "Teal" | "Green" | "Dark Green" | "Brown";
                             tak_role: "Team Member" | "Team Lead" | "HQ" | "Sniper" | "Medic" | "Forward Observer" | "RTO" | "K9";
                             tak_loc: {
@@ -9795,6 +13014,8 @@ export interface paths {
                                 type: "Point";
                                 coordinates: number[];
                             } | null;
+                            tak_loc_freq: number;
+                            display_projection: "mercator" | "globe";
                             display_stale: string;
                             display_text: string;
                             display_distance: string;
@@ -9824,11 +13045,14 @@ export interface paths {
                         display_stale?: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
                         display_distance?: "meter" | "kilometer" | "mile";
                         display_elevation?: "meter" | "feet";
+                        display_projection?: "mercator" | "globe";
                         display_speed?: "m/s" | "km/h" | "mi/h";
                         display_text?: "Small" | "Medium" | "Large";
                         tak_callsign?: string;
+                        tak_remarks?: string;
                         tak_group?: "White" | "Yellow" | "Orange" | "Magenta" | "Red" | "Maroon" | "Purple" | "Dark Blue" | "Blue" | "Cyan" | "Teal" | "Green" | "Dark Green" | "Brown";
                         tak_role?: "Team Member" | "Team Lead" | "HQ" | "Sniper" | "Medic" | "Forward Observer" | "RTO" | "K9";
+                        tak_loc_freq?: number;
                         tak_loc?: null | {
                             type: string;
                             coordinates: number[];
@@ -9852,6 +13076,7 @@ export interface paths {
                             system_admin: boolean;
                             agency_admin: number[];
                             tak_callsign: string;
+                            tak_remarks: string;
                             tak_group: "White" | "Yellow" | "Orange" | "Magenta" | "Red" | "Maroon" | "Purple" | "Dark Blue" | "Blue" | "Cyan" | "Teal" | "Green" | "Dark Green" | "Brown";
                             tak_role: "Team Member" | "Team Lead" | "HQ" | "Sniper" | "Medic" | "Forward Observer" | "RTO" | "K9";
                             tak_loc: {
@@ -9859,6 +13084,8 @@ export interface paths {
                                 type: "Point";
                                 coordinates: number[];
                             } | null;
+                            tak_loc_freq: number;
+                            display_projection: "mercator" | "globe";
                             display_stale: string;
                             display_text: string;
                             display_distance: string;
@@ -9881,7 +13108,10 @@ export interface paths {
         /** Get information about a given point */
         get: {
             parameters: {
-                query?: never;
+                query: {
+                    /** @description No Description */
+                    altitude: number;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -9895,6 +13125,36 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
+                            sun: {
+                                /** @description sunrise (top edge of the sun appears on the horizon) */
+                                sunrise: string;
+                                /** @description sunrise ends (bottom edge of the sun touches the horizon) */
+                                sunriseEnd: string;
+                                /** @description morning golden hour (soft light, best time for photography) ends */
+                                goldenHourEnd: string;
+                                /** @description solar noon (sun is in the highest position) */
+                                solarNoon: string;
+                                /** @description evening golden hour starts */
+                                goldenHour: string;
+                                /** @description sunset starts (bottom edge of the sun touches the horizon) */
+                                sunsetStart: string;
+                                /** @description sunset (sun disappears below the horizon, evening civil twilight starts) */
+                                sunset: string;
+                                /** @description dusk (evening nautical twilight starts) */
+                                dusk: string;
+                                /** @description nautical dusk (evening astronomical twilight starts) */
+                                nauticalDusk: string;
+                                /** @description night starts (dark enough for astronomical observations) */
+                                night: string;
+                                /** @description nadir (darkest moment of the night, sun is in the lowest position) */
+                                nadir: string;
+                                /** @description night ends (morning astronomical twilight starts) */
+                                nightEnd: string;
+                                /** @description nautical dawn (morning nautical twilight starts) */
+                                nauticalDawn: string;
+                                /** @description dawn (morning nautical twilight ends, morning civil twilight starts) */
+                                dawn: string;
+                            };
                             weather: {
                                 type: string;
                                 properties: {
@@ -9972,6 +13232,8 @@ export interface paths {
                     /** @description No Description */
                     query: string;
                     /** @description No Description */
+                    limit?: number;
+                    /** @description No Description */
                     magicKey: string;
                 };
                 header?: never;
@@ -10031,6 +13293,8 @@ export interface paths {
                 query: {
                     /** @description No Description */
                     query: string;
+                    /** @description No Description */
+                    limit: number;
                 };
                 header?: never;
                 path?: never;
@@ -10091,9 +13355,7 @@ export interface paths {
                             status: string;
                             created: string;
                             updated: string;
-                            provider_client?: string;
-                            provider_secret?: string;
-                            provider_url?: string;
+                            version: string;
                             name: string;
                             url: string;
                             api: string;
@@ -10130,9 +13392,6 @@ export interface paths {
                         api: string;
                         webtak: string;
                         name?: string;
-                        provider_url?: string;
-                        provider_secret?: string;
-                        provider_client?: string;
                         username?: string;
                         password?: string;
                         auth?: {
@@ -10154,9 +13413,7 @@ export interface paths {
                             status: string;
                             created: string;
                             updated: string;
-                            provider_client?: string;
-                            provider_secret?: string;
-                            provider_url?: string;
+                            version: string;
                             name: string;
                             url: string;
                             api: string;
@@ -10229,7 +13486,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort?: "id" | "prefix" | "created" | "updated" | "name" | "repo" | "readme";
+                    sort?: "id" | "prefix" | "created" | "updated" | "name" | "repo" | "readme" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                 };
@@ -10331,7 +13588,7 @@ export interface paths {
                     content: {
                         "application/json": {
                             total: number;
-                            items: unknown;
+                            items: Record<string, never>;
                         };
                     };
                 };
@@ -10370,7 +13627,7 @@ export interface paths {
                     content: {
                         "application/json": {
                             total: number;
-                            versions: unknown[];
+                            versions: string[];
                         };
                     };
                 };
@@ -10531,7 +13788,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort?: "id" | "email" | "name" | "token" | "created" | "updated";
+                    sort?: "id" | "email" | "name" | "token" | "created" | "updated" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                 };
@@ -10727,7 +13984,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort?: "id" | "name" | "username" | "last_login" | "auth" | "created" | "updated" | "phone" | "tak_callsign" | "tak_group" | "tak_role" | "tak_loc" | "display_stale" | "display_distance" | "display_elevation" | "display_speed" | "display_text" | "system_admin" | "agency_admin";
+                    sort?: "id" | "name" | "username" | "last_login" | "auth" | "created" | "updated" | "phone" | "tak_callsign" | "tak_remarks" | "tak_group" | "tak_role" | "tak_loc" | "tak_loc_freq" | "display_stale" | "display_distance" | "display_elevation" | "display_speed" | "display_projection" | "display_text" | "system_admin" | "agency_admin" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                 };
@@ -10754,6 +14011,7 @@ export interface paths {
                                 system_admin: boolean;
                                 agency_admin: number[];
                                 tak_callsign: string;
+                                tak_remarks: string;
                                 tak_group: "White" | "Yellow" | "Orange" | "Magenta" | "Red" | "Maroon" | "Purple" | "Dark Blue" | "Blue" | "Cyan" | "Teal" | "Green" | "Dark Green" | "Brown";
                                 tak_role: "Team Member" | "Team Lead" | "HQ" | "Sniper" | "Medic" | "Forward Observer" | "RTO" | "K9";
                                 tak_loc: {
@@ -10761,6 +14019,8 @@ export interface paths {
                                     type: "Point";
                                     coordinates: number[];
                                 } | null;
+                                tak_loc_freq: number;
+                                display_projection: "mercator" | "globe";
                                 display_stale: string;
                                 display_text: string;
                                 display_distance: string;
@@ -10812,6 +14072,7 @@ export interface paths {
                             system_admin: boolean;
                             agency_admin: number[];
                             tak_callsign: string;
+                            tak_remarks: string;
                             tak_group: "White" | "Yellow" | "Orange" | "Magenta" | "Red" | "Maroon" | "Purple" | "Dark Blue" | "Blue" | "Cyan" | "Teal" | "Green" | "Dark Green" | "Brown";
                             tak_role: "Team Member" | "Team Lead" | "HQ" | "Sniper" | "Medic" | "Forward Observer" | "RTO" | "K9";
                             tak_loc: {
@@ -10819,6 +14080,8 @@ export interface paths {
                                 type: "Point";
                                 coordinates: number[];
                             } | null;
+                            tak_loc_freq: number;
+                            display_projection: "mercator" | "globe";
                             display_stale: string;
                             display_text: string;
                             display_distance: string;
@@ -10865,6 +14128,7 @@ export interface paths {
                             system_admin: boolean;
                             agency_admin: number[];
                             tak_callsign: string;
+                            tak_remarks: string;
                             tak_group: "White" | "Yellow" | "Orange" | "Magenta" | "Red" | "Maroon" | "Purple" | "Dark Blue" | "Blue" | "Cyan" | "Teal" | "Green" | "Dark Green" | "Brown";
                             tak_role: "Team Member" | "Team Lead" | "HQ" | "Sniper" | "Medic" | "Forward Observer" | "RTO" | "K9";
                             tak_loc: {
@@ -10872,6 +14136,8 @@ export interface paths {
                                 type: "Point";
                                 coordinates: number[];
                             } | null;
+                            tak_loc_freq: number;
+                            display_projection: "mercator" | "globe";
                             display_stale: string;
                             display_text: string;
                             display_distance: string;
@@ -10882,6 +14148,84 @@ export interface paths {
                 };
             };
         };
+        trace?: never;
+    };
+    "/video/active": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         *                 Return information about an active lease given read credentials
+         *
+         *                 If a user has a valid read URL, the API endpoint will allow an authenticated user
+         *                 to get metadata to agument the video stream itself
+         *              */
+        get: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    url: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @description If a lease request is made, is it likely to succeed */
+                            leasable: boolean;
+                            message?: string;
+                            metadata?: {
+                                name: string;
+                                username: null | string;
+                                active: boolean;
+                                watchers: number;
+                                source_type: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
+                                source_model: string;
+                                protocols: {
+                                    rtmp?: {
+                                        name: string;
+                                        url: string;
+                                    };
+                                    rtsp?: {
+                                        name: string;
+                                        url: string;
+                                    };
+                                    webrtc?: {
+                                        name: string;
+                                        url: string;
+                                    };
+                                    hls?: {
+                                        name: string;
+                                        url: string;
+                                    };
+                                    srt?: {
+                                        name: string;
+                                        url: string;
+                                    };
+                                };
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/video/lease": {
@@ -10895,6 +14239,8 @@ export interface paths {
         get: {
             parameters: {
                 query: {
+                    /** @description No Description */
+                    impersonate?: boolean | string;
                     /** @description Limit the number of responses returned */
                     limit: number;
                     /** @description Iterate through "pages" of items based on the "limit" query param */
@@ -10902,7 +14248,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort?: "id" | "email" | "name" | "token" | "created" | "updated";
+                    sort?: "id" | "email" | "name" | "token" | "created" | "updated" | "enableRLS";
                     /** @description No Description */
                     ephemeral?: boolean;
                     /** @description Filter results by a human readable name field */
@@ -10927,13 +14273,21 @@ export interface paths {
                                 name: string;
                                 created: string;
                                 updated: string;
-                                username: string;
+                                username: string | null;
+                                connection: number | null;
+                                source_type: string;
+                                source_model: string;
+                                publish: boolean;
+                                recording: boolean;
                                 ephemeral: boolean;
-                                expiration: string | null;
+                                channel: (null | string) | null;
+                                expiration: (null | string) | null;
                                 path: string;
                                 stream_user: string | null;
                                 stream_pass: string | null;
-                                proxy: string | null;
+                                read_user: string | null;
+                                read_pass: string | null;
+                                proxy: (null | string) | null;
                             }[];
                         };
                     };
@@ -10969,9 +14323,24 @@ export interface paths {
                          * @default false
                          */
                         permanent: boolean;
-                        path?: string;
-                        stream_user?: string;
-                        stream_pass?: string;
+                        /**
+                         * @description Record streams to disk
+                         * @default false
+                         */
+                        recording: boolean;
+                        /**
+                         * @description Publish stream URL to TAK Server Video Manager
+                         * @default false
+                         */
+                        publish: boolean;
+                        /**
+                         * @description Increase stream security by enforcing a seperate read and write username/password
+                         * @default false
+                         */
+                        secure: boolean;
+                        source_type?: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
+                        source_model?: string;
+                        channel?: string | null;
                         proxy?: string;
                     };
                 };
@@ -10989,13 +14358,21 @@ export interface paths {
                                 name: string;
                                 created: string;
                                 updated: string;
-                                username: string;
+                                username: string | null;
+                                connection: number | null;
+                                source_type: string;
+                                source_model: string;
+                                publish: boolean;
+                                recording: boolean;
                                 ephemeral: boolean;
-                                expiration: string | null;
+                                channel: (null | string) | null;
+                                expiration: (null | string) | null;
                                 path: string;
                                 stream_user: string | null;
                                 stream_pass: string | null;
-                                proxy: string | null;
+                                read_user: string | null;
+                                read_pass: string | null;
+                                proxy: (null | string) | null;
                             };
                             protocols: {
                                 rtmp?: {
@@ -11059,13 +14436,48 @@ export interface paths {
                                 name: string;
                                 created: string;
                                 updated: string;
-                                username: string;
+                                username: string | null;
+                                connection: number | null;
+                                source_type: string;
+                                source_model: string;
+                                publish: boolean;
+                                recording: boolean;
                                 ephemeral: boolean;
-                                expiration: string | null;
+                                channel: (null | string) | null;
+                                expiration: (null | string) | null;
                                 path: string;
                                 stream_user: string | null;
                                 stream_pass: string | null;
-                                proxy: string | null;
+                                read_user: string | null;
+                                read_pass: string | null;
+                                proxy: (null | string) | null;
+                            };
+                            config?: {
+                                name: string;
+                                source: string;
+                                sourceFingerprint: string;
+                                sourceOnDemand: boolean;
+                                sourceOnDemandStartTimeout: string;
+                                sourceOnDemandCloseAfter: string;
+                                maxReaders: number;
+                                record: boolean;
+                            };
+                            path?: {
+                                name: string;
+                                confName: string;
+                                source: {
+                                    id: string;
+                                    type: string;
+                                } | null;
+                                ready: boolean;
+                                readyTime: string | null;
+                                tracks: string[];
+                                bytesReceived: number;
+                                bytesSent: number;
+                                readers: {
+                                    type: string;
+                                    id: string;
+                                }[];
                             };
                             protocols: {
                                 rtmp?: {
@@ -11139,6 +14551,14 @@ export interface paths {
                          * @default 3600
                          */
                         duration: number;
+                        source_type?: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
+                        source_model?: string;
+                        channel?: string | null;
+                        secure?: boolean;
+                        /** @description Record streams to disk */
+                        recording: boolean;
+                        /** @description Publish stream URL to TAK Server Video Manager */
+                        publish: boolean;
                         /**
                          * @description System Admins can create non-expiring leases
                          * @default false
@@ -11160,13 +14580,21 @@ export interface paths {
                                 name: string;
                                 created: string;
                                 updated: string;
-                                username: string;
+                                username: string | null;
+                                connection: number | null;
+                                source_type: string;
+                                source_model: string;
+                                publish: boolean;
+                                recording: boolean;
                                 ephemeral: boolean;
-                                expiration: string | null;
+                                channel: (null | string) | null;
+                                expiration: (null | string) | null;
                                 path: string;
                                 stream_user: string | null;
                                 stream_pass: string | null;
-                                proxy: string | null;
+                                read_user: string | null;
+                                read_pass: string | null;
+                                proxy: (null | string) | null;
                             };
                             protocols: {
                                 rtmp?: {
@@ -11245,6 +14673,15 @@ export interface paths {
                                 webrtcAddress: string;
                                 srt: boolean;
                                 srtAddress: string;
+                                authInternalUsers: {
+                                    user: string;
+                                    pass?: string;
+                                    ips?: string[];
+                                    permissions: {
+                                        action: string;
+                                        path?: string;
+                                    }[];
+                                }[];
                             };
                             paths?: {
                                 name: string;
@@ -11293,6 +14730,15 @@ export interface paths {
                         hls?: boolean;
                         webrtc?: boolean;
                         srt?: boolean;
+                        authInternalUsers?: {
+                            user: string;
+                            pass?: string;
+                            ips?: string[];
+                            permissions: {
+                                action: string;
+                                path?: string;
+                            }[];
+                        }[];
                     };
                 };
             };
@@ -11328,6 +14774,15 @@ export interface paths {
                                 webrtcAddress: string;
                                 srt: boolean;
                                 srtAddress: string;
+                                authInternalUsers: {
+                                    user: string;
+                                    pass?: string;
+                                    ips?: string[];
+                                    permissions: {
+                                        action: string;
+                                        path?: string;
+                                    }[];
+                                }[];
                             };
                             paths?: {
                                 name: string;
@@ -11461,14 +14916,33 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            name: string;
-                            source: string;
-                            sourceFingerprint: string;
-                            sourceOnDemand: boolean;
-                            sourceOnDemandStartTimeout: string;
-                            sourceOnDemandCloseAfter: string;
-                            maxReaders: number;
-                            record: boolean;
+                            config: {
+                                name: string;
+                                source: string;
+                                sourceFingerprint: string;
+                                sourceOnDemand: boolean;
+                                sourceOnDemandStartTimeout: string;
+                                sourceOnDemandCloseAfter: string;
+                                maxReaders: number;
+                                record: boolean;
+                            };
+                            path: {
+                                name: string;
+                                confName: string;
+                                source: {
+                                    id: string;
+                                    type: string;
+                                } | null;
+                                ready: boolean;
+                                readyTime: string | null;
+                                tracks: string[];
+                                bytesReceived: number;
+                                bytesSent: number;
+                                readers: {
+                                    type: string;
+                                    id: string;
+                                }[];
+                            };
                         };
                     };
                 };

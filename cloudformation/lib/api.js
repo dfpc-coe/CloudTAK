@@ -164,10 +164,12 @@ export default {
                                 'sqs:SendMessageBatch',
                                 'sqs:ChangeMessageVisibility',
                                 'sqs:GetQueueUrl',
-                                'sqs:GetQueueAttributes'
+                                'sqs:GetQueueAttributes',
+                                'sqs:DeleteMessage'
                             ],
                             Resource: [
-                                cf.join(['arn:', cf.partition, ':sqs:', cf.region, ':', cf.accountId, ':', cf.getAtt('HookQueue', 'QueueName')])
+                                cf.join(['arn:', cf.partition, ':sqs:', cf.region, ':', cf.accountId, ':', cf.getAtt('HookQueue', 'QueueName')]),
+                                cf.join(['arn:', cf.partition, ':sqs:', cf.region, ':', cf.accountId, ':coe-etl-', cf.ref('Environment'), '-layer-*'])
                             ]
                         },{
                             Effect: 'Allow',
@@ -237,10 +239,26 @@ export default {
                         },{
                             Effect: 'Allow',
                             Action: [
+                                'apigateway:GET',
+                                'apigateway:PATCH',
+                                'apigateway:DELETE',
+                                'apigateway:POST',
+                                'apigateway:PUT'
+                            ],
+                            Resource: [
+                                cf.join(['arn:', cf.partition, ':apigateway:', cf.region, '::/apis/', cf.importValue(cf.join(['coe-etl-webhooks-', cf.ref('Environment'), '-api'])), '/routes']),
+                                cf.join(['arn:', cf.partition, ':apigateway:', cf.region, '::/apis/', cf.importValue(cf.join(['coe-etl-webhooks-', cf.ref('Environment'), '-api'])), '/routes/*']),
+                                cf.join(['arn:', cf.partition, ':apigateway:', cf.region, '::/apis/', cf.importValue(cf.join(['coe-etl-webhooks-', cf.ref('Environment'), '-api'])), '/integrations']),
+                                cf.join(['arn:', cf.partition, ':apigateway:', cf.region, '::/apis/', cf.importValue(cf.join(['coe-etl-webhooks-', cf.ref('Environment'), '-api'])), '/integrations/*'])
+                            ]
+                        },{
+                            Effect: 'Allow',
+                            Action: [
                                 'iam:PassRole'
                             ],
                             Resource: [
-                                cf.join(['arn:', cf.partition, ':iam::', cf.accountId, ':role/', cf.stackName])
+                                cf.join(['arn:', cf.partition, ':iam::', cf.accountId, ':role/', cf.stackName]),
+                                cf.join(['arn:', cf.partition, ':iam::', cf.accountId, ':role/coe-etl-webhooks-', cf.ref('Environment')])
                             ]
                         },{
                             Effect: 'Allow',
@@ -257,6 +275,21 @@ export default {
                             ],
                             Resource: [
                                 cf.join(['arn:', cf.partition, ':cloudwatch:', cf.region, ':', cf.accountId, ':alarm:*'])
+                            ]
+                        },{
+                            Effect: 'Allow',
+                            Action: [
+                                'sqs:CreateQueue',
+                                'sqs:DeleteQueue',
+                                'sqs:GetQueueAttributes',
+                                'sqs:SetQueueAttributes',
+                                'sqs:ListQueueTags',
+                                'sqs:ReceiveMessage',
+                                'sqs:DeleteMessage',
+                                'sqs:TagQueue'
+                            ],
+                            Resource: [
+                                cf.join(['arn:', cf.partition, ':sqs:', cf.region, ':', cf.accountId, ':coe-etl-', cf.ref('Environment'), '-layer-*'])
                             ]
                         },{
                             Effect: 'Allow',
@@ -318,6 +351,9 @@ export default {
                         },{
                             Effect: 'Allow',
                             Action: [
+                                'lambda:CreateEventSourceMapping',
+                                'lambda:GetEventSourceMapping',
+                                'lambda:DeleteEventSourceMapping',
                                 'batch:SubmitJob',
                                 'batch:ListJobs',
                                 'batch:DescribeJobs',
@@ -402,7 +438,6 @@ export default {
                             ])
                         },
                         { Name: 'HookURL', Value: cf.ref('HookQueue') },
-                        { Name: 'TileBaseURL', Value: cf.join(['s3://', cf.ref('AssetBucket'), '/zipcodes.tilebase']) },
                         { Name: 'SigningSecret', Value: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/secret:SecretString::AWSCURRENT}}') },
                         { Name: 'StackName', Value: cf.stackName },
                         { Name: 'ASSET_BUCKET', Value: cf.ref('AssetBucket') },
@@ -492,18 +527,38 @@ export default {
                     }]
                 },
                 Path: '/',
+                Policies: [{
+                    PolicyName: cf.join([cf.stackName, '-etl-policy']),
+                    PolicyDocument: {
+                        Version: '2012-10-17',
+                        Statement: [{
+                            Effect: 'Allow',
+                            Action: [
+                                'sqs:SendMessage',
+                                'sqs:ChangeMessageVisibility',
+                                'sqs:DeleteMessage',
+                                'sqs:GetQueueUrl',
+                                'sqs:GetQueueAttributes'
+                            ],
+                            Resource: [
+                                cf.join(['arn:', cf.partition, ':sqs:', cf.region, ':', cf.accountId, ':coe-etl-', cf.ref('Environment'), '-layer-*'])
+                            ]
+                        }]
+                    }
+                }],
                 ManagedPolicyArns: [
+                    cf.join(['arn:', cf.partition, ':iam::aws:policy/service-role/AWSLambdaSQSQueueExecutionRole']),
                     cf.join(['arn:', cf.partition, ':iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'])
                 ]
             }
         }
     },
     Outputs: {
-        API: {
-            Description: 'API ELB',
-            Value: cf.join(['http://', cf.getAtt('ELB', 'DNSName')])
+        APIURLCNAME: {
+            Description: 'Hosted API CNAME target (API ELB)',
+            Value: cf.join([cf.getAtt('ELB', 'DNSName'), '.'])
         },
-        HostedURL: {
+        APIURL: {
             Description: 'Hosted API Location',
             Export: {
                 Name: cf.join([cf.stackName, '-hosted'])

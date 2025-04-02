@@ -3,7 +3,7 @@ import STS from '@aws-sdk/client-sts';
 import External from './external.js';
 import SecretsManager from '@aws-sdk/client-secrets-manager';
 import EventsPool from './events-pool.js';
-import { Pool } from '@openaddresses/batch-generic';
+import { Pool, GenerateUpsert } from '@openaddresses/batch-generic';
 import ConnectionPool from './connection-pool.js';
 import { ConnectionWebSocket } from './connection-web.js';
 import Cacher from './cacher.js';
@@ -20,25 +20,22 @@ interface ConfigArgs {
     noevents: boolean,
     nosinks: boolean,
     nocache: boolean,
-    nometrics: boolean,
 }
 
 export default class Config {
     silent: boolean;
     unsafe: boolean;
     noevents: boolean;
-    nometrics: boolean;
     nosinks: boolean;
     nocache: boolean;
     models: Models;
     StackName: string;
     HookURL?: string;
     SigningSecret: string;
-    external: External;
+    external?: External;
     UnsafeSigningSecret: string;
     API_URL: string;
     PMTILES_URL: string;
-    TileBaseURL: URL;
     DynamoDB?: string;
     wsClients: Map<string, ConnectionWebSocket[]>;
     Bucket?: string;
@@ -51,19 +48,18 @@ export default class Config {
     SubnetPublicA?: string;
     SubnetPublicB?: string;
     MediaSecurityGroup?: string;
+    arnPrefix?: string;
 
     constructor(init: {
         silent: boolean;
         unsafe: boolean;
         noevents: boolean;
-        nometrics: boolean;
         nosinks: boolean;
         nocache: boolean;
         models: Models;
         StackName: string;
         API_URL: string;
         PMTILES_URL: string;
-        TileBaseURL: URL;
         SigningSecret: string;
         wsClients: Map<string, ConnectionWebSocket[]>;
         pg: Pool<typeof pgtypes>;
@@ -75,7 +71,6 @@ export default class Config {
         this.silent = init.silent;
         this.unsafe = init.unsafe;
         this.noevents = init.noevents;
-        this.nometrics = init.nometrics;
         this.nosinks = init.nosinks;
         this.nocache = init.nocache;
         this.models = init.models;
@@ -84,7 +79,6 @@ export default class Config {
         this.SigningSecret = init.SigningSecret;
         this.API_URL = init.API_URL;
         this.PMTILES_URL = init.PMTILES_URL;
-        this.TileBaseURL = init.TileBaseURL;
         this.wsClients = init.wsClients;
         this.pg = init.pg;
         this.DynamoDB = init.DynamoDB;
@@ -94,7 +88,6 @@ export default class Config {
 
         this.conns = new ConnectionPool(this);
         this.cacher = new Cacher(this.nocache, this.silent);
-        this.external = new External(this)
 
         this.events = new EventsPool(this.StackName);
     }
@@ -121,9 +114,9 @@ export default class Config {
         if (!process.env.StackName || process.env.StackName === 'test') {
             process.env.StackName = 'test';
 
-            SigningSecret = 'coe-wildland-fire';
-            API_URL = 'http://localhost:5001';
+            SigningSecret = process.env.SigningSecret || 'coe-wildland-fire';
             Bucket = process.env.ASSET_BUCKET;
+            API_URL = process.env.API_URL || 'http://localhost:5001';
             PMTILES_URL = process.env.PMTILES_URL || 'http://localhost:5001';
         } else {
             if (!process.env.StackName) throw new Error('StackName env must be set');
@@ -137,7 +130,7 @@ export default class Config {
                 API_URL = `http://${process.env.API_URL}`;
                 PMTILES_URL = process.env.PMTILES_URL || 'http://localhost:5001'
             } else {
-                PMTILES_URL = `https://tiles.${process.env.API_URL}`;
+                PMTILES_URL = process.env.PMTILES_URL || `https://tiles.${process.env.API_URL}`;
                 API_URL = String(`https://${process.env.API_URL}`);
             }
 
@@ -161,8 +154,8 @@ export default class Config {
 
             server = await models.Server.generate({
                 name: 'Default Server',
-                url: 'ssl://ops.example.com:8089',
-                api: 'https://ops.example.com:8443'
+                url: 'ssl://localhost:8089',
+                api: 'https://localhost:8443'
             });
         }
 
@@ -170,10 +163,8 @@ export default class Config {
             unsafe: (args.unsafe || false),
             silent: (args.silent || false),
             noevents: (args.noevents || false),
-            nometrics: (args.nometrics || false),
             nosinks: (args.nosinks || false),
             nocache: (args.nocache || false),
-            TileBaseURL: process.env.TileBaseURL ? new URL(process.env.TileBaseURL) : new URL('./data-dev/zipcodes.tilebase', import.meta.url),
             StackName: process.env.StackName,
             wsClients: new Map(),
             server, SigningSecret, API_URL, DynamoDB, Bucket, pg, models, HookURL, PMTILES_URL
@@ -185,10 +176,26 @@ export default class Config {
             console.error(`ok - StackName: ${config.StackName}`);
         }
 
+        const external = await External.init(config);
+        config.external = external;
+
         if (process.env.VpcId) config.VpcId = process.env.VpcId;
         if (process.env.SubnetPublicA) config.SubnetPublicA = process.env.SubnetPublicA;
         if (process.env.SubnetPublicB) config.SubnetPublicB = process.env.SubnetPublicB;
         if (process.env.MediaSecurityGroup) config.MediaSecurityGroup = process.env.MediaSecurityGroup;
+
+        for (const envkey in process.env) {
+            if (!envkey.startsWith('CLOUDTAK')) continue;
+
+            if (envkey.startsWith('CLOUDTAK_Config_')) {
+                const key = envkey.replace(/^CLOUDTAK_Config_/, '').replace(/_/g, '::');
+                console.error(`ok - Updating ${key} with value from environment`);
+                await config.models.Setting.generate({
+                    key,
+                    value: process.env[envkey]
+                },{ upsert: GenerateUpsert.UPDATE })
+            }
+        }
 
         return config;
     }
@@ -197,17 +204,23 @@ export default class Config {
      * Return a prefix to an ARN
      */
     async fetchArnPrefix(service = ''): Promise<string> {
-        const sts = new STS.STSClient({ region: process.env.AWS_REGION });
-        const account = await sts.send(new STS.GetCallerIdentityCommand({}));
-        const res = [];
+        if (this.arnPrefix) {
+            return this.arnPrefix;
+        } else {
+            const sts = new STS.STSClient({ region: process.env.AWS_REGION });
+            const account = await sts.send(new STS.GetCallerIdentityCommand({}));
+            const res = [];
 
-        if (!account.Arn) throw new Error('ARN Could not be determined');
+            if (!account.Arn) throw new Error('ARN Could not be determined');
 
-        res.push(...account.Arn.split(':').splice(0, 2));
-        res.push(service);
-        res.push(process.env.AWS_REGION);
-        res.push(...account.Arn.split(':').splice(4, 1))
-        return res.join(':');
+            res.push(...account.Arn.split(':').splice(0, 2));
+            res.push(service);
+            res.push(process.env.AWS_REGION);
+            res.push(...account.Arn.split(':').splice(4, 1))
+            this.arnPrefix = res.join(':');
+
+            return this.arnPrefix;
+        }
     }
 
     static async fetchSigningSecret(StackName: string): Promise<string> {

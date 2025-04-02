@@ -32,10 +32,10 @@
                     v-for='select in selected.values()'
                     class='col-12'
                 >
-                    <Feature
+                    <DisplayFeature
                         :feature='select'
                         delete-action='emit'
-                        @delete='selected.delete(select.properties.id)'
+                        @delete='selected.delete(select.id)'
                     />
                 </div>
             </div>
@@ -107,7 +107,7 @@
         <template v-else-if='share === ShareType.USERS'>
             <Share
                 style='height: 400px;'
-                :feats='Array.from(selected.values())'
+                :feats='Array.from(selected.values()).map((c) => c.as_feature())'
                 :compact='true'
                 @done='selected.clear()'
                 @cancel='share = ShareType.NONE'
@@ -116,7 +116,7 @@
         <template v-else-if='share === ShareType.MISSION'>
             <ShareToMission
                 style='height: 400px;'
-                :feats='Array.from(selected.values())'
+                :feats='Array.from(selected.values()).map((c) => c.as_feature())'
                 :compact='true'
                 @done='selected.clear()'
                 @cancel='share = ShareType.NONE'
@@ -125,7 +125,7 @@
         <template v-else-if='share === ShareType.PACKAGE'>
             <ShareToPackage
                 style='height: 400px;'
-                :feats='Array.from(selected.values())'
+                :feats='Array.from(selected.values()).map((c) => c.as_feature())'
                 :compact='true'
                 @done='selected.clear()'
                 @cancel='share = ShareType.NONE'
@@ -136,8 +136,9 @@
 
 <script setup lang='ts'>
 import { ref } from 'vue';
-import Feature from './Feature.vue';
-import { useCOTStore } from '../../../../src/stores/cots.ts';
+import DisplayFeature from './Feature.vue';
+import COT from '../../../base/cot.ts';
+import { useMapStore } from '../../../stores/map.ts';
 import {
     IconPackageExport,
     IconDotsVertical,
@@ -156,14 +157,11 @@ import Share from './Share.vue';
 import ShareToMission from './ShareToMission.vue';
 import ShareToPackage from './ShareToPackage.vue';
 
-const cotStore = useCOTStore();
+const mapStore = useMapStore();
 
-const props = defineProps({
-    selected: {
-        type: Object,
-        required: true
-    }
-});
+const props = defineProps<{
+    selected: Map<string, COT>
+}>();
 
 enum ShareType {
     NONE = 'none',
@@ -179,7 +177,7 @@ async function deleteFeatures() {
     loading.value = true;
 
     for (const id of props.selected.keys()) {
-        await cotStore.delete(id);
+        await mapStore.worker.db.remove(id);
     }
 
     props.selected.clear()

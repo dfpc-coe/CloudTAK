@@ -13,7 +13,8 @@
         </div>
 
         <TablerLoading
-            v-if='loading.data'
+            v-if='!data || !connection'
+            class='text-white'
             desc='Loading Data'
         />
         <div
@@ -29,7 +30,7 @@
 
                                 <a
                                     class='card-title cursor-pointer mx-2'
-                                    @click='$router.push(`/connection/${connection.id}`)'
+                                    @click='router.push(`/connection/${connection.id}`)'
                                     v-text='connection.name'
                                 />
 
@@ -46,24 +47,26 @@
                                             v-if='data.mission_sync'
                                             v-tooltip='"Mission Sync On"'
                                             :size='32'
-                                            :stroke='1'
+                                            stroke='1'
                                             class='text-green'
                                         />
                                         <IconAccessPointOff
                                             v-else
                                             v-tooltip='"Mission Sync Off"'
                                             :size='32'
-                                            :stroke='1'
+                                            stroke='1'
                                             class='text-red'
                                         />
 
-                                        <IconSettings
-                                            v-tooltip='"Edit"'
-                                            :size='32'
-                                            :stroke='1'
-                                            class='cursor-pointer'
-                                            @click='$router.push(`/connection/${$route.params.connectionid}/data/${data.id}/edit`)'
-                                        />
+                                        <TablerIconButton
+                                            title='Edit'
+                                            @click='router.push(`/connection/${route.params.connectionid}/data/${data.id}/edit`)'
+                                        >
+                                            <IconSettings
+                                                :size='32'
+                                                stroke='1'
+                                            />
+                                        </TablerIconButton>
                                     </div>
                                 </div>
                             </div>
@@ -73,7 +76,7 @@
                             />
 
                             <div
-                                v-if='data.mission_error'
+                                v-if='mission_error'
                                 class='card-body bg-red-lt'
                             >
                                 <div class='header'>
@@ -124,50 +127,61 @@
                                         <h4 class='subheader'>
                                             Data Sections
                                         </h4>
-                                        <div class='list-group list-group-transparent'>
+                                        <div
+                                            role='menu'
+                                            class='list-group list-group-transparent'
+                                        >
                                             <span
-                                                class='list-group-item list-group-item-action d-flex align-items-center'
+                                                tabindex='0'
+                                                role='menuitem'
+                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
-                                                    "active": $route.name === "data-groups",
-                                                    "cursor-pointer": $route.name !== "data-groups"
+                                                    "active": route.name === "data-groups",
+                                                    "cursor-pointer": route.name !== "data-groups"
                                                 }'
-                                                @click='$router.push(`/connection/${$route.params.connectionid}/data/${$route.params.dataid}/groups`)'
+                                                @click='router.push(`/connection/${route.params.connectionid}/data/${route.params.dataid}/groups`)'
                                             ><IconAffiliate
                                                 :size='32'
-                                                :stroke='1'
+                                                stroke='1'
                                             /><span class='mx-3'>Channels</span></span>
                                             <span
-                                                class='list-group-item list-group-item-action d-flex align-items-center'
+                                                tabindex='0'
+                                                role='menuitem'
+                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
-                                                    "active": $route.name === "data-files",
-                                                    "cursor-pointer": $route.name !== "data-files"
+                                                    "active": route.name === "data-files",
+                                                    "cursor-pointer": route.name !== "data-files"
                                                 }'
-                                                @click='$router.push(`/connection/${$route.params.connectionid}/data/${$route.params.dataid}/files`)'
+                                                @click='router.push(`/connection/${route.params.connectionid}/data/${route.params.dataid}/files`)'
                                             ><IconFiles
                                                 :size='32'
-                                                :stroke='1'
+                                                stroke='1'
                                             /><span class='mx-3'>Files</span></span>
                                             <span
-                                                class='list-group-item list-group-item-action d-flex align-items-center'
+                                                tabindex='0'
+                                                role='menuitem'
+                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
-                                                    "active": $route.name === "data-layer",
-                                                    "cursor-pointer": $route.name !== "data-layer"
+                                                    "active": route.name === "data-layer",
+                                                    "cursor-pointer": route.name !== "data-layer"
                                                 }'
-                                                @click='$router.push(`/connection/${$route.params.connectionid}/data/${$route.params.dataid}/layer`)'
+                                                @click='router.push(`/connection/${route.params.connectionid}/data/${route.params.dataid}/layer`)'
                                             ><IconBuildingBroadcastTower
                                                 :size='32'
-                                                :stroke='1'
+                                                stroke='1'
                                             /><span class='mx-3'>Layers</span></span>
                                             <span
-                                                class='list-group-item list-group-item-action d-flex align-items-center'
+                                                tabindex='0'
+                                                role='menuitem'
+                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
-                                                    "active": $route.name === "data-jobs",
-                                                    "cursor-pointer": $route.name !== "data-jobs"
+                                                    "active": route.name === "data-jobs",
+                                                    "cursor-pointer": route.name !== "data-jobs"
                                                 }'
-                                                @click='$router.push(`/connection/${$route.params.connectionid}/data/${$route.params.dataid}/jobs`)'
+                                                @click='router.push(`/connection/${route.params.connectionid}/data/${route.params.dataid}/jobs`)'
                                             ><IconTransform
                                                 :size='32'
-                                                :stroke='1'
+                                                stroke='1'
                                             /><span class='mx-3'>Jobs</span></span>
                                         </div>
                                     </div>
@@ -188,12 +202,16 @@
     </div>
 </template>
 
-<script>
-import { std } from '/src/std.ts';
+<script setup lang='ts'>
+import type { ETLData, ETLConnection } from '../types.ts';
+import { ref, onMounted, computed } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import { std } from '../std.ts';
 import PageFooter from './PageFooter.vue';
 import timeDiff from '../timediff.ts';
 import {
     TablerLoading,
+    TablerIconButton,
     TablerMarkdown,
     TablerBreadCrumb,
 } from '@tak-ps/vue-tabler'
@@ -206,64 +224,44 @@ import {
     IconAccessPoint,
     IconAccessPointOff,
 } from '@tabler/icons-vue'
-import ConnectionStatus from './Connection/Status.vue';
+import ConnectionStatus from './Connection/StatusDot.vue';
 
-export default {
-    name: 'DataSingle',
-    components: {
-        IconFiles,
-        IconAffiliate,
-        IconTransform,
-        IconBuildingBroadcastTower,
-        IconSettings,
-        PageFooter,
-        TablerLoading,
-        TablerBreadCrumb,
-        TablerMarkdown,
-        IconAccessPoint,
-        IconAccessPointOff,
-        ConnectionStatus
-    },
-    data: function() {
+const route = useRoute();
+const router = useRouter();
+
+const connection = ref<ETLConnection | undefined >();
+const data = ref<ETLData | undefined>();
+
+const mission_error = computed<{
+    code: string
+    status: string;
+    message: string
+} | undefined>(() => {
+    if (!data.value || !data.value.mission_error) return;
+
+    try {
+        return JSON.parse(data.value.mission_error)
+    } catch (err) {
+        console.error(err)
         return {
-            err: false,
-            loading: {
-                data: true
-            },
-            connection: {},
-            data: {},
-        }
-    },
-    computed: {
-        mission_error: function() {
-            try {
-                return JSON.parse(this.data.mission_error)
-            } catch (err) {
-                console.error(err)
-                return {
-                    code: 'Unknown',
-                    status: 'Unknown',
-                    message: this.data.mission_error
-                }
-            }
-        }
-    },
-    mounted: async function() {
-        await this.fetchConnection();
-        await this.fetch();
-    },
-    methods: {
-        timeDiff(update) {
-            return timeDiff(update);
-        },
-        fetchConnection: async function() {
-            this.connection = await std(`/api/connection/${this.$route.params.connectionid}`);
-        },
-        fetch: async function() {
-            this.loading.data = true;
-            this.data = await std(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}`);
-            this.loading.data = false;
+            code: 'Unknown',
+            status: 'Unknown',
+            message: data.value.mission_error
         }
     }
+});
+
+onMounted(async () => {
+    await fetchConnection();
+    await fetch();
+});
+
+
+async function fetchConnection() {
+    connection.value = await std(`/api/connection/${route.params.connectionid}`) as ETLConnection;
+}
+
+async function fetch() {
+    data.value = await std(`/api/connection/${route.params.connectionid}/data/${route.params.dataid}`) as ETLData;
 }
 </script>

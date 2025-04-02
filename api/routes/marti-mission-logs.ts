@@ -6,6 +6,9 @@ import { MissionOptions } from '../lib/api/mission.js';
 import { MissionLog } from '../lib/api/mission-log.js';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
+import {
+    TAKItem
+} from '../lib/api/types.js';
 import TAKAPI, {
     APIAuthCertificate,
 } from '../lib/tak-api.js';
@@ -58,7 +61,8 @@ export default async function router(schema: Schema, config: Config) {
         }),
         description: 'Helper API to add a log to a mission',
         body: Type.Object({
-            content: Type.String()
+            content: Type.String(),
+            keywords: Type.Optional(Type.Array(Type.String()))
         }),
         res: GenericMartiResponse
     }, async (req, res) => {
@@ -77,7 +81,8 @@ export default async function router(schema: Schema, config: Config) {
                 req.params.name,
                 {
                     creatorUid: creatorUid,
-                    content: req.body.content
+                    content: req.body.content,
+                    keywords: req.body.keywords
                 },
                 opts
             );
@@ -97,15 +102,10 @@ export default async function router(schema: Schema, config: Config) {
         }),
         description: 'Helper API to update a log on a mission',
         body: Type.Object({
-            content: Type.String()
+            content: Type.String(),
+            keywords: Type.Optional(Type.Array(Type.String()))
         }),
-        res: Type.Object({
-            version: Type.String(),
-            type: Type.String(),
-            data:  MissionLog,
-            messages: Type.Optional(Type.Array(Type.String())),
-            nodeId: Type.Optional(Type.String())
-        })
+        res: TAKItem(MissionLog)
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -123,7 +123,8 @@ export default async function router(schema: Schema, config: Config) {
                 {
                     id: req.params.logid,
                     creatorUid: creatorUid,
-                    content: req.body.content
+                    content: req.body.content,
+                    keywords: req.body.keywords
                 },
                 opts
             );

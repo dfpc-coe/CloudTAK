@@ -12,7 +12,7 @@
                         </li>
                         <li class='list-inline-item'>
                             <a
-                                href='https://github.com/tak-ps/etl'
+                                href='https://github.com/dfpc-coe/CloudTAK'
                                 target='_blank'
                                 class='link-secondary'
                                 rel='noopener'
@@ -23,12 +23,15 @@
                 <div class='col-12 col-lg-auto mt-3 mt-lg-0'>
                     <ul class='list-inline list-inline-dots mb-0'>
                         <li class='list-inline-item'>
-                            Copyright © 2023
+                            Copyright © 2025
                             <a
-                                href='.'
+                                href='https://www.colorado.gov/'
                                 class='link-secondary'
-                            >TAK Public Safety</a>
-                            - MIT License
+                            >State of Colorado</a>
+                            - <a 
+                                href='https://github.com/dfpc-coe/CloudTAK/blob/main/LICENSE'
+                                class='link-secondary'  
+                            >AGPL-3.0 license</a>
                         </li>
                     </ul>
                 </div>
@@ -36,9 +39,3 @@
         </div>
     </footer>
 </template>
-
-<script lang='ts'>
-export default {
-    name: 'PageFooter'
-}
-</script>

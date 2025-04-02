@@ -4,7 +4,7 @@ import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
-import { Channel }  from '../lib/external.js';
+import { Channel, ChannelAccess } from '../lib/external.js';
 import TAKAPI, {
     APIAuthPassword,
 } from '../lib/tak-api.js';
@@ -26,7 +26,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const profile = await Auth.as_profile(config, req);
 
-            if (!config.server.provider_url || !config.server.provider_secret || !config.server.provider_client) {
+            if (!config.external || !config.external.configured) {
                 throw new Err(400, null, 'External LDAP API not configured - Contact your administrator');
             }
 
@@ -36,7 +36,7 @@ export default async function router(schema: Schema, config: Config) {
 
             res.json(list);
         } catch (err) {
-             Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
@@ -48,19 +48,25 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.String(),
             description: Type.String(),
             agency_id: Type.Union([Type.Integer(), Type.Null()]),
-            channels: Type.Array(Type.Integer(), {
+            channels: Type.Array(Type.Object({
+                id: Type.Integer(),
+                access: ChannelAccess
+            }), {
                 minItems: 1
             })
         }),
         res: Type.Object({
-            cert: Type.String(),
-            key: Type.String()
+            integrationId: Type.Optional(Type.Integer()),
+            auth: Type.Object({
+                cert: Type.String(),
+                key: Type.String()
+            })
         })
     }, async (req, res) => {
         try {
             const profile = await Auth.as_profile(config, req);
 
-            if (!config.server.provider_url || !config.server.provider_secret || !config.server.provider_client) {
+            if (!config.external || !config.external.configured) {
                 throw new Err(400, null, 'External LDAP API not configured - Contact your administrator');
             }
 
@@ -74,14 +80,16 @@ export default async function router(schema: Schema, config: Config) {
                 integration: {
                     name: req.body.name,
                     description: req.body.description,
-                    management_url: config.API_URL
+                    management_url: config.API_URL,
+                    active: false,
                 }
             });
 
             for (const channel of req.body.channels) {
                 await config.external.attachMachineUser(profile.id, {
                     machine_id: user.id,
-                    channel_id: channel
+                    channel_id: channel.id,
+                    access: channel.access
                 })
             }
 
@@ -92,9 +100,12 @@ export default async function router(schema: Schema, config: Config) {
 
             const certs = await api.Credentials.generate();
 
-            res.json(certs)
+            res.json({
+                integrationId: user.integrations.find(Boolean)?.id ?? undefined,
+                auth: certs
+            })
         } catch (err) {
-             Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 }

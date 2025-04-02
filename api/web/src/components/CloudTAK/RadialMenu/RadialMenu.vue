@@ -14,6 +14,23 @@
         class='d-none'
     >
         <symbol
+            id='radial-lock'
+            viewBox='0 0 24 24'
+            fill='none'
+            width='24'
+            height='24'
+            stroke='#fff'
+            stroke-width='2'
+            stroke-linejoin='round'
+            stroke-linecap='round'
+        >
+            <path d='M12.5 21h-5.5a2 2 0 0 1 -2 -2v-6a2 2 0 0 1 2 -2h10c.24 0 .47 .042 .683 .12' />
+            <path d='M11 16a1 1 0 1 0 2 0a1 1 0 0 0 -2 0' />
+            <path d='M8 11v-4a4 4 0 1 1 8 0v4' />
+            <path d='M21.121 20.121a3 3 0 1 0 -4.242 0c.418 .419 1.125 1.045 2.121 1.879c1.051 -.89 1.759 -1.516 2.121 -1.879z' />
+            <path d='M19 18v.01' />
+        </symbol>
+        <symbol
             id='radial-question'
             viewBox='0 0 24 24'
             stroke-width='2'
@@ -91,17 +108,30 @@
             d='M0 0h24v24H0z'
             fill='none'
         /><path d='M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4' /><path d='M13.5 6.5l4 4' /><path d='M16 19h6' /><path d='M19 16v6' /></symbol>
+        <symbol
+            id='radial-save'
+            viewBox='0 0 24 24'
+            fill='none'
+            stroke='#fff'
+            stroke-width='2'
+            stroke-linecap='round'
+            stroke-linejoin='round'
+        >
+            <path d='M6 4h10l4 4v10a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2' />
+            <path d='M12 14m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0' />
+            <path d='M14 4l0 4l-6 0l0 -4' />
+        </symbol>
     </svg>
 </template>
 
 <script>
+import { OriginMode } from '../../../base/cot.ts';
 import RadialMenu from './RadialMenu.js';
 import './RadialMenu.css';
-import { useMapStore } from '/src/stores/map.ts';
-import { useCOTStore } from '/src/stores/cots.ts';
+import { useMapStore } from '../../../stores/map.ts';
 import { mapState, mapActions } from 'pinia'
 
-const cotStore = useCOTStore();
+const mapStore = useMapStore();
 
 export default {
     name: 'RadialMenu',
@@ -124,8 +154,8 @@ export default {
     unmounted: function() {
         this.$emit('close')
     },
-    mounted: function() {
-        this.genMenuItems();
+    mounted: async function() {
+        await this.genMenuItems();
 
         this.$nextTick(() => {
             this.menu = new RadialMenu({
@@ -142,22 +172,38 @@ export default {
     },
     methods: {
         ...mapActions(useMapStore, ['radialClick']),
-        genMenuItems: function() {
+        genMenuItems: async function() {
             this.menuItems.splice(0, this.menuItems.length);
             if (this.radial.mode === 'cot') {
-                this.menuItems.push({ id: 'edit', icon: '#radial-pencil' })
-                this.menuItems.push({ id: 'view', icon: '#radial-view' })
-                this.menuItems.push({ id: 'delete', icon: '#radial-trash' })
-
                 if (this.radial.cot && this.radial.cot.properties) {
-                    const cot = cotStore.get(this.radial.cot.properties.id, {
+                    const cot = await mapStore.worker.db.get(this.radial.cot.properties.id, {
                         mission: true
                     });
 
-                    if (cot.properties.video) {
+                    if (!cot) throw new Error('Could not find marker');
+
+                    if (await cot.origin.mode === OriginMode.CONNECTION) {
+                        this.menuItems.push({ id: 'edit', icon: '#radial-pencil' })
+                        this.menuItems.push({ id: 'delete', icon: '#radial-trash' })
+
+                        if (await cot.geometry.type === 'Point') {
+                            this.menuItems.push({ id: 'lock', icon: '#radial-lock' })
+                        }
+                    } else if (await cot.origin.mode === OriginMode.MISSION && await cot.origin.mode_id) {
+                        const sub = await mapStore.worker.db.subscriptions.get(await cot.origin.mode_id);
+
+                        if (sub.role && sub.role.permissions.includes("MISSION_WRITE")) {
+                            this.menuItems.push({ id: 'edit', icon: '#radial-pencil' })
+                            this.menuItems.push({ id: 'delete', icon: '#radial-trash' })
+                        }
+                    }
+
+                    if (await cot.properties.video) {
                         this.menuItems.push({ id: 'play', icon: '#radial-play' })
                     }
                 }
+
+                this.menuItems.push({ id: 'view', icon: '#radial-view' })
             } else if (this.radial.mode === 'feat') {
                 this.menuItems.push({ id: 'view', icon: '#radial-view' })
             } else if (this.radial.mode === 'context') {

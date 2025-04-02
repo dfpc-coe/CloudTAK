@@ -6,32 +6,68 @@
             </h1>
 
             <div class='ms-auto btn-list'>
-                <IconPlus
-                    v-tooltip='"Create Overlay"'
-                    :size='32'
-                    :stroke='1'
-                    class='cursor-pointer'
-                    @click='$router.push("/admin/overlay/new")'
-                />
-                <IconRefresh
-                    v-tooltip='"Refresh"'
-                    :size='32'
-                    :stroke='1'
-                    class='cursor-pointer'
+                <TablerIconButton
+                    title='Create Overlay'
+                    @click='router.push("/admin/overlay/new")'
+                >
+                    <IconPlus
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+                <TablerIconButton
+                    title='Refresh'
                     @click='fetchList'
-                />
+                >
+                    <IconRefresh
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
             </div>
         </div>
         <div style='min-height: 20vh; margin-bottom: 61px'>
-            <TablerInput
-                v-model='paging.filter'
-                placeholder='Filter...'
-                class='mx-1 my-2'
-            />
+            <div class='row col-12 mx-1 my-2'>
+                <div class='col-md-6'>
+                    <TablerInput
+                        v-model='paging.filter'
+                        icon='search'
+                        label='Name Filter'
+                        placeholder='Filter...'
+                    />
+                </div>
+                <div class='col-md-3'>
+                    <TablerEnum
+                        v-model='paging.scope'
+                        label='Ownership'
+                        default='all'
+                        :options='[
+                            "all",
+                            "server",
+                            "user"
+                        ]'
+                    />
+                </div>
+                <div class='col-md-3'>
+                    <TablerEnum
+                        v-model='paging.type'
+                        label='Type'
+                        default='basemap'
+                        :options='[
+                            "basemap",
+                            "overlay"
+                        ]'
+                    />
+                </div>
+            </div>
 
             <TablerLoading
                 v-if='loading'
                 desc='Loading Overlays'
+            />
+            <TablerAlert
+                v-else-if='error'
+                :err='error'
             />
             <TablerNone
                 v-else-if='!list.items.length'
@@ -52,13 +88,39 @@
                         <tr
                             v-for='ov in list.items'
                             :key='ov.id'
+                            tabindex='0'
                             class='cursor-pointer'
-                            @click='stdclick($router, $event, `/admin/overlay/${ov.id}`)'
+                            @keyup.enter='stdclick(router, $event, `/admin/overlay/${ov.id}`)'
+                            @click='stdclick(router, $event, `/admin/overlay/${ov.id}`)'
                         >
                             <template v-for='h in header'>
                                 <template v-if='h.display'>
                                     <td>
-                                        <span v-text='ov[h.name]' />
+                                        <div class='d-flex align-items-center'>
+                                            <span v-text='ov[h.name]' />
+
+                                            <template v-if='h.name === "name"'>
+                                                <div class='ms-auto'>
+                                                    <span
+                                                        v-if='!ov.username'
+                                                        class='mx-3 ms-auto badge border bg-blue text-white'
+                                                    >Public</span>
+                                                    <span
+                                                        v-else
+                                                        class='mx-3 ms-auto badge border bg-red text-white'
+                                                    >Private</span>
+
+                                                    <span
+                                                        v-if='!ov.overlay'
+                                                        class='mx-3 ms-auto badge border bg-purple text-white'
+                                                    >Basemap</span>
+                                                    <span
+                                                        v-else
+                                                        class='mx-3 ms-auto badge border bg-green text-white'
+                                                    >Overlay</span>
+                                                </div>
+                                            </template>
+                                        </div>
                                     </td>
                                 </template>
                             </template>
@@ -80,13 +142,19 @@
     </div>
 </template>
 
-<script>
-import { std, stdurl, stdclick } from '/src/std.ts';
+<script setup lang='ts'>
+import { ref, watch, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { std, stdurl, stdclick } from '../../../src/std.ts';
+import type { Basemap, BasemapList } from '../../../src/types.ts';
 import TableHeader from '../util/TableHeader.vue'
 import TableFooter from '../util/TableFooter.vue'
 import {
     TablerNone,
     TablerInput,
+    TablerEnum,
+    TablerAlert,
+    TablerIconButton,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
@@ -94,77 +162,76 @@ import {
     IconRefresh,
 } from '@tabler/icons-vue'
 
-export default {
-    name: 'OverlayAdmin',
-    components: {
-        TablerNone,
-        TablerInput,
-        TablerLoading,
-        IconPlus,
-        IconRefresh,
-        TableHeader,
-        TableFooter,
-    },
-    data: function() {
-        return {
-            err: false,
-            loading: true,
-            header: [],
-            paging: {
-                filter: '',
-                sort: 'name',
-                order: 'asc',
-                limit: 100,
-                page: 0
-            },
-            list: {
-                total: 0,
-                items: []
-            }
-        }
-    },
-    watch: {
-       paging: {
-            deep: true,
-            handler: async function() {
-                await this.fetchList();
-            }
-        }
-    },
-    mounted: async function() {
-        await this.listOverlaySchema();
-        await this.fetchList();
-    },
-    methods: {
-        stdclick,
-        listOverlaySchema: async function() {
-            const schema = await std('/api/schema?method=GET&url=/basemap');
-            this.header = ['id', 'name'].map((h) => {
-                return { name: h, display: true };
-            });
+type Header = { name: keyof Basemap, display: boolean };
 
-            this.header.push(...schema.query.properties.sort.enum.map((h) => {
-                return {
-                    name: h,
-                    display: false
-                }
-            }).filter((h) => {
-                for (const hknown of this.header) {
-                    if (hknown.name === h.name) return false;
-                }
-                return true;
-            }));
-        },
-        fetchList: async function() {
-            this.loading = true;
-            const url = stdurl('/api/basemap');
-            url.searchParams.append('overlay', 'true');
-            url.searchParams.append('filter', this.paging.filter);
-            url.searchParams.append('limit', this.paging.limit);
-            url.searchParams.append('page', this.paging.page);
-            this.list = await std(url);
-            this.loading = false;
+const router = useRouter();
+
+const error = ref<Error | undefined>();
+const loading = ref(true);
+const header = ref<Array<Header>>([]);
+
+const paging = ref({
+    filter: '',
+    sort: 'name',
+    order: 'asc',
+    limit: 100,
+    scope: 'server',
+    type: 'basemap',
+    page: 0
+});
+
+const list = ref<BasemapList>({
+    total: 0,
+    collections: [],
+    items: []
+});
+
+watch(paging.value, async () => {
+    await fetchList();
+});
+
+onMounted(async () => {
+    await listBasemapSchema();
+    await fetchList();
+});
+
+async function listBasemapSchema() {
+    const schema = await std('/api/schema?method=GET&url=/basemap');
+
+    const defaults: Array<keyof Basemap> = ['id', 'name'];
+    header.value = defaults.map((h) => {
+        return { name: h, display: true };
+    });
+
+    // @ts-expect-error Worth trying to type at some point maybe but not now
+    header.value.push(...schema.query.properties.sort.enum.map((h) => {
+        return {
+            name: h,
+            display: false
+        } as Header
+    }).filter((h: Header) => {
+        for (const hknown of header.value) {
+            if (hknown.name === h.name) return false;
         }
+        return true;
+    }));
+}
+
+async function fetchList() {
+    loading.value = true;
+    const url = stdurl('/api/basemap');
+
+    if (paging.value.type === 'overlay') {
+        url.searchParams.append('overlay', String(true));
     }
+
+    if (paging.value.scope !== "all") {
+        url.searchParams.append('scope', paging.value.scope);
+    }
+    url.searchParams.append('filter', paging.value.filter);
+    url.searchParams.append('limit', String(paging.value.limit));
+    url.searchParams.append('page', String(paging.value.page));
+    list.value = await std(url) as BasemapList;
+    loading.value = false;
 }
 </script>

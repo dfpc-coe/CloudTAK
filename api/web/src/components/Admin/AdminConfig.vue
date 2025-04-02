@@ -8,18 +8,58 @@
                 </h3>
                 <div class='ms-auto'>
                     <div class='btn-list'>
-                        <IconSettings
+                        <TablerIconButton
                             v-if='!edit'
-                            v-tooltip='"Configure Server"'
-                            :size='32'
-                            :stroke='1'
-                            class='cursor-pointer'
+                            title='Edit'
                             @click='edit = true'
-                        />
+                        >
+                            <IconPencil
+                                :size='32'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
                     </div>
                 </div>
             </div>
             <div class='card-body row'>
+                <div
+                    class='col-lg-12 hover-light py-2 cursor-pointer'
+                    @click='opened.has("login") ? opened.delete("login") : opened.add("login")'
+                >
+                    <IconChevronDown v-if='opened.has("login")' />
+                    <IconChevronRight v-else />
+
+                    <span class='mx-2 user-select-none'>Login Page</span>
+                </div>
+
+                <div
+                    v-if='opened.has("login")'
+                    class='col-lg-12 py-2 border rounded'
+                >
+                    <div class='row'>
+                        <div class='col-lg-12'>
+                            <TablerInput
+                                v-model='config["login::signup"]'
+                                :disabled='!edit'
+                                :error='(config["login::signup"] && config["login::signup"].startsWith("http")) ? "" : "Invalid URL"'
+                                label='TAK Server Signup Link'
+                            />
+                            <TablerInput
+                                v-model='config["login::forgot"]'
+                                :disabled='!edit'
+                                :error='(config["login::forgot"] && config["login::forgot"].startsWith("http")) ? "" : "Invalid URL"'
+                                label='TAK Server Password Reset Link'
+                            />
+                            <TablerInput
+                                v-model='config["login::logo"]'
+                                :disabled='!edit'
+                                :error='(config["login::logo"] && config["login::logo"].startsWith("data:image/png;base64,")) ? "" : "Must start with: data:image/png;base64,"'
+                                label='Base64 Encoded Login Logo'
+                            />
+                        </div>
+                    </div>
+                </div>
+
                 <div
                     class='col-lg-12 hover-light py-2 cursor-pointer'
                     @click='opened.has("agol") ? opened.delete("agol") : opened.add("agol")'
@@ -123,6 +163,45 @@
                 </div>
 
                 <div
+                    class='col-lg-12 hover-light py-2 cursor-pointer'
+                    @click='opened.has("provider") ? opened.delete("provider") : opened.add("provider")'
+                >
+                    <IconChevronDown v-if='opened.has("provider")' />
+                    <IconChevronRight v-else />
+
+                    <span class='mx-2 user-select-none'>COTAK OAuth Provider</span>
+                </div>
+
+                <div
+                    v-if='opened.has("provider")'
+                    class='col-lg-12 py-2 border rounded'
+                >
+                    <div class='row'>
+                        <div class='col-lg-12'>
+                            <TablerInput
+                                v-model='config[`provider::url`]'
+                                label='Provider URL'
+                                :disabled='!edit'
+                            />
+                        </div>
+                        <div class='col-lg-12'>
+                            <TablerInput
+                                v-model='config[`provider::secret`]'
+                                label='Provider Secret'
+                                :disabled='!edit'
+                            />
+                        </div>
+                        <div class='col-lg-12'>
+                            <TablerInput
+                                v-model='config[`provider::client`]'
+                                label='Provider Client'
+                                :disabled='!edit'
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div
                     v-if='edit'
                     class='col-lg-12 d-flex py-2'
                 >
@@ -150,11 +229,12 @@
 import { std, stdurl } from '/src/std.ts';
 import {
     TablerLoading,
+    TablerIconButton,
     TablerToggle,
     TablerInput
 } from '@tak-ps/vue-tabler';
 import {
-    IconSettings,
+    IconPencil,
     IconChevronRight,
     IconChevronDown,
 } from '@tabler/icons-vue';
@@ -163,10 +243,11 @@ import timeDiff from '../../timediff.ts';
 export default {
     name: 'AdminConfig',
     components: {
-        IconSettings,
+        IconPencil,
         IconChevronRight,
         IconChevronDown,
         TablerLoading,
+        TablerIconButton,
         TablerToggle,
         TablerInput,
     },
@@ -195,6 +276,14 @@ export default {
             'media::url': '',
             'media::username': '',
             'media::password': '',
+
+            'provider::url': '',
+            'provider::secret': '',
+            'provider::client': '',
+
+            'login::logo': '',
+            'login::forgot': '',
+            'login::signup': '',
         }
 
         for (const group of groups) {

@@ -1,7 +1,4 @@
 {
-    "ts-node": {
-        "esm": true
-    },
     "compilerOptions": {
         "strict": true,
         "strictNullChecks": true,
@@ -22,8 +19,8 @@
     "exclude": [],
     "include": [
         "*.ts",
-        "routes/**/*",
-        "test/**/*",
-        "lib/**/*"
+        "routes/",
+        "test/",
+        "lib/"
     ]
 }

@@ -10,7 +10,7 @@
                     <IconTrash
                         v-tooltip='"Clear Events"'
                         :size='32'
-                        :stroke='1'
+                        stroke='1'
                         class='cursor-pointer'
                         @click='events = []'
                     />
@@ -19,7 +19,7 @@
                         v-if='paused'
                         v-tooltip='"Play Events"'
                         :size='32'
-                        :stroke='1'
+                        stroke='1'
                         class='cursor-pointer'
                         @click='paused = false'
                     />
@@ -27,7 +27,7 @@
                         v-else
                         v-tooltip='"Pause Events"'
                         :size='32'
-                        :stroke='1'
+                        stroke='1'
                         class='cursor-pointer'
                         @click='paused = true'
                     />

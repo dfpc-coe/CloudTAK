@@ -2,12 +2,10 @@ import Err from '@openaddresses/batch-error';
 import ImportControl, { ImportModeEnum }  from './control/import.js';
 import Sinks from './sinks.js';
 import Config from './config.js';
-import Metrics from './aws/metric.js';
 import { randomUUID } from 'node:crypto';
 import TAK, { CoT } from '@tak-ps/node-tak';
 import Modeler from '@openaddresses/batch-generic';
 import { Connection } from './schema.js';
-import { InferSelectModel } from 'drizzle-orm';
 import sleep from './sleep.js';
 import TAKAPI, { APIAuthCertificate, } from '../lib/tak-api.js';
 import type ConnectionConfig from './connection-config.js';
@@ -31,6 +29,10 @@ export class ConnectionClient {
         this.initial = true;
         this.ephemeral = ephemeral;
     }
+
+    destroy(): void {
+        this.tak.destroy()
+    }
 }
 
 /**
@@ -39,19 +41,28 @@ export class ConnectionClient {
  */
 export default class ConnectionPool extends Map<number | string, ConnectionClient> {
     config: Config;
-    metrics: Metrics;
     sinks: Sinks;
     importControl: ImportControl;
+    closed: boolean;
 
     constructor(config: Config) {
         super();
 
+        this.closed = false;
         this.config = config;
         this.importControl = new ImportControl(config);
-        this.metrics = new Metrics(this.config.StackName);
 
-        if (config.nometrics) this.metrics.paused = true;
         this.sinks = new Sinks(config);
+    }
+
+    async close(): Promise<void> {
+        this.closed = true;
+
+        for (const conn of this.values()) {
+            conn.destroy();
+        }
+
+        this.clear();
     }
 
     async subscription(connection: number | string, name: string): Promise<{
@@ -83,26 +94,13 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         const conns: Promise<ConnectionClient>[] = [];
 
         const ConnectionModel = new Modeler(this.config.pg, Connection);
-        const stream = ConnectionModel.stream();
+        for await (const conn of ConnectionModel.iter()) {
+            if (conn.enabled) {
+                conns.push(this.add(new MachineConnConfig(this.config, conn)));
+            }
+        }
 
-        return new Promise((resolve, reject) => {
-            stream.on('data', async (conn: InferSelectModel<typeof Connection>) => {
-                if (conn.enabled) {
-                    conns.push(this.add(new MachineConnConfig(this.config, conn)));
-                }
-            }).on('error', (err) => {
-                return reject(err);
-            }).on('end', async () => {
-                try {
-                    await Promise.all(conns);
-                    return resolve();
-                } catch (err) {
-                    console.error(err);
-                    return reject(err);
-                }
-
-            });
-        });
+        await Promise.all(conns);
     }
 
     status(id: number | string): string {
@@ -167,9 +165,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
             }
 
             if (!ephemeral && !this.config.nosinks) {
-                await this.sinks.cots(conn, cots.filter((cot) => {
-                    return cot.is_atom();
-                }));
+                await this.sinks.cots(conn, cots);
             }
         } catch (err) {
             console.error('Error', err);
@@ -221,14 +217,6 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         }).on('timeout', async () => {
             console.error(`not ok - ${connConfig.id} - ${connConfig.name} @ timeout`);
             this.retry(connClient);
-        }).on('ping', async () => {
-            if (this.config.StackName !== 'test' && !ephemeral && typeof connConfig.id === 'number') {
-                try {
-                    await this.metrics.post(connConfig.id);
-                } catch (err) {
-                    console.error(`not ok - failed to push metrics - ${err}`);
-                }
-            }
         }).on('error', async (err) => {
             console.error(`not ok - ${connConfig.id} - ${connConfig.name} @ error:${err}`);
             this.retry(connClient);
@@ -237,7 +225,12 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         return connClient;
     }
 
-    async retry(connClient: ConnectionClient) {
+    async retry(connClient: ConnectionClient): Promise<void> {
+        if (this.closed) {
+            console.log('ok - ConnectionPool has been closed - not retrying');
+            return;
+        }
+
         const retryms = Math.min(connClient.retry * 1000, 15000);
         if (connClient.retry <= 15) connClient.retry++
         console.log(`not ok - ${connClient.config.uid()} - ${connClient.config.name} - retrying in ${retryms}ms`)

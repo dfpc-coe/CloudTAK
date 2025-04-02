@@ -2,41 +2,41 @@
     <thead>
         <tr>
             <th
-                v-for='h in shown'
-                :key='h'
+                v-for='s in shown'
+                :key='s'
             >
-                <div class='d-flex'>
+                <div class='d-flex align-items-center'>
                     <span
                         class='cursor-pointer'
-                        @click='updateSort(h.name)'
-                        v-text='h.name'
+                        @click='updateSort(s.name)'
+                        v-text='s.name'
                     />
                     <span
-                        v-if='h.name === sort'
+                        v-if='s.name === sort'
                         class='ms-auto'
                     >
                         <IconChevronDown
                             v-if='order === "asc"'
                             :size='16'
-                            :stroke='1'
+                            stroke='1'
                             class='cursor-pointer'
                             @click='updateOrder("desc")'
                         />
                         <IconChevronUp
                             v-else
                             :size='16'
-                            :stroke='1'
+                            stroke='1'
                             class='cursor-pointer'
                             @click='updateOrder("asc")'
                         />
                     </span>
 
-                    <template v-if='shown[shown.length - 1] === h'>
+                    <template v-if='shown[shown.length - 1] === s'>
                         <div class='ms-auto'>
                             <TablerDropdown>
                                 <IconSettings
                                     :size='16'
-                                    :stroke='1'
+                                    stroke='1'
                                     class='mx-2 dropdown-toggle cursor-pointer'
                                 />
 

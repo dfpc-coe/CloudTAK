@@ -14,6 +14,7 @@
 
         <TablerLoading
             v-if='loading.data'
+            class='text-white'
             desc='Loading Data'
         />
         <div
@@ -57,7 +58,7 @@
                                             <IconSettings
                                                 v-if='!$route.params.dataid'
                                                 :size='32'
-                                                :stroke='1'
+                                                stroke='1'
                                                 class='cursor-pointer'
                                                 @click='modal = true'
                                             />

@@ -9,14 +9,14 @@
                 <IconPlus
                     v-tooltip='"Create Connection"'
                     :size='32'
-                    :stroke='1'
+                    stroke='1'
                     class='cursor-pointer'
                     @click='$router.push("/connection/new")'
                 />
                 <IconRefresh
                     v-tooltip='"Refresh"'
                     :size='32'
-                    :stroke='1'
+                    stroke='1'
                     class='cursor-pointer'
                     @click='fetchList'
                 />
@@ -26,10 +26,10 @@
         <div style='min-height: 20vh; margin-bottom: 61px'>
             <TablerInput
                 v-model='paging.filter'
+                icon='search'
                 placeholder='Filter...'
                 class='mx-1 my-2'
             />
-
             <TablerLoading
                 v-if='loading'
                 desc='Loading Connections'
@@ -104,7 +104,7 @@ import {
     IconRefresh,
     IconPlus,
 } from '@tabler/icons-vue'
-import Status from '../Connection/Status.vue';
+import Status from '../Connection/StatusDot.vue';
 
 export default {
     name: 'LayerAdmin',

@@ -1,8 +1,20 @@
 <template>
     <div
-        class='page page-center cloudtak-gradient'
+        class='page page-center cloudtak-gradient position-relative'
         style='overflow: auto;'
     >
+        <img
+            class='position-absolute d-none d-md-inline user-select-none'
+            draggable='false'
+            style='
+                height: 48px;
+                bottom: 24px;
+                left: 24px;
+            '
+            src='/CloudTAKLogoText.svg'
+            alt='CloudTAK Logo'
+        >
+
         <div class='container container-normal py-4'>
             <div class='row align-items-center g-4'>
                 <div class='col-lg'>
@@ -14,8 +26,10 @@
                                     style='margin-bottom: 24px;'
                                 >
                                     <img
-                                        src='/logo.png'
+                                        :src='config && config.logo ? config.logo : "/logo.png"'
                                         style='height: 150px;'
+                                        draggable='false'
+                                        class='user-select-none'
                                         alt='CloudTAK System Logo'
                                     >
                                 </div>
@@ -43,8 +57,9 @@
                                             </label>
                                             <span class='ms-auto'>
                                                 <a
+                                                    v-if='config && config.forgot'
                                                     class='cursor-pointer'
-                                                    @click='external("https://cotak.gov/forgot-password")'
+                                                    :href='config.forgot'
                                                 >Forgot Password</a>
                                             </span>
                                         </div>
@@ -68,8 +83,11 @@
                                 </template>
                             </div>
                         </div>
-                        <div class='text-center text-muted mt-3'>
-                            Don't have account yet? <a href='mailto:nicholas.ingalls@state.co.us'>Contact Us</a>
+                        <div
+                            v-if='config && config.signup'
+                            class='text-center text-muted mt-3'
+                        >
+                            Don't have an account yet? <a :href='config.signup'>Sign Up</a>
                         </div>
                     </div>
                 </div>
@@ -78,57 +96,58 @@
     </div>
 </template>
 
-<script>
-import { std } from '/src/std.ts';
+<script setup lang='ts'>
+import type { Login_Create, Login_CreateRes, LoginConfig } from '../types.ts'
+import { ref, onMounted } from 'vue';
+import { useRouter, useRoute } from 'vue-router'
+import { std } from '../std.ts';
 import {
     TablerLoading,
     TablerInput
 } from '@tak-ps/vue-tabler'
 
-export default {
-    name: 'UserLogin',
-    components: {
-        TablerInput,
-        TablerLoading
-    },
-    emits: [
-        'login'
-    ],
-    data: function() {
-        return {
-            loading: false,
+const emit = defineEmits([ 'login' ]);
+
+const route = useRoute();
+const router = useRouter();
+
+const loading = ref(false);
+const config = ref<LoginConfig | undefined>();
+const body = ref<Login_Create>({
+    username: '',
+    password: ''
+});
+
+onMounted(async () => {
+    config.value = await std('/api/config/login') as LoginConfig;
+})
+
+async function createLogin() {
+    loading.value = true;
+
+    try {
+        const login = await std('/api/login', {
+            method: 'POST',
             body: {
-                username: '',
-                password: ''
-            }
+                username: body.value.username.match(/[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/)
+                    ? body.value.username.toLowerCase()
+                    : body.value.username,
+                password: body.value.password
+             }
+        }) as Login_CreateRes
+
+        localStorage.token = login.token;
+
+        emit('login');
+
+        if (route.query.redirect && !String(route.query.redirect).includes('/login')) {
+            router.push(String(route.query.redirect));
+        } else {
+            router.push("/");
         }
-    },
-    methods: {
-        external: function(url) {
-            window.location = new URL(url);
-        },
-        createLogin: async function() {
-            this.loading = true;
-            try {
-                const login = await std('/api/login', {
-                    method: 'POST',
-                    body: this.body
-                });
-
-                localStorage.token = login.token;
-
-                this.$emit('login');
-
-                if (this.$route.query.redirect && !this.$route.query.redirect.includes('/login')) {
-                    this.$router.push(this.$route.query.redirect);
-                } else {
-                    this.$router.push("/");
-                }
-            } catch (err) {
-                this.loading = false;
-                throw err;
-            }
-        }
+    } catch (err) {
+        loading.value = false;
+        throw err;
     }
 }
 </script>

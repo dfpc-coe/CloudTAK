@@ -40,7 +40,7 @@
                                     <span class='input-icon-addon'>
                                         <IconSearch
                                             :size='24'
-                                            :stroke='1'
+                                            stroke='1'
                                         />
                                     </span>
                                 </div>
@@ -78,7 +78,7 @@
 
                                             <IconSettings
                                                 :size='32'
-                                                :stroke='1'
+                                                stroke='1'
                                                 class='cursor-pointer'
                                                 @click='$router.push(`/connection/${connection.id}/edit`)'
                                             />
@@ -94,14 +94,16 @@
                                 </div>
                             </div>
 
-                            <div class='col-lg-12'>
-                                <TablerPager
-                                    v-if='list.total > paging.limit'
-                                    :page='paging.page'
-                                    :total='list.total'
-                                    :limit='paging.limit'
-                                    @page='paging.page = $event'
-                                />
+                            <div class='col-lg-12 d-flex'>
+                                <div class='ms-auto'>
+                                    <TablerPager
+                                        v-if='list.total > paging.limit'
+                                        :page='paging.page'
+                                        :total='list.total'
+                                        :limit='paging.limit'
+                                        @page='paging.page = $event'
+                                    />
+                                </div>
                             </div>
                         </template>
                     </template>
@@ -112,10 +114,12 @@
     </div>
 </template>
 
-<script>
-import { std, stdurl } from '/src/std.ts';
+<script setup lang='ts'>
+import { ref, onMounted, watch } from 'vue';
+import type { ETLConnectionList } from '../types.ts'
+import { std, stdurl } from '../std.ts';
 import PageFooter from './PageFooter.vue';
-import ConnectionStatus from './Connection/Status.vue';
+import ConnectionStatus from './Connection/StatusDot.vue';
 import AgencyBadge from './Connection/AgencyBadge.vue';
 import timeDiff from '../timediff.ts';
 import {
@@ -130,59 +134,38 @@ import {
     IconSearch
 } from '@tabler/icons-vue'
 
-export default {
-    name: 'TAKConnections',
-    components: {
-        TablerNone,
-        AgencyBadge,
-        TablerPager,
-        IconSettings,
-        IconSearch,
-        PageFooter,
-        TablerBreadCrumb,
-        ConnectionStatus,
-        TablerMarkdown,
-        TablerLoading
+const loading = ref(true);
+const paging = ref({
+    filter: '',
+    limit: 10,
+    page: 0
+});
+
+const list = ref<ETLConnectionList>({
+    total: 0,
+    status: {
+        dead: 0,
+        live: 0,
+        unknown: 0
     },
-    data: function() {
-        return {
-            err: false,
-            loading: true,
-            paging: {
-                filter: '',
-                limit: 10,
-                page: 0
-            },
-            list: {
-                total: 0,
-                items: []
-            }
-        }
-    },
-    watch: {
-        paging: {
-            deep: true,
-            handler: async function() {
-                await this.fetchList();
-            },
-        }
-    },
-    mounted: async function() {
-        await this.fetchList();
-    },
-    methods: {
-        timeDiff(update) {
-            return timeDiff(update);
-        },
-        fetchList: async function() {
-            this.loading = true;
-            const url = stdurl('/api/connection');
-            url.searchParams.append('filter', this.paging.filter);
-            url.searchParams.append('limit', this.paging.limit);
-            url.searchParams.append('page', this.paging.page);
-            this.list = await std(url);
-            this.loading = false;
-        }
-    }
+    items: []
+})
+
+watch(paging.value, async () => {
+    await fetchList();
+});
+
+onMounted(async () => {
+    await fetchList();
+});
+
+async function fetchList() {
+    loading.value = true;
+    const url = stdurl('/api/connection');
+    url.searchParams.append('filter', paging.value.filter);
+    url.searchParams.append('limit', String(paging.value.limit));
+    url.searchParams.append('page', String(paging.value.page));
+    list.value = await std(url) as ETLConnectionList;
+    loading.value = false;
 }
 </script>

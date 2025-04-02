@@ -26,7 +26,7 @@ export default async function(icons: Array<Static<typeof IconResponse>>, config:
         src.push(new Vinyl({
             // @ts-expect-error Deal with indexing issue on icon
             path: config.name ? icon[config.name] + '.png' : icon.path.replace(/.*?\//, ''),
-                contents
+            contents
         }))
     }
 

@@ -491,6 +491,202 @@
       "when": 1731969306208,
       "tag": "0069_tiny_triathlon",
       "breakpoints": true
+    },
+    {
+      "idx": 70,
+      "version": "7",
+      "when": 1733181888609,
+      "tag": "0070_abnormal_nightmare",
+      "breakpoints": true
+    },
+    {
+      "idx": 71,
+      "version": "7",
+      "when": 1733255272208,
+      "tag": "0071_glamorous_wild_pack",
+      "breakpoints": true
+    },
+    {
+      "idx": 72,
+      "version": "7",
+      "when": 1733424131456,
+      "tag": "0072_rainy_zaladane",
+      "breakpoints": true
+    },
+    {
+      "idx": 73,
+      "version": "7",
+      "when": 1733527002274,
+      "tag": "0073_rare_korvac",
+      "breakpoints": true
+    },
+    {
+      "idx": 74,
+      "version": "7",
+      "when": 1734362826779,
+      "tag": "0074_eminent_stick",
+      "breakpoints": true
+    },
+    {
+      "idx": 75,
+      "version": "7",
+      "when": 1734485752848,
+      "tag": "0075_clumsy_alex_power",
+      "breakpoints": true
+    },
+    {
+      "idx": 76,
+      "version": "7",
+      "when": 1734727961068,
+      "tag": "0076_messy_swordsman",
+      "breakpoints": true
+    },
+    {
+      "idx": 77,
+      "version": "7",
+      "when": 1734885033661,
+      "tag": "0077_cloudy_expediter",
+      "breakpoints": true
+    },
+    {
+      "idx": 78,
+      "version": "7",
+      "when": 1734989247320,
+      "tag": "0078_mixed_deathbird",
+      "breakpoints": true
+    },
+    {
+      "idx": 79,
+      "version": "7",
+      "when": 1735237234267,
+      "tag": "0079_dizzy_hawkeye",
+      "breakpoints": true
+    },
+    {
+      "idx": 80,
+      "version": "7",
+      "when": 1735323219376,
+      "tag": "0080_demonic_wither",
+      "breakpoints": true
+    },
+    {
+      "idx": 81,
+      "version": "7",
+      "when": 1735613720206,
+      "tag": "0081_fluffy_loners",
+      "breakpoints": true
+    },
+    {
+      "idx": 82,
+      "version": "7",
+      "when": 1736129468932,
+      "tag": "0082_flat_whizzer",
+      "breakpoints": true
+    },
+    {
+      "idx": 83,
+      "version": "7",
+      "when": 1736132332081,
+      "tag": "0083_glorious_ken_ellis",
+      "breakpoints": true
+    },
+    {
+      "idx": 84,
+      "version": "7",
+      "when": 1736994788279,
+      "tag": "0084_clumsy_betty_brant",
+      "breakpoints": true
+    },
+    {
+      "idx": 85,
+      "version": "7",
+      "when": 1737570878443,
+      "tag": "0085_parched_celestials",
+      "breakpoints": true
+    },
+    {
+      "idx": 86,
+      "version": "7",
+      "when": 1738170297346,
+      "tag": "0086_fixed_thunderball",
+      "breakpoints": true
+    },
+    {
+      "idx": 87,
+      "version": "7",
+      "when": 1738170479655,
+      "tag": "0087_lean_bruce_banner",
+      "breakpoints": true
+    },
+    {
+      "idx": 88,
+      "version": "7",
+      "when": 1738266453604,
+      "tag": "0088_moaning_skreet",
+      "breakpoints": true
+    },
+    {
+      "idx": 89,
+      "version": "7",
+      "when": 1738278981225,
+      "tag": "0089_wise_fallen_one",
+      "breakpoints": true
+    },
+    {
+      "idx": 90,
+      "version": "7",
+      "when": 1738292998153,
+      "tag": "0090_nosy_thunderbolts",
+      "breakpoints": true
+    },
+    {
+      "idx": 91,
+      "version": "7",
+      "when": 1738343483207,
+      "tag": "0091_clammy_prodigy",
+      "breakpoints": true
+    },
+    {
+      "idx": 92,
+      "version": "7",
+      "when": 1738724273479,
+      "tag": "0092_late_toad_men",
+      "breakpoints": true
+    },
+    {
+      "idx": 93,
+      "version": "7",
+      "when": 1742487900663,
+      "tag": "0093_wild_spectrum",
+      "breakpoints": true
+    },
+    {
+      "idx": 94,
+      "version": "7",
+      "when": 1742493516316,
+      "tag": "0094_striped_maginty",
+      "breakpoints": true
+    },
+    {
+      "idx": 95,
+      "version": "7",
+      "when": 1743021753034,
+      "tag": "0095_silent_electro",
+      "breakpoints": true
+    },
+    {
+      "idx": 96,
+      "version": "7",
+      "when": 1743216940327,
+      "tag": "0096_moaning_dexter_bennett",
+      "breakpoints": true
+    },
+    {
+      "idx": 97,
+      "version": "7",
+      "when": 1743525375344,
+      "tag": "0097_amusing_angel",
+      "breakpoints": true
     }
   ]
 }

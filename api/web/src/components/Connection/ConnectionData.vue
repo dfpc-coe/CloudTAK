@@ -7,21 +7,21 @@
                 <IconPlus
                     v-tooltip='"Create Sync"'
                     :size='32'
-                    :stroke='1'
+                    stroke='1'
                     class='cursor-pointer'
                     @click='$router.push(`/connection/${connection.id}/data/new`)'
                 />
                 <IconRefresh
                     v-tooltip='"Refresh"'
                     :size='32'
-                    :stroke='1'
+                    stroke='1'
                     class='cursor-pointer'
                     @click='listData'
                 />
             </div>
         </div>
 
-        <div style='min-height: 20vh; margin-bottom: 61px'>
+        <div style='min-height: 20vh; margin-bottom: 60px'>
             <TablerAlert
                 v-if='err'
                 title='ETL Server Error'
@@ -62,14 +62,14 @@
                                             v-if='data.mission_sync'
                                             v-tooltip='"Mission Sync On"'
                                             :size='32'
-                                            :stroke='1'
+                                            stroke='1'
                                             class='cursor-pointer text-green'
                                         />
                                         <IconAccessPointOff
                                             v-else
                                             v-tooltip='"Mission Sync Off"'
                                             :size='32'
-                                            :stroke='1'
+                                            stroke='1'
                                             class='cursor-pointer text-red'
                                         />
                                     </div>
@@ -83,7 +83,7 @@
 
         <div
             class='position-absolute bottom-0 w-100'
-            style='height: 61px;'
+            style='height: 60px;'
         >
             <TableFooter
                 :limit='paging.limit'

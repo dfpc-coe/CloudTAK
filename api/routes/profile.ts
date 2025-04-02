@@ -6,7 +6,7 @@ import { ProfileResponse } from '../lib/types.js'
 import Config from '../lib/config.js';
 import { TAKRole, TAKGroup } from '../lib/api/types.js'
 import { sql } from 'drizzle-orm';
-import { Profile_Text, Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance } from  '../lib/enums.js';
+import { Profile_Text, Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Projection } from  '../lib/enums.js';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/profile', {
@@ -34,11 +34,14 @@ export default async function router(schema: Schema, config: Config) {
             display_stale: Type.Optional(Type.Enum(Profile_Stale)),
             display_distance: Type.Optional(Type.Enum(Profile_Distance)),
             display_elevation: Type.Optional(Type.Enum(Profile_Elevation)),
+            display_projection: Type.Optional(Type.Enum(Profile_Projection)),
             display_speed: Type.Optional(Type.Enum(Profile_Speed)),
             display_text: Type.Optional(Type.Enum(Profile_Text)),
             tak_callsign: Type.Optional(Type.String()),
+            tak_remarks: Type.Optional(Type.String()),
             tak_group: Type.Optional(Type.Enum(TAKGroup)),
             tak_role: Type.Optional(Type.Enum(TAKRole)),
+            tak_loc_freq: Type.Optional(Type.Integer()),
             tak_loc: Type.Optional(Type.Union([Type.Null(), Type.Object({
                 type: Type.String(),
                 coordinates: Type.Array(Type.Number())

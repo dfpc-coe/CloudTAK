@@ -14,14 +14,27 @@ export enum MissionSubscriberRole {
     MISSION_READONLY_SUBSCRIBER = 'MISSION_READONLY_SUBSCRIBER'
 }
 
+export const MissionContent = Type.Object({
+    keywords: Type.Array(Type.String()),
+    mimeType: Type.String(),
+    name: Type.String(),
+    hash: Type.String(),
+    submissionTime: Type.String(),
+    submitter: Type.String(),
+    uid: Type.String(),
+    creatorUid: Type.String(),
+    size: Type.Integer(),
+    expiration: Type.Integer()
+});
+
 export const Mission = Type.Object({
     name: Type.String(),
     description: Type.String(),
     chatRoom: Type.String(),
-    baseLayer: Type.String(),
-    bbox: Type.String(),
-    path: Type.String(),
-    classification: Type.String(),
+    baseLayer: Type.Optional(Type.String()),
+    bbox: Type.Optional(Type.String()),
+    path: Type.Optional(Type.String()),
+    classification: Type.Optional(Type.String()),
     tool: Type.String(),
     keywords: Type.Array(Type.Unknown()),
     creatorUid: Type.String(),
@@ -41,18 +54,7 @@ export const Mission = Type.Object({
     contents: Type.Array(Type.Object({
         timestamp: Type.String(),
         creatorUid: Type.String(),
-        data: Type.Object({
-            keywords: Type.Array(Type.String()),
-            mimeType: Type.String(),
-            name: Type.String(),
-            hash: Type.String(),
-            submissionTime: Type.String(),
-            submitter: Type.String(),
-            uid: Type.String(),
-            creatorUid: Type.String(),
-            size: Type.Integer(),
-            expiration: Type.Integer()
-        })
+        data: MissionContent
     })),
     passwordProtected: Type.Boolean(),
     token: Type.Optional(Type.String()),                        // Only present when mission created
@@ -68,8 +70,16 @@ export const MissionChange = Type.Object({
     serverTime: Type.String(),
     creatorUid: Type.String(),
     contentUid: Type.Optional(Type.String()),
-    details: Type.Optional(Type.Any()),
-    contentResource: Type.Optional(Type.Any())
+    details: Type.Optional(Type.Object({
+        type: Type.String(),
+        callsign: Type.String(),
+        color: Type.Optional(Type.String()),
+        location: Type.Object({
+            lat: Type.Number(),
+            lon: Type.Number()
+        })
+    })),
+    contentResource: Type.Optional(MissionContent)
 });
 
 export const MissionRole = Type.Object({
@@ -174,6 +184,11 @@ export const MissionCreateInput = Type.Object({
 
 export const GUIDMatch = new RegExp(/^[{]?[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}[}]?$/);
 
+export const TAKList_Mission = TAKList(Mission);
+export const TAKList_MissionChange = TAKList(MissionChange);
+export const TAKList_MissionSubscriber = TAKList(MissionSubscriber);
+export const TAKItem_MissionSubscriber = TAKItem(MissionSubscriber);
+
 /**
  * @class
  */
@@ -203,6 +218,25 @@ export default class {
     }
 
     /**
+     * Return Zip archive of Mission Sync
+     *
+     * {@link https://docs.tak.gov/api/takserver/redoc#tag/mission-api/operation/getMissionArchive_1 TAK Server Docs}.
+     */
+    async getArchive(
+        name: string,
+        opts?: Static<typeof MissionOptions>
+    ): Promise<Readable> {
+        const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/archive`, this.api.url);
+
+        const res = await this.api.fetch(url, {
+            method: 'GET',
+            headers: this.#headers(opts),
+        }, true);
+
+        return res.body;
+    }
+
+    /**
      * Return Mission Sync changes in a given time range
      *
      * {@link https://docs.tak.gov/api/takserver/redoc#tag/mission-api/operation/getMissionChanges TAK Server Docs}.
@@ -211,7 +245,7 @@ export default class {
         name: string,
         query: Static<typeof MissionChangesInput>,
         opts?: Static<typeof MissionOptions>
-    ): Promise<TAKList<Static<typeof MissionChange>>> {
+    ): Promise<Static<typeof TAKList_MissionChange>> {
         if (this.#isGUID(name)) name = (await this.getGuid(name, {})).name;
 
         const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/changes`, this.api.url);
@@ -242,8 +276,8 @@ export default class {
 
         const res: any = xmljs.xml2js(await this.latestCots(name, opts), { compact: true });
 
-        if (!Object.keys(res.events).length) return [];
-        if (!res.events.event || (Array.isArray(res.events.event) && !res.events.event.length)) return [];
+        if (!Object.keys(res.events).length) return feats;
+        if (!res.events.event || (Array.isArray(res.events.event) && !res.events.event.length)) return feats;
 
         for (const event of Array.isArray(res.events.event) ? res.events.event : [res.events.event] ) {
             feats.push((new CoT({ event })).to_geojson());
@@ -365,7 +399,7 @@ export default class {
     async subscriptions(
         name: string,
         opts?: Static<typeof MissionOptions>
-    ): Promise<TAKItem<Static<typeof MissionSubscriber>>> {
+    ): Promise<Static<typeof TAKItem_MissionSubscriber>> {
         const url = this.#isGUID(name)
             ? new URL(`/Marti/api/missions/guid/${encodeURIComponent(name)}/subscriptions`, this.api.url)
             : new URL(`/Marti/api/missions/${this.#encodeName(name)}/subscriptions`, this.api.url);
@@ -384,7 +418,7 @@ export default class {
     async subscriptionRoles(
         name: string,
         opts?: Static<typeof MissionOptions>
-    ): Promise<TAKList<Static<typeof MissionSubscriber>>> {
+    ): Promise<Static<typeof TAKList_MissionSubscriber>> {
         const url = this.#isGUID(name)
             ? new URL(`/Marti/api/missions/guid/${encodeURIComponent(name)}/subscriptions/roles`, this.api.url)
             : new URL(`/Marti/api/missions/${this.#encodeName(name)}/subscriptions/roles`, this.api.url);
@@ -483,7 +517,7 @@ export default class {
         name: string,
         query: Static<typeof SubscribeInput>,
         opts?: Static<typeof MissionOptions>
-    ): Promise<TAKItem<Static<typeof MissionSubscriber>>> {
+    ): Promise<Static<typeof TAKItem_MissionSubscriber>> {
         const url = this.#isGUID(name)
             ? new URL(`/Marti/api/missions/guid/${encodeURIComponent(name)}/subscription`, this.api.url)
             : new URL(`/Marti/api/missions/${this.#encodeName(name)}/subscription`, this.api.url);
@@ -533,7 +567,7 @@ export default class {
      *
      * {@link https://docs.tak.gov/api/takserver/redoc#tag/mission-api/operation/getAllMissions_1 TAK Server Docs}.
      */
-    async list(query: Static<typeof MissionListInput>): Promise<TAKList<Static<typeof Mission>>> {
+    async list(query: Static<typeof MissionListInput>): Promise<Static<typeof TAKList_Mission>> {
         const url = new URL('/Marti/api/missions', this.api.url);
 
         let q: keyof Static<typeof MissionListInput>;
@@ -567,7 +601,7 @@ export default class {
             }
         }
 
-        const missions: TAKList<Static <typeof Mission>> = await this.api.fetch(url, {
+        const missions: Static<typeof TAKList_Mission> = await this.api.fetch(url, {
             method: 'GET',
             headers: this.#headers(opts),
         });
@@ -588,7 +622,7 @@ export default class {
                 ? new URL(`/Marti/api/missions/guid/${encodeURIComponent(name)}`, this.api.url)
                 : new URL(`/Marti/api/missions/${this.#encodeName(name)}`, this.api.url);
 
-            const missions: TAKList<Static<typeof Mission>> = await this.api.fetch(url, {
+            const missions: Static<typeof TAKList_Mission> = await this.api.fetch(url, {
                 method: 'GET',
                 headers: this.#headers(opts),
             });
@@ -622,7 +656,7 @@ export default class {
             }
         }
 
-        const missions: TAKList<Static<typeof Mission>> = await this.api.fetch(url, {
+        const missions: Static<typeof TAKList_Mission> = await this.api.fetch(url, {
             method: 'GET',
             headers: this.#headers(opts),
         });

@@ -18,6 +18,7 @@ test('GET: api/basemap', async (t) => {
 
         t.deepEquals(res.body, {
             total: 0,
+            collections: [],
             items: []
         });
     } catch (err) {
@@ -84,7 +85,7 @@ test('POST: api/basemap - Invalid URL - No Variables', async (t) => {
 
         t.fail()
     } catch (err) {
-        t.equals(String(err), 'AssertionError [ERR_ASSERTION]: {"status":400,"message":"Either ZXY or Quadkey variables must be used","messages":[]}');
+        t.equals(String(err), 'AssertionError [ERR_ASSERTION]: {"status":400,"message":"Either ZXY, Quadkey variables OR ESRI FeatureServer/ImageServer must be used","messages":[]}');
     }
 
     t.end();
@@ -111,7 +112,9 @@ test('POST: api/basemap', async (t) => {
             name: 'Test Basemap',
             url: 'https://test.com/test/{z}/{x}/{y}',
             overlay: false,
+            title: 'callsign',
             username: 'admin@example.com',
+            collection: null,
             minzoom: 0,
             maxzoom: 16,
             format: 'png',
@@ -174,7 +177,9 @@ test('PATCH: api/basemap/1', async (t) => {
             name: 'Test Basemap2',
             url: 'https://test.com/test/{z}/{x}/{y}',
             overlay: false,
+            title: 'callsign',
             username: 'admin@example.com',
+            collection: null,
             minzoom: 0,
             maxzoom: 16,
             format: 'png',

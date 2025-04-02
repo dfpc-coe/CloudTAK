@@ -1,7 +1,7 @@
 import Err from '@openaddresses/batch-error';
+import S3 from '../lib/aws/s3.js';
 import { sql, and, inArray } from 'drizzle-orm';
 import Config from '../lib/config.js';
-import CW from '../lib/aws/metric.js';
 import Auth, { AuthResourceAccess } from '../lib/auth.js';
 import { X509Certificate } from 'crypto';
 import { Type } from '@sinclair/typebox'
@@ -12,8 +12,6 @@ import Schema from '@openaddresses/batch-schema';
 import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: Config) {
-    const cw = new CW(config.StackName);
-
     await schema.get('/connection', {
         name: 'List Connections',
         group: 'Connection',
@@ -29,8 +27,8 @@ export default async function router(schema: Schema, config: Config) {
             total: Type.Integer(),
             status: Type.Object({
                 dead: Type.Integer({ description: 'The connection is not currently connected to a TAK server' }),
-                live: Type.Integer({ description: 'The connection is currently connected to a TAK server'}),
-                unknown: Type.Integer({ description: 'The status of the connection could not be determined'}),
+                live: Type.Integer({ description: 'The connection is currently connected to a TAK server' }),
+                unknown: Type.Integer({ description: 'The status of the connection could not be determined' }),
             }),
             items: Type.Array(ConnectionResponse)
         })
@@ -91,7 +89,8 @@ export default async function router(schema: Schema, config: Config) {
             name: Default.NameField,
             description: Default.DescriptionField,
             enabled: Type.Optional(Type.Boolean({ default: true })),
-            agency: Type.Union([Type.Null(), Type.Optional(Type.Integer({ minimum: 1 }))]),
+            agency: Type.Optional(Type.Union([Type.Null(), Type.Integer({ minimum: 1 })])),
+            integrationId: Type.Optional(Type.Integer()),
             auth: Type.Object({
                 key: Type.String({ minLength: 1, maxLength: 4096 }),
                 cert: Type.String({ minLength: 1, maxLength: 4096 })
@@ -101,12 +100,11 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
+            const profile = await config.models.Profile.from(user.email);
 
             if (!req.body.agency && user.access !== 'admin') {
                 throw new Err(400, null, 'Only System Admins can create a server without an Agency Configured');
             } else if (req.body.agency && user.access !== 'admin') {
-                const profile = await config.models.Profile.from(user.email);
-
                 if (!profile.agency_admin || !profile.agency_admin.includes(req.body.agency)) {
                     throw new Err(400, null, 'Cannot create a connection for an Agency you are not an admin of');
                 }
@@ -119,6 +117,15 @@ export default async function router(schema: Schema, config: Config) {
             if (conn.enabled) await config.conns.add(new MachineConnConfig(config, conn));
 
             const { validFrom, validTo, subject } = new X509Certificate(conn.auth.cert);
+
+            if (req.body.integrationId && config.external && config.external.configured) {
+                if (!profile.id) throw new Err(400, null, 'External ID must be set on profile');
+
+                await config.external.updateIntegrationConnectionId(profile.id, {
+                    connection_id: conn.id,
+                    integration_id: req.body.integrationId
+                })
+            }
 
             res.json({
                 status: config.conns.status(conn.id),
@@ -271,84 +278,34 @@ export default async function router(schema: Schema, config: Config) {
                 where: sql`connection = ${req.params.connectionid}`
             }) > 0) throw new Err(400, null, 'Connection has active Data Syncs - Delete Syncs before deleting Connection');
 
-            await config.models.Connection.delete(req.params.connectionid);
+            await S3.del(`connection/${String(req.params.connectionid)}/`, { recurse: true });
 
             await config.models.ConnectionToken.delete(sql`
                 connection = ${req.params.connectionid}
             `);
 
+            await config.models.Connection.delete(req.params.connectionid);
+
             config.conns.delete(req.params.connectionid);
+
+            if (config.external && config.external.configured) {
+                const user = await Auth.as_user(config, req);
+                const profile = await config.models.Profile.from(user.email);
+
+                if (profile.id) {
+                    // I don't know how to figure out if the connection was created with a machine user and hence registered
+                    // with COTAK, so just firing off the delete, which won't error out if no integration found.
+                    await config.external.deleteIntegrationByConnectionId(profile.id, {
+                        connection_id: req.params.connectionid,
+                    })
+                }
+            }
+
 
             res.json({
                 status: 200,
                 message: 'Connection Deleted'
             });
-        } catch (err) {
-            Err.respond(err, res);
-        }
-    });
-
-    await schema.get('/connection/:connectionid/stats', {
-        name: 'Get Stats',
-        group: 'Connection',
-        description: 'Return Conn Success/Failure Stats',
-        params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 })
-        }),
-        res: Type.Object({
-            stats: Type.Array(Type.Object({
-                label: Type.String(),
-                success: Type.Integer()
-            }))
-        })
-    }, async (req, res) => {
-        try {
-            await Auth.is_connection(config, req, {
-                resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
-            }, req.params.connectionid);
-
-            const conn = await config.models.Connection.from(req.params.connectionid);
-
-            const stats = await cw.connection(conn.id);
-
-            const timestamps: Set<Date> = new Set();
-            const map: Map<string, number> = new Map();
-
-            if (!stats.length) {
-                res.json({ stats: [] });
-            } else {
-                const stat = stats[0];
-
-                if (!stat.Timestamps) stat.Timestamps = [];
-                if (!stat.Values) stat.Values = [];
-
-                for (let i = 0; i < stat.Timestamps.length; i++) {
-                    timestamps.add(stat.Timestamps[i]);
-                    map.set(String(stat.Timestamps[i]), Number(stat.Values[i]));
-                }
-
-                const ts_arr = Array.from(timestamps).sort((d1, d2) => {
-                    return d1.getTime() - d2.getTime();
-                }).map((d) => {
-                    return String(d);
-                });
-
-                const statsres: {
-                    stats: Array<{
-                        label: string;
-                        success: number;
-                    }>
-                } = { stats: [] }
-
-                for (const ts of ts_arr) {
-                    statsres.stats.push({
-                        label: ts,
-                        success: map.get(ts) || 0,
-                    });
-                }
-
-                res.json(statsres);
-            }
         } catch (err) {
             Err.respond(err, res);
         }

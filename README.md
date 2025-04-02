@@ -1,4 +1,4 @@
-<p align=center><img src='./docs/CloudTAKLogo.svg' alt='CloudTAK Logo' width='128'/></p>
+<p align=center><img src='./api/web/public/CloudTAKLogo.svg' alt='CloudTAK Logo' width='128'/></p>
 
 <h1 align=center>CloudTAK</h1>
 
@@ -19,7 +19,7 @@ many of the services it provides will initiate AWS API calls with no graceful fa
 ### Docker Compose
 
 ```
-docker-compose up --build
+docker compose up --build
 ```
 
 Once the database and API service have built, the server will start on port 5000.
@@ -33,13 +33,33 @@ In the `./api`, perform the following
 ```sh
 npm install
 echo "CREATE DATABASE tak_ps_etl" | psql
-npx knex migrate:latest
 cd web/
 npm install
 npm run build
 cd ..
 npm run dev
 ```
+
+## Initial Configuration
+
+Almost all values with the exception of the initial Postgres Connection string are stored in the database and can be
+changed via the Administrative Interface in the Web UI.
+
+Alternatively, values can be configured by setting Environment Variables on launch. Note that if this is done,
+environment variables present at launch they will OVERRIDE any values that might be present in the database
+
+### CloudTAK Config Values
+
+Any of the listed config keys present in the `POST /config` API can all be set via Env Vars at startup.
+
+To do so, follow the following formatting rules:
+- Append `CLOUDTAK_Config_`
+- Replace any instance of `::` with `_`
+- All characters after `CLOUDTAK_Config_` are case SENSITIVE
+
+For example:
+- `media::url` would map to: `CLOUDTAK_Config_media_url`
+- `group::Brown` would map to: `CLOUDTAK_Config_group_Brown`
 
 ## AWS Deployment
 
@@ -135,7 +155,15 @@ aws_access_key_id = <redacted>
 aws_secret_access_key = <redacted>
 ```
 
-Deployment can then be performed via the following:
+Then deploy the webhooks sub-stack with:
+
+```
+npx deploy create <stack> --template cloudformation/webhooks.template.js
+```
+
+This will create the API Gateway resources necessary for accepting incoming ETL Data Events
+
+Deployment of the main stack can then be performed via the following:
 
 ```
 npx deploy create <stack>
@@ -161,7 +189,7 @@ npx deploy info --help
 
 | Name                  | Notes |
 | --------------------- | ----- |
-| `coe-media-<name>`   | Task Definitions for Media Server Support - [repo](ttps://github.com/dfoc-coe/media-infra)  |
+| `coe-media-<name>`   | Task Definitions for Media Server Support - [repo](ttps://github.com/dfoc-coe/media-infra) |
 
 
 ### S3 Bucket Contents

@@ -1,6 +1,7 @@
 <template>
     <MenuTemplate
         name='Mission Logs'
+        :zindex='0'
         :back='false'
         :border='false'
         :loading='loading.logs'
@@ -46,6 +47,7 @@
                         <TablerDelete
                             v-if='role.permissions.includes("MISSION_WRITE")'
                             displaytype='icon'
+                            size='24'
                             class='position-absolute cursor-pointer end-0 mx-2 my-2'
                             @delete='deleteLog(logidx)'
                         />
@@ -55,7 +57,10 @@
                         />
                     </div>
 
-                    <div class='col-12'>
+                    <div
+                        v-if='log.keywords.length'
+                        class='col-12 pt-1'
+                    >
                         <span
                             v-for='keyword in log.keywords'
                             :key='keyword'
@@ -76,15 +81,30 @@
         <template v-if='role.permissions.includes("MISSION_WRITE")'>
             <div class='mx-2'>
                 <TablerInput
-                    v-model='createLog'
+                    v-model='createLog.content'
                     label='Create Log'
                     :rows='4'
                     @keyup.enter='submitOnEnter ? submitLog() : undefined'
-                />
+                >
+                    <TablerDropdown>
+                        <template #default>
+                            <IconSettings
+                                :size='24'
+                                stroke='1'
+                            />
+                        </template>
+                        <template #dropdown>
+                            <TablerToggle
+                                v-model='submitOnEnter'
+                                label='Submit on Enter'
+                            />
+                        </template>
+                    </TablerDropdown>
+                </TablerInput>
 
-                <TablerToggle
-                    v-model='submitOnEnter'
-                    label='Submit on Enter'
+                <TagEntry
+                    placeholder='Keyword Entry'
+                    @tags='createLog.keywords = $event'
                 />
 
                 <div class='d-flex my-2'>
@@ -105,18 +125,23 @@
 <script setup lang='ts'>
 import { ref, computed, onMounted } from 'vue'
 import type { ComputedRef } from 'vue';
+import TagEntry from '../../util/TagEntry.vue';
 import type { MissionLog } from '../../../../types.ts';
 import {
     TablerInput,
     TablerDelete,
     TablerToggle,
     TablerLoading,
+    TablerDropdown,
     TablerNone
 } from '@tak-ps/vue-tabler';
+import {
+    IconSettings
+} from '@tabler/icons-vue';
 import MenuTemplate from '../../util/MenuTemplate.vue';
-import Subscription from '../../../../stores/base/mission.ts';
-import { useCOTStore } from '../../../../stores/cots.ts';
-const cotStore = useCOTStore();
+import Subscription from '../../../../base/subscription.ts';
+import { useMapStore } from '../../../../stores/map.ts';
+const mapStore = useMapStore();
 
 const props = defineProps({
     mission: {
@@ -133,7 +158,11 @@ const props = defineProps({
 const submitOnEnter = ref(true);
 const sub = ref<Subscription | undefined>();
 const paging = ref({ filter: '' });
-const createLog = ref('');
+
+const createLog = ref({
+    content: '',
+    keywords: []
+});
 const logs = ref<MissionLog[]>([]);
 const loading = ref<{
     logs: boolean,
@@ -146,7 +175,7 @@ const loading = ref<{
 });
 
 onMounted(async () => {
-    sub.value = cotStore.subscriptions.get(props.mission.guid);
+    sub.value = await mapStore.worker.db.subscriptionGet(props.mission.guid);
 
     if (!sub.value) {
         await fetchLogs()
@@ -186,23 +215,26 @@ async function deleteLog(logidx: number): Promise<void> {
 }
 
 async function submitLog() {
-    if (sub.value) {
-        loading.value.create = true;
-        const log = await Subscription.logCreate(props.mission.guid, props.token, {
-            content: createLog.value
-        });
+    try {
+        if (sub.value) {
+            loading.value.create = true;
+            const log = await Subscription.logCreate(props.mission.guid, props.token, createLog.value)
 
-        sub.value.logs.push(log);
+            sub.value.logs.push(log);
 
+            loading.value.create = false;
+        } else {
+            loading.value.logs = true;
+            await Subscription.logCreate(props.mission.guid, props.token, createLog.value)
+            await fetchLogs();
+        }
+
+        createLog.value.keywords = [];
+        createLog.value.content = '';
+    } catch (err) {
         loading.value.create = false;
-    } else {
-        loading.value.logs = true;
-        await Subscription.logCreate(props.mission.guid, props.token, {
-            content: createLog.value
-        });
-        await fetchLogs();
-    }
 
-    createLog.value = '';
+        throw err;
+    }
 }
 </script>

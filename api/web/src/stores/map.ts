@@ -8,32 +8,62 @@
 */
 
 import { defineStore } from 'pinia'
-import Subscription from './base/mission.ts';
-import Overlay from './base/overlay.ts';
+import { coordEach } from '@turf/meta';
+import { distance } from '@turf/distance';
+import * as Comlink from 'comlink';
+import AtlasWorker from '../workers/atlas.ts?worker&url';
+import COT from '../base/cot.ts';
+import { WorkerMessageType, LocationState }from '../base/events.ts';
+import type { WorkerMessage }from '../base/events.ts';
+import Overlay from '../base/overlay.ts';
 import { std, stdurl } from '../std.js';
 import mapgl from 'maplibre-gl'
 import * as terraDraw from 'terra-draw';
-import type { ProfileOverlay, Basemap, APIList } from '../types.ts';
-import type { Feature } from 'geojson';
-import type {
-    LngLat,
-    Point,
-    MapMouseEvent,
-    MapGeoJSONFeature
-} from 'maplibre-gl';
-import { useCOTStore } from './cots.js'
+import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
+import type Atlas from '../workers/atlas.ts';
+import { CloudTAKTransferHandler } from '../workers/atlas.ts';
+
+import type { ProfileOverlay, Basemap, APIList, Feature, IconsetList } from '../types.ts';
+import type { Polygon, Position } from 'geojson';
+import type { LngLat, LngLatLike, Point, MapMouseEvent, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl';
+
+export type TAKNotification = { type: string; name: string; body: string; url: string; }
 
 export const useMapStore = defineStore('cloudtak', {
     state: (): {
-        map?: mapgl.Map;
-        draw?: terraDraw.TerraDraw;
-        edit: null | MapGeoJSONFeature;
+        _map?: mapgl.Map;
+        _draw?: terraDraw.TerraDraw;
+        channel: BroadcastChannel;
+
+        // Lock the map view to a given CoT - The last element is the currently locked value
+        // this is an array so that things like the radial menu can temporarily lock state but remember the previous lock value when they are closed
+        locked: Array<string>;
+
+        callsign: string;
+        location: LocationState;
+
+        permissions: {
+            location: boolean;
+            notification: boolean;
+        }
+
+        worker: Comlink.Remote<Atlas>;
+        edit: COT | undefined;
+        mission: string | undefined;
+        notifications: Array<TAKNotification>;
         container?: HTMLElement;
         hasTerrain: boolean;
+        hasNoChannels: boolean;
         isTerrainEnabled: boolean;
         isLoaded: boolean;
+        isOpen: boolean;
         bearing: number;
-        selected: Map<string, MapGeoJSONFeature>;
+        selected: Map<string, COT>;
+        drawOptions: {
+            mode: string;
+            pointMode: string;
+            snapping: Set<[number, number]>;
+        },
         select: {
             mode?: string;
             e?: MapMouseEvent;
@@ -42,25 +72,55 @@ export const useMapStore = defineStore('cloudtak', {
             y: number;
         },
         radial: {
-            mode?: string;
-            cot?: object;
+            mode: string | undefined;
+            cot: Feature | MapGeoJSONFeature | undefined;
             x: number;
             y: number;
         },
         overlays: Array<Overlay>
     } => {
+        const worker = Comlink.wrap<Atlas>(new Worker(AtlasWorker, {
+            type: 'module'
+        }));
+
+        new CloudTAKTransferHandler(
+            worker,
+            Comlink.transferHandlers,
+            new BroadcastChannel('sync')
+        );
+
         return {
+            worker,
+            callsign: 'Unknown',
+            location: LocationState.Loading,
+            channel: new BroadcastChannel("cloudtak"),
+            locked: [],
+            notifications: [],
             hasTerrain: false,
+            hasNoChannels: false,
             isTerrainEnabled: false,
+            isOpen: false,
             isLoaded: false,
             bearing: 0,
-            edit: null,
+            mission: undefined,
+            edit: undefined,
+            permissions: {
+                location: false,
+                notification: false
+            },
             select: {
                 mode: undefined,
                 feats: [],
                 x: 0, y: 0,
             },
+            drawOptions: {
+                mode: 'static',
+                pointMode: 'u-d-p',
+                snapping: new Set()
+            },
             radial: {
+                mode: undefined,
+                cot: undefined,
                 x: 0, y: 0,
             },
             overlays: [],
@@ -68,12 +128,26 @@ export const useMapStore = defineStore('cloudtak', {
             selected: new Map()
         }
     },
+    getters: {
+        map: function(): mapgl.Map {
+            if (!this._map) throw new Error('Map has not yet initialized');
+            // @ts-expect-error Maplibre Type difference, need to investigate
+            return this._map;
+        },
+        draw: function(): terraDraw.TerraDraw {
+            if (!this._draw) throw new Error('Drawing Tools have not yet initialized');
+            // @ts-expect-error Maplibre Type difference, need to investigate
+            return this._draw;
+        }
+    },
     actions: {
         destroy: function() {
-            if (this.map) {
+            this.channel.close();
+
+            if (this._map) {
                 try {
-                    this.map.remove();
-                    delete this.map;
+                    this._map.remove();
+                    delete this._map;
                 } catch (err) {
                     console.error(err);
                 }
@@ -81,8 +155,6 @@ export const useMapStore = defineStore('cloudtak', {
             this.$reset();
         },
         removeOverlay: async function(overlay: Overlay) {
-            if (!this.map) throw new Error('Cannot removeOverlay before map has loaded');
-
             // @ts-expect-error Doesn't like use of object to index array
             const pos = this.overlays.indexOf(overlay)
             if (pos === -1) return;
@@ -91,8 +163,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             await overlay.delete();
             if (overlay.mode === 'mission' && overlay.mode_id) {
-                const cotStore = useCOTStore();
-                cotStore.subscriptions.delete(overlay.mode_id);
+                await this.worker.db.subscriptionDelete(overlay.mode_id);
             }
         },
         getOverlayById(id: number): Overlay | null {
@@ -124,7 +195,7 @@ export const useMapStore = defineStore('cloudtak', {
         // TODO: Convert to overlay
         addTerrain: async function(): Promise<void> {
             const basemaps = await this.listTerrain();
-            if (this.map && basemaps.items.length && !this.map.getSource('-2')) {
+            if (basemaps.items.length && !this.map.getSource('-2')) {
                 this.map.addSource('-2', {
                     type: 'raster-dem',
                     url: String(stdurl(`/api/basemap/${basemaps.items[0].id}/tiles?token=${localStorage.token}`)),
@@ -143,12 +214,46 @@ export const useMapStore = defineStore('cloudtak', {
         },
 
         removeTerrain: function(): void {
-            if (this.map) {
-                this.map.setTerrain(null);
-                this.map.removeSource('-2');
-            }
+            this.map.setTerrain(null);
+            this.map.removeSource('-2');
 
             this.isTerrainEnabled = false;
+        },
+
+        updateCOT: async function(): Promise<void> {
+            try {
+                const diff = await this.worker.db.diff();
+
+                if (
+                    (diff.add && diff.add.length)
+                    || (diff.remove && diff.remove.length)
+                    || (diff.update && diff.update.length)
+                ) {
+                    const source = this.map.getSource('-1') as GeoJSONSource
+                    if (source) source.updateData(diff);
+                }
+
+                if (this.locked.length && await this.worker.db.has(this.locked[this.locked.length - 1])) {
+                    const featid = this.locked[this.locked.length - 1];
+                    if (featid) {
+                        const feat = await this.worker.db.get(featid);
+                        if (feat && feat.geometry.type === "Point") {
+                            const flyTo = {
+                                center: feat.properties.center as LngLatLike,
+                                speed: Infinity
+                            };
+                            this.map.flyTo(flyTo);
+
+                            if (this.radial.mode) {
+                                this.radial.x = this.container ? this.container.clientWidth / 2 : 0;
+                                this.radial.y = this.container ? this.container.clientHeight / 2 : 0;
+                            }
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error(err);
+            }
         },
 
         /**
@@ -163,22 +268,88 @@ export const useMapStore = defineStore('cloudtak', {
             const oStore = this.map.getSource(String(overlay.id));
             if (!oStore) return false
 
-            const cotStore = useCOTStore();
-
-            let sub = cotStore.subscriptions.get(guid);
+            let sub = await this.worker.db.subscriptionGet(guid);
 
             if (!sub) {
-                sub = await Subscription.load(guid, overlay.token || undefined);
-                cotStore.subscriptions.set(guid, sub)
+                sub = await this.worker.db.subscriptionLoad(guid, overlay.token || undefined)
             }
 
             // @ts-expect-error Source.setData is not defined
-            oStore.setData(sub.collection());
+            oStore.setData(await sub.collection());
 
             return true;
         },
-        init: function(container: HTMLElement) {
+        init: async function(container: HTMLElement) {
             this.container = container;
+
+            await this.worker.init(localStorage.token);
+
+            if ("geolocation" in navigator) {
+                const status = await navigator.permissions
+                    .query({ name: "geolocation" })
+
+                this.permissions.location = status.state === 'granted' ? true : false
+                status.onchange = () => {
+                    this.permissions.location = status.state === 'granted' ? true : false
+                };
+
+                navigator.geolocation.watchPosition((position) => {
+                    if (position.coords.accuracy <= 50) {
+                        this.channel.postMessage({
+                            type: WorkerMessageType.Profile_Location_Coordinates,
+                            body: {
+                                accuracy: position.coords.accuracy,
+                                coordinates: [ position.coords.longitude, position.coords.latitude ]
+                            }
+                        })
+                    }
+                }, (err) => {
+                    if (err.code !== 0) {
+                        console.error('Location Error', err);
+                    }
+                },{
+                    maximumAge: 0,
+                    timeout: 1500,
+                    enableHighAccuracy: true
+                });
+            } else {
+                console.error('Browser does not appear to support Geolocation');
+            }
+
+            if ('Notification' in window) {
+                const status = await navigator.permissions
+                    .query({ name: "notifications" })
+
+                this.permissions.notification = status.state === 'granted' ? true : false
+
+                if (!this.permissions.notification) {
+                    Notification.requestPermission()
+                }
+
+                status.onchange = () => {
+                    this.permissions.notification = status.state === 'granted' ? true : false
+
+                    if (!this.permissions.notification) {
+                        Notification.requestPermission()
+                    }
+                };
+            } else {
+                console.error('Browser does not appear to support Notifications');
+            }
+
+            const sprite = [{
+                id: 'default',
+                url: String(stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=default`))
+            }]
+
+            // Eventually make a sprite URL part of the overlay so KMLs can load a sprite package & add paging support
+            const iconsets = await std('/api/iconset?limit=100') as IconsetList;
+            for (const iconset of iconsets.items) {
+                sprite.push({
+                    id: iconset.uid,
+                    url: String(stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=${iconset.uid}&alt=true`))
+                });
+            }
 
             const init: mapgl.MapOptions = {
                 container: this.container,
@@ -193,20 +364,12 @@ export const useMapStore = defineStore('cloudtak', {
                 style: {
                     version: 8,
                     glyphs: String(stdurl('/fonts')) + '/{fontstack}/{range}.pbf',
-                    sprite: [{
-                        id: 'default',
-                        url: String(stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=default`))
-                    }],
+                    sprite,
                     sources: {
                         '-1': {
                             type: 'geojson',
                             cluster: false,
                             promoteId: 'id',
-                            data: { type: 'FeatureCollection', features: [] }
-                        },
-                        0: {
-                            type: 'geojson',
-                            cluster: false,
                             data: { type: 'FeatureCollection', features: [] }
                         }
                     },
@@ -220,7 +383,48 @@ export const useMapStore = defineStore('cloudtak', {
 
             if (!init.style || typeof init.style === 'string') throw new Error('init.style must be an object');
 
-            this.map = new mapgl.Map(init);
+            const map = new mapgl.Map(init);
+
+            this._map = map;
+
+            this.channel.onmessage = (event: MessageEvent<WorkerMessage>) => {
+                const msg = event.data;
+
+                if (!msg || !msg.type) return;
+                if (msg.type === WorkerMessageType.Map_FlyTo) {
+                    if (msg.body.options.speed === null) {
+                        msg.body.options.speed = Infinity;
+                    }
+
+                    map.fitBounds(msg.body.bounds, msg.body.options);
+                } else if (msg.type === WorkerMessageType.Profile_Location_Source) {
+                    this.location = msg.body.source as LocationState;
+                } else if (msg.type === WorkerMessageType.Profile_Callsign) {
+                    this.callsign = msg.body.callsign;
+                } else if (msg.type === WorkerMessageType.Map_Projection) {
+                    map.setProjection(msg.body);
+                } else if (msg.type === WorkerMessageType.Connection_Open) {
+                    this.isOpen = true;
+                } else if (msg.type === WorkerMessageType.Connection_Close) {
+                    this.isOpen = false;
+                } else if (msg.type === WorkerMessageType.Channels_None) {
+                    this.hasNoChannels = true;
+                } else if (msg.type === WorkerMessageType.Channels_List) {
+                    this.hasNoChannels = false;
+                } else if (msg.type === WorkerMessageType.Notification) {
+                    this.notifications.push(msg.body as TAKNotification);
+                } else if (msg.type === WorkerMessageType.Mission_Change_Feature) {
+                    this.loadMission(msg.body.guid);
+                } else {
+                    console.error('Unknown Event:', msg);
+                }
+            }
+
+            // If we missed the Profile_Location_Source make sure it gets synced
+            const loc = await this.worker.profile.location;
+            this.location = loc.source;
+
+            this.callsign = await this.worker.profile.callsign()
         },
         initOverlays: async function() {
             if (!this.map) throw new Error('Cannot initLayers before map has loaded');
@@ -231,8 +435,16 @@ export const useMapStore = defineStore('cloudtak', {
                 this.bearing = map.getBearing()
             })
 
-            map.on('click', (e: MapMouseEvent) => {
-                if (this.draw && this.draw.getMode() !== 'static') return;
+            map.on('moveend', async () => {
+                if (this.drawOptions.mode !== 'static') {
+                    this.drawOptions.snapping = await this.worker.db.snapping(this.map.getBounds().toArray());
+                } else {
+                    this.drawOptions.snapping.clear();
+                }
+            });
+
+            map.on('click', async (e: MapMouseEvent) => {
+                if (this.draw.getMode() !== 'static') return;
 
                 if (this.radial.mode) this.radial.mode = undefined;
                 if (this.select.feats) this.select.feats = [];
@@ -260,7 +472,12 @@ export const useMapStore = defineStore('cloudtak', {
 
                 // MultiSelect Mode
                 if (e.originalEvent.ctrlKey && features.length) {
-                    this.selected.set(features[0].properties.id, features[0]);
+                    const cot = await this.worker.db.get(features[0].properties.id, {
+                        mission: true
+                    });
+
+                    if (!cot) return;
+                    this.selected.set(cot.id, cot);
                 } else if (features.length === 1) {
                     this.radialClick(features[0], {
                         lngLat: e.lngLat,
@@ -291,13 +508,21 @@ export const useMapStore = defineStore('cloudtak', {
             map.on('contextmenu', (e) => {
                 if (this.edit) return;
 
+                const id = window.crypto.randomUUID();
                 this.radialClick({
-                    id: window.crypto.randomUUID(),
+                    id,
                     type: 'Feature',
+                    path: '/',
                     properties: {
+                        id,
                         callsign: 'New Feature',
                         archived: true,
                         type: 'u-d-p',
+                        how: 'm-g',
+                        time: new Date().toISOString(),
+                        start: new Date().toISOString(),
+                        stale: new Date(Date.now() + 2 * (60 * 60 * 1000)).toISOString(),
+                        center: [ e.lngLat.lng, e.lngLat.lat ],
                         'marker-color': '#00ff00',
                         'marker-opacity': 1
                     },
@@ -346,31 +571,19 @@ export const useMapStore = defineStore('cloudtak', {
             }
 
             for (const item of items) {
-                this.overlays.push(new Overlay(
+                this.overlays.push(await Overlay.create(
                     map,
-                    item as ProfileOverlay
+                    item as ProfileOverlay,
+                    {
+                        skipSave: true
+                    }
                 ));
             }
 
-            this.overlays.push(Overlay.internal(map, {
+            this.overlays.push(await Overlay.internal(map, {
                 id: -1,
                 name: 'CoT Icons',
                 type: 'geojson',
-            }));
-
-            this.overlays.push(Overlay.internal(map, {
-                id: 0,
-                name: 'Your Location',
-                type: 'vector',
-                styles: [{
-                    id: 'you',
-                    type: 'circle',
-                    source: '0',
-                    paint: {
-                        'circle-radius': 10,
-                        'circle-color': '#0000f6',
-                    },
-                }]
             }));
 
             // Data Syncs are specially loaded as they are dynamic
@@ -413,8 +626,6 @@ export const useMapStore = defineStore('cloudtak', {
             point: Point;
             mode?: string;
         }): Promise<void> {
-            if (!this.map) throw new Error('Cannot radialClick before map has loaded');
-
             // If the call is coming from MultipleSelect, ensure this menu is closed
             this.select.feats = [];
 
@@ -439,11 +650,40 @@ export const useMapStore = defineStore('cloudtak', {
             this.radial.cot = feat;
             this.radial.mode = opts.mode;
         },
-        initDraw: function() {
-            this.draw = new terraDraw.TerraDraw({
-                adapter: new terraDraw.TerraDrawMapLibreGLAdapter({
-                    // @ts-expect-error TODO Figure out why this is failing
-                    map: this.map
+        initDraw: async function() {
+            const toCustom = (event: terraDraw.TerraDrawMouseEvent): Position | undefined => {
+                let closest: {
+                    dist: number
+                    coord: Position
+                } | undefined = undefined;
+
+                for (const coord of this.drawOptions.snapping.values()) {
+                    const dist = distance([event.lng, event.lat], coord);
+
+                    if (!closest || (dist < closest.dist)) {
+                        closest = { dist, coord }
+                    }
+                }
+
+                if (closest) {
+                    // Base Threshold / Math.pow(decayFactor, zoomLevel)
+                    const threshold = 1000 / Math.pow(2, this.map.getZoom());
+
+                    if (closest.dist < threshold) {
+                        return closest.coord;
+                    }
+
+                    return;
+                } else {
+                    return;
+                }
+            }
+
+            const draw = new terraDraw.TerraDraw({
+                adapter: new TerraDrawMapLibreGLAdapter({
+                    map: this.map,
+                    // @ts-expect-error TS is complaining
+                    lib: mapgl
                 }),
                 idStrategy: {
                     isValidId: (id: string | number): boolean => {
@@ -456,9 +696,18 @@ export const useMapStore = defineStore('cloudtak', {
                     })()
                 },
                 modes: [
-                    new terraDraw.TerraDrawPointMode(),
-                    new terraDraw.TerraDrawLineStringMode(),
-                    new terraDraw.TerraDrawPolygonMode(),
+                    new terraDraw.TerraDrawPointMode({
+                        editable: true
+                    }),
+                    new terraDraw.TerraDrawLineStringMode({
+                        editable: true,
+                        snapping: { toCustom }
+                    }),
+                    new terraDraw.TerraDrawPolygonMode({
+                        editable: true,
+                        //showCoordinatePoints: true, Ref: https://github.com/JamesLMilner/terra-draw/issues/520
+                        snapping: { toCustom }
+                    }),
                     new terraDraw.TerraDrawAngledRectangleMode(),
                     new terraDraw.TerraDrawFreehandMode(),
                     new terraDraw.TerraDrawSectorMode(),
@@ -468,8 +717,11 @@ export const useMapStore = defineStore('cloudtak', {
                                 feature: {
                                     draggable: true,
                                     coordinates: {
+                                        snappable: true,
                                         deletable: true,
-                                        midpoints: true,
+                                        midpoints: {
+                                            draggable: true
+                                        },
                                         draggable: true,
                                     }
                                 }
@@ -478,22 +730,168 @@ export const useMapStore = defineStore('cloudtak', {
                                 feature: {
                                     draggable: true,
                                     coordinates: {
+                                        snappable: true,
                                         deletable: true,
-                                        midpoints: true,
+                                        midpoints: {
+                                            draggable: true
+                                        },
                                         draggable: true,
                                     }
                                 }
                             },
                             point: {
                                 feature: {
-                                    draggable: true
+                                    draggable: true,
                                 }
                             }
                         }
                     })
                 ]
             });
+
+            // Deselect event is for editing existing features
+            draw.on('deselect', async () => {
+                if (!this.edit) return;
+
+                const feat = draw.getSnapshotFeature(this.edit.id);
+
+                if (!feat) throw new Error('Could not find underlying marker');
+
+                delete feat.properties.center;
+
+                await this.worker.db.unhide(this.edit.id);
+
+                this.edit = undefined
+
+                draw.setMode('static');
+                this.drawOptions.mode = 'static';
+                draw.stop();
+
+                await this.worker.db.add(feat as Feature);
+
+                await this.updateCOT();
+            })
+
+            // Finish event is for creating new features
+            draw.on('finish', async (id, context) => {
+                if (context.action === "draw") {
+                    if (draw.getMode() === 'select' || this.edit) {
+                        return;
+                    } else if (draw.getMode() === 'freehand') {
+                        const feat = draw.getSnapshotFeature(id);
+                        if (!feat) throw new Error('Could not find underlying marker');
+                        draw.removeFeatures([id]);
+                        draw.setMode('static');
+                        this.drawOptions.mode = 'static';
+                        draw.stop();
+
+                        const touching = await this.worker.db.touching(feat.geometry as Polygon);
+                        for (const cot of touching.values()) {
+                            this.selected.set(cot.id, cot);
+                        }
+                    } else {
+                        const storeFeat = draw.getSnapshotFeature(id);
+                        if (!storeFeat) throw new Error('Could not find underlying marker');
+
+                        const now = new Date();
+                        const feat: Feature = {
+                            id: String(id),
+                            type: 'Feature',
+                            path: '/',
+                            properties: {
+                                id: String(id),
+                                type: 'u-d-p',
+                                how: 'h-g-i-g-o',
+                                archived: true,
+                                callsign: 'New Feature',
+                                time: now.toISOString(),
+                                start: now.toISOString(),
+                                stale: new Date(now.getTime() + 3600).toISOString(),
+                                center: [0,0]
+                            },
+                            geometry: JSON.parse(JSON.stringify(storeFeat.geometry))
+                        };
+
+                        if (
+                            draw.getMode() === 'polygon'
+                            || draw.getMode() === 'angled-rectangle'
+                            || draw.getMode() === 'sector'
+                        ) {
+                            feat.properties.type = 'u-d-f';
+                        } else if (draw.getMode() === 'linestring') {
+                            feat.properties.type = 'u-d-f';
+                        } else if (draw.getMode() === 'point') {
+                            feat.properties.type = this.drawOptions.pointMode || 'u-d-p';
+                            feat.properties["marker-opacity"] = 1;
+                            feat.properties["marker-color"] = '#00FF00';
+                        }
+
+                        draw.removeFeatures([id]);
+                        draw.setMode('static');
+                        this.drawOptions.mode = 'static';
+                        draw.stop();
+                        await this.worker.db.add(feat);
+                        await this.updateCOT();
+                    }
+                }
+            });
+
+
+            this._draw = draw;
             this.isLoaded = true;
+        },
+        editGeometry: async function (featid: string): Promise<void> {
+            const cot = await this.worker.db.get(featid, { mission: true });
+
+            if (!cot) return;
+
+            try {
+                this.edit = cot;
+                this.draw.start();
+                this.draw.setMode('select');
+                this.drawOptions.mode = 'select';
+
+                const feat = cot.as_feature({ clone: true });
+                if (feat.geometry.type === 'Polygon') {
+                    feat.properties.mode = 'polygon';
+                } else if (feat.geometry.type === 'LineString') {
+                    feat.properties.mode = 'linestring';
+                } else if (feat.geometry.type === 'Point') {
+                    feat.properties.mode = 'point';
+                }
+
+                coordEach(feat, (coord) => {
+                    if (coord.length > 2) {
+                        coord.splice(2, coord.length - 2);
+                    }
+
+                    // Ensure precision is within bounds
+                    for (let i = 0; i < coord.length; i++) {
+                        coord[i] = Math.round(coord[i] * Math.pow(10, 9)) / Math.pow(10, 9);
+                    }
+                });
+
+                await this.worker.db.hide(cot.id);
+                this.updateCOT();
+
+                const errorStatus = this.draw.addFeatures([feat as terraDraw.GeoJSONStoreFeatures]).filter((status) => {
+                    return !status.valid;
+                });
+
+                if (errorStatus.length) {
+                    throw new Error('Error editing this feature: ' + errorStatus[0].reason)
+                }
+
+                this.draw.selectFeature(cot.id);
+            } catch (err) {
+                await this.worker.db.unhide(cot.id);
+                this.draw.setMode('static');
+                this.updateCOT();
+                this.drawOptions.mode = 'static';
+                this.draw.stop();
+
+                throw err;
+            }
         }
     },
 })

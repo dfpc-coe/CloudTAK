@@ -13,7 +13,7 @@
                         v-if='selected.id'
                         v-tooltip='"Remove Connection"'
                         :size='32'
-                        :stroke='1'
+                        stroke='1'
                         class='cursor-pointer'
                         @click='selected = {}'
                     />

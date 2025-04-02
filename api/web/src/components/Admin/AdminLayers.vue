@@ -9,7 +9,7 @@
                 <IconCloudUpload
                     v-tooltip='"Redeploy"'
                     :size='32'
-                    :stroke='1'
+                    stroke='1'
                     class='cursor-pointer'
                     @click='redeploy'
                 />
@@ -17,7 +17,7 @@
                 <IconRefresh
                     v-tooltip='"Refresh"'
                     :size='32'
-                    :stroke='1'
+                    stroke='1'
                     class='cursor-pointer'
                     @click='fetchList'
                 />
@@ -28,6 +28,7 @@
                 <div class='col-md-8 px-2'>
                     <TablerInput
                         v-model='paging.filter'
+                        icon='search'
                         placeholder='Filter...'
                     />
                 </div>
@@ -105,7 +106,7 @@
 import { std, stdurl, stdclick } from '/src/std.ts';
 import TableHeader from '../util/TableHeader.vue'
 import TableFooter from '../util/TableFooter.vue'
-import Status from '../Layer/utils/Status.vue';
+import Status from '../Layer/utils/StatusDot.vue';
 import {
     TablerNone,
     TablerInput,

@@ -3,6 +3,7 @@ import path from 'node:path';
 import cors from 'cors';
 import express from 'express';
 import SwaggerUI from 'swagger-ui-express';
+import Bulldozer from './lib/initialization.js';
 import history, {Context} from 'connect-history-api-fallback';
 import Schema from '@openaddresses/batch-schema';
 import { ProfileConnConfig } from './lib/connection-config.js';
@@ -21,7 +22,6 @@ const args = minimist(process.argv, {
         'nocache',  // Ignore MemCached
         'unsafe',   // Allow unsecure local dev creds
         'noevents', // Disable Initialization of Second Level Events
-        'nometrics', // Disable Sending AWS CloudWatch Metrics about each conn
         'nosinks',  // Disable Push to Sinks
     ],
     string: [
@@ -56,10 +56,10 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         unsafe: args.unsafe || false,
         noevents: args.noevents || false,
         postgres: process.env.POSTGRES || args.postgres || 'postgres://postgres@localhost:5432/tak_ps_etl',
-        nometrics: args.nometrics || false,
         nosinks: args.nosinks || false,
         nocache: args.nocache || false,
     });
+
     await server(config);
 }
 
@@ -69,6 +69,9 @@ export default async function server(config: Config) {
     } catch (err) {
         console.log(`ok - failed to flush cache: ${err instanceof Error? err.message : String(err)}`);
     }
+
+    // If the database is empty, populate it with generally sensible defaults
+    await Bulldozer.fireItUp(config);
 
     await config.conns.init();
 
@@ -84,12 +87,15 @@ export default async function server(config: Config) {
     app.disable('x-powered-by');
     app.use(cors({
         origin: '*',
+        exposedHeaders: [
+            'Content-Disposition'
+        ],
         allowedHeaders: [
             'Content-Type',
-            'Authorization',
-            'User-Agent',
-            'MissionAuthorization',
             'Content-Length',
+            'User-Agent',
+            'Authorization',
+            'MissionAuthorization',
             'x-requested-with'
         ],
         credentials: true
@@ -206,7 +212,7 @@ export default async function server(config: Config) {
                     if (!conns || !conns.length) return;
 
                     const i = webClients.indexOf(connClient);
-                    if (!i) return;
+                    if (i < 0) return;
                     webClients[i].destroy();
                     webClients.splice(i, 1);
 
@@ -234,7 +240,13 @@ export default async function server(config: Config) {
 
     return new Promise((resolve) => {
         const srv = app.listen(5001, () => {
-            if (!config.silent) console.log('ok - http://localhost:5001');
+            if (!config.silent) {
+                if (process.env.CLOUDTAK_Mode === 'docker-compose') {
+                    console.log('ok - http://localhost:5000');
+                } else {
+                    console.log('ok - http://localhost:5001');
+                }
+            }
             return resolve(srv);
         });
 
@@ -242,6 +254,12 @@ export default async function server(config: Config) {
             wss.handleUpgrade(request, socket, head, (ws) => {
                 wss.emit('connection', ws, request);
             });
+        });
+
+        srv.on('close', async () => {
+            await config.conns.close();
+            // Doesn't currently exit cleanly by itself
+            process.exit(0)
         });
     });
 }

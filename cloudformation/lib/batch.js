@@ -169,8 +169,7 @@ export default {
                 }],
                 VpcId: cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-vpc'])),
                 GroupName: cf.join([cf.stackName, '-batch']),
-                GroupDescription: cf.join([cf.stackName, ' Batch Security Group']),
-                SecurityGroupIngress: []
+                GroupDescription: cf.join([cf.stackName, ' Batch Security Group'])
             }
         }
     }

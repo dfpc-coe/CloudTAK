@@ -4,16 +4,18 @@
             type='button'
             class='btn-close'
             aria-label='Close'
-            @click='$emit("close")'
+            @click='emit("close")'
         />
         <div class='modal-status bg-yellow' />
         <div class='modal-header'>
             <span class='modal-title'>Row Editor</span>
-            <TablerDelete
-                v-if='!disabled'
-                displaytype='icon'
-                @delete='$emit("remove")'
-            />
+            <div class='ms-auto'>
+                <TablerDelete
+                    v-if='!disabled'
+                    displaytype='icon'
+                    @delete='emit("remove")'
+                />
+            </div>
         </div>
         <div
             v-if='!loading'
@@ -28,7 +30,7 @@
             <button
                 v-if='!disabled'
                 class='btn btn-primary w-100 mt-4'
-                @click='$emit("done", row)'
+                @click='emit("done", row)'
             >
                 Done
             </button>
@@ -36,48 +38,40 @@
     </TablerModal>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted } from 'vue';
 import {
     TablerModal,
     TablerSchema,
     TablerDelete
 } from '@tak-ps/vue-tabler';
 
-export default {
-    name: 'LayerEnvironmentModal',
-    components: {
-        TablerModal,
-        TablerDelete,
-        TablerSchema
+const props = defineProps({
+    edit: {
+        type: Object,
+        required: true
     },
-    props: {
-        edit: {
-            type: Object,
-            required: true
-        },
-        disabled: {
-            type: Boolean,
-            default: true
-        },
-        schema: {
-            type: Object,
-            required: true
-        },
+    disabled: {
+        type: Boolean,
+        default: true
     },
-    emits: [
-        'close',
-        'remove',
-        'done'
-    ],
-    data: function() {
-        return {
-            loading: true,
-            row: {}
-        }
+    schema: {
+        type: Object,
+        required: true
     },
-    mounted: function() {
-        this.row = Object.assign(this.row, JSON.parse(JSON.stringify(this.edit)));
-        this.loading = false;
-    }
-}
+});
+
+const emit = defineEmits([
+    'close',
+    'remove',
+    'done'
+]);
+
+const loading = ref(true);
+const row = ref({});
+
+onMounted(() => {
+    row.value = Object.assign(row.value, JSON.parse(JSON.stringify(props.edit)));
+    loading.value = false;
+})
 </script>

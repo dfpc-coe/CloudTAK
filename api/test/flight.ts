@@ -1,6 +1,8 @@
 process.env.StackName = 'test';
 
 import assert from 'assert';
+import CP from 'node:child_process';
+import MockTAKServer from './tak-server.js'
 import jwt from 'jsonwebtoken';
 import fs from 'fs';
 import api from '../index.js';
@@ -10,7 +12,7 @@ import { pathToRegexp } from 'path-to-regexp';
 import test from 'tape';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
-import * as pgschema from '../lib/schema.js';
+import * as pgtypes from '../lib/schema.js';
 import { Pool } from '@openaddresses/batch-generic';
 const ajv = addFormats(new Ajv({ allErrors: true }));
 
@@ -62,9 +64,9 @@ export default class Flight {
                 if (dropdb) {
                     const connstr = process.env.POSTGRES || 'postgres://postgres@localhost:5432/tak_ps_etl_test';
                     await drop(connstr);
-                    const pool = await Pool.connect(connstr, {
+
+                    const pool = await Pool.connect(connstr, pgtypes, {
                         migrationsFolder: (new URL('../migrations', import.meta.url)).pathname,
-                        schema: pgschema
                     });
                     // @ts-expect-error Not present in type def
                     pool.session.client.end();
@@ -156,7 +158,6 @@ export default class Flight {
             return res;
         }
 
-
         if (!req.method) req.method = 'GET';
 
         let match: string;
@@ -220,20 +221,19 @@ export default class Flight {
                 unsafe: true,
                 noevents: true,
                 nosinks: true,
-                nocache: true,
-                nometrics: true,
+                nocache: true
             });
 
             Object.assign(this.config, custom);
 
             this.config.models.Server.generate({
                 name: 'Test Runner',
-                url: 'ssl://tak.example.com',
+                url: 'ssl://localhost',
                 auth: {
                     cert: 'cert-123',
                     key: 'key-123'
                 },
-                api: 'http://tak-api.example.com'
+                api: 'https://localhost'
             });
 
             this.srv = await api(this.config);
@@ -267,6 +267,71 @@ export default class Flight {
             }
             t.end();
         });
+    }
+
+    connection() {
+        test(`Creating Connection`, async (t) => {
+            const tak = new MockTAKServer();
+
+            CP.execSync(`
+                openssl req \
+                    -newkey rsa:4096 \
+                    -keyout /tmp/cloudtak-test-alice.key \
+                    -out /tmp/cloudtak-test-alice.csr \
+                    -nodes \
+                    -subj "/CN=Alice"
+            `);
+
+            CP.execSync(`
+               openssl x509 \
+                    -req \
+                    -in /tmp/cloudtak-test-alice.csr \
+                    -CA ${tak.keys.cert} \
+                    -CAkey ${tak.keys.key} \
+                    -out /tmp/cloudtak-test-alice.cert \
+                    -set_serial 01 \
+                    -days 365
+            `);
+
+            const conn = await this.fetch('/api/connection', {
+                method: 'POST',
+                auth: {
+                    bearer: this.token.admin
+                },
+                body: {
+                    name: 'Test Connection',
+                    description: 'Connection created by Flight Test Runner',
+                    auth: {
+                        key: String(fs.readFileSync('/tmp/cloudtak-test-alice.key')),
+                        cert: String(fs.readFileSync('/tmp/cloudtak-test-alice.cert'))
+                    }
+                }
+            }, true);
+
+            delete conn.body.certificate.validFrom;
+            delete conn.body.certificate.validTo;
+            delete conn.body.created;
+            delete conn.body.updated;
+
+            t.deepEquals(conn.body, {
+                status: 'dead',                                                                                                       
+                certificate: {                                                                                                        
+                    subject: 'CN=Alice'                                                                                                 
+                },                                                                                                                    
+                id: 1,                                                                                                                
+                agency: 0,                                                                                                            
+                name: 'Test Connection', 
+                description: 'Connection created by Flight Test Runner',
+                enabled: true  
+            });
+
+            await new Promise((resolve) => {
+                setTimeout(resolve, 1000);
+            })
+
+            await tak.close();
+            t.end();
+       })
     }
 
     /**

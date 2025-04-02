@@ -60,6 +60,7 @@ export default {
             DependsOn: ['DBMasterSecret'],
             Properties: {
                 Engine: 'postgres',
+                EngineVersion: '17.2',
                 AllowMajorVersionUpgrade: false,
                 DBName: 'tak_ps_etl',
                 CopyTagsToSnapshot: true,
@@ -67,7 +68,6 @@ export default {
                 MonitoringInterval: 60,
                 MonitoringRoleArn: cf.getAtt('DBMonitoringRole', 'Arn'),
                 KmsKeyId: cf.ref('KMS'),
-                EngineVersion: '16.4',
                 StorageEncrypted: true,
                 MasterUsername: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/rds/secret:SecretString:username:AWSCURRENT}}'),
                 MasterUserPassword: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/rds/secret:SecretString:password:AWSCURRENT}}'),
@@ -111,7 +111,14 @@ export default {
                     IpProtocol: 'TCP',
                     FromPort: 5432,
                     ToPort: 5432,
-                    SourceSecurityGroupId: cf.getAtt('ServiceSecurityGroup', 'GroupId')
+                    SourceSecurityGroupId: cf.getAtt('ServiceSecurityGroup', 'GroupId'),
+                    Description: 'Allow CloudTAK ECS Service Access'
+                },{
+                    IpProtocol: 'TCP',
+                    FromPort: 5432,
+                    ToPort: 5432,
+                    CidrIp: cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-vpc-cidr'])),
+                    Description: 'Allow Internal network access'
                 }]
             }
         }

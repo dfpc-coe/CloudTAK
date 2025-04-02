@@ -3,7 +3,16 @@ import CP from 'child_process';
 
 process.env.GITSHA = sha();
 
-for (const env of ['GITSHA', 'AWS_REGION', 'AWS_ACCOUNT_ID']) {
+process.env.API_URL = process.env.API_URL || '"https://example.com"';
+process.env.Environment = process.env.Environment || 'prod';
+
+for (const env of [
+    'GITSHA',
+    'AWS_REGION',
+    'AWS_ACCOUNT_ID',
+    'Environment',
+    'API_URL'
+]) {
     if (!process.env[env]) {
         console.error(`${env} Env Var must be set`);
         process.exit();
@@ -12,20 +21,22 @@ for (const env of ['GITSHA', 'AWS_REGION', 'AWS_ACCOUNT_ID']) {
 
 await login();
 
-
 if (!process.argv[2]) {
     console.error('ok - building all containers');
 
-    await api();
+    await cloudtak_api();
+    await cloudtak_ui();
 
     for (const dir of await fs.readdir(new URL('./tasks/', import.meta.url))) {
-        await task(dir);
+        await cloudtak_task(dir);
     }
 } else {
     if (process.argv[2] === 'api') {
-        await api();
+        await cloudtak_api();
+    } else if (process.argv[2] === 'ui') {
+        await cloudtak_ui();
     } else {
-        await task(process.argv[2]);
+        await cloudtak_task(process.argv[2]);
     }
 }
 
@@ -49,7 +60,7 @@ function login() {
 
 }
 
-function api() {
+function cloudtak_api() {
     return new Promise((resolve, reject) => {
         const $ = CP.exec(`
             docker compose build api \
@@ -65,7 +76,23 @@ function api() {
     });
 }
 
-async function task(task) {
+function cloudtak_ui() {
+    return new Promise((resolve, reject) => {
+        const $ = CP.exec(`
+            cd api/web/ \
+            && npm run builds3 \
+            && aws s3 cp --recursive "dist/" "s3://coe-etl-$\{Environment\}-$\{AWS_ACCOUNT_ID\}-$\{AWS_REGION\}-public/$\{GITSHA\}/"
+        `, (err) => {
+            if (err) return reject(err);
+            return resolve();
+        });
+
+        $.stdout.pipe(process.stdout);
+        $.stderr.pipe(process.stderr);
+    });
+}
+
+async function cloudtak_task(task) {
     process.env.TASK = task;
 
     return new Promise((resolve, reject) => {

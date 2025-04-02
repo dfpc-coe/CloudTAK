@@ -5,32 +5,40 @@
                 Environment
             </h3>
             <div
-                v-if='!editing'
+                v-if='disabled'
                 class='ms-auto btn-list'
             >
-                <template v-if='!raw && disabled'>
-                    <IconCode
-                        v-tooltip='"Raw View"'
-                        :size='32'
-                        :stroke='1'
-                        class='cursor-pointer'
+                <template v-if='disabled && !raw'>
+                    <TablerIconButton
+                        title='Raw View'
                         @click='raw = true'
-                    />
-                    <IconSettings
-                        :size='32'
-                        :stroke='1'
-                        class='cursor-pointer'
+                    >
+                        <IconCode
+                            :size='32'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
+                    <TablerIconButton
+                        v-if='props.capabilities'
+                        title='Edit'
                         @click='disabled = false'
-                    />
+                    >
+                        <IconPencil
+                            :size='32'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
                 </template>
                 <template v-else-if='raw'>
-                    <IconX
-                        v-tooltip='"Close View"'
-                        :size='32'
-                        :stroke='1'
-                        class='cursor-pointer'
+                    <TablerIconButton
+                        title='Close View'
                         @click='raw = false'
-                    />
+                    >
+                        <IconX
+                            :size='32'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
                 </template>
             </div>
         </div>
@@ -42,9 +50,8 @@
             <div>Output Schema could not be loaded from upstream source:</div>
             <div v-text='softAlert.message' />
         </div>
-
         <TablerLoading
-            v-if='loading.schema'
+            v-else-if='!environment'
             desc='Loading Environment'
         />
         <TablerLoading
@@ -56,29 +63,52 @@
             class='col'
         >
             <template v-if='raw'>
-                <pre v-text='environment' />
-            </template>
-            <template v-else-if='alert'>
-                <TablerAlert
-                    title='Layer failed to return an Environment Schema'
-                    :err='alert'
+                <CopyField
+                    :rows='20'
+                    :edit='true'
+                    :hover='true'
+                    :validate='validateJSON'
+                    :model-value='JSON.stringify(environment, null, 4)'
+                    @update:model-value='environment = JSON.parse($event)'
                 />
             </template>
-            <template v-else-if='schema.display === "arcgis"'>
-                <LayerEnvironmentArcGIS
+            <TablerAlert
+                v-else-if='!props.capabilities'
+                title='Missing Capabilities'
+                :err='new Error("Layer failed to return an input schema on the Capabilities object")'
+            />
+            <template v-else-if='direction === "incoming" && props.capabilities.name === "etl-arcgis"'>
+                <LayerIncomingEnvironmentArcGIS
                     v-model='environment'
                     :disabled='disabled'
                 />
             </template>
-            <template v-else-if='schema.type !== "object"'>
+            <template v-else-if='direction === "outgoing" && props.capabilities.name === "etl-arcgis"'>
+                <LayerOutgoingEnvironmentArcGIS
+                    v-model='environment'
+                    :disabled='disabled'
+                />
+            </template>
+            <template
+                v-else-if='
+                    props.capabilities[direction].schema.input.type !== "object"
+                        || !props.capabilities[direction].schema.input.properties
+                '
+            >
                 <div class='d-flex justify-content-center my-4'>
                     Only Object Schemas are Supported.
                 </div>
             </template>
             <template v-else>
+                <TablerNone
+                    v-if='Object.keys(capabilities[direction].schema.input.properties).length === 0'
+                    label='Schema'
+                    :create='false'
+                />
                 <Schema
+                    v-else
                     v-model='environment'
-                    :schema='schema'
+                    :schema='capabilities[direction].schema.input'
                     :disabled='disabled'
                 />
             </template>
@@ -95,11 +125,10 @@
             </div>
 
             <div
-                v-if='!disabled'
+                v-if='!disabled || raw'
                 class='col-12 px-2 py-2 d-flex'
             >
                 <button
-                    v-if='!editing'
                     class='btn'
                     @click='reload'
                 >
@@ -118,133 +147,114 @@
     </div>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
 import { std } from '/src/std.ts';
 import {
+    TablerNone,
     TablerAlert,
     TablerLoading,
+    TablerIconButton,
     TablerTimeZone,
 } from '@tak-ps/vue-tabler';
-import LayerEnvironmentArcGIS from './LayerEnvironmentArcGIS.vue';
+import CopyField from '../CloudTAK/util/CopyField.vue';
+import LayerIncomingEnvironmentArcGIS from './LayerIncomingEnvironmentArcGIS.vue';
+import LayerOutgoingEnvironmentArcGIS from './LayerOutgoingEnvironmentArcGIS.vue';
 import Schema from './utils/Schema.vue';
 import {
     IconX,
     IconCode,
-    IconSettings,
+    IconPencil,
 } from '@tabler/icons-vue'
 
-export default {
-    name: 'LayerEnvironment',
-    components: {
-        Schema,
-        IconCode,
-        IconX,
-        IconSettings,
-        TablerTimeZone,
-        TablerAlert,
-        TablerLoading,
-        LayerEnvironmentArcGIS
+const props = defineProps({
+    layer: {
+        type: Object,
+        required: true
     },
-    props: {
-        layer: {
-            type: Object,
-            required: true
-        },
-        editing: {
-            type: Boolean,
-            default: false
-        }
-    },
-    emits: [
-        'layer'
-    ],
-    data: function() {
-        return {
-            raw: false,
-            alert: false,
-            softAlert: false,
-            esriView: false,
-            disabled: this.editing ? false : true,
-            config: {},
-            environment: {},
-            schema: { properties: {} },
-            schemaOutput: { properties: {} },
-            filterModal: false,
-            loading: {
-                schema: true,
-                save: false
-            },
-        };
-    },
-    watch: {
-        editing: function() {
-            if (this.editing) {
-                this.disabled = false;
-            }
-        }
-    },
-    mounted: async function() {
-        await this.reload();
-    },
-    methods: {
-        hasDateTime: function() {
-            for (const prop of Object.keys(this.schemaOutput.properties)) {
-                if (this.schemaOutput.properties[prop].format && this.schemaOutput.properties[prop].format === 'date-time') {
-                    return true;
-                }
-            }
-            return false;
-        },
-        reload: async function() {
-            await this.fetchSchema()
-            this.environment = JSON.parse(JSON.stringify(this.layer.environment));
-            const config = JSON.parse(JSON.stringify(this.layer.config));
-
-            if (!this.hasDateTime()) {
-                delete config.timezone;
-            } else if (!config.timezone) {
-                config.timezone = { timezone: 'No TimeZone' }
-            }
-
-            this.config = config;
-
-            if (!this.editing) this.disabled = true;
-
-            this.loading.schema = false;
-        },
-        fetchSchema: async function() {
-            this.alert = false;
-
-            try {
-                this.loading.schema = true;
-                this.schema = (await std(`/api/connection/${this.layer.connection}/layer/${this.layer.id}/task/schema`)).schema;
-            } catch (err) {
-                this.alert = err;
-            }
-
-            try {
-                const output = (await std(`/api/connection/${this.layer.connection}/layer/${this.layer.id}/task/schema?type=schema:output`)).schema;
-                if (output.properties) this.schemaOutput = output;
-            } catch (err) {
-                this.softAlert = err;
-            }
-        },
-        saveLayer: async function() {
-            this.loading.save = true;
-
-            const layer = await std(`/api/connection/${this.layer.connection}/layer/${this.layer.id}`, {
-                method: 'PATCH',
-                body: {
-                    environment: this.environment,
-                    config: this.config
-                }
-            });
-
-            this.disabled = true;
-            this.loading.save = false;
-
-            this.$emit('layer', layer);
-        },
+    capabilities: {
+        type: Object,
+        required: true
     }
+});
+
+const emit = defineEmits([ 'refresh' ]);
+
+const route = useRoute();
+
+const direction = ref(route.name.includes('incoming') ? 'incoming' : 'outgoing');
+
+const raw = ref(false);
+const softAlert = ref(false);
+const disabled = ref(true);
+const config = ref({});
+const environment = ref();
+
+const loading = ref({
+    save: false
+});
+
+onMounted(async () => {
+    await reload();
+});
+
+function validateJSON(text) {
+    try {
+        JSON.parse(text);
+    } catch (err) {
+        return err instanceof Error ? err.message : String(err);
+    }
+
+    return true;
+}
+
+function hasDateTime() {
+    if (!props.capabilities) return false;
+
+    for (const prop of Object.keys(props.capabilities[direction.value].schema.output.properties)) {
+        if (props.capabilities[direction.value].schema.output.properties[prop].format && props.capabilities[direction.value].schema.output.properties[prop].format === 'date-time') {
+            return true;
+        }
+    }
+    return false;
+}
+
+async function reload() {
+    raw.value = false;
+    disabled.value = true;
+
+    environment.value = JSON.parse(JSON.stringify(props.layer[direction.value].environment));
+
+    if (direction.value === 'incoming')  {
+        const cnf = JSON.parse(JSON.stringify(props.layer[direction.value].config));
+
+        if (!hasDateTime()) {
+            delete cnf.timezone;
+        } else if (!cnf.timezone) {
+            cnf.timezone = { timezone: 'No TimeZone' }
+        }
+
+        config.value = cnf;
+    }
+
+    disabled.value = true;
+}
+
+async function saveLayer() {
+    loading.value.save = true;
+
+    await std(`/api/connection/${props.layer.connection}/layer/${props.layer.id}/${direction.value}`, {
+        method: 'PATCH',
+        body: {
+            environment: environment.value,
+            config: config.value
+        }
+    });
+
+    disabled.value = true;
+    loading.value.save = false;
+
+    emit('refresh');
 }
 </script>

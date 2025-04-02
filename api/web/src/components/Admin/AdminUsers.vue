@@ -20,6 +20,7 @@
         <div style='min-height: 20vh; margin-bottom: 61px'>
             <TablerInput
                 v-model='paging.filter'
+                icon='search'
                 placeholder='Filter...'
                 class='mx-1 my-2'
             />
@@ -107,7 +108,7 @@ const paging = ref({
     page: 0
 });
 
-watch(paging, async () => {
+watch(paging.value, async () => {
     await fetchList();
 });
 

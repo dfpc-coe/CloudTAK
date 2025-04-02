@@ -56,7 +56,7 @@
                             </div>
                             <span
                                 class='mx-2'
-                                v-text='mission.meta.name'
+                                v-text='mission.name'
                             />
                         </div>
                     </div>
@@ -95,7 +95,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed } from 'vue';
+import { ref, onMounted } from 'vue';
 import type { PropType } from 'vue';
 import EmptyInfo from './EmptyInfo.vue';
 import {
@@ -109,21 +109,10 @@ import {
     IconAmbulance,
     IconShare2
 } from '@tabler/icons-vue';
-import type { Feature } from '../../../../src/types.ts';
-import COT from '../../../../src/stores/base/cot.ts'
-import { useCOTStore } from '../../../../src/stores/cots.ts';
-import { useConnectionStore } from '../../../../src/stores/connection.ts';
-import Subscription from '../../../../src/stores/base/mission.ts'
+import type { Feature, Mission } from '../../../types.ts';
+import { useMapStore } from '../../../stores/map.ts';
 
-const cotStore = useCOTStore();
-const connectionStore = useConnectionStore();
-
-const missions = computed(() => {
-    return Array.from(cotStore.subscriptions.values())
-        .filter((mission) => {
-            return mission.role.permissions.includes("MISSION_WRITE")
-        })
-});
+const mapStore = useMapStore();
 
 const props = defineProps({
     feats: {
@@ -142,31 +131,32 @@ const props = defineProps({
 
 const emit = defineEmits(['cancel', 'done']);
 
-const loading = ref(false);
-const selected = ref<Set<Subscription>>(new Set());
+const loading = ref(true);
+const selected = ref<Set<Mission>>(new Set());
+const missions = ref<Array<Mission>>([]);
 
-/** Feats often come from Vector Tiles which don't contain the full feature */
-function currentFeats(): Array<Feature> {
-    return (props.feats || []).map((f) => {
+onMounted(async () => {
+    missions.value = (await mapStore.worker.db.subscriptionList())
+        .filter((mission) => {
+            return mission.role.permissions.includes("MISSION_WRITE")
+        }).map((mission) => {
+            return mission.meta;
+        })
+
+    loading.value = false;
+});
+
+async function share(): Promise<void> {
+    const feats = [];
+    for (const f of props.feats || []) {
         if (f.properties.type === 'b-f-t-r') {
             // FileShare is manually generated and won't exist in CoT Store
-            return f;
+            feats.push(f);
         } else {
-            return cotStore.get(f.id);
+            const feat = await mapStore.worker.db.get(f.id);
+            if (feat) feats.push(feat.as_feature());
         }
-    }).filter((f) => {
-        return !!f;
-    }).map((f) => {
-        if (f instanceof COT) {
-            return f.as_feature();
-        } else {
-            return f;
-        }
-    })
-}
-
-async function share() {
-    const feats = currentFeats();
+    }
 
     for (let feat of feats) {
         feat = JSON.parse(JSON.stringify(feat));
@@ -174,11 +164,11 @@ async function share() {
         feat.properties.dest = [];
         for (const mission of selected.value) {
             feat.properties.dest.push({
-                mission: mission.meta.name
+                mission: mission.name
             });
         }
 
-        connectionStore.sendCOT(feat);
+        await mapStore.worker.conn.sendCOT(feat);
     }
 
     emit('done');

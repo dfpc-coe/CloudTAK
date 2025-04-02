@@ -13,13 +13,11 @@ export default class HookQueue {
     }
 
     async submit(
-        Entries: SQS.SendMessageBatchRequestEntry[]
+        Entries: SQS.SendMessageBatchRequestEntry[],
+        QueueUrl = process.env.HookURL,
     ): Promise<SQS.SendMessageBatchCommandOutput> {
         try {
-            const res = await this.sqs.send(new SQS.SendMessageBatchCommand({
-                QueueUrl: process.env.HookURL,
-                Entries: Entries
-            }));
+            const res = await this.sqs.send(new SQS.SendMessageBatchCommand({ QueueUrl, Entries }));
 
             return res;
         } catch (err) {

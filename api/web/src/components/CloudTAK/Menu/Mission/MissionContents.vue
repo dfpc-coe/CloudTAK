@@ -1,12 +1,13 @@
 <template>
     <MenuTemplate
         name='Mission Files'
+        :zindex='0'
         :back='false'
         :border='false'
     >
         <template #buttons>
             <TablerIconButton
-                v-if='!upload && role.permissions.includes("MISSION_WRITE")'
+                v-if='!upload && role && role.permissions.includes("MISSION_WRITE")'
                 title='Upload File'
                 @click='upload = true'
             >
@@ -17,13 +18,15 @@
             </TablerIconButton>
         </template>
 
-        <TablerAlert
-            v-if='err'
-            :err='err'
+        <TablerLoading
+            v-if='loading'
         />
-
+        <TablerAlert
+            v-else-if='error'
+            :err='error'
+        />
         <div
-            v-if='upload'
+            v-else-if='upload'
             class='mx-2'
         >
             <UploadImport
@@ -37,6 +40,7 @@
 
         <TablerNone
             v-else-if='!mission.contents.length'
+            label='Files'
             :create='false'
         />
         <template v-else>
@@ -62,180 +66,157 @@
                 </div>
                 <div class='col-auto ms-auto btn-list'>
                     <TablerDelete
-                        v-if='role.permissions.includes("MISSION_WRITE")'
+                        v-if='role && role.permissions.includes("MISSION_WRITE")'
                         displaytype='icon'
-                        @delete='deleteFile(content.data)'
+                        @delete='deleteFile(content.data.hash)'
                     />
-                    <IconFileImport
-                        v-tooltip='"Import File"'
-                        :size='32'
-                        :stroke='1'
-                        class='cursor-pointer'
-                        @click='importFile(content)'
-                    />
+                    <TablerIconButton
+                        title='Import File'
+                        @click='importFile(content.data.name)'
+                    >
+                        <IconFileImport
+                            :size='32'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
                     <a
                         v-tooltip='"Download Asset"'
-                        :href='downloadFile(content.data)'
+                        :href='downloadFile(content.data.hash)'
                     ><IconDownload
                         :size='32'
-                        :stroke='1'
+                        stroke='1'
                         color='white'
                         class='cursor-pointer'
                     /></a>
                 </div>
             </div>
-        </template>
 
-        <template v-if='imports.length'>
-            <label class='subheader'>Imports</label>
+            <template v-if='imports.items.length'>
+                <label class='subheader px-2'>Imports</label>
 
-            <div
-                v-for='imp in imports'
-                :key='imp.id'
-                class='col-12 d-flex align-items-center hover-dark cursor-pointer rounded'
-                @click='$router.push(`/import/${imp.id}`)'
-            >
-                <Status :status='imp.status' /><span
-                    class='mx-2'
-                    v-text='imp.name'
-                />
-            </div>
+                <div
+                    v-for='imp in imports.items'
+                    :key='imp.id'
+                    class='col-12 d-flex px-2 py-2 hover-dark align-items-center cursor-pointer'
+                    @click='router.push(`/menu/imports/${imp.id}`)'
+                >
+                    <Status :status='imp.status' />
+
+                    <div
+                        class='mx-2'
+                        v-text='imp.name'
+                    />
+                </div>
+            </template>
         </template>
     </MenuTemplate>
 </template>
 
-<script>
-import { std, stdurl } from '/src/std.ts';
+<script setup lang='ts'>
+import { ref, onMounted, watch } from 'vue';
+import { useRouter } from 'vue-router';
+import { std, stdurl } from '../../../../std.ts';
+import type {
+    Mission,
+    MissionRole,
+    Import,
+    ImportList
+} from '../../../../types.ts';
 import {
     IconPlus,
     IconFileImport,
     IconDownload,
 } from '@tabler/icons-vue';
 import UploadImport from '../../util/UploadImport.vue';
-import Status from '../../../util/Status.vue';
+import Status from '../../../util/StatusDot.vue';
 import {
     TablerIconButton,
+    TablerLoading,
     TablerAlert,
     TablerNone,
     TablerDelete,
 } from '@tak-ps/vue-tabler';
-import { useMapStore } from '/src/stores/map.ts';
-const mapStore = useMapStore();
+
 import MenuTemplate from '../../util/MenuTemplate.vue';
 
-export default {
-    name: 'MissionContents',
-    components: {
-        Status,
-        IconPlus,
-        MenuTemplate,
-        TablerNone,
-        UploadImport,
-        TablerAlert,
-        TablerDelete,
-        TablerIconButton,
-        IconFileImport,
-        IconDownload,
-    },
-    props: {
-        mission: Object,
-        token: String,
-        role: Object
-    },
-    emits: [
-        'close',
-        'refresh',
-        'select'
-    ],
-    data: function() {
-        return {
-            err: null,
-            subscribed: undefined,
-            mode: 'info',
-            password: '',
-            upload: false,
-            createLog: false,
-            changes: [],
-            loading: {
-                logs: false,
-                changes: true,
-                users: true,
-                delete: false
-            },
-            imports: [],
-        }
-    },
-    watch: {
-        upload: async function() {
-            if (!this.upload) await this.$emit('refresh');
-        }
-    },
-    methods: {
-        subscribe: async function(subscribed) {
-            const overlay = mapStore.getOverlayByMode('mission', this.mission.guid);
+const props = defineProps<{
+    mission: Mission,
+    token?: string,
+    role?: MissionRole
+}>()
 
-            if (subscribed === true && !overlay) {
-                await mapStore.addDefaultLayer({
-                    id: this.mission.guid,
-                    url: `/mission/${encodeURIComponent(this.mission.name)}`,
-                    name: this.mission.name,
-                    source: this.mission.guid,
-                    type: 'geojson',
-                    before: 'CoT Icons',
-                    mode: 'mission',
-                    mode_id: this.mission.guid,
-                    clickable: [
-                        { id: `${this.mission.guid}-poly`, type: 'feat' },
-                        { id: `${this.mission.guid}-polyline`, type: 'feat' },
-                        { id: `${this.mission.guid}-line`, type: 'feat' },
-                        { id: this.mission.guid, type: 'feat' }
-                    ]
-                });
-            } else if (subscribed === false && overlay) {
-                await mapStore.removeLayer(this.mission.name);
-            }
+const emit = defineEmits([ 'refresh' ]);
 
-            this.subscribed = !!mapStore.getOverlayByMode('mission', this.mission.guid);
-        },
-        downloadFile: function(file) {
-            const url = stdurl(`/api/marti/api/files/${file.hash}`)
-            url.searchParams.append('token', localStorage.token);
-            url.searchParams.append('name', file.name);
-            return url;
-        },
-        deleteFile: async function(file) {
-            await std(`/api/marti/missions/${this.mission.name}/upload/${file.hash}`, {
-                method: 'DELETE'
-            });
+const router = useRouter();
 
-            this.$emit("refresh");
-        },
-        genConfig: function() {
-            return { id: this.mission.name }
-        },
-        fetchImports: async function() {
-            const url = await stdurl(`/api/import`);
-            url.searchParams.append('mode', 'Mission');
-            url.searchParams.append('mode_id', this.mission.guid);
-            this.imports = (await std(url, {
-                headers: {
-                    MissionAuthorization: this.token
-                }
-            })).items.filter((i) => {
-                return !['Success'].includes(i.status);
-            });
-            this.loading.users = false;
-        },
-        fetchChanges: async function() {
-            this.loading.changes = true;
-            const url = await stdurl(`/api/marti/missions/${this.mission.name}/changes`);
-            this.changes = (await std(url, {
-                headers: {
-                    MissionAuthorization: this.token
-                }
-            })).data;
-            this.loading.changes = false;
+const error = ref<Error | undefined>();
+const upload = ref(false);
+const loading = ref(false)
+
+const imports = ref<ImportList>({
+    total: 0,
+    items: []
+})
+
+onMounted(async () => {
+    await fetchImports();
+});
+
+watch(upload, async () => {
+    await fetchImports();
+});
+
+async function deleteFile(hash: string) {
+    await std(`/api/marti/missions/${props.mission.name}/upload/${hash}`, {
+        method: 'DELETE'
+    });
+
+    emit("refresh");
+}
+
+function downloadFile(hash: string): string {
+    const url = stdurl(`/api/marti/api/files/${hash}`)
+    url.searchParams.append('token', localStorage.token);
+    return String(url);
+}
+
+function genConfig() {
+    return { id: props.mission.name }
+}
+
+async function importFile(name: string) {
+    loading.value = true;
+
+    const imp = await std('/api/import', {
+        method: 'POST',
+        body: {
+            name: name,
+            mode: 'Mission',
+            mode_id: props.mission.guid
         }
+    }) as Import;
+
+    router.push(`/menu/imports/${imp.id}`)
+}
+
+async function fetchImports() {
+    loading.value = true;
+
+    try {
+        const url = await stdurl(`/api/import`);
+        url.searchParams.append('mode', 'Mission');
+        url.searchParams.append('mode_id', props.mission.guid);
+        const imps = await std(url) as ImportList;
+
+        imps.items = imps.items.filter((i) => {
+            return !['Success'].includes(i.status);
+        });
+
+        imports.value = imps;
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
     }
+
+    loading.value = false;
 }
 </script>

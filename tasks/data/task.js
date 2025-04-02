@@ -1,3 +1,4 @@
+import os from 'node:os';
 import fs from 'node:fs';
 import S3 from '@aws-sdk/client-s3';
 import { pipeline } from 'node:stream/promises';
@@ -6,7 +7,6 @@ import Tippecanoe from './lib/tippecanoe.js';
 import jwt from 'jsonwebtoken';
 import path from 'node:path';
 import API from './lib/api.js';
-import os from 'node:os';
 import cp from 'node:child_process';
 
 // Formats
@@ -40,6 +40,8 @@ try {
 export default class Task {
     constructor() {
         if (!process.env.AWS_REGION) process.env.AWS_REGION = 'us-east-1';
+
+        this.temp = fs.mkdtempSync(path.resolve(os.tmpdir(), 'cloudtak-'));
 
         this.etl = {
             api: process.env.TAK_ETL_URL || '',
@@ -78,11 +80,11 @@ export default class Task {
             Key: `${this.etl.type}/${this.etl.id}/${this.etl.task.asset}`
         }));
 
-        await pipeline(res.Body, fs.createWriteStream(path.resolve(os.tmpdir(), this.etl.task.asset)));
+        await pipeline(res.Body, fs.createWriteStream(path.resolve(this.temp, this.etl.task.asset)));
 
         const { ext } = path.parse(this.etl.task.asset);
         if (!formats.has(ext)) throw new Error('Unsupported Input Format');
-        const convert = new (formats.get(ext))(this.etl);
+        const convert = new (formats.get(ext))(this);
 
         const asset = await convert.convert();
 
@@ -102,7 +104,7 @@ export default class Task {
             console.log(`ok - tiling ${asset}`);
             await tp.tile(
                 fs.createReadStream(asset),
-                path.resolve(os.tmpdir(), path.parse(this.etl.task.asset).name + '.pmtiles'), {
+                path.resolve(this.temp, path.parse(this.etl.task.asset).name + '.pmtiles'), {
                     std: true,
                     quiet: false,
                     name: asset,
@@ -125,23 +127,23 @@ export default class Task {
                 params: {
                     Bucket: this.etl.bucket,
                     Key: `${this.etl.type}/${this.etl.id}/${path.parse(this.etl.task.asset).name}.pmtiles`,
-                    Body: fs.createReadStream(path.resolve(os.tmpdir(), path.parse(this.etl.task.asset).name + '.pmtiles'))
+                    Body: fs.createReadStream(path.resolve(this.temp, path.parse(this.etl.task.asset).name + '.pmtiles'))
                 }
             });
             await pmuploader.done();
         } else {
             console.log(`ok - converting ${asset}`);
-            const pmout = cp.execSync(`pmtiles convert ${asset} ${path.resolve(os.tmpdir(), path.parse(this.etl.task.asset).name + '.pmtiles')}`);
+            const pmout = cp.execFileSync('pmtiles', ['convert', asset, path.resolve(this.temp, path.parse(this.etl.task.asset).name + '.pmtiles')]);
             console.log(String(pmout));
 
-            console.log(`ok - converted: ${path.resolve(os.tmpdir(), path.parse(this.etl.task.asset).name + '.pmtiles')}`);
+            console.log(`ok - converted: ${path.resolve(this.temp, path.parse(this.etl.task.asset).name + '.pmtiles')}`);
 
             const pmuploader = new Upload({
                 client: s3,
                 params: {
                     Bucket: this.etl.bucket,
                     Key: `${this.etl.type}/${this.etl.id}/${path.parse(this.etl.task.asset).name}.pmtiles`,
-                    Body: fs.createReadStream(path.resolve(os.tmpdir(), path.parse(this.etl.task.asset).name + '.pmtiles'))
+                    Body: fs.createReadStream(path.resolve(this.temp, path.parse(this.etl.task.asset).name + '.pmtiles'))
                 }
             });
 

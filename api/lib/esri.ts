@@ -1,5 +1,8 @@
 import Err from '@openaddresses/batch-error';
-import { Static } from '@sinclair/typebox';
+import { Static, Type } from '@sinclair/typebox';
+import { OptionalTileJSON } from './types.js';
+import { Basemap_Format, Basemap_Type, Basemap_Style  } from './enums.js';
+import { fetch } from '@tak-ps/etl';
 import type { ESRILayerList } from './esri/types.js';
 import {
     DefaultLayerPoints,
@@ -12,6 +15,40 @@ export enum EsriType {
     PORTAL = 'PORTAL',  // Enterprise Portal
     SERVER = 'SERVER'   // Stand-Alone Server
 }
+
+export enum EsriLayerType {
+    MAP = 'MapServer',
+    FEATURE = 'FeatureServer',
+    IMAGE = 'ImageServer',
+    UNKNOWN = 'Unknown'
+}
+
+// TODO Convert all extents to 4326
+export const EsriExtent = Type.Object({
+    xmin: Type.Number(),
+    ymin: Type.Number(),
+    xmax: Type.Number(),
+    ymax: Type.Number(),
+    spatialReference: Type.Object({
+        wkid: Type.Integer(),
+        latestWkid: Type.Integer()
+    })
+})
+
+export const ImageLayer = Type.Object({
+    name: Type.String(),
+    description: Type.String(),
+    extent: EsriExtent
+});
+
+export const FeatureLayer = Type.Object({
+    currentVersion: Type.Number(),
+    id: Type.Integer(),
+    name: Type.String(),
+    geometryType: Type.String(),
+    description: Type.String(),
+    extent: EsriExtent
+});
 
 export interface EsriToken {
     token: string;
@@ -90,7 +127,7 @@ export class EsriBase {
                 body: String(body)
             });
 
-            let json: { [k: string]: unknown; } = await res.json()
+            let json = await res.json() as Record<string, unknown>
 
             if (json.error) {
                 // @ts-expect-error No Typing on JSON Body
@@ -139,29 +176,36 @@ export class EsriBase {
      * The root of any portal REST endpoint should return
      * a version string that can be parsed and verified
      */
-    async fetchVersion(): Promise<string> {
+    async fetchVersion(): Promise<number> {
         try {
             const url = new URL(this.base);
             url.searchParams.append('f', 'json');
             const res = await fetch(url);
 
-            const json = await res.json()
+            const json = await res.typed(Type.Object({
+                currentVersion: Type.String(),
+                error: Type.Optional(Type.Object({
+                    message: Type.String()
+                }))
+            }))
 
             if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
 
             if (!json.currentVersion) throw new Err(400, null, 'Could not determine ESRI Server Version, is this an ESRI Server?');
 
             if (this.type === EsriType.PORTAL || this.type === EsriType.SERVER) {
-                if (String(json.currentVersion).split('.').length < 2) throw new Err(400, null, 'Could not parse ESRI Server Version - this version may not be supported');
+                if (String(json.currentVersion).split('.').length < 2) {
+                    throw new Err(400, null, `Could not parse ESRI Server Version (${json.currentVersion}) - this version may not be supported`);
+                }
 
                 const major = parseInt(String(json.currentVersion).split('.')[0])
-                if (isNaN(major)) throw new Err(400, null, 'Could not parse ESRI Server Version - non-integer - this version may not be supported');
-                if (major < 8) throw new Err(400, null, 'ESRI Server version is too old - Update to at least version 8.x')
+                if (isNaN(major)) throw new Err(400, null, `Could not parse ESRI Server Version (${json.currentVersion}) - non-integer - this version may not be supported`);
+                if (major < 8) throw new Err(400, null, `ESRI Server version (${json.currentVersion}) is too old - Update to at least version 8.x`)
             }
 
             // ArcGIS Online (AGOL) uses a <year>.<month?> format - assume it's always at the bleeding edge
 
-            return json.currentVersion;
+            return Number(json.currentVersion);
         } catch (err) {
             if (err instanceof Error && err.name === 'PublicError') throw err;
             if (err instanceof Error) {
@@ -239,9 +283,10 @@ class EsriProxyPortal {
 
         const json = await res.json()
 
+        // @ts-expect-error Untyped Response
         if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
 
-        return json;
+        return json as { username: string };
     }
 
     async getPortal(): Promise<object> {
@@ -252,9 +297,10 @@ class EsriProxyPortal {
 
             const json = await res.json()
 
+            // @ts-expect-error Untyped Response
             if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
 
-            return json;
+            return json as object;
         } catch (err) {
             if (err instanceof Error && err.name === 'PublicError') throw err;
             throw new Err(400, err instanceof Error ? err : new Error(String(err)), err instanceof Error ? err.message : String(err));
@@ -275,9 +321,10 @@ class EsriProxyPortal {
 
         const json = await res.json()
 
+        // @ts-expect-error Untyped Response
         if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
 
-        return json;
+        return json as { username: string };
     }
 
     async getServers() {
@@ -292,9 +339,12 @@ class EsriProxyPortal {
 
         const json = await res.json()
 
+        // @ts-expect-error Untyped Response
         if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
 
-        return json;
+        return json as {
+            servers: any[]
+        };
     }
 
     async createService(name: string): Promise<object> {
@@ -324,9 +374,10 @@ class EsriProxyPortal {
 
         const json = await res.json()
 
+        // @ts-expect-error Untyped Response
         if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
 
-        return json;
+        return json as object;
     }
 
 }
@@ -357,9 +408,10 @@ class EsriProxyServer {
 
         const json = await res.json()
 
+        // @ts-expect-error Untyped Response
         if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
 
-        return json;
+        return json as object;
     }
 
     async createLayer(layerDefinition: Static<typeof ESRILayerList> = {
@@ -381,9 +433,10 @@ class EsriProxyServer {
 
         const json = await res.json()
 
+        // @ts-expect-error Untyped Response
         if (json.error) throw new Err(400, new Error(JSON.stringify(json.error)), 'ESRI Server Error: ' + json.error.message);
 
-        return json;
+        return json as object;
     }
 
     async getList(postfix: string): Promise<object> {
@@ -397,25 +450,87 @@ class EsriProxyServer {
             headers
         });
 
-        const json = await res.json()
+        const json = await res.json() as Record<string, unknown>
 
+        // @ts-expect-error Untyped Response
         if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
+        // @ts-expect-error Untyped Response
         else if (json.status === 'error') throw new Err(400, null, 'ESRI Server Error: ' + json.messages[0]);
 
-        return json;
+        return json as object;
     }
 }
 
 class EsriProxyLayer {
     esri: EsriBase;
+    type: EsriLayerType;
 
     constructor(esri: EsriBase) {
         this.esri = esri;
+
+        this.type = EsriLayerType.UNKNOWN;
+        if (this.esri.postfix.includes('FeatureServer')) {
+            this.type = EsriLayerType.FEATURE;
+        } else if (this.esri.postfix.includes('MapServer')) {
+            this.type = EsriLayerType.MAP;
+        } else if (this.esri.postfix.includes('ImageServer')) {
+            this.type = EsriLayerType.IMAGE;
+        }
     }
 
-    async query(where: string): Promise<object> {
-        const count: any = await this.#features(where, true);
-        const features: any = await this.#features(where, false);
+    async tilejson(): Promise<Static<typeof OptionalTileJSON>> {
+        const url = new URL(this.esri.base + this.esri.postfix);
+        url.searchParams.append('f', 'json');
+
+        const res = await fetch(url);
+
+        if ([EsriLayerType.FEATURE, EsriLayerType.MAP].includes(this.type)) {
+            const json = await res.typed(FeatureLayer)
+
+            // @ts-expect-error ESRI JSON Format
+            if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
+
+            return {
+                name: json.name,
+                type: Basemap_Type.VECTOR,
+                url: this.esri.base + this.esri.postfix,
+                bounds: [json.extent.xmin, json.extent.ymin, json.extent.xmax, json.extent.ymax],
+                minzoom: 0,
+                maxzoom: 20,
+                style: Basemap_Style.ZXY,
+                format: Basemap_Format.MVT
+            }
+        } else if (this.type === EsriLayerType.IMAGE) {
+            const json = await res.typed(ImageLayer)
+
+            // @ts-expect-error ESRI JSON Format
+            if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
+
+            return {
+                name: json.name,
+                type: Basemap_Type.RASTER,
+                url: this.esri.base + this.esri.postfix,
+                bounds: [json.extent.xmin, json.extent.ymin, json.extent.xmax, json.extent.ymax],
+                minzoom: 0,
+                maxzoom: 20,
+                style: Basemap_Style.ZXY,
+                format: Basemap_Format.PNG
+            }
+        } else {
+            throw new Err(400, null, 'Unsupported ESRI Layer Type');
+        }
+    }
+
+    async sample(where: string): Promise<{
+        count: number,
+        features: object
+    }> {
+        if (![EsriLayerType.FEATURE, EsriLayerType.MAP].includes(this.type)) {
+            throw new Err(400, null, 'Can only sample a FeatureServer or MapServer');
+        }
+
+        const count: any = await this.#sampleFeatures(where, true);
+        const features: any = await this.#sampleFeatures(where, false);
 
         return {
             count: count.count,
@@ -423,7 +538,7 @@ class EsriProxyLayer {
         }
     }
 
-    async #features(where: string, countOnly=false): Promise<object> {
+    async #sampleFeatures(where: string, countOnly=false): Promise<object> {
         const url = new URL(this.esri.base + this.esri.postfix + '/query');
         url.searchParams.append('f', 'json');
         url.searchParams.append('where', where);
@@ -443,9 +558,10 @@ class EsriProxyLayer {
 
         const json = await res.json()
 
+        // @ts-expect-error ESRI JSON Format
         if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
 
-        return json;
+        return json as object;
     }
 }
 

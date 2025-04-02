@@ -11,7 +11,7 @@
             <div class='d-flex align-items-center'>
                 <IconInfoSquare
                     :size='28'
-                    :stroke='1'
+                    stroke='1'
                 />
                 <span class='mx-2'>Welcome to CloudTAK</span>
             </div>

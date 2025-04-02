@@ -3,29 +3,35 @@
         Style Editor
         <div class='ms-auto btn-list'>
             <template v-if='mode === "visual"'>
-                <IconPlus
-                    v-tooltip='"New Layer"'
-                    class='cursor-pointer'
-                    :size='32'
-                    stroke='1'
+                <TablerIconButton
+                    title='New Layer'
                     @click='newLayer'
-                />
-                <IconCode
-                    v-tooltip='"Code View"'
-                    class='cursor-pointer'
+                >
+                    <IconPlus
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+                <TablerIconButton
+                    title='Code View'
+                    @click='mode = "code"'
+                >
+                    <IconCode
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+            </template>
+            <TablerIconButton
+                v-if='mode === "code"'
+                title='Visual View'
+                @click='mode = "visual"'
+            >
+                <IconEye
                     :size='32'
                     stroke='1'
-                    @click='mode = "code"'
                 />
-            </template>
-            <IconEye
-                v-if='mode === "code"'
-                v-tooltip='"Visual View"'
-                class='cursor-pointer'
-                :size='32'
-                stroke='1'
-                @click='mode = "visual"'
-            />
+            </TablerIconButton>
         </div>
     </div>
 
@@ -54,52 +60,52 @@
                     <IconPaint
                         v-if='l.type === "fill"'
                         :size='24'
-                        :stroke='1'
+                        stroke='1'
                     />
                     <IconLine
                         v-else-if='l.type === "line"'
                         :size='24'
-                        :stroke='1'
+                        stroke='1'
                     />
                     <IconAbc
                         v-else-if='l.type === "symbol"'
                         :size='24'
-                        :stroke='1'
+                        stroke='1'
                     />
                     <IconCircle
                         v-else-if='l.type === "circle"'
                         :size='24'
-                        :stroke='1'
+                        stroke='1'
                     />
                     <IconFlame
                         v-else-if='l.type === "heatmap"'
                         :size='24'
-                        :stroke='1'
+                        stroke='1'
                     />
                     <IconCube
                         v-else-if='l.type === "fill-extrusion"'
                         :size='24'
-                        :stroke='1'
+                        stroke='1'
                     />
                     <IconPhoto
                         v-else-if='l.type === "raster"'
                         :size='24'
-                        :stroke='1'
+                        stroke='1'
                     />
                     <IconMountain
                         v-else-if='l.type === "hillshade"'
                         :size='24'
-                        :stroke='1'
+                        stroke='1'
                     />
                     <IconBackground
                         v-else-if='l.type === "background"'
                         :size='24'
-                        :stroke='1'
+                        stroke='1'
                     />
                     <IconQuestionMark
                         v-else
                         :size='24'
-                        :stroke='1'
+                        stroke='1'
                     />
 
                     <span
@@ -112,22 +118,26 @@
                         class='ms-auto btn-list'
                         @click.stop.prevent
                     >
-                        <IconCode
+                        <TablerIconButton
                             v-if='!code.has(l.id)'
-                            v-tooltip='"Code View"'
-                            class='cursor-pointer'
-                            :size='32'
-                            stroke='1'
+                            title='Code View'
                             @click='code.add(l.id)'
-                        />
-                        <IconEye
+                        >
+                            <IconCode
+                                :size='32'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
+                        <TablerIconButton
                             v-else
-                            v-tooltip='"Visual View"'
-                            class='cursor-pointer'
-                            :size='32'
-                            stroke='1'
+                            title='Visual View'
                             @click='code.delete(l.id)'
-                        />
+                        >
+                            <IconEye
+                                :size='32'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
 
                         <TablerDelete
                             v-tooltip='"Remove Layer"'
@@ -144,6 +154,7 @@
                 <StyleLayer
                     v-else
                     :layer='l'
+                    :advanced='advanced'
                     :update-map='false'
                 />
             </div>
@@ -151,8 +162,10 @@
     </template>
 </template>
 
-<script>
+<script setup>
+import { ref, watch } from 'vue';
 import {
+    TablerIconButton,
     TablerDelete,
     TablerNone,
 } from '@tak-ps/vue-tabler';
@@ -174,67 +187,43 @@ import {
 } from '@tabler/icons-vue';
 import StyleLayer from './Layer.vue';
 
-export default {
-    name: 'StylingContainer',
-    components: {
-        IconEye,
-        IconAbc,
-        IconPlus,
-        IconCube,
-        IconCode,
-        IconPaint,
-        IconLine,
-        IconPhoto,
-        IconFlame,
-        IconCircle,
-        IconMountain,
-        IconBackground,
-        IconQuestionMark,
-        StyleLayer,
-        TablerDelete,
-        TablerNone,
-        ObjectInput,
+const props = defineProps({
+    modelValue: {
+        type: Object,
+        required: true
     },
-    props: {
-        modelValue: {
-            type: Object,
-            required: true
-        }
-    },
-    emits: [
-        'update:modelValue'
-    ],
-    data: function() {
-        return {
-            styles: JSON.parse(JSON.stringify(this.modelValue)),
-            code: new Set(),
-            open: new Set(),
-            mode: 'visual'
-        }
-    },
-    watch: {
-        styles: {
-            deep: true,
-            handler: function() {
-                this.$emit('update:modelValue', this.styles);
-            }
-        }
-    },
-    methods: {
-        removeLayer: function(l, i) {
-            this.styles.splice(i, 1);
-            this.open.delete(l.id)
-            this.code.delete(l.id)
-        },
-        newLayer: function() {
-            this.styles.push({
-                id: "new-layer",
-                type: 'circle',
-                layout: {},
-                paint: {}
-            });
-            this.open.add('new-layer');
-        }
+    advanced: {
+        type: Boolean,
+        default: false
     }
+});
+
+const emit = defineEmits([
+    'update:modelValue'
+]);
+
+const styles = ref(JSON.parse(JSON.stringify(props.modelValue)))
+const code = ref(new Set());
+const open = ref(new Set());
+const mode = ref('visual');
+
+watch(styles.value, () => {
+    emit('update:modelValue', styles.value);
+});
+
+function removeLayer(l, i) {
+    styles.value.splice(i, 1);
+    open.value.delete(l.id)
+    code.value.delete(l.id)
+}
+
+function newLayer() {
+    styles.value.push({
+        id: "new-layer",
+        type: 'circle',
+        layout: {},
+        paint: {}
+    });
+    open.value.add('new-layer');
 }
 </script>

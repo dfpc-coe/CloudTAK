@@ -76,8 +76,9 @@ export default class TileJSON {
             !(pathname.includes('{z}') && pathname.includes('{x}') && pathname.includes('{y}'))
             && !pathname.includes('{q}')
             && !pathname.includes('/FeatureServer/')
+            && !pathname.includes('/ImageServer')
         ) {
-            throw new Err(400, null, 'Either ZXY, Quadkey variables OR ESRI FeatureServer must be used');
+            throw new Err(400, null, 'Either ZXY, Quadkey variables OR ESRI FeatureServer/ImageServer must be used');
         }
     }
 
@@ -102,7 +103,27 @@ export default class TileJSON {
         return tileToBBOX([x, y, z]);
     }
 
-    static esri(layer: string, z: number, x: number, y: number): URL {
+    static esriRasterTileURL(layer: string, z: number, x: number, y: number): URL {
+        const url = new URL(layer);
+
+        if (!url.pathname.endsWith('/exportImage')) {
+            url.pathname = url.pathname + '/exportImage'
+        }
+
+        url.searchParams.set('f', 'image');
+
+        const bbox = this.extent(z, x, y);
+
+        url.searchParams.append('imageSR', '3857');
+        url.searchParams.append('size', '256,256');
+
+        url.searchParams.append('bboxSR', '4326');
+        url.searchParams.append('bbox', `${bbox[0]},${bbox[1]},${bbox[2]},${bbox[3]}`);
+
+        return url
+    }
+
+    static esriVectorTileURL(layer: string, z: number, x: number, y: number): URL {
         const url = new URL(layer);
 
         if (!url.pathname.endsWith('/query')) {
@@ -179,9 +200,34 @@ export default class TileJSON {
         if (!opts) opts = {};
         if (!opts.headers) opts.headers = {};
 
-        if (config.url.includes("/FeatureServer/")) {
+        if (config.url.includes("/ImageServer")) {
             try {
-                const url = this.esri(config.url, z, x, y)
+                const url = this.esriRasterTileURL(config.url, z, x, y)
+
+                const tileRes = await fetch(url);
+
+                if (!tileRes.ok) throw new Err(400, null, `Upstream Error: ${await tileRes.text()}`);
+
+                const tile = Buffer.from(await tileRes.arrayBuffer());
+
+                res.writeHead(200, {
+                    ...opts.headers,
+                    'Content-Type': 'image/jpeg',
+                    'Content-Length': Buffer.byteLength(tile)
+                });
+
+                res.write(tile);
+                res.end();
+            } catch (err) {
+                if (err instanceof Err) {
+                    throw err;
+                } else {
+                    throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Failed to fetch ESRI tile')
+                }
+            }
+        } else if (config.url.includes("/FeatureServer/")) {
+            try {
+                const url = this.esriVectorTileURL(config.url, z, x, y)
 
                 const tileRes = await fetch(url);
 
@@ -216,7 +262,11 @@ export default class TileJSON {
                 res.write(tile)
                 res.end();
             } catch (err) {
-                throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Failed to fetch ESRI tile')
+                if (err instanceof Err) {
+                    throw err;
+                } else {
+                    throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Failed to fetch ESRI tile')
+                }
             }
         } else {
             const url = new URL(config.url

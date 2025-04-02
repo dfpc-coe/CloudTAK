@@ -1,13 +1,14 @@
 <template>
     <MenuTemplate
         name='Mission Info'
+        :zindex='0'
         :back='false'
         :border='false'
     >
         <div class='my-2'>
             <div class='row g-0 mx-2'>
                 <div class='col-12'>
-                    <div class='datagrid-title'>
+                    <div class='datagrid-title user-select-none'>
                         Created
                     </div>
                     <div
@@ -16,7 +17,7 @@
                     />
                 </div>
                 <div class='col-6'>
-                    <div class='datagrid-title'>
+                    <div class='datagrid-title user-select-none'>
                         Subscribers
                     </div>
 
@@ -31,7 +32,7 @@
                     />
                 </div>
                 <div class='col-6'>
-                    <div class='datagrid-title'>
+                    <div class='datagrid-title user-select-none'>
                         Contents
                     </div>
                     <div
@@ -40,7 +41,7 @@
                     />
                 </div>
                 <div class='col-12'>
-                    <div class='datagrid-title'>
+                    <div class='datagrid-title user-select-none'>
                         Groups (Channels)
                     </div>
                     <div
@@ -51,7 +52,7 @@
                     </div>
                 </div>
                 <div class='col-12'>
-                    <div class='datagrid-title'>
+                    <div class='datagrid-title user-select-none'>
                         Keywords
                     </div>
                     <div
@@ -67,7 +68,7 @@
                     </div>
                 </div>
                 <div class='col-12'>
-                    <div class='datagrid-title'>
+                    <div class='datagrid-title user-select-none'>
                         Description
                     </div>
                     <div
@@ -76,7 +77,7 @@
                     />
                 </div>
                 <div class='col-12'>
-                    <div class='datagrid-title'>
+                    <div class='datagrid-title user-select-none'>
                         Subscription
                     </div>
                     <button
@@ -87,14 +88,36 @@
                     >
                         Subscribe
                     </button>
-                    <button
+                    <template
                         v-else-if='subscribed === true'
-                        class='btn btn-danger'
-                        style='height: 32px;'
-                        @click='subscribe(false)'
                     >
-                        Unsubscribe
-                    </button>
+                        <div class='btn-list'>
+                            <button
+                                class='btn btn-danger'
+                                style='height: 32px;'
+                                @click='subscribe(false)'
+                            >
+                                Unsubscribe
+                            </button>
+
+                            <button
+                                v-if='mapStore.mission !== props.mission.guid'
+                                class='btn btn-green'
+                                style='height: 32px;'
+                                @click='mapStore.mission = props.mission.guid'
+                            >
+                                Make Active
+                            </button>
+                            <button
+                                v-else
+                                class='btn btn-muted'
+                                style='height: 32px;'
+                                @click='mapStore.mission = undefined'
+                            >
+                                Deactivate
+                            </button>
+                        </div>
+                    </template>
                     <TablerLoading
                         v-else
                         :inline='true'
@@ -109,12 +132,12 @@
 <script setup lang='ts'>
 import { ref, computed, onMounted } from 'vue';
 import type { MissionSubscriptions } from '../../../../types.ts'
-import Subscription from '../../../../stores/base/mission.ts';
+import Subscription from '../../../../base/subscription.ts';
 import {
     TablerLoading,
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../../util/MenuTemplate.vue';
-import Overlay from '../../../../stores/base/overlay.ts';
+import Overlay from '../../../../base/overlay.ts';
 import { useMapStore } from '../../../../stores/map.ts';
 const mapStore = useMapStore();
 
@@ -157,9 +180,6 @@ async function subscribe(subscribed: boolean) {
     const overlay = mapStore.getOverlayByMode('mission', props.mission.guid);
 
     if (subscribed === true && !overlay) {
-        if (!mapStore.map) throw new Error('Cannot subscribe before map is loaded');
-
-        // @ts-expect-error Map.Style is missing properties (probably a MapLibreGL@5 issue)
         const missionOverlay = await Overlay.create(mapStore.map, {
             name: props.mission.name,
             url: `/mission/${encodeURIComponent(props.mission.name)}`,

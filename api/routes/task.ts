@@ -110,7 +110,10 @@ export default async function router(schema: Schema, config: Config) {
         description: 'List Tasks',
         res: Type.Object({
             total: Type.Integer(),
-            items: Type.Any()
+            items: Type.Record(
+                Type.String(),
+                Type.Array(Type.String())
+            )
         })
     }, async (req, res) => {
         try {
@@ -136,7 +139,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'List Version for a specific task',
         res: Type.Object({
             total: Type.Integer(),
-            versions: Type.Array(Type.Any())
+            versions: Type.Array(Type.String())
         })
     }, async (req, res) => {
         try {

@@ -4,7 +4,7 @@
             <div class='col-12 d-flex align-items-center'>
                 <label><IconLicense
                     :size='20'
-                    :stroke='1'
+                    stroke='1'
                 /> Global ID</label>
                 <div class='ms-auto'>
                     <TablerToggle
@@ -28,7 +28,7 @@
             <div class='col-12 d-flex align-items-center'>
                 <label><IconBlockquote
                     :size='20'
-                    :stroke='1'
+                    stroke='1'
                 /> Global Callsign</label>
                 <div class='ms-auto'>
                     <TablerToggle
@@ -52,7 +52,7 @@
             <div class='col-12 d-flex align-items-center'>
                 <label><IconBlockquote
                     :size='20'
-                    :stroke='1'
+                    stroke='1'
                 /> Global Remarks</label>
                 <div class='ms-auto'>
                     <TablerToggle
@@ -75,7 +75,7 @@
             <div class='col-12 d-flex align-items-center'>
                 <label><IconLink
                     :size='20'
-                    :stroke='1'
+                    stroke='1'
                 /> Global Links</label>
                 <div class='ms-auto'>
                     <TablerToggle
@@ -113,7 +113,7 @@
                     >
                         <IconPoint
                             :size='32'
-                            :stroke='1'
+                            stroke='1'
                         /> Points
                     </label>
                     <input
@@ -129,7 +129,7 @@
                     >
                         <IconLine
                             :size='32'
-                            :stroke='1'
+                            stroke='1'
                         /> Lines
                     </label>
                     <input
@@ -145,7 +145,7 @@
                     >
                         <IconPolygon
                             :size='32'
-                            :stroke='1'
+                            stroke='1'
                         /> Polygons
                     </label>
                 </div>
@@ -156,7 +156,7 @@
             <div class='col-12 d-flex align-items-center'>
                 <label><IconLicense
                     :size='20'
-                    :stroke='1'
+                    stroke='1'
                 /> ID Override</label>
                 <div class='ms-auto'>
                     <TablerToggle
@@ -180,7 +180,7 @@
             <div class='col-12 d-flex align-items-center'>
                 <label><IconBlockquote
                     :size='20'
-                    :stroke='1'
+                    stroke='1'
                 /> Callsign Override</label>
                 <div class='ms-auto'>
                     <TablerToggle
@@ -204,7 +204,7 @@
             <div class='col-12 d-flex align-items-center'>
                 <label><IconBlockquote
                     :size='20'
-                    :stroke='1'
+                    stroke='1'
                 /> Remarks Override</label>
                 <div class='ms-auto'>
                     <TablerToggle
@@ -228,7 +228,7 @@
             <div class='col-12 d-flex align-items-center'>
                 <label><IconLink
                     :size='20'
-                    :stroke='1'
+                    stroke='1'
                 /> Links Override</label>
                 <div class='ms-auto'>
                     <TablerToggle
@@ -253,7 +253,7 @@
                 <div class='col-12 d-flex align-items-center'>
                     <label><IconCategory
                         :size='20'
-                        :stroke='1'
+                        stroke='1'
                     /> Point Type</label>
                     <div class='ms-auto'>
                         <TablerToggle
@@ -276,7 +276,7 @@
                 <div class='col-12 d-flex align-items-center'>
                     <label><IconPhoto
                         :size='20'
-                        :stroke='1'
+                        stroke='1'
                     /> Point Icon</label>
                     <div class='ms-auto'>
                         <TablerToggle
@@ -297,7 +297,7 @@
                 <div class='col-12 d-flex align-items-center'>
                     <label><IconPaint
                         :size='20'
-                        :stroke='1'
+                        stroke='1'
                     /> Point Color</label>
                     <div class='ms-auto'>
                         <TablerToggle
@@ -319,7 +319,7 @@
                     <label>
                         <IconGhost
                             :size='20'
-                            :stroke='1'
+                            stroke='1'
                         />
                         Point Opacity
                     </label>
@@ -352,7 +352,7 @@
                     <div>
                         <IconPaint
                             :size='20'
-                            :stroke='1'
+                            stroke='1'
                         /> Line Color
                     </div>
                     <div class='ms-auto'>
@@ -375,7 +375,7 @@
                 <div class='col-12 d-flex align-items-center'>
                     <label><IconBorderStyle2
                         :size='20'
-                        :stroke='1'
+                        stroke='1'
                     /> Line Style</label>
                     <div class='ms-auto'>
                         <TablerToggle
@@ -396,7 +396,7 @@
                 <div class='col-12 d-flex align-items-center'>
                     <label><IconRuler2
                         :size='20'
-                        :stroke='1'
+                        stroke='1'
                     /> Line Width</label>
                     <div class='ms-auto'>
                         <TablerToggle
@@ -420,7 +420,7 @@
                     <label>
                         <IconGhost
                             :size='20'
-                            :stroke='1'
+                            stroke='1'
                         />
                         Line Opacity
                     </label>
@@ -452,7 +452,7 @@
                 <div class='col-12 d-flex align-items-center'>
                     <label><IconPaint
                         :size='20'
-                        :stroke='1'
+                        stroke='1'
                     /> Fill Color</label>
                     <div class='ms-auto'>
                         <TablerToggle
@@ -474,7 +474,7 @@
                     <label>
                         <IconGhost
                             :size='20'
-                            :stroke='1'
+                            stroke='1'
                         />
                         Fill Opacity
                     </label>
@@ -673,7 +673,10 @@ export default {
     },
     mounted: function() {
         for (const prop of ['id', 'remarks', 'callsign', 'links']) {
-            if (!this.modelValue[prop]) continue;
+            if (!this.modelValue[prop] || (Array.isArray(this.modelValue[prop]) && this.modelValue[prop].length === 0)) {
+                continue;
+            }
+
             this.filters[prop] = this.modelValue[prop];
             this.enabled[prop] = true;
         }

@@ -2,12 +2,28 @@ import { createSelectSchema } from 'drizzle-typebox';
 import { Type } from '@sinclair/typebox'
 import * as schemas from './schema.js';
 import { TAKGroup, TAKRole } from './api/types.js';
+import { Profile_Projection } from './enums.js';
 import { AugmentedData } from './models/Data.js';
-import { AugmentedLayer } from './models/Layer.js';
+import { AugmentedLayer, AugmentedLayerIncoming, AugmentedLayerOutgoing } from './models/Layer.js';
+import { Basemap_Format, Basemap_Style, Basemap_Type } from '../lib/enums.js';
 import { Feature } from '@tak-ps/node-cot';
 
 export const LayerResponse = AugmentedLayer;
+export const LayerIncomingResponse = AugmentedLayerIncoming;
+export const LayerOutgoingResponse = AugmentedLayerOutgoing;
 export const DataResponse = AugmentedData;
+
+export const OptionalTileJSON = Type.Object({
+    name: Type.Optional(Type.String()),
+    type: Type.Optional(Type.Enum(Basemap_Type)),
+    url: Type.Optional(Type.String()),
+    bounds: Type.Optional(Type.Any()),
+    center: Type.Optional(Type.Any()),
+    minzoom: Type.Optional(Type.Integer()),
+    maxzoom: Type.Optional(Type.Integer()),
+    style: Type.Optional(Type.Enum(Basemap_Style)),
+    format: Type.Optional(Type.Enum(Basemap_Format))
+});
 
 export const LayerError = Type.Object({
     error: Type.String(),
@@ -24,6 +40,38 @@ export const StandardResponse = Type.Object({
     status: Type.Integer(),
     message: Type.String()
 });
+
+export const PaletteFeatureResponse = createSelectSchema(schemas.PaletteFeature, {
+    uuid: Type.String(),
+});
+
+
+const Palette = createSelectSchema(schemas.Palette, {
+    uuid: Type.String(),
+    created: Type.String(),
+    updated: Type.String(),
+})
+
+export const PaletteResponse = Type.Composite([
+    Palette,
+    Type.Object({
+        features: Type.Array(PaletteFeatureResponse)
+    })
+]);
+
+export const PaletteFeatureStyle = Type.Object({
+    'marker-color': Type.Optional(Type.String()),
+    'marker-opacity': Type.Optional(Type.String()),
+
+    icon: Type.Optional(Type.String()),
+
+    stroke: Type.Optional(Type.String()),
+    'stroke-style': Type.Optional(Type.String()),
+    'stroke-opacity': Type.Optional(Type.String()),
+    'stroke-width': Type.Optional(Type.String()),
+    fill: Type.Optional(Type.String()),
+    'fill-opacity': Type.Optional(Type.String()),
+})
 
 export const VideoResponse = Type.Object({
     id: Type.String(),
@@ -42,9 +90,7 @@ export const ServerResponse = Type.Object({
     status: Type.String(),
     created: Type.String(),
     updated: Type.String(),
-    provider_client: Type.Optional(Type.String()),
-    provider_secret: Type.Optional(Type.String()),
-    provider_url: Type.Optional(Type.String()),
+    version: Type.String(),
     name: Type.String(),
     url: Type.String(),
     api: Type.String(),
@@ -66,12 +112,15 @@ export const ProfileResponse = Type.Object({
     system_admin: Type.Boolean(),
     agency_admin: Type.Array(Type.Integer()),
     tak_callsign: Type.String(),
+    tak_remarks: Type.String(),
     tak_group: Type.Enum(TAKGroup),
     tak_role: Type.Enum(TAKRole),
     tak_loc: Type.Union([Type.Object({
         type: Type.Literal('Point'),
         coordinates: Type.Array(Type.Number())
     }), Type.Null()]),
+    tak_loc_freq: Type.Integer(),
+    display_projection: Type.Enum(Profile_Projection),
     display_stale: Type.String(),
     display_text: Type.String(),
     display_distance: Type.String(),
@@ -81,7 +130,10 @@ export const ProfileResponse = Type.Object({
 
 export const VideoLeaseResponse = createSelectSchema(schemas.VideoLease, {
     id: Type.Integer(),
-    ephemeral: Type.Boolean()
+    ephemeral: Type.Boolean(),
+    expiration: Type.Union([Type.Null(), Type.String()]),
+    channel: Type.Union([Type.Null(), Type.String()]),
+    proxy: Type.Union([Type.Null(), Type.String()]),
 });
 
 export const ProfileOverlayResponse = createSelectSchema(schemas.ProfileOverlay, {
@@ -109,6 +161,10 @@ export const LayerTemplateResponse = createSelectSchema(schemas.LayerTemplate, {
     config: Type.Unknown(),
 });
 
+export const ProfileInterestResponse = createSelectSchema(schemas.ProfileInterest, {
+    id: Type.Integer(),
+});
+
 export const ProfileFeature = Type.Composite([ Feature.Feature, Type.Object({
     path: Type.String({ default: '/' }),
 })]);
@@ -122,6 +178,12 @@ export const LayerAlertResponse = createSelectSchema(schemas.LayerAlert, {
 export const ImportResponse = createSelectSchema(schemas.Import, {
     config: Type.Unknown(),
     result: Type.Unknown()
+});
+
+export const ErrorResponse = createSelectSchema(schemas.Errors, {
+    id: Type.Integer(),
+    created: Type.String(),
+    updated: Type.String(),
 });
 
 export const TaskResponse = createSelectSchema(schemas.Task, {
@@ -220,7 +282,7 @@ export const ConnectionSinkResponse = createSelectSchema(schemas.ConnectionSink,
     connection: Type.Integer(),
     enabled: Type.Boolean(),
     logging: Type.Boolean(),
-    body: Type.Unknown()
+    body: Type.Record(Type.String(), Type.String())
 });
 
 export const ConnectionResponse = Type.Object({
@@ -244,4 +306,5 @@ export const BasemapResponse = createSelectSchema(schemas.Basemap, {
     minzoom: Type.Integer(),
     maxzoom: Type.Integer(),
     styles: Type.Array(Type.Unknown()),
+    collection: Type.Optional(Type.Union([Type.Null(), Type.String()])),
 });

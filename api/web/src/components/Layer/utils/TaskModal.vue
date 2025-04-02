@@ -29,10 +29,15 @@
                     />
                     <template v-else>
                         <div class='card-body'>
-                            <div class='list-group'>
+                            <div
+                                role='menu'
+                                class='list-group'
+                            >
                                 <span
                                     v-for='t of list.items'
                                     :key='t.prefix'
+                                    tabindex='0'
+                                    role='menuitem'
                                     class='list-group-item list-group-item-action d-flex align-items-center'
                                     :class='{
                                         "active": current.prefix === t.prefix,
@@ -49,14 +54,16 @@
                         </div>
                     </template>
 
-                    <div class='col-lg-12 py-2'>
-                        <TablerPager
-                            v-if='list.total > paging.limit'
-                            :page='paging.page'
-                            :total='list.total'
-                            :limit='paging.limit'
-                            @page='paging.page = $event'
-                        />
+                    <div class='col-lg-12 py-2 d-flex'>
+                        <div class='ms-auto'>
+                            <TablerPager
+                                v-if='list.total > paging.limit'
+                                :page='paging.page'
+                                :total='list.total'
+                                :limit='paging.limit'
+                                @page='paging.page = $event'
+                            />
+                        </div>
                     </div>
                 </div>
                 <div class='col-12 col-md-9 position-relative px-4'>

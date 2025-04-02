@@ -133,7 +133,7 @@
                                                             >
                                                                 <IconPoint
                                                                     :size='32'
-                                                                    :stroke='1'
+                                                                    stroke='1'
                                                                 /> Points
                                                             </label>
                                                             <input
@@ -149,7 +149,7 @@
                                                             >
                                                                 <IconLine
                                                                     :size='32'
-                                                                    :stroke='1'
+                                                                    stroke='1'
                                                                 /> Lines
                                                             </label>
                                                             <input
@@ -165,7 +165,7 @@
                                                             >
                                                                 <IconPolygon
                                                                     :size='32'
-                                                                    :stroke='1'
+                                                                    stroke='1'
                                                                 /> Polygons
                                                             </label>
                                                         </div>

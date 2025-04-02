@@ -3,7 +3,7 @@
         <div class='d-flex align-items-center'>
             <label class='mx-1 mb-1'>Connection Agency</label>
             <div
-                v-if='profile.system_admin'
+                v-if='isSystemAdmin'
                 class='ms-auto'
             >
                 <TablerToggle
@@ -27,55 +27,59 @@
                         :inline='true'
                         desc='Loading Agencies'
                     />
-                    <template v-else-if='selected.id'>
+                    <template v-else-if='selected'>
                         <div class='col-12 d-flex align-items-center'>
                             <div v-text='selected.name' />
                             <div class='ms-auto'>
-                                <IconTrash
-                                    v-if='selected.id && data.total > 1'
-                                    v-tooltip='"Remove Agency"'
-                                    :size='32'
-                                    :stroke='1'
-                                    class='cursor-pointer'
-                                    @click='selected.id = null'
-                                />
+                                <TablerIconButton
+                                    v-if='selected && list.total > 1'
+                                    title='Remove Agency'
+                                    @click='selected = undefined'
+                                >
+                                    <IconTrash
+                                        :size='32'
+                                        stroke='1'
+                                    />
+                                </TablerIconButton>
                             </div>
                         </div>
                     </template>
                     <template v-else>
-                        <TablerInput
-                            v-model='filter'
-                            placeholder='Agency Filter...'
-                        />
-
-                        <div
-                            v-if='loading.list'
-                            class='card-body'
-                        >
-                            <TablerLoading desc='Loading Agencies' />
+                        <div class='col-12 pb-2'>
+                            <TablerInput
+                                v-model='filter'
+                                icon='search'
+                                placeholder='Agency Filter...'
+                            />
                         </div>
+
+                        <TablerLoading
+                            v-if='loading.list'
+                            desc='Loading Agencies'
+                        />
                         <TablerNone
-                            v-else-if='data.total === 0'
+                            v-else-if='list.total === 0'
                             :create='false'
                             :compact='true'
                             label='Agencies'
                         />
-                        <template
-                            v-for='agency in data.items'
-                            v-else
-                        >
+                        <template v-else>
                             <div
-                                class='hover-light px-2 py-2 cursor-pointer row rounded'
+                                v-for='agency in list.items'
+                                :key='agency.id'
+                                class='hover-light px-2 py-2 cursor-pointer row rounded col-12'
                                 @click='selected = agency'
                             >
-                                <div class='col-md-12'>
-                                    <span v-text='agency.name' />
+                                <div class='d-flex align-items-center'>
+                                    <IconHome
+                                        :size='32'
+                                        stroke='1'
+                                    />
+                                    <span
+                                        class='mx-2'
+                                        v-text='agency.name'
+                                    />
                                 </div>
-
-                                <div
-                                    class='col-md-8'
-                                    v-text='agency.description'
-                                />
                             </div>
                         </template>
                     </template>
@@ -85,106 +89,94 @@
     </div>
 </template>
 
-<script>
-import { std, stdurl } from '/src/std.ts';
+<script setup lang='ts'>
+import { ref, watch, onMounted } from 'vue';
+import { std, stdurl } from '../../std.ts';
+import type { Profile, ETLAgencyList, ETLAgency } from '../../types.ts';
+import { watchDebounced } from '@vueuse/core'
 import {
     IconTrash,
+    IconHome,
 } from '@tabler/icons-vue';
 import {
+    TablerIconButton,
     TablerLoading,
     TablerToggle,
     TablerInput,
     TablerNone,
 } from '@tak-ps/vue-tabler';
-import { useProfileStore } from '/src/stores/profile.ts';
-import { mapState } from 'pinia'
 
-export default {
-    name: 'Agency',
-    components: {
-        IconTrash,
-        TablerToggle,
-        TablerInput,
-        TablerNone,
-        TablerLoading
-    },
-    props: {
-        modelValue: Number,
-        disabled: {
-            type: Boolean,
-            default: false
-        }
-    },
-    emits: [
-        'update:modelValue'
-    ],
-    data: function() {
-        return {
-            noAgency: false,
-            loading: {
-                main: true,
-                list: true,
-            },
-            filter: '',
-            selected: {
-                id: '',
-                name: ''
-            },
-            data: {
-                total: 0,
-                items: []
-            }
-        }
-    },
-    watch: {
-        selected: {
-            deep: true,
-            handler: function() {
-                if (!this.noAgency) {
-                    this.$emit('update:modelValue', this.selected.id);
-                }
-            }
-        },
-        noAgency: function() {
-            if (this.noAgency) {
-                this.selected.id = '';
-                this.$emit('update:modelValue', null);
-            }
-        },
-        filter: async function() {
-            await this.listData()
-        },
-        modelValue: function() {
-            if (this.modelValue) this.fetch();
-        }
-    },
-    computed: {
-        ...mapState(useProfileStore, ['profile']),
-    },
-    mounted: async function() {
-        if (this.modelValue) await this.fetch();
-        await this.listData();
-        this.loading.main = false;
-    },
-    methods: {
-        fetch: async function() {
-            this.selected = await std(`/api/agency/${this.modelValue}`);
-        },
-        listData: async function() {
-            this.loading.list = true;
-            const url = stdurl('/api/agency');
-            url.searchParams.append('filter', this.filter);
-            const data = await std(url);
+const props = withDefaults(defineProps<{
+    modelValue: number,
+    disable: boolean
+}>(), {
+    disable: false
+});
 
-            if (!this.profile.system_admin && data.total === 1) {
-                this.selected.name = data.items[0].name;
-                this.selected.id = data.items[0].id;
-            }
+const emit = defineEmits([ 'update:modelValue' ]);
 
-            this.data = data;
+const noAgency = ref(false);
+const loading = ref({
+    main: true,
+    list: true,
+});
+const filter = ref('');
+const selected = ref<ETLAgency | undefined>(undefined);
+const isSystemAdmin = ref(false);
 
-            this.loading.list = false;
-        },
+const list =  ref<ETLAgencyList>({
+    total: 0,
+    items: []
+});
+
+watch(selected, () => {
+    if (!noAgency.value) {
+        emit('update:modelValue', selected.value ? selected.value.id : undefined);
     }
-};
+});
+
+watch(noAgency, () => {
+    if (noAgency.value) {
+        selected.value = undefined;
+        emit('update:modelValue', null);
+    }
+});
+
+watchDebounced(filter, async function() {
+    await listData()
+}, { debounce: 500 })
+
+watch(props, async (newProps, oldProps) => {
+    if (newProps.modelValue !== oldProps.modelValue) {
+        await fetch();
+    }
+})
+
+onMounted(async () => {
+    const profile = await std('/api/profile') as Profile;
+    isSystemAdmin.value = profile.system_admin;
+
+    if (props.modelValue) await fetch();
+    await listData();
+    loading.value.main = false;
+});
+
+async function fetch() {
+    selected.value = await std(`/api/agency/${props.modelValue}`) as ETLAgency;
+}
+
+async function listData() {
+    loading.value.list = true;
+    const url = stdurl('/api/agency');
+    url.searchParams.append('filter', filter.value);
+    const data = await std(url) as ETLAgencyList;
+
+    if (!isSystemAdmin.value && data.total === 1) {
+        selected.value = data.items[0];
+    }
+
+    list.value = data;
+
+    loading.value.list = false;
+}
 </script>

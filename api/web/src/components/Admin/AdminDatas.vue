@@ -9,7 +9,7 @@
                 <IconRefresh
                     v-tooltip='"Refresh"'
                     :size='32'
-                    :stroke='1'
+                    stroke='1'
                     class='cursor-pointer'
                     @click='fetchList'
                 />
@@ -18,6 +18,7 @@
         <div style='min-height: 20vh; margin-bottom: 61px'>
             <TablerInput
                 v-model='paging.filter'
+                icon='search'
                 placeholder='Filter...'
                 class='mx-1 my-2'
             />

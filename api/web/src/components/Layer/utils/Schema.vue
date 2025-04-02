@@ -62,21 +62,21 @@
                         <IconTrash
                             v-tooltip='"Clear Table"'
                             :size='32'
-                            :stroke='1'
+                            stroke='1'
                             class='cursor-pointer'
                             @click='data[key].splice(0, data[key].length)'
                         />
                         <IconDatabaseImport
                             v-tooltip='"Import CSV"'
                             :size='32'
-                            :stroke='1'
+                            stroke='1'
                             class='cursor-pointer'
                             @click='importModal(Object.keys(schema.properties[key].items.properties), data[key])'
                         />
                         <IconPlus
                             v-tooltip='"Add Row"'
                             :size='32'
-                            :stroke='1'
+                            stroke='1'
                             class='cursor-pointer'
                             @click='editModal(schema.properties[key].items, {}, key)'
                         />
@@ -124,6 +124,7 @@
                     <TablerNone
                         v-if='!data[key] || !data[key].length'
                         :label='key'
+                        :create='!disabled'
                         @create='editModal(schema.properties[key].items, {}, key)'
                     />
                 </template>
@@ -141,7 +142,7 @@
                                 <IconTrash
                                     v-if='!disabled'
                                     :size='32'
-                                    :stroke='1'
+                                    stroke='1'
                                     class='cursor-pointer'
                                     @click='data[key].splice(i, 1)'
                                 />
@@ -264,14 +265,12 @@ export default {
 
         if (this.schema.type === 'object' && this.schema.properties) {
             for (const key in this.schema.properties) {
-                if (!this.schema.properties[key].default) {
-                    if (!this.data[key] && this.schema.properties[key].type === 'array') {
-                        this.data[key] = [];
-                    } else if (!this.data[key] && this.schema.properties[key].type === 'boolean') {
-                        this.data[key] = false;
-                    } else if (!this.data[key] && this.schema.properties[key].type === 'string') {
-                        this.data[key] = '';
-                    }
+                if (!this.data[key] && this.schema.properties[key].type === 'array') {
+                    this.data[key] = this.schema.properties[key].default || [];
+                } else if (!this.data[key] && this.schema.properties[key].type === 'boolean') {
+                    this.data[key] = this.schema.properties[key].default || false;
+                } else if (!this.data[key] && this.schema.properties[key].type === 'string') {
+                    this.data[key] = this.schema.properties[key].default || '';
                 }
             }
         }

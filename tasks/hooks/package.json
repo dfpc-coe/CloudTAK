@@ -3,6 +3,9 @@
     "version": "0.0.0",
     "type": "module",
     "private": true,
+    "engines": {
+        "node": ">= 22"
+    },
     "scripts": {
         "lint": "eslint src/",
         "check": "tsc --noEmit src/index.ts",
@@ -10,14 +13,13 @@
         "build": "tsup --target es2022 --format esm src/index.ts"
     },
     "dependencies": {
-        "@aws-sdk/client-cloudwatch": "^3.370.0",
         "@aws-sdk/client-s3": "^3.213.0",
         "@aws-sdk/node-http-handler": "^3.212.0",
         "@terraformer/arcgis": "^2.1.2",
         "@types/tape": "^5.6.0",
         "proj4": "^2.9.0",
         "tape": "^5.6.4",
-        "undici": "^6.2.1"
+        "undici": "^7.0.0"
     },
     "devDependencies": {
         "@types/aws-lambda": "^8.10.108",

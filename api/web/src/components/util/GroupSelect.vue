@@ -2,12 +2,23 @@
     <div class='modal-body'>
         <TablerInput
             v-model='filter'
+            icon='search'
             label='Channel Selection'
             placeholder='Filter Channels...'
         />
 
+        <div
+            v-if='props.limit'
+            class='alert alert-info mt-2'
+            role='alert'
+        >
+            <div class='d-flex align-items-center'>
+                <IconInfoCircle /><span class='mx-1'>Select up to&nbsp;<span v-text='props.limit' />&nbsp;Channel<span v-text='props.limit > 1 ? "s" : ""' /></span>
+            </div>
+        </div>
+
         <TablerLoading
-            v-if='loading.groups'
+            v-if='loading'
             desc='Loading Channels'
         />
         <TablerNone
@@ -16,7 +27,10 @@
             :create='false'
         />
         <template v-else>
-            <div class='my-2'>
+            <div
+                class='my-2 overflow-auto'
+                style='height: 25vh;'
+            >
                 <div
                     v-for='group in filtered'
                     :key='group'
@@ -26,13 +40,13 @@
                     <IconCircleFilled
                         v-if='selected.has(group)'
                         :size='32'
-                        :stroke='1'
+                        stroke='1'
                         class='cursor-pointer'
                     />
                     <IconCircle
                         v-else
                         :size='32'
-                        :stroke='1'
+                        troke='1'
                         class='cursor-pointer'
                     />
                     <span
@@ -45,8 +59,10 @@
     </div>
 </template>
 
-<script>
-import { std, stdurl } from '/src/std.ts';
+<script setup lang='ts'>
+import { ref, computed, onMounted } from 'vue';
+import { std, stdurl } from '../../../src/std.ts';
+import type { Group } from '../../../src/types.ts';
 import {
     TablerLoading,
     TablerInput,
@@ -54,97 +70,83 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     IconCircle,
+    IconInfoCircle,
     IconCircleFilled
 } from '@tabler/icons-vue';
 
-export default {
-    name: 'GroupSelectModal',
-    components: {
-        IconCircle,
-        IconCircleFilled,
-        TablerNone,
-        TablerInput,
-        TablerLoading
-    },
-    props: {
-        disabled: {
-            type: Boolean
-        },
-        button: {
-            type: Boolean,
-            default: false
-        },
-        connection: {
-            type: Number
-        },
-        modelValue: {
-            type: Array,
-            default: function() {
-                return []
-            }
+const props = defineProps<{
+    connection?: number,
+    limit?: number,
+    modelValue: Array<string>
+}>();
+
+const emit = defineEmits([
+    'update:modelValue'
+]);
+
+const filter = ref('');
+const loading = ref(true);
+const selected = ref<Set<string>>(new Set(props.modelValue))
+const groups = ref<Record<string, Group>>({});
+
+const filtered = computed(() => {
+    return Object.keys(groups.value).filter((g) => {
+        return g.toLowerCase().includes(filter.value.toLowerCase());
+    });
+})
+
+onMounted(async () => {
+    await fetch();
+});
+
+function updateGroup(group: string) {
+    if (selected.value.has(group)) {
+        selected.value.delete(group)
+    } else {
+        if (props.limit && selected.value.size >= props.limit) {
+            throw new Error(`Cannot select more than ${props.limit} Channels`);
         }
-    },
-    emits: [
-        'update:modelValue'
-    ],
-    data: function() {
-        return {
-            filter: '',
-            loading: {
-                groups: true,
-            },
-            selected: new Set(this.modelValue),
-            groups: []
-        }
-    },
-    computed: {
-        filtered: function() {
-            return Object.keys(this.groups).filter((g) => {
-                return g.toLowerCase().includes(this.filter.toLowerCase());
-            });
-        }
-    },
-    mounted: async function() {
-        await this.fetch();
-    },
-    methods: {
-        updateGroup: function(group) {
-            if (this.selected.has(group)) {
-                this.selected.delete(group)
-            } else {
-                this.selected.add(group)
-            }
-            this.$emit('update:modelValue', Array.from(this.selected));
-        },
-        fetch: async function() {
-            this.loading.groups = true;
 
-            let list;
-            if (this.connection) {
-                const url = stdurl(`/api/connection/${this.connection}/channel`);
-                list = await std(url);
-            } else {
-                const url = stdurl('/api/marti/group');
-                list = await std(url);
-            }
-
-            const channels = {};
-
-            JSON.parse(JSON.stringify(list.data)).sort((a, b) => {
-                return (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0);
-            }).forEach((channel) => {
-                if (channels[channel.name]) {
-                    channels[channel.name].direction.push(channel.direction);
-                } else {
-                    channel.direction = [channel.direction];
-                    channels[channel.name] = channel;
-                }
-            });
-
-            this.groups = channels;
-
-            this.loading.groups = false;
-        },
+        selected.value.add(group)
     }
+
+    emit('update:modelValue', Array.from(selected.value));
+}
+
+async function fetch() {
+    loading.value = true;
+
+    let list: Group[];
+    if (props.connection) {
+        const url = stdurl(`/api/connection/${props.connection}/channel`);
+        list = (await std(url) as {
+            data: Group[]
+        }).data;
+    } else {
+        const url = stdurl('/api/marti/group');
+        url.searchParams.append('useCache', 'true');
+        list = ((await std(url)) as {
+            data: Group[]
+        }).data
+    }
+
+    const channels: Record<string, Group> = {};
+
+    JSON.parse(JSON.stringify(list)).sort((a: Group, b: Group) => {
+        return (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0);
+    }).forEach((channel: Group) => {
+        if (channels[channel.name]) {
+            // @ts-expect-error Need to make these human readable strings instead of array to sync with type
+            channels[channel.name].direction.push(channel.direction);
+        } else {
+            // @ts-expect-error Need to make these human readable strings instead of array to sync with type
+            channel.direction = [channel.direction];
+            channels[channel.name] = channel;
+        }
+    });
+
+    groups.value = channels;
+
+    loading.value = false;
 }
 </script>

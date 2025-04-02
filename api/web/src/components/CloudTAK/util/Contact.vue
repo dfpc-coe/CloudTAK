@@ -14,7 +14,7 @@
                 <IconCheck
                     v-if='selected'
                     :size='compact ? 20 : 32'
-                    :stroke='1'
+                    stroke='1'
                     :style='compact ? "margin-left: 8px" : "margin-left: 16px;"'
                 />
                 <ContactPuck
@@ -34,7 +34,7 @@
                     v-text='contact.callsign'
                 />
                 <div
-                    class='text-truncate subheader'
+                    class='text-truncate subheader user-select-none'
                     v-text='contact.notes.trim()'
                 />
             </div>
@@ -46,7 +46,7 @@
                     v-if='buttonChat && isChatable(contact)'
                     v-tooltip='"Start Chat"'
                     :size='compact ? 20 : 32'
-                    :stroke='1'
+                    stroke='1'
                     class='cursor-pointer'
                     @click='$emit("chat", contact)'
                 />
@@ -61,8 +61,6 @@ import {
     IconMessage,
 } from '@tabler/icons-vue';
 import ContactPuck from './ContactPuck.vue';
-import { useCOTStore } from '/src/stores/cots.ts';
-const cotStore = useCOTStore();
 import { useMapStore } from '/src/stores/map.ts';
 const mapStore = useMapStore();
 
@@ -103,26 +101,22 @@ export default {
         'chat'
     ],
     methods: {
-        isZoomable: function(contact) {
-            return cotStore.cots.has(contact.uid);
+        isZoomable: async function(contact) {
+            return mapStore.worker.db.has(contact.uid);
         },
-        isChatable: function(contact) {
-            if (!cotStore.cots.has(contact.uid)) return false;
-            const cot = cotStore.cots.get(contact.uid);
+        isChatable: async function(contact) {
+            if (!await mapStore.worker.db.has(contact.uid)) return false;
+            const cot = await mapStore.worker.db.get(contact.uid);
             return cot.properties.contact && cot.properties.contact.endpoint;
         },
-        flyTo: function(contact) {
-            if (!this.buttonZoom || !this.isZoomable(contact)) return;
+        flyTo: async function(contact) {
+            if (!this.buttonZoom || !await this.isZoomable(contact)) return;
 
-            const flyTo = {
-                speed: Infinity,
-                center: cotStore.cots.get(contact.uid).geometry.coordinates,
-                zoom: 16
-            };
+            const cot = await mapStore.worker.db.get(contact.uid);
+            if (!cot) return;
 
-            if (mapStore.map.getZoom() < 3) flyTo.zoom = 4;
-            mapStore.map.flyTo(flyTo)
-        },
+            cot.flyTo();
+        }
     }
 }
 </script>

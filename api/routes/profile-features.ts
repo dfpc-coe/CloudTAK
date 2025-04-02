@@ -75,7 +75,8 @@ export default async function router(schema: Schema, config: Config) {
             const user = await Auth.as_user(config, req);
 
             await config.models.ProfileFeature.delete(sql`
-                starts_with(path, ${req.query.path}) AND username = ${user.email}
+                starts_with(path, ${req.query.path})
+                AND username = ${user.email}
             `);
 
             res.json({
@@ -120,6 +121,7 @@ export default async function router(schema: Schema, config: Config) {
                 type: 'Feature',
                 ...(await config.models.ProfileFeature.generate({
                     id: req.body.id,
+                    path: req.body.path,
                     username: user.email,
                     properties: req.body.properties,
                     geometry: req.body.geometry

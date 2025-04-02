@@ -14,6 +14,7 @@
 
         <TablerLoading
             v-if='loading.layer'
+            class='text-white'
             desc='Loading Layer'
         />
         <div
@@ -125,64 +126,7 @@
                                         <template v-else-if='type === "manual"'>
                                             <div class='card mx-2'>
                                                 <div class='card-body row'>
-                                                    <div class='col-md-6'>
-                                                        <TablerInput
-                                                            v-model='layer.cron'
-                                                            :error='errors.cron'
-                                                            label='Cron Expression'
-                                                            placeholder='Cron Expression'
-                                                        >
-                                                            <div class='dropdown'>
-                                                                <div
-                                                                    id='dropdownCron'
-                                                                    class='dropdown-toggle'
-                                                                    type='button'
-                                                                    data-bs-toggle='dropdown'
-                                                                    aria-expanded='false'
-                                                                >
-                                                                    <IconSettings
-                                                                        :size='16'
-                                                                        :stroke='1'
-                                                                        class='cursor-pointer dropdown-toggle'
-                                                                    />
-                                                                </div>
-                                                                <ul
-                                                                    class='dropdown-menu px-1 py-1'
-                                                                    aria-labelledby='dropdownCron'
-                                                                >
-                                                                    <li
-                                                                        class='py-1 cursor-pointer'
-                                                                        @click='layer.cron = "rate(1 minute)"'
-                                                                    >
-                                                                        rate(1 minute)
-                                                                    </li>
-                                                                    <li
-                                                                        class='py-1 cursor-pointer'
-                                                                        @click='layer.cron = "rate(5 minutes)"'
-                                                                    >
-                                                                        rate(5 minutes)
-                                                                    </li>
-                                                                    <li
-                                                                        class='py-1 cursor-pointer'
-                                                                        @click='layer.cron = "cron(15 10 * * ? *)"'
-                                                                    >
-                                                                        cron(15 10 * * ? *)
-                                                                    </li>
-                                                                    <li
-                                                                        class='py-1 cursor-pointer'
-                                                                        @click='layer.cron = "cron(0/5 8-17 ? * MON-FRI *)"'
-                                                                    >
-                                                                        cron(0/5 8-17 ? * MON-FRI *)
-                                                                    </li>
-                                                                </ul>
-                                                            </div>
-                                                        </TablerInput>
-                                                        <label
-                                                            v-if='layer.cron'
-                                                            v-text='cronstr(layer.cron)'
-                                                        />
-                                                    </div>
-                                                    <div class='col-md-6'>
+                                                    <div class='col-md-12'>
                                                         <div class='d-flex' />
                                                         <TablerInput
                                                             v-model='layer.task'
@@ -193,7 +137,7 @@
                                                             <div class='ms-auto btn-list'>
                                                                 <IconSettings
                                                                     :size='16'
-                                                                    :stroke='1'
+                                                                    stroke='1'
                                                                     class='cursor-pointer'
                                                                     @click='taskmodal = true'
                                                                 />
@@ -247,7 +191,6 @@
 import { std, stdurl } from '/src/std.ts';
 import PageFooter from './PageFooter.vue';
 import LayerTemplateSelect from './util/LayerTemplateSelect.vue';
-import cronstrue from 'cronstrue';
 import {
     TablerBreadCrumb,
     TablerDelete,
@@ -283,7 +226,6 @@ export default {
             },
             errors: {
                 name: '',
-                cron: '',
                 task: '',
                 description: '',
             },
@@ -292,9 +234,6 @@ export default {
             layer: {
                 name: '',
                 description: '',
-                data: this.$route.params.dataid ? parseInt(this.$route.params.dataid) : undefined,
-                connection: this.$route.params.dataid ? undefined : parseInt(this.$route.params.connectionid),
-                cron: '',
                 task: '',
                 enabled: true,
                 logging: false,
@@ -313,16 +252,6 @@ export default {
             this.layer.task = this.layer.task.replace(/-v[0-9]+\.[0-9]+\.[0-9]+$/, `-v${this.newTaskVersion}`);
             this.newTaskVersion = null;
         },
-        cronstr: function(cron) {
-            if (!cron) return;
-
-            if (cron.includes('cron(')) {
-                return cronstrue.toString(cron.replace('cron(', '').replace(')', ''));
-            } else {
-                const rate = cron.replace('rate(', '').replace(')', '');
-                return `Once every ${rate}`;
-            }
-        },
         fetch: async function() {
             this.loading.layer = true;
             this.layer = await std(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}`);
@@ -338,7 +267,7 @@ export default {
         create: async function() {
             let fields =  ['name', 'description']
 
-            if (this.type === "manual") fields.push('task', 'cron');
+            if (this.type === "manual") fields.push('task');
 
             for (const field of fields) {
                 this.errors[field] = !this.layer[field] ? 'Cannot be empty' : '';
@@ -367,13 +296,9 @@ export default {
 
                     layer = JSON.parse(JSON.stringify(this.layer));
 
-                    if (this.layer.connection) delete layer.data;
-                    if (this.layer.data) delete layer.connection;
-
                     let body = JSON.parse(JSON.stringify(this.layer));
                     if (this.type === "template" && this.template) {
                         // These should be overwritten
-                        delete body.cron;
                         delete body.task;
                         body = { ...this.template, ...body };
                     }

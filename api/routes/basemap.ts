@@ -1,7 +1,6 @@
 import path from 'node:path';
-import { bbox } from '@turf/bbox';
-import fs from 'node:fs/promises'
 import Err from '@openaddresses/batch-error';
+import { bbox } from '@turf/bbox';
 import TileJSON, { TileJSONType } from '../lib/control/tilejson.js';
 import Auth, { AuthUserAccess, ResourceCreationScope } from '../lib/auth.js';
 import Cacher from '../lib/cacher.js';
@@ -14,11 +13,13 @@ import { Param } from '@openaddresses/batch-generic'
 import { sql } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import { Geometry, BBox } from 'geojson';
-import { Type } from '@sinclair/typebox'
-import { StandardResponse, BasemapResponse } from '../lib/types.js';
+import { Static, Type } from '@sinclair/typebox'
+import { StandardResponse, BasemapResponse, OptionalTileJSON } from '../lib/types.js';
+import { BasemapCollection } from '../lib/models/Basemap.js';
 import { Basemap as BasemapParser } from '@tak-ps/node-cot';
 import { Basemap } from '../lib/schema.js';
 import { toEnum, Basemap_Format, Basemap_Style, Basemap_Type } from '../lib/enums.js';
+import { EsriBase, EsriProxyLayer } from '../lib/esri.js';
 import * as Default from '../lib/limits.js';
 
 const AugmentedBasemapResponse = Type.Composite([
@@ -30,27 +31,6 @@ const AugmentedBasemapResponse = Type.Composite([
 ])
 
 export default async function router(schema: Schema, config: Config) {
-    const count = await config.models.Basemap.count();
-    if (count === 0) {
-        try {
-            await fs.access(new URL('../data/', import.meta.url));
-
-            for (const file of await fs.readdir(new URL('../data/basemaps/', import.meta.url))) {
-                console.error(`ok - loading basemap ${file}`);
-                const b = (await BasemapParser.parse(String(await fs.readFile(new URL(`../data/basemaps/${file}`, import.meta.url))))).to_json();
-
-                await config.models.Basemap.generate({
-                    name: b.name || 'Unknown',
-                    url: b.url,
-                    minzoom: b.minZoom || 0,
-                    maxzoom: b.maxZoom || 16
-                })
-            }
-        } catch (err) {
-            console.log('Could not automatically load basemaps', err);
-        }
-    }
-
     await schema.put('/basemap', {
         name: 'Import Basemaps',
         group: 'BaseMap',
@@ -60,17 +40,7 @@ export default async function router(schema: Schema, config: Config) {
 
             Both return as many BaseMap fields as possible to use in the creation of a new BaseMap
         `,
-        res: Type.Object({
-            name: Type.Optional(Type.String()),
-            type: Type.Optional(Type.Enum(Basemap_Type)),
-            url: Type.Optional(Type.String()),
-            bounds: Type.Optional(Type.Any()),
-            center: Type.Optional(Type.Any()),
-            minzoom: Type.Optional(Type.Integer()),
-            maxzoom: Type.Optional(Type.Integer()),
-            style: Type.Optional(Type.Enum(Basemap_Style)),
-            format: Type.Optional(Type.Enum(Basemap_Format))
-        })
+        res: OptionalTileJSON
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req);
@@ -131,25 +101,38 @@ export default async function router(schema: Schema, config: Config) {
                 req.pipe(bb);
             } else if (req.headers['content-type'] && req.headers['content-type'].startsWith('text/plain')) {
                 const url = new URL(String(await stream2buffer(req)));
-                const tjres = await fetch(url);
-                const tjbody = await tjres.json();
 
-                if (tjbody.name) imported.name = tjbody.name;
-                if (tjbody.maxzoom !== undefined) imported.maxzoom = tjbody.maxzoom;
-                if (tjbody.minzoom !== undefined) imported.minzoom = tjbody.minzoom;
-                if (tjbody.tiles.length) {
-                    imported.url = tjbody.tiles[0]
-                        .replace('{z}', '{$z}')
-                        .replace('{x}', '{$x}')
-                        .replace('{y}', '{$y}')
+                if (
+                    String(url).includes('/FeatureServer')
+                    || String(url).includes('/MapServer')
+                    || String(url).includes('/ImageServer')
+                ) {
+                    const base = new EsriBase(url);
+                    const layer = new EsriProxyLayer(base);
+                    const tilejson = await layer.tilejson();
+
+                    res.json(tilejson);
+                } else {
+                    const tjres = await fetch(url);
+                    const tjbody = await tjres.json();
+
+                    if (tjbody.name) imported.name = tjbody.name;
+                    if (tjbody.maxzoom !== undefined) imported.maxzoom = tjbody.maxzoom;
+                    if (tjbody.minzoom !== undefined) imported.minzoom = tjbody.minzoom;
+                    if (tjbody.tiles.length) {
+                        imported.url = tjbody.tiles[0]
+                            .replace('{z}', '{$z}')
+                            .replace('{x}', '{$x}')
+                            .replace('{y}', '{$y}')
+                    }
+
+                    if (imported.url) {
+                        const url = new URL(imported.url)
+                        imported.format = toEnum.fromString(Type.Enum(Basemap_Format), path.parse(url.pathname).ext.replace('.', ''));
+                    }
+
+                    res.json(imported);
                 }
-
-                if (imported.url) {
-                    const url = new URL(imported.url)
-                    imported.format = toEnum.fromString(Type.Enum(Basemap_Format), path.parse(url.pathname).ext.replace('.', ''));
-                }
-
-                res.json(imported);
             } else {
                 throw new Err(400, null, 'Unsupported Content-Type');
             }
@@ -164,42 +147,113 @@ export default async function router(schema: Schema, config: Config) {
         description: 'List BaseMaps',
         query: Type.Object({
             scope: Type.Optional(Type.Enum(ResourceCreationScope)),
+            impersonate: Type.Optional(Type.Union([
+                Type.Boolean({ description: 'List all of the given resource, regardless of ACL' }),
+                Type.String({ description: 'Filter the given resource by a given username' }),
+            ])),
             limit: Default.Limit,
             page: Default.Page,
             order: Default.Order,
             type: Type.Optional(Type.Enum(Basemap_Type)),
             sort: Type.String({ default: 'created', enum: Object.keys(Basemap) }),
             filter: Default.Filter,
+            collection: Type.Optional(Type.String({
+                description: 'Only show Basemaps belonging to a given collection'
+            })),
             overlay: Type.Boolean({ default: false })
         }),
         res: Type.Object({
             total: Type.Integer(),
+            collections: Type.Array(BasemapCollection),
             items: Type.Array(AugmentedBasemapResponse)
         })
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req);
+            let list;
+            let collections: Array<Static<typeof BasemapCollection>> = [];
 
             let scope = sql`True`;
-            if (req.query.scope === ResourceCreationScope.SERVER) scope = sql`username IS NULL`;
-            else if (req.query.scope === ResourceCreationScope.USER) scope = sql`username IS NOT NULL`;
+            if (req.query.scope === ResourceCreationScope.SERVER) {
+                scope = sql`username IS NULL`;
+            } else if (req.query.scope === ResourceCreationScope.USER) {
+                scope = sql`username IS NOT NULL`;
+            }
 
-            const list = await config.models.Basemap.list({
-                limit: req.query.limit,
-                page: req.query.page,
-                order: req.query.order,
-                sort: req.query.sort,
-                where: sql`
-                    name ~* ${Param(req.query.filter)}
-                    AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
-                    AND (username IS NULL OR username = ${user.email})
-                    AND (${Param(req.query.type)}::TEXT IS NULL or ${Param(req.query.type)}::TEXT = type)
-                    AND ${scope}
-                `
-            });
+            if (req.query.impersonate) {
+                await Auth.as_user(config, req, { admin: true });
+
+                const impersonate: string | null = req.query.impersonate === true ? null : req.query.impersonate;
+
+                list = await config.models.Basemap.list({
+                    limit: req.query.limit,
+                    page: req.query.page,
+                    order: req.query.order,
+                    sort: req.query.sort,
+                    where: sql`
+                        name ~* ${Param(req.query.filter)}
+                        AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
+                        AND (${Param(req.query.type)}::TEXT IS NULL or ${Param(req.query.type)}::TEXT = type)
+                        AND (
+                                (${Param(req.query.collection)}::TEXT IS NULL AND collection IS NULL)
+                                OR ${Param(req.query.collection)}::TEXT = collection
+                            )
+                        AND ${scope}
+                        AND (${impersonate}::TEXT IS NULL OR username = ${impersonate}::TEXT)
+                    `
+                });
+
+                if (!req.query.collection) {
+                    collections = await config.models.Basemap.collections({
+                        order: req.query.order,
+                        sort: req.query.sort,
+                        where: sql`
+                            collection ~* ${Param(req.query.filter)}
+                            AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
+                            AND (${Param(req.query.type)}::TEXT IS NULL or ${Param(req.query.type)}::TEXT = type)
+                            AND ${scope}
+                            AND (${impersonate}::TEXT IS NULL OR username = ${impersonate}::TEXT)
+                        `
+                    });
+                }
+            } else {
+                const user = await Auth.as_user(config, req);
+
+                list = await config.models.Basemap.list({
+                    limit: req.query.limit,
+                    page: req.query.page,
+                    order: req.query.order,
+                    sort: req.query.sort,
+                    where: sql`
+                        name ~* ${Param(req.query.filter)}
+                        AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
+                        AND (username IS NULL OR username = ${user.email})
+                        AND (${Param(req.query.type)}::TEXT IS NULL or ${Param(req.query.type)}::TEXT = type)
+                        AND (
+                                (${Param(req.query.collection)}::TEXT IS NULL AND collection IS NULL)
+                                OR ${Param(req.query.collection)}::TEXT = collection
+                            )
+                        AND ${scope}
+                    `
+                });
+
+                if (!req.query.collection) {
+                    collections = await config.models.Basemap.collections({
+                        order: req.query.order,
+                        sort: req.query.sort,
+                        where: sql`
+                            collection ~* ${Param(req.query.filter)}
+                            AND (${Param(req.query.overlay)}::BOOLEAN = overlay)
+                            AND (username IS NULL OR username = ${user.email})
+                            AND (${Param(req.query.type)}::TEXT IS NULL or ${Param(req.query.type)}::TEXT = type)
+                            AND ${scope}
+                        `
+                    });
+                }
+            }
 
             res.json({
                 total: list.total,
+                collections,
                 items: list.items.map((basemap) => {
                     return {
                         ...basemap,
@@ -217,8 +271,12 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Create Basemap',
         group: 'BaseMap',
         description: 'Register a new basemap',
+        query: Type.Object({
+            impersonate: Type.Optional(Type.String({ description: 'Filter the given resource by a given username' })),
+        }),
         body: Type.Object({
             name: Default.NameField,
+            collection: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             scope: Type.Enum(ResourceCreationScope, { default: ResourceCreationScope.USER }),
             url: Type.String(),
             overlay: Type.Boolean({ default: false }),
@@ -234,7 +292,9 @@ export default async function router(schema: Schema, config: Config) {
         res: AugmentedBasemapResponse
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req);
+            const user = req.query.impersonate
+                ? await Auth.impersonate(config, req, req.query.impersonate)
+                : await Auth.as_user(config, req);
 
             let bounds: Geometry | undefined = undefined;
             if (req.body.bounds) {
@@ -281,8 +341,13 @@ export default async function router(schema: Schema, config: Config) {
         params: Type.Object({
             basemapid: Type.Integer({ minimum: 1 })
         }),
+        query: Type.Object({
+            impersonate: Type.Optional(Type.String({ description: 'Filter the given resource by a given username' })),
+        }),
         body: Type.Object({
             name: Type.Optional(Default.NameField),
+            collection: Type.Optional(Type.Union([Type.Null(), Type.String()])),
+            scope: Type.Enum(ResourceCreationScope, { default: ResourceCreationScope.USER }),
             url: Type.Optional(Type.String()),
             minzoom: Type.Optional(Type.Integer()),
             maxzoom: Type.Optional(Type.Integer()),
@@ -291,12 +356,14 @@ export default async function router(schema: Schema, config: Config) {
             type: Type.Optional(Type.Enum(Basemap_Type)),
             bounds: Type.Optional(Type.Array(Type.Number(), { minItems: 4, maxItems: 4 })),
             center: Type.Optional(Type.Array(Type.Number())),
-            styles: Type.Optional(Type.Array(Type.Unknown()))
+            styles: Type.Optional(Type.Array(Type.Unknown())),
         }),
         res: AugmentedBasemapResponse
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req);
+            const user = req.query.impersonate
+                ? await Auth.impersonate(config, req, req.query.impersonate)
+                : await Auth.as_user(config, req);
 
             let bounds: Geometry | undefined = undefined;
             let center: Geometry | undefined = undefined;
@@ -310,11 +377,25 @@ export default async function router(schema: Schema, config: Config) {
 
             if (existing.username && existing.username !== user.email && user.access === AuthUserAccess.USER) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
-            } else if (!existing.username && user.access !== AuthUserAccess.ADMIN) {
-                throw new Err(400, null, 'Only System Admin can edit Server Resource');
+            } else if (!existing.username && (user.access !== AuthUserAccess.ADMIN && !user.impersonate)) {
+                throw new Err(400, null, 'Only System Admin can edit Server Resources');
+            }
+
+            let username: string | null = existing.username;
+            if (
+                req.body.scope !== undefined
+                && req.body.scope === ResourceCreationScope.SERVER
+                && (!user.impersonate && user.access !== AuthUserAccess.ADMIN)
+            ) {
+                throw new Err(400, null, 'Only Server Admins can edit scoped basemaps');
+            } else if (req.body.scope !== undefined && user.access === AuthUserAccess.ADMIN && req.body.scope === ResourceCreationScope.SERVER) {
+                username = null
+            } else if (req.body.scope && user.access === AuthUserAccess.USER || req.body.scope === ResourceCreationScope.USER) {
+                username = user.email;
             }
 
             const basemap = await config.models.Basemap.commit(Number(req.params.basemapid), {
+                username,
                 updated: sql`Now()`,
                 ...req.body,
                 bounds, center,
@@ -454,6 +535,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             return await TileJSON.tile(
+                // @ts-expect-error TODO Fix polygon bounds
                 basemap,
                 req.params.z,
                 req.params.x,

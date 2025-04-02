@@ -2,12 +2,15 @@
     <div class='container px-0'>
         <div
             class='sticky-top col-12 bg-dark'
-            style='border-radius: 0px;'
+            :style='`z-index: ${zindex};`'
+            style='
+                border-radius: 0px;
+            '
             :class='{
                 "border-bottom border-light": border
             }'
         >
-            <div class='modal-header px-0 mx-2'>
+            <div class='card-header py-2 px-0 mx-2'>
                 <TablerIconButton
                     v-if='backType === "close"'
                     title='Close Menu'
@@ -32,7 +35,7 @@
                 <div v-else />
 
                 <div
-                    class='modal-title d-flex mx-auto'
+                    class='modal-title d-flex mx-auto user-select-none'
                     v-text='name'
                 />
                 <div class='col-auto btn-list align-items-center'>
@@ -73,7 +76,7 @@ import {
 } from '@tabler/icons-vue';
 
 import { useRouter } from 'vue-router'
-import { defineProps, computed } from 'vue';
+import { computed } from 'vue';
 
 const router = useRouter()
 
@@ -81,6 +84,10 @@ const props = defineProps({
     name: {
         type: String,
         required: true
+    },
+    zindex: {
+        type: Number,
+        default: 1020
     },
     border: {
         type: Boolean,

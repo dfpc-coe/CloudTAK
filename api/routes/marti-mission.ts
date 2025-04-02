@@ -1,5 +1,6 @@
 import { Static, Type } from '@sinclair/typebox'
 import Schema from '@openaddresses/batch-schema';
+import { Feature } from '@tak-ps/node-cot'
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
@@ -10,10 +11,14 @@ import {
     Mission,
     MissionChangesInput,
     MissionListInput,
+    MissionChange,
     MissionDeleteInput,
     MissionCreateInput,
     MissionSubscriber
 } from '../lib/api/mission.js';
+import {
+    TAKList,
+} from '../lib/api/types.js';
 import TAKAPI, {
     APIAuthCertificate,
 } from '../lib/tak-api.js';
@@ -72,7 +77,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Helper API to get latest CoTs',
         res: Type.Object({
             type: Type.String(),
-            features: Type.Array(Type.Any())
+            features: Type.Array(Feature.Feature)
         })
     }, async (req, res) => {
         try {
@@ -100,7 +105,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         description: 'Helper API to get mission changes',
         query: MissionChangesInput,
-        res: GenericMartiResponse
+        res: TAKList(MissionChange)
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -171,7 +176,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const mission = await api.Mission.create(req.params.name, {
                 ...req.body,
-                creatorUid: user.email
+                creatorUid: `ANDROID-CloudTAK-${user.email}`
             });
 
             res.json(mission);
@@ -185,13 +190,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'MartiMissions',
         description: 'Helper API to list missions',
         query: MissionListInput,
-        res: Type.Object({
-            version: Type.String(),
-            type: Type.String(),
-            data: Type.Array(Mission),
-            messages: Type.Optional(Type.Array(Type.String())),
-            nodeId: Type.Optional(Type.String())
-        })
+        res: TAKList(Mission)
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -201,6 +200,46 @@ export default async function router(schema: Schema, config: Config) {
             const missions = await api.Mission.list(req.query);
 
             res.json(missions);
+        } catch (err) {
+             Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/marti/missions/:name/archive', {
+        name: 'Mission Archive',
+        group: 'MartiMissions',
+        params: Type.Object({
+            name: Type.String(),
+        }),
+        query: Type.Object({
+            download: Type.Boolean({
+                default: false,
+                description: 'If set, the response will include a Content-Disposition Header'
+            })
+        }),
+        description: 'Get a Mission Archive Zip'
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+            const auth = (await config.models.Profile.from(user.email)).auth;
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+
+            const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
+                ? { token: String(req.headers['missionauthorization']) }
+                : await config.conns.subscription(user.email, req.params.name)
+
+            const archive = await api.Mission.getArchive(
+                req.params.name,
+                opts
+            );
+
+            res.setHeader('Content-Type', 'application/zip');
+
+            if (req.query.download) {
+                res.setHeader('Content-Disposition', `attachment; filename="${req.params.name}.zip"`);
+            }
+
+            archive.pipe(res);
         } catch (err) {
              Err.respond(err, res);
         }
@@ -271,13 +310,7 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.String(),
         }),
         description: 'List subscriptions associated with a mission',
-        res: Type.Object({
-            version: Type.String(),
-            type: Type.String(),
-            data: Type.Array(MissionSubscriber),
-            messages: Type.Optional(Type.Array(Type.String())),
-            nodeId: Type.Optional(Type.String())
-        })
+        res: TAKList(MissionSubscriber)
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);

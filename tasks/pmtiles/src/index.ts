@@ -1,217 +1,268 @@
-import Lambda from "aws-lambda";
-import jwt from 'jsonwebtoken';
-import S3 from "@aws-sdk/client-s3";
+import AWSS3 from '@aws-sdk/client-s3';
+import express from 'express';
+import { createHash } from "crypto";
+import Err from '@openaddresses/batch-error';
+import Schema from '@openaddresses/batch-schema';
+import { Type } from '@sinclair/typebox'
+import cors from 'cors';
+import { S3Source, nativeDecompress, CACHE } from './lib/pmtiles.js';
+import auth from './lib/auth.js';
 import * as pmtiles from 'pmtiles';
 import zlib from "zlib";
+// @ts-expect-error No Type Defs
 import vtquery from '@mapbox/vtquery';
-import TB from '@mapbox/tilebelt';
-import { NodeHttpHandler } from "@aws-sdk/node-http-handler";
+import { pointToTile } from '@mapbox/tilebelt';
+import serverless from 'serverless-http';
 
-// the region should default to the same one as the function
-const s3client = new S3.S3Client({
-    requestHandler: new NodeHttpHandler({
-        connectionTimeout: 500,
-        socketTimeout: 500,
-    }),
+if (!process.env.SigningSecret) throw new Error('SigningSecret env var must be provided');
+if (!process.env.ASSET_BUCKET) throw new Error('ASSET_BUCKET env var must be provided');
+if (!process.env.APIROOT) process.env.APIROOT = 'http://localhost:5002';
+
+const app = express();
+
+const schema = new Schema(express.Router(), {
+    logging: true,
+    limit: 50
 });
 
-async function nativeDecompress(
-    buf: ArrayBuffer,
-    compression: pmtiles.Compression
-): Promise<ArrayBuffer> {
-    if (compression === pmtiles.Compression.None || compression === pmtiles.Compression.Unknown) {
-        return buf;
-    } else if (compression === pmtiles.Compression.Gzip) {
-        return zlib.gunzipSync(buf);
-    } else {
-        throw Error("Compression method not supported");
-    }
-}
+app.disable('x-powered-by');
 
-// Lambda needs to run with 512MB, empty function takes about 70
-const CACHE = new pmtiles.ResolvedValueCache(undefined, undefined, nativeDecompress);
-// eslint-disable-next-line no-useless-escape
-const TILE = /^\/(?<NAME>[0-9a-zA-Z\/!\-@_\.\%\*\'\(\)]+)\/(?<Z>\d+)\/(?<X>\d+)\/(?<Y>\d+).(?<EXT>[a-z]+)$/;
-// eslint-disable-next-line no-useless-escape
-const META = /^\/(?<NAME>[0-9a-zA-Z\/!\-@_\.\%\*\'\(\)]+)$/;
+app.use(cors({
+    origin: '*',
+    allowedHeaders: [
+        'Content-Type',
+        'Authorization',
+        'User-Agent',
+        'MissionAuthorization',
+        'Content-Length',
+        'x-requested-with'
+    ],
+    credentials: true
+}));
 
-export const tile_path = (
-    path: string,
-): {
-    ok: boolean;
-    meta: boolean;
-    name: string;
-    tile: [number, number, number];
-    ext: string;
-} => {
-    const match = path.match(TILE);
+app.use(schema.router);
 
-    if (match) {
-        const g = match.groups!;
-        return { ok: true, meta: false, name: decodeURIComponent(g.NAME), tile: [+g.Z, +g.X, +g.Y], ext: g.EXT };
-    } else {
-        const meta_match = path.match(META);
-
-        if (meta_match) {
-            const g = meta_match.groups!;
-            return { ok: true, meta: true, name: decodeURIComponent(g.NAME), tile: [0, 0, 0], ext: g.EXT };
-        } else {
-            return { ok: false, meta: false, name: "", tile: [0, 0, 0], ext: "" };
-        }
-    }
-
-};
-
-class S3Source implements pmtiles.Source {
-    archive_name: string;
-
-    constructor(archive_name: string) {
-        this.archive_name = archive_name;
-    }
-
-    getKey() {
-        return this.archive_name;
-    }
-
-    async getBytes(offset: number, length: number): Promise<pmtiles.RangeResponse> {
-        const resp = await s3client.send(
-            new S3.GetObjectCommand({
-                Bucket: process.env.BUCKET!,
-                Key: this.archive_name + '.pmtiles',
-                Range: "bytes=" + offset + "-" + (offset + length - 1),
-            })
-        );
-
-        const arr = await resp.Body!.transformToByteArray();
-
-        return {
-            data: arr.buffer,
-            etag: resp.ETag,
-            expires: resp.Expires?.toISOString(),
-            cacheControl: resp.CacheControl,
-        };
-    }
-}
-
-interface Headers {
-    [key: string]: string;
-}
-
-const apiResp = (
-    statusCode: number,
-    body: string,
-    isBase64Encoded = false,
-    headers: Headers = {}
-): Lambda.APIGatewayProxyResult => {
-    return {
-        statusCode,
-        body,
-        headers,
-        isBase64Encoded
-    };
-};
-
-const apiError = (
-    statusCode: number,
-    message: string,
-): Lambda.APIGatewayProxyResult => {
-    return apiResp(statusCode, JSON.stringify({
-        status: statusCode, message
-    }), false, {
-        'Content-Type': 'application/json'
+schema.get('/tiles', {
+    name: 'API Info',
+    group: 'Root',
+    description: 'Return API Info for the Tiles API',
+    res: Type.Object({
+        name: Type.String()
     })
-}
+}, (req, res) => {
+    res.json({
+       name: process.env.StackName || 'Default Tiles API'
+    });
+});
 
-
-// Assumes event is a API Gateway V2 or Lambda Function URL formatted dict
-// and returns API Gateway V2 / Lambda Function dict responses
-export const handlerRaw = async (
-    event: Lambda.APIGatewayProxyEventV2,
-    context: Lambda.Context,
-    tilePostprocess?: (a: ArrayBuffer, t: pmtiles.TileType) => ArrayBuffer
-): Promise<Lambda.APIGatewayProxyResult> => {
-    let path;
-
-    if (event && event.pathParameters && event.pathParameters.proxy) {
-        path = "/" + event.pathParameters.proxy;
-    } else {
-        return apiError(500, "Proxy integration missing tile_path parameter");
-    }
-
-    if (!path) return apiError(500, "Invalid event configuration");
-
-    const headers: Headers = {
-        "Access-Control-Allow-Origin": '*',
-        "Access-Control-Allow-Credentials": 'true'
-    };
-
-    if (!event.queryStringParameters || !event.queryStringParameters.token) {
-        return apiError(400, 'token query param required');
-    }
-
+schema.get('/tiles/public', {
+    name: 'Get Sources',
+    group: 'PublicTiles',
+    description: 'Return a list of public tile sources',
+    query: Type.Object({
+        token: Type.String()
+    }),
+    res: Type.Object({
+        total: Type.Integer(),
+        items: Type.Array(Type.Object({
+            name: Type.String(),
+            hash: Type.String(),
+            updated: Type.String(),
+            size: Type.Integer(),
+        }))
+    })
+}, async (req, res) => {
     try {
-        jwt.verify(event.queryStringParameters.token, process.env.SigningSecret);
-    } catch (err) {
-        console.error(err);
-        return apiError(401, 'Invalid Token')
-    }
+        auth(req.query.token);
 
-    const { ok, name, tile, ext, meta } = tile_path(path);
+        const client = new AWSS3.S3Client();
 
-    if (!ok) return apiError(400, "Invalid tile URL");
+        const Contents = [];
 
-    const source = new S3Source(name);
-    const p = new pmtiles.PMTiles(source, CACHE, nativeDecompress);
-
-    try {
-        const header = await p.getHeader();
-        if (!meta && (tile[0] < header.minZoom || tile[0] > header.maxZoom)) {
-            return apiResp(404, "", false, headers);
-        }
-
-        if (meta && event.queryStringParameters && event.queryStringParameters.query) {
-            headers["Content-Type"] = "application/json";
-
-            const query: {
-                lnglat: number[],
-                zoom: number,
-                limit: number
-            } = {
-                lnglat: [],
-                zoom: event.queryStringParameters.zoom ? parseInt(event.queryStringParameters.zoom) : header.maxZoom,
-                limit: event.queryStringParameters.limit ? parseInt(event.queryStringParameters.limit) : 1,
-            }
-
-            const lnglat: number[] = event.queryStringParameters.query
-                .split(',')
-                .map((comp) => { return Number(comp) });
-
-            if (lnglat.length !== 2) return apiError(400, "Invalid LngLat");
-            if (isNaN(lnglat[0]) || isNaN(lnglat[1])) return apiError(400, "Invalid LngLat (Non-Numeric)");
-            query.lnglat = lnglat;
-            if (isNaN(query.zoom)) return apiError(400, "Invalid Integer Zoom");
-            if (isNaN(query.limit)) return apiError(400, "Invalid Integer Limit");
-            if (query.zoom > header.maxZoom) return apiError(400, "Above Layer MaxZoom");
-            if (query.zoom < header.minZoom) return apiError(400, "Below Layer MinZoom");
-
-            const xyz = TB.pointToTile(query.lnglat[0], query.lnglat[1], query.zoom)
-            const tile = await p.getZxy(xyz[2], xyz[0], xyz[1]);
-
-            const meta = {
-                x: xyz[0],
-                y: xyz[1],
-                z: xyz[2]
+        let s3res;
+        do {
+            const req: AWSS3.ListObjectsV2CommandInput = {
+                Bucket: process.env.ASSET_BUCKET,
+                Prefix: 'public/'
             };
 
-            if (!tile) {
-                return apiResp(200, JSON.stringify({
-                    type: 'FeatureCollection',
-                    query,
-                    meta,
-                    features: []
-                }), false, headers);
-            }
+            if (s3res && s3res.NextToken) req.NextToken = s3res.NextToken;
+            s3res = await client.send(new AWSS3.ListObjectsV2Command(req))
 
+            Contents.push(...(s3res.Contents.filter((Content) => {
+                return Content.Key.endsWith('.pmtiles')
+            }) || []));
+        } while (s3res.NextToken)
+
+        return res.json({
+            total: Contents.length,
+            items: Contents.map((Content) => {
+                return {
+                    name: Content.Key,
+                    hash: JSON.parse(Content.ETag),
+                    updated: Content.LastModified,
+                    size: Content.Size
+                }
+            })
+        })
+    } catch (err) {
+        Err.respond(err, res);
+    }
+});
+
+schema.get('/tiles/profile/:username/:file', {
+    name: 'Get TileJSON',
+    group: 'ProfileTiles',
+    description: 'Return TileJSON for a given file',
+    params: Type.Object({
+        username: Type.String(),
+        file: Type.String()
+    }),
+    query: Type.Object({
+        token: Type.String()
+    }),
+    res: Type.Object({
+        tilejson: Type.Literal('2.2.0'),
+        name: Type.String(),
+        description: Type.String(),
+        version: Type.Literal('1.0.0'),
+        scheme: Type.Literal('xyz'),
+        tiles: Type.Array(Type.String()),
+        minzoom: Type.Integer(),
+        maxzoom: Type.Integer(),
+        bounds: Type.Array(Type.Number()),
+        meta: Type.Unknown(),
+        center: Type.Array(Type.Number())
+    })
+}, async (req, res) => {
+    try {
+        const token = auth(req.query.token);
+        if (token.email !== req.params.username || token.access !== 'profile') {
+            throw new Err(401, null, 'Unauthorized Access');
+        }
+
+        const path = `profile/${req.params.username}/${req.params.file}`;
+        const p = new pmtiles.PMTiles(new S3Source(path), CACHE, nativeDecompress);
+        const header = await p.getHeader();
+
+        let format = 'mvt';
+        for (const pair of [
+            [pmtiles.TileType.Mvt, "mvt"],
+            [pmtiles.TileType.Png, "png"],
+            [pmtiles.TileType.Jpeg, "jpg"],
+            [pmtiles.TileType.Webp, "webp"],
+            [pmtiles.TileType.Avif, "avif"],
+        ]) {
+            if (header.tileType === pair[0]) {
+                format = String(pair[1]);
+            }
+        }
+
+        res.json({
+            "tilejson": "2.2.0",
+            "name": `${req.params.file}.pmtiles`,
+            "description": "Hosted by TAK-ETL",
+            "version": "1.0.0",
+            "scheme": "xyz",
+            "tiles": [ process.env.APIROOT + `/tiles/${path}/tiles/{z}/{x}/{y}.${format}?token=${req.query.token}`],
+            "minzoom": header.minZoom,
+            "maxzoom": header.maxZoom,
+            "bounds": [ header.minLon, header.minLat, header.maxLon, header.maxLat ],
+            "meta": header,
+            "center": [ header.centerLon, header.centerLat, header.centerZoom ]
+        });
+    } catch (err) {
+        Err.respond(err, res);
+    }
+})
+
+schema.get('/tiles/profile/:username/:file/query', {
+    name: 'Get TileJSON',
+    group: 'ProfileTiles',
+    description: 'Return TileJSON for a given file',
+    params: Type.Object({
+        username: Type.String(),
+        file: Type.String()
+    }),
+    query: Type.Object({
+        token: Type.String(),
+        query: Type.String(),
+        zoom: Type.Optional(Type.Integer()),
+        limit: Type.Integer({ default: 1 })
+    }),
+    res: Type.Object({
+        type: Type.Literal('FeatureCollection'),
+        query: Type.Object({
+            lnglat: Type.Array(Type.Number()),
+            zoom: Type.Number(),
+            limit: Type.Number()
+        }),
+        meta: Type.Object({
+            z: Type.Number({
+                description: 'The Zoom level the query falls in'
+            }),
+            x: Type.Number({
+                description: 'The X ZXY coordinate the query falls in'
+            }),
+            y: Type.Number({
+                description: 'The Y ZXY coordinate the query falls in'
+            })
+        }),
+        features: Type.Array(Type.Object({
+            type: Type.Literal('Feature'),
+            properties: Type.Record(Type.String(), Type.String()),
+            geometry: Type.Object({
+                type: Type.String(),
+                coordinates: Type.Array(Type.Unknown())
+            })
+        }))
+    })
+}, async (req, res) => {
+    try {
+        const token = auth(req.query.token);
+        if (token.email !== req.params.username || token.access !== 'profile') {
+            throw new Err(401, null, 'Unauthorized Access');
+        }
+
+        const path = `profile/${req.params.username}/${req.params.file}`;
+        const p = new pmtiles.PMTiles(new S3Source(path), CACHE, nativeDecompress);
+        const header = await p.getHeader();
+
+        const query: {
+            lnglat: number[],
+            zoom: number,
+            limit: number
+        } = {
+            lnglat: [],
+            zoom: req.query.zoom || header.maxZoom,
+            limit: req.query.limit
+        }
+
+        const lnglat: number[] = req.query.query
+            .split(',')
+            .map((comp) => { return Number(comp) });
+
+        if (lnglat.length !== 2) throw new Err(400, null, "Invalid LngLat");
+        if (isNaN(lnglat[0]) || isNaN(lnglat[1])) throw new Err(400, null, "Invalid LngLat (Non-Numeric)");
+        query.lnglat = lnglat;
+        if (isNaN(query.zoom)) throw new Err(400, null, "Invalid Integer Zoom");
+        if (isNaN(query.limit)) throw new Err(400, null, "Invalid Integer Limit");
+        if (query.zoom > header.maxZoom) throw new Err(400, null, "Above Layer MaxZoom");
+        if (query.zoom < header.minZoom) throw new Err(400, null, "Below Layer MinZoom");
+
+        const xyz = pointToTile(query.lnglat[0], query.lnglat[1], query.zoom)
+        const tile = await p.getZxy(xyz[2], xyz[0], xyz[1]);
+
+        const meta = { x: xyz[0], y: xyz[1], z: xyz[2] };
+
+        if (!tile) {
+            res.json({
+                type: 'FeatureCollection',
+                query,
+                meta,
+                features: []
+            });
+        } else {
             const fc: any = await new Promise((resolve, reject) => {
                 vtquery([
                     { buffer: tile.data, z: xyz[2], x: xyz[0], y: xyz[1] }
@@ -229,42 +280,41 @@ export const handlerRaw = async (
             fc.query = query;
             fc.meta = meta;
 
-            return apiResp(200, JSON.stringify(fc), false, headers);
-        } else if (meta) {
-            headers["Content-Type"] = "application/json";
+            res.json(fc);
+        }
+    } catch (err) {
+        Err.respond(err, res);
+    }
+})
 
-            let format = 'mvt';
-            for (const pair of [
-                [pmtiles.TileType.Mvt, "mvt"],
-                [pmtiles.TileType.Png, "png"],
-                [pmtiles.TileType.Jpeg, "jpg"],
-                [pmtiles.TileType.Webp, "webp"],
-            ]) {
-                if (header.tileType === pair[0]) format = pair[1];
-            }
+schema.get('/tiles/profile/:username/:file/tiles/:z/:x/:y.:ext', {
+    name: 'Get Tile',
+    group: 'ProfileTiles',
+    description: 'Return tile for a given zxy',
+    query: Type.Object({
+        token: Type.String()
+    }),
+    params: Type.Object({
+        username: Type.String(),
+        file: Type.String(),
+        z: Type.Integer(),
+        x: Type.Integer(),
+        y: Type.Integer(),
+        ext: Type.String()
+    }),
+}, async (req, res) => {
+    try {
+        const token = auth(req.query.token);
+        if (token.email !== req.params.username || token.access !== 'profile') {
+            throw new Err(401, null, 'Unauthorized Access');
+        }
 
-            return apiResp(200, JSON.stringify({
-                "tilejson": "2.2.0",
-                "name": `${name}.pmtiles`,
-                "description": "Hosted by TAK-ETL",
-                "version": "1.0.0",
-                "scheme": "xyz",
-                "tiles": [ process.env.APIROOT + `/tiles${path}/{z}/{x}/{y}.${format}?token=${event.queryStringParameters.token}`],
-                "minzoom": header.minZoom,
-                "maxzoom": header.maxZoom,
-                "bounds": [
-                    header.minLon,
-                    header.minLat,
-                    header.maxLon,
-                    header.maxLat
-                ],
-                "meta": header,
-                "center": [
-                    header.centerLon,
-                    header.centerLat,
-                    header.centerZoom
-                ]
-            }), false, headers);
+        const path = `profile/${req.params.username}/${req.params.file}`;
+        const p = new pmtiles.PMTiles(new S3Source(path), CACHE, nativeDecompress);
+        const header = await p.getHeader();
+
+        if (req.params.z < header.minZoom || req.params.z > header.maxZoom) {
+            throw new Err(404, null, 'File Not Found');
         }
 
         for (const pair of [
@@ -272,77 +322,66 @@ export const handlerRaw = async (
             [pmtiles.TileType.Png, "png"],
             [pmtiles.TileType.Jpeg, "jpg"],
             [pmtiles.TileType.Webp, "webp"],
+            [pmtiles.TileType.Avif, "avif"],
         ]) {
-            if (header.tileType === pair[0] && ext !== pair[1]) {
-                if (header.tileType == pmtiles.TileType.Mvt && ext === "pbf") {
+            if (header.tileType === pair[0] && req.params.ext !== pair[1]) {
+                if (header.tileType == pmtiles.TileType.Mvt && req.params.ext === "pbf") {
                     // allow this for now. Eventually we will delete this in favor of .mvt
                     continue;
                 }
-                return apiError(400, "Bad request: archive has type ." + pair[1]);
+
+                throw new Err(400, null, "Bad request: archive has type ." + pair[1]);
             }
         }
 
-        const tile_result = await p.getZxy(tile[0], tile[1], tile[2]);
+        const tile_result = await p.getZxy(req.params.z, req.params.x, req.params.y);
+
         if (tile_result) {
             switch (header.tileType) {
                 case pmtiles.TileType.Mvt:
                     // part of the list of Cloudfront compressible types.
-                    headers["Content-Type"] = "application/vnd.mapbox-vector-tile";
+                    res.set("Content-Type", "application/vnd.mapbox-vector-tile");
                 break;
                 case pmtiles.TileType.Png:
-                    headers["Content-Type"] = "image/png";
+                    res.set("Content-Type", "image/png");
                 break;
                 case pmtiles.TileType.Jpeg:
-                    headers["Content-Type"] = "image/jpeg";
+                    res.set("Content-Type", "image/jpeg");
                 break;
                 case pmtiles.TileType.Webp:
-                    headers["Content-Type"] = "image/webp";
+                    res.set("Content-Type", "image/webp");
                 break;
             }
 
-            let data = tile_result.data;
+            const data = tile_result.data;
 
-            if (tilePostprocess) {
-                data = tilePostprocess(data, header.tileType);
-            }
+            res.set("Cache-Control", "private, max-age=86400");
+            res.set('ETag', `"${createHash("sha256").update(Buffer.from(data)).digest("hex")}"`);
 
             // We need to force API Gateway to interpret the Lambda response as binary
             // without depending on clients sending matching Accept: headers in the request.
-            const recompressed_data = zlib.gzipSync(data);
-            headers["Content-Encoding"] = "gzip";
-            return apiResp(
-                200,
-                Buffer.from(recompressed_data).toString("base64"),
-                true,
-                headers
-            );
+            if (process.env.StackName) {
+                res.set("Content-Encoding", "gzip");
+                const recompressed_data = zlib.gzipSync(data);
+                res.send(Buffer.from(recompressed_data));
+            } else {
+                res.send(Buffer.from(data));
+            }
         } else {
-            return apiResp(204, "", false, headers);
+            res.status(204).send('')
         }
-    } catch (err: any) {
-        if ((err as Error).name === "AccessDenied") {
-            return apiError(403, "Bucket access unauthorized");
-        }
-
-        console.error(err);
-
-        if ((err as Error) && err.message) {
-            headers["Content-Type"] = 'application/json';
-            return apiResp(500, JSON.stringify({
-                status: 500,
-                message: err.message
-            }), false, headers);
-        } else {
-            throw err;
-        }
+    } catch (err) {
+        Err.respond(err, res);
     }
+})
 
-    return apiError(404, "Invalid URL");
+export const handler = serverless(app);
+
+const startServer = async () => {
+    app.listen(5002, () => {
+        console.log('ok - tile server on http://localhost:5002');
+    });
 };
 
-export const handler = async (
-    event: Lambda.APIGatewayProxyEventV2,
-    context: Lambda.Context
-): Promise<Lambda.APIGatewayProxyResult> => {
-    return handlerRaw(event, context);
-};
+startServer();
+

@@ -13,7 +13,8 @@
         </div>
 
         <TablerLoading
-            v-if='loading.layer'
+            v-if='loading.layer || !layer || !alerts || !stack'
+            class='text-white'
             desc='Loading Layer'
         />
         <div
@@ -29,34 +30,31 @@
 
                                 <a
                                     class='card-title cursor-pointer mx-2'
-                                    @click='$router.push(`/connection/${$route.params.connectionid}/layer/${layer.id}`)'
+                                    @click='router.push(`/connection/${route.params.connectionid}/layer/${layer.id}`)'
                                     v-text='layer.name'
                                 />
 
                                 <div class='ms-auto'>
                                     <div class='btn-list'>
-                                        <IconAlertTriangle
-                                            v-tooltip='"Layer Alerts"'
-                                            :size='32'
-                                            :stroke='1'
-                                            class='cursor-pointer'
-                                            :class='{ "text-red": alerts.total }'
-                                            @click='$router.push(`/connection/${$route.params.connectionid}/layer/${layer.id}/alert`)'
-                                        />
-                                        <IconDatabase
-                                            v-tooltip='"CoT Logging"'
-                                            :size='32'
-                                            :stroke='1'
-                                            class='cursor-pointer'
-                                            @click='$router.push(`/connection/${$route.params.connectionid}/layer/${layer.id}/query`)'
-                                        />
-                                        <IconSettings
-                                            v-tooltip='"Edit"'
-                                            :size='32'
-                                            :stroke='1'
-                                            class='cursor-pointer'
-                                            @click='$router.push(`/connection/${$route.params.connectionid}/layer/${layer.id}/edit`)'
-                                        />
+                                        <TablerIconButton
+                                            title='Layer Alerts'
+                                            @click='router.push(`/connection/${route.params.connectionid}/layer/${layer.id}/alert`)'
+                                        >
+                                            <IconAlertTriangle
+                                                :size='32'
+                                                stroke='1'
+                                                :class='{ "text-red": alerts.total }'
+                                            />
+                                        </TablerIconButton>
+                                        <TablerIconButton
+                                            title='Edit'
+                                            @click='router.push(`/connection/${route.params.connectionid}/layer/${layer.id}/edit`)'
+                                        >
+                                            <IconPencil
+                                                :size='32'
+                                                stroke='1'
+                                            />
+                                        </TablerIconButton>
                                     </div>
                                 </div>
                             </div>
@@ -69,6 +67,20 @@
                             </div>
                         </div>
                     </div>
+
+                    <div
+                        v-if='softAlert && (!stack || (stack && !["CREATE_IN_PROGRESS"].includes(stack.status)))'
+                        class='col-lg-12'
+                    >
+                        <div class='card'>
+                            <div
+                                class='bg-red-lt mx-2 px-2 py-2 my-2 rounded border border-red justify-content-center'
+                            >
+                                <div>Layer Capabilities could not be loaded from upstream source - Some functionality may not work until properly deployed &amp; configured</div>
+                            </div>
+                        </div>
+                    </div>
+
 
                     <div class='col-lg-12'>
                         <div
@@ -93,7 +105,7 @@
                         >
                             <div class='card-header d-flex align-items-center'>
                                 <TablerLoading
-                                    inline='true'
+                                    :inline='true'
                                     desc='Layer is updating'
                                 />
                                 <div class='ms-auto btn-list'>
@@ -101,7 +113,7 @@
                                         v-tooltip='"Cancel Stack Update"'
                                         class='cursor-pointer'
                                         :size='32'
-                                        :stroke='1'
+                                        stroke='1'
                                         @click='cancelUpdate'
                                     />
                                 </div>
@@ -120,70 +132,186 @@
                                         <h4 class='subheader'>
                                             Layer Settings
                                         </h4>
-                                        <div class='list-group list-group-transparent'>
+                                        <div
+                                            role='menu'
+                                            class='list-group list-group-transparent'
+                                        >
                                             <span
-                                                class='list-group-item list-group-item-action d-flex align-items-center'
+                                                tabindex='0'
+                                                role='menuitem'
+                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
-                                                    "active": $route.name === "layer-deployment",
-                                                    "cursor-pointer": $route.name !== "layer-deployment"
+                                                    "active": route.name === "layer-deployment",
+                                                    "cursor-pointer": route.name !== "layer-deployment"
                                                 }'
-                                                @click='$router.push(`/connection/${$route.params.connectionid}/layer/${$route.params.layerid}/deployment`)'
+                                                @click='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/deployment`)'
                                             ><IconPlaneDeparture
                                                 :size='32'
-                                                :stroke='1'
+                                                stroke='1'
                                             /><span class='mx-3'>Deployment</span></span>
-                                            <span
-                                                class='list-group-item list-group-item-action d-flex align-items-center'
-                                                :class='{
-                                                    "active": $route.name === "layer-config",
-                                                    "cursor-pointer": $route.name !== "layer-config"
-                                                }'
-                                                @click='$router.push(`/connection/${$route.params.connectionid}/layer/${$route.params.layerid}/config`)'
-                                            ><IconAdjustments
-                                                :size='32'
-                                                :stroke='1'
-                                            /><span class='mx-3'>Config</span></span>
-                                            <span
-                                                class='list-group-item list-group-item-action d-flex align-items-center'
-                                                :class='{
-                                                    "active": $route.name === "layer-environment",
-                                                    "cursor-pointer": $route.name !== "layer-environment"
-                                                }'
-                                                @click='$router.push(`/connection/${$route.params.connectionid}/layer/${$route.params.layerid}/environment`)'
-                                            ><IconBeach
-                                                :size='32'
-                                                :stroke='1'
-                                            /><span class='mx-3'>Environment</span></span>
-                                            <span
-                                                class='list-group-item list-group-item-action d-flex align-items-center'
-                                                :class='{
-                                                    "active": $route.name === "layer-schema",
-                                                    "cursor-pointer": $route.name !== "layer-schema"
-                                                }'
-                                                @click='$router.push(`/connection/${$route.params.connectionid}/layer/${$route.params.layerid}/schema`)'
-                                            ><IconSchema
-                                                :size='32'
-                                                :stroke='1'
-                                            /><span class='mx-3'>Schema</span></span>
-                                            <span
-                                                class='list-group-item list-group-item-action d-flex align-items-center'
-                                                :class='{
-                                                    "active": $route.name === "layer-styles",
-                                                    "cursor-pointer": $route.name !== "layer-styles"
-                                                }'
-                                                @click='$router.push(`/connection/${$route.params.connectionid}/layer/${$route.params.layerid}/styles`)'
-                                            ><IconPaint
-                                                :size='32'
-                                                :stroke='1'
-                                            /><span class='mx-3'>Styling</span></span>
+
+                                            <div
+                                                class='px-2 py-2 round btn-group w-100'
+                                                role='group'
+                                            >
+                                                <input
+                                                    id='layer-incoming'
+                                                    type='radio'
+                                                    class='btn-check'
+                                                    autocomplete='off'
+                                                    :checked='mode === "incoming"'
+                                                    @click='mode = "incoming"'
+                                                >
+                                                <label
+                                                    for='layer-incoming'
+                                                    type='button'
+                                                    class='btn btn-sm'
+                                                ><IconWorldDownload
+                                                    v-tooltip='"Incoming"'
+                                                    :size='32'
+                                                    stroke='1'
+                                                />Incoming</label>
+
+                                                <input
+                                                    id='layer-outgoing'
+                                                    type='radio'
+                                                    class='btn-check'
+                                                    autocomplete='off'
+                                                    :checked='mode === "outgoing"'
+                                                    @click='mode = "outgoing"'
+                                                >
+                                                <label
+                                                    for='layer-outgoing'
+                                                    type='button'
+                                                    class='btn btn-sm'
+                                                ><IconWorldUpload
+                                                    v-tooltip='"Outgoing"'
+                                                    :size='32'
+                                                    stroke='1'
+                                                />Outgoing</label>
+                                            </div>
+
+                                            <template v-if='mode === "incoming"'>
+                                                <TablerLoading
+                                                    v-if='loading.incoming'
+                                                    desc='Creating Config'
+                                                />
+                                                <TablerNone
+                                                    v-else-if='!layer.incoming'
+                                                    label='Incoming Config'
+                                                    :create='capabilities && capabilities.incoming !== undefined'
+                                                    @create='createIncoming'
+                                                />
+                                                <template v-else>
+                                                    <span
+                                                        tabindex='0'
+                                                        role='menuitem'
+                                                        class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
+                                                        :class='{
+                                                            "active": route.name === "layer-incoming-config",
+                                                            "cursor-pointer": route.name !== "layer-incoming-config"
+                                                        }'
+                                                        @click='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/incoming/config`)'
+                                                    ><IconAdjustments
+                                                        :size='32'
+                                                        stroke='1'
+                                                    /><span class='mx-3'>Config</span></span>
+
+                                                    <span
+                                                        tabindex='0'
+                                                        role='menuitem'
+                                                        class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
+                                                        :class='{
+                                                            "active": route.name === "layer-incoming-environment",
+                                                            "cursor-pointer": route.name !== "layer-incoming-environment"
+                                                        }'
+                                                        @click='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/incoming/environment`)'
+                                                    ><IconBeach
+                                                        :size='32'
+                                                        stroke='1'
+                                                    /><span class='mx-3'>Environment</span></span>
+                                                    <span
+                                                        tabindex='0'
+                                                        role='menuitem'
+                                                        class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
+                                                        :class='{
+                                                            "active": route.name === "layer-incoming-schema",
+                                                            "cursor-pointer": route.name !== "layer-incoming-schema"
+                                                        }'
+                                                        @click='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/incoming/schema`)'
+                                                    ><IconSchema
+                                                        :size='32'
+                                                        stroke='1'
+                                                    /><span class='mx-3'>Schema</span></span>
+                                                    <span
+                                                        tabindex='0'
+                                                        role='menuitem'
+                                                        class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
+                                                        :class='{
+                                                            "active": route.name === "layer-incoming-styles",
+                                                            "cursor-pointer": route.name !== "layer-incoming-styles"
+                                                        }'
+                                                        @click='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/incoming/styles`)'
+                                                    ><IconPaint
+                                                        :size='32'
+                                                        stroke='1'
+                                                    /><span class='mx-3'>Styling</span></span>
+                                                    <div
+                                                        class='list-group-item list-group-item-action d-flex align-items-center justify-content-center'
+                                                    >
+                                                        <TablerDelete
+                                                            label='Delete Incoming'
+                                                            @delete='deleteConfig("incoming")'
+                                                        />
+                                                    </div>
+                                                </template>
+                                            </template>
+                                            <template v-else>
+                                                <TablerLoading
+                                                    v-if='loading.outgoing'
+                                                    desc='Creating Config'
+                                                />
+                                                <TablerNone
+                                                    v-else-if='!layer.outgoing'
+                                                    label='Outgoing Config'
+                                                    :create='capabilities && capabilities.outgoing !== undefined'
+                                                    @create='createOutgoing'
+                                                />
+                                                <template v-else>
+                                                    <span
+                                                        tabindex='0'
+                                                        role='menuitem'
+                                                        class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
+                                                        :class='{
+                                                            "active": route.name === "layer-outgoing-environment",
+                                                            "cursor-pointer": route.name !== "layer-outgoing-environment"
+                                                        }'
+                                                        @click='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/outgoing/environment`)'
+                                                    ><IconBeach
+                                                        :size='32'
+                                                        stroke='1'
+                                                    /><span class='mx-3'>Environment</span></span>
+
+                                                    <div
+                                                        class='list-group-item list-group-item-action d-flex align-items-center justify-content-center'
+                                                    >
+                                                        <TablerDelete
+                                                            label='Delete Outgoing'
+                                                            @delete='deleteConfig("outgoing")'
+                                                        />
+                                                    </div>
+                                                </template>
+                                            </template>
                                         </div>
                                     </div>
                                 </div>
                                 <div class='col-12 col-md-9'>
                                     <router-view
+                                        :key='route.fullPath'
                                         :layer='layer'
+                                        :capabilities='capabilities'
                                         :stack='stack'
-                                        @layer='layer = $event'
+                                        @refresh='refresh(true)'
                                         @stack='fetchStatus(true)'
                                     />
                                 </div>
@@ -198,21 +326,27 @@
     </div>
 </template>
 
-<script>
-import { std, stdurl } from '/src/std.ts';
+<script setup lang='ts'>
+import { ref, watch, onMounted, onUnmounted } from 'vue';
+import type { ETLLayer, ETLLayerTask, ETLLayerTaskCapabilities, ETLLayerAlertList } from '../types.ts';
+import { std, stdurl } from '../std.ts';
+import { useRoute, useRouter } from 'vue-router';
 import PageFooter from './PageFooter.vue';
-import LayerStatus from './Layer/utils/Status.vue';
-import cronstrue from 'cronstrue';
+import LayerStatus from './Layer/utils/StatusDot.vue';
 import timeDiff from '../timediff.ts';
 import {
+    TablerNone,
+    TablerDelete,
     TablerBreadCrumb,
+    TablerIconButton,
     TablerMarkdown,
     TablerLoading
 } from '@tak-ps/vue-tabler'
 import {
     IconX,
-    IconSettings,
-    IconDatabase,
+    IconWorldDownload,
+    IconWorldUpload,
+    IconPencil,
     IconAlertTriangle,
     IconPlaneDeparture,
     IconAdjustments,
@@ -221,96 +355,132 @@ import {
     IconPaint,
 } from '@tabler/icons-vue'
 
-export default {
-    name: 'ConnectionLayer',
-    components: {
-        LayerStatus,
-        PageFooter,
-        TablerBreadCrumb,
-        TablerMarkdown,
-        TablerLoading,
-        IconX,
-        IconSettings,
-        IconDatabase,
-        IconAlertTriangle,
-        IconPlaneDeparture,
-        IconAdjustments,
-        IconBeach,
-        IconSchema,
-        IconPaint,
-    },
-    data: function() {
-        return {
-            err: false,
-            loading: {
-                layer: true,
-                stack: true
-            },
-            stack: {},
-            layer: {},
-            alerts: {},
-            looping: false
-        }
-    },
-    watch: {
-        'stack.status': async function() {
-            if (this.stack.status.includes("_COMPLETE")) {
-                this.loading.layer = true;
-                await this.fetch()
-                this.loading.layer = false;
-            }
-        }
-    },
-    mounted: async function() {
-        await this.fetch();
+const route = useRoute();
+const router = useRouter();
 
-        await this.fetchStatus();
-        this.looping = setInterval(() => {
-            this.fetchStatus();
-        }, 10 * 1000);
+const mode = ref(String(route.name).includes('outgoing') ? 'outgoing' : 'incoming');
+const softAlert = ref(false);
+const loading = ref({
+    layer: true,
+    incoming: false,
+    outgoing: false,
+    stack: true
+});
+const stack = ref<ETLLayerTask | undefined>(undefined)
+const layer = ref<ETLLayer | undefined>(undefined)
+const capabilities = ref<ETLLayerTaskCapabilities | undefined>(undefined);
+const alerts = ref<ETLLayerAlertList | undefined>(undefined);
+const looping = ref<ReturnType<typeof setInterval> | undefined>(undefined);
 
-        await this.fetchAlerts();
-
-        this.loading.layer = false;
-    },
-    unmounted: function() {
-        this.clear()
-    },
-    methods: {
-        timeDiff(update) {
-            return timeDiff(update);
-        },
-        clear: function() {
-            if (this.looping) clearInterval(this.looping);
-        },
-        cronstr: function(cron) {
-            if (!cron) return;
-
-            if (cron.includes('cron(')) {
-                return cronstrue.toString(cron.replace('cron(', '').replace(')', ''));
-            } else {
-                const rate = cron.replace('rate(', '').replace(')', '');
-                return `Once every ${rate}`;
-            }
-        },
-        fetch: async function() {
-            const url = stdurl(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}`);
-            url.searchParams.append('alarms', 'true');
-            this.layer = await std(url);
-        },
-        cancelUpdate: async function() {
-            await std(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}/task`, {
-                method: 'DELETE'
-            });
-        },
-        fetchStatus: async function(loading = false) {
-            this.loading.stack = loading;
-            this.stack = await std(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}/task`);
-            this.loading.stack = false;
-        },
-        fetchAlerts: async function() {
-            this.alerts = await std(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}/alert`);
-        }
+watch(stack, async (newStack, oldStack) => {
+    if (
+        oldStack
+        && newStack
+        && newStack.status.includes("_COMPLETE")
+        && !oldStack.status.includes("_COMPLETE")
+    ) {
+        loading.value.layer = true;
+        await fetch()
+        loading.value.layer = false;
     }
+});
+
+onMounted(async () => {
+    await refresh(true);
+
+    looping.value = setInterval(async () => {
+        await refresh(false);
+    }, 10 * 1000);
+
+    await fetchAlerts();
+
+    loading.value.layer = false;
+});
+
+onUnmounted(() => {
+    if (looping.value) {
+        clearInterval(looping.value);
+    }
+});
+
+async function refresh(full = false) {
+    if (full) await fetch();
+    await fetchStatus();
+    await fetchCapabilities();
+}
+
+async function createOutgoing() {
+    loading.value.outgoing = true;
+
+    await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/outgoing`, {
+        method: 'POST',
+        body: {}
+    });
+
+    await fetch();
+    await fetchStatus();
+
+    loading.value.outgoing = false;
+}
+
+async function createIncoming() {
+    loading.value.incoming = true;
+
+    await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/incoming`, {
+        method: 'POST',
+        body: {}
+    });
+
+    await fetch();
+    await fetchStatus();
+
+    loading.value.incoming = false;
+}
+
+async function fetch() {
+    const url = stdurl(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}`);
+    url.searchParams.append('alarms', 'true');
+    layer.value = await std(url) as ETLLayer;
+}
+
+async function cancelUpdate() {
+    await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/task`, {
+        method: 'DELETE'
+    });
+}
+
+async function deleteConfig(direction: string) {
+    loading.value.layer = true;
+
+    await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/${direction}`, {
+        method: 'DELETE'
+    });
+
+    await fetch();
+    await fetchStatus();
+
+    router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/deployment`);
+
+    loading.value.layer = false;
+}
+
+async function fetchStatus(load = false) {
+    loading.value.stack = load;
+    stack.value = await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/task`) as ETLLayerTask;
+    loading.value.stack = false;
+}
+
+async function fetchCapabilities() {
+    try {
+        capabilities.value = await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/task/capabilities`) as ETLLayerTaskCapabilities;
+        softAlert.value = false
+    } catch (err) {
+        softAlert.value = true;
+        console.error(err);
+    }
+}
+
+async function fetchAlerts() {
+    alerts.value = await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/alert`) as ETLLayerAlertList;
 }
 </script>

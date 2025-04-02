@@ -2,30 +2,60 @@
     <div
         ref='container'
         class='position-absolute bg-dark rounded border resizable-content text-white'
-        :style='`
-            left: ${video ? video.x : 60}px;
-            top: ${video ? video.y : 0}px;
-        `'
     >
-        <div class='d-flex align-items-center px-2 py-2'>
+        <div
+            style='height: 40px;'
+            class='d-flex align-items-center px-2 py-2'
+        >
             <div
-                :draggable='true'
-                @dragstart='dragStart'
+                ref='drag-handle'
+                class='cursor-pointer'
             >
                 <IconGripVertical
-                    ref='drag-handle'
                     :size='24'
                     stroke='1'
-                    class='cursor-pointer'
                 />
             </div>
 
-            <div
-                class='subheader'
-                v-text='title'
+            <StatusDot
+                v-if='active && active.metadata'
+                :status='active.metadata.active ? "success" : "unknown"'
+                :dark='true'
+                :title='active.metadata.active ? "Streaming" : "Unknown"'
+                :size='24'
             />
 
+            <VideoLeaseSourceType
+                v-if='active && active.metadata'
+                :source-type='active.metadata.source_type'
+                :size='24'
+            />
+
+            <div class='mx-2'>
+                <div
+                    class='text-sm'
+                    v-text='title'
+                />
+                <div
+                    v-if='active && active.metadata && active.metadata.source_model'
+                    class='subheader'
+                    v-text='active.metadata.source_model'
+                />
+            </div>
+
             <div class='btn-list ms-auto'>
+                <span v-if='active && active.metadata'>
+                    <IconUsersGroup
+                        :size='24'
+                        stroke='1'
+                    />
+                    <span v-text='active.metadata.watchers + 1' />
+                    <span
+                        class='ms-1'
+                        v-text='active.metadata.watchers + 1 > 1 ? "Watchers" : "Watcher"'
+                    />
+                </span>
+
                 <TablerIconButton
                     title='Close Video Player'
                     @click='emit("close")'
@@ -50,16 +80,30 @@
             <template v-else-if='error'>
                 <TablerAlert
                     title='Video Error'
+                    :compact='true'
                     :err='error'
                 />
 
-                <div class='d-flex justify-content-center'>
-                    <TablerButton @click='$emit("close")'>
-                        Close Player
-                    </TablerButton>
+                <div class='row g-2 col-12 ps-2 pt-4'>
+                    <div class='col-md-6'>
+                        <TablerButton
+                            class='w-100'
+                            @click='$emit("close")'
+                        >
+                            Close Player
+                        </TablerButton>
+                    </div>
+                    <div class='col-md-6'>
+                        <TablerButton
+                            class='w-100'
+                            @click='requestLease'
+                        >
+                            Retry
+                        </TablerButton>
+                    </div>
                 </div>
             </template>
-            <template v-else-if='!videoProtocols || !videoProtocols.hls'>
+            <template v-else-if='!video || !videoProtocols || !videoProtocols.hls'>
                 <TablerNone
                     label='HLS Streaming Protocol'
                     :create='false'
@@ -69,8 +113,8 @@
                 <video
                     :id='id'
                     class='video-js vjs-default-skin'
-                    controls='true'
-                    autoplay='true'
+                    :controls='true'
+                    :autoplay='true'
                 >
                     <source
                         type='application/x-mpegURL'
@@ -83,8 +127,10 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted, onUnmounted, nextTick, useTemplateRef } from 'vue'
-import { std } from '../../../../src/std.ts';
+import { ref, computed, onMounted, onUnmounted, nextTick, useTemplateRef } from 'vue'
+import { std, stdurl } from '../../../../src/std.ts';
+import StatusDot from './../../util/StatusDot.vue';
+import VideoLeaseSourceType from './VideoLeaseSourceType.vue';
 import type { VideoLeaseResponse } from '../../../types.ts';
 import type Player from 'video.js/dist/types/player.d.ts';
 import videojs from 'video.js';
@@ -92,6 +138,7 @@ import { useVideoStore } from '../../../../src/stores/videos.ts';
 import 'video.js/dist/video-js.css';
 import {
     IconX,
+    IconUsersGroup,
     IconGripVertical
 } from '@tabler/icons-vue';
 import {
@@ -101,8 +148,8 @@ import {
     TablerButton,
     TablerIconButton,
 } from '@tak-ps/vue-tabler';
-const videoStore = useVideoStore();
 
+const videoStore = useVideoStore();
 const id = `video-${(Math.random() + 1).toString(36).substring(7)}`;
 
 const props = defineProps({
@@ -117,6 +164,7 @@ const props = defineProps({
 });
 
 const container = useTemplateRef<HTMLElement>('container');
+const dragHandle = useTemplateRef<HTMLElement>('drag-handle');
 
 const emit = defineEmits(['close']);
 
@@ -128,6 +176,17 @@ const video = ref(videoStore.videos.get(props.uid));
 const videoLease = ref<VideoLeaseResponse["lease"] | undefined>();
 const videoProtocols = ref<VideoLeaseResponse["protocols"] | undefined>();
 const observer = ref<ResizeObserver | undefined>();
+const lastPosition = ref({ top: 0, left: 0 })
+
+const active = ref();
+
+const title = computed(() => {
+    if (active.value && active.value.metadata) {
+        return active.value.metadata.name;
+    } else {
+        return props.title;
+    }
+});
 
 onUnmounted(async () => {
     if (observer.value) {
@@ -142,43 +201,71 @@ onUnmounted(async () => {
 });
 
 onMounted(async () => {
-    await requestLease();
+    observer.value = new ResizeObserver((entries) => {
+        if (!entries.length) return;
 
-    document.body.addEventListener('dragover', (event) => {
-        if (video.value && video.value) {
-            video.value.x = event.clientX;
-            video.value.y = event.clientY;
-        }
-
-        event.preventDefault();
-        return false;
-    }, false);
-
-    observer.value = new ResizeObserver(() => {
-        if (video.value && video.value &&  container.value) {
-            video.value.height = container.value.clientHeight;
-            video.value.width = container.value.clientWidth;
-        }
+        window.requestAnimationFrame(() => {
+            if (video.value && video.value && container.value) {
+                video.value.height = entries[0].contentRect.height;
+                video.value.width = entries[0].contentRect.width;
+            }
+        });
     })
 
-    if (container.value) {
+    if (container.value && video.value) {
+        container.value.style.top = video.value.y + 'px';
+        container.value.style.left = video.value.x + 'px';
+
+        container.value.style.height = video.value.height + 'px';
+        container.value.style.width = video.value.width + 'px';
+
         observer.value.observe(container.value);
     }
 
-    if (!error.value && videoProtocols.value && videoProtocols.value.hls) {
-        nextTick(() => {
-            player.value = videojs(id, {
-                fluid: true
-            });
-        });
+    if (dragHandle.value) {
+        dragHandle.value.addEventListener('mousedown', dragStart);
     }
+
+    await requestLease();
 });
 
-function dragStart(event: DragEvent) {
-    if (!event.dataTransfer) return;
-    event.dataTransfer.effectAllowed = 'move';
-    event.dataTransfer.setData("text/plain", id);
-    event.dataTransfer.setDragImage(new Image(), 0, 0)
+function dragStart(event: MouseEvent) {
+    if (!container.value || !dragHandle.value) return;
+
+    lastPosition.value.left = event.clientX;
+    lastPosition.value.top = event.clientY;
+
+    dragHandle.value.classList.add('dragging');
+
+    container.value.addEventListener('mousemove', dragMove);
+    container.value.addEventListener('mouseleave', dragEnd);
+    container.value.addEventListener('mouseup', dragEnd);
+}
+
+function dragMove(event: MouseEvent) {
+    if (!container.value || !dragHandle.value || !video.value) return;
+
+
+    const dragElRect = container.value.getBoundingClientRect();
+
+    video.value.x = dragElRect.left + event.clientX - lastPosition.value.left;
+    video.value.y = dragElRect.top + event.clientY - lastPosition.value.top;
+
+    lastPosition.value.left = event.clientX;
+    lastPosition.value.top = event.clientY;
+
+    container.value.style.top = video.value.y + 'px';
+    container.value.style.left = video.value.x + 'px';
+}
+
+function dragEnd() {
+    if (!container.value || !dragHandle.value) return;
+
+    container.value.removeEventListener('mousemove', dragMove);
+    container.value.removeEventListener('mouseleave', dragEnd);
+    container.value.removeEventListener('mouseup', dragEnd);
+
+    dragHandle.value.classList.remove('dragging');
 }
 
 async function deleteLease(): Promise<void> {
@@ -197,21 +284,42 @@ async function deleteLease(): Promise<void> {
 }
 
 async function requestLease(): Promise<void> {
+    if (!video.value) throw new Error('Video URL could not be loaded');
+
     try {
-        const { lease, protocols } = await std('/api/video/lease', {
-            method: 'POST',
-            body:  {
-                name: 'Temporary Lease',
-                ephemeral: true,
-                duration: 1 * 60 * 60,
-                proxy: video.value ? video.value.url : undefined
-            }
-        }) as VideoLeaseResponse
+        const url = stdurl('/api/video/active');
+        url.searchParams.append('url', video.value.url)
+        active.value = await std(url);
 
-        videoLease.value = lease;
-        videoProtocols.value = protocols;
+        if (active.value.metadata) {
+            videoProtocols.value = active.value.metadata.protocols;
+            loading.value = false;
+        } else if (active.value.leaseable) {
+            const { lease, protocols } = await std('/api/video/lease', {
+                method: 'POST',
+                body:  {
+                    name: 'Temporary Lease',
+                    ephemeral: true,
+                    duration: 1 * 60 * 60,
+                    proxy: video.value.url
+                }
+            }) as VideoLeaseResponse
 
-        loading.value = false;
+            videoLease.value = lease;
+            videoProtocols.value = protocols;
+
+            loading.value = false;
+        } else if (!active.value.leasable) {
+            error.value = new Error(active.value.message || 'Could not start stream');
+        }
+
+        if (!error.value && videoProtocols.value && videoProtocols.value.hls) {
+            nextTick(() => {
+                player.value = videojs(id, {
+                    fill: true,
+                });
+            });
+        }
     } catch (err) {
         loading.value = false;
         error.value = err instanceof Error ? err : new Error(String(err));
@@ -220,6 +328,10 @@ async function requestLease(): Promise<void> {
 </script>
 
 <style>
+.dragging {
+    cursor: move !important;
+}
+
 .resizable-content {
     min-height: 300px;
     min-width: 400px;

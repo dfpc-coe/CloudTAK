@@ -35,21 +35,18 @@
                                         New Connection
                                     </h3>
 
-                                    <div class='ms-auto'>
-                                        <div class='d-flex'>
-                                            <div class='btn-list'>
-                                                <div class='d-flex'>
-                                                    <span class='px-2'>Enabled</span>
-                                                    <label class='form-check form-switch'>
-                                                        <input
-                                                            v-model='connection.enabled'
-                                                            class='form-check-input'
-                                                            type='checkbox'
-                                                        >
-                                                    </label>
-                                                </div>
-                                            </div>
-                                        </div>
+                                    <div
+                                        v-if='$route.params.connectionid'
+                                        class='ms-auto d-flex btn-list'
+                                    >
+                                        <span class='px-2'>Enabled</span>
+                                        <label class='form-check form-switch'>
+                                            <input
+                                                v-model='connection.enabled'
+                                                class='form-check-input'
+                                                type='checkbox'
+                                            >
+                                        </label>
                                     </div>
                                 </div>
                                 <div class='card-body'>
@@ -57,7 +54,7 @@
                                         <div class='col-md-12 mt-3'>
                                             <TablerInput
                                                 v-model='connection.name'
-                                                label='Connection Name'
+                                                label='Name'
                                                 :error='errors.name'
                                                 description='
                                                     The human readable name of the Connection
@@ -67,7 +64,7 @@
                                         <div class='col-md-12'>
                                             <TablerInput
                                                 v-model='connection.description'
-                                                label='Connection Description'
+                                                label='Description'
                                                 description='
                                                     Human readable details about what the connection contains or is used for
                                                 '
@@ -101,13 +98,15 @@
                                                     <span class='mx-3'>Certificate Uploaded</span>
 
                                                     <div class='ms-auto'>
-                                                        <IconTrash
-                                                            v-tooltip='"Remove Certificate"'
-                                                            :size='32'
-                                                            :stroke='1'
-                                                            class='cursor-pointer'
+                                                        <TablerIconButton
+                                                            title='Remove Certificate'
                                                             @click='marti({ key: "", cert: ""})'
-                                                        />
+                                                        >
+                                                            <IconTrash
+                                                                :size='32'
+                                                                stroke='1'
+                                                            />
+                                                        </TablerIconButton>
                                                     </div>
                                                 </div>
                                             </template>
@@ -200,7 +199,7 @@
                                                 <template v-else-if='type === "creation"'>
                                                     <CertificateMachineUser
                                                         :connection='connection'
-                                                        @certs='marti($event)'
+                                                        @integration='creation($event)'
                                                         @err='err = $event'
                                                     />
                                                 </template>
@@ -210,7 +209,7 @@
                                                     <div class='d-flex justify-content-center'>
                                                         <IconLock
                                                             :size='50'
-                                                            :stroke='1'
+                                                            stroke='1'
                                                         />
                                                     </div>
                                                     <div class='d-flex justify-content-center my-3'>
@@ -275,6 +274,7 @@ import {
 } from '@tabler/icons-vue';
 import {
     TablerLoading,
+    TablerIconButton,
     TablerBreadCrumb,
     TablerDelete,
     TablerInput
@@ -289,6 +289,7 @@ export default {
         AgencySelect,
         TablerDelete,
         TablerBreadCrumb,
+        TablerIconButton,
         CertificateP12,
         CertificateRaw,
         CertificateLogin,
@@ -314,6 +315,7 @@ export default {
                 agency: undefined,
                 description: '',
                 enabled: true,
+                integrationId: undefined,
                 auth: { cert: '', key: '' }
             }
         }
@@ -342,17 +344,24 @@ export default {
             this.connection.auth = { cert: '', key: '' }
             this.loading = false;
         },
+        creation: function(integration) {
+            this.connection.integrationId = integration.integrationId;
+            this.connection.auth.cert = integration.certs.cert;
+            this.connection.auth.key = integration.certs.key;
+        },
         marti: function(certs) {
+            this.connection.integrationId = null;
             this.connection.auth.cert = certs.cert;
             this.connection.auth.key = certs.key;
         },
         p12upload: function(certs) {
             this.modal.upload = false;
+            this.connection.integrationId = null;
             this.connection.auth.cert = certs.cert;
             this.connection.auth.key = certs.key;
         },
         create: async function() {
-            for (const field of ['name', 'description' ]) {
+            for (const field of ['name', 'description']) {
                 if (!this.connection[field]) this.errors[field] = 'Cannot be empty';
                 else this.errors[field] = '';
             }

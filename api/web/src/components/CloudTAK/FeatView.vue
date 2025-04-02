@@ -1,47 +1,59 @@
 <template>
     <div
-        class='position-absolute end-0 bottom-0 text-white bg-dark overflow-auto'
+        class='position-absolute end-0 bottom-0 text-white bg-dark'
         style='z-index: 1; width: 400px; top: 56px;'
     >
         <div
-            class='col-12 border-light border-bottom d-flex'
+            class='col-12 border-light border-bottom sticky-top'
             style='border-radius: 0px;'
         >
-            <div class='col-auto card-header row mx-1 my-2'>
+            <div class='col-12 card-header px-1 py-2'>
                 <div
-                    class='card-title mx-2'
-                    v-text='feat.properties.name || "No Name"'
+                    class='card-title mx-2 text-truncate'
+                    style='width: 280px'
+                    v-text='feat.properties?.name || "No Name"'
                 />
             </div>
-            <div class='col-auto btn-list my-2 ms-auto d-flex align-items-center mx-2'>
-                <IconZoomPan
-                    v-tooltip='"Zoom To"'
-                    :size='32'
-                    :stroke='1'
-                    class='cursor-pointer'
+            <div class='col-12 btn-list my-2 d-flex align-items-center mx-2'>
+                <TablerIconButton
+                    title='Zoom To'
                     @click='zoomTo'
-                />
+                >
+                    <IconZoomPan
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+                <div
+                    class='ms-auto'
+                    style='margin-right: 14px;'
+                >
+                    <TablerIconButton
+                        v-if='mode === "default"'
+                        title='Raw View'
+                        @click='mode = "raw"'
+                    >
+                        <IconCode
+                            :size='32'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
 
-                <IconCode
-                    v-if='mode === "default"'
-                    v-tooltip='"Raw View"'
-                    :size='32'
-                    :stroke='1'
-                    class='cursor-pointer'
-                    @click='mode = "raw"'
-                />
-                <IconX
-                    v-if='mode === "raw"'
-                    v-tooltip='"Default View"'
-                    :size='32'
-                    :stroke='1'
-                    class='cursor-pointer'
-                    @click='mode = "default"'
-                />
+                    <TablerIconButton
+                        v-if='mode === "raw"'
+                        title='Default View'
+                        @click='mode = "default"'
+                    >
+                        <IconX
+                            :size='32'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
+                </div>
             </div>
         </div>
 
-        <div class='col-12'>
+        <div class='col-12 overflow-auto'>
             <template v-if='mode === "default"'>
                 <div class='col-12 px-3 py-2'>
                     <Coordinate v-model='center' />
@@ -58,13 +70,26 @@
                                 </tr>
                             </thead>
                             <tbody class='bg-gray-500'>
-                                <tr
-                                    v-for='prop of Object.keys(feat.properties)'
-                                    :key='prop'
-                                >
-                                    <td v-text='prop' />
-                                    <td v-text='feat.properties[prop]' />
-                                </tr>
+                                <template v-if='feat.properties'>
+                                    <tr
+                                        v-for='prop of Object.keys(feat.properties)'
+                                        :key='prop'
+                                    >
+                                        <td v-text='prop' />
+                                        <td>
+                                            <a
+                                                v-if='typeof feat.properties[prop] === "string" && feat.properties[prop].startsWith("http")'
+                                                :href='feat.properties[prop]'
+                                                target='_blank'
+                                                v-text='feat.properties[prop]'
+                                            />
+                                            <span
+                                                v-else
+                                                v-text='feat.properties[prop]'
+                                            />
+                                        </td>
+                                    </tr>
+                                </template>
                             </tbody>
                         </table>
                     </div>
@@ -77,49 +102,37 @@
     </div>
 </template>
 
-<script>
-import { useMapStore } from '/src/stores/map.ts';
+<script setup lang='ts'>
+import { ref, computed } from 'vue';
+import { useMapStore } from '../../stores/map.ts';
+import type { LngLatLike } from 'maplibre-gl';
+import type { Feature } from 'geojson';
 import pointOnFeature from '@turf/point-on-feature';
 import Coordinate from './util/Coordinate.vue';
-const mapStore = useMapStore();
+import {
+    TablerIconButton
+} from '@tak-ps/vue-tabler';
 import {
     IconX,
     IconZoomPan,
     IconCode
 } from '@tabler/icons-vue';
 
-export default {
-    name: 'CloudTAKFeatView',
-    components: {
-        IconX,
-        IconCode,
-        IconZoomPan,
-        Coordinate
-    },
-    props: {
-        feat: {
-            type: Object,
-            required: true
-        }
-    },
-    data: function() {
-        return {
-            mode: 'default',
-            icon: null
-        }
-    },
-    computed: {
-        center: function() {
-            return pointOnFeature(this.feat).geometry.coordinates;
-        }
-    },
-    methods: {
-        zoomTo: function() {
-            mapStore.map.flyTo({
-                center: this.center,
-                zoom: 14
-            })
-        }
-    }
+const mapStore = useMapStore();
+
+const props = defineProps<{
+    feat: Feature
+}>();
+
+const mode = ref('default');
+const center = computed(() => {
+    return pointOnFeature(props.feat).geometry.coordinates;
+});
+
+function zoomTo() {
+    mapStore.map.flyTo({
+        center: center.value as LngLatLike,
+        zoom: 14
+    })
 }
 </script>

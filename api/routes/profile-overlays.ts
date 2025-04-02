@@ -157,6 +157,11 @@ export default async function router(schema: Schema, config: Config) {
                 TileJSON.isValidStyle(overlay.type, req.body.styles);
             }
 
+            if (overlay.mode === 'profile' && req.body.url && req.body.url.startsWith('http')) {
+                const url = new URL(req.body.url);
+                req.body.url = url.pathname;
+            }
+
             overlay = await config.models.ProfileOverlay.commit(req.params.overlay, req.body)
 
             res.json({
@@ -213,6 +218,11 @@ export default async function router(schema: Schema, config: Config) {
                     token: sub.data.token
                 })
             } else {
+                if (req.body.mode === 'profile' && req.body.url.startsWith('http')) {
+                    const url = new URL(req.body.url);
+                    req.body.url = url.pathname;
+                }
+
                 overlay = await config.models.ProfileOverlay.generate({
                     ...req.body,
                     opacity: String(req.body.opacity || 1),

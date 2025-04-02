@@ -1,21 +1,24 @@
 <template>
     <div
         ref='selectMenu'
+        role='menu'
         class='position-absolute bg-dark rounded'
         style='
             width: 200px;
             z-index: 1;
         '
         :style='{
-            top: `${select.y}px`,
-            left: `${select.x - 100}px`,
+            top: `${mapStore.select.y}px`,
+            left: `${mapStore.select.x - 100}px`,
         }'
     >
         <div
-            v-for='feat in select.feats'
+            v-for='feat in mapStore.select.feats'
             :key='feat.properties.id'
+            role='menuitem'
+            tabindex='0'
             class='col-12 text-white'
-            @click='$emit("selected", feat)'
+            @click='emit("selected", feat)'
         >
             <Feature
                 :feature='feat'
@@ -26,24 +29,11 @@
     </div>
 </template>
 
-<script>
+<script setup lang='ts'>
 import Feature from './Feature.vue'
-import { useMapStore } from '/src/stores/map.ts';
-import { mapState, mapActions } from 'pinia'
+import { useMapStore } from '../../../stores/map.ts';
 
-export default {
-    name: 'MultipleSelect',
-    components: {
-        Feature
-    },
-    emits: [
-        'selected'
-    ],
-    computed: {
-        ...mapState(useMapStore, ['select']),
-    },
-    methods: {
-        ...mapActions(useMapStore, ['radialClick']),
-    },
-}
+const emit = defineEmits([ 'selected' ]);
+
+const mapStore = useMapStore();
 </script>

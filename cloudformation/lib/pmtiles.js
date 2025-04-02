@@ -13,7 +13,8 @@ export default {
                 PackageType: 'Image',
                 Environment: {
                     Variables: {
-                        BUCKET: cf.join('-', [cf.stackName, cf.accountId, cf.region]),
+                        StackName: cf.stackName,
+                        ASSET_BUCKET: cf.ref('AssetBucket'),
                         APIROOT: cf.join(['https://tiles.', cf.ref('HostedURL')]),
                         SigningSecret: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/secret:SecretString::AWSCURRENT}}')
                     }
@@ -113,7 +114,7 @@ export default {
         PMTilesLambdaAPI: {
             Type: 'AWS::ApiGateway::RestApi',
             Properties: {
-                Name: 'PMtiles Rest API',
+                Name: cf.stackName,
                 DisableExecuteApiEndpoint: true,
                 EndpointConfiguration: {
                     Types: ['REGIONAL']
@@ -197,6 +198,13 @@ export default {
             Value: cf.join(['https://tiles.', cf.ref('HostedURL')]),
             Export: {
                 Name: cf.join([cf.stackName, '-pmtiles-api'])
+            }
+        },
+        PMTilesAPICNAME: {
+            Description: 'PMTiles API CNAME target',
+            Value: cf.join([cf.getAtt('PMTilesApiDomain', 'RegionalDomainName'), '.']),
+            Export: {
+                Name: cf.join([cf.stackName, '-pmtiles-api-cname-target'])
             }
         }
     }

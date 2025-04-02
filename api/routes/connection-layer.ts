@@ -11,8 +11,10 @@ import Alarm from '../lib/aws/alarm.js';
 import Config from '../lib/config.js';
 import Schedule from '../lib/schedule.js';
 import { Param } from '@openaddresses/batch-generic';
-import { sql } from 'drizzle-orm';
-import { StandardResponse, LayerResponse } from '../lib/types.js';
+import { sql, eq } from 'drizzle-orm';
+import type { InferInsertModel } from 'drizzle-orm';;
+import { StandardResponse, LayerResponse, LayerIncomingResponse, LayerOutgoingResponse } from '../lib/types.js';
+import { LayerIncoming, LayerOutgoing } from '../lib/schema.js';
 import DataMission from '../lib/data-mission.js';
 import { MAX_LAYERS_IN_DATA_SYNC } from '../lib/data-mission.js';
 import { Layer_Config } from '../lib/models/Layer.js';
@@ -98,7 +100,7 @@ export default async function router(schema: Schema, config: Config) {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             }, req.params.connectionid);
 
-            const list = await config.models.Layer.list({
+            const list = await config.models.Layer.augmented_list({
                 limit: req.query.limit,
                 page: req.query.page,
                 order: req.query.order,
@@ -106,17 +108,23 @@ export default async function router(schema: Schema, config: Config) {
                 where: sql`
                     name ~* ${req.query.filter}
                     AND connection = ${req.params.connectionid}
-                    AND (${Param(req.query.data)}::BIGINT IS NULL OR ${Param(req.query.data)}::BIGINT = layers.data)
+                    AND (${Param(req.query.data)}::BIGINT IS NULL OR ${Param(req.query.data)}::BIGINT = layers_incoming.data)
                 `
             });
 
-            const alarms = (config.StackName !== 'test' && req.query.alarms) ? await alarm.list() : new Map();
-
+            let alarms = new Map();
             const status = { healthy: 0, alarm: 0, unknown: 0 };
-            for (const state of alarms.values()) {
-                if (state === 'healthy') status.healthy++;
-                if (state === 'alarm') status.alarm++;
-                if (state === 'unknown') status.unknown++;
+            try {
+                alarms = (config.StackName !== 'test' && req.query.alarms) ? await alarm.list() : new Map();
+
+                for (const state of alarms.values()) {
+                    if (state === 'healthy') status.healthy++;
+                    if (state === 'alarm') status.alarm++;
+                    if (state === 'unknown') status.unknown++;
+                }
+            } catch (err) {
+                // Surface this in the future - failing alarm lists shouldn't nuke access
+                console.error(err);
             }
 
             res.json({
@@ -151,22 +159,12 @@ export default async function router(schema: Schema, config: Config) {
             name: Default.NameField,
             priority: Type.Optional(Type.Enum(Layer_Priority)),
             description: Default.DescriptionField,
+            webhooks: Type.Optional(Type.Boolean()),
             enabled: Type.Optional(Type.Boolean()),
             task: Type.String(),
-            cron: Type.String(),
             logging: Type.Boolean(),
-            stale: Type.Optional(Type.Integer()),
-            data: Type.Optional(Type.Integer()),
-            schema: Type.Optional(Type.Any()),
-            enabled_styles: Type.Optional(Type.Boolean()),
-            styles: Type.Optional(StyleContainer),
             memory: Type.Optional(Type.Integer()),
             timeout: Type.Optional(Type.Integer()),
-            config: Type.Optional(Layer_Config),
-            alarm_period: Type.Optional(Type.Integer()),
-            alarm_evals: Type.Optional(Type.Integer()),
-            alarm_points: Type.Optional(Type.Integer()),
-            alarm_threshold: Type.Optional(Type.Integer()),
         }),
         res: LayerResponse
     }, async (req, res) => {
@@ -175,16 +173,87 @@ export default async function router(schema: Schema, config: Config) {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             }, req.params.connectionid);
 
+            const base = await config.models.Layer.generate({
+                connection: req.params.connectionid,
+                ...req.body
+            });
+
+            const layer = await config.models.Layer.augmented_from(base.id);
+
+            try {
+                const stack = await Lambda.generate(config, layer);
+                await CloudFormation.create(config, layer.id, stack);
+            } catch (err) {
+                console.error(err);
+            }
+
+            let status = 'unknown';
+            if (config.StackName !== 'test' && req.query.alarms) {
+                try {
+                    status = await alarm.get(layer.id);
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+
+            res.json({
+                status,
+                ...layer
+            });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.post('/connection/:connectionid/layer/:layerid/incoming', {
+        name: 'Create Incoming',
+        group: 'Layer',
+        description: 'Register a new incoming layer config',
+        params: Type.Object({
+            connectionid: Type.Integer({ minimum: 1 }),
+            layerid: Type.Integer({ minimum: 1 })
+        }),
+        body: Type.Object({
+            webhooks: Type.Optional(Type.Boolean()),
+            cron: Type.Optional(Type.String()),
+            stale: Type.Optional(Type.Integer()),
+            data: Type.Optional(Type.Integer()),
+            enabled_styles: Type.Optional(Type.Boolean()),
+            styles: Type.Optional(StyleContainer),
+            config: Type.Optional(Layer_Config),
+            alarm_period: Type.Optional(Type.Integer()),
+            alarm_evals: Type.Optional(Type.Integer()),
+            alarm_points: Type.Optional(Type.Integer()),
+            alarm_threshold: Type.Optional(Type.Integer()),
+        }),
+        res: LayerIncomingResponse
+    }, async (req, res) => {
+        try {
+            const { connection } = await Auth.is_connection(config, req, {
+                resources: [
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                    { access: AuthResourceAccess.LAYER, id: req.params.layerid }
+                ]
+            }, req.params.connectionid);
+
+            let layer = await config.models.Layer.augmented_from(req.params.layerid);
+
+            if (layer.connection !== connection.id) {
+                throw new Err(400, null, 'Layer does not belong to this connection');
+            }
+
             if (req.body.styles) {
                 await Style.validate(req.body.styles);
             }
 
-            Schedule.is_valid(req.body.cron);
+            if (req.body.cron) {
+                Schedule.is_valid(req.body.cron);
+            }
 
             if (req.body.data) {
                 const data = await config.models.Data.from(req.body.data);
-                if (data.mission_diff && parseInt(String(await config.models.Layer.count({
-                    where: sql`data = ${req.body.data}`
+                if (data.mission_diff && parseInt(String(await config.models.LayerIncoming.count({
+                    where: eq(LayerIncoming.data, req.body.data)
                 }))) + 1 > MAX_LAYERS_IN_DATA_SYNC) {
                     throw new Err(400, null, `Only ${MAX_LAYERS_IN_DATA_SYNC} layers can be added to a DataSync with Mission Diff Enabled`)
                 }
@@ -194,22 +263,28 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
-            const layer = await config.models.Layer.generate({
-                connection: req.params.connectionid,
+            const incoming = await config.models.LayerIncoming.generate({
+                layer: layer.id,
                 ...req.body
             });
 
+            layer = await config.models.Layer.augmented_from(layer.id);
+
             if (config.events) {
-                if (layer.cron && !Schedule.is_aws(layer.cron) && layer.enabled) {
-                    config.events.add(layer.id, layer.cron);
-                } else if (layer.cron && Schedule.is_aws(layer.cron) || !layer.enabled) {
+                if (incoming.cron && !Schedule.is_aws(incoming.cron) && layer.enabled) {
+                    config.events.add(layer.id, incoming.cron);
+                } else if (!incoming.cron || (incoming.cron && Schedule.is_aws(incoming.cron)) || !layer.enabled) {
                     await config.events.delete(layer.id);
                 }
             }
 
             try {
                 const stack = await Lambda.generate(config, layer);
-                await CloudFormation.create(config, layer.id, stack);
+                if (await CloudFormation.exists(config, layer.id)) {
+                    await CloudFormation.update(config, layer.id, stack);
+                } else {
+                    await CloudFormation.create(config, layer.id, stack);
+                }
             } catch (err) {
                 console.error(err);
             }
@@ -226,9 +301,353 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
+            res.json(incoming);
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.patch('/connection/:connectionid/layer/:layerid/incoming', {
+        name: 'Update Incoming',
+        group: 'Layer',
+        description: 'Update an incoming layer configuration',
+        params: Type.Object({
+            connectionid: Type.Integer({ minimum: 1 }),
+            layerid: Type.Integer({ minimum: 1 }),
+        }),
+        body: Type.Object({
+            webhooks: Type.Optional(Type.Boolean()),
+            cron: Type.Optional(Type.Union([Type.String(), Type.Null()])),
+            enabled_styles: Type.Optional(Type.Boolean()),
+            styles: Type.Optional(StyleContainer),
+            stale: Type.Optional(Type.Integer()),
+            data: Type.Optional(Type.Union([Type.Null(), Type.Integer()])),
+            environment: Type.Optional(Type.Any()),
+            config: Type.Optional(Layer_Config),
+            alarm_period: Type.Optional(Type.Integer()),
+            alarm_evals: Type.Optional(Type.Integer()),
+            alarm_points: Type.Optional(Type.Integer()),
+            alarm_threshold: Type.Optional(Type.Integer()),
+        }),
+        res: LayerIncomingResponse
+    }, async (req, res) => {
+        try {
+            const { connection } = await Auth.is_connection(config, req, {
+                resources: [
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                    { access: AuthResourceAccess.LAYER, id: req.params.layerid }
+                ]
+            }, req.params.connectionid);
+
+            const layer = await config.models.Layer.augmented_from(req.params.layerid);
+
+            if (layer.connection !== connection.id) {
+                throw new Err(400, null, 'Layer does not belong to this connection');
+            } else if (!layer.incoming) {
+                throw new Err(400, null, 'Layer does not have incoming config');
+            }
+
+            if (req.body.data) {
+                const data = await config.models.Data.from(req.body.data);
+
+                const modifier = layer.incoming.data === req.body.data ? 0 : 1;
+
+                if (data.mission_diff && parseInt(String(await config.models.LayerIncoming.count({
+                    where: eq(LayerIncoming.data, req.body.data)
+                }))) + modifier > MAX_LAYERS_IN_DATA_SYNC) {
+                    throw new Err(400, null, `Only ${MAX_LAYERS_IN_DATA_SYNC} layers can be added to a DataSync with Mission Diff Enabled`)
+                }
+
+                if (data.connection !== req.params.connectionid) {
+                    throw new Err(400, null, 'Layer cannot reference a Data Sync that is not part of the current connection');
+                }
+
+                try {
+                    // Handle Potential Renames
+                    await DataMission.sync(config, data);
+                } catch (err) {
+                    // Eventually do something
+                    console.error(err);
+                }
+            }
+
+            if (req.body.styles) {
+                await Style.validate(req.body.styles);
+            }
+
+            if (req.body.cron) {
+                Schedule.is_valid(req.body.cron);
+            }
+
+            let changed = false;
+            // Avoid Updating CF unless necessary as it blocks further updates until deployed
+            for (const prop of [ 'cron', 'webhooks', 'alarm_period', 'alarm_evals', 'alarm_points', 'alarm_threshold' ]) {
+                // @ts-expect-error Doesn't like indexed values
+                if (req.body[prop] !== undefined && req.body[prop] !== layer[prop]) changed = true;
+            }
+
+            if (changed) {
+                const status = (await CloudFormation.status(config, req.params.layerid)).status;
+                if (!status.endsWith('_COMPLETE')) throw new Err(400, null, 'Layer is still Deploying, Wait for Deploy to succeed before updating')
+            }
+
+            const updated: InferInsertModel<typeof LayerIncoming> = {
+                // @ts-expect-error Inference expects a Date and not an SQL blob
+                updated: sql`Now()`,
+                ...req.body
+            }
+
+            // Ephemeral storage stores cached password, if the env changes, the ephemeral storage should be cleared
+            if (req.body.environment) {
+                updated.ephemeral = {};
+            }
+
+            const incoming = await config.models.LayerIncoming.commit(layer.id, updated)
+
+            if (changed) {
+                try {
+                    const stack = await Lambda.generate(config, layer);
+                    if (await CloudFormation.exists(config, layer.id)) {
+                        await CloudFormation.update(config, layer.id, stack);
+                    } else {
+                        await CloudFormation.create(config, layer.id, stack);
+                    }
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+
+            if (config.events) {
+                if (incoming.cron && !Schedule.is_aws(incoming.cron) && layer.enabled) {
+                    config.events.add(layer.id, incoming.cron);
+                } else if (!incoming.cron || (incoming.cron && Schedule.is_aws(incoming.cron)) || !layer.enabled) {
+                    await config.events.delete(layer.id);
+                }
+            }
+
+            if (req.body.data) {
+                const data = await config.models.Data.from(req.body.data);
+
+                try {
+                    // Handle Potential Renames
+                    await DataMission.sync(config, data);
+                } catch (err) {
+                    // Eventually do something
+                    console.error(err);
+                }
+            }
+
+            await config.cacher.del(`layer-${req.params.layerid}`);
+
+            res.json(incoming);
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.delete('/connection/:connectionid/layer/:layerid/incoming', {
+        name: 'Delete Incoming',
+        group: 'Layer',
+        description: 'Remove an incoming config from a layer',
+        params: Type.Object({
+            connectionid: Type.Integer({ minimum: 1 }),
+            layerid: Type.Integer({ minimum: 1 })
+        }),
+        res: StandardResponse
+    }, async (req, res) => {
+        try {
+            const { connection } = await Auth.is_connection(config, req, {
+                resources: [
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                    { access: AuthResourceAccess.LAYER, id: req.params.layerid }
+                ]
+            }, req.params.connectionid);
+
+            let layer = await config.models.Layer.augmented_from(req.params.layerid);
+
+            if (layer.connection !== connection.id) {
+                throw new Err(400, null, 'Layer does not belong to this connection');
+            }
+
+            if (!layer.incoming) {
+                throw new Err(400, null, 'Layer does not have an incoming configuration');
+            }
+
+            const status = (await CloudFormation.status(config, req.params.layerid)).status;
+            if (!status.endsWith('_COMPLETE')) throw new Err(400, null, 'Layer is still Deploying, Wait for Deploy to succeed before deleting')
+
+            await config.models.LayerIncoming.delete(layer.id);
+
+            layer = await config.models.Layer.augmented_from(req.params.layerid);
+
+            try {
+                const stack = await Lambda.generate(config, layer);
+                if (await CloudFormation.exists(config, layer.id)) {
+                    await CloudFormation.update(config, layer.id, stack);
+                } else {
+                    await CloudFormation.create(config, layer.id, stack);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+
             res.json({
-                status: (config.StackName !== 'test' && req.query.alarms) ? await alarm.get(layer.id) : 'unknown',
-                ...layer
+                status: 200,
+                message: 'Incoming Layer Config Deleted'
+            });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.post('/connection/:connectionid/layer/:layerid/outgoing', {
+        name: 'Create Outgoing',
+        group: 'Layer',
+        description: 'Register a new incoming layer config',
+        params: Type.Object({
+            connectionid: Type.Integer({ minimum: 1 }),
+            layerid: Type.Integer({ minimum: 1 })
+        }),
+        body: Type.Object({}),
+        res: LayerOutgoingResponse
+    }, async (req, res) => {
+        try {
+            const { connection } = await Auth.is_connection(config, req, {
+                resources: [
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                    { access: AuthResourceAccess.LAYER, id: req.params.layerid }
+                ]
+            }, req.params.connectionid);
+
+            let layer = await config.models.Layer.augmented_from(req.params.layerid);
+
+            if (layer.connection !== connection.id) {
+                throw new Err(400, null, 'Layer does not belong to this connection');
+            }
+
+            const incoming = await config.models.LayerOutgoing.generate({
+                layer: layer.id,
+                ...req.body
+            });
+
+            layer = await config.models.Layer.augmented_from(layer.id);
+
+            try {
+                const stack = await Lambda.generate(config, layer);
+                if (await CloudFormation.exists(config, layer.id)) {
+                    await CloudFormation.update(config, layer.id, stack);
+                } else {
+                    await CloudFormation.create(config, layer.id, stack);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+
+            res.json(incoming);
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.patch('/connection/:connectionid/layer/:layerid/outgoing', {
+        name: 'Update Outgoing',
+        group: 'Layer',
+        description: 'Update an outgoing layer configuration',
+        params: Type.Object({
+            connectionid: Type.Integer({ minimum: 1 }),
+            layerid: Type.Integer({ minimum: 1 }),
+        }),
+        body: Type.Object({
+            environment: Type.Optional(Type.Any()),
+        }),
+        res: LayerOutgoingResponse
+    }, async (req, res) => {
+        try {
+            const { connection } = await Auth.is_connection(config, req, {
+                resources: [
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                    { access: AuthResourceAccess.LAYER, id: req.params.layerid }
+                ]
+            }, req.params.connectionid);
+
+            const layer = await config.models.Layer.augmented_from(req.params.layerid);
+
+            if (layer.connection !== connection.id) {
+                throw new Err(400, null, 'Layer does not belong to this connection');
+            } else if (!layer.outgoing) {
+                throw new Err(400, null, 'Layer does not have outgoing config');
+            }
+
+            const updated: InferInsertModel<typeof LayerOutgoing> = {
+                // @ts-expect-error Inference expects a Date and not an SQL blob
+                updated: sql`Now()`,
+                ...req.body
+            }
+
+            // Ephemeral storage stores cached password, if the env changes, the ephemeral storage should be cleared
+            if (req.body.environment) {
+                updated.ephemeral = {};
+            }
+
+            const outgoing = await config.models.LayerOutgoing.commit(layer.id, updated);
+
+            await config.cacher.del(`layer-${req.params.layerid}`);
+
+            res.json(outgoing);
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.delete('/connection/:connectionid/layer/:layerid/outgoing', {
+        name: 'Delete Outgoing',
+        group: 'Layer',
+        description: 'Remove an outgoing config from a layer',
+        params: Type.Object({
+            connectionid: Type.Integer({ minimum: 1 }),
+            layerid: Type.Integer({ minimum: 1 })
+        }),
+        res: StandardResponse
+    }, async (req, res) => {
+        try {
+            const { connection } = await Auth.is_connection(config, req, {
+                resources: [
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                    { access: AuthResourceAccess.LAYER, id: req.params.layerid }
+                ]
+            }, req.params.connectionid);
+
+            let layer = await config.models.Layer.augmented_from(req.params.layerid);
+
+            if (layer.connection !== connection.id) {
+                throw new Err(400, null, 'Layer does not belong to this connection');
+            }
+
+            if (!layer.outgoing) {
+                throw new Err(400, null, 'Layer does not have an outgoing configuration');
+            }
+
+            const status = (await CloudFormation.status(config, req.params.layerid)).status;
+            if (!status.endsWith('_COMPLETE')) throw new Err(400, null, 'Layer is still Deploying, Wait for Deploy to succeed before deleting')
+
+            await config.models.LayerOutgoing.delete(layer.id);
+
+            layer = await config.models.Layer.augmented_from(req.params.layerid);
+
+            try {
+                const stack = await Lambda.generate(config, layer);
+                if (await CloudFormation.exists(config, layer.id)) {
+                    await CloudFormation.update(config, layer.id, stack);
+                } else {
+                    await CloudFormation.create(config, layer.id, stack);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+
+            res.json({
+                status: 200,
+                message: 'Outgoing Layer Config Deleted'
             });
         } catch (err) {
             Err.respond(err, res);
@@ -253,23 +672,11 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.Optional(Default.NameField),
             priority: Type.Optional(Type.Enum(Layer_Priority)),
             description: Type.Optional(Default.DescriptionField),
-            cron: Type.Optional(Type.String()),
             memory: Type.Optional(Type.Integer()),
             timeout: Type.Optional(Type.Integer()),
             enabled: Type.Optional(Type.Boolean()),
-            enabled_styles: Type.Optional(Type.Boolean()),
             task: Type.Optional(Type.String()),
-            styles: Type.Optional(StyleContainer),
             logging: Type.Optional(Type.Boolean()),
-            stale: Type.Optional(Type.Integer()),
-            data: Type.Optional(Type.Union([Type.Null(), Type.Integer()])),
-            environment: Type.Optional(Type.Any()),
-            config: Type.Optional(Layer_Config),
-            schema: Type.Optional(Type.Any()),
-            alarm_period: Type.Optional(Type.Integer()),
-            alarm_evals: Type.Optional(Type.Integer()),
-            alarm_points: Type.Optional(Type.Integer()),
-            alarm_threshold: Type.Optional(Type.Integer()),
         }),
         res: LayerResponse
     }, async (req, res) => {
@@ -281,37 +688,7 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
-            let layer = await config.models.Layer.from(req.params.layerid);
-
-            if (req.body.data) {
-                const data = await config.models.Data.from(req.body.data);
-
-                const modifier = layer.data === req.body.data ? 0 : 1;
-
-                if (data.mission_diff && parseInt(String(await config.models.Layer.count({
-                    where: sql`data = ${req.body.data}`
-                }))) + modifier > MAX_LAYERS_IN_DATA_SYNC) {
-                    throw new Err(400, null, `Only ${MAX_LAYERS_IN_DATA_SYNC} layers can be added to a DataSync with Mission Diff Enabled`)
-                }
-
-                if (data.connection !== req.params.connectionid) {
-                    throw new Err(400, null, 'Layer cannot reference a Data Sync that is not part of the current connection');
-                }
-
-                try {
-                    // Handle Potential Renames
-                    await DataMission.sync(config, data);
-                } catch (err) {
-                    // Eventually do something
-                    console.error(err);
-                }
-            }
-
-            if (req.body.styles) {
-                await Style.validate(req.body.styles);
-            }
-
-            if (req.body.cron) Schedule.is_valid(req.body.cron);
+            let layer = await config.models.Layer.augmented_from(req.params.layerid);
 
             if (layer.connection !== connection.id) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
@@ -319,20 +696,24 @@ export default async function router(schema: Schema, config: Config) {
 
             let changed = false;
             // Avoid Updating CF unless necessary as it blocks further updates until deployed
-            for (const prop of [
-                'cron', 'task', 'memory', 'timeout', 'enabled', 'priority',
-                'alarm_period', 'alarm_evals', 'alarm_points', 'alarm_threshold'
-            ]) {
+            for (const prop of [ 'task', 'memory', 'timeout', 'enabled', 'priority' ]) {
                 // @ts-expect-error Doesn't like indexed values
                 if (req.body[prop] !== undefined && req.body[prop] !== layer[prop]) changed = true;
             }
 
             if (changed) {
                 const status = (await CloudFormation.status(config, req.params.layerid)).status;
-                if (!status.endsWith('_COMPLETE')) throw new Err(400, null, 'Layer is still Deploying, Wait for Deploy to succeed before updating')
+                if (!status.endsWith('_COMPLETE')) {
+                    throw new Err(400, null, 'Layer is still Deploying, Wait for Deploy to succeed before updating')
+                }
             }
 
-            layer = await config.models.Layer.commit(layer.id, { updated: sql`Now()`, ...req.body });
+            await config.models.Layer.commit(layer.id, {
+                updated: sql`Now()`,
+                ...req.body
+            });
+
+            layer = await config.models.Layer.augmented_from(req.params.layerid);
 
             if (changed) {
                 try {
@@ -347,30 +728,29 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
-            if (config.events) {
-                if (layer.cron && !Schedule.is_aws(layer.cron) && layer.enabled) {
-                    config.events.add(layer.id, layer.cron);
-                } else if (layer.cron && Schedule.is_aws(layer.cron) || !layer.enabled) {
+            await config.cacher.del(`layer-${req.params.layerid}`);
+
+            layer = await config.models.Layer.augmented_from(layer.id);
+
+            if (layer.incoming && config.events) {
+                if (layer.incoming.cron && !Schedule.is_aws(layer.incoming.cron) && layer.enabled) {
+                    config.events.add(layer.id, layer.incoming.cron);
+                } else if (!layer.incoming.cron || (layer.incoming.cron && Schedule.is_aws(layer.incoming.cron)) || !layer.enabled) {
                     await config.events.delete(layer.id);
                 }
             }
 
-            if (req.body.data) {
-                const data = await config.models.Data.from(req.body.data);
-
+            let status = 'unknown';
+            if (config.StackName !== 'test' && req.query.alarms) {
                 try {
-                    // Handle Potential Renames
-                    await DataMission.sync(config, data);
+                    status = await alarm.get(layer.id);
                 } catch (err) {
-                    // Eventually do something
                     console.error(err);
                 }
             }
 
-            await config.cacher.del(`layer-${req.params.layerid}`);
-
             res.json({
-                status: (config.StackName !== 'test' && req.query.alarms) ? await alarm.get(layer.id) : 'unknown',
+                status,
                 ...layer
             });
         } catch (err) {
@@ -403,15 +783,24 @@ export default async function router(schema: Schema, config: Config) {
             }, req.params.connectionid);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await config.models.Layer.from(req.params.layerid);
+                return await config.models.Layer.augmented_from(req.params.layerid);
             });
 
             if (layer.connection !== connection.id) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
             }
 
+            let status = 'unknown';
+            if (config.StackName !== 'test' && req.query.alarms) {
+                try {
+                    status = await alarm.get(layer.id);
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+
             res.json({
-                status: (config.StackName !== 'test' && req.query.alarms) ? await alarm.get(layer.id) : 'unknown',
+                status,
                 ...layer
             });
         } catch (err) {
@@ -436,7 +825,7 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
-            const layer = await config.models.Layer.from(req.params.layerid);
+            const layer = await config.models.Layer.augmented_from(req.params.layerid);
 
             if (layer.connection !== connection.id) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
@@ -482,13 +871,24 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
-            const layer = await config.models.Layer.from(req.params.layerid);
+            const layer = await config.models.Layer.augmented_from(req.params.layerid);
 
             if (layer.connection !== connection.id) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
             }
 
+            const status = (await CloudFormation.status(config, req.params.layerid)).status;
+            if (!status.endsWith('_COMPLETE')) throw new Err(400, null, 'Layer is still Deploying, Wait for Deploy to succeed before deleting')
+
             await CloudFormation.delete(config, layer.id);
+
+            if (layer.incoming) {
+                await config.models.LayerIncoming.delete(req.params.layerid);
+            }
+
+            if (layer.outgoing) {
+                await config.models.LayerOutgoing.delete(req.params.layerid);
+            }
 
             config.events.delete(layer.id);
 
