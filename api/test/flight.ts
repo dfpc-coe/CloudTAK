@@ -78,7 +78,12 @@ export default class Flight {
             this.schema = JSON.parse(String(fs.readFileSync(new URL('./fixtures/get_schema.json', import.meta.url))));
 
             for (const route of Object.keys(this.schema || {})) {
-                this.routes[route] = new RegExp(pathToRegexp(route.split(' ').join(' /api')));
+                try {
+                    const regexp = pathToRegexp(route.split(' ').join(' /api'));
+                    this.routes[route] = new RegExp(regexp.regexp);
+                } catch (err) {
+                    t.fail(`Could not parse ${route} as RegExp: ` + err);
+                }
             }
 
             t.end();
