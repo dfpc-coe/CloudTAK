@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v7.25.0 - 2025-04-02
+
+- :rocket: Allow editing directly from the CoT View
+
 ### v7.24.0 - 2025-04-01
 
 - :bug: Ensure snapping works without moving the map to refresh snap coordinates in draw mode
