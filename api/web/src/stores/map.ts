@@ -8,6 +8,7 @@
 */
 
 import { defineStore } from 'pinia'
+import { coordEach } from '@turf/meta';
 import { distance } from '@turf/distance';
 import * as Comlink from 'comlink';
 import AtlasWorker from '../workers/atlas.ts?worker&url';
@@ -704,7 +705,7 @@ export const useMapStore = defineStore('cloudtak', {
                     }),
                     new terraDraw.TerraDrawPolygonMode({
                         editable: true,
-                        showCoordinatePoints: true,
+                        //showCoordinatePoints: true, Ref: https://github.com/JamesLMilner/terra-draw/issues/520
                         snapping: { toCustom }
                     }),
                     new terraDraw.TerraDrawAngledRectangleMode(),
@@ -788,58 +789,109 @@ export const useMapStore = defineStore('cloudtak', {
                         for (const cot of touching.values()) {
                             this.selected.set(cot.id, cot);
                         }
+                    } else {
+                        const storeFeat = draw.getSnapshotFeature(id);
+                        if (!storeFeat) throw new Error('Could not find underlying marker');
 
-                        return;
-                    }
-
-                    const storeFeat = draw.getSnapshotFeature(id);
-                    if (!storeFeat) throw new Error('Could not find underlying marker');
-
-                    const now = new Date();
-                    const feat: Feature = {
-                        id: String(id),
-                        type: 'Feature',
-                        path: '/',
-                        properties: {
+                        const now = new Date();
+                        const feat: Feature = {
                             id: String(id),
-                            type: 'u-d-p',
-                            how: 'h-g-i-g-o',
-                            archived: true,
-                            callsign: 'New Feature',
-                            time: now.toISOString(),
-                            start: now.toISOString(),
-                            stale: new Date(now.getTime() + 3600).toISOString(),
-                            center: [0,0]
-                        },
-                        geometry: JSON.parse(JSON.stringify(storeFeat.geometry))
-                    };
+                            type: 'Feature',
+                            path: '/',
+                            properties: {
+                                id: String(id),
+                                type: 'u-d-p',
+                                how: 'h-g-i-g-o',
+                                archived: true,
+                                callsign: 'New Feature',
+                                time: now.toISOString(),
+                                start: now.toISOString(),
+                                stale: new Date(now.getTime() + 3600).toISOString(),
+                                center: [0,0]
+                            },
+                            geometry: JSON.parse(JSON.stringify(storeFeat.geometry))
+                        };
 
-                    if (
-                        draw.getMode() === 'polygon'
-                        || draw.getMode() === 'angled-rectangle'
-                        || draw.getMode() === 'sector'
-                    ) {
-                        feat.properties.type = 'u-d-f';
-                    } else if (draw.getMode() === 'linestring') {
-                        feat.properties.type = 'u-d-f';
-                    } else if (draw.getMode() === 'point') {
-                        feat.properties.type = this.drawOptions.pointMode || 'u-d-p';
-                        feat.properties["marker-opacity"] = 1;
-                        feat.properties["marker-color"] = '#00FF00';
+                        if (
+                            draw.getMode() === 'polygon'
+                            || draw.getMode() === 'angled-rectangle'
+                            || draw.getMode() === 'sector'
+                        ) {
+                            feat.properties.type = 'u-d-f';
+                        } else if (draw.getMode() === 'linestring') {
+                            feat.properties.type = 'u-d-f';
+                        } else if (draw.getMode() === 'point') {
+                            feat.properties.type = this.drawOptions.pointMode || 'u-d-p';
+                            feat.properties["marker-opacity"] = 1;
+                            feat.properties["marker-color"] = '#00FF00';
+                        }
+
+                        draw.removeFeatures([id]);
+                        draw.setMode('static');
+                        this.drawOptions.mode = 'static';
+                        draw.stop();
+                        await this.worker.db.add(feat);
+                        await this.updateCOT();
                     }
-
-                    draw.removeFeatures([id]);
-                    draw.setMode('static');
-                    this.drawOptions.mode = 'static';
-                    draw.stop();
-                    await this.worker.db.add(feat);
-                    await this.updateCOT();
                 }
             });
 
 
             this._draw = draw;
             this.isLoaded = true;
+        },
+        editGeometry: async function (featid: string): Promise<void> {
+            const cot = await this.worker.db.get(featid, { mission: true });
+
+            if (!cot) return;
+
+            try {
+                this.edit = cot;
+                this.draw.start();
+                this.draw.setMode('select');
+                this.drawOptions.mode = 'select';
+
+                const feat = cot.as_feature({ clone: true });
+                if (feat.geometry.type === 'Polygon') {
+                    feat.properties.mode = 'polygon';
+                } else if (feat.geometry.type === 'LineString') {
+                    feat.properties.mode = 'linestring';
+                } else if (feat.geometry.type === 'Point') {
+                    feat.properties.mode = 'point';
+                }
+
+                coordEach(feat, (coord) => {
+                    if (coord.length > 2) {
+                        coord.splice(2, coord.length - 2);
+                    }
+
+                    // Ensure precision is within bounds
+                    for (let i = 0; i < coord.length; i++) {
+                        coord[i] = Math.round(coord[i] * Math.pow(10, 9)) / Math.pow(10, 9);
+                    }
+                });
+
+                await this.worker.db.hide(cot.id);
+                this.updateCOT();
+
+                const errorStatus = this.draw.addFeatures([feat as terraDraw.GeoJSONStoreFeatures]).filter((status) => {
+                    return !status.valid;
+                });
+
+                if (errorStatus.length) {
+                    throw new Error('Error editing this feature: ' + errorStatus[0].reason)
+                }
+
+                this.draw.selectFeature(cot.id);
+            } catch (err) {
+                await this.worker.db.unhide(cot.id);
+                this.draw.setMode('static');
+                this.updateCOT();
+                this.drawOptions.mode = 'static';
+                this.draw.stop();
+
+                throw err;
+            }
         }
     },
 })

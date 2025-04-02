@@ -65,6 +65,17 @@
                         </TablerIconButton>
 
                         <TablerIconButton
+                            title='Zoom To'
+                            @click='cot.flyTo()'
+                        >
+                            <IconZoomPan
+                                :size='32'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
+
+
+                        <TablerIconButton
                             v-if='cot.properties.video && cot.properties.video.url'
                             title='View Video Stream'
                             @click='videoStore.add(String(route.params.uid))'
@@ -109,14 +120,15 @@
                         />
 
                         <TablerIconButton
-                            title='Zoom To'
-                            @click='cot.flyTo()'
+                            title='Edit'
+                            @click='editGeometry'
                         >
-                            <IconZoomPan
+                            <IconPencil
                                 :size='32'
                                 stroke='1'
                             />
                         </TablerIconButton>
+
 
                         <TablerIconButton
                             v-if='cot.properties.group && !cot.is_self'
@@ -702,6 +714,7 @@ import Breadcrumb from './util/Breadcrumb.vue';
 import Elevation from './util/Elevation.vue';
 import Attachments from './util/Attachments.vue';
 import {
+    IconPencil,
     IconMovie,
     IconRoute,
     IconCone,
@@ -836,6 +849,12 @@ function updateCenter(center: number[]) {
     if (cot.value.geometry.type === 'Point') {
         cot.value.geometry.coordinates = center;
     }
+}
+
+async function editGeometry() {
+    if (!cot.value) return;
+
+    mapStore.editGeometry(cot.value.id);
 }
 
 async function fetchType() {
