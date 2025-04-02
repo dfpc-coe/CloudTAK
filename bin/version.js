@@ -12,10 +12,7 @@ pkg_web.version = pkg_root.version;
 await fs.writeFile(new URL('../api/package.json', import.meta.url), JSON.stringify(pkg_api, null, 4));
 await fs.writeFile(new URL('../api/web/package.json', import.meta.url), JSON.stringify(pkg_web, null, 4));
 
-CP.execSync(`
-        git commit -am "Update Version" && git push
-    `, (err) => {
+console.log(String(CP.execSync(`
+    git commit -am "Update Version" && git push
+`)))
 
-    if (err) return reject(err);
-    return resolve();
-});
