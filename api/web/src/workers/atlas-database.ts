@@ -31,7 +31,8 @@ export default class AtlasDatabase {
     // Store ImageIDs currently loaded in MapLibre
     images: Set<string>;
 
-    pending: Map<string, COT>;
+    pendingCreate: Map<string, COT>;
+    pendingUpdate: Map<string, COT>;
     pendingHidden: Set<string>;
     pendingUnhide: Set<string>;
     pendingDelete: Set<string>;
@@ -48,7 +49,8 @@ export default class AtlasDatabase {
 
         this.images = new Set();
 
-        this.pending = new Map();
+        this.pendingCreate = new Map();
+        this.pendingUpdate = new Map();
         this.pendingUnhide = new Set();
         this.pendingHidden = new Set();
         this.pendingDelete = new Set();
@@ -207,25 +209,26 @@ export default class AtlasDatabase {
 
         this.pendingUnhide.clear();
 
-        for (const cot of this.pending.values()) {
+        for (const cot of this.pendingCreate.values()) {
             const render = cot.as_rendered();
-
-            if (this.cots.has(cot.id)) {
-                diff.update.push({
-                    id: String(render.id),
-                    addOrUpdateProperties: Object.keys(render.properties).map((key) => {
-                        return { key, value: render.properties[key] }
-                    }),
-                    newGeometry: render.geometry
-                })
-            } else {
-                diff.add.push(render);
-            }
-
-            this.cots.set(cot.id, cot);
+            diff.add.push(render);
         }
 
-        this.pending.clear();
+        this.pendingCreate.clear();
+
+        for (const cot of this.pendingUpdate.values()) {
+            const render = cot.as_rendered();
+
+            diff.update.push({
+                id: String(render.id),
+                addOrUpdateProperties: Object.keys(render.properties).map((key) => {
+                    return { key, value: render.properties[key] }
+                }),
+                newGeometry: render.geometry
+            })
+        }
+
+        this.pendingCreate.clear();
 
         for (const id of this.pendingDelete) {
             diff.remove.push(id);
@@ -339,8 +342,13 @@ export default class AtlasDatabase {
         }) as APIList<Feature>;
 
         for (const a of archive.items) {
-            this.add(a, undefined, { skipSave: true });
+            this.add(a, undefined, {
+                skipSave: true,
+                skipBroadcast: true
+            });
         }
+
+console.error('LoadArchive');
 
         this.atlas.postMessage({
             type: WorkerMessageType.Feature_Archived_Added,
@@ -358,11 +366,17 @@ export default class AtlasDatabase {
 
         this.cots.delete(id);
 
-        if (!skipNetwork && cot.properties.archived) {
-            await std(`/api/profile/feature/${id}`, {
-                token: this.atlas.token,
-                method: 'DELETE'
+        if (cot.properties.archived) {
+            this.atlas.postMessage({
+                type: WorkerMessageType.Feature_Archived_Removed
             });
+
+            if (!skipNetwork) {
+                await std(`/api/profile/feature/${id}`, {
+                    token: this.atlas.token,
+                    method: 'DELETE'
+                });
+            }
         }
     }
 
@@ -433,6 +447,7 @@ export default class AtlasDatabase {
         mission_guid?: string,
         opts?: {
             skipSave?: boolean;
+            skipBroadcast?: boolean;
         }
     ): Promise<void> {
         if (!opts) opts = {};
@@ -481,7 +496,7 @@ export default class AtlasDatabase {
                     mode: OriginMode.CONNECTION
                 }, opts);
 
-                if (!opts.skipSave && cot.properties.archived) {
+                if (opts.skipBroadcast !== true && cot.properties.archived) {
                     this.atlas.postMessage({
                         type: WorkerMessageType.Feature_Archived_Added,
                     });
