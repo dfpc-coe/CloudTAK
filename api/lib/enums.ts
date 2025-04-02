@@ -36,6 +36,12 @@ export enum VideoLease_SourceType {
     UAS_FIXEDWING = 'uas-fixedwing'
 }
 
+export enum Profile_Zoom {
+    ALWAYS = 'always',
+    CONDITIONAL = 'conditional',
+    NEVER = 'never',
+}
+
 export enum Profile_Projection {
     MERCATOR = 'mercator',
     GLOBE = 'globe',
