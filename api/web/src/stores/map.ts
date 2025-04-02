@@ -874,7 +874,7 @@ export const useMapStore = defineStore('cloudtak', {
                 await this.worker.db.hide(cot.id);
                 this.updateCOT();
 
-                const errorStatus = this.draw.addFeatures([feat as GeoJSONStoreFeatures]).filter((status) => {
+                const errorStatus = this.draw.addFeatures([feat as terraDraw.GeoJSONStoreFeatures]).filter((status) => {
                     return !status.valid;
                 });
 
