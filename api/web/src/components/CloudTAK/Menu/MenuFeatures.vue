@@ -122,8 +122,6 @@ channel.onmessage = async (event: MessageEvent<WorkerMessage>) => {
     const msg = event.data;
     if (!msg || !msg.type) return;
 
-    console.error(msg.type);
-
     if (msg.type === WorkerMessageType.Feature_Archived_Added) {
         await refresh();
     } else if (msg.type === WorkerMessageType.Feature_Archived_Removed) {
@@ -154,7 +152,6 @@ onBeforeUnmount(() => {
 })
 
 async function refresh(): Promise<void> {
-    console.error('REFRESH');
     cots.value = Array.from(await mapStore.worker.db
         .filter(`
             properties.archived
