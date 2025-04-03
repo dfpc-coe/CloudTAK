@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v7.29.0 - 2025-04-03
+
+- :tada: Show FeatureIcon in CoT Sidebar
+
 ### v7.28.0 - 2025-04-02
 
 - :tada: Immediately add COTs to Atlas.Database.cots & introduce `pendingCreate` & `pendingUpdate` queues
