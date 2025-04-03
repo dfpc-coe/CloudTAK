@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v7.30.0 - 2025-04-03
+
+- :tada: Show LineString length in CoT sidebar
+- :rocket: Show `Circle` for default Overlay Styles
+
 ### v7.29.0 - 2025-04-03
 
 - :tada: Show FeatureIcon in CoT Sidebar
