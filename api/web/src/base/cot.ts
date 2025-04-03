@@ -198,7 +198,7 @@ export default class COT {
     /**
      * Update the COT and return a boolean as to whether the COT needs to be re-rendered
      */
-    update(update: {
+    async update(update: {
         properties?: Feature["properties"],
         geometry?: Feature["geometry"]
     }, opts?: {
