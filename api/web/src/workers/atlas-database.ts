@@ -348,8 +348,6 @@ export default class AtlasDatabase {
             });
         }
 
-console.error('LoadArchive');
-
         this.atlas.postMessage({
             type: WorkerMessageType.Feature_Archived_Added,
         });

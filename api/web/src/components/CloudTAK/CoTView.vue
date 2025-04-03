@@ -338,10 +338,22 @@
                 </div>
 
                 <div
+                    v-if='cot && cot.geometry.type === "LineString"'
+                    class='col-12 pt-2'
+                >
+                    <LineLength
+                        :cot='cot'
+                        :unit='units.display_distance'
+                    />
+                </div>
+
+                <div
                     v-if='cot && cot.geometry.type === "Polygon"'
                     class='col-12 pt-2'
                 >
-                    <PolygonArea :cot='cot' />
+                    <PolygonArea
+                        :cot='cot'
+                    />
                 </div>
 
                 <div
@@ -707,6 +719,7 @@ import CopyField from './util/CopyField.vue';
 import IconSelect from '../util/IconSelect.vue';
 import Battery from './util/Battery.vue';
 import Share from './util/Share.vue';
+import LineLength from './util/LineLength.vue';
 import PolygonArea from './util/PolygonArea.vue';
 import Coordinate from './util/Coordinate.vue';
 import Course from './util/Course.vue';
@@ -755,7 +768,8 @@ const subscription = ref<Subscription | undefined>();
 
 const units = ref({
     display_speed: 'mi/h',
-    display_elevation: 'feet'
+    display_elevation: 'feet',
+    display_distance: 'mile'
 });
 
 const chevrons = ref<Set<string>>(new Set());
@@ -787,6 +801,7 @@ onMounted(async () => {
     if (profile) {
         units.value.display_speed = profile.display_speed;
         units.value.display_elevation = profile.display_elevation;
+        units.value.display_distance = profile.display_distance;
     }
 
     if (!cot.value) {
