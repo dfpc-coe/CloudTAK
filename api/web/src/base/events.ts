@@ -5,8 +5,12 @@ export enum WorkerMessageType {
     Map_Projection = 'cloudtak:map:projection',
 
     Profile_Callsign = 'cloudtak:profile:callsign',
+    Profile_Display_Zoom = 'cloudtak:profile:display:zoom',
     Profile_Location_Coordinates = 'cloudtak:profile:location:coordinates',
     Profile_Location_Source = 'cloudtak:profile:location:source',
+
+    Feature_Archived_Added = 'cloudtak:feature:archived:added',
+    Feature_Archived_Removed = 'cloudtak:feature:archived:removed',
 
     Channels_None = 'channels:none',
     Channels_List = 'channels:list',

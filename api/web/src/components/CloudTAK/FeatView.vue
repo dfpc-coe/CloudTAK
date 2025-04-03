@@ -1,11 +1,18 @@
 <template>
     <div
         class='position-absolute end-0 bottom-0 text-white bg-dark'
-        style='z-index: 1; width: 400px; top: 56px;'
+        style='
+            z-index: 1;
+            width: 400px;
+            top: 56px;
+        '
     >
         <div
             class='col-12 border-light border-bottom sticky-top'
-            style='border-radius: 0px;'
+            style='
+                height: 90px;
+                border-radius: 0px;
+            '
         >
             <div class='col-12 card-header px-1 py-2'>
                 <div
@@ -53,7 +60,10 @@
             </div>
         </div>
 
-        <div class='col-12 overflow-auto'>
+        <div
+            class='col-12 overflow-auto'
+            style='height: calc(100vh - 90px)'
+        >
             <template v-if='mode === "default"'>
                 <div class='col-12 px-3 py-2'>
                     <Coordinate v-model='center' />

@@ -96,7 +96,14 @@ export default class COT {
 
         if (this.origin.mode === OriginMode.CONNECTION && !this._remote) {
             const atlas = this._atlas as Atlas;
-            atlas.db.pending.set(this.id, this);
+
+            if (!atlas.db.cots.has(this.id)) {
+                atlas.db.pendingCreate.set(this.id, this);
+            } else {
+                atlas.db.pendingUpdate.set(this.id, this);
+            }
+
+            atlas.db.cots.set(this.id, this);
         }
 
         if (!opts || (opts && opts.skipSave !== true)) {
@@ -249,7 +256,7 @@ export default class COT {
             }
 
             if (this.origin.mode === OriginMode.CONNECTION) {
-                atlas.db.pending.set(this.id, this);
+                atlas.db.pendingUpdate.set(this.id, this);
             }
 
             atlas.sync.postMessage(`cot:${this.id}`);

@@ -12,6 +12,40 @@
 
 ### Pending Release
 
+### v7.30.2 - 2025-04-03
+
+- :rocket: Autocommit version bump
+
+### v7.30.1 - 2025-04-03
+
+- :bug: Ensure ARCGIS_URL is set on new Outgoing Layers
+
+### v7.30.0 - 2025-04-03
+
+- :tada: Show LineString length in CoT sidebar
+- :rocket: Show `Circle` for default Overlay Styles
+
+### v7.29.0 - 2025-04-03
+
+- :tada: Show FeatureIcon in CoT Sidebar
+
+### v7.28.0 - 2025-04-02
+
+- :tada: Immediately add COTs to Atlas.Database.cots & introduce `pendingCreate` & `pendingUpdate` queues
+- :tada: Add search container for Feature Menu
+
+### v7.27.0 - 2025-04-02
+
+- :bug: Fix scroll on Feature Sidebar
+
+### v7.26.0 - 2025-04-02
+
+- :arrow_up: Update to Express@5
+
+### v7.25.1 - 2025-04-02
+
+- :bug: Allow updating `lambda:UpdateEventSourceMapping`
+
 ### v7.25.0 - 2025-04-02
 
 - :rocket: Allow editing directly from the CoT View

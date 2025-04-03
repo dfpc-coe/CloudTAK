@@ -1,70 +1,107 @@
 <template>
     <MenuTemplate
         name='Saved Features'
-        :loading='loading || !mapStore.isLoaded'
+        :loading='!mapStore.isLoaded'
     >
-        <template #default>
-            <template
-                v-for='path of paths'
-                :key='path'
+        <template #buttons>
+            <TablerIconButton
+                title='Refresh'
+                :size='24'
+                @click='refresh'
             >
-                <div
-                    class='d-flex align-items-center px-3 py-2 me-2 hover-button cursor-pointer user-select-none'
-                    @click='path.opened ? closePath(path) : openPath(path)'
-                >
-                    <IconChevronRight
-                        v-if='!path.opened'
-                        :size='20'
-                        stroke='1'
-                    />
-                    <IconChevronDown
-                        v-else
-                        :size='20'
-                        stroke='1'
-                    />
-                    <IconFolder
-                        class='mx-2'
-                        :size='20'
-                        stroke='2'
-                    />
-                    <span v-text='path.name.replace(/(^\/|\/$)/g, "")' />
-                </div>
-                <div
-                    v-if='path.opened'
-                    class='ms-2'
-                >
-                    <TablerLoading v-if='path.loading' />
-                    <template v-else>
-                        <Feature
-                            v-for='cot of path.cots.values()'
-                            :key='cot.id'
-                            :feature='cot'
-                        />
-                    </template>
-                </div>
-            </template>
-
-            <Feature
-                v-for='cot of cots.values()'
-                :key='cot.id'
-                :delete-button='true'
-                :info-button='true'
-                :feature='cot'
+                <IconRefresh
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
+        </template>
+        <template #default>
+            <div class='mx-2 my-2'>
+                <TablerInput
+                    v-model='query.filter'
+                    icon='search'
+                    placeholder='Search'
+                />
+            </div>
+            <TablerLoading
+                v-if='loading'
+                v-model='query.filter'
+                desc='Loading Features'
             />
+            <TablerNone
+                v-if='cots.length === 0'
+                :create='false'
+                label='Archived Features'
+            />
+            <template v-else>
+                <template
+                    v-for='path of paths'
+                    :key='path'
+                >
+                    <div
+                        class='d-flex align-items-center px-3 py-2 me-2 hover-button cursor-pointer user-select-none'
+                        @click='path.opened ? closePath(path) : openPath(path)'
+                    >
+                        <IconChevronRight
+                            v-if='!path.opened'
+                            :size='20'
+                            stroke='1'
+                        />
+                        <IconChevronDown
+                            v-else
+                            :size='20'
+                            stroke='1'
+                        />
+                        <IconFolder
+                            class='mx-2'
+                            :size='20'
+                            stroke='2'
+                        />
+                        <span v-text='path.name.replace(/(^\/|\/$)/g, "")' />
+                    </div>
+                    <div
+                        v-if='path.opened'
+                        class='ms-2'
+                    >
+                        <TablerLoading v-if='path.loading' />
+                        <template v-else>
+                            <Feature
+                                v-for='cot of path.cots.values()'
+                                :key='cot.id'
+                                :feature='cot'
+                            />
+                        </template>
+                    </div>
+                </template>
+
+                <Feature
+                    v-for='cot of cots'
+                    :key='cot.id'
+                    :delete-button='true'
+                    :info-button='true'
+                    :feature='cot'
+                />
+            </template>
         </template>
     </MenuTemplate>
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted } from 'vue';
+import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import COT from '../../../base/cot.ts';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import Feature from '../util/Feature.vue';
 import {
-    TablerLoading
+    TablerNone,
+    TablerInput,
+    TablerLoading,
+    TablerIconButton
 } from '@tak-ps/vue-tabler';
+import type { WorkerMessage } from '../../../base/events.ts';
+import { WorkerMessageType } from '../../../base/events.ts';
 import {
     IconFolder,
+    IconRefresh,
     IconChevronRight,
     IconChevronDown
 } from '@tabler/icons-vue';
@@ -79,13 +116,47 @@ type Path = {
     cots: Set<COT>;
 };
 
-const cots = ref<Set<COT>>(new Set());
-const paths = ref<Array<Path>>();
+const channel = new BroadcastChannel("cloudtak");
 
+channel.onmessage = async (event: MessageEvent<WorkerMessage>) => {
+    const msg = event.data;
+    if (!msg || !msg.type) return;
+
+    if (msg.type === WorkerMessageType.Feature_Archived_Added) {
+        await refresh();
+    } else if (msg.type === WorkerMessageType.Feature_Archived_Removed) {
+        await refresh();
+    }
+}
+
+const cots = ref<COT[]>([]);
+const paths = ref<Array<Path>>();
+const query = ref({
+    filter: ''
+})
 const loading = ref(true);
 
+watch(query.value, async () => {
+    await refresh();
+})
+
 onMounted(async () => {
-    cots.value = await mapStore.worker.db.pathFeatures();
+    await refresh();
+    loading.value = false
+});
+
+onBeforeUnmount(() => {
+    if (channel) {
+        channel.close();
+    }
+})
+
+async function refresh(): Promise<void> {
+    cots.value = Array.from(await mapStore.worker.db
+        .filter(`
+            properties.archived
+            and $contains($lowercase(properties.callsign), "${query.value.filter.toLowerCase()}")
+        `))
 
     paths.value = (await mapStore.worker.db.paths())
         .map(p => p.path)
@@ -101,9 +172,7 @@ onMounted(async () => {
                 cots: new Set()
             }
         });
-
-    loading.value = false
-});
+}
 
 async function closePath(path: Path): Promise<void> {
     path.opened = false;

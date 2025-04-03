@@ -46,7 +46,6 @@
                     :disabled='disabled'
                 />
             </div>
-
             <div
                 v-if='environment.ARCGIS_URL'
                 class='col-12'
@@ -244,6 +243,7 @@ if (props.modelValue.ARCGIS_PORTAL && props.modelValue.ARCGIS_PORTAL.includes('a
 const esriView = ref(false);
 const environment = ref(props.modelValue);
 
+if (!environment.value.ARCGIS_URL) environment.value.ARCGIS_URL = '';
 if (!environment.value.ARCGIS_POINTS_URL) environment.value.ARCGIS_POINTS_URL = '';
 if (!environment.value.ARCGIS_LINES_URL) environment.value.ARCGIS_LINES_URL = '';
 if (!environment.value.ARCGIS_POLYS_URL) environment.value.ARCGIS_POLYS_URL = '';

@@ -11,19 +11,21 @@
         >
             <div class='col-12 card-header row my-2 d-flex'>
                 <div class='card-title d-flex'>
-                    <div
-                        v-if='cot.properties.status && cot.properties.status.battery && !isNaN(parseInt(cot.properties.status.battery))'
-                        class='col-auto ms-2 my-1'
-                    >
+                    <div class='col-auto ms-2 my-1'>
                         <Battery
+                            v-if='cot && cot.properties.status && cot.properties.status.battery && !isNaN(parseInt(cot.properties.status.battery))'
                             :battery='Number(cot.properties.status.battery)'
                         />
+                        <FeatureIcon
+                            v-else
+                            :size='32'
+                            :feature='cot'
+                        />
                     </div>
-
                     <div
                         class='col-auto mx-2'
                         :style='`
-                            width: calc(100% - ${hasBattery ? "40px" : "0px"});
+                            width: calc(100% - 40px);
                         `'
                     >
                         <CopyField
@@ -336,10 +338,22 @@
                 </div>
 
                 <div
+                    v-if='cot && cot.geometry.type === "LineString"'
+                    class='col-12 pt-2'
+                >
+                    <LineLength
+                        :cot='cot'
+                        :unit='units.display_distance'
+                    />
+                </div>
+
+                <div
                     v-if='cot && cot.geometry.type === "Polygon"'
                     class='col-12 pt-2'
                 >
-                    <PolygonArea :cot='cot' />
+                    <PolygonArea
+                        :cot='cot'
+                    />
                 </div>
 
                 <div
@@ -600,11 +614,13 @@
                 '
                 class='col-12 px-1 pb-2'
             >
-                <div class='col-12 d-flex align-items-center'>
+                <div
+                    class='col-12 py-2 d-flex align-items-center hover-dark cursor-pointer user-select-none'
+                    @click='chevrons.has("metadata") ? chevrons.delete("metadata") : chevrons.add("metadata")'
+                >
                     <TablerIconButton
                         v-if='!chevrons.has("metadata")'
                         title='Open Metadata'
-                        @click='chevrons.add("metadata")'
                     >
                         <IconChevronRight
                             :size='24'
@@ -615,14 +631,13 @@
                     <TablerIconButton
                         v-else
                         title='Close Metadata'
-                        @click='chevrons.delete("metadata")'
                     >
                         <IconChevronDown
                             :size='24'
                             stroke='1'
                         />
                     </TablerIconbutton>
-                    <label class='subheader'>Metadata</label>
+                    <label class='subheader cursor-pointer'>Metadata</label>
                 </div>
                 <div
                     v-if='chevrons.has("metadata")'
@@ -685,6 +700,7 @@
 <script setup lang='ts'>
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
+import FeatureIcon from './util/FeatureIcon.vue';
 import type COT from '../../base/cot.ts';
 import type { COTType } from '../../types.ts';
 import { OriginMode } from '../../base/cot.ts'
@@ -703,6 +719,7 @@ import CopyField from './util/CopyField.vue';
 import IconSelect from '../util/IconSelect.vue';
 import Battery from './util/Battery.vue';
 import Share from './util/Share.vue';
+import LineLength from './util/LineLength.vue';
 import PolygonArea from './util/PolygonArea.vue';
 import Coordinate from './util/Coordinate.vue';
 import Course from './util/Course.vue';
@@ -751,7 +768,8 @@ const subscription = ref<Subscription | undefined>();
 
 const units = ref({
     display_speed: 'mi/h',
-    display_elevation: 'feet'
+    display_elevation: 'feet',
+    display_distance: 'mile'
 });
 
 const chevrons = ref<Set<string>>(new Set());
@@ -783,6 +801,7 @@ onMounted(async () => {
     if (profile) {
         units.value.display_speed = profile.display_speed;
         units.value.display_elevation = profile.display_elevation;
+        units.value.display_distance = profile.display_distance;
     }
 
     if (!cot.value) {
@@ -795,10 +814,6 @@ onMounted(async () => {
         }, 1000)
     }
 });
-
-const hasBattery = computed(() => {
-    return cot.value && cot.value.properties.status && cot.value.properties.status.battery && !isNaN(parseInt(cot.value.properties.status.battery))
-})
 
 const center = computed(() => {
     if (!cot.value) return [0,0];

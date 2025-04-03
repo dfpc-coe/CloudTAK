@@ -24,46 +24,8 @@
             @click='flyTo'
         >
             <span class='me-2'>
-                <canvas
-                    v-if='feature.properties.icon'
-                    ref='imgCanvas'
-                    width='20'
-                    height='20'
-                />
-                <IconPointFilled
-                    v-else-if='feature.properties && feature.properties.type === "u-d-p"'
-                    :size='20'
-                    :color='feature.properties["marker-color"]'
-                />
-                <!-- Icons are in order of most preferred display => Least-->
-                <IconVideo
-                    v-else-if='feature.properties && feature.properties.type === "b-m-p-s-p-loc"'
-                    :size='20'
-                    :color='feature.properties.stroke || "white"'
-                    stroke='1'
-                />
-                <IconLine
-                    v-else-if='feature.geometry && feature.geometry.type === "LineString"'
-                    :size='20'
-                    :color='feature.properties.stroke || "white"'
-                    stroke='1'
-                />
-                <IconCone
-                    v-else-if='feature.properties && feature.properties.sensor'
-                    :size='20'
-                    :color='feature.properties.stroke || "white"'
-                    stroke='1'
-                />
-                <IconPolygon
-                    v-else-if='feature.geometry && feature.geometry.type === "Polygon"'
-                    :size='20'
-                    :color='feature.properties.fill || "white"'
-                    stroke='1'
-                />
-                <IconMapPin
-                    v-else
-                    :size='20'
-                    stroke='1'
+                <FeatureIcon
+                    :feature='feature'
                 />
             </span>
             <div
@@ -107,21 +69,16 @@
 
 <script setup lang='ts'>
 import { useRouter } from 'vue-router';
-import { ref, onMounted, computed, useTemplateRef, watch } from 'vue';
+import { ref, onMounted, computed } from 'vue';
+import FeatureIcon from './FeatureIcon.vue';
 import Contact from './Contact.vue';
 import {
     TablerDelete,
     TablerIconButton
 } from '@tak-ps/vue-tabler';
 import {
-    IconVideo,
     IconListDetails,
-    IconPointFilled,
-    IconMapPin,
     IconTrash,
-    IconLine,
-    IconCone,
-    IconPolygon,
 } from '@tabler/icons-vue';
 import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();
@@ -160,8 +117,6 @@ const isDeleted = ref(false);
 const isDeleting = ref(false);
 const isZoomable = ref(false);
 
-const canvas = useTemplateRef<HTMLCanvasElement>('imgCanvas');
-
 onMounted(async () => {
     const cot = await mapStore.worker.db.get(props.feature.id, {
         mission: true
@@ -178,35 +133,6 @@ const textWidth = computed(() => {
 
     return width + ')'
 });
-
-watch(canvas, async () => {
-    if (!canvas.value) return;
-
-    const icon = mapStore.map.getImage(props.feature.properties.icon)
-
-    if (!icon) return;
-
-    const context = canvas.value.getContext('2d');
-
-    canvas.value.height = 20;
-    canvas.value.width = 20;
-
-    if (!context) return;
-
-    context.drawImage(
-        await createImageBitmap(new ImageData(
-            // @ts-expect-error icon.data.data issue
-            new Uint8ClampedArray(icon.data.data, icon.data.width, icon.data.height),
-            icon.data.width,
-            icon.data.height,
-        )),
-        0, 0,
-        icon.data.width,
-        icon.data.height,
-        0,0,
-        20,20
-    );
-})
 
 async function deleteCOT() {
     if (props.deleteAction === 'delete') {
