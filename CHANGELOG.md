@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v7.30.1 - 2025-04-03
+
+- :bug: Ensure ARCGIS_URL is set on new Outgoing Layers
+
 ### v7.30.0 - 2025-04-03
 
 - :tada: Show LineString length in CoT sidebar
