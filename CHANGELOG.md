@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v7.30.2 - 2025-04-03
+
+- :rocket: Autocommit version bump
+
 ### v7.30.1 - 2025-04-03
 
 - :bug: Ensure ARCGIS_URL is set on new Outgoing Layers

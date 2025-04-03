@@ -7,7 +7,7 @@
         "lint": "eslint bin/ cloudformation/",
         "build": "node bin/build.js",
         "test": "echo \"Error: no test specified\" && exit 1",
-        "postversion": "node bin/version.js"
+        "postversion": "node bin/version.js && git commit -am \"Sync Versions\" && git push"
     },
     "engines": {
         "node": ">= 22"
