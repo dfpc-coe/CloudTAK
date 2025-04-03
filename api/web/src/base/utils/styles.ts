@@ -84,7 +84,6 @@ export default function styles(id: string, opts: {
         id: id,
         type: 'circle',
         source: id,
-        filter: ['all', ["==", "$type", "Point"], ['!has', 'icon']],
         layout: {},
         paint: {
             'circle-color': ["string", ["get", "marker-color"], "#00FF00"],
@@ -92,6 +91,13 @@ export default function styles(id: string, opts: {
             'circle-opacity': ["number", ["get", "marker-opacity"], 1],
         }
     }
+
+    if (opts.icons) {
+        circle.filter = ['all', ["==", "$type", "Point"], ['!has', 'icon']];
+    } else {
+        circle.filter = ["==", "$type", "Point"];
+    }
+
 
     if (opts.sourceLayer) {
         circle['source-layer'] = opts.sourceLayer;

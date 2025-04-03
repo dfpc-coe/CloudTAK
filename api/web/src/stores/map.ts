@@ -543,6 +543,7 @@ export const useMapStore = defineStore('cloudtak', {
             const url = stdurl('/api/profile/overlay');
             url.searchParams.append('sort', 'pos');
             url.searchParams.append('order', 'asc');
+            url.searchParams.append('limit', '100');
             const items = ((await std(url)) as APIList<ProfileOverlay>).items;
 
             const hasBasemap = items.some((o: ProfileOverlay) => {
