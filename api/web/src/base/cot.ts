@@ -106,6 +106,10 @@ export default class COT {
             atlas.db.cots.set(this.id, this);
         }
 
+        if (!this._remote && this._properties.sensor) {
+            this.link();
+        }
+
         if (!opts || (opts && opts.skipSave !== true)) {
             this.save();
         }
@@ -125,10 +129,6 @@ export default class COT {
                 }
             };
         }
-
-        if (this._properties.sensor) {
-            this.link();
-        }
     }
 
     set properties(properties: Feature["properties"]) {
@@ -147,15 +147,21 @@ export default class COT {
     }
 
     link(): void {
-        if (this._properties.sensor) {
+        if (this._remote) throw new Error('Cannot Link Remotely');
+
+        const atlas = this._atlas as Atlas;
+
+        if (
+            this._properties.sensor
+            && this._properties.sensor.fov !== undefined
+            && this._properties.sensor.azimuth !== undefined
+        ) {
             const id = `${this.id}-sensor`
 
             let updated = false;
 
-            console.error('SENSOR RANGE', this._properties.sensor.range)
-
             if (this.links.has(id)) {
-                const cot = this._store.get(id);
+                const cot = atlas.db.cots.get(id);
                 if (cot) {
                     updated = true;
 
@@ -170,25 +176,35 @@ export default class COT {
 
             if (!updated) {
                 // TODO Use NodeCoT & Respect Sensor Style if present
-                new COT({
-                    id,
-                    type: 'Feature',
-                    properties: {
-                        callsign: '',
-                        type: 'u-d-p',
-                        stroke: '#ffffff',
-                        'stroke-width': 1,
-                        'stroke-opacity': 1,
-                        fill: '#ffffff',
-                        'fill-opacity': 0.2
-                    },
-                    geometry: sector(
-                        this._properties.center,
-                        (this._properties.sensor.range || 10) / 1000,
-                        this._properties.sensor.azimuth,
-                        this._properties.sensor.azimuth + this._properties.sensor.fov,
-                    ).geometry
-                });
+                new COT(
+                    atlas,
+                    {
+                        id,
+                        path: '/',
+                        type: 'Feature',
+                        properties: {
+                            id,
+                            callsign: '',
+                            type: 'u-d-p',
+                            how: this._properties.how,
+                            center: this._properties.center,
+                            stroke: '#ffffff',
+                            time: this._properties.time,
+                            start: this._properties.start,
+                            stale: this._properties.stale,
+                            'stroke-width': 1,
+                            'stroke-opacity': 1,
+                            fill: '#ffffff',
+                            'fill-opacity': 0.2
+                        },
+                        geometry: sector(
+                            this._properties.center,
+                            (this._properties.sensor.range || 10) / 1000,
+                            this._properties.sensor.azimuth,
+                            this._properties.sensor.azimuth + this._properties.sensor.fov,
+                        ).geometry
+                    }
+                );
 
                 this.links.add(id)
             }
@@ -222,15 +238,15 @@ export default class COT {
                 }
             }
 
-            if (update.properties.sensor) {
-                this.link();
-            } else if (this._properties.sensor && !update.properties.sensor) {
-                // TODO Unlink & cleanup
-            }
-
             this._properties = update.properties;
 
             if (update.properties) {
+                if (update.properties.sensor) {
+                    this.link();
+                } else if (this._properties.sensor && !update.properties.sensor) {
+                    // TODO Unlink & cleanup
+                }
+
                 update.properties = COT.style(atlas, this._geometry.type, update.properties);
 
                 if (isEqual(this.properties, update.properties)) {
