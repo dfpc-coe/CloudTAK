@@ -9,8 +9,8 @@
             class='btn-check'
             name='point-type'
             autocomplete='off'
-            :checked='mode === "u-d-p"'
-            @click='mode = "u-d-p"'
+            :checked='config.mode === "u-d-p"'
+            @click='config.mode = "u-d-p"'
         >
         <label
             v-tooltip='"Custom Point"'
@@ -29,8 +29,8 @@
             class='btn-check'
             name='point-type'
             autocomplete='off'
-            :checked='mode === "a-u-G"'
-            @click='mode = "a-u-G"'
+            :checked='config.mode === "a-u-G"'
+            @click='config.mode = "a-u-G"'
         >
         <label
             v-tooltip='"Unknown Point"'
@@ -49,8 +49,8 @@
             class='btn-check'
             name='point-type'
             autocomplete='off'
-            :checked='mode === "a-f-G"'
-            @click='mode = "a-f-G"'
+            :checked='config.mode === "a-f-G"'
+            @click='config.mode = "a-f-G"'
         >
         <label
             v-tooltip='"Friendly Point"'
@@ -69,8 +69,8 @@
             class='btn-check'
             name='point-type'
             autocomplete='off'
-            :checked='mode === "a-h-G"'
-            @click='mode = "a-h-G"'
+            :checked='config.mode === "a-h-G"'
+            @click='config.mode = "a-h-G"'
         >
         <label
             v-tooltip='"Hostile Point"'
@@ -89,8 +89,8 @@
             class='btn-check'
             name='point-type'
             autocomplete='off'
-            :checked='mode === "a-n-G"'
-            @click='mode = "a-n-G"'
+            :checked='config.mode === "a-n-G"'
+            @click='config.mode = "a-n-G"'
         >
         <label
             v-tooltip='"Neutral Point"'
@@ -105,37 +105,30 @@
     </div>
 </template>
 
-<script lang='ts'>
+<script setup lang='ts'>
+import { ref, watch } from 'vue';
 import {
     IconPoint
 } from '@tabler/icons-vue';
-export default {
-    name: 'CoordinateType',
-    components: {
-        IconPoint
+
+const props = defineProps({
+    modelValue: {
+        type: String,
+        required: true,
     },
-    props: {
-        modelValue: {
-            type: String,
-            required: true,
-        },
-        size: {
-            type: Number,
-            default: 24
-        }
-    },
-    emits: [
-        'update:modelValue',
-    ],
-    data: function() {
-        return {
-            mode: this.modelValue || 'u-d-p'
-        }
-    },
-    watch: {
-        mode: function() {
-            this.$emit('update:modelValue', this.mode);
-        }
+    size: {
+        type: Number,
+        default: 24
     }
-}
+});
+
+const config = ref({
+    mode: props.modelValue || 'u-d-p'
+})
+
+const emit = defineEmits([ 'update:modelValue' ])
+
+watch(config.value, () => {
+    emit('update:modelValue', config.value.mode);
+})
 </script>

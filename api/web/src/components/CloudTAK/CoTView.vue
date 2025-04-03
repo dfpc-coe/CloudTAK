@@ -11,19 +11,21 @@
         >
             <div class='col-12 card-header row my-2 d-flex'>
                 <div class='card-title d-flex'>
-                    <div
-                        v-if='cot.properties.status && cot.properties.status.battery && !isNaN(parseInt(cot.properties.status.battery))'
-                        class='col-auto ms-2 my-1'
-                    >
+                    <div class='col-auto ms-2 my-1'>
                         <Battery
+                            v-if='cot && cot.properties.status && cot.properties.status.battery && !isNaN(parseInt(cot.properties.status.battery))'
                             :battery='Number(cot.properties.status.battery)'
                         />
+                        <FeatureIcon
+                            v-else
+                            :size='32'
+                            :feature='cot'
+                        />
                     </div>
-
                     <div
                         class='col-auto mx-2'
                         :style='`
-                            width: calc(100% - ${hasBattery ? "40px" : "0px"});
+                            width: calc(100% - 40px);
                         `'
                     >
                         <CopyField
@@ -686,6 +688,7 @@
 <script setup lang='ts'>
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
+import FeatureIcon from './util/FeatureIcon.vue';
 import type COT from '../../base/cot.ts';
 import type { COTType } from '../../types.ts';
 import { OriginMode } from '../../base/cot.ts'
@@ -796,10 +799,6 @@ onMounted(async () => {
         }, 1000)
     }
 });
-
-const hasBattery = computed(() => {
-    return cot.value && cot.value.properties.status && cot.value.properties.status.battery && !isNaN(parseInt(cot.value.properties.status.battery))
-})
 
 const center = computed(() => {
     if (!cot.value) return [0,0];
