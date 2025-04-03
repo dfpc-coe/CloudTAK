@@ -13,7 +13,7 @@
                 <div class='card-title d-flex'>
                     <div class='col-auto ms-2 my-1'>
                         <Battery
-                            v-if='cot.properties.status && cot.properties.status.battery && !isNaN(parseInt(cot.properties.status.battery))'
+                            v-if='cot && cot.properties.status && cot.properties.status.battery && !isNaN(parseInt(cot.properties.status.battery))'
                             :battery='Number(cot.properties.status.battery)'
                         />
                         <FeatureIcon
@@ -799,10 +799,6 @@ onMounted(async () => {
         }, 1000)
     }
 });
-
-const hasBattery = computed(() => {
-    return cot.value && cot.value.properties.status && cot.value.properties.status.battery && !isNaN(parseInt(cot.value.properties.status.battery))
-})
 
 const center = computed(() => {
     if (!cot.value) return [0,0];
