@@ -709,12 +709,13 @@ export const useMapStore = defineStore('cloudtak', {
                     }),
                     new terraDraw.TerraDrawPolygonMode({
                         editable: true,
-                        //showCoordinatePoints: true, Ref: https://github.com/JamesLMilner/terra-draw/issues/520
+                        showCoordinatePoints: true,
                         snapping: { toCustom }
                     }),
                     new terraDraw.TerraDrawAngledRectangleMode(),
                     new terraDraw.TerraDrawFreehandMode(),
                     new terraDraw.TerraDrawSectorMode(),
+                    new terraDraw.TerraDrawCircleMode(),
                     new terraDraw.TerraDrawSelectMode({
                         flags: {
                             polygon: {
