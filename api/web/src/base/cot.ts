@@ -158,23 +158,17 @@ export default class COT {
         ) {
             const id = `${this.id}-sensor`
 
-            let updated = false;
-
-            if (this.links.has(id)) {
-                const cot = atlas.db.cots.get(id);
-                if (cot) {
-                    updated = true;
-
-                    cot.geometry = sector(
+            const cot = atlas.db.cots.get(id);
+            if (cot) {
+                cot.update({
+                    geometry: sector(
                         this._properties.center,
                         (this._properties.sensor.range || 10) / 1000,
                         this._properties.sensor.azimuth,
                         this._properties.sensor.azimuth + this._properties.sensor.fov,
                     ).geometry
-                }
-            }
-
-            if (!updated) {
+                });
+            } else {
                 // TODO Use NodeCoT & Respect Sensor Style if present
                 new COT(
                     atlas,
