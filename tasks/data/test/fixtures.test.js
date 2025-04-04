@@ -63,7 +63,7 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/', import.meta.u
                     t.equals(f.type, 'Feature')
                 });
             } else {
-                test.fail('Unexpected Command');
+                t.fail('Unexpected Command: ' + command.input);
             }
         });
 

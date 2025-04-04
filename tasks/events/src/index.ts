@@ -102,7 +102,8 @@ async function genericEvent(md: Event) {
         } else {
             console.log(`ok - Data ${md.ID} has auto-transform turned off`);
         }
-
+    if (md.Key.startsWith('import/')) {
+        console.error('Ignoring Profile Imports as these are handled programatically');
     } else {
         throw new Error('Unknown Import Type');
     }
