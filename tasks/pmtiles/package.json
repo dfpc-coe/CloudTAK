@@ -22,7 +22,7 @@
         "@openaddresses/batch-schema": "^10.12.1",
         "@sinclair/typebox": "^0.34.11",
         "cors": "^2.8.5",
-        "express": "^4.21.0",
+        "express": "^5.0.0",
         "jsonwebtoken": "^9.0.0",
         "pmtiles": "^4.0.0",
         "serverless-http": "^3.2.0"
