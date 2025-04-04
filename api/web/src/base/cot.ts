@@ -238,8 +238,6 @@ export default class COT {
                 }
             }
 
-            this._properties = update.properties;
-
             if (update.properties) {
                 if (update.properties.sensor) {
                     this.link();
