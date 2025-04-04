@@ -291,10 +291,11 @@ async function requestLease(): Promise<void> {
         url.searchParams.append('url', video.value.url)
         active.value = await std(url);
 
+        console.error(active.value.leasable);
         if (active.value.metadata) {
             videoProtocols.value = active.value.metadata.protocols;
             loading.value = false;
-        } else if (active.value.leaseable) {
+        } else if (active.value.leasable) {
             const { lease, protocols } = await std('/api/video/lease', {
                 method: 'POST',
                 body:  {

@@ -171,7 +171,20 @@ export default class AtlasProfile {
             this.profile = profile;
         }
 
-        if (this.profile.tak_loc && this.location.source === LocationState.Disabled) {
+        this.updateLocation()
+
+        return this.profile;
+    }
+
+    updateLocation() {
+        if (
+            this.profile
+            && this.profile.tak_loc
+            && (
+                this.location.source === LocationState.Disabled
+                || this.location.source === LocationState.Preset
+            )
+        ) {
             this.location.source = LocationState.Preset;
             this.location.accuracy = undefined;
             this.location.coordinates = this.profile.tak_loc.coordinates;
@@ -181,8 +194,6 @@ export default class AtlasProfile {
                 body: { source: LocationState.Preset }
             });
         }
-
-        return this.profile;
     }
 
     async setChannel(name: string, active: boolean): Promise<Array<Group>> {
@@ -254,6 +265,11 @@ export default class AtlasProfile {
             this.setupTimer();
         }
 
+        // Ensure if network request fails user intent is preserved for session
+        if (this.profile) {
+            Object.assign(this.profile, body);
+        }
+
         if (body.tak_loc) {
             await this.CoT();
         }
@@ -274,9 +290,13 @@ export default class AtlasProfile {
 
         if (body.display_projection) {
             this.atlas.postMessage({
-                type: WorkerMessageType.Profile_Location_Source,
-                body: { source: this.location.source }
+                type: WorkerMessageType.Map_Projection,
+                body: { type: body.display_projection }
             });
+        }
+
+        if (body.tak_loc) {
+            this.updateLocation();
         }
 
         this.profile = await std('/api/profile', {
@@ -284,6 +304,7 @@ export default class AtlasProfile {
             token: this.atlas.token,
             body
         }) as Profile
+
     }
 
     uid(): string {

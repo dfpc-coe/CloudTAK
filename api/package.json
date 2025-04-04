@@ -84,7 +84,7 @@
         "pem": "^1.14.7",
         "pg": "^8.8.0",
         "semver-sort": "^1.0.0",
-        "sharp": "^0.33.0",
+        "sharp": "^0.34.0",
         "spritesmith": "^3.4.1",
         "suncalc": "^1.9.0",
         "swagger-ui-express": "^5.0.0",
