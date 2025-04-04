@@ -13,7 +13,7 @@ import { distance } from '@turf/distance';
 import * as Comlink from 'comlink';
 import AtlasWorker from '../workers/atlas.ts?worker&url';
 import COT from '../base/cot.ts';
-import { WorkerMessageType, LocationState }from '../base/events.ts';
+import { WorkerMessageType, LocationState } from '../base/events.ts';
 import type { WorkerMessage }from '../base/events.ts';
 import Overlay from '../base/overlay.ts';
 import { std, stdurl } from '../std.js';
