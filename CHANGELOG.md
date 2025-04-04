@@ -12,6 +12,16 @@
 
 ### Pending Release
 
+### v7.32.0 - 2025-04-04
+
+- :bug: Fix KML import failure if KMZ included jpg icons
+
+### v7.31.0 - 2025-04-04
+
+- :tada: Add prelim circle mode
+- :bug: Fix Video Lease creation in Video Modal if the lease wasn't already "owned" by the CloudTAK server
+- :bug: Ensure manual location updates persist to the UI Backend
+
 ### v7.30.2 - 2025-04-03
 
 - :rocket: Autocommit version bump

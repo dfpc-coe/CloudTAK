@@ -1,7 +1,7 @@
 {
     "name": "@tak-ps/CloudTAK.api",
     "type": "module",
-    "version": "7.30.2",
+    "version": "7.32.0",
     "description": "Facilitate ETL operations to bring non-TAK sources into a TAK Server",
     "main": "index.js",
     "scripts": {
@@ -84,7 +84,7 @@
         "pem": "^1.14.7",
         "pg": "^8.8.0",
         "semver-sort": "^1.0.0",
-        "sharp": "^0.33.0",
+        "sharp": "^0.34.0",
         "spritesmith": "^3.4.1",
         "suncalc": "^1.9.0",
         "swagger-ui-express": "^5.0.0",

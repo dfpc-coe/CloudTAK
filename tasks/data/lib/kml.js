@@ -69,18 +69,22 @@ export default class KML {
 
         const src = [];
         for (const [name, icon] of icons.entries()) {
-            const contents = await (Sharp(icon)
-                .resize(32, 32, {
-                    fit: 'contain',
-                    background: { r: 0, g: 0, b: 0, alpha: 0 }
-                })
-                .png()
-                .toBuffer());
+            try {
+                const contents = await (Sharp(icon)
+                    .resize(32, 32, {
+                        fit: 'contain',
+                        background: { r: 0, g: 0, b: 0, alpha: 0 }
+                    })
+                    .png()
+                    .toBuffer());
 
-            src.push(new Vinyl({
-                path: name,
-                contents
-            }));
+                src.push(new Vinyl({
+                    path: name.replace(/.[a-z]+$/, '.png'),
+                    contents
+                }));
+            } catch (err) {
+                console.error(`failing to process ${name}`, err);
+            }
         }
 
         const doc = await SpriteSmith({ src });
