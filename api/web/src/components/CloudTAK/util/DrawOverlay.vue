@@ -12,6 +12,12 @@
                 v-model='mapStore.drawOptions.pointMode'
             />
         </div>
+        <div v-else-if='mapStore.drawOptions.mode === "circle"'>
+            <IconCircle
+                :size='24'
+                stroke='1'
+            /><span class='mx-2'>Circle Editing</span>
+        </div>
         <div v-else-if='mapStore.drawOptions.mode === "angled-rectangle"'>
             <IconVector
                 :size='24'
@@ -53,6 +59,7 @@ import CoordinateType from '../util/CoordinateType.vue';
 import { useMapStore } from '../../../stores/map.ts';
 import {
     IconLine,
+    IconCircle,
     IconLasso,
     IconCone,
     IconVector,

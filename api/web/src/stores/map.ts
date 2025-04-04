@@ -13,7 +13,7 @@ import { distance } from '@turf/distance';
 import * as Comlink from 'comlink';
 import AtlasWorker from '../workers/atlas.ts?worker&url';
 import COT from '../base/cot.ts';
-import { WorkerMessageType, LocationState }from '../base/events.ts';
+import { WorkerMessageType, LocationState } from '../base/events.ts';
 import type { WorkerMessage }from '../base/events.ts';
 import Overlay from '../base/overlay.ts';
 import { std, stdurl } from '../std.js';
@@ -709,12 +709,13 @@ export const useMapStore = defineStore('cloudtak', {
                     }),
                     new terraDraw.TerraDrawPolygonMode({
                         editable: true,
-                        //showCoordinatePoints: true, Ref: https://github.com/JamesLMilner/terra-draw/issues/520
+                        showCoordinatePoints: true,
                         snapping: { toCustom }
                     }),
                     new terraDraw.TerraDrawAngledRectangleMode(),
                     new terraDraw.TerraDrawFreehandMode(),
                     new terraDraw.TerraDrawSectorMode(),
+                    new terraDraw.TerraDrawCircleMode(),
                     new terraDraw.TerraDrawSelectMode({
                         flags: {
                             polygon: {

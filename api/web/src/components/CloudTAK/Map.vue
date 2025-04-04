@@ -92,7 +92,7 @@
                     <div
                         v-tooltip='"Zoom To Location"'
                         style='line-height: 40px; width: calc(100% - 40px);'
-                        class='h-100 cursor-pointer text-center px-2 text-truncate subheader text-white hover-button'
+                        class='h-100 cursor-pointer text-center px-2 text-truncate subheader text-white hover-button user-select-none'
                         @click='toLocation'
                         v-text='mapStore.callsign'
                     />
@@ -292,7 +292,7 @@
                     </template>
                     <template #dropdown>
                         <div
-                            class='col-12 py-1 px-2 hover-button cursor-pointer'
+                            class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
                             @click='pointInput = true'
                         >
                             <IconCursorText
@@ -301,7 +301,7 @@
                             /> Coordinate Input
                         </div>
                         <div
-                            class='col-12 py-1 px-2 hover-button cursor-pointer'
+                            class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
                             @click='startDraw("point")'
                         >
                             <IconPoint
@@ -310,7 +310,7 @@
                             /> Draw Point
                         </div>
                         <div
-                            class='col-12 py-1 px-2 hover-button cursor-pointer'
+                            class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
                             @click='startDraw("linestring")'
                         >
                             <IconLine
@@ -319,7 +319,7 @@
                             /> Draw Line
                         </div>
                         <div
-                            class='col-12 py-1 px-2 hover-button cursor-pointer'
+                            class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
                             @click='startDraw("polygon")'
                         >
                             <IconPolygon
@@ -328,7 +328,7 @@
                             /> Draw Polygon
                         </div>
                         <div
-                            class='col-12 py-1 px-2 hover-button cursor-pointer'
+                            class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
                             @click='startDraw("angled-rectangle")'
                         >
                             <IconVector
@@ -337,7 +337,16 @@
                             /> Draw Rectangle
                         </div>
                         <div
-                            class='col-12 py-1 px-2 hover-button cursor-pointer'
+                            class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
+                            @click='startDraw("circle")'
+                        >
+                            <IconCircle
+                                :size='25'
+                                stroke='1'
+                            /> Draw Circle
+                        </div>
+                        <div
+                            class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
                             @click='startDraw("sector")'
                         >
                             <IconCone
@@ -346,7 +355,7 @@
                             /> Draw Sector
                         </div>
                         <div
-                            class='col-12 py-1 px-2 hover-button cursor-pointer'
+                            class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
                             @click='startDraw("freehand")'
                         >
                             <IconLasso
@@ -479,6 +488,7 @@ import {
     IconPoint,
     IconLine,
     IconCone,
+    IconCircle,
     IconPolygon,
     IconCursorText,
     IconVector,
@@ -665,6 +675,7 @@ async function toLocation() {
     const location = await mapStore.worker.profile.location;
 
     if ([LocationState.Preset, LocationState.Live].includes(location.source)) {
+        console.error(location);
         mapStore.map.flyTo({
             center: location.coordinates as LngLatLike,
             zoom: 14

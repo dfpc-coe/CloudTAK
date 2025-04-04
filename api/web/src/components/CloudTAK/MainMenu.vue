@@ -62,7 +62,7 @@
                         />
                         <span
                             v-if='!compact'
-                            class='mx-2'
+                            class='mx-2 user-select-none'
                             style='font-size: 18px;'
                         >Your Features</span>
                     </div>
@@ -90,7 +90,7 @@
                         />
                         <span
                             v-if='!compact'
-                            class='mx-2'
+                            class='mx-2 user-select-none'
                             style='font-size: 18px;'
                         >Overlays</span>
                     </div>
@@ -118,7 +118,7 @@
                         />
                         <span
                             v-if='!compact'
-                            class='mx-2'
+                            class='mx-2 user-select-none'
                             style='font-size: 18px;'
                         >Contacts</span>
                     </div>
@@ -146,7 +146,7 @@
                         />
                         <span
                             v-if='!compact'
-                            class='mx-2'
+                            class='mx-2 user-select-none'
                             style='font-size: 18px;'
                         >BaseMaps</span>
                     </div>
@@ -174,7 +174,7 @@
                         />
                         <span
                             v-if='!compact'
-                            class='mx-2'
+                            class='mx-2 user-select-none'
                             style='font-size: 18px;'
                         >Data Sync</span>
                     </div>
@@ -202,7 +202,7 @@
                         />
                         <span
                             v-if='!compact'
-                            class='mx-2'
+                            class='mx-2 user-select-none'
                             style='font-size: 18px;'
                         >Data Package</span>
                     </div>
@@ -230,7 +230,7 @@
                         />
                         <span
                             v-if='!compact'
-                            class='mx-2'
+                            class='mx-2 user-select-none'
                             style='font-size: 18px;'
                         >Channels</span>
                     </div>
@@ -258,7 +258,7 @@
                         />
                         <span
                             v-if='!compact'
-                            class='mx-2'
+                            class='mx-2 user-select-none'
                             style='font-size: 18px;'
                         >Videos</span>
                     </div>
@@ -286,7 +286,7 @@
                         />
                         <span
                             v-if='!compact'
-                            class='mx-2'
+                            class='mx-2 user-select-none'
                             style='font-size: 18px;'
                         >Chats</span>
                     </div>
@@ -314,7 +314,7 @@
                         />
                         <span
                             v-if='!compact'
-                            class='mx-2'
+                            class='mx-2 user-select-none'
                             style='font-size: 18px;'
                         >Uploaded Files</span>
                     </div>
@@ -342,7 +342,7 @@
                         />
                         <span
                             v-if='!compact'
-                            class='mx-2'
+                            class='mx-2 user-select-none'
                             style='font-size: 18px;'
                         >Imports</span>
                     </div>
@@ -370,7 +370,7 @@
                         />
                         <span
                             v-if='!compact'
-                            class='mx-2'
+                            class='mx-2 user-select-none'
                             style='font-size: 18px;'
                         >Iconsets</span>
                     </div>
@@ -400,7 +400,7 @@
                         />
                         <span
                             v-if='!compact'
-                            class='mx-2'
+                            class='mx-2 user-select-none'
                             style='font-size: 18px;'
                         >Connections</span>
                         <span
@@ -435,7 +435,7 @@
                         />
                         <span
                             v-if='!compact'
-                            class='mx-2'
+                            class='mx-2 user-select-none'
                             style='font-size: 18px;'
                         >COT Debugger</span>
                         <span
@@ -470,7 +470,7 @@
                         />
                         <span
                             v-if='!compact'
-                            class='mx-2'
+                            class='mx-2 user-select-none'
                             style='font-size: 18px;'
                         >Server</span>
                         <span
@@ -504,7 +504,7 @@
                         />
                         <span
                             v-if='!compact'
-                            class='mx-2'
+                            class='mx-2 user-select-none'
                             style='font-size: 18px;'
                         >Settings</span>
                     </div>
