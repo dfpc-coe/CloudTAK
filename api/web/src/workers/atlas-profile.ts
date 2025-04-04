@@ -178,7 +178,8 @@ export default class AtlasProfile {
 
     updateLocation() {
         if (
-            this.profile.tak_loc
+            this.profile
+            && this.profile.tak_loc
             && (
                 this.location.source === LocationState.Disabled
                 || this.location.source === LocationState.Preset
@@ -265,7 +266,9 @@ export default class AtlasProfile {
         }
 
         // Ensure if network request fails user intent is preserved for session
-        Object.assign(this.profile, body);
+        if (this.profile) {
+            Object.assign(this.profile, body);
+        }
 
         if (body.tak_loc) {
             await this.CoT();
