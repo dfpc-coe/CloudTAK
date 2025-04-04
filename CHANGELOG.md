@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v7.31.1 - 2025-04-04
+
+- :bug: Fix KML import failure if KMZ included jpg icons
+
 ### v7.31.0 - 2025-04-04
 
 - :tada: Add prelim circle mode
