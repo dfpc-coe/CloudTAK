@@ -105,6 +105,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
                     throw new Error('Unknown Source');
                 }
             }
+
+            const resRes = await fetch(`http://${process.env.AWS_LAMBDA_RUNTIME_API}/2018-06-01/runtime/invocation/${RequestID}/response`, {
+                method: 'POST',
+                body: 'SUCCESS'
+            });
         } catch (err) {
             const error = err instanceof Error ? err : new Error(String(err));
 
