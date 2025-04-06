@@ -1,8 +1,13 @@
-FROM public.ecr.aws/lambda/nodejs:22
+FROM alpine:3.21
 
-COPY . ${LAMBDA_TASK_ROOT}/
+ENV HOME=/home/events
+WORKDIR $HOME
+
+RUN apk add nodejs npm gdal-tools
+
+COPY . $HOME
 
 RUN npm install
 RUN npm run build
 
-CMD ["dist/index.handler"]
+CMD ["node", "dist/index.js"]
