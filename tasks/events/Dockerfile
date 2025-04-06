@@ -6,7 +6,7 @@ WORKDIR $HOME
 RUN apk add git make bash g++ sqlite3pp zlib-dev
 
 # TippeCanoe: https://github.com/felt/tippecanoe/releases
-RUN export VERSION_TIPPECANOE='2.75.1' && \
+RUN export VERSION_TIPPECANOE='2.77.0' && \
     git clone -c "advice.detachedHead=false" -b "${VERSION_TIPPECANOE}" --depth 1 https://github.com/felt/tippecanoe.git /tmp/tippecanoe && \
     cd /tmp/tippecanoe && \
     make && \
