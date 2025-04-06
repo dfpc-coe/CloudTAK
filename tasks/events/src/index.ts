@@ -21,23 +21,12 @@ export type Event = {
 }
 
 export const handler = async (
-    event: {
-        Records: Lambda.S3EventRecord[]
-    }
 ): Promise<void> => {
     if (!event.Records) {
         console.error('No Records: ', JSON.stringify(event));
         throw new Error('No Records');
     }
 
-    for (const record of event.Records) {
-        if (Object.keys(record).includes('s3')) {
-            await s3Event(record as Lambda.S3EventRecord)
-        } else {
-            console.log('Unknown Source', JSON.stringify(record));
-            throw new Error('Unknown Source');
-        }
-    }
 };
 
 async function s3Event(record: Lambda.S3EventRecord) {
@@ -110,28 +99,53 @@ async function genericEvent(md: Event) {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-    try {
-        const dotfile = new URL('../.env', import.meta.url);
-        fs.accessSync(dotfile);
-        Object.assign(process.env, JSON.parse(String(fs.readFileSync(dotfile))));
-        console.log('ok - .env file loaded');
-    } catch (err) {
-        if (!String(err).includes('ENOENT')) {
-            console.error(`ok - env file error (${err})`);
+    if (process.env.AWS_EXECUTION_ENV) {
+        try {
+            const res = await fetch(`http://${AWS_LAMBDA_RUNTIME_API}/2018-06-01/runtime/invocation/next`);
+            const data = await res.json() as {
+                Records: unknown
+            }
+
+            console.error('DATA', data);
+
+            for (const record of event.Records) {
+                if (Object.keys(record).includes('s3')) {
+                    await s3Event(record as Lambda.S3EventRecord)
+                } else {
+                    console.log('Unknown Source', JSON.stringify(record));
+                    throw new Error('Unknown Source');
+                }
+            }
+        } catch (err) {
+            console.error(err);
+            /*
+            await fetch(`http://${AWS_LAMBDA_RUNTIME_API}/2018-06-01/runtime/invocation/${AwsRequestId}/error`, {
+                method: 'POST'
+            });
+            */
         }
+    } else {
+        try {
+            const dotfile = new URL('../.env', import.meta.url);
+            fs.accessSync(dotfile);
+            Object.assign(process.env, JSON.parse(String(fs.readFileSync(dotfile))));
+            console.log('ok - .env file loaded');
+        } catch (err) {
+            if (!String(err).includes('ENOENT')) {
+                console.error(`ok - env file error (${err})`);
+            }
+        }
+
+        if (!process.env.KEY) throw new Error('KEY env var must be set');
+        if (!process.env.BUCKET) throw new Error('BUCKET env var must be set');
+        process.env.SigningSecret = 'coe-wildland-fire'
+
+        await genericEvent({
+            Bucket: process.env.BUCKET,
+            Key: process.env.KEY,
+            Name: path.parse(process.env.KEY).name,
+            Ext: path.parse(process.env.KEY).ext,
+            Local: path.resolve(os.tmpdir(), `input${path.parse(process.env.KEY).ext}`),
+        });
     }
-
-    console.error(process.env);
-
-    if (!process.env.KEY) throw new Error('KEY env var must be set');
-    if (!process.env.BUCKET) throw new Error('BUCKET env var must be set');
-    process.env.SigningSecret = 'coe-wildland-fire'
-
-    await genericEvent({
-        Bucket: process.env.BUCKET,
-        Key: process.env.KEY,
-        Name: path.parse(process.env.KEY).name,
-        Ext: path.parse(process.env.KEY).ext,
-        Local: path.resolve(os.tmpdir(), `input${path.parse(process.env.KEY).ext}`),
-    });
 }
