@@ -121,6 +121,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         }
     }
 
+    console.error(process.env);
 
     if (!process.env.KEY) throw new Error('KEY env var must be set');
     if (!process.env.BUCKET) throw new Error('BUCKET env var must be set');
