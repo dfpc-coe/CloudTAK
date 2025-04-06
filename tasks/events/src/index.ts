@@ -101,7 +101,7 @@ async function genericEvent(md: Event) {
 if (import.meta.url === `file://${process.argv[1]}`) {
     if (process.env.AWS_EXECUTION_ENV) {
         try {
-            const res = await fetch(`http://${AWS_LAMBDA_RUNTIME_API}/2018-06-01/runtime/invocation/next`);
+            const res = await fetch(`http://${process.env.AWS_LAMBDA_RUNTIME_API}/2018-06-01/runtime/invocation/next`);
             const data = await res.json() as {
                 Records: unknown
             }
@@ -119,7 +119,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         } catch (err) {
             console.error(err);
             /*
-            await fetch(`http://${AWS_LAMBDA_RUNTIME_API}/2018-06-01/runtime/invocation/${AwsRequestId}/error`, {
+            await fetch(`http://${process.env.AWS_LAMBDA_RUNTIME_API}/2018-06-01/runtime/invocation/${AwsRequestId}/error`, {
                 method: 'POST'
             });
             */
