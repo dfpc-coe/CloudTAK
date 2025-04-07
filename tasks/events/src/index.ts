@@ -20,38 +20,6 @@ export type Event = {
     Local: string;
 }
 
-export const handler = async (
-    event: {
-        Records: Lambda.S3EventRecord[]
-    }
-): Promise<void> => {
-    if (!event.Records) {
-        console.error('No Records: ', JSON.stringify(event));
-        throw new Error('No Records');
-    }
-
-    for (const record of event.Records) {
-        if (Object.keys(record).includes('s3')) {
-            await s3Event(record as Lambda.S3EventRecord)
-        } else {
-            console.log('Unknown Source', JSON.stringify(record));
-            throw new Error('Unknown Source');
-        }
-    }
-};
-
-async function s3Event(record: Lambda.S3EventRecord) {
-    const md: Event = {
-        Bucket: record.s3.bucket.name,
-        Key: decodeURIComponent(record.s3.object.key.replace(/\+/g, ' ')),
-        Name: path.parse(decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '))).base,
-        Ext: path.parse(decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '))).ext,
-        Local: path.resolve(os.tmpdir(), `input${path.parse(decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '))).ext}`),
-    };
-
-    return await genericEvent(md)
-}
-
 async function genericEvent(md: Event) {
     console.log(`ok - New file detected in s3://${md.Bucket}/${md.Key}`);
     if (md.Key.startsWith('import/')) {
@@ -110,27 +78,79 @@ async function genericEvent(md: Event) {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-    try {
-        const dotfile = new URL('../.env', import.meta.url);
-        fs.accessSync(dotfile);
-        Object.assign(process.env, JSON.parse(String(fs.readFileSync(dotfile))));
-        console.log('ok - .env file loaded');
-    } catch (err) {
-        if (!String(err).includes('ENOENT')) {
-            console.error(`ok - env file error (${err})`);
+    if (process.env.AWS_EXECUTION_ENV) {
+        const res = await fetch(`http://${process.env.AWS_LAMBDA_RUNTIME_API}/2018-06-01/runtime/invocation/next`);
+        const RequestID = res.headers.get('Lambda-Runtime-Aws-Request-Id');
+        const data = await res.json() as {
+            Records: unknown
         }
+
+        try {
+            for (const record of data.Records) {
+                console.error('DATA', record)
+
+                if (Object.keys(record).includes('s3')) {
+                    const rec = record as Lambda.S3EventRecord;
+                    const md: Event = {
+                        Bucket: rec.s3.bucket.name,
+                        Key: decodeURIComponent(rec.s3.object.key.replace(/\+/g, ' ')),
+                        Name: path.parse(decodeURIComponent(rec.s3.object.key.replace(/\+/g, ' '))).base,
+                        Ext: path.parse(decodeURIComponent(rec.s3.object.key.replace(/\+/g, ' '))).ext,
+                        Local: path.resolve(os.tmpdir(), `input${path.parse(decodeURIComponent(rec.s3.object.key.replace(/\+/g, ' '))).ext}`),
+                    };
+
+                    await genericEvent(md)
+                } else {
+                    console.log('Unknown Source', JSON.stringify(record));
+                    throw new Error('Unknown Source');
+                }
+            }
+
+            const resRes = await fetch(`http://${process.env.AWS_LAMBDA_RUNTIME_API}/2018-06-01/runtime/invocation/${RequestID}/response`, {
+                method: 'POST',
+                body: 'SUCCESS'
+            });
+        } catch (err) {
+            const error = err instanceof Error ? err : new Error(String(err));
+
+            const errRes = await fetch(`http://${process.env.AWS_LAMBDA_RUNTIME_API}/2018-06-01/runtime/invocation/${RequestID}/error`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    errorMessage: error.message,
+                    errorType: 'Error',
+                    stackTrace: error.stack ? error.stack.split('\n') : []
+                })
+            });
+
+            if (!errRes.ok) {
+                console.error(await errRes.text());
+            }
+        }
+    } else {
+        try {
+            const dotfile = new URL('../.env', import.meta.url);
+            fs.accessSync(dotfile);
+            Object.assign(process.env, JSON.parse(String(fs.readFileSync(dotfile))));
+            console.log('ok - .env file loaded');
+        } catch (err) {
+            if (!String(err).includes('ENOENT')) {
+                console.error(`ok - env file error (${err})`);
+            }
+        }
+
+        if (!process.env.KEY) throw new Error('KEY env var must be set');
+        if (!process.env.BUCKET) throw new Error('BUCKET env var must be set');
+        process.env.SigningSecret = 'coe-wildland-fire'
+
+        await genericEvent({
+            Bucket: process.env.BUCKET,
+            Key: process.env.KEY,
+            Name: path.parse(process.env.KEY).name,
+            Ext: path.parse(process.env.KEY).ext,
+            Local: path.resolve(os.tmpdir(), `input${path.parse(process.env.KEY).ext}`),
+        });
     }
-
-
-    if (!process.env.KEY) throw new Error('KEY env var must be set');
-    if (!process.env.BUCKET) throw new Error('BUCKET env var must be set');
-    process.env.SigningSecret = 'coe-wildland-fire'
-
-    await genericEvent({
-        Bucket: process.env.BUCKET,
-        Key: process.env.KEY,
-        Name: path.parse(process.env.KEY).name,
-        Ext: path.parse(process.env.KEY).ext,
-        Local: path.resolve(os.tmpdir(), `input${path.parse(process.env.KEY).ext}`),
-    });
 }
