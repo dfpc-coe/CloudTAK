@@ -406,7 +406,7 @@ export default {
         },
         TaskDefinition: {
             Type: 'AWS::ECS::TaskDefinition',
-            DependsOn: ['SigningSecret'],
+            DependsOn: ['SigningSecret', 'MediaSecret'],
             Properties: {
                 Family: cf.stackName,
                 Cpu: 1024 * 1,
@@ -439,6 +439,7 @@ export default {
                             ])
                         },
                         { Name: 'HookURL', Value: cf.ref('HookQueue') },
+                        { Name: 'MediaSecret', Value: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/media:SecretString::AWSCURRENT}}') },
                         { Name: 'SigningSecret', Value: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/secret:SecretString::AWSCURRENT}}') },
                         { Name: 'StackName', Value: cf.stackName },
                         { Name: 'ASSET_BUCKET', Value: cf.ref('AssetBucket') },
