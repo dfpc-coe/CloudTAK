@@ -37,6 +37,12 @@ export default async function router(schema: Schema, config: Config) {
         try {
             await Auth.as_user(config, req);
 
+            console.error('MEDIAMTX', req.body);
+
+            res.json({
+                status: 200,
+                message: 'Authorized'
+            });
         } catch (err) {
              Err.respond(err, res);
         }
