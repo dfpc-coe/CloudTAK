@@ -11,12 +11,36 @@ import { StandardResponse, VideoLeaseResponse } from '../lib/types.js';
 import { VideoLease_SourceType } from '../lib/enums.js';
 import { VideoLease } from '../lib/schema.js'
 import { eq } from 'drizzle-orm';
-import ECSVideoControl, { Protocols, PathConfig, PathListItem, ProtocolPopulation } from '../lib/control/video-service.js';
+import ECSVideoControl, { Action, Protocol, Protocols, PathConfig, PathListItem, ProtocolPopulation } from '../lib/control/video-service.js';
 import * as Default from '../lib/limits.js';
 import TAKAPI, { APIAuthCertificate } from '../lib/tak-api.js';
 
 export default async function router(schema: Schema, config: Config) {
     const videoControl = new ECSVideoControl(config);
+
+    await schema.post('/video/auth', {
+        name: 'Auth Lease',
+        group: 'VideoLease',
+        description: `Authenticate a request to view a lease`,
+        body: Type.Object({
+            user: Type.String(),
+            password: Type.String(),
+            ip: Type.String(),
+            action: Type.Enum(Action),
+            path: Type.String(),
+            protocol: Type.Enum(Protocol),
+            id: Type.String(),
+            query: Type.String()
+        }),
+        res: StandardResponse
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req);
+
+        } catch (err) {
+             Err.respond(err, res);
+        }
+    });
 
     await schema.get('/video/active', {
         name: 'Active Lease',

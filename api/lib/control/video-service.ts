@@ -12,6 +12,23 @@ export enum ProtocolPopulation {
     READ
 }
 
+export enum Protocol {
+    RTSP = "rtsp"
+    RTML = "rtmp",
+    HLS = "hls",
+    WEBRTC = "webrtc",
+    SRT = "srt",
+}
+
+export enum Action {
+    PUBLISH = "publish",
+    READ = "read",
+    PLAYBACK = "playback",
+    API = "api",
+    METRICS = "metrics"
+    PPROF = "pprof",
+}
+
 export const Protocols = Type.Object({
     rtmp: Type.Optional(Type.Object({
         name: Type.String(),
