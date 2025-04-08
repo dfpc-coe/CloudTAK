@@ -272,15 +272,7 @@ function auth_request(config: Config, req: Request<any, any, any, any>, opts?: {
                 throw new Err(401, null, 'No bearer token present');
             }
 
-            try {
-                return tokenParser(authorization[1], config.SigningSecret);
-            } catch (err) {
-                if (config.unsafe) {
-                    return tokenParser(authorization[1], config.UnsafeSigningSecret);
-                } else {
-                    throw err;
-                }
-            }
+            return tokenParser(authorization[1], config.SigningSecret);
         } else if (
             opts
             && opts.token
@@ -288,15 +280,7 @@ function auth_request(config: Config, req: Request<any, any, any, any>, opts?: {
             && req.query.token
             && typeof req.query.token === 'string'
         ) {
-            try {
-                return tokenParser(req.query.token, config.SigningSecret);
-            } catch (err) {
-                if (config.unsafe) {
-                    return tokenParser(req.query.token, config.UnsafeSigningSecret);
-                } else {
-                    throw err;
-                }
-            }
+            return tokenParser(req.query.token, config.SigningSecret);
         } else {
             throw new Err(401, null, 'No Auth Present')
         }

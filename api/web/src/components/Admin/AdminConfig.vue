@@ -110,24 +110,7 @@
                             <TablerInput
                                 v-model='config["media::url"]'
                                 :disabled='!edit'
-                                label='Hosted Media Service URL'
-                            />
-                        </div>
-
-                        <div class='col-lg-6'>
-                            <TablerInput
-                                v-model='config["media::username"]'
-                                :disabled='!edit'
-                                label='Hosted Media Service Username'
-                            />
-                        </div>
-
-                        <div class='col-lg-6'>
-                            <TablerInput
-                                v-model='config["media::password"]'
-                                type='password'
-                                :disabled='!edit'
-                                label='Hosted Media Service Password'
+                                label='CloudTAK Hosted MediaMTX Service URL'
                             />
                         </div>
                     </div>
@@ -274,8 +257,6 @@ export default {
             'agol::token': '',
 
             'media::url': '',
-            'media::username': '',
-            'media::password': '',
 
             'provider::url': '',
             'provider::secret': '',

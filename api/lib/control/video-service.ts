@@ -13,7 +13,7 @@ export enum ProtocolPopulation {
 }
 
 export enum Protocol {
-    RTSP = "rtsp"
+    RTSP = "rtsp",
     RTML = "rtmp",
     HLS = "hls",
     WEBRTC = "webrtc",
@@ -25,7 +25,7 @@ export enum Action {
     READ = "read",
     PLAYBACK = "playback",
     API = "api",
-    METRICS = "metrics"
+    METRICS = "metrics",
     PPROF = "pprof",
 }
 
@@ -198,12 +198,10 @@ export default class VideoServiceControl {
         username?: string;
         password?: string;
     }> {
-        let video, user, pass;
+        let video;
 
         try {
             video = await this.config.models.Setting.from('media::url');
-            user = await this.config.models.Setting.from('media::username');
-            pass = await this.config.models.Setting.from('media::password');
         } catch (err) {
             if (err instanceof Error && err.message.includes('Not Found')) {
                 return {
@@ -217,8 +215,8 @@ export default class VideoServiceControl {
         return {
             configured: true,
             url: typeof video.value === 'string' ? video.value : '',
-            username: typeof user.value === 'string' ? user.value : '',
-            password: typeof pass.value === 'string' ? pass.value : ''
+            username: 'management',
+            password: config.MediaSecret
         }
     }
 

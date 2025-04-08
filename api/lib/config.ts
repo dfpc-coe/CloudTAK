@@ -16,7 +16,6 @@ import * as pgtypes from './schema.js';
 interface ConfigArgs {
     silent: boolean,
     postgres: string,
-    unsafe: boolean,
     noevents: boolean,
     nosinks: boolean,
     nocache: boolean,
@@ -24,7 +23,6 @@ interface ConfigArgs {
 
 export default class Config {
     silent: boolean;
-    unsafe: boolean;
     noevents: boolean;
     nosinks: boolean;
     nocache: boolean;
@@ -32,8 +30,8 @@ export default class Config {
     StackName: string;
     HookURL?: string;
     SigningSecret: string;
+    MediaSecret: string;
     external?: External;
-    UnsafeSigningSecret: string;
     API_URL: string;
     PMTILES_URL: string;
     DynamoDB?: string;
@@ -52,7 +50,6 @@ export default class Config {
 
     constructor(init: {
         silent: boolean;
-        unsafe: boolean;
         noevents: boolean;
         nosinks: boolean;
         nocache: boolean;
@@ -69,13 +66,11 @@ export default class Config {
         HookURL?: string;
     }) {
         this.silent = init.silent;
-        this.unsafe = init.unsafe;
         this.noevents = init.noevents;
         this.nosinks = init.nosinks;
         this.nocache = init.nocache;
         this.models = init.models;
         this.StackName = init.StackName;
-        this.UnsafeSigningSecret = 'coe-wildland-fire';
         this.SigningSecret = init.SigningSecret;
         this.API_URL = init.API_URL;
         this.PMTILES_URL = init.PMTILES_URL;
@@ -160,7 +155,6 @@ export default class Config {
         }
 
         const config = new Config({
-            unsafe: (args.unsafe || false),
             silent: (args.silent || false),
             noevents: (args.noevents || false),
             nosinks: (args.nosinks || false),
