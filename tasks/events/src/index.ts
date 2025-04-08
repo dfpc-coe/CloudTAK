@@ -79,56 +79,58 @@ async function genericEvent(md: Event) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
     if (process.env.AWS_EXECUTION_ENV) {
-        const res = await fetch(`http://${process.env.AWS_LAMBDA_RUNTIME_API}/2018-06-01/runtime/invocation/next`);
-        const RequestID = res.headers.get('Lambda-Runtime-Aws-Request-Id');
-        const data = await res.json() as {
-            Records: unknown
-        }
+        do {
+            const res = await fetch(`http://${process.env.AWS_LAMBDA_RUNTIME_API}/2018-06-01/runtime/invocation/next`);
+            const RequestID = res.headers.get('Lambda-Runtime-Aws-Request-Id');
+            const data = await res.json() as {
+                Records: unknown
+            }
 
-        try {
-            for (const record of data.Records) {
-                console.error('DATA', record)
+            try {
+                for (const record of data.Records) {
+                    if (Object.keys(record).includes('s3')) {
+                        const rec = record as Lambda.S3EventRecord;
+                        const md: Event = {
+                            Bucket: rec.s3.bucket.name,
+                            Key: decodeURIComponent(rec.s3.object.key.replace(/\+/g, ' ')),
+                            Name: path.parse(decodeURIComponent(rec.s3.object.key.replace(/\+/g, ' '))).base,
+                            Ext: path.parse(decodeURIComponent(rec.s3.object.key.replace(/\+/g, ' '))).ext,
+                            Local: path.resolve(os.tmpdir(), `input${path.parse(decodeURIComponent(rec.s3.object.key.replace(/\+/g, ' '))).ext}`),
+                        };
 
-                if (Object.keys(record).includes('s3')) {
-                    const rec = record as Lambda.S3EventRecord;
-                    const md: Event = {
-                        Bucket: rec.s3.bucket.name,
-                        Key: decodeURIComponent(rec.s3.object.key.replace(/\+/g, ' ')),
-                        Name: path.parse(decodeURIComponent(rec.s3.object.key.replace(/\+/g, ' '))).base,
-                        Ext: path.parse(decodeURIComponent(rec.s3.object.key.replace(/\+/g, ' '))).ext,
-                        Local: path.resolve(os.tmpdir(), `input${path.parse(decodeURIComponent(rec.s3.object.key.replace(/\+/g, ' '))).ext}`),
-                    };
+                        await genericEvent(md)
+                    } else {
+                        console.log('Unknown Source', JSON.stringify(record));
+                        throw new Error('Unknown Source');
+                    }
+                }
 
-                    await genericEvent(md)
-                } else {
-                    console.log('Unknown Source', JSON.stringify(record));
-                    throw new Error('Unknown Source');
+                await fetch(`http://${process.env.AWS_LAMBDA_RUNTIME_API}/2018-06-01/runtime/invocation/${RequestID}/response`, {
+                    method: 'POST',
+                    body: 'SUCCESS'
+                });
+            } catch (err) {
+                const error = err instanceof Error ? err : new Error(String(err));
+
+                const errRes = await fetch(`http://${process.env.AWS_LAMBDA_RUNTIME_API}/2018-06-01/runtime/invocation/${RequestID}/error`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        errorMessage: error.message,
+                        errorType: 'Error',
+                        stackTrace: error.stack ? error.stack.split('\n') : []
+                    })
+                });
+
+                if (!errRes.ok) {
+                    console.error(await errRes.text());
                 }
             }
-
-            const resRes = await fetch(`http://${process.env.AWS_LAMBDA_RUNTIME_API}/2018-06-01/runtime/invocation/${RequestID}/response`, {
-                method: 'POST',
-                body: 'SUCCESS'
-            });
-        } catch (err) {
-            const error = err instanceof Error ? err : new Error(String(err));
-
-            const errRes = await fetch(`http://${process.env.AWS_LAMBDA_RUNTIME_API}/2018-06-01/runtime/invocation/${RequestID}/error`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    errorMessage: error.message,
-                    errorType: 'Error',
-                    stackTrace: error.stack ? error.stack.split('\n') : []
-                })
-            });
-
-            if (!errRes.ok) {
-                console.error(await errRes.text());
-            }
-        }
+        // Lambda will handle it's own shutdown
+        // eslint-disable-next-line no-constant-condition
+        } while (true)
     } else {
         try {
             const dotfile = new URL('../.env', import.meta.url);
