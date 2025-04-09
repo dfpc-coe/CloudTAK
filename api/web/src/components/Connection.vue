@@ -188,19 +188,6 @@
                                                 role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
-                                                    "active": route.name === "connection-sinks",
-                                                    "cursor-pointer": route.name !== "connection-sinks"
-                                                }'
-                                                @click='router.push(`/connection/${route.params.connectionid}/sink`)'
-                                            ><IconOutbound
-                                                :size='32'
-                                                stroke='1'
-                                            /><span class='mx-3'>Outbounds Sinks</span></span>
-                                            <span
-                                                tabindex='0'
-                                                role='menuitem'
-                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
-                                                :class='{
                                                     "active": route.name === "connection-videos",
                                                     "cursor-pointer": route.name !== "connection-videos"
                                                 }'
@@ -255,7 +242,6 @@ import {
     IconVideo,
     IconRefresh,
     IconDatabase,
-    IconOutbound,
     IconAffiliate,
     IconPlugConnected,
     IconBuildingBroadcastTower,

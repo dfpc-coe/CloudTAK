@@ -243,10 +243,6 @@ const router = VueRouter.createRouter({
         { path: '/connection', name: 'connections', component: () => import('./components/Connections.vue') },
         { path: '/connection/new', name: 'connection-new', component: () => import('./components/ConnectionEdit.vue') },
 
-        { path: '/connection/:connectionid/sink/new', name: 'connection-sink-new', component: () => import('./components/ConnectionSinkEdit.vue') },
-        { path: '/connection/:connectionid/sink/:sinkid', name: 'connection-sink', component: () => import('./components/ConnectionSink.vue') },
-        { path: '/connection/:connectionid/sink/:sinkid/edit', name: 'connection-sink-edit', component: () => import('./components/ConnectionSinkEdit.vue') },
-
         {
             path: '/connection/:connectionid',
             name: 'connection',
@@ -277,10 +273,6 @@ const router = VueRouter.createRouter({
                 path: 'video',
                 name: 'connection-videos',
                 component: () => import('./components/Connection/ConnectionVideos.vue')
-            },{
-                path: 'sink',
-                name: 'connection-sinks',
-                component: () => import('./components/Connection/ConnectionSink.vue')
             },{
                 path: 'tokens',
                 name: 'connection-tokens',
