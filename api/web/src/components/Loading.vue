@@ -27,6 +27,7 @@
 </template>
 
 <script setup lang='ts'>
+import type { LoginConfig } from '../types.ts'
 import { std } from '../std.js';
 import { ref, onMounted } from 'vue'
 import {
