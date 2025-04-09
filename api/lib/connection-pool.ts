@@ -18,6 +18,8 @@ export class ConnectionClient {
     initial: boolean;
     ephemeral: boolean;
 
+    retrying: boolean;
+
     constructor(
         config: ConnectionConfig,
         tak: TAK,
@@ -27,6 +29,7 @@ export class ConnectionClient {
         this.config = config;
         this.retry = 0;
         this.initial = true;
+        this.retrying = false;
         this.ephemeral = ephemeral;
     }
 
@@ -213,29 +216,51 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
             }
         }).on('end', async () => {
             console.error(`not ok - ${connConfig.id} - ${connConfig.name} @ end`);
-            this.retry(connClient);
+            if (!tak.destroyed) {
+                this.retry(connClient);
+            }
         }).on('timeout', async () => {
             console.error(`not ok - ${connConfig.id} - ${connConfig.name} @ timeout`);
-            this.retry(connClient);
+            if (!tak.destroyed) {
+                this.retry(connClient);
+            }
         }).on('error', async (err) => {
             console.error(`not ok - ${connConfig.id} - ${connConfig.name} @ error:${err}`);
-            this.retry(connClient);
+            if (!tak.destroyed) {
+                this.retry(connClient);
+            }
         });
 
         return connClient;
     }
 
     async retry(connClient: ConnectionClient): Promise<void> {
-        if (this.closed) {
-            console.log('ok - ConnectionPool has been closed - not retrying');
+        if (connClient.retrying) {
+            console.error(`ok - Not Retrying: ${connClient.config.id} - ${connClient.config.name} - Connection Already Retrying`);
+            return;
+        } else if (this.closed) {
+            console.error(`ok - Not Retrying: ${connClient.config.id} - ${connClient.config.name} - Connection Pool Closed`);
+            return;
+        } else if (connClient.tak.destroyed) {
+            console.error(`ok - Not Retrying: ${connClient.config.id} - ${connClient.config.name} - Connection Destroyed`);
             return;
         }
+
+        connClient.retrying = true;
 
         const retryms = Math.min(connClient.retry * 1000, 15000);
         if (connClient.retry <= 15) connClient.retry++
         console.log(`not ok - ${connClient.config.uid()} - ${connClient.config.name} - retrying in ${retryms}ms`)
         await sleep(retryms);
-        await connClient.tak.reconnect();
+
+        if (connClient.tak.destroyed) {
+            console.log('ok - TAK Client has been closed - not retrying');
+            connClient.retrying = false;
+            return;
+        } else {
+            connClient.retrying = false
+            await connClient.tak.reconnect();
+        }
     }
 
     delete(id: number | string): boolean {

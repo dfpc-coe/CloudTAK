@@ -174,7 +174,6 @@ export default async function router(schema: Schema, config: Config) {
             if (conn.enabled && !config.conns.has(conn.id)) {
                 await config.conns.add(new MachineConnConfig(config, conn));
             } else if (conn.enabled && config.conns.has(conn.id)) {
-                console.error('REFRESHING CONNECTION');
                 await config.conns.delete(conn.id);
                 await config.conns.add(new MachineConnConfig(config, conn));
             } else if (!conn.enabled && config.conns.has(conn.id)) {
