@@ -106,16 +106,13 @@ import {
     TablerNone,
 } from '@tak-ps/vue-tabler';
 
-const props = withDefaults(defineProps<{
-    modelValue: number,
-    disable: boolean
-}>(), {
-    disable: false
-});
+const props = defineProps<{
+    modelValue: number | null,
+}>()
 
 const emit = defineEmits([ 'update:modelValue' ]);
 
-const noAgency = ref(false);
+const noAgency = ref(props.modelValue === null);
 const loading = ref({
     main: true,
     list: true,

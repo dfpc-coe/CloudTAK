@@ -242,7 +242,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         const conn = this.get(id);
 
         if (conn) {
-            conn.tak.destroy();
+            conn.destroy();
             super.delete(id);
 
             return true;
