@@ -136,7 +136,6 @@ export default class ExternalProvider {
         const url = new URL(`api/v1/proxy/machine-users`, this.provider.url);
         url.searchParams.append('proxy_user_id', String(uid));
         url.searchParams.append('sequential_email', 'true')
-        url.searchParams.append('sync', 'true')
 
         const req = {
             name: body.name,
