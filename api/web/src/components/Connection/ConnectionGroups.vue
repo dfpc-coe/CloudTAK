@@ -16,6 +16,10 @@
             </div>
         </div>
         <TablerLoading v-if='loading' />
+        <TablerAlert
+            v-else-if='error'
+            :err='error'
+        />
         <TablerNone
             v-else-if='!rawChannels.length'
             :create='false'
@@ -89,8 +93,10 @@
     </div>
 </template>
 
-<script>
-import { std, stdurl } from '/src/std.ts';
+<script setup>
+import { ref, onMounted, computed } from 'vue'
+import { useRoute } from 'vue-router';
+import { std, stdurl } from '../../std.ts';
 import {
     IconEye,
     IconEyeOff,
@@ -100,66 +106,59 @@ import {
 } from '@tabler/icons-vue';
 import {
     TablerNone,
+    TablerAlert,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 
-export default {
-    name: 'ConnectionGroups',
-    components: {
-        IconEye,
-        IconEyeOff,
-        IconRefresh,
-        TablerNone,
-        TablerLoading,
-        IconLocation,
-        IconLocationOff,
-    },
-    data: function() {
-        return {
-            loading: true,
-            rawChannels: []
+const route = useRoute();
+
+const error = ref();
+const loading = ref(true);
+const rawChannels = ref([]);
+
+const processChannels = computed(() => {
+    const channels = {};
+
+    JSON.parse(JSON.stringify(rawChannels.value)).sort((a, b) => {
+        return (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0);
+    }).forEach((channel) => {
+        if (channels[channel.name]) {
+            channels[channel.name].direction.push(channel.direction);
+        } else {
+            channel.direction = [channel.direction];
+            channels[channel.name] = channel;
         }
-    },
-    computed: {
-        processChannels: function() {
-            const channels = {};
+    });
 
-            JSON.parse(JSON.stringify(this.rawChannels)).sort((a, b) => {
-                return (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0);
-            }).forEach((channel) => {
-                if (channels[channel.name]) {
-                    channels[channel.name].direction.push(channel.direction);
-                } else {
-                    channel.direction = [channel.direction];
-                    channels[channel.name] = channel;
-                }
-            });
+    return channels;
+});
 
-            return channels;
-        }
-    },
-    mounted: async function() {
-        await this.fetch();
-    },
-    methods: {
-        fetch: async function() {
-            this.loading = true;
-            this.rawChannels = (await std(`/api/connection/${this.$route.params.connectionid}/channel`)).data;
-            this.loading = false;
-        },
-        setStatus: async function(channel, active=false) {
-            this.rawChannels = this.rawChannels.map((ch) => {
-                if (ch.name === channel.name) ch.active = active;
-                return ch;
-            });
+onMounted(async () => {
+    await fetch();
+});
 
-            const url = stdurl('/api/marti/group');
-            url.searchParams.append('connection', this.$route.params.connectionid);
-            await std(url, {
-                method: 'PUT',
-                body: this.rawChannels
-            });
-        },
+async function fetch() {
+    loading.value = true;
+    try {
+        rawChannels.value = (await std(`/api/connection/${route.params.connectionid}/channel`)).data;
+        loading.value = false;
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+        loading.value = false;
     }
+}
+
+async function setStatus(channel, active=false) {
+    rawChannels.value = rawChannels.value.map((ch) => {
+        if (ch.name === channel.name) ch.active = active;
+        return ch;
+    });
+
+    const url = stdurl('/api/marti/group');
+    url.searchParams.append('connection', route.params.connectionid);
+    await std(url, {
+        method: 'PUT',
+        body: rawChannels.value
+    });
 }
 </script>
