@@ -21,7 +21,7 @@ jobs:
     if: github.event.pull_request.draft == false
     strategy:
       matrix:
-        task: [api, data, pmtiles, hooks, events]
+        task: [api, data, pmtiles, events]
     steps:
       - uses: actions/checkout@v4
         with:

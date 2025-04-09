@@ -224,18 +224,6 @@ export const Connection = pgTable('connections', {
     auth: json().$type<ConnectionAuth>().notNull()
 });
 
-export const ConnectionSink = pgTable('connection_sinks', {
-    id: serial().primaryKey(),
-    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    name: text().notNull(),
-    enabled: boolean().notNull().default(true),
-    connection: integer().notNull().references(() => Connection.id),
-    type: text().notNull(),
-    body: json().$type<Record<string, string>>().notNull().default({}),
-    logging: boolean().notNull().default(false)
-});
-
 export const Data = pgTable('data', {
     id: serial().primaryKey(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
