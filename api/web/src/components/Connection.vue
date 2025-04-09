@@ -83,9 +83,19 @@
                                                     Certificate Valid To
                                                 </div>
                                                 <div
-                                                    class='datagrid-content'
-                                                    v-text='connection.certificate.validTo'
-                                                />
+                                                    class='datagrid-content d-flex'
+                                                    :class='{
+                                                        "rounded bg-red text-white px-2 py-1": new Date(connection.certificate.validTo) < new Date()
+                                                    }'
+                                                >
+                                                    <div v-text='connection.certificate.validTo'/>
+                                                    <div
+                                                        v-if='new Date(connection.certificate.validTo) < new Date()'
+                                                        class='ms-auto'
+                                                    >
+                                                        Expired Certificate
+                                                    </div>
+                                                </div>
                                             </div>
                                             <div class='datagrid-item pb-2'>
                                                 <div class='datagrid-title'>

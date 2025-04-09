@@ -1,84 +1,94 @@
 <template>
     <div class='card mx-2 px-0'>
-        <div class='card-body'>
-            <TablerLoading v-if='loading.gen' />
-            <template v-else>
-                <div
-                    v-for='(sel, it) in selected'
-                    class='card my-2'
-                >
-                    <div class='col-12 d-flex align-items-center px-2 py-2'>
-                        <div v-text='sel.channel.rdn' />
-                        <div class='ms-auto btn-list'>
-                            <TablerEnum
-                                v-model='sel.access'
-                                default='Duplex'
-                                :options='[
-                                    "Read",
-                                    "Write",
-                                    "Duplex"
-                                ]'
-                            />
+        <TablerLoading v-if='loading.gen' />
+        <div
+            v-else-if='!connection.certificate'
+            class='card-body'
+        >
+            <div
+                v-for='(sel, it) in selected'
+                class='card my-2'
+            >
+                <div class='col-12 d-flex align-items-center px-2 py-2'>
+                    <div v-text='sel.channel.rdn' />
+                    <div class='ms-auto btn-list'>
+                        <TablerEnum
+                            v-model='sel.access'
+                            default='Duplex'
+                            :options='[
+                                "Read",
+                                "Write",
+                                "Duplex"
+                            ]'
+                        />
 
-                            <TablerIconButton
-                                title='Remove Channel'
-                                @click='selected.splice(it, 1)'
-                            >
-                                <IconTrash
-                                    :size='32'
-                                    stroke='1'
-                                />
-                            </TablerIconButton>
-                        </div>
+                        <TablerIconButton
+                            title='Remove Channel'
+                            @click='selected.splice(it, 1)'
+                        >
+                            <IconTrash
+                                :size='32'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
                     </div>
                 </div>
-                <div class='col-12 mb-2'>
-                    <TablerInput
-                        v-model='paging.filter'
-                        icon='search'
-                        placeholder='Channels Filter...'
-                        @keyup.enter='generate'
-                    />
-                </div>
-                <div class='col-12'>
-                    <TablerLoading
-                        v-if='loading.channels'
-                        desc='Loading Channels'
-                    />
-                    <TablerNone
-                        v-else-if='filteredChannels.length === 0'
-                        :compact='true'
-                        :create='false'
-                        label='Channels'
-                    />
-                    <template
-                        v-for='channel in filteredChannels'
-                        v-else
+            </div>
+            <div class='col-12 mb-2'>
+                <TablerInput
+                    v-model='paging.filter'
+                    icon='search'
+                    placeholder='Channels Filter...'
+                    @keyup.enter='generate'
+                />
+            </div>
+            <div class='col-12'>
+                <TablerLoading
+                    v-if='loading.channels'
+                    desc='Loading Channels'
+                />
+                <TablerNone
+                    v-else-if='filteredChannels.length === 0'
+                    :compact='true'
+                    :create='false'
+                    label='Channels'
+                />
+                <template
+                    v-for='channel in filteredChannels'
+                    v-else
+                >
+                    <div
+                        class='hover-light px-2 py-2 cursor-pointer row'
+                        @click='push(channel)'
                     >
-                        <div
-                            class='hover-light px-2 py-2 cursor-pointer row'
-                            @click='push(channel)'
-                        >
-                            <div class='col-md-4'>
-                                <span v-text='channel.rdn' />
-                            </div>
-
-                            <div
-                                class='col-md-8'
-                                v-text='channel.description'
-                            />
+                        <div class='col-md-4'>
+                            <span v-text='channel.rdn' />
                         </div>
-                    </template>
-                </div>
-            </template>
+
+                        <div
+                            class='col-md-8'
+                            v-text='channel.description'
+                        />
+                    </div>
+                </template>
+            </div>
         </div>
         <div class='card-footer'>
             <button
+                v-if='!connection.certificate'
                 :disabled='loading.gen || !selected.length'
                 class='cursor-pointer btn btn-primary w-100'
                 @click='generate'
             >
                 Create Machine User
+            </button>
+            <button
+                v-else
+                class='cursor-pointer btn btn-primary w-100'
+                :disabled='loading.gen'
+                @click='regenerate'
+            >
+                Regenerate Certificate
             </button>
         </div>
     </div>
@@ -175,6 +185,23 @@ async function listChannels() {
         throw err;
     }
     loading.value.channels = false;
+}
+
+async function regenerate() {
+    loading.value.gen = true;
+
+    const email = props.connection.certificate.subject.split('=')[3]
+
+    const url = stdurl(`/api/ldap/user/${email}`);
+    const res = await std(url, {
+        method: 'PUT',
+    }) as ETLLdapUser
+
+    loading.value.gen = true;
+    emit('integration', {
+        'certs': res.auth,
+        'integrationId': res.integrationId
+    });
 }
 
 async function generate() {

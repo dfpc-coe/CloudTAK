@@ -199,6 +199,7 @@
                                                 <template v-else-if='type === "creation"'>
                                                     <CertificateMachineUser
                                                         :connection='connection'
+                                                        @certs='p12upload($event)'
                                                         @integration='creation($event)'
                                                         @err='err = $event'
                                                     />

@@ -319,15 +319,15 @@ export default class Flight {
             delete conn.body.updated;
 
             t.deepEquals(conn.body, {
-                status: 'dead',                                                                                                       
-                certificate: {                                                                                                        
-                    subject: 'CN=Alice'                                                                                                 
-                },                                                                                                                    
-                id: 1,                                                                                                                
-                agency: 0,                                                                                                            
-                name: 'Test Connection', 
+                status: 'dead',
+                certificate: {
+                    subject: 'CN=Alice'
+                },
+                id: 1,
+                agency: null,
+                name: 'Test Connection',
                 description: 'Connection created by Flight Test Runner',
-                enabled: true  
+                enabled: true
             });
 
             await new Promise((resolve) => {
