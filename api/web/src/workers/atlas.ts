@@ -9,6 +9,7 @@ import Subscription from '../base/subscription.ts';
 import * as Comlink from 'comlink';
 import AtlasProfile from './atlas-profile.ts';
 import type { ProfileLocation } from './atlas-profile.ts';
+import AtlasTeam from './atlas-team.ts';
 import AtlasDatabase from './atlas-database.ts';
 import AtlasConnection from './atlas-connection.ts';
 import type { Remote, TransferHandler } from 'comlink';
@@ -139,6 +140,7 @@ export default class Atlas {
     token: string;
 
     db = Comlink.proxy(new AtlasDatabase(this));
+    team = Comlink.proxy(new AtlasTeam(this));
     conn = Comlink.proxy(new AtlasConnection(this));
     profile = Comlink.proxy(new AtlasProfile(this));
 
@@ -177,7 +179,10 @@ export default class Atlas {
         const username = await this.profile.init();
         await this.conn.connect(username)
 
-        await this.db.init();
+        await Promise.all([
+            this.db.init(),
+            this.team.init()
+        ])
     }
 
     destroy() {
