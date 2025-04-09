@@ -1,5 +1,5 @@
 import { Type } from '@sinclair/typebox'
-import { randomUUID } from 'node:crypto';
+import crypto from 'node:crypto';
 import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
@@ -72,7 +72,10 @@ export default async function router(schema: Schema, config: Config) {
 
             if (!profile.id) throw new Err(400, null, 'External ID must be set on profile');
 
-            const password = randomUUID();
+            const password = Array.from(crypto.randomFillSync(new Uint8Array(16)))
+                .map((n) => String.fromCharCode((n % 94) + 33))
+                .join('');
+
             const user = await config.external.createMachineUser(profile.id, {
                 ...req.body,
                 agency_id: req.body.agency_id || undefined,
@@ -92,6 +95,54 @@ export default async function router(schema: Schema, config: Config) {
                     access: channel.access
                 })
             }
+
+            const api = await TAKAPI.init(
+                new URL(config.server.webtak),
+                new APIAuthPassword(user.email, password)
+            );
+
+            const certs = await api.Credentials.generate();
+
+            res.json({
+                integrationId: user.integrations.find(Boolean)?.id ?? undefined,
+                auth: certs
+            })
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.put('/ldap/user/:email', {
+        name: 'Reset Machine User',
+        group: 'LDAP',
+        description: 'Reset the password on an existing user and regen a certificate',
+        params: Type.Object({
+            email: Type.String()
+        }),
+        res: Type.Object({
+            integrationId: Type.Optional(Type.Integer()),
+            auth: Type.Object({
+                cert: Type.String(),
+                key: Type.String()
+            })
+        })
+    }, async (req, res) => {
+        try {
+            const profile = await Auth.as_profile(config, req);
+
+            if (!config.external || !config.external.configured) {
+                throw new Err(400, null, 'External LDAP API not configured - Contact your administrator');
+            }
+
+            if (!profile.id) throw new Err(400, null, 'External ID must be set on profile');
+
+            const password = Array.from(crypto.randomFillSync(new Uint8Array(16)))
+                .map((n) => String.fromCharCode((n % 94) + 33))
+                .join('');
+
+            const user = await config.external.fetchMachineUser(profile.id, req.params.email)
+
+            await config.external.updateMachineUser(profile.id, user.id, { password });
 
             const api = await TAKAPI.init(
                 new URL(config.server.webtak),

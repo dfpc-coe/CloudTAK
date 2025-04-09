@@ -654,6 +654,11 @@
         "query": false,
         "res": true
     },
+    "PUT /ldap/user/:email": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "POST /login": {
         "body": true,
         "query": false,
