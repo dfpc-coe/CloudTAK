@@ -112,11 +112,11 @@ const route = useRoute();
 const router = useRouter();
 
 const loading = ref(false);
-const config = ref<LoginConfig | undefined>();
 const body = ref<Login_Create>({
     username: '',
     password: ''
 });
+const config = ref<LoginConfig | undefined>();
 
 onMounted(async () => {
     config.value = await std('/api/config/login') as LoginConfig;
