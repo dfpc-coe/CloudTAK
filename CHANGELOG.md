@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v7.33.0 - 2025-04-09
+
+- :tada: Allow COTAK API to update password for Connection Cert reissuance
+- :tada: `UI` Sketch out AtlasTeam manager
+- :bug: Fix TAK Server Connection not getting properly closed when a connection is refreshed
+
 ### v7.32.0 - 2025-04-04
 
 - :bug: Fix KML import failure if KMZ included jpg icons
