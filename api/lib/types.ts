@@ -278,14 +278,6 @@ export const ProfileTokenResponse = Type.Object({
     updated: Type.String(),
 });
 
-export const ConnectionSinkResponse = createSelectSchema(schemas.ConnectionSink, {
-    id: Type.Integer(),
-    connection: Type.Integer(),
-    enabled: Type.Boolean(),
-    logging: Type.Boolean(),
-    body: Type.Record(Type.String(), Type.String())
-});
-
 export const ConnectionResponse = Type.Object({
     id: Type.Integer(),
     status: Type.String(),
