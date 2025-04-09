@@ -23,7 +23,7 @@ export const Integration = Type.Object({
 export const MachineUser = Type.Object({
     id: Type.Number(),
     email: Type.String(),
-    integrations: Type.Optional(Type.Array(Integration)),
+    integrations: Type.Array(Integration),
 });
 
 export const Channel = Type.Object({
