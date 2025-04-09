@@ -174,6 +174,8 @@ export default class Atlas {
     }
 
     async init(authToken: string) {
+        if (this.token) return;
+
         this.token = authToken;
 
         const username = await this.profile.init();
