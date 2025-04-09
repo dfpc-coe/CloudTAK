@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v7.33.1 - 2025-04-09
+
+- :bug: Ensure Open Connection status is set in UI on initial load
+- :bug: Ensure Atlas Init cannot be called twice
+
 ### v7.33.0 - 2025-04-09
 
 - :tada: Allow COTAK API to update password for Connection Cert reissuance
