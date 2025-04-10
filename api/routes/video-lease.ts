@@ -38,10 +38,7 @@ export default async function router(schema: Schema, config: Config) {
             if (req.body.user === 'management' && req.body.password === config.MediaSecret) {
                 res.json({ status: 200, message: 'Authorized' });
             } else if ([Action.PUBLISH, Action.READ, Action.PLAYBACK].includes(req.body.action)) {
-                const lease = await videoControl.from(req.body.path, {
-                    // We want to do the lease check ourselves to allow fetching any lease
-                    admin: true
-                });
+                const lease = await config.models.VideoLease.from(eq(VideoLease.path, req.body.path))
 
                 if (Action.PUBLISH && lease.stream_user && lease.stream_pass) {
                     if (req.body.user !== lease.stream_user) {
@@ -75,14 +72,12 @@ export default async function router(schema: Schema, config: Config) {
                     }
                 } else if (Action.PLAYBACK && !lease.read_user && !lease.read_pass) {
                     res.json({ status: 200, message: 'Authorized' });
+                } else {
+                    res.json({ status: 401, message: 'Unauthorized' });
                 }
-
-                res.json({ status: 401, message: 'Unauthorized' });
             } else {
                 throw new Err(401, null, 'Unauthorized');
             }
-
-
         } catch (err) {
              Err.respond(err, res);
         }
