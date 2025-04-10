@@ -173,9 +173,11 @@ export default async function router(schema: Schema, config: Config) {
 
             if (conn.enabled && !config.conns.has(conn.id)) {
                 await config.conns.add(new MachineConnConfig(config, conn));
-            } else if (!conn.enabled && config.conns.has(conn.id)) {
+            } else if (conn.enabled && config.conns.has(conn.id)) {
                 await config.conns.delete(conn.id);
                 await config.conns.add(new MachineConnConfig(config, conn));
+            } else if (!conn.enabled && config.conns.has(conn.id)) {
+                await config.conns.delete(conn.id);
             }
 
             const { validFrom, validTo, subject } = new X509Certificate(conn.auth.cert);
@@ -269,10 +271,6 @@ export default async function router(schema: Schema, config: Config) {
             if (await config.models.Layer.count({
                 where: sql`connection = ${req.params.connectionid}`
             }) > 0) throw new Err(400, null, 'Connection has active Layers - Delete layers before deleting Connection');
-
-            if (await config.models.ConnectionSink.count({
-                where: sql`connection = ${req.params.connectionid}`
-            }) > 0) throw new Err(400, null, 'Connection has active Sinks - Delete Sinks before deleting Connection');
 
             if (await config.models.Data.count({
                 where: sql`connection = ${req.params.connectionid}`

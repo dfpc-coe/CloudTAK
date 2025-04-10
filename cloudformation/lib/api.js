@@ -168,7 +168,6 @@ export default {
                                 'sqs:DeleteMessage'
                             ],
                             Resource: [
-                                cf.join(['arn:', cf.partition, ':sqs:', cf.region, ':', cf.accountId, ':', cf.getAtt('HookQueue', 'QueueName')]),
                                 cf.join(['arn:', cf.partition, ':sqs:', cf.region, ':', cf.accountId, ':coe-etl-', cf.ref('Environment'), '-layer-*'])
                             ]
                         },{
@@ -438,7 +437,6 @@ export default {
                                 ':5432/tak_ps_etl?sslmode=require'
                             ])
                         },
-                        { Name: 'HookURL', Value: cf.ref('HookQueue') },
                         { Name: 'MediaSecret', Value: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/media:SecretString::AWSCURRENT}}') },
                         { Name: 'SigningSecret', Value: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/secret:SecretString::AWSCURRENT}}') },
                         { Name: 'StackName', Value: cf.stackName },

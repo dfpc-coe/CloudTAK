@@ -83,9 +83,19 @@
                                                     Certificate Valid To
                                                 </div>
                                                 <div
-                                                    class='datagrid-content'
-                                                    v-text='connection.certificate.validTo'
-                                                />
+                                                    class='datagrid-content d-flex'
+                                                    :class='{
+                                                        "rounded bg-red text-white px-2 py-1": new Date(connection.certificate.validTo) < new Date()
+                                                    }'
+                                                >
+                                                    <div v-text='connection.certificate.validTo'/>
+                                                    <div
+                                                        v-if='new Date(connection.certificate.validTo) < new Date()'
+                                                        class='ms-auto'
+                                                    >
+                                                        Expired Certificate
+                                                    </div>
+                                                </div>
                                             </div>
                                             <div class='datagrid-item pb-2'>
                                                 <div class='datagrid-title'>
@@ -178,19 +188,6 @@
                                                 role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
-                                                    "active": route.name === "connection-sinks",
-                                                    "cursor-pointer": route.name !== "connection-sinks"
-                                                }'
-                                                @click='router.push(`/connection/${route.params.connectionid}/sink`)'
-                                            ><IconOutbound
-                                                :size='32'
-                                                stroke='1'
-                                            /><span class='mx-3'>Outbounds Sinks</span></span>
-                                            <span
-                                                tabindex='0'
-                                                role='menuitem'
-                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
-                                                :class='{
                                                     "active": route.name === "connection-videos",
                                                     "cursor-pointer": route.name !== "connection-videos"
                                                 }'
@@ -245,7 +242,6 @@ import {
     IconVideo,
     IconRefresh,
     IconDatabase,
-    IconOutbound,
     IconAffiliate,
     IconPlugConnected,
     IconBuildingBroadcastTower,

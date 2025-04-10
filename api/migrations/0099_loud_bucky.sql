@@ -1,0 +1,1 @@
+DROP TABLE "connection_sinks" CASCADE;

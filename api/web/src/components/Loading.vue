@@ -12,7 +12,7 @@
                                 >
                                     <img
                                         alt='Agency Logo'
-                                        src='/logo.png'
+                                        :src='config && config.logo ? config.logo : "/logo.png"'
                                         style='height: 150px;'
                                     >
                                 </div>
@@ -26,15 +26,17 @@
     </div>
 </template>
 
-<script>
+<script setup lang='ts'>
+import type { LoginConfig } from '../types.ts'
+import { std } from '../std.js';
+import { ref, onMounted } from 'vue'
 import {
     TablerLoading
 } from '@tak-ps/vue-tabler'
 
-export default {
-    name: 'MainLoading',
-    components: {
-        TablerLoading
-    }
-}
+const config = ref<LoginConfig | undefined>();
+
+onMounted(async () => {
+    config.value = await std('/api/config/login') as LoginConfig;
+})
 </script>

@@ -11,6 +11,8 @@ declare module '@openaddresses/cloudfriend' {
     function ref(ref: string): object
     function getAtt(obj: string, att: string): object
     function importValue(val: string): object
+
+    function join(delimiter: string, join: Array<any>)
     function join(join: Array<any>)
 }
 
