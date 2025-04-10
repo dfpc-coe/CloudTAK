@@ -309,31 +309,6 @@
         "query": false,
         "res": true
     },
-    "GET /connection/:connectionid/sink": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "POST /connection/:connectionid/sink": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "PATCH /connection/:connectionid/sink/:sinkid": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "GET /connection/:connectionid/sink/:sinkid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "DELETE /connection/:connectionid/sink/:sinkid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "GET /connection/:connectionid/layer/:layerid/task": {
         "body": false,
         "query": false,
@@ -494,6 +469,51 @@
         "query": true,
         "res": true
     },
+    "POST /import": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PUT /import/:import": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PUT /import": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /import/:import": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PATCH /import/:import": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /import/:import": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /import": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /import/:import/batch": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /import/:import/batch": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /iconset": {
         "body": false,
         "query": true,
@@ -559,51 +579,6 @@
         "query": true,
         "res": false
     },
-    "POST /import": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "PUT /import/:import": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "PUT /import": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /import/:import": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "PATCH /import/:import": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "DELETE /import/:import": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /import": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "POST /import/:import/batch": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /import/:import/batch": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "GET /layer": {
         "body": false,
         "query": true,
@@ -651,6 +626,11 @@
     },
     "POST /ldap/user": {
         "body": true,
+        "query": false,
+        "res": true
+    },
+    "PUT /ldap/user/:email": {
+        "body": false,
         "query": false,
         "res": true
     },

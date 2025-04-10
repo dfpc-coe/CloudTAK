@@ -286,6 +286,41 @@ export const useMapStore = defineStore('cloudtak', {
 
             await this.worker.init(localStorage.token);
 
+            this.channel.onmessage = (event: MessageEvent<WorkerMessage>) => {
+                const msg = event.data;
+
+                if (!msg || !msg.type) return;
+                if (msg.type === WorkerMessageType.Map_FlyTo) {
+                    if (msg.body.options.speed === null) {
+                        msg.body.options.speed = Infinity;
+                    }
+
+                    map.fitBounds(msg.body.bounds, msg.body.options);
+                } else if (msg.type === WorkerMessageType.Profile_Location_Source) {
+                    this.location = msg.body.source as LocationState;
+                } else if (msg.type === WorkerMessageType.Profile_Callsign) {
+                    this.callsign = msg.body.callsign;
+                } else if (msg.type === WorkerMessageType.Profile_Display_Zoom) {
+                    this.zoom = msg.body.zoom;
+                } else if (msg.type === WorkerMessageType.Map_Projection) {
+                    map.setProjection(msg.body);
+                } else if (msg.type === WorkerMessageType.Connection_Open) {
+                    console.error('OPENED MESSAGE')
+                    this.isOpen = true;
+                } else if (msg.type === WorkerMessageType.Connection_Close) {
+                    console.error('CLOSED MESSAGE')
+                    this.isOpen = false;
+                } else if (msg.type === WorkerMessageType.Channels_None) {
+                    this.hasNoChannels = true;
+                } else if (msg.type === WorkerMessageType.Channels_List) {
+                    this.hasNoChannels = false;
+                } else if (msg.type === WorkerMessageType.Notification) {
+                    this.notifications.push(msg.body as TAKNotification);
+                } else if (msg.type === WorkerMessageType.Mission_Change_Feature) {
+                    this.loadMission(msg.body.guid);
+                }
+            }
+
             if ("geolocation" in navigator) {
                 const status = await navigator.permissions
                     .query({ name: "geolocation" })
@@ -388,39 +423,6 @@ export const useMapStore = defineStore('cloudtak', {
 
             this._map = map;
 
-            this.channel.onmessage = (event: MessageEvent<WorkerMessage>) => {
-                const msg = event.data;
-
-                if (!msg || !msg.type) return;
-                if (msg.type === WorkerMessageType.Map_FlyTo) {
-                    if (msg.body.options.speed === null) {
-                        msg.body.options.speed = Infinity;
-                    }
-
-                    map.fitBounds(msg.body.bounds, msg.body.options);
-                } else if (msg.type === WorkerMessageType.Profile_Location_Source) {
-                    this.location = msg.body.source as LocationState;
-                } else if (msg.type === WorkerMessageType.Profile_Callsign) {
-                    this.callsign = msg.body.callsign;
-                } else if (msg.type === WorkerMessageType.Profile_Display_Zoom) {
-                    this.zoom = msg.body.zoom;
-                } else if (msg.type === WorkerMessageType.Map_Projection) {
-                    map.setProjection(msg.body);
-                } else if (msg.type === WorkerMessageType.Connection_Open) {
-                    this.isOpen = true;
-                } else if (msg.type === WorkerMessageType.Connection_Close) {
-                    this.isOpen = false;
-                } else if (msg.type === WorkerMessageType.Channels_None) {
-                    this.hasNoChannels = true;
-                } else if (msg.type === WorkerMessageType.Channels_List) {
-                    this.hasNoChannels = false;
-                } else if (msg.type === WorkerMessageType.Notification) {
-                    this.notifications.push(msg.body as TAKNotification);
-                } else if (msg.type === WorkerMessageType.Mission_Change_Feature) {
-                    this.loadMission(msg.body.guid);
-                }
-            }
-
             // If we missed the Profile_Location_Source make sure it gets synced
             const loc = await this.worker.profile.location;
             this.location = loc.source;
@@ -428,6 +430,8 @@ export const useMapStore = defineStore('cloudtak', {
             const profile = await this.worker.profile.load()
             this.callsign = profile.tak_callsign;
             this.zoom = profile.display_zoom;
+
+            this.isOpen = await this.worker.conn.isOpen;
         },
         initOverlays: async function() {
             if (!this.map) throw new Error('Cannot initLayers before map has loaded');

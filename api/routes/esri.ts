@@ -19,7 +19,6 @@ export default async function router(schema: Schema, config: Config) {
             url: Type.String(),
             username: Type.Optional(Type.String()),
             password: Type.Optional(Type.String()),
-            sinkid: Type.Optional(Type.Integer())
         }),
         res: Type.Object({
             type: Type.Enum(EsriType),
@@ -41,16 +40,6 @@ export default async function router(schema: Schema, config: Config) {
                 url = new URL(req.body.url);
             } catch (err) {
                 throw new Err(400, null, err instanceof Error ? err.message : String(err));
-            }
-
-            if (req.body.sinkid) {
-                const sink = await config.models.ConnectionSink.from(req.body.sinkid);
-                const body = sink.body as {
-                    username: string;
-                    password: string;
-                };
-                req.body.username = body.username;
-                req.body.password = body.password;
             }
 
             let base;

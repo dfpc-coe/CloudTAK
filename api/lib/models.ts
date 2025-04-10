@@ -16,7 +16,6 @@ export default class Models {
     Token: Modeler<typeof pgtypes.Token>;
 
     Connection: Modeler<typeof pgtypes.Connection>;
-    ConnectionSink: Modeler<typeof pgtypes.ConnectionSink>;
     ConnectionToken: Modeler<typeof pgtypes.ConnectionToken>;
 
     Setting: Setting;
@@ -69,7 +68,6 @@ export default class Models {
         this.VideoLease = new Modeler(pg, pgtypes.VideoLease);
         this.Connection = new Modeler(pg, pgtypes.Connection);
         this.ConnectionToken = new Modeler(pg, pgtypes.ConnectionToken);
-        this.ConnectionSink = new Modeler(pg, pgtypes.ConnectionSink);
         this.Task = new Modeler(pg, pgtypes.Task);
         this.Data = new Data(pg);
         this.Iconset = new Modeler(pg, pgtypes.Iconset);

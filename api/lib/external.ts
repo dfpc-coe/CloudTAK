@@ -136,7 +136,6 @@ export default class ExternalProvider {
         const url = new URL(`api/v1/proxy/machine-users`, this.provider.url);
         url.searchParams.append('proxy_user_id', String(uid));
         url.searchParams.append('sequential_email', 'true')
-        url.searchParams.append('sync', 'true')
 
         const req = {
             name: body.name,
@@ -169,6 +168,63 @@ export default class ExternalProvider {
         return user.data;
     }
 
+    async fetchMachineUser(uid: number, email: string): Promise<Static<typeof MachineUser>> {
+        const creds = await this.auth();
+
+        const url = new URL(`api/v1/proxy/machine-users/email/${email}`, this.provider.url);
+        url.searchParams.append('proxy_user_id', String(uid));
+
+        const userres = await fetch(url, {
+            headers: {
+                Accept: 'application/json',
+                "Authorization": `Bearer ${creds.token}`
+            },
+        });
+
+        if (!userres.ok) throw new Err(500, new Error(await userres.text()), 'External Machine User Creation Error');
+
+        const user = await userres.typed(Type.Object({
+            data: MachineUser
+        }))
+
+        return user.data;
+    }
+
+
+    async updateMachineUser(
+        uid: number,
+        mid: number,
+        body: {
+            name?: string;
+            email?: string;
+            active?: boolean;
+            password?: string;
+        }
+    ): Promise<Static<typeof MachineUser>> {
+        const creds = await this.auth();
+
+        const url = new URL(`api/v1/proxy/machine-users/${mid}`, this.provider.url);
+        url.searchParams.append('proxy_user_id', String(uid));
+
+        const userres = await fetch(url, {
+            method: 'PATCH',
+            headers: {
+                Accept: 'application/json',
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${creds.token}`
+            },
+            body: JSON.stringify(body)
+        });
+
+        if (!userres.ok) throw new Err(500, new Error(await userres.text()), 'External Machine User Update Error');
+
+        const user = await userres.typed(Type.Object({
+            data: MachineUser
+        }))
+
+        return user.data;
+    }
+
     async attachMachineUser(uid: number, body: {
         machine_id: number;
         channel_id: number;
@@ -178,7 +234,7 @@ export default class ExternalProvider {
 
         const url = new URL(`api/v1/proxy/channels/${body.channel_id}/machine-users/attach/${body.machine_id}`, this.provider.url);
         url.searchParams.append('proxy_user_id', String(uid));
-        
+
         url.searchParams.append('sync', 'true')
         url.searchParams.append('access_type', body.access)
 

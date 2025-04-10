@@ -1,7 +1,0 @@
-#!/bin/bash
-set -euo pipefail
-
-for TEST in $(ls $(basename $0)/*.test.ts)
-do
-   npx tsx $TEST
-done

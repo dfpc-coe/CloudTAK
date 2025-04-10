@@ -12,6 +12,22 @@
 
 ### Pending Release
 
+### 8.0.0 - 2025-04-09
+
+- :rocket: Remove Connection Sinks in favor of outgoing layers
+- :rocket: Note: Sinks must be migrated manually to etl-arcgis outgoing layer
+
+### v7.33.1 - 2025-04-09
+
+- :bug: Ensure Open Connection status is set in UI on initial load
+- :bug: Ensure Atlas Init cannot be called twice
+
+### v7.33.0 - 2025-04-09
+
+- :tada: Allow COTAK API to update password for Connection Cert reissuance
+- :tada: `UI` Sketch out AtlasTeam manager
+- :bug: Fix TAK Server Connection not getting properly closed when a connection is refreshed
+
 ### v7.32.0 - 2025-04-04
 
 - :bug: Fix KML import failure if KMZ included jpg icons
