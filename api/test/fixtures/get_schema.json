@@ -309,31 +309,6 @@
         "query": false,
         "res": true
     },
-    "GET /connection/:connectionid/sink": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "POST /connection/:connectionid/sink": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "PATCH /connection/:connectionid/sink/:sinkid": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "GET /connection/:connectionid/sink/:sinkid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "DELETE /connection/:connectionid/sink/:sinkid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "GET /connection/:connectionid/layer/:layerid/task": {
         "body": false,
         "query": false,

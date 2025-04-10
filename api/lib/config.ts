@@ -30,7 +30,6 @@ export default class Config {
     nocache: boolean;
     models: Models;
     StackName: string;
-    HookURL?: string;
     SigningSecret: string;
     external?: External;
     UnsafeSigningSecret: string;
@@ -66,7 +65,6 @@ export default class Config {
         server: InferSelectModel<typeof Server>;
         DynamoDB?: string;
         Bucket?: string;
-        HookURL?: string;
     }) {
         this.silent = init.silent;
         this.unsafe = init.unsafe;
@@ -84,7 +82,6 @@ export default class Config {
         this.DynamoDB = init.DynamoDB;
         this.Bucket = init.Bucket;
         this.server = init.server;
-        this.HookURL = init.HookURL;
 
         this.conns = new ConnectionPool(this);
         this.cacher = new Cacher(this.nocache, this.silent);
@@ -110,7 +107,7 @@ export default class Config {
             process.env.AWS_REGION = 'us-east-1';
         }
 
-        let SigningSecret, API_URL, PMTILES_URL, DynamoDB, Bucket, HookURL;
+        let SigningSecret, API_URL, PMTILES_URL, DynamoDB, Bucket;
         if (!process.env.StackName || process.env.StackName === 'test') {
             process.env.StackName = 'test';
 
@@ -122,8 +119,6 @@ export default class Config {
             if (!process.env.StackName) throw new Error('StackName env must be set');
             if (!process.env.API_URL) throw new Error('API_URL env must be set');
             if (!process.env.ASSET_BUCKET) throw new Error('ASSET_BUCKET env must be set');
-
-            HookURL = process.env.HookURL;
 
             const apiUrl = new URL(`http://${process.env.API_URL}`);
             if (apiUrl.hostname === 'localhost') {
@@ -167,7 +162,7 @@ export default class Config {
             nocache: (args.nocache || false),
             StackName: process.env.StackName,
             wsClients: new Map(),
-            server, SigningSecret, API_URL, DynamoDB, Bucket, pg, models, HookURL, PMTILES_URL
+            server, SigningSecret, API_URL, DynamoDB, Bucket, pg, models, PMTILES_URL
         });
 
         if (!config.silent) {

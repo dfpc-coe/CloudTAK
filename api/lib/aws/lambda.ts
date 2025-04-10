@@ -117,6 +117,44 @@ export default class Lambda {
                 }
             };
 
+            stack.Resources.OutgoingDeadQueueBacklogAlarm = {
+                Type: 'AWS::CloudWatch::Alarm',
+                Properties: {
+                    AlarmName: cf.join('-', [cf.stackName, 'outgoing-dead-backlog']),
+                    Namespace: 'AWS/SQS',
+                    MetricName: 'ApproximateNumberOfMessagesVisible',
+                    ComparisonOperator: 'GreaterThanThreshold',
+                    Threshold: 1000,
+                    EvaluationPeriods: 5,
+                    Statistic: 'Maximum',
+                    Period: 60,
+                    AlarmActions: [cf.ref('HighUrgencyAlarmTopic')],
+                    Dimensions: [{
+                        Name: 'QueueName',
+                        Value: cf.getAtt('OutgoingDeadQueue', 'QueueName')
+                    }]
+                }
+            }
+
+            stack.Resources.OutgoingQueueBacklogAlarm = {
+                Type: 'AWS::CloudWatch::Alarm',
+                Properties: {
+                    AlarmName: cf.join('-', [cf.stackName, 'outgoing-backlog']),
+                    Namespace: 'AWS/SQS',
+                    MetricName: 'ApproximateNumberOfMessagesVisible',
+                    ComparisonOperator: 'GreaterThanThreshold',
+                    Threshold: 1000,
+                    EvaluationPeriods: 5,
+                    Statistic: 'Maximum',
+                    Period: 60,
+                    AlarmActions: [cf.ref('HighUrgencyAlarmTopic')],
+                    Dimensions: [{
+                        Name: 'QueueName',
+                        Value: cf.getAtt('OutgoingQueue', 'QueueName')
+                    }]
+                }
+            }
+
             stack.Resources.OutgoingLambdaSource = {
                 Type: 'AWS::Lambda::EventSourceMapping',
                 Properties: {
