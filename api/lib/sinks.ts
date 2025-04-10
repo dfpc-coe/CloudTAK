@@ -1,17 +1,17 @@
 import Config from './config.js';
 import { CoT } from '@tak-ps/node-tak';
-import HookQueue from './aws/hooks.js';
+import Queue from './aws/queue.js';
 import { sql } from 'drizzle-orm';
 import ConnectionConfig from './connection-config.js';
 import SQS from '@aws-sdk/client-sqs';
 
 export default class Sinks {
     config: Config;
-    queue: HookQueue;
+    queue: Queue;
 
     constructor(config: Config) {
         this.config = config;
-        this.queue = new HookQueue();
+        this.queue = new Queue();
     }
 
     async cots(conn: ConnectionConfig, cots: CoT[]): Promise<boolean> {
