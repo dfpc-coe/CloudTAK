@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### 8.0.0 - 2025-04-09
+
+- :rocket: Remove Connection Sinks in favor of outgoing layers
+- :rocket: Note: Sinks must be migrated manually to etl-arcgis outgoing layer
+
 ### v7.33.1 - 2025-04-09
 
 - :bug: Ensure Open Connection status is set in UI on initial load
