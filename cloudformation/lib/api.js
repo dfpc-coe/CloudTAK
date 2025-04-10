@@ -437,8 +437,6 @@ export default {
                                 ':5432/tak_ps_etl?sslmode=require'
                             ])
                         },
-                        { Name: 'MediaSecret', Value: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/media:SecretString::AWSCURRENT}}') },
-                        { Name: 'SigningSecret', Value: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/secret:SecretString::AWSCURRENT}}') },
                         { Name: 'StackName', Value: cf.stackName },
                         { Name: 'ASSET_BUCKET', Value: cf.ref('AssetBucket') },
                         { Name: 'API_URL', Value: cf.ref('HostedURL') },
