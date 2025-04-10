@@ -11,7 +11,7 @@ import { StandardResponse, VideoLeaseResponse } from '../lib/types.js';
 import { VideoLease_SourceType } from '../lib/enums.js';
 import { VideoLease } from '../lib/schema.js'
 import { eq } from 'drizzle-orm';
-import ECSVideoControl, { Action, Protocol, Protocols, PathConfig, PathListItem, ProtocolPopulation } from '../lib/control/video-service.js';
+import ECSVideoControl, { Action, Protocols, PathConfig, PathListItem, ProtocolPopulation } from '../lib/control/video-service.js';
 import * as Default from '../lib/limits.js';
 import TAKAPI, { APIAuthCertificate } from '../lib/tak-api.js';
 
@@ -48,7 +48,7 @@ export default async function router(schema: Schema, config: Config) {
                     } else {
                         res.json({ status: 200, message: 'Authorized' });
                     }
-                } else if (Action.PUBLISH && !lease.strema_user && !lease.stream_pass) {
+                } else if (Action.PUBLISH && !lease.stream_user && !lease.stream_pass) {
                     res.json({ status: 200, message: 'Authorized' });
                 } else if (Action.READ && lease.read_user && lease.read_pass) {
                     if (req.body.user !== lease.read_user) {
@@ -60,7 +60,7 @@ export default async function router(schema: Schema, config: Config) {
                     }
                 } else if (Action.READ && !lease.read_user && !lease.read_pass) {
                     res.json({ status: 200, message: 'Authorized' });
-                } else if (Action.PLAYBACK && !lease.record) {
+                } else if (Action.PLAYBACK && !lease.recording) {
                     throw new Err(401, null, 'Unauthorized - Recording Disabled');
                 } else if (Action.PLAYBACK && lease.read_user && lease.read_pass) {
                     if (req.body.user !== lease.read_user) {
