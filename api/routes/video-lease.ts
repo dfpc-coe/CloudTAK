@@ -28,8 +28,8 @@ export default async function router(schema: Schema, config: Config) {
             ip: Type.String(),
             action: Type.Enum(Action),
             path: Type.String(),
-            protocol: Type.Enum(Protocol),
-            id: Type.String(),
+            protocol: Type.String(),
+            id: Type.Union([Type.Null(), Type.String()]),
             query: Type.String()
         }),
         res: StandardResponse
