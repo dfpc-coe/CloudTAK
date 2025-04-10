@@ -68,6 +68,8 @@
                             <Feature
                                 v-for='cot of path.cots.values()'
                                 :key='cot.id'
+                                :delete-button='true'
+                                :info-button='true'
                                 :feature='cot'
                             />
                         </template>

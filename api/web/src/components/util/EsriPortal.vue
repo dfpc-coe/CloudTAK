@@ -250,9 +250,6 @@ export default {
             type: [URL, String],
             description: 'ArcGIS Server/Layer URL'
         },
-        sinkid: {
-            type: Number
-        },
         username: {
             type: String,
         },
@@ -307,7 +304,9 @@ export default {
         }
     },
     mounted: async function() {
-        if ((this.username && this.password) || this.sinkid) await this.generateToken();
+        if (this.username && this.password) {
+            await this.generateToken();
+        }
     },
     methods: {
         fmtserver: function(content) {
@@ -319,7 +318,6 @@ export default {
                 const body = {
                     username: this.username,
                     password: this.password,
-                    sinkid: this.sinkid,
                     url: this.url || this.server.url
                 }
 

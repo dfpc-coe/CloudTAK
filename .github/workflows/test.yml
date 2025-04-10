@@ -30,32 +30,6 @@ jobs:
       - name: Docker Data Task Test
         run: docker run cloudtak-data:latest npm run test
 
-  hooks:
-    runs-on: ubuntu-latest
-    if: github.event.pull_request.draft == false
-    timeout-minutes: 60
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{github.event.pull_request.head.sha || github.sha}}
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          registry-url: https://registry.npmjs.org/
-
-      - name: Install
-        working-directory: ./tasks/hooks/
-        run: npm install
-
-      - name: Lint
-        working-directory: ./tasks/hooks/
-        run: npm run lint
-
-      - name: Test
-        working-directory: ./tasks/hooks/
-        run: npm test
-
   pmtiles:
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
