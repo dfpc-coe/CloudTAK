@@ -35,19 +35,54 @@ export default async function router(schema: Schema, config: Config) {
         res: StandardResponse
     }, async (req, res) => {
         try {
-            console.error('MEDIAMTX', req.body);
+            if (req.body.user === 'management' && req.body.password === config.MediaSecret) {
+                res.json({ status: 200, message: 'Authorized' });
+            } else if ([Action.PUBLISH, Action.READ, Action.PLAYBACK].includes(req.body.action)) {
+                const lease = await videoControl.from(req.body.path, {
+                    // We want to do the lease check ourselves to allow fetching any lease
+                    admin: true
+                });
 
-            const lease = await videoControl.from(req.body.path, {
-                // We want to do the lease check ourselves to allow fetching any lease
-                admin: true
-            });
+                if (Action.PUBLISH && lease.stream_user && lease.stream_pass) {
+                    if (req.body.user !== lease.stream_user) {
+                        throw new Err(401, null, 'Unauthorized');
+                    } else if (req.body.password !== lease.stream_pass) {
+                        throw new Err(401, null, 'Unauthorized');
+                    } else {
+                        res.json({ status: 200, message: 'Authorized' });
+                    }
+                } else if (Action.PUBLISH && !lease.strema_user && !lease.stream_pass) {
+                    res.json({ status: 200, message: 'Authorized' });
+                } else if (Action.READ && lease.read_user && lease.read_pass) {
+                    if (req.body.user !== lease.read_user) {
+                        throw new Err(401, null, 'Unauthorized');
+                    } else if (req.body.password !== lease.read_pass) {
+                        throw new Err(401, null, 'Unauthorized');
+                    } else {
+                        res.json({ status: 200, message: 'Authorized' });
+                    }
+                } else if (Action.READ && !lease.read_user && !lease.read_pass) {
+                    res.json({ status: 200, message: 'Authorized' });
+                } else if (Action.PLAYBACK && !lease.record) {
+                    throw new Err(401, null, 'Unauthorized - Recording Disabled');
+                } else if (Action.PLAYBACK && lease.read_user && lease.read_pass) {
+                    if (req.body.user !== lease.read_user) {
+                        throw new Err(401, null, 'Unauthorized');
+                    } else if (req.body.password !== lease.read_pass) {
+                        throw new Err(401, null, 'Unauthorized');
+                    } else {
+                        res.json({ status: 200, message: 'Authorized' });
+                    }
+                } else if (Action.PLAYBACK && !lease.read_user && !lease.read_pass) {
+                    res.json({ status: 200, message: 'Authorized' });
+                }
 
-            console.error('LEASE', lease);
+                res.json({ status: 401, message: 'Unauthorized' });
+            } else {
+                throw new Err(401, null, 'Unauthorized');
+            }
 
-            res.json({
-                status: 200,
-                message: 'Authorized'
-            });
+
         } catch (err) {
              Err.respond(err, res);
         }
