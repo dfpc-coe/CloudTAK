@@ -39,6 +39,13 @@ export default async function router(schema: Schema, config: Config) {
 
             console.error('MEDIAMTX', req.body);
 
+            const lease = await videoControl.from(req.body.path, {
+                // We want to do the lease check ourselves to allow fetching any lease
+                admin: true
+            });
+
+            console.error('LEASE', lease);
+
             res.json({
                 status: 200,
                 message: 'Authorized'
