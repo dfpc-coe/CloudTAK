@@ -35,8 +35,6 @@ export default async function router(schema: Schema, config: Config) {
         res: StandardResponse
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req);
-
             console.error('MEDIAMTX', req.body);
 
             const lease = await videoControl.from(req.body.path, {
