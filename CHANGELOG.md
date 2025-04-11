@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### 8.3.1 - 2025-04-10
+
+- :bug: Include permanent leases when `expired=false` on VideoLease API
+
 ### 8.3.0 - 2025-04-10
 
 - :rocket: Add AllBoolean to expired query param on VideoLease
