@@ -24,6 +24,12 @@ export enum AllBoolean {
     ALL = 'all'
 }
 
+export function AllBooleanCast(allBoolean: AllBoolean): boolean | null {
+    return allBoolean === AllBoolean.TRUE
+        ? true
+        : allBoolean === AllBoolean.FALSE ? false : null;
+}
+
 export enum BasicGeometryType {
     POINT = 'Point',
     LINESTRING = 'LineString',

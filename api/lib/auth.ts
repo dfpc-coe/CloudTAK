@@ -30,6 +30,7 @@ export enum AuthResourceAccess {
     DATA = 'data',
     LAYER = 'layer',
     IMPORT = 'import',
+    LEASE = 'lease',
     CONNECTION = 'connection'
 }
 
@@ -62,15 +63,19 @@ export class AuthUser {
     email: string;
 
     // Username of admin doing the impersonating - if this value is populated the calling user is guarenteed to be an admin
-    impersonate?: string; 
+    impersonate?: string;
 
     constructor(access: AuthUserAccess, email: string) {
         this.access = access;
         this.email = email;
     }
 
-    is_user() {
-        return this.email && this.email.length;
+    is_admin(): boolean {
+        return this.access === AuthUserAccess.ADMIN
+    }
+
+    is_user(): boolean {
+        return !!(this.email && this.email.length);
     }
 }
 
