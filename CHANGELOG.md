@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### 8.1.0 - 2025-04-10
+
+- :tada: Handle MediaMTX Auth requests on `/api/video/auth` when `authMethod: internal` is set in MediaMTX
+
 ### 8.0.0 - 2025-04-09
 
 - :rocket: Remove Connection Sinks in favor of outgoing layers
