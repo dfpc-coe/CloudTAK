@@ -106,13 +106,13 @@ export default class COT {
         }
 
         if (this._remote) {
-            const atlas = this._atlas as Remote<Atlas>;
-
             // The sync BroadcastChannel will post a message anytime the underlying
             // Atlas database has a COT update, resulting in a sync with the frontend
             this._remote.onmessage = async (ev) => {
                 if (ev.data.id === this.id) {
                     if (feat) {
+                        this.path = ev.data.path;
+                        this.origin = ev.data.origin;
                         Object.assign(this._properties, ev.data.properties);
                         Object.assign(this._geometry, ev.data.geometry);
                     }
