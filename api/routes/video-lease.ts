@@ -2,7 +2,7 @@ import { Type } from '@sinclair/typebox'
 import moment from 'moment';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
-import Auth, { AuthUserAccess } from '../lib/auth.js';
+import Auth, { AuthUserAccess, AuthUser, AuthResource, AuthResourceAccess } from '../lib/auth.js';
 import Config from '../lib/config.js';
 import { sql } from 'drizzle-orm';
 import { Token } from '../lib/schema.js';
@@ -206,12 +206,14 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
+            const auth = await Auth.is_auth(config, req, {
+                resources: [ { access: AuthResourceAccess.LEASE, id: undefined } ]
+            })
+
             const ephemeral = AllBooleanCast(req.query.ephemeral);
             const expired = AllBooleanCast(req.query.expired)
 
-            if (req.query.impersonate) {
-                await Auth.as_user(config, req, { admin: true });
-
+            if (req.query.impersonate && (auth instanceof AuthResource || (auth instanceof AuthUser && (auth as AuthUser).is_admin()))) {
                 const impersonate: string | null = req.query.impersonate === true ? null : req.query.impersonate;
 
                 res.json(await config.models.VideoLease.list({
