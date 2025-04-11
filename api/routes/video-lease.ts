@@ -8,7 +8,7 @@ import { sql } from 'drizzle-orm';
 import { Token } from '../lib/schema.js';
 import { randomUUID } from 'node:crypto';
 import { StandardResponse, VideoLeaseResponse } from '../lib/types.js';
-import { VideoLease_SourceType } from '../lib/enums.js';
+import { VideoLease_SourceType, AllBoolean } from '../lib/enums.js';
 import { VideoLease } from '../lib/schema.js'
 import { eq } from 'drizzle-orm';
 import ECSVideoControl, { Action, Protocols, PathConfig, PathListItem, ProtocolPopulation } from '../lib/control/video-service.js';
@@ -192,7 +192,9 @@ export default async function router(schema: Schema, config: Config) {
             page: Default.Page,
             order: Default.Order,
             sort: Type.Optional(Type.String({ default: 'created', enum: Object.keys(Token) })),
-            ephemeral: Type.Optional(Type.Boolean({ default: false })),
+            ephemeral: Type.Enum(AllBoolean, {
+                default: AllBoolean.FALSE
+            }),
             filter: Default.Filter
         }),
         res: Type.Object({
@@ -201,6 +203,12 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
+            const ephemeral = req.query.ephemeral === AllBoolean.TRUE
+                ? true
+                : req.query.ephemeral === AllBoolean.FALSE
+                ? false
+                : null;
+
             if (req.query.impersonate) {
                 await Auth.as_user(config, req, { admin: true });
 
@@ -213,7 +221,7 @@ export default async function router(schema: Schema, config: Config) {
                     sort: req.query.sort,
                     where: sql`
                         name ~* ${req.query.filter}
-                        AND ephemeral = ${req.query.ephemeral}
+                        AND (${ephemeral}::BOOLEAN IS NULL OR ephemeral = ${ephemeral})
                         AND (${impersonate}::TEXT IS NULL OR username = ${impersonate}::TEXT)
                     `
                 }));
@@ -234,7 +242,7 @@ export default async function router(schema: Schema, config: Config) {
                     where: sql`
                         name ~* ${req.query.filter}
                         AND (username = ${user.email} OR channel IN ${groups})
-                        AND ephemeral = ${req.query.ephemeral}
+                        AND (${ephemeral}::BOOLEAN IS NULL OR ephemeral = ${ephemeral})
                     `
                 }));
             }
