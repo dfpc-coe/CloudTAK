@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### 8.3.3 - 2025-04-11
+
+- :bug: Allow Null value in CreatorUID in Package List API
+
 ### 8.3.2 - 2025-04-10
 
 - :bug: Update DockerCompose with new EnvVars for MediaServer

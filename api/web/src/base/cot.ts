@@ -114,8 +114,8 @@ export default class COT {
                 if (ev.data === `cot:${this.id}`) {
                     const feat = await atlas.db.get(this.id)
                     if (feat) {
-                        this._properties = feat.properties;
-                        this._geometry = feat.geometry;
+                        Object.assign(this._properties, feat.properties);
+                        Object.assign(this._geometry, feat.geometry);
                     }
                 }
             };
