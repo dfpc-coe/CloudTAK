@@ -12,9 +12,14 @@
 
 ### Pending Release
 
+### 8.3.0 - 2025-04-10
+
+- :rocket: Add AllBoolean to expired query param on VideoLease
+- :rocket: Implement `lease` AuthResource type on API tokens
+
 ### 8.2.0 - 2025-04-10
 
-- :rocket: Add AllBoolean to ephemeral param on VideoLease
+- :rocket: Add AllBoolean to ephemeral query param on VideoLease
 
 ### 8.1.0 - 2025-04-10
 
