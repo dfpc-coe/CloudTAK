@@ -226,8 +226,8 @@ export default async function router(schema: Schema, config: Config) {
                         AND (${ephemeral}::BOOLEAN IS NULL OR ephemeral = ${ephemeral})
                         AND (
                             ${expired}::BOOLEAN IS NULL
-                            OR (${expired}::BOOLEAN IS True AND expiration > Now())
-                            OR (${expired}::BOOLEAN IS False AND expiration < Now())
+                            OR (${expired}::BOOLEAN IS True AND expiration < Now())
+                            OR (${expired}::BOOLEAN IS False AND expiration > Now())
                         )
                         AND (${impersonate}::TEXT IS NULL OR username = ${impersonate}::TEXT)
                     `
