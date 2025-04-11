@@ -18,6 +18,12 @@ export class toEnum {
     }
 }
 
+export enum AllBoolean {
+    TRUE = 'true',
+    FALSE = 'false',
+    ALL = 'all'
+}
+
 export enum BasicGeometryType {
     POINT = 'Point',
     LINESTRING = 'LineString',
