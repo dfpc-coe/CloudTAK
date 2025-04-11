@@ -40,11 +40,11 @@ export default class Subscription {
         logs: Array<MissionLog>,
         opts?: {
             token?: string,
-            remote?: BroadcastChannel | null
+            remote?: boolean
         }
     ) {
         this._atlas = atlas;
-        this._remote = (opts && opts.remote !== undefined) ? opts.remote : null;
+        this._remote = (opts && opts.remote === true) ? new BroadcastChannel('sync') : null
 
         this.meta = mission;
         this.role = role;
