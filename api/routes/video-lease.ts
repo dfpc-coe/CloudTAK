@@ -2,13 +2,13 @@ import { Type } from '@sinclair/typebox'
 import moment from 'moment';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
-import Auth, { AuthUserAccess } from '../lib/auth.js';
+import Auth, { AuthUserAccess, AuthUser, AuthResource, AuthResourceAccess } from '../lib/auth.js';
 import Config from '../lib/config.js';
 import { sql } from 'drizzle-orm';
 import { Token } from '../lib/schema.js';
 import { randomUUID } from 'node:crypto';
 import { StandardResponse, VideoLeaseResponse } from '../lib/types.js';
-import { VideoLease_SourceType, AllBoolean } from '../lib/enums.js';
+import { VideoLease_SourceType, AllBoolean, AllBooleanCast } from '../lib/enums.js';
 import { VideoLease } from '../lib/schema.js'
 import { eq } from 'drizzle-orm';
 import ECSVideoControl, { Action, Protocols, PathConfig, PathListItem, ProtocolPopulation } from '../lib/control/video-service.js';
@@ -192,6 +192,9 @@ export default async function router(schema: Schema, config: Config) {
             page: Default.Page,
             order: Default.Order,
             sort: Type.Optional(Type.String({ default: 'created', enum: Object.keys(Token) })),
+            expired: Type.Enum(AllBoolean, {
+                default: AllBoolean.FALSE
+            }),
             ephemeral: Type.Enum(AllBoolean, {
                 default: AllBoolean.FALSE
             }),
@@ -203,15 +206,14 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            const ephemeral = req.query.ephemeral === AllBoolean.TRUE
-                ? true
-                : req.query.ephemeral === AllBoolean.FALSE
-                ? false
-                : null;
+            const auth = await Auth.is_auth(config, req, {
+                resources: [ { access: AuthResourceAccess.LEASE, id: undefined } ]
+            })
 
-            if (req.query.impersonate) {
-                await Auth.as_user(config, req, { admin: true });
+            const ephemeral = AllBooleanCast(req.query.ephemeral);
+            const expired = AllBooleanCast(req.query.expired)
 
+            if (req.query.impersonate && (auth instanceof AuthResource || (auth instanceof AuthUser && (auth as AuthUser).is_admin()))) {
                 const impersonate: string | null = req.query.impersonate === true ? null : req.query.impersonate;
 
                 res.json(await config.models.VideoLease.list({
@@ -222,6 +224,11 @@ export default async function router(schema: Schema, config: Config) {
                     where: sql`
                         name ~* ${req.query.filter}
                         AND (${ephemeral}::BOOLEAN IS NULL OR ephemeral = ${ephemeral})
+                        AND (
+                            ${expired}::BOOLEAN IS NULL
+                            OR (${expired}::BOOLEAN IS True AND expiration < Now())
+                            OR (${expired}::BOOLEAN IS False AND expiration > Now())
+                        )
                         AND (${impersonate}::TEXT IS NULL OR username = ${impersonate}::TEXT)
                     `
                 }));
@@ -243,6 +250,11 @@ export default async function router(schema: Schema, config: Config) {
                         name ~* ${req.query.filter}
                         AND (username = ${user.email} OR channel IN ${groups})
                         AND (${ephemeral}::BOOLEAN IS NULL OR ephemeral = ${ephemeral})
+                        AND (
+                            ${expired}::BOOLEAN IS NULL
+                            OR (${expired}::BOOLEAN IS True AND expiration < Now())
+                            OR (${expired}::BOOLEAN IS False AND expiration > Now())
+                        )
                     `
                 }));
             }
