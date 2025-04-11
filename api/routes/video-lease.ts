@@ -203,7 +203,11 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            const ephemeral = req.query.ephemeral === AllBoolean.ALL ? null : Boolean(req.query.ephemeral);
+            const ephemeral = req.query.ephemeral === AllBoolean.TRUE
+                ? true
+                : req.query.ephemeral === AllBoolean.FALSE
+                ? false
+                : null;
 
             if (req.query.impersonate) {
                 await Auth.as_user(config, req, { admin: true });
