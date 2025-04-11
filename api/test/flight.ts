@@ -223,7 +223,6 @@ export default class Flight {
             this.config = await Config.env({
                 postgres: process.env.POSTGRES || 'postgres://postgres@localhost:5432/tak_ps_etl_test',
                 silent: true,
-                unsafe: true,
                 noevents: true,
                 nosinks: true,
                 nocache: true

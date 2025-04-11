@@ -12,6 +12,23 @@ export enum ProtocolPopulation {
     READ
 }
 
+export enum Protocol {
+    RTSP = "rtsp",
+    RTML = "rtmp",
+    HLS = "hls",
+    WEBRTC = "webrtc",
+    SRT = "srt",
+}
+
+export enum Action {
+    PUBLISH = "publish",
+    READ = "read",
+    PLAYBACK = "playback",
+    API = "api",
+    METRICS = "metrics",
+    PPROF = "pprof",
+}
+
 export const Protocols = Type.Object({
     rtmp: Type.Optional(Type.Object({
         name: Type.String(),
@@ -35,16 +52,6 @@ export const Protocols = Type.Object({
     }))
 })
 
-export const AuthInternalUser = Type.Object({
-    user: Type.String(),
-    pass: Type.Optional(Type.String()),
-    ips: Type.Optional(Type.Array(Type.String())),
-    permissions: Type.Array(Type.Object({
-        action: Type.String(),
-        path: Type.Optional(Type.String())
-    }))
-})
-
 export const VideoConfigUpdate = Type.Object({
     api: Type.Optional(Type.Boolean()),
     metrics: Type.Optional(Type.Boolean()),
@@ -55,8 +62,6 @@ export const VideoConfigUpdate = Type.Object({
     hls: Type.Optional(Type.Boolean()),
     webrtc: Type.Optional(Type.Boolean()),
     srt: Type.Optional(Type.Boolean()),
-
-    authInternalUsers: Type.Optional(Type.Array(AuthInternalUser)),
 })
 
 export const VideoConfig = Type.Object({
@@ -89,8 +94,6 @@ export const VideoConfig = Type.Object({
 
     srt: Type.Boolean(),
     srtAddress: Type.String(),
-
-    authInternalUsers: Type.Array(AuthInternalUser)
 })
 
 export const PathConfig = Type.Object({
@@ -181,12 +184,10 @@ export default class VideoServiceControl {
         username?: string;
         password?: string;
     }> {
-        let video, user, pass;
+        let video;
 
         try {
             video = await this.config.models.Setting.from('media::url');
-            user = await this.config.models.Setting.from('media::username');
-            pass = await this.config.models.Setting.from('media::password');
         } catch (err) {
             if (err instanceof Error && err.message.includes('Not Found')) {
                 return {
@@ -200,8 +201,8 @@ export default class VideoServiceControl {
         return {
             configured: true,
             url: typeof video.value === 'string' ? video.value : '',
-            username: typeof user.value === 'string' ? user.value : '',
-            password: typeof pass.value === 'string' ? pass.value : ''
+            username: 'management',
+            password: this.config.MediaSecret
         }
     }
 
@@ -383,49 +384,6 @@ export default class VideoServiceControl {
                 read_pass: null
             });
         }
-
-        const defaultUser: Static<typeof AuthInternalUser> = {
-            user: 'any',
-            pass: '',
-            permissions: []
-        };
-
-        const authInternalUsers: Array<Static<typeof AuthInternalUser>> = [];
-        for await (const lease of this.config.models.VideoLease.iter()) {
-            if (lease.stream_user && lease.stream_pass && lease.read_user && lease.read_pass) {
-                authInternalUsers.push({
-                    user: lease.stream_user,
-                    pass: lease.stream_pass,
-                    permissions: [{ action: 'publish', path: lease.path }]
-                });
-
-                authInternalUsers.push({
-                    user: lease.read_user,
-                    pass: lease.read_pass,
-                    permissions: [{ action: 'read', path: lease.path }]
-                })
-            } else {
-                defaultUser.permissions.push({ action: 'read', path: lease.path });
-                defaultUser.permissions.push({ action: 'publish', path: lease.path });
-            }
-        }
-
-        authInternalUsers.push(defaultUser);
-
-        authInternalUsers.push({
-            user: video.username,
-            pass: video.password,
-            permissions: [
-                { action: 'publish' },
-                { action: 'read' },
-                { action: 'playback' },
-                { action: 'api' },
-                { action: 'metrics' },
-                { action: 'pprof' }
-            ]
-        })
-
-        await this.configure({ authInternalUsers })
     }
 
     async generate(opts: {

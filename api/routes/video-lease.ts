@@ -11,12 +11,77 @@ import { StandardResponse, VideoLeaseResponse } from '../lib/types.js';
 import { VideoLease_SourceType } from '../lib/enums.js';
 import { VideoLease } from '../lib/schema.js'
 import { eq } from 'drizzle-orm';
-import ECSVideoControl, { Protocols, PathConfig, PathListItem, ProtocolPopulation } from '../lib/control/video-service.js';
+import ECSVideoControl, { Action, Protocols, PathConfig, PathListItem, ProtocolPopulation } from '../lib/control/video-service.js';
 import * as Default from '../lib/limits.js';
 import TAKAPI, { APIAuthCertificate } from '../lib/tak-api.js';
 
 export default async function router(schema: Schema, config: Config) {
     const videoControl = new ECSVideoControl(config);
+
+    await schema.post('/video/auth', {
+        name: 'Auth Lease',
+        group: 'VideoLease',
+        description: `Authenticate a request to view a lease`,
+        body: Type.Object({
+            user: Type.String(),
+            password: Type.String(),
+            ip: Type.String(),
+            action: Type.Enum(Action),
+            path: Type.String(),
+            protocol: Type.String(),
+            id: Type.Union([Type.Null(), Type.String()]),
+            query: Type.String()
+        }),
+        res: StandardResponse
+    }, async (req, res) => {
+        try {
+            if (req.body.user === 'management' && req.body.password === config.MediaSecret) {
+                res.json({ status: 200, message: 'Authorized' });
+            } else if ([Action.PUBLISH, Action.READ, Action.PLAYBACK].includes(req.body.action)) {
+                const lease = await config.models.VideoLease.from(eq(VideoLease.path, req.body.path))
+
+                if (Action.PUBLISH && lease.stream_user && lease.stream_pass) {
+                    if (req.body.user !== lease.stream_user) {
+                        throw new Err(401, null, 'Unauthorized');
+                    } else if (req.body.password !== lease.stream_pass) {
+                        throw new Err(401, null, 'Unauthorized');
+                    } else {
+                        res.json({ status: 200, message: 'Authorized' });
+                    }
+                } else if (Action.PUBLISH && !lease.stream_user && !lease.stream_pass) {
+                    res.json({ status: 200, message: 'Authorized' });
+                } else if (Action.READ && lease.read_user && lease.read_pass) {
+                    if (req.body.user !== lease.read_user) {
+                        throw new Err(401, null, 'Unauthorized');
+                    } else if (req.body.password !== lease.read_pass) {
+                        throw new Err(401, null, 'Unauthorized');
+                    } else {
+                        res.json({ status: 200, message: 'Authorized' });
+                    }
+                } else if (Action.READ && !lease.read_user && !lease.read_pass) {
+                    res.json({ status: 200, message: 'Authorized' });
+                } else if (Action.PLAYBACK && !lease.recording) {
+                    throw new Err(401, null, 'Unauthorized - Recording Disabled');
+                } else if (Action.PLAYBACK && lease.read_user && lease.read_pass) {
+                    if (req.body.user !== lease.read_user) {
+                        throw new Err(401, null, 'Unauthorized');
+                    } else if (req.body.password !== lease.read_pass) {
+                        throw new Err(401, null, 'Unauthorized');
+                    } else {
+                        res.json({ status: 200, message: 'Authorized' });
+                    }
+                } else if (Action.PLAYBACK && !lease.read_user && !lease.read_pass) {
+                    res.json({ status: 200, message: 'Authorized' });
+                } else {
+                    res.json({ status: 401, message: 'Unauthorized' });
+                }
+            } else {
+                throw new Err(401, null, 'Unauthorized');
+            }
+        } catch (err) {
+             Err.respond(err, res);
+        }
+    });
 
     await schema.get('/video/active', {
         name: 'Active Lease',

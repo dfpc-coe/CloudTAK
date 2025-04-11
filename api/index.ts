@@ -20,7 +20,6 @@ const args = minimist(process.argv, {
     boolean: [
         'silent',   // Turn off logging as much as possible
         'nocache',  // Ignore MemCached
-        'unsafe',   // Allow unsecure local dev creds
         'noevents', // Disable Initialization of Second Level Events
         'nosinks',  // Disable Push to Sinks
     ],
@@ -53,7 +52,6 @@ process.on('uncaughtExceptionMonitor', (exception, origin) => {
 if (import.meta.url === `file://${process.argv[1]}`) {
     const config = await Config.env({
         silent: args.silent || false,
-        unsafe: args.unsafe || false,
         noevents: args.noevents || false,
         postgres: process.env.POSTGRES || args.postgres || 'postgres://postgres@localhost:5432/tak_ps_etl',
         nosinks: args.nosinks || false,
