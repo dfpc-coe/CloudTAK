@@ -45,6 +45,8 @@ export default class COT {
     id: string;
     path: string;
 
+    instance: string;
+
     _properties: Feature["properties"];
     _geometry: Feature["geometry"];
 
@@ -78,6 +80,8 @@ export default class COT {
 
         this._remote = (opts && opts.remote === true) ? new BroadcastChannel('sync') : null
         this._atlas = atlas;
+
+        this.instance = this._remote ? `remote:${crypto.randomUUID()}` : `db:${crypto.randomUUID()}`
 
         this.origin = origin || { mode: OriginMode.CONNECTION };
 
