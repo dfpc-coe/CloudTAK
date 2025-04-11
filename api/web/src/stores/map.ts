@@ -87,7 +87,7 @@ export const useMapStore = defineStore('cloudtak', {
         new CloudTAKTransferHandler(
             worker,
             Comlink.transferHandlers,
-            new BroadcastChannel('sync')
+            true
         );
 
         return {
