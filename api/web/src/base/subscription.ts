@@ -80,7 +80,14 @@ export default class Subscription {
     }
 
     async updateLogs(): Promise<void> {
-        const logs = await Subscription.logList(this.meta.guid);
+        if (this._remote) return;
+
+        const atlas = this._atlas as Atlas;
+
+        const logs = await Subscription.logList(this.meta.guid, {
+            missionToken: this.token,
+            token: atlas.token
+        });
         this.logs.splice(0, this.logs.length, ...logs.items);
     }
 
@@ -186,9 +193,16 @@ export default class Subscription {
         return res.data
     }
 
-    static async featList(guid: string, token?: string): Promise<FeatureCollection> {
+    static async featList(
+        guid: string,
+        opts: {
+            token?: string
+            missionToken?: string
+        } = {}
+    ): Promise<FeatureCollection> {
         return await std('/api/marti/missions/' + encodeURIComponent(guid) + '/cot', {
-            headers: Subscription.headers(token)
+            token: opts.token,
+            headers: Subscription.headers(opts.missionToken)
         }) as FeatureCollection;
     }
 
@@ -226,12 +240,19 @@ export default class Subscription {
         return;
     }
 
-    static async logList(guid: string, token?: string): Promise<MissionLogList> {
+    static async logList(
+        guid: string,
+        opts: {
+            token?: string
+            missionToken?: string
+        }  = {}
+    ): Promise<MissionLogList> {
         const url = stdurl('/api/marti/missions/' + encodeURIComponent(guid) + '/log');
 
         const list = await std(url, {
             method: 'GET',
-            headers: Subscription.headers(token)
+            token: opts.token,
+            headers: Subscription.headers(opts.missionToken)
         }) as MissionLogList;
 
         list.items = list.items.map((l) => {
@@ -242,12 +263,19 @@ export default class Subscription {
         return list;
     }
 
-    static async layerList(guid: string, token?: string): Promise<MissionLayerList> {
+    static async layerList(
+        guid: string,
+        opts: {
+            token?: string
+            missionToken?: string
+        } = {}
+    ): Promise<MissionLayerList> {
         const url = stdurl(`/api/marti/missions/${encodeURIComponent(guid)}/layer`);
 
         return await std(url, {
             method: 'GET',
-            headers: Subscription.headers(token)
+            token: opts.token,
+            headers: Subscription.headers(opts.missionToken)
         }) as MissionLayerList;
     }
 
