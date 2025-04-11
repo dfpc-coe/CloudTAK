@@ -197,7 +197,9 @@ const filteredLogs: ComputedRef<Array<MissionLog>> = computed(() => {
 
 async function fetchLogs() {
     loading.value.logs = true;
-    logs.value = (await Subscription.logList(props.mission.guid, props.token)).items;
+    logs.value = (await Subscription.logList(props.mission.guid, {
+        missionToken: props.token
+    })).items;
     loading.value.logs = false;
 }
 
