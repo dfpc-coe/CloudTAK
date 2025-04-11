@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### 8.3.2 - 2025-04-10
+
+- :bug: Update DockerCompose with new EnvVars for MediaServer
+
 ### 8.3.1 - 2025-04-10
 
 - :bug: Include permanent leases when `expired=false` on VideoLease API
