@@ -16,7 +16,6 @@ import * as pgtypes from './schema.js';
 interface ConfigArgs {
     silent: boolean,
     postgres: string,
-    unsafe: boolean,
     noevents: boolean,
     nosinks: boolean,
     nocache: boolean,
@@ -24,15 +23,14 @@ interface ConfigArgs {
 
 export default class Config {
     silent: boolean;
-    unsafe: boolean;
     noevents: boolean;
     nosinks: boolean;
     nocache: boolean;
     models: Models;
     StackName: string;
     SigningSecret: string;
+    MediaSecret: string;
     external?: External;
-    UnsafeSigningSecret: string;
     API_URL: string;
     PMTILES_URL: string;
     DynamoDB?: string;
@@ -51,7 +49,6 @@ export default class Config {
 
     constructor(init: {
         silent: boolean;
-        unsafe: boolean;
         noevents: boolean;
         nosinks: boolean;
         nocache: boolean;
@@ -59,6 +56,7 @@ export default class Config {
         StackName: string;
         API_URL: string;
         PMTILES_URL: string;
+        MediaSecret: string;
         SigningSecret: string;
         wsClients: Map<string, ConnectionWebSocket[]>;
         pg: Pool<typeof pgtypes>;
@@ -67,13 +65,12 @@ export default class Config {
         Bucket?: string;
     }) {
         this.silent = init.silent;
-        this.unsafe = init.unsafe;
         this.noevents = init.noevents;
         this.nosinks = init.nosinks;
         this.nocache = init.nocache;
         this.models = init.models;
         this.StackName = init.StackName;
-        this.UnsafeSigningSecret = 'coe-wildland-fire';
+        this.MediaSecret = init.MediaSecret;
         this.SigningSecret = init.SigningSecret;
         this.API_URL = init.API_URL;
         this.PMTILES_URL = init.PMTILES_URL;
@@ -107,11 +104,12 @@ export default class Config {
             process.env.AWS_REGION = 'us-east-1';
         }
 
-        let SigningSecret, API_URL, PMTILES_URL, DynamoDB, Bucket;
+        let SigningSecret, MediaSecret, API_URL, PMTILES_URL, DynamoDB, Bucket;
         if (!process.env.StackName || process.env.StackName === 'test') {
             process.env.StackName = 'test';
 
             SigningSecret = process.env.SigningSecret || 'coe-wildland-fire';
+            MediaSecret = process.env.SigningSecret || 'coe-wildland-fire-video';
             Bucket = process.env.ASSET_BUCKET;
             API_URL = process.env.API_URL || 'http://localhost:5001';
             PMTILES_URL = process.env.PMTILES_URL || 'http://localhost:5001';
@@ -131,7 +129,8 @@ export default class Config {
 
             Bucket = process.env.ASSET_BUCKET;
             DynamoDB = process.env.StackName;
-            SigningSecret = await Config.fetchSigningSecret(process.env.StackName);
+            SigningSecret = await Config.fetchSecret(process.env.StackName, 'secret');
+            MediaSecret = await Config.fetchSecret(process.env.StackName, 'media');
         }
 
         const pg: Pool<typeof pgtypes> = await Pool.connect(args.postgres, pgtypes, {
@@ -155,14 +154,13 @@ export default class Config {
         }
 
         const config = new Config({
-            unsafe: (args.unsafe || false),
             silent: (args.silent || false),
             noevents: (args.noevents || false),
             nosinks: (args.nosinks || false),
             nocache: (args.nocache || false),
             StackName: process.env.StackName,
             wsClients: new Map(),
-            server, SigningSecret, API_URL, DynamoDB, Bucket, pg, models, PMTILES_URL
+            server, SigningSecret, MediaSecret, API_URL, DynamoDB, Bucket, pg, models, PMTILES_URL
         });
 
         if (!config.silent) {
@@ -218,11 +216,14 @@ export default class Config {
         }
     }
 
-    static async fetchSigningSecret(StackName: string): Promise<string> {
+    static async fetchSecret(
+        StackName: string,
+        Secret: string
+    ): Promise<string> {
         const secrets = new SecretsManager.SecretsManagerClient({ region: process.env.AWS_REGION });
 
         const secret = await secrets.send(new SecretsManager.GetSecretValueCommand({
-            SecretId: `${StackName}/api/secret`
+            SecretId: `${StackName}/api/${Secret}`
         }));
 
         return secret.SecretString || '';

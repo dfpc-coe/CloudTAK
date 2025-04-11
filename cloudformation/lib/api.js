@@ -405,7 +405,7 @@ export default {
         },
         TaskDefinition: {
             Type: 'AWS::ECS::TaskDefinition',
-            DependsOn: ['SigningSecret'],
+            DependsOn: ['SigningSecret', 'MediaSecret'],
             Properties: {
                 Family: cf.stackName,
                 Cpu: 1024 * 1,
@@ -437,7 +437,6 @@ export default {
                                 ':5432/tak_ps_etl?sslmode=require'
                             ])
                         },
-                        { Name: 'SigningSecret', Value: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/secret:SecretString::AWSCURRENT}}') },
                         { Name: 'StackName', Value: cf.stackName },
                         { Name: 'ASSET_BUCKET', Value: cf.ref('AssetBucket') },
                         { Name: 'API_URL', Value: cf.ref('HostedURL') },
