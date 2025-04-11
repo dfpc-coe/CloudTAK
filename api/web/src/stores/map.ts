@@ -21,7 +21,7 @@ import mapgl from 'maplibre-gl'
 import * as terraDraw from 'terra-draw';
 import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 import type Atlas from '../workers/atlas.ts';
-import { CloudTAKTransferHandler } from '../workers/atlas.ts';
+import { CloudTAKTransferHandler } from '../base/handler.ts';
 
 import type { ProfileOverlay, Basemap, APIList, Feature, IconsetList } from '../types.ts';
 import type { Polygon, Position } from 'geojson';
