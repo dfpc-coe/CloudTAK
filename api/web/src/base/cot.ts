@@ -76,7 +76,7 @@ export default class COT {
         this._properties = feat["properties"] || {};
         this._geometry = feat["geometry"];
 
-        this._remote = (opts && opts.remote !== undefined) ? opts.remote : null;
+        this._remote = (opts && opts.remote !== undefined) ? new BroadcastChannel('sync') : null
         this._atlas = atlas;
 
         this.origin = origin || { mode: OriginMode.CONNECTION };
@@ -111,11 +111,10 @@ export default class COT {
             // The sync BroadcastChannel will post a message anytime the underlying
             // Atlas database has a COT update, resulting in a sync with the frontend
             this._remote.onmessage = async (ev) => {
-                if (ev.data === `cot:${this.id}`) {
-                    const feat = await atlas.db.get(this.id)
+                if (ev.data.id === this.id) {
                     if (feat) {
-                        Object.assign(this._properties, feat.properties);
-                        Object.assign(this._geometry, feat.geometry);
+                        Object.assign(this._properties, ev.data.properties);
+                        Object.assign(this._geometry, ev.data.geometry);
                     }
                 }
             };
@@ -194,7 +193,7 @@ export default class COT {
                 atlas.db.pendingUpdate.set(this.id, this);
             }
 
-            atlas.sync.postMessage(`cot:${this.id}`);
+            atlas.sync.postMessage(this.as_feature());
 
             if (this.is_self) {
                 const getProfile = await atlas.profile.profile;

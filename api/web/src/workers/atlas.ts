@@ -22,15 +22,15 @@ import type {
 
 export class CloudTAKTransferHandler {
     atlas: Atlas | Remote<Atlas>;
-    sync: BroadcastChannel | null;
+    remote: boolean;
 
     constructor(
         atlas: Atlas | Remote<Atlas>,
         transferHandlers: Map<string, TransferHandler<unknown, unknown>>,
-        sync?: BroadcastChannel
+        remote: boolean
     ) {
         this.atlas = atlas;
-        this.sync = sync || null;
+        this.remote = remote;
 
         transferHandlers.set("cot", this.cot);
         transferHandlers.set("cots", this.cots);
@@ -74,13 +74,13 @@ export class CloudTAKTransferHandler {
                 ser.logs,
                 {
                     token: ser.token,
-                    remote: this.sync ? this.sync : null
+                    remote: this.remote
                 }
             );
 
             for (const feat of ser.feats) {
                 const cot = new COT(this.atlas, feat, feat.origin, {
-                    remote: this.sync ? this.sync : null
+                    remote: this.remote
                 });
 
                 sub.cots.set(cot.id, cot);
@@ -109,7 +109,7 @@ export class CloudTAKTransferHandler {
             const set = new Set<COT>;
             for (const feat of feats) {
                 set.add(new COT(this.atlas, feat, feat.origin, {
-                    remote: this.sync ? this.sync : null
+                    remote: this.remote
                 }));
             }
 
@@ -127,7 +127,7 @@ export class CloudTAKTransferHandler {
         },
         deserialize: (feat: Feature): COT => {
             return new COT(this.atlas, feat, feat.origin, {
-                remote: this.sync ? this.sync : null
+                remote: true
             });
         }
     }
@@ -194,6 +194,6 @@ export default class Atlas {
 
 const atlas = new Atlas()
 
-new CloudTAKTransferHandler(atlas, Comlink.transferHandlers);
+new CloudTAKTransferHandler(atlas, Comlink.transferHandlers, false);
 
 Comlink.expose(Comlink.proxy(atlas));
