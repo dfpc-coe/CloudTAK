@@ -27,7 +27,7 @@ export enum AllBoolean {
 export function AllBooleanCast(allBoolean: AllBoolean): boolean | null {
     return allBoolean === AllBoolean.TRUE
         ? true
-        : allBoolean === AllBoolean.FEALSE ? false : null;
+        : allBoolean === AllBoolean.FALSE ? false : null;
 }
 
 export enum BasicGeometryType {
