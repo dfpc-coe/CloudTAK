@@ -62,7 +62,7 @@ export default class COT {
         origin?: Origin,
         opts?: {
             skipSave?: boolean;
-            remote?: BroadcastChannel | null;
+            remote?: boolean
         }
     ) {
         if (!opts || (opts && !opts.remote)) {
@@ -76,7 +76,7 @@ export default class COT {
         this._properties = feat["properties"] || {};
         this._geometry = feat["geometry"];
 
-        this._remote = (opts && opts.remote !== undefined) ? new BroadcastChannel('sync') : null
+        this._remote = (opts && opts.remote === true) ? new BroadcastChannel('sync') : null
         this._atlas = atlas;
 
         this.origin = origin || { mode: OriginMode.CONNECTION };
