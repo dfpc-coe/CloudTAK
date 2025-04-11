@@ -215,13 +215,21 @@ export default class Subscription {
         }) as MissionChanges;
     }
 
-    static async logCreate(guid: string, token: string | undefined, body: object): Promise<MissionLog> {
+    static async logCreate(
+        guid: string,
+        body: object,
+        opts: {
+            token?: string;
+            missionToken?: string
+        } = {}
+    ): Promise<MissionLog> {
         const url = stdurl('/api/marti/missions/' + encodeURIComponent(guid) + '/log');
 
         const log = await std(url, {
             method: 'POST',
             body: body,
-            headers: Subscription.headers(token)
+            token: opts.token,
+            headers: Subscription.headers(opts.missionToken)
         }) as {
             data: MissionLog
         };
@@ -229,12 +237,20 @@ export default class Subscription {
         return log.data;
     }
 
-    static async logDelete(guid: string, token: string | undefined, logid: string): Promise<void> {
+    static async logDelete(
+        guid: string,
+        logid: string,
+        opts: {
+            token?: string
+            missionToken?: string
+        } = {}
+    ): Promise<void> {
         const url = stdurl('/api/marti/missions/' + encodeURIComponent(guid) + '/log/' + encodeURIComponent(logid));
 
         await std(url, {
             method: 'DELETE',
-            headers: Subscription.headers(token)
+            token: opts.token,
+            headers: Subscription.headers(opts.missionToken)
         });
 
         return;
