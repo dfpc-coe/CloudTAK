@@ -47,7 +47,7 @@
                         <TablerDelete
                             v-if='role.permissions.includes("MISSION_WRITE")'
                             displaytype='icon'
-                            size='24'
+                            :size='24'
                             class='position-absolute cursor-pointer end-0 mx-2 my-2'
                             @delete='deleteLog(logidx)'
                         />
@@ -88,10 +88,14 @@
                 >
                     <TablerDropdown>
                         <template #default>
-                            <IconSettings
-                                :size='24'
-                                stroke='1'
-                            />
+                            <TablerIconButton
+                                title='Options'
+                            >
+                                <IconSettings
+                                    :size='24'
+                                    stroke='1'
+                                />
+                            </TablerIconButton>
                         </template>
                         <template #dropdown>
                             <TablerToggle
@@ -128,12 +132,13 @@ import type { ComputedRef } from 'vue';
 import TagEntry from '../../util/TagEntry.vue';
 import type { MissionLog } from '../../../../types.ts';
 import {
+    TablerNone,
     TablerInput,
     TablerDelete,
     TablerToggle,
     TablerLoading,
     TablerDropdown,
-    TablerNone
+    TablerIconButton,
 } from '@tak-ps/vue-tabler';
 import {
     IconSettings
@@ -206,12 +211,16 @@ async function fetchLogs() {
 async function deleteLog(logidx: number): Promise<void> {
     if (sub.value) {
         loading.value.ids.add(logidx);
-        await Subscription.logDelete(props.mission.guid, props.token, logs.value[logidx].id);
+        await Subscription.logDelete(props.mission.guid, logs.value[logidx].id, {
+            missionToken: props.token
+        });
         sub.value.logs.splice(logidx, 1);
         loading.value.ids.delete(logidx);
     } else {
         loading.value.logs = true;
-        await Subscription.logDelete(props.mission.guid, props.token, logs.value[logidx].id);
+        await Subscription.logDelete(props.mission.guid, logs.value[logidx].id, {
+            missionToken: props.token
+        });
         await fetchLogs();
     }
 }
@@ -220,14 +229,18 @@ async function submitLog() {
     try {
         if (sub.value) {
             loading.value.create = true;
-            const log = await Subscription.logCreate(props.mission.guid, props.token, createLog.value)
+            const log = await Subscription.logCreate(props.mission.guid, createLog.value, {
+                missionToken: props.token
+            })
 
             sub.value.logs.push(log);
 
             loading.value.create = false;
         } else {
             loading.value.logs = true;
-            await Subscription.logCreate(props.mission.guid, props.token, createLog.value)
+            await Subscription.logCreate(props.mission.guid, createLog.value, {
+                missionToken: props.token
+            })
             await fetchLogs();
         }
 
