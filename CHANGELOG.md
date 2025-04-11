@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### 8.2.0 - 2025-04-10
+
+- :rocket: Add AllBoolean to ephemeral param on VideoLease
+
 ### 8.1.0 - 2025-04-10
 
 - :tada: Handle MediaMTX Auth requests on `/api/video/auth` when `authMethod: internal` is set in MediaMTX
