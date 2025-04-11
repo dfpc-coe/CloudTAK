@@ -11,7 +11,7 @@ export const Package = Type.Object({
     SubmissionUser: Type.String(),
     PrimaryKey: Type.String(),
     Hash: Type.String(),
-    CreatorUid: Type.Optional(Type.String()),
+    CreatorUid: Type.Optional(Type.Union([Type.Null(), Type.String()])),
     Name: Type.String(),
     Tool: Type.String()
 });
