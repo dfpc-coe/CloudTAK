@@ -314,6 +314,7 @@ async function fetchLeases(): Promise<void> {
         error.value = undefined;
         const url = stdurl('/api/video/lease');
         url.searchParams.append('filter', leasePaging.value.filter);
+        url.searchParams.append('expired', 'all');
         url.searchParams.append('limit', String(leasePaging.value.limit));
         url.searchParams.append('page', String(leasePaging.value.page));
         leases.value = await std(url) as VideoLeaseList
