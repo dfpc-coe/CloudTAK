@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### 8.5.0 - 2025-04-14
+
+- :rocket: Migrate PMTiles Service to routes directory in anticipation of setting up public tiles endpoints
+
 ### 8.4.0 - 2025-04-14
 
 - :bug: Ensure Atlas worker isn't constructed more than once by moving shared class into it's own helper file
