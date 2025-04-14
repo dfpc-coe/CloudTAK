@@ -6,15 +6,10 @@
             </h1>
 
             <div class='ms-auto btn-list'>
-                <TablerIconButton
-                    title='Refresh'
+                <TablerRefreshButton
+                    :loading='loading'
                     @click='fetchList'
-                >
-                    <IconRefresh
-                        :size='32'
-                        stroke='1'
-                    />
-                </TablerIconButton>
+                />
             </div>
         </div>
         <div style='min-height: 20vh; margin-bottom: 61px'>
@@ -120,11 +115,8 @@ import {
     TablerInput,
     TablerAlert,
     TablerLoading,
-    TablerIconButton
+    TablerRefreshButton
 } from '@tak-ps/vue-tabler';
-import {
-    IconRefresh
-} from '@tabler/icons-vue'
 
 type Header = { name: keyof VideoLease, display: boolean };
 
@@ -188,6 +180,7 @@ async function fetchList() {
     try {
         const url = stdurl('/api/video/lease');
         url.searchParams.append('impersonate', String(true));
+        url.searchParams.append('expired', 'all');
         url.searchParams.append('filter', paging.value.filter);
         url.searchParams.append('limit', String(paging.value.limit));
         url.searchParams.append('sort', paging.value.sort);

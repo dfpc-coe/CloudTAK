@@ -8,7 +8,7 @@
             <div class='col-12'>
                 <TablerToggle
                     v-model='config.api'
-                    :disabled='disabled'
+                    :disabled='true'
                     class='subheader'
                     label='Config API Enabled'
                 />
@@ -28,7 +28,7 @@
             <div class='col-12 pt-2'>
                 <TablerToggle
                     v-model='config.metrics'
-                    :disabled='disabled'
+                    :disabled='true'
                     class='subheader'
                     label='Metrics API Enabled'
                 />
@@ -48,7 +48,7 @@
             <div class='col-12 pt-2'>
                 <TablerToggle
                     v-model='config.pprof'
-                    :disabled='disabled'
+                    :disabled='true'
                     class='subheader'
                     label='Performance API Enabled'
                 />
@@ -68,7 +68,7 @@
             <div class='col-12 pt-2'>
                 <TablerToggle
                     v-model='config.playback'
-                    :disabled='disabled'
+                    :disabled='true'
                     class='subheader'
                     label='Playback API Enabled'
                 />
@@ -88,7 +88,7 @@
             <div class='col-12 pt-2'>
                 <TablerToggle
                     v-model='config.rtsp'
-                    :disabled='disabled'
+                    :disabled='true'
                     class='subheader'
                     label='RTSP API Enabled'
                 />
@@ -108,7 +108,7 @@
             <div class='col-12 pt-2'>
                 <TablerToggle
                     v-model='config.rtmp'
-                    :disabled='disabled'
+                    :disabled='true'
                     class='subheader'
                     label='RTMP API Enabled'
                 />
@@ -128,7 +128,7 @@
             <div class='col-12 pt-2'>
                 <TablerToggle
                     v-model='config.hls'
-                    :disabled='disabled'
+                    :disabled='true'
                     class='subheader'
                     label='HLS API Enabled'
                 />
@@ -148,7 +148,7 @@
             <div class='col-12 pt-2'>
                 <TablerToggle
                     v-model='config.webrtc'
-                    :disabled='disabled'
+                    :disabled='true'
                     class='subheader'
                     label='WebRTC API Enabled'
                 />
@@ -168,7 +168,7 @@
             <div class='col-12 pt-2'>
                 <TablerToggle
                     v-model='config.srt'
-                    :disabled='disabled'
+                    :disabled='true'
                     class='subheader'
                     label='SRT API Enabled'
                 />
@@ -186,67 +186,44 @@
             </div>
         </div>
 
-        <div
-            v-if='!disabled'
-            class='col-12 d-flex px-2 py-3'
-        >
-            <button
-                class='btn btn-secondary'
-                @click='$emit("cancel")'
-            >
-                Cancel
-            </button>
+        <div class='row g-0 py-3'>
+            <label class='subheader mx-2'>Server Paths</label>
+            <div class='col-12 border rounded mx-2'>
+                <TablerNone
+                    v-if='(service.paths || []).length === 0'
+                    :create='false'
+                    :compact='true'
+                    label='Server Paths'
+                />
+                <template v-else>
+                    <div
+                        v-for='path in service.paths'
+                        class='hover-light px-2 py-2 cursor-pointer d-flex align-items-center'
+                        @click='pathid = path.name'
+                    >
+                        <StatusDot
+                            :title='path.ready ? "Streaming" : "Not Streaming"'
+                            :status='path.ready ? "success" : "fail"'
+                        />
+                        <span
+                            class='mx-2'
+                            v-text='path.name'
+                        />
 
-            <div class='ms-auto'>
-                <button
-                    class='btn btn-primary'
-                    @click='saveConfig'
-                >
-                    Submit
-                </button>
-            </div>
-        </div>
-
-        <template v-if='disabled'>
-            <div class='row g-0 py-3'>
-                <label class='subheader mx-2'>Server Paths</label>
-                <div class='col-12 border rounded mx-2'>
-                    <TablerNone
-                        v-if='(service.paths || []).length === 0'
-                        :create='false'
-                        :compact='true'
-                        label='Server Paths'
-                    />
-                    <template v-else>
-                        <div
-                            v-for='path in service.paths'
-                            class='hover-light px-2 py-2 cursor-pointer d-flex align-items-center'
-                            @click='pathid = path.name'
-                        >
-                            <StatusDot
-                                :title='path.ready ? "Streaming" : "Not Streaming"'
-                                :status='path.ready ? "success" : "fail"'
+                        <div class='ms-auto'>
+                            <IconUsersGroup
+                                :size='32'
+                                stroke='1'
                             />
                             <span
                                 class='mx-2'
-                                v-text='path.name'
+                                v-text='`${path.readers.length} Viewers`'
                             />
-
-                            <div class='ms-auto'>
-                                <IconUsersGroup
-                                    :size='32'
-                                    stroke='1'
-                                />
-                                <span
-                                    class='mx-2'
-                                    v-text='`${path.readers.length} Viewers`'
-                                />
-                            </div>
                         </div>
-                    </template>
-                </div>
+                    </div>
+                </template>
             </div>
-        </template>
+        </div>
     </div>
 
     <VideoConfigPath
@@ -258,7 +235,6 @@
 
 <script setup lang='ts'>
 import { ref } from 'vue';
-import { std } from '../../../std.ts';
 import type { VideoService } from '../../../types.ts';
 import VideoConfigPath from './VideoConfigPath.vue';
 import StatusDot from '../../util/StatusDot.vue';
@@ -272,28 +248,11 @@ import {
     IconUsersGroup
 } from '@tabler/icons-vue'
 
-const props = withDefaults(defineProps<{
+const props = defineProps<{
     service: VideoService,
-    disabled: boolean
-}>(), {
-    disabled: true
-})
-
-const emit = defineEmits([ 'cancel' ]);
+}>()
 
 const loading = ref(false);
 const pathid = ref<string | undefined>();
 const config = ref(JSON.parse(JSON.stringify(props.service.config)))
-
-async function saveConfig() {
-    loading.value = true;
-
-    await std('/api/video/service', {
-        method: 'PATCH',
-        body: config.value
-    });
-
-    loading.value = false;
-    emit('cancel');
-}
 </script>

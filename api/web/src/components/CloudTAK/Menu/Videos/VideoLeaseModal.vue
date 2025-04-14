@@ -36,16 +36,12 @@
             />
 
             <div class='ms-auto btn-list'>
-                <TablerIconButton
+                <TablerRefreshButton
                     v-if='disabled && editLease.id'
                     title='Refresh'
+                    :loading='loading'
                     @click='fetchLease'
-                >
-                    <IconRefresh
-                        :size='32'
-                        stroke='1'
-                    />
-                </TablerIconButton>
+                />
 
                 <TablerIconButton
                     v-if='disabled && editLease.id'
@@ -319,7 +315,6 @@
                 </div>
                 <div class='col-12'>
                     <TablerEnum
-                        v-if='!editLease.id'
                         v-model='editLease.duration'
                         :options='durations'
                         :disabled='disabled'
@@ -445,7 +440,6 @@ import type { VideoLease, VideoLeaseResponse, VideoLeaseProtocols } from '../../
 import VideoLeaseSourceType from '../../util/VideoLeaseSourceType.vue'
 import GroupSelect from '../../../util/GroupSelect.vue';
 import {
-    IconRefresh,
     IconPencil,
     IconWand,
     IconArrowsLeftRight,
@@ -455,6 +449,7 @@ import {
     IconChevronLeft,
 } from '@tabler/icons-vue';
 import {
+    TablerRefreshButton,
     TablerIconButton,
     TablerLoading,
     TablerToggle,
@@ -554,7 +549,7 @@ async function fetchLease() {
 
     editLease.value = {
         ...res.lease,
-        duration: '16 Hours'
+        duration: res.lease.expiration ? '16 Hours' : 'Permanent'
     }
 
     if (editLease.value.stream_user && editLease.value.read_user) {

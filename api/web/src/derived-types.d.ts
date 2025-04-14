@@ -736,8 +736,6 @@ export interface paths {
                         "agol::enabled"?: boolean;
                         "agol::token"?: string;
                         "media::url"?: string;
-                        "media::username"?: string;
-                        "media::password"?: string;
                         "group::Yellow"?: string;
                         "group::Cyan"?: string;
                         "group::Green"?: string;
@@ -4419,225 +4417,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/connection/{:connectionid}/sink": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Sinks */
-        get: {
-            parameters: {
-                query: {
-                    /** @description Limit the number of responses returned */
-                    limit: number;
-                    /** @description Iterate through "pages" of items based on the "limit" query param */
-                    page: number;
-                    /** @description Order in which results are returned based on the "sort" query param */
-                    order: "asc" | "desc";
-                    /** @description No Description */
-                    sort?: "id" | "created" | "updated" | "name" | "enabled" | "connection" | "type" | "body" | "logging" | "enableRLS";
-                    /** @description Filter results by a human readable name field */
-                    filter: string;
-                    /** @description No Description */
-                    enabled?: boolean;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            total: number;
-                            items: {
-                                id: number;
-                                created: string;
-                                updated: string;
-                                name: string;
-                                enabled: boolean;
-                                connection: number;
-                                type: string;
-                                body: Record<string, never>;
-                                logging: boolean;
-                            }[];
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        /** Register a new connection sink */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        /** @description Human readable name */
-                        name: string;
-                        type: string;
-                        logging: boolean;
-                        enabled: boolean;
-                        body: {
-                            points?: string;
-                            lines?: string;
-                            polys?: string;
-                            url: string;
-                            username?: string;
-                            password?: string;
-                        };
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: number;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            enabled: boolean;
-                            connection: number;
-                            type: string;
-                            body: Record<string, never>;
-                            logging: boolean;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/connection/{:connectionid}/sink/{:sinkid}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get a connection sink */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: number;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            enabled: boolean;
-                            connection: number;
-                            type: string;
-                            body: Record<string, never>;
-                            logging: boolean;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        /** Delete a connection sink */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        /** Update a connection sink */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        /** @description Human readable name */
-                        name?: string;
-                        type?: string;
-                        logging?: boolean;
-                        enabled?: boolean;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: number;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            enabled: boolean;
-                            connection: number;
-                            type: string;
-                            body: Record<string, never>;
-                            logging: boolean;
-                        };
-                    };
-                };
-            };
-        };
-        trace?: never;
-    };
     "/connection/{:connectionid}/layer/{:layerid}/task": {
         parameters: {
             query?: never;
@@ -5420,7 +5199,7 @@ export interface paths {
                             items: {
                                 id: number;
                                 status: string;
-                                agency?: number | null;
+                                agency?: null | number;
                                 certificate: {
                                     subject: string;
                                     validFrom: string;
@@ -5474,7 +5253,7 @@ export interface paths {
                         "application/json": {
                             id: number;
                             status: string;
-                            agency?: number | null;
+                            agency?: null | number;
                             certificate: {
                                 subject: string;
                                 validFrom: string;
@@ -5522,7 +5301,7 @@ export interface paths {
                         "application/json": {
                             id: number;
                             status: string;
-                            agency?: number | null;
+                            agency?: null | number;
                             certificate: {
                                 subject: string;
                                 validFrom: string;
@@ -5600,7 +5379,7 @@ export interface paths {
                         "application/json": {
                             id: number;
                             status: string;
-                            agency?: number | null;
+                            agency?: null | number;
                             certificate: {
                                 subject: string;
                                 validFrom: string;
@@ -5646,7 +5425,7 @@ export interface paths {
                         "application/json": {
                             id: number;
                             status: string;
-                            agency?: number | null;
+                            agency?: null | number;
                             certificate: {
                                 subject: string;
                                 validFrom: string;
@@ -5785,7 +5564,6 @@ export interface paths {
                         url: string;
                         username?: string;
                         password?: string;
-                        sinkid?: number;
                     };
                 };
             };
@@ -7873,6 +7651,48 @@ export interface paths {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ldap/user/{:email}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Reset the password on an existing user and regen a certificate */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            integrationId?: number;
+                            auth: {
+                                cert: string;
+                                key: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -10022,7 +9842,7 @@ export interface paths {
                                 SubmissionUser: string;
                                 PrimaryKey: string;
                                 Hash: string;
-                                CreatorUid?: string;
+                                CreatorUid?: null | string;
                                 Name: string;
                                 Tool: string;
                             }[];
@@ -10114,7 +9934,7 @@ export interface paths {
                             SubmissionUser: string;
                             PrimaryKey: string;
                             Hash: string;
-                            CreatorUid?: string;
+                            CreatorUid?: null | string;
                             Name: string;
                             Tool: string;
                         };
@@ -10161,7 +9981,7 @@ export interface paths {
                             SubmissionUser: string;
                             PrimaryKey: string;
                             Hash: string;
-                            CreatorUid?: string;
+                            CreatorUid?: null | string;
                             Name: string;
                             Tool: string;
                         };
@@ -13003,6 +12823,8 @@ export interface paths {
                             updated: string;
                             phone: string;
                             last_login: string;
+                            /** @description Does the user have an active CloudTAK Session */
+                            active: boolean;
                             system_admin: boolean;
                             agency_admin: number[];
                             tak_callsign: string;
@@ -13075,6 +12897,8 @@ export interface paths {
                             updated: string;
                             phone: string;
                             last_login: string;
+                            /** @description Does the user have an active CloudTAK Session */
+                            active: boolean;
                             system_admin: boolean;
                             agency_admin: number[];
                             tak_callsign: string;
@@ -14011,6 +13835,8 @@ export interface paths {
                                 updated: string;
                                 phone: string;
                                 last_login: string;
+                                /** @description Does the user have an active CloudTAK Session */
+                                active: boolean;
                                 system_admin: boolean;
                                 agency_admin: number[];
                                 tak_callsign: string;
@@ -14073,6 +13899,8 @@ export interface paths {
                             updated: string;
                             phone: string;
                             last_login: string;
+                            /** @description Does the user have an active CloudTAK Session */
+                            active: boolean;
                             system_admin: boolean;
                             agency_admin: number[];
                             tak_callsign: string;
@@ -14130,6 +13958,8 @@ export interface paths {
                             updated: string;
                             phone: string;
                             last_login: string;
+                            /** @description Does the user have an active CloudTAK Session */
+                            active: boolean;
                             system_admin: boolean;
                             agency_admin: number[];
                             tak_callsign: string;
@@ -14154,6 +13984,58 @@ export interface paths {
                 };
             };
         };
+        trace?: never;
+    };
+    "/video/auth": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Authenticate a request to view a lease */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        user: string;
+                        password: string;
+                        ip: string;
+                        action: "publish" | "read" | "playback" | "api" | "metrics" | "pprof";
+                        path: string;
+                        protocol: string;
+                        id: null | string;
+                        query: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/video/active": {
@@ -14256,7 +14138,9 @@ export interface paths {
                     /** @description No Description */
                     sort?: "id" | "email" | "name" | "token" | "created" | "updated" | "enableRLS";
                     /** @description No Description */
-                    ephemeral?: boolean;
+                    expired: "true" | "false" | "all";
+                    /** @description No Description */
+                    ephemeral: "true" | "false" | "all";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                 };
@@ -14679,15 +14563,6 @@ export interface paths {
                                 webrtcAddress: string;
                                 srt: boolean;
                                 srtAddress: string;
-                                authInternalUsers: {
-                                    user: string;
-                                    pass?: string;
-                                    ips?: string[];
-                                    permissions: {
-                                        action: string;
-                                        path?: string;
-                                    }[];
-                                }[];
                             };
                             paths?: {
                                 name: string;
@@ -14716,102 +14591,7 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Get Video Service Configuration */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        api?: boolean;
-                        metrics?: boolean;
-                        pprof?: boolean;
-                        playback?: boolean;
-                        rtsp?: boolean;
-                        rtmp?: boolean;
-                        hls?: boolean;
-                        webrtc?: boolean;
-                        srt?: boolean;
-                        authInternalUsers?: {
-                            user: string;
-                            pass?: string;
-                            ips?: string[];
-                            permissions: {
-                                action: string;
-                                path?: string;
-                            }[];
-                        }[];
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            configured: boolean;
-                            url?: string;
-                            config?: {
-                                api: boolean;
-                                apiAddress: string;
-                                metrics: boolean;
-                                metricsAddress: string;
-                                pprof: boolean;
-                                pprofAddress: string;
-                                playback: boolean;
-                                playbackAddress: string;
-                                rtsp: boolean;
-                                rtspAddress: string;
-                                rtspsAddress: string;
-                                rtspAuthMethods: string[];
-                                rtmp: boolean;
-                                rtmpAddress: string;
-                                rtmpsAddress: string;
-                                hls: boolean;
-                                hlsAddress: string;
-                                webrtc: boolean;
-                                webrtcAddress: string;
-                                srt: boolean;
-                                srtAddress: string;
-                                authInternalUsers: {
-                                    user: string;
-                                    pass?: string;
-                                    ips?: string[];
-                                    permissions: {
-                                        action: string;
-                                        path?: string;
-                                    }[];
-                                }[];
-                            };
-                            paths?: {
-                                name: string;
-                                confName: string;
-                                source: {
-                                    id: string;
-                                    type: string;
-                                } | null;
-                                ready: boolean;
-                                readyTime: string | null;
-                                tracks: string[];
-                                bytesReceived: number;
-                                bytesSent: number;
-                                readers: {
-                                    type: string;
-                                    id: string;
-                                }[];
-                            }[];
-                        };
-                    };
-                };
-            };
-        };
+        patch?: never;
         trace?: never;
     };
     "/video/server": {

@@ -5,7 +5,7 @@ import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import EC2 from '../lib/aws/ec2.js';
 import ECSVideo from '../lib/aws/ecs-video.js';
-import ECSVideoControl, { Configuration, VideoConfigUpdate, PathConfig, PathListItem } from '../lib/control/video-service.js';
+import ECSVideoControl, { Configuration, PathConfig, PathListItem } from '../lib/control/video-service.js';
 import { StandardResponse, VideoResponse } from '../lib/types.js';
 
 export default async function router(schema: Schema, config: Config) {
@@ -22,24 +22,6 @@ export default async function router(schema: Schema, config: Config) {
             await Auth.as_user(config, req, { admin: true });
 
             const configuration = await videoControl.configuration();
-
-            res.json(configuration);
-        } catch (err) {
-            Err.respond(err, res);
-        }
-    });
-
-    await schema.patch('/video/service', {
-        name: 'Update Service',
-        group: 'VideoService',
-        description: 'Get Video Service Configuration',
-        body: VideoConfigUpdate,
-        res: Configuration
-    }, async (req, res) => {
-        try {
-            await Auth.as_user(config, req, { admin: true });
-
-            const configuration = await videoControl.configure(req.body);
 
             res.json(configuration);
         } catch (err) {
