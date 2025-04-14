@@ -134,7 +134,9 @@ async function refresh() {
 }
 
 async function fetchFeats() {
-    const fc = await Subscription.featList(props.mission.name, props.token)
+    const fc = await Subscription.featList(props.mission.name, {
+        missionToken: props.token
+    })
 
     for (const feat of fc.features) {
         feats.value.set(feat.id, feat);
@@ -158,7 +160,9 @@ function removeFeatures(mlayers: MissionLayer[]): void {
 }
 
 async function fetchLayers(): Promise<void> {
-    layers.value = (await Subscription.layerList(props.mission.name, props.token)).data;
+    layers.value = (await Subscription.layerList(props.mission.name, {
+        missionToken: props.token
+    })).data;
 
     if (layers.value) {
         removeFeatures(layers.value);
