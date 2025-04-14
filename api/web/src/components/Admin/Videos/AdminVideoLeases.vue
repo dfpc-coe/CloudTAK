@@ -188,6 +188,7 @@ async function fetchList() {
     try {
         const url = stdurl('/api/video/lease');
         url.searchParams.append('impersonate', String(true));
+        url.searchParams.append('expired', 'all');
         url.searchParams.append('filter', paging.value.filter);
         url.searchParams.append('limit', String(paging.value.limit));
         url.searchParams.append('sort', paging.value.sort);
