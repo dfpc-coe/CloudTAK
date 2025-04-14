@@ -2,8 +2,8 @@ import { createHash } from "crypto";
 import Err from '@openaddresses/batch-error';
 import Schema from '@openaddresses/batch-schema';
 import { Type } from '@sinclair/typebox'
-import { S3Source, nativeDecompress, CACHE } from './lib/pmtiles.js';
-import auth from './lib/auth.js';
+import { S3Source, nativeDecompress, CACHE } from '../lib/pmtiles.js';
+import auth from '../lib/auth.js';
 import * as pmtiles from 'pmtiles';
 import zlib from "zlib";
 // @ts-expect-error No Type Defs

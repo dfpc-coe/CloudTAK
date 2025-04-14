@@ -29,6 +29,7 @@
     },
     "devDependencies": {
         "@types/aws-lambda": "^8.10.108",
+        "@types/cors": "^2.8.17",
         "@types/jsonwebtoken": "^9.0.2",
         "@types/node": "^22.0.0",
         "eslint": "^9.0.0",
