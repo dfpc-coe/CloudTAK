@@ -20,7 +20,10 @@ export default async function router(schema: Schema, config: Config) {
             const profile = await config.models.Profile.from(user.email);
 
             // @ts-expect-error Update Batch-Generic to specify actual geometry type (Point) instead of Geometry
-            res.json(profile);
+            res.json({
+                active: config.wsClients.has(profile.username),
+                ...profile
+            });
         } catch (err) {
              Err.respond(err, res);
         }
@@ -58,7 +61,10 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             // @ts-expect-error Update Batch-Generic to specify actual geometry type (Point) instead of Geometry
-            res.json(profile);
+            res.json({
+                active: config.wsClients.has(profile.username),
+                ...profile
+            });
         } catch (err) {
              Err.respond(err, res);
         }

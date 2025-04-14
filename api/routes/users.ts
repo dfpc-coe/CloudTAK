@@ -38,6 +38,13 @@ export default async function router(schema: Schema, config: Config) {
                 `
             });
 
+            list.items = list.items.map((user) => {
+                return {
+                    active: config.wsClients.has(user.username),
+                    ...user
+                }
+            });
+
             // @ts-expect-error Update Batch-Generic to specify actual geometry type (Point) instead of Geometry
             res.json(list);
         } catch (err) {
@@ -65,6 +72,7 @@ export default async function router(schema: Schema, config: Config) {
             // @ts-expect-error Update Batch-Generic to specify actual geometry type (Point) instead of Geometry
             res.json({
                 ...user,
+                active: config.wsClients.has(user.username),
                 agency_admin: user.agency_admin || []
             });
         } catch (err) {
@@ -89,6 +97,7 @@ export default async function router(schema: Schema, config: Config) {
             // @ts-expect-error Update Batch-Generic to specify actual geometry type (Point) instead of Geometry
             res.json({
                 ...user,
+                active: config.wsClients.has(user.username),
                 agency_admin: user.agency_admin || []
             });
         } catch (err) {

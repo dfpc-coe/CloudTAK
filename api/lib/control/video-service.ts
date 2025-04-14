@@ -52,18 +52,6 @@ export const Protocols = Type.Object({
     }))
 })
 
-export const VideoConfigUpdate = Type.Object({
-    api: Type.Optional(Type.Boolean()),
-    metrics: Type.Optional(Type.Boolean()),
-    pprof: Type.Optional(Type.Boolean()),
-    playback: Type.Optional(Type.Boolean()),
-    rtsp: Type.Optional(Type.Boolean()),
-    rtmp: Type.Optional(Type.Boolean()),
-    hls: Type.Optional(Type.Boolean()),
-    webrtc: Type.Optional(Type.Boolean()),
-    srt: Type.Optional(Type.Boolean()),
-})
-
 export const VideoConfig = Type.Object({
     api: Type.Boolean(),
     apiAddress: Type.String(),
@@ -213,29 +201,6 @@ export default class VideoServiceControl {
         }
 
         return headers;
-    }
-
-    async configure(
-        config: Static<typeof VideoConfigUpdate>
-    ): Promise<Static<typeof Configuration>> {
-        const video = await this.settings();
-        if (!video.configured) return video;
-
-        const headers = this.headers(video.username, video.password);
-        headers.append('Content-Type', 'application/json');
-
-        const url = new URL('/v3/config/global/patch', video.url);
-        url.port = '9997';
-
-        const res = await fetch(url, {
-            method: 'PATCH',
-            headers,
-            body: JSON.stringify(config)
-        });
-
-        if (!res.ok) throw new Err(500, null, await res.text())
-
-        return this.configuration();
     }
 
     async configuration(): Promise<Static<typeof Configuration>> {

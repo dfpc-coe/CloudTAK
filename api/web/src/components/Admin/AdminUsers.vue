@@ -6,15 +6,10 @@
             </h1>
 
             <div class='ms-auto btn-list'>
-                <TablerIconButton
-                    title='Refresh'
+                <TablerRefreshButton
+                    :loading='loading'
                     @click='fetchList'
-                >
-                    <IconRefresh
-                        :size='32'
-                        stroke='1'
-                    />
-                </TablerIconButton>
+                />
             </div>
         </div>
         <div style='min-height: 20vh; margin-bottom: 61px'>
@@ -55,7 +50,14 @@
                             <template v-for='h in header'>
                                 <template v-if='h.display'>
                                     <td>
-                                        <span v-text='user[h.name]' />
+                                        <div v-if='h.name === "username"' class='d-flex align-items-center'>
+                                            <StatusDot :status='user.active ? "Success" : "Unknown"'/>
+                                            <span
+                                                class='mx-2'
+                                                v-text='user[h.name]'
+                                            />
+                                        </div>
+                                        <span v-else v-text='user[h.name]' />
                                     </td>
                                 </template>
                             </template>
@@ -83,16 +85,14 @@ import { std, stdurl } from '../../std.ts';
 import type { User, UserList } from '../../types.ts';
 import TableHeader from '../util/TableHeader.vue'
 import TableFooter from '../util/TableFooter.vue'
+import StatusDot from '../util/StatusDot.vue';
 import {
     TablerNone,
     TablerAlert,
     TablerInput,
     TablerLoading,
-    TablerIconButton
+    TablerRefreshButton
 } from '@tak-ps/vue-tabler';
-import {
-    IconRefresh,
-} from '@tabler/icons-vue'
 
 const error = ref<Error | undefined>(undefined);
 const loading = ref(true);
