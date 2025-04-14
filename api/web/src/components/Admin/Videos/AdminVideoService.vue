@@ -5,15 +5,6 @@
         </div>
         <div class='ms-auto btn-list'>
             <TablerIconButton
-                title='Edit Service'
-                @click='disabled = false'
-            >
-                <IconPencil
-                    :size='32'
-                    stroke='1'
-                />
-            </TablerIconButton>
-            <TablerIconButton
                 title='Refresh'
                 @click='fetchService'
             >
@@ -34,8 +25,6 @@
         <VideoConfig
             v-else
             :service='service'
-            :disabled='disabled'
-            @cancel='disabled = true'
         />
     </div>
 </template>
@@ -46,7 +35,6 @@ import type { VideoService } from '../../../types.ts';
 import { std, stdurl } from '../../../std.ts';
 import VideoConfig from './VideoConfig.vue';
 import {
-    IconPencil,
     IconRefresh
 } from '@tabler/icons-vue';
 import {
@@ -55,7 +43,6 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 
-const disabled = ref(true);
 const loading = ref(true);
 
 const service = ref<VideoService | undefined>();
