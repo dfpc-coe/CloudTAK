@@ -52,6 +52,14 @@ jobs:
         working-directory: ./tasks/pmtiles/
         run: npm run lint
 
+      - name: Check
+        working-directory: ./tasks/pmtiles/
+        run: npm run check
+
+      - name: Check
+        working-directory: ./tasks/pmtiles/
+        run: npm run build
+
   test:
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
