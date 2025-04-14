@@ -12,6 +12,14 @@
 
 ### Pending Release
 
+### 8.6.0 - 2025-04-14
+
+- :rocket: Begin process of merging data and events tasks
+- :bug: Fix permanent lease loss if re-saving a permanent lease
+- :bug: Show all leases, including expired in admin page
+- :rocket: `UI` Add RefreshButton component as a cleaner indication of reloading
+- :tada: Show active status in returned User Response
+
 ### 8.5.0 - 2025-04-14
 
 - :rocket: Migrate PMTiles Service to routes directory in anticipation of setting up public tiles endpoints
