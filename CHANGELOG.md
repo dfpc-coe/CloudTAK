@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### 8.4.0 - 2025-04-14
+
+- :bug: Ensure Atlas worker isn't constructed more than once by moving shared class into it's own helper file
+- :bug: Create new BroadcastChannel for each COT in a remote context
+- :rocket: Add `instance` ID to each COT created to greatly assist in debugging
+
 ### 8.3.3 - 2025-04-11
 
 - :bug: Allow Null value in CreatorUID in Package List API
