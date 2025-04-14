@@ -1164,11 +1164,6 @@
         "query": false,
         "res": true
     },
-    "PATCH /video/service": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
     "GET /video/server": {
         "body": false,
         "query": false,
