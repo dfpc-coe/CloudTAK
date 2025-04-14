@@ -45,6 +45,8 @@ export default class COT {
     id: string;
     path: string;
 
+    instance: string;
+
     _properties: Feature["properties"];
     _geometry: Feature["geometry"];
 
@@ -62,7 +64,7 @@ export default class COT {
         origin?: Origin,
         opts?: {
             skipSave?: boolean;
-            remote?: BroadcastChannel | null;
+            remote?: boolean
         }
     ) {
         if (!opts || (opts && !opts.remote)) {
@@ -76,8 +78,10 @@ export default class COT {
         this._properties = feat["properties"] || {};
         this._geometry = feat["geometry"];
 
-        this._remote = (opts && opts.remote !== undefined) ? opts.remote : null;
+        this._remote = (opts && opts.remote === true) ? new BroadcastChannel('sync') : null
         this._atlas = atlas;
+
+        this.instance = this._remote ? `remote:${crypto.randomUUID()}` : `db:${crypto.randomUUID()}`
 
         this.origin = origin || { mode: OriginMode.CONNECTION };
 
@@ -106,16 +110,15 @@ export default class COT {
         }
 
         if (this._remote) {
-            const atlas = this._atlas as Remote<Atlas>;
-
             // The sync BroadcastChannel will post a message anytime the underlying
             // Atlas database has a COT update, resulting in a sync with the frontend
             this._remote.onmessage = async (ev) => {
-                if (ev.data === `cot:${this.id}`) {
-                    const feat = await atlas.db.get(this.id)
+                if (ev.data.id === this.id) {
                     if (feat) {
-                        Object.assign(this._properties, feat.properties);
-                        Object.assign(this._geometry, feat.geometry);
+                        this.path = ev.data.path;
+                        this.origin = ev.data.origin;
+                        Object.assign(this._properties, ev.data.properties);
+                        Object.assign(this._geometry, ev.data.geometry);
                     }
                 }
             };
@@ -194,7 +197,7 @@ export default class COT {
                 atlas.db.pendingUpdate.set(this.id, this);
             }
 
-            atlas.sync.postMessage(`cot:${this.id}`);
+            atlas.sync.postMessage(this.as_feature());
 
             if (this.is_self) {
                 const getProfile = await atlas.profile.profile;
