@@ -21,7 +21,7 @@ export default async function router(schema: Schema, config: Config) {
 
             // @ts-expect-error Update Batch-Generic to specify actual geometry type (Point) instead of Geometry
             res.json({
-                active: config.wsClients.has(user.username),
+                active: config.wsClients.has(profile.username),
                 ...profile
             });
         } catch (err) {
@@ -62,7 +62,7 @@ export default async function router(schema: Schema, config: Config) {
 
             // @ts-expect-error Update Batch-Generic to specify actual geometry type (Point) instead of Geometry
             res.json({
-                active: config.wsClients.has(user.username),
+                active: config.wsClients.has(profile.username),
                 ...profile
             });
         } catch (err) {
