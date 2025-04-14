@@ -11,10 +11,13 @@
                 />
             </TablerIconButton>
 
-            <h1
-                class='card-title mx-2'
-                v-text='`User: ${$route.params.user}`'
-            />
+            <div class='card-title d-flex align-items-center'>
+                <StatusDot :status='user.active ? "Success" : "Unknown"'/>
+                <span
+                    class='mx-2'
+                    v-text='route.params.user'
+                />
+            </div>
 
             <div class='ms-auto btn-list'>
                 <TablerIconButton
@@ -27,15 +30,10 @@
                         stroke='1'
                     />
                 </TablerIconButton>
-                <TablerIconButton
-                    title='Refresh'
+                <TablerRefreshButton
+                    :loading='loading'
                     @click='fetchUserLoading'
-                >
-                    <IconRefresh
-                        :size='32'
-                        stroke='1'
-                    />
-                </TablerIconButton>
+                />
             </div>
         </div>
         <div class='card-body'>
@@ -196,13 +194,14 @@
 import { std, stdurl } from '../../std.ts';
 import type { User } from '../../types.ts';
 import CopyField from '../CloudTAK/util/CopyField.vue';
+import StatusDot from '../util/StatusDot.vue';
 import {
     TablerLoading,
     TablerToggle,
-    TablerIconButton
+    TablerIconButton,
+    TablerRefreshButton
 } from '@tak-ps/vue-tabler';
 import {
-    IconRefresh,
     IconSettings,
     IconChevronDown,
     IconChevronRight,
