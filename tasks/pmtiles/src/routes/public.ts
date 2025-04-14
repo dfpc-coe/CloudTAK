@@ -2,7 +2,7 @@ import AWSS3 from '@aws-sdk/client-s3';
 import Err from '@openaddresses/batch-error';
 import Schema from '@openaddresses/batch-schema';
 import { Type } from '@sinclair/typebox'
-import auth from './lib/auth.js';
+import auth from '../lib/auth.js';
 
 export default async function router(schema: Schema) {
     schema.get('/tiles/public', {
@@ -36,24 +36,31 @@ export default async function router(schema: Schema) {
                     Prefix: 'public/'
                 };
 
-                if (s3res && s3res.NextToken) req.NextToken = s3res.NextToken;
+                if (s3res && s3res.NextContinuationToken) {
+                    req.ContinuationToken = s3res.NextContinuationToken;
+                }
+
                 s3res = await client.send(new AWSS3.ListObjectsV2Command(req))
 
-                Contents.push(...(s3res.Contents.filter((Content) => {
-                    return Content.Key.endsWith('.pmtiles')
+                Contents.push(...((s3res.Contents || []).filter((Content) => {
+                    return (Content.Key || '').endsWith('.pmtiles')
                 }) || []));
-            } while (s3res.NextToken)
+            } while (s3res.NextContinuationToken)
 
-            return res.json({
+            res.json({
                 total: Contents.length,
-                items: Contents.map((Content) => {
-                    return {
-                        name: Content.Key,
-                        hash: JSON.parse(Content.ETag),
-                        updated: Content.LastModified,
-                        size: Content.Size
-                    }
-                })
+                items: Contents
+                    .filter((Content) => {
+                        return Content.ETag && Content.Key
+                    }) 
+                    .map((Content) => {
+                        return {
+                            name: (Content.Key || ''),
+                            hash: JSON.parse(Content.ETag || '""'),
+                            updated: Content.LastModified ? Content.LastModified.toISOString() : new Date().toISOString(),
+                            size: Content.Size || 0
+                        }
+                    })
             })
         } catch (err) {
             Err.respond(err, res);
