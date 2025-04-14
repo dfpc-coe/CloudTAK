@@ -88,7 +88,7 @@
                                                         "rounded bg-red text-white px-2 py-1": new Date(connection.certificate.validTo) < new Date()
                                                     }'
                                                 >
-                                                    <div v-text='connection.certificate.validTo'/>
+                                                    <div v-text='connection.certificate.validTo' />
                                                     <div
                                                         v-if='new Date(connection.certificate.validTo) < new Date()'
                                                         class='ms-auto'

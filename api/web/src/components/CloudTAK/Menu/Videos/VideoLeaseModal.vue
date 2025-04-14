@@ -440,7 +440,6 @@ import type { VideoLease, VideoLeaseResponse, VideoLeaseProtocols } from '../../
 import VideoLeaseSourceType from '../../util/VideoLeaseSourceType.vue'
 import GroupSelect from '../../../util/GroupSelect.vue';
 import {
-    IconRefresh,
     IconPencil,
     IconWand,
     IconArrowsLeftRight,

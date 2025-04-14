@@ -117,9 +117,6 @@ import {
     TablerLoading,
     TablerRefreshButton
 } from '@tak-ps/vue-tabler';
-import {
-    IconRefresh
-} from '@tabler/icons-vue'
 
 type Header = { name: keyof VideoLease, display: boolean };
 
