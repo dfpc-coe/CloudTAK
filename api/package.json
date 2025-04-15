@@ -6,7 +6,7 @@
     "main": "index.js",
     "scripts": {
         "pretest": "mkdir -p dist/test/fixtures/ && cp test/fixtures/* dist/test/fixtures/",
-        "test": "StackName='test' c8 tape dist/test/*.test.js",
+        "test": "StackName='test' c8 --reporter html tape dist/test/*.test.js",
         "tstest": "test/test",
         "build": "tsc && cp .env* dist/ || true && cp ./icons dist/icons -r && cp ./fonts dist/fonts -r && cp package.json dist/ && cp migrations/ dist/ -r",
         "lint": "eslint index.ts lib/ routes/ test/",

@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import http from 'node:http'
 import cors from 'cors';
 import express from 'express';
 import SwaggerUI from 'swagger-ui-express';
@@ -261,7 +262,15 @@ export default async function server(config: Config) {
 }
 
 export class ServerManager {
-    constructor(server, wss, config) {
+    server: http.Server;
+    wss: ws.WebSocketServer;
+    config: Config;
+
+    constructor(
+        server: http.Server,
+        wss: ws.WebSocketServer,
+        config: Config
+    ) {
         this.wss = wss;
         this.server = server;
         this.config = config;
