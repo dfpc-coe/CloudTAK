@@ -40,37 +40,31 @@ export default async function router(schema: Schema, config: Config) {
             } else if ([Action.PUBLISH, Action.READ, Action.PLAYBACK].includes(req.body.action)) {
                 const lease = await config.models.VideoLease.from(eq(VideoLease.path, req.body.path))
 
-                if (Action.PUBLISH && lease.stream_user && lease.stream_pass) {
-                    if (req.body.user !== lease.stream_user) {
-                        throw new Err(401, null, 'Unauthorized');
-                    } else if (req.body.password !== lease.stream_pass) {
+                if (req.body.action === Action.PUBLISH && lease.stream_user && lease.stream_pass) {
+                    if (req.body.user !== lease.stream_user || req.body.password !== lease.stream_pass) {
                         throw new Err(401, null, 'Unauthorized');
                     } else {
                         res.json({ status: 200, message: 'Authorized' });
                     }
-                } else if (Action.PUBLISH && !lease.stream_user && !lease.stream_pass) {
+                } else if (req.body.action === Action.PUBLISH && !lease.stream_user && !lease.stream_pass) {
                     res.json({ status: 200, message: 'Authorized' });
-                } else if (Action.READ && lease.read_user && lease.read_pass) {
-                    if (req.body.user !== lease.read_user) {
-                        throw new Err(401, null, 'Unauthorized');
-                    } else if (req.body.password !== lease.read_pass) {
+                } else if (req.body.action === Action.READ && lease.read_user && lease.read_pass) {
+                    if (req.body.user !== lease.read_user || req.body.password !== lease.read_pass) {
                         throw new Err(401, null, 'Unauthorized');
                     } else {
                         res.json({ status: 200, message: 'Authorized' });
                     }
-                } else if (Action.READ && !lease.read_user && !lease.read_pass) {
+                } else if (req.body.action === Action.READ && !lease.read_user && !lease.read_pass) {
                     res.json({ status: 200, message: 'Authorized' });
-                } else if (Action.PLAYBACK && !lease.recording) {
+                } else if (req.body.action === Action.PLAYBACK && !lease.recording) {
                     throw new Err(401, null, 'Unauthorized - Recording Disabled');
-                } else if (Action.PLAYBACK && lease.read_user && lease.read_pass) {
-                    if (req.body.user !== lease.read_user) {
-                        throw new Err(401, null, 'Unauthorized');
-                    } else if (req.body.password !== lease.read_pass) {
+                } else if (req.body.action === Action.PLAYBACK && lease.read_user && lease.read_pass) {
+                    if (req.body.user !== lease.read_user || req.body.password !== lease.read_pass) {
                         throw new Err(401, null, 'Unauthorized');
                     } else {
                         res.json({ status: 200, message: 'Authorized' });
                     }
-                } else if (Action.PLAYBACK && !lease.read_user && !lease.read_pass) {
+                } else if (req.body.action === Action.PLAYBACK && !lease.read_user && !lease.read_pass) {
                     res.json({ status: 200, message: 'Authorized' });
                 } else {
                     res.json({ status: 401, message: 'Unauthorized' });

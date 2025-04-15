@@ -310,9 +310,29 @@ export default class VideoServiceControl {
             const url = new URL(`/${lease.path}/index.m3u8`, c.url);
             url.port = c.config.hlsAddress.replace(':', '');
 
-            protocols.hls = {
-                name: 'HTTP Live Streaming (HLS)',
-                url: String(url)
+            if (populated === ProtocolPopulation.READ) {
+                const hlsurl = new URL(String(url))
+                hlsurl.username = lease.read_user;
+                hlsurl.password = lease.read_pass;
+
+                protocols.hls = {
+                    name: 'HTTP Live Streaming (HLS)',
+                    url: String(hlsurl)
+                }
+            } else if (populated === ProtocolPopulation.WRITE) {
+                const hlsurl = new URL(String(url))
+                hlsurl.username = lease.stream_user;
+                hlsurl.password = lease.stream_pass;
+
+                protocols.hls = {
+                    name: 'HTTP Live Streaming (HLS)',
+                    url: String(hlsurl)
+                }
+            } else {
+                protocols.hls = {
+                    name: 'HTTP Live Streaming (HLS)',
+                    url: String(url)
+                }
             }
         }
 
