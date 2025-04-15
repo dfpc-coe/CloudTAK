@@ -10,19 +10,19 @@
     >
         <div class='mx-2 my-2'>
             <TablerInput
-                v-model='name'
+                v-model='config.name'
                 label='Name'
                 @submit='submitPoint'
             />
             <Coordinate
-                v-model='coordinates'
+                v-model='config.coordinates'
                 :edit='true'
                 :modes='["dd"]'
                 @submit='submitPoint'
             />
             <Div class='d-flex justify-content-center'>
                 <CoordinateType
-                    v-model='type'
+                    v-model='config.type'
                     class='pt-3'
                     :size='24'
                 />
@@ -37,64 +37,62 @@
     </div>
 </template>
 
-<script>
-import { defineComponent } from 'vue'
+<script setup lang='ts'>
+import { ref, toRaw } from 'vue'
 import Coordinate from './util/Coordinate.vue';
 import CoordinateType from './util/CoordinateType.vue';
 import {
     TablerInput,
 } from '@tak-ps/vue-tabler';
+import type { LngLatLike } from 'maplibre-gl'
 import { useMapStore } from '../../stores/map.ts';
 const mapStore = useMapStore();
 
-export default defineComponent({
-    name: 'CoordInput',
-    components: {
-        TablerInput,
-        CoordinateType,
-        Coordinate
-    },
-    emits: [
-        'close'
-    ],
-    data: function() {
-        const center = mapStore.map ? mapStore.map.getCenter() : [0,0]
+const emit = defineEmits([ 'close' ]);
 
-        return {
-            name: '',
-            type: 'u-d-p',
-            coordinates: [
-                Math.round(center.lng * 1000000) / 1000000,
-                Math.round(center.lat * 1000000) / 1000000,
-            ]
-        };
-    },
-    methods: {
-        submitPoint: async function() {
-            await mapStore.worker.db.add({
-                type: 'Feature',
-                properties: {
-                    type: this.type,
-                    how: 'h-g-i-g-o',
-                    color: '#00FF00',
-                    archived: true,
-                    callsign: this.name || 'New Feature'
-                },
-                geometry: {
-                    type: 'Point',
-                    coordinates: this.coordinates
-                }
-            });
+const center = mapStore.map.getCenter();
 
-            if (mapStore.map) {
-                mapStore.map.flyTo({
-                    center: this.coordinates,
-                    zoom: 14
-                });
-            }
+const config = ref({
+    name: '',
+    type: 'u-d-p',
+    coordinates: [
+        Math.round(center.lng * 1000000) / 1000000,
+        Math.round(center.lat * 1000000) / 1000000,
+    ]
+});
 
-            this.$emit('close');
+async function submitPoint() {
+    const id = crypto.randomUUID();
+
+    await mapStore.worker.db.add({
+        id,
+        type: 'Feature',
+        path: '/',
+        properties: {
+            id,
+            type: toRaw(config.value.type),
+            how: 'h-g-i-g-o',
+            color: '#00FF00',
+            archived: true,
+            time: new Date().toISOString(),
+            start: new Date().toISOString(),
+            stale: new Date().toISOString(),
+            center: toRaw(config.value.coordinates),
+            callsign: toRaw(config.value.name || 'New Feature')
         },
+        geometry: {
+            type: 'Point',
+            coordinates: toRaw(config.value.coordinates)
+        }
+    });
+
+    if (mapStore.map) {
+        mapStore.map.flyTo({
+            center: config.value.coordinates as LngLatLike,
+            zoom: 14
+        });
     }
-})
+
+    emit('close');
+}
 </script>
