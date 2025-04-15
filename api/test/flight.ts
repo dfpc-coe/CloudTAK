@@ -342,18 +342,8 @@ export default class Flight {
      * Shutdown an existing server test instance
      */
     landing() {
-        test('test server landing - api', (t) => {
-            this.srv.close(async () => {
-                if (this.config) {
-                    // @ts-expect-error not present in type def
-                    this.config.pg.session.client.end();
-                    this.config.cacher.end();
-                    delete this.config;
-                }
-
-                delete this.srv;
-                t.end();
-            });
+        test('test server landing - api', async (t) => {
+            await this.srv.close();
         });
     }
 }

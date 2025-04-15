@@ -95,7 +95,7 @@ export default class Cacher {
         }
     }
 
-    end(): void {
+    async end(): Promise<void> {
         this.cache.close();
     }
 }

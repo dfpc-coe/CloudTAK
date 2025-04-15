@@ -245,7 +245,7 @@ export default async function server(config: Config) {
                     console.log('ok - http://localhost:5001');
                 }
             }
-            return resolve(srv);
+            return resolve(new ServerManager(srv, wss, config));
         });
 
         srv.on('upgrade', (request, socket, head) => {
@@ -256,8 +256,27 @@ export default async function server(config: Config) {
 
         srv.on('close', async () => {
             await config.conns.close();
-            // Doesn't currently exit cleanly by itself
-            process.exit(0)
         });
     });
 }
+
+export class ServerManager {
+    constructor(server, wss, config) {
+        this.wss = wss;
+        this.server = server;
+        this.config = config;
+    }
+
+    async close() {
+        await Promise.allSettled([
+            new Promise((resolve) => {
+                this.server.close(resolve);
+            }),
+            this.config.cacher.end(),
+            new Promise((resolve) => {
+                this.wss.close(resolve);
+            }),
+        ]);
+    }
+}
+
