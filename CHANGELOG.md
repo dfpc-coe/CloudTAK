@@ -12,6 +12,14 @@
 
 ### Pending Release
 
+### 8.7.0 - 2025-04-15
+
+- :rocket: Add username/password support for HLS Streams
+- :bug: Fix bug related to authentication payloads from MediaMTX read/write seperated streams
+- :rocket: Migrate Refresh buttons to new `TablerRefreshButton` component
+- :rocket: Migrate CoordInput component to `setup lang='ts'`
+- :bug: Fix Coordinate creation due to proxy error
+
 ### 8.6.0 - 2025-04-14
 
 - :rocket: Begin process of merging data and events tasks
