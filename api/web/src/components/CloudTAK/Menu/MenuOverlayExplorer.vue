@@ -3,15 +3,10 @@
         name='Overlay Explorer'
     >
         <template #buttons>
-            <TablerIconButton
-                title='Refresh'
+            <TablerRefreshButton
+                :loading='loading'
                 @click='fetchList'
-            >
-                <IconRefresh
-                    :size='32'
-                    stroke='1'
-                />
-            </TablerIconButton>
+            />
         </template>
         <template #default>
             <div class='row g-0 py-2'>
@@ -75,11 +70,10 @@ import MenuTemplate from '../util/MenuTemplate.vue';
 import {
     TablerNone,
     TablerLoading,
-    TablerIconButton
+    TablerRefreshButton
 } from '@tak-ps/vue-tabler';
 import {
     IconUser,
-    IconRefresh
 } from '@tabler/icons-vue'
 import Overlay from '../../../base/overlay.ts';
 import { useMapStore } from '../../../stores/map.ts';

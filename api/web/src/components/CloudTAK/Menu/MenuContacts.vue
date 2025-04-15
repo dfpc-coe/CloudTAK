@@ -1,17 +1,10 @@
 <template>
     <MenuTemplate name='Contacts'>
         <template #buttons>
-            <TablerIconButton
-                v-if='!loading'
-                icon='IconRefresh'
-                title='Refresh'
+            <TablerRefreshButton
+                :loading='loading'
                 @click='fetchList'
-            >
-                <IconRefresh
-                    :size='32'
-                    stroke='1'
-                />
-            </TablerIconButton>
+            />
         </template>
         <template #default>
             <div
@@ -158,7 +151,6 @@ import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();
 import MenuTemplate from '../util/MenuTemplate.vue';
 import {
-    IconRefresh,
     IconChevronRight,
     IconChevronDown
 } from '@tabler/icons-vue';
@@ -167,7 +159,8 @@ import {
     TablerAlert,
     TablerInput,
     TablerLoading,
-    TablerIconButton
+    TablerIconButton,
+    TablerRefreshButton
 } from '@tak-ps/vue-tabler';
 import Contact from '../util/Contact.vue';
 import ContactPuck from '../util/ContactPuck.vue';

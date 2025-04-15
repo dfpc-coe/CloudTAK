@@ -47,15 +47,10 @@
                     </div>
                 </template>
             </TablerDropdown>
-            <TablerIconButton
-                title='Refresh'
+            <TablerRefreshButton
+                :loading='!mission || loading'
                 @click='fetchMission'
-            >
-                <IconRefresh
-                    :size='32'
-                    stroke='1'
-                />
-            </TablerIconButton>
+            />
         </template>
         <template #default>
             <TablerLoading
@@ -204,7 +199,6 @@ import { std } from '../../../std.ts';
 import type { Feature, Mission, MissionRole } from '../../../types.ts';
 import Subscription from '../../../base/subscription.ts';
 import {
-    IconRefresh,
     IconPackages,
     IconFileZip,
     IconBoxMultiple,
@@ -220,7 +214,8 @@ import {
     TablerLoading,
     TablerDropdown,
     TablerDelete,
-    TablerIconButton
+    TablerIconButton,
+    TablerRefreshButton
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import ShareToPackage from '../util/ShareToPackage.vue';

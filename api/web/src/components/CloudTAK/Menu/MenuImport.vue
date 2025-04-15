@@ -6,15 +6,10 @@
                 displaytype='icon'
                 @delete='deleteImport'
             />
-            <TablerIconButton
-                title='Refresh'
+            <TablerRefreshButton
+                :loading='loading.initial'
                 @click='fetch(true)'
-            >
-                <IconRefresh
-                    :size='32'
-                    stroke='1'
-                />
-            </TablerIconButton>
+            />
         </template>
         <template #default>
             <TablerLoading v-if='!imported || loading.initial' />
@@ -122,12 +117,9 @@ import {
     TablerAlert,
     TablerDelete,
     TablerLoading,
-    TablerIconButton
+    TablerRefreshButton
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
-import {
-    IconRefresh,
-} from '@tabler/icons-vue';
 
 const route = useRoute();
 const router = useRouter();

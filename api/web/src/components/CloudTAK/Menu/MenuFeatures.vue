@@ -4,16 +4,10 @@
         :loading='!mapStore.isLoaded'
     >
         <template #buttons>
-            <TablerIconButton
-                title='Refresh'
-                :size='24'
-                @click='refresh'
-            >
-                <IconRefresh
-                    :size='32'
-                    stroke='1'
-                />
-            </TablerIconButton>
+            <TablerRefreshButton
+                :loading='loading'
+                @click='refresh(true)'
+            />
         </template>
         <template #default>
             <div class='mx-2 my-2'>
@@ -97,13 +91,12 @@ import {
     TablerNone,
     TablerInput,
     TablerLoading,
-    TablerIconButton
+    TablerRefreshButton
 } from '@tak-ps/vue-tabler';
 import type { WorkerMessage } from '../../../base/events.ts';
 import { WorkerMessageType } from '../../../base/events.ts';
 import {
     IconFolder,
-    IconRefresh,
     IconChevronRight,
     IconChevronDown
 } from '@tabler/icons-vue';
@@ -144,7 +137,6 @@ watch(query.value, async () => {
 
 onMounted(async () => {
     await refresh();
-    loading.value = false
 });
 
 onBeforeUnmount(() => {
@@ -153,7 +145,9 @@ onBeforeUnmount(() => {
     }
 })
 
-async function refresh(): Promise<void> {
+async function refresh(load = false): Promise<void> {
+    if (load) loading.value = true;
+
     cots.value = Array.from(await mapStore.worker.db
         .filter(`
             properties.archived
@@ -174,6 +168,8 @@ async function refresh(): Promise<void> {
                 cots: new Set()
             }
         });
+
+    loading.value = false
 }
 
 async function closePath(path: Path): Promise<void> {

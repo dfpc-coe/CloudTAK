@@ -10,16 +10,10 @@
                     stroke='1'
                 />
             </TablerIconButton>
-            <TablerIconButton
-                v-if='!loading'
-                title='Refresh'
+            <TablerRefreshButton
+                :loading='loading'
                 @click='fetchList'
-            >
-                <IconRefresh
-                    :size='32'
-                    stroke='1'
-                />
-            </TablerIconButton>
+            />
         </template>
         <template #default>
             <TablerAlert
@@ -66,13 +60,13 @@ import {
     TablerNone,
     TablerAlert,
     TablerLoading,
-    TablerIconButton
+    TablerIconButton,
+    TablerRefreshButton
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import {
     IconUser,
     IconPlus,
-    IconRefresh,
 } from '@tabler/icons-vue';
 
 const error = ref<Error | undefined>(undefined);

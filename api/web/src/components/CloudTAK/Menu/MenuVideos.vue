@@ -15,15 +15,10 @@
                     />
                 </TablerIconButton>
 
-                <TablerIconButton
-                    title='Refresh Leases'
+                <TablerRefreshButton
+                    :loading='loading.main'
                     @click='fetchLeases'
-                >
-                    <IconRefresh
-                        :size='32'
-                        stroke='1'
-                    />
-                </TablerIconButton>
+                />
             </template>
             <template v-else>
                 <TablerIconButton
@@ -36,15 +31,10 @@
                     />
                 </TablerIconButton>
 
-                <TablerIconButton
-                    title='Refresh Connections'
+                <TablerRefreshButton
+                    :loading='loading.main'
                     @click='fetchConnections'
-                >
-                    <IconRefresh
-                        :size='32'
-                        stroke='1'
-                    />
-                </TablerIconButton>
+                />
             </template>
         </template>
         <template #default>
@@ -249,13 +239,13 @@ import {
     TablerPager,
     TablerDelete,
     TablerLoading,
-    TablerIconButton
+    TablerIconButton,
+    TablerRefreshButton,
 } from '@tak-ps/vue-tabler';
 import {
     IconPlus,
     IconVideo,
     IconPencil,
-    IconRefresh,
     IconServer2,
 } from '@tabler/icons-vue';
 

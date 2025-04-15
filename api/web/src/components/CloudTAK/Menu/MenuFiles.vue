@@ -1,12 +1,8 @@
 <template>
     <MenuTemplate name='User Files'>
         <template #buttons>
-            <IconRefresh
-                v-if='!loading'
-                v-tooltip='"Refresh"'
-                :size='32'
-                stroke='1'
-                class='cursor-pointer'
+            <TablerRefreshButton
+                :loading='loading'
                 @click='fetchList'
             />
         </template>
@@ -109,6 +105,7 @@ import { std, stdurl } from '../../../std.ts';
 import {
     TablerDelete,
     TablerIconButton,
+    TablerRefreshButton,
     TablerAlert,
     TablerNone,
     TablerPager,
@@ -121,7 +118,6 @@ import {
     IconMapPlus,
     IconTransform,
     IconDownload,
-    IconRefresh,
 } from '@tabler/icons-vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import { useMapStore } from '/src/stores/map.ts';

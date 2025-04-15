@@ -12,7 +12,7 @@
             </TablerIconButton>
 
             <div class='card-title d-flex align-items-center'>
-                <StatusDot :status='user.active ? "Success" : "Unknown"'/>
+                <StatusDot :status='user.active ? "Success" : "Unknown"' />
                 <span
                     class='mx-2'
                     v-text='route.params.user'

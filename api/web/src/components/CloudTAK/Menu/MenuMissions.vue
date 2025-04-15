@@ -13,15 +13,10 @@
                     stroke='1'
                 />
             </TablerIconButton>
-            <TablerIconButton
-                title='Refresh'
+            <TablerRefreshButton
+                :loading='loading'
                 @click='fetchMissions'
-            >
-                <IconRefresh
-                    :size='32'
-                    stroke='1'
-                />
-            </TablerIconButton>
+            />
         </template>
         <template #default>
             <div class='col-12 px-2 py-2'>
@@ -143,6 +138,7 @@ import MenuTemplate from '../util/MenuTemplate.vue';
 import { useRouter } from 'vue-router';
 import {
     TablerIconButton,
+    TablerRefreshButton,
     TablerInput,
     TablerNone,
     TablerAlert,
@@ -155,7 +151,6 @@ import {
     IconLock,
     IconLockOpen,
     IconAccessPoint,
-    IconRefresh,
 } from '@tabler/icons-vue';
 import ChannelInfo from '../util/ChannelInfo.vue';
 import { useMapStore } from '../../../stores/map.ts';

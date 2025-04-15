@@ -18,16 +18,10 @@
                     stroke='1'
                 />
             </TablerIconButton>
-            <TablerIconButton
-                title='Refresh Mission Layers'
-                :size='24'
+            <TablerRefreshButton
+                :loading='loading'
                 @click='refresh'
-            >
-                <IconRefresh
-                    :size='32'
-                    stroke='1'
-                />
-            </TablerIconButton>
+            />
         </template>
 
         <div class='col-12'>
@@ -91,12 +85,12 @@
 import { ref, onMounted } from 'vue';
 import {
     IconPlus,
-    IconRefresh,
 } from '@tabler/icons-vue';
 import {
     TablerNone,
     TablerLoading,
     TablerIconButton,
+    TablerRefreshButton,
 } from '@tak-ps/vue-tabler';
 import type {
     Mission,
