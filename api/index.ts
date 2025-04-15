@@ -277,6 +277,8 @@ export class ServerManager {
                 this.wss.close(resolve);
             }),
         ]);
+
+        this.config.pg.end();
     }
 }
 
