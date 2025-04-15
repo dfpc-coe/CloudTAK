@@ -1,4 +1,4 @@
-m<template>
+<template>
     <MenuTemplate name='Connections'>
         <template #buttons>
             <TablerRefreshButton
