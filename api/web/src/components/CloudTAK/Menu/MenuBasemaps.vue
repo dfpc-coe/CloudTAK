@@ -10,16 +10,10 @@
                     stroke='1'
                 />
             </TablerIconButton>
-            <TablerIconButton
-                v-if='!loading'
-                title='Refresh'
+            <TablerRefreshButton
+                :loading='loading'
                 @click='fetchList'
-            >
-                <IconRefresh
-                    :size='32'
-                    stroke='1'
-                />
-            </TablerIconButton>
+            />
         </template>
 
         <template #default>
@@ -198,6 +192,7 @@ import {
     TablerAlert,
     TablerLoading,
     TablerIconButton,
+    TablerRefreshButton,
     TablerDropdown
 } from '@tak-ps/vue-tabler';
 import {
@@ -205,7 +200,6 @@ import {
     IconPlus,
     IconFolder,
     IconShare2,
-    IconRefresh,
     IconSettings,
     IconDownload,
     IconDotsVertical,

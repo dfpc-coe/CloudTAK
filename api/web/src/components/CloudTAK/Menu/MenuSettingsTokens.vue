@@ -14,15 +14,10 @@
                     stroke='1'
                 />
             </TablerIconButton>
-            <TablerIconButton
-                title='Refresh'
+            <TablerRefreshButton
+                :loading='loading'
                 @click='fetch'
-            >
-                <IconRefresh
-                    :size='32'
-                    stroke='1'
-                />
-            </TablerIconButton>
+            />
         </template>
         <template #default>
             <div
@@ -58,8 +53,11 @@ import MenuTemplate from '../util/MenuTemplate.vue';
 import { std } from '../../../std.ts';
 import TokenModal from './Settings/TokenModal.vue';
 import {
+    TablerIconButton,
+    TablerRefreshButton
+} from '@tak-ps/vue-tabler';
+import {
     IconPlus,
-    IconRefresh,
     IconRobot,
 } from '@tabler/icons-vue';
 

@@ -4,15 +4,10 @@
         :loading='loading'
     >
         <template #buttons>
-            <TablerIconButton
-                title='Refresh'
+            <TablerRefreshButton
+                :loading='loading'
                 @click='fetchChats'
-            >
-                <IconRefresh
-                    :size='32'
-                    stroke='1'
-                />
-            </TablerIconButton>
+            />
         </template>
         <template #default>
             <div
@@ -60,12 +55,9 @@ import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { std } from '../../../std.ts';
 import {
-    TablerIconButton,
+    TablerRefreshButton,
     TablerInput,
 } from '@tak-ps/vue-tabler';
-import {
-    IconRefresh,
-} from '@tabler/icons-vue'
 import MenuTemplate from '../util/MenuTemplate.vue';
 import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();

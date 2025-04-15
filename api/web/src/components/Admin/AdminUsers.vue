@@ -50,14 +50,20 @@
                             <template v-for='h in header'>
                                 <template v-if='h.display'>
                                     <td>
-                                        <div v-if='h.name === "username"' class='d-flex align-items-center'>
-                                            <StatusDot :status='user.active ? "Success" : "Unknown"'/>
+                                        <div
+                                            v-if='h.name === "username"'
+                                            class='d-flex align-items-center'
+                                        >
+                                            <StatusDot :status='user.active ? "Success" : "Unknown"' />
                                             <span
                                                 class='mx-2'
                                                 v-text='user[h.name]'
                                             />
                                         </div>
-                                        <span v-else v-text='user[h.name]' />
+                                        <span
+                                            v-else
+                                            v-text='user[h.name]'
+                                        />
                                     </td>
                                 </template>
                             </template>

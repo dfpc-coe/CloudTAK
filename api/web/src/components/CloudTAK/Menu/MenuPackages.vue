@@ -15,16 +15,10 @@
                 />
             </TablerIconButton>
 
-            <TablerIconButton
-                v-if='!loading'
-                title='Refresh'
+            <TablerRefreshButton
+                :loading='loading'
                 @click='fetchList'
-            >
-                <IconRefresh
-                    :size='32'
-                    stroke='1'
-                />
-            </TablerIconButton>
+            />
         </template>
         <template #default>
             <div
@@ -97,11 +91,11 @@ import {
     TablerNone,
     TablerAlert,
     TablerIconButton,
+    TablerRefreshButton,
     TablerInput,
 } from '@tak-ps/vue-tabler';
 import {
     IconPlus,
-    IconRefresh,
 } from '@tabler/icons-vue';
 import timeDiff from '../../../timediff.ts';
 import ChannelInfo from '../util/ChannelInfo.vue';

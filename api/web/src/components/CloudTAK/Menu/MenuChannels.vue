@@ -22,16 +22,10 @@
                 />
             </TablerIconButton>
 
-            <TablerIconButton
-                v-if='!loading'
-                title='Refresh'
+            <TablerRefreshButton
+                :loading='loading'
                 @click='refresh'
-            >
-                <IconRefresh
-                    :size='32'
-                    stroke='1'
-                />
-            </TablerIconButton>
+            />
         </template>
         <template #default>
             <div
@@ -130,6 +124,7 @@ import type { Group } from '../../../../src/types.ts';
 import {
     TablerNone,
     TablerIconButton,
+    TablerRefreshButton,
     TablerInput,
     TablerAlert,
     TablerLoading
@@ -139,7 +134,6 @@ import EmptyInfo from '../util/EmptyInfo.vue';
 import {
     IconLocation,
     IconLocationOff,
-    IconRefresh,
     IconEye,
     IconEyeX,
     IconEyePlus,

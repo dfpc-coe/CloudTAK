@@ -1,16 +1,10 @@
 m<template>
     <MenuTemplate name='Connections'>
         <template #buttons>
-            <TablerIconButton
-                v-if='!loading'
-                title='"Refresh"'
+            <TablerRefreshButton
+                :loading='loading'
                 @click='fetchList'
-            >
-                <IconRefresh
-                    :size='32'
-                    stroke='1'
-                />
-            </TablerIconButton>
+            />
         </template>
         <template #default>
             <div class='row g-0 py-2'>
@@ -133,12 +127,11 @@ import {
     TablerInput,
     TablerPager,
     TablerLoading,
-    TablerIconButton
+    TablerRefreshButton
 } from '@tak-ps/vue-tabler';
 import {
     IconPlus,
     IconWand,
-    IconRefresh,
 } from '@tabler/icons-vue';
 
 import MenuTemplate from '../util/MenuTemplate.vue';

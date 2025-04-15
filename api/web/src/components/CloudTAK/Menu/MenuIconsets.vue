@@ -22,23 +22,17 @@
                 />
             </TablerIconButton>
 
-            <TablerIconButton
-                v-if='!loading'
-                title='Refresh'
+            <TablerRefreshButton
+                :loading='loading'
                 @click='fetchList'
-            >
-                <IconRefresh
-                    :size='32'
-                    stroke='1'
-                />
-            </TablerIconButton>
+            />
         </template>
         <template #default>
             <template v-if='upload'>
                 <div class='mx-4 my-4'>
                     <Upload
                         method='PUT'
-                        :url='uploadURL()'
+                        :url='stdurl(`/api/import`)'
                         :headers='uploadHeaders()'
                         @done='processUpload($event)'
                         @cancel='upload = false'
@@ -108,6 +102,10 @@
                         v-if='loading'
                         desc='Loading Iconsets'
                     />
+                    <TablerAlert
+                        v-else-if='error'
+                        :err='error'
+                    />
                     <TablerNone
                         v-else-if='!list.items.length'
                         label='Iconsets'
@@ -117,7 +115,7 @@
                         v-for='iconset in list.items'
                         :key='iconset.uid'
                         class='col-12 hover-dark cursor-pointer py-2 px-3'
-                        @click='$router.push(`/menu/iconset/${iconset.uid}`)'
+                        @click='router.push(`/menu/iconset/${iconset.uid}`)'
                     >
                         <div class='d-flex align-items-center'>
                             <span v-text='iconset.name' />
@@ -172,9 +170,11 @@
     />
 </template>
 
-<script>
+<script setup>
+import { ref, watch, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import MenuTemplate from '../util/MenuTemplate.vue';
-import { std, stdurl } from '/src/std.ts';
+import { std, stdurl } from '../../../std.ts';
 import Upload from '../../util/Upload.vue';
 import IconCombineds from '../util/Icons.vue'
 import IconsetEditModal from './Iconset/EditModal.vue';
@@ -182,11 +182,12 @@ import {
     TablerNone,
     TablerPager,
     TablerInput,
+    TablerAlert,
     TablerLoading,
     TablerIconButton,
+    TablerRefreshButton
 } from '@tak-ps/vue-tabler';
 import {
-    IconRefresh,
     IconDownload,
     IconFileUpload,
     IconAlbum,
@@ -194,82 +195,64 @@ import {
     IconPlus
 } from '@tabler/icons-vue'
 
-export default {
-    name: 'CloudTAKIconsets',
-    components: {
-        Upload,
-        IconAlbum,
-        IconPhoto,
-        IconPlus,
-        IconDownload,
-        MenuTemplate,
-        IconsetEditModal,
-        IconFileUpload,
-        IconCombineds,
-        TablerNone,
-        TablerPager,
-        TablerInput,
-        TablerLoading,
-        TablerIconButton,
-        IconRefresh,
-    },
-    data: function() {
-        return {
-            mode: 'iconsets',
-            err: false,
-            loading: true,
-            upload: false,
-            editModal: false,
-            paging: {
-                limit: 20,
-                filter: '',
-                page: 0
-            },
-            list: {
-                total: 0,
-                items: []
-            }
-        }
-    },
-    watch: {
-        paging: {
-            deep: true,
-            handler: async function() {
-                await this.fetchList();
-            }
-        }
-    },
-    mounted: async function() {
-        await this.fetchList();
-    },
-    methods: {
-        throws: function(err) {
-            throw err;
-        },
-        processUpload: function(body) {
-            body = JSON.parse(body);
-            this.$router.push(`/menu/imports/${body.imports[0].uid}`);
-        },
-        uploadHeaders: function() {
-            return {
-                Authorization: `Bearer ${localStorage.token}`
-            };
-        },
-        download: async function(iconset) {
-            window.location.href = stdurl(`api/iconset/${iconset.uid}?format=zip&download=true&token=${localStorage.token}`);
-        },
-        uploadURL: function() {
-            return stdurl(`/api/import`);
-        },
-        fetchList: async function() {
-            this.loading = true;
-            const url = stdurl('/api/iconset');
-            url.searchParams.append('page', this.paging.page);
-            url.searchParams.append('filter', this.paging.filter);
-            url.searchParams.append('limit', this.paging.limit);
-            this.list = await std(url);
-            this.loading = false;
-        }
+const router = useRouter();
+const mode = ref('iconsets');
+
+const error = ref();
+const loading = ref(true)
+const upload = ref(false);
+const editModal = ref(false);
+
+const paging = ref({
+    limit: 20,
+    filter: '',
+    page: 0
+});
+
+const list = ref({
+    total: 0,
+    items: []
+});
+
+watch(paging.value, async () => {
+    await fetchList();
+});
+
+onMounted(async () => {
+    await fetchList();
+});
+
+function throws(err) {
+    throw err;
+}
+
+function processUpload(body) {
+    body = JSON.parse(body);
+    router.push(`/menu/imports/${body.imports[0].uid}`);
+}
+
+function uploadHeaders() {
+    return {
+        Authorization: `Bearer ${localStorage.token}`
+    };
+}
+
+function download(iconset) {
+    window.location.href = stdurl(`api/iconset/${iconset.uid}?format=zip&download=true&token=${localStorage.token}`);
+}
+
+async function fetchList() {
+    loading.value = true;
+
+    try {
+        const url = stdurl('/api/iconset');
+        url.searchParams.append('page', this.paging.page);
+        url.searchParams.append('filter', this.paging.filter);
+        url.searchParams.append('limit', this.paging.limit);
+        list.value = await std(url);
+        loading.value = false;
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
     }
 }
 </script>
