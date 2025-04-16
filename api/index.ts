@@ -1,6 +1,5 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import http from 'node:http'
 import cors from 'cors';
 import express from 'express';
 import SwaggerUI from 'swagger-ui-express';
@@ -14,6 +13,7 @@ import sleep from './lib/sleep.js';
 import type WebSocket from 'ws';
 import * as ws from 'ws';
 import Config from './lib/config.js';
+import ServerManager from './lib/server.js';
 import { tokenParser, AuthUser } from './lib/auth.js'
 import process from 'node:process';
 
@@ -62,7 +62,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     await server(config);
 }
 
-export default async function server(config: Config) {
+export default async function server(config: Config): Promise<ServerManager> {
     try {
         await config.cacher.flush();
     } catch (err) {
@@ -246,7 +246,9 @@ export default async function server(config: Config) {
                     console.log('ok - http://localhost:5001');
                 }
             }
-            return resolve(new ServerManager(srv, wss, config));
+
+            const sm = new ServerManager(srv, wss, config);
+            return resolve(sm);
         });
 
         srv.on('upgrade', (request, socket, head) => {
@@ -259,35 +261,5 @@ export default async function server(config: Config) {
             await config.conns.close();
         });
     });
-}
-
-export class ServerManager {
-    server: http.Server;
-    wss: ws.WebSocketServer;
-    config: Config;
-
-    constructor(
-        server: http.Server,
-        wss: ws.WebSocketServer,
-        config: Config
-    ) {
-        this.wss = wss;
-        this.server = server;
-        this.config = config;
-    }
-
-    async close() {
-        await Promise.allSettled([
-            new Promise((resolve) => {
-                this.server.close(resolve);
-            }),
-            this.config.cacher.end(),
-            new Promise((resolve) => {
-                this.wss.close(resolve);
-            }),
-        ]);
-
-        this.config.pg.end();
-    }
 }
 

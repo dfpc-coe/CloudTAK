@@ -344,6 +344,7 @@ export default class Flight {
     landing() {
         test('test server landing - api', async (t) => {
             await this.srv.close();
+            t.end();
         });
     }
 }

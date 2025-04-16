@@ -81,6 +81,9 @@ export type PackageList = paths["/marti/package"]["get"]["responses"]["200"]["co
 
 export type IconsetList = paths["/iconset"]["get"]["responses"]["200"]["content"]["application/json"]
 
+export type AttachmentList = paths["/attachment"]["get"]["responses"]["200"]["content"]["application/json"]
+export type Attachment = paths["/attachment"]["get"]["responses"]["200"]["content"]["application/json"]["items"][]
+
 export type ConfigGroups = paths["/config/group"]["get"]["responses"]["200"]["content"]["application/json"]
 
 export type Basemap = paths["/basemap/{:basemapid}"]["patch"]["responses"]["200"]["content"]["application/json"]

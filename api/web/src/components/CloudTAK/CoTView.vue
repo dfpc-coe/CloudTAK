@@ -80,7 +80,7 @@
                         <TablerIconButton
                             v-if='cot.properties.video && cot.properties.video.url'
                             title='View Video Stream'
-                            @click='videoStore.add(String(route.params.uid))'
+                            @click='floatStore.addCOT(String(route.params.uid))'
                         >
                             <IconPlayerPlay
                                 size='32'
@@ -754,11 +754,11 @@ import Subscriptions from './util/Subscriptions.vue';
 import timediff from '../../timediff.ts';
 import { std } from '../../std.ts';
 import { useMapStore } from '../../stores/map.ts';
-import { useVideoStore } from '../../stores/videos.ts';
+import { useFloatStore } from '../../stores/float.ts';
 
 const mapStore = useMapStore();
 
-const videoStore = useVideoStore();
+const floatStore = useFloatStore();
 const route = useRoute();
 const router = useRouter();
 

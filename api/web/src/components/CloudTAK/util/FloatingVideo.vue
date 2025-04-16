@@ -134,7 +134,7 @@ import VideoLeaseSourceType from './VideoLeaseSourceType.vue';
 import type { VideoLeaseResponse } from '../../../types.ts';
 import type Player from 'video.js/dist/types/player.d.ts';
 import videojs from 'video.js';
-import { useVideoStore } from '../../../../src/stores/videos.ts';
+import { useFloatStore } from '../../../stores/float.ts';
 import 'video.js/dist/video-js.css';
 import {
     IconX,
@@ -149,7 +149,7 @@ import {
     TablerIconButton,
 } from '@tak-ps/vue-tabler';
 
-const videoStore = useVideoStore();
+const floatStore = useFloatStore();
 const id = `video-${(Math.random() + 1).toString(36).substring(7)}`;
 
 const props = defineProps({
@@ -172,7 +172,7 @@ const loading = ref(true);
 const error = ref<Error | undefined>();
 const player = ref<Player | undefined>()
 
-const video = ref(videoStore.videos.get(props.uid));
+const video = ref(floatStore.panes.get(props.uid));
 const videoLease = ref<VideoLeaseResponse["lease"] | undefined>();
 const videoProtocols = ref<VideoLeaseResponse["protocols"] | undefined>();
 const observer = ref<ResizeObserver | undefined>();

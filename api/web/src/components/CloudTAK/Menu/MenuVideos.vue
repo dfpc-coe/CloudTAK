@@ -99,7 +99,7 @@
                             v-for='connection in connections.videoConnections'
                             :key='connection.uuid'
                             class='d-flex align-items-center px-3 py-2 hover-dark cursor-pointer'
-                            @click='videoStore.addConnection(connection)'
+                            @click='floatStore.addConnection(connection)'
                         >
                             <span class='me-1'>
                                 <IconVideo
@@ -231,7 +231,7 @@ import COT from '../../../base/cot.ts';
 import VideoLeaseSourceType from '../util/VideoLeaseSourceType.vue';
 import type { VideoLease, VideoLeaseList, VideoConnectionList } from '../../../types.ts';
 import { useMapStore } from '../../../stores/map.ts';
-import { useVideoStore } from '../../../stores/videos.ts';
+import { useFloatStore } from '../../../stores/float.ts';
 import {
     TablerNone,
     TablerInput,
@@ -252,7 +252,7 @@ import {
 import { ref, watch, onMounted } from 'vue'
 
 const mapStore = useMapStore();
-const videoStore = useVideoStore();
+const floatStore = useFloatStore();
 
 const leasePaging = ref({
     page: 0,
