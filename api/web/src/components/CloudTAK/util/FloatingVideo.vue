@@ -135,6 +135,7 @@ import type { VideoLeaseResponse } from '../../../types.ts';
 import type Player from 'video.js/dist/types/player.d.ts';
 import videojs from 'video.js';
 import { useFloatStore } from '../../../stores/float.ts';
+import type { VideoPane } from '../../../stores/float.ts';
 import 'video.js/dist/video-js.css';
 import {
     IconX,
@@ -172,7 +173,7 @@ const loading = ref(true);
 const error = ref<Error | undefined>();
 const player = ref<Player | undefined>()
 
-const video = ref(floatStore.panes.get(props.uid));
+const video = ref(floatStore.panes.get(props.uid) as VideoPane);
 const videoLease = ref<VideoLeaseResponse["lease"] | undefined>();
 const videoProtocols = ref<VideoLeaseResponse["protocols"] | undefined>();
 const observer = ref<ResizeObserver | undefined>();
@@ -206,18 +207,18 @@ onMounted(async () => {
 
         window.requestAnimationFrame(() => {
             if (video.value && video.value && container.value) {
-                video.value.height = entries[0].contentRect.height;
-                video.value.width = entries[0].contentRect.width;
+                video.value.config.height = entries[0].contentRect.height;
+                video.value.config.width = entries[0].contentRect.width;
             }
         });
     })
 
     if (container.value && video.value) {
-        container.value.style.top = video.value.y + 'px';
-        container.value.style.left = video.value.x + 'px';
+        container.value.style.top = video.value.config.y + 'px';
+        container.value.style.left = video.value.config.x + 'px';
 
-        container.value.style.height = video.value.height + 'px';
-        container.value.style.width = video.value.width + 'px';
+        container.value.style.height = video.value.config.height + 'px';
+        container.value.style.width = video.value.config.width + 'px';
 
         observer.value.observe(container.value);
     }
@@ -248,14 +249,14 @@ function dragMove(event: MouseEvent) {
 
     const dragElRect = container.value.getBoundingClientRect();
 
-    video.value.x = dragElRect.left + event.clientX - lastPosition.value.left;
-    video.value.y = dragElRect.top + event.clientY - lastPosition.value.top;
+    video.value.config.x = dragElRect.left + event.clientX - lastPosition.value.left;
+    video.value.config.y = dragElRect.top + event.clientY - lastPosition.value.top;
 
     lastPosition.value.left = event.clientX;
     lastPosition.value.top = event.clientY;
 
-    container.value.style.top = video.value.y + 'px';
-    container.value.style.left = video.value.x + 'px';
+    container.value.style.top = video.value.config.y + 'px';
+    container.value.style.left = video.value.config.x + 'px';
 }
 
 function dragEnd() {
@@ -288,7 +289,7 @@ async function requestLease(): Promise<void> {
 
     try {
         const url = stdurl('/api/video/active');
-        url.searchParams.append('url', video.value.url)
+        url.searchParams.append('url', video.value.config.url)
         active.value = await std(url);
 
         console.error(active.value.leasable);
@@ -302,7 +303,7 @@ async function requestLease(): Promise<void> {
                     name: 'Temporary Lease',
                     ephemeral: true,
                     duration: 1 * 60 * 60,
-                    proxy: video.value.url
+                    proxy: video.value.config.url
                 }
             }) as VideoLeaseResponse
 
