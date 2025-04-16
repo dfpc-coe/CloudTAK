@@ -26,7 +26,15 @@
             </div>
 
             <div class='btn-list ms-auto'>
-
+                <TablerIconButton
+                    title='Download'
+                    @click='downloadAsset(pane.config.attachment)'
+                >
+                    <IconDownload
+                        :size='24'
+                        stroke='1'
+                    />
+                </TablerIconButton>
                 <TablerIconButton
                     title='Close Video Player'
                     @click='emit("close")'
@@ -45,7 +53,7 @@
         >
             <img
                 v-if='[".png", ".jpg", "jpeg", "webp"].includes(pane.config.attachment.ext)'
-                :src='downloadAssetUrl(pane.config.attachment)'
+                :src='String(downloadAssetUrl(pane.config.attachment))'
                 style='
                     width: 100%;
                     height: 100%;
@@ -56,19 +64,17 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, onMounted, onUnmounted, nextTick, useTemplateRef } from 'vue'
-import { std, stdurl } from '../../../std.ts';
+import { ref, onMounted, onUnmounted, useTemplateRef } from 'vue'
+import { stdurl } from '../../../std.ts';
 import type { Attachment } from '../../../types.ts';
 import { useFloatStore } from '../../../stores/float.ts';
+import type { AttachmentPane } from '../../../stores/float.ts';
 import {
     IconX,
+    IconDownload,
     IconGripVertical
 } from '@tabler/icons-vue';
 import {
-    TablerNone,
-    TablerAlert,
-    TablerLoading,
-    TablerButton,
     TablerIconButton,
 } from '@tak-ps/vue-tabler';
 
@@ -86,10 +92,7 @@ const dragHandle = useTemplateRef<HTMLElement>('drag-handle');
 
 const emit = defineEmits(['close']);
 
-const loading = ref(true);
-const error = ref<Error | undefined>();
-
-const pane = ref(floatStore.panes.get(props.uid));
+const pane = ref(floatStore.panes.get(props.uid) as AttachmentPane);
 const observer = ref<ResizeObserver | undefined>();
 const lastPosition = ref({ top: 0, left: 0 })
 
@@ -131,7 +134,7 @@ function downloadAssetUrl(attachment: Attachment) {
 }
 
 async function downloadAsset(attachment: Attachment) {
-    window.open(downloadAssetUrl(attachment), "_blank")
+    window.open(String(downloadAssetUrl(attachment)), "_blank")
 }
 
 function dragStart(event: MouseEvent) {

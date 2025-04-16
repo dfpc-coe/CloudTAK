@@ -18,33 +18,33 @@ export enum VideoStoreType {
 }
 
 export type VideoPane = {
-    type: VideoStoreType,
-    url: string,
-    height: number,
-    width: number,
-    x: number,
-    y: number,
+    uid: string,
+    type: PaneType.VIDEO,
+    config: {
+        type: VideoStoreType,
+        url: string,
+        height: number,
+        width: number,
+        x: number,
+        y: number,
+    }
 }
 
-export type ImagePane = {
-    attachment: Attachment,
-    height: number,
-    width: number,
-    x: number,
-    y: number,
+export type AttachmentPane = {
+    uid: string,
+    type: PaneType.ATTACHMENT,
+    config: {
+        attachment: Attachment,
+        height: number,
+        width: number,
+        x: number,
+        y: number,
+    }
 }
 
 export const useFloatStore = defineStore('float', {
     state: (): {
-        panes: Map<string, {
-            uid: string,
-            type: PaneType.VIDEO,
-            config: VideoPane
-        } | {
-            uid: string,
-            type: PaneType.Image,
-            config: ImagePane
-        }>
+        panes: Map<string, VideoPane | AttachmentPane>
     } => {
         return {
             panes: new Map()
