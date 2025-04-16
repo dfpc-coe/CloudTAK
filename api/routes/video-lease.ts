@@ -169,6 +169,10 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
         } catch (err) {
+            if (err instanceof TypeError && err.message.includes('Invalid URL')) {
+                Err.respond(new Err(400, null, 'Invalid URL'), res);
+            }
+
              Err.respond(err, res);
         }
     });

@@ -305,10 +305,8 @@ export const useMapStore = defineStore('cloudtak', {
                 } else if (msg.type === WorkerMessageType.Map_Projection) {
                     map.setProjection(msg.body);
                 } else if (msg.type === WorkerMessageType.Connection_Open) {
-                    console.error('OPENED MESSAGE')
                     this.isOpen = true;
                 } else if (msg.type === WorkerMessageType.Connection_Close) {
-                    console.error('CLOSED MESSAGE')
                     this.isOpen = false;
                 } else if (msg.type === WorkerMessageType.Channels_None) {
                     this.hasNoChannels = true;

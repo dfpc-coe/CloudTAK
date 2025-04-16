@@ -428,12 +428,18 @@
             />
 
             <template
-                v-for='video in videoStore.videos.values()'
-                :key='video.uid'
+                v-for='float in floatStore.panes.values()'
+                :key='float.uid'
             >
-                <CoTVideo
-                    :uid='video.uid'
-                    @close='videoStore.videos.delete(video.uid)'
+                <FloatingVideo
+                    v-if='float.type === PaneType.VIDEO'
+                    :uid='float.uid'
+                    @close='floatStore.panes.delete(float.uid)'
+                />
+                <FloatingAttachment
+                    v-if='float.type === PaneType.ATTACHMENT'
+                    :uid='float.uid'
+                    @close='floatStore.panes.delete(float.uid)'
                 />
             </template>
 
@@ -463,7 +469,8 @@
 <script setup lang='ts'>
 import {ref, watch, computed, toRaw, onMounted, onBeforeUnmount, useTemplateRef } from 'vue';
 import {useRoute, useRouter } from 'vue-router';
-import CoTVideo from './util/Video.vue';
+import FloatingVideo from './util/FloatingVideo.vue';
+import FloatingAttachment from './util/FloatingAttachment.vue';
 import DrawOverlay from './util/DrawOverlay.vue';
 import WarnChannels from './util/WarnChannels.vue';
 import SearchBox from './util/SearchBox.vue';
@@ -510,10 +517,10 @@ import MapLoading from './MapLoading.vue';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import RadialMenu from './RadialMenu/RadialMenu.vue';
 import { useMapStore } from '../../stores/map.ts';
-import { useVideoStore } from '../../stores/videos.ts';
+import { useFloatStore, PaneType } from '../../stores/float.ts';
 import UploadImport from './util/UploadImport.vue'
 const mapStore = useMapStore();
-const videoStore = useVideoStore();
+const floatStore = useFloatStore();
 const router = useRouter();
 const route = useRoute();
 
@@ -728,7 +735,7 @@ async function handleRadial(event: string): Promise<void> {
         router.push(`/cot/${mapStore.radial.cot.properties.id}`);
         closeRadial()
     } else if (event === 'cot:play') {
-        await videoStore.add(mapStore.radial.cot.properties.id);
+        await floatStore.addCOT(mapStore.radial.cot.properties.id);
         closeRadial()
     } else if (event === 'cot:delete') {
         const cot = mapStore.radial.cot;

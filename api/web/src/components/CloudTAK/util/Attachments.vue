@@ -44,6 +44,8 @@
                         <div class='col-4 px-2 py-2'>
                             <img
                                 v-if='[".png", ".jpg", "jpeg", "webp"].includes(file.ext)'
+                                class='cursor-pointer'
+                                @click='attachmentPane(file)'
                                 :src='downloadAssetUrl(file)'
                                 :size='24'
                                 stroke='1'
@@ -62,13 +64,15 @@
                                 />
 
                                 <div class='ms-auto'>
-                                    <IconDownload
-                                        v-tooltip='"Download Asset"'
-                                        :size='24'
-                                        stroke='1'
-                                        class='cursor-pointer'
+                                    <TablerIconButton
+                                        title='Download Asset'
                                         @click='downloadAsset(file)'
-                                    />
+                                    >
+                                        <IconDownload
+                                            :size='24'
+                                            stroke='1'
+                                        />
+                                    </TablerIconButton>
                                 </div>
                             </div>
                         </div>
@@ -79,8 +83,10 @@
     </div>
 </template>
 
-<script>
-import { std, stdurl } from '/src/std.ts';
+<script setup>
+import { ref, onMounted, watch } from 'vue';
+import { std, stdurl } from '../../../std.ts';
+import { useFloatStore } from '../../../stores/float.ts';
 import Upload from '../../util/Upload.vue';
 import {
     IconFile,
@@ -89,86 +95,82 @@ import {
 } from '@tabler/icons-vue';
 
 import {
+    TablerIconButton,
     TablerLoading,
     TablerNone
 } from '@tak-ps/vue-tabler'
 
-export default {
-    name: 'COTAttachments',
-    components: {
-        Upload,
-        IconFile,
-        IconDownload,
-        IconFileUpload,
-        TablerLoading,
-        TablerNone
-    },
-    props: {
-        attachments: {
-            type: Array,
-            required: true
-        },
-    },
-    emits: [
-        'attachment'
-    ],
-    data: function() {
-        return {
-            upload: false,
-            loading: true,
-            files: []
-        }
-    },
-    watch: {
-        attachments: {
-            deep: true,
-            handler: async function() {
-                await this.refresh();
-            }
-        }
-    },
-    mounted: async function() {
-        await this.refresh();
-    },
-    methods: {
-        refresh: async function() {
-            this.loading = true;
-            if (this.attachments.length) {
-                await this.fetchMetadata();
-            } else {
-                this.files = [];
-            }
-
-            this.loading = false;
-        },
-        uploadHeaders: function() {
-            return {
-                Authorization: `Bearer ${localStorage.token}`
-            };
-        },
-        uploadComplete: function(event) {
-            this.upload = false;
-
-            this.$emit("attachment", JSON.parse(event).hash);
-        },
-        uploadURL: function() {
-            return stdurl(`/api/attachment`);
-        },
-        downloadAssetUrl: function(file) {
-            const url = stdurl(`/api/attachment/${file.hash}`);
-            url.searchParams.append('token', localStorage.token);
-            return url;
-        },
-        downloadAsset: async function(file) {
-            window.open(this.downloadAssetUrl(file), "_blank")
-        },
-        fetchMetadata: async function() {
-            const url = stdurl(`/api/attachment`);
-            for (const a of this.attachments) {
-                url.searchParams.append('hash', a);
-            }
-            this.files = (await std(url)).items;
-        }
+const props = defineProps({
+    attachments: {
+        type: Array,
+        required: true
     }
+});
+
+const emit = defineEmits([
+    'attachment'
+]);
+
+const floatStore = useFloatStore();
+
+const upload = ref(false);
+const loading = ref(true);
+const files = ref([]);
+
+watch(props.attachments, async () => {
+    await refresh();
+});
+
+onMounted(async () => {
+    await refresh();
+})
+
+function attachmentPane(file) {
+    floatStore.addAttachment(file);
+}
+
+async function refresh() {
+    loading.value = true;
+    if (props.attachments.length) {
+        await fetchMetadata();
+    } else {
+        files.value = [];
+    }
+
+    loading.value = false;
+}
+
+function uploadHeaders() {
+    return {
+        Authorization: `Bearer ${localStorage.token}`
+    };
+}
+
+function uploadComplete(event) {
+    upload.value = false;
+
+    emit("attachment", JSON.parse(event).hash);
+}
+
+function uploadURL() {
+    return stdurl(`/api/attachment`);
+}
+
+function downloadAssetUrl(file) {
+    const url = stdurl(`/api/attachment/${file.hash}`);
+    url.searchParams.append('token', localStorage.token);
+    return url;
+}
+
+async function downloadAsset(file) {
+    window.open(downloadAssetUrl(file), "_blank")
+}
+
+async function fetchMetadata() {
+    const url = stdurl(`/api/attachment`);
+    for (const a of props.attachments) {
+        url.searchParams.append('hash', a);
+    }
+    files.value = (await std(url)).items;
 }
 </script>
