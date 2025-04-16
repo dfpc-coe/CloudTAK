@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### 8.8.0 - 2025-04-16
+
+- :rocket: Allow opening attachments in a Floating Pane
+
 ### 8.7.0 - 2025-04-15
 
 - :rocket: Add username/password support for HLS Streams
