@@ -42,7 +42,7 @@ export const useFloatStore = defineStore('float', {
             config: VideoPane
         } | {
             uid: string,
-            type: PaneType.Image,
+            type: PaneType.ATTACHMENT,
             config: ImagePane
         }>
     } => {
