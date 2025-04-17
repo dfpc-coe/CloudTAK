@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### 8.9.1 - 2025-04-17
+
+- :arrow_up: Update to `@tak-ps/serverless-http` in PMTiles Task for better express@5 compat.t 
+
 ### 8.9.0 - 2025-04-17
 
 - :bug: Fix UI Build step due to getOverlayById
