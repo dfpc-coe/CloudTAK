@@ -115,7 +115,7 @@
 <script setup lang='ts'>
 import { ref, computed } from 'vue';
 import { useMapStore } from '../../stores/map.ts';
-import Overlay from '../../base/overlay.ts';
+//import Overlay from '../../base/overlay.ts';
 import type { LngLatLike, MapGeoJSONFeature } from 'maplibre-gl';
 import type { Feature } from 'geojson';
 import pointOnFeature from '@turf/point-on-feature';
@@ -137,6 +137,7 @@ const props = defineProps<{
 
 const mode = ref('default');
 
+/*
 const overlay = computed<Overlay | null>(() => {
     // @ts-expect-error Doesn't exist in typedef
     const source: number | undefined = Number(props.feat.source);
@@ -144,6 +145,7 @@ const overlay = computed<Overlay | null>(() => {
     const ov = mapStore.getOverlayById(source);
     return ov;
 })
+*/
 
 const center = computed(() => {
     return pointOnFeature(props.feat).geometry.coordinates;
