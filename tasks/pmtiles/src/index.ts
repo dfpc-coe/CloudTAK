@@ -1,7 +1,7 @@
 import express from 'express';
 import Schema from '@openaddresses/batch-schema';
 import cors from 'cors';
-import serverless from 'serverless-http';
+import serverless from '@tak-ps/serverless-http';
 
 if (!process.env.SigningSecret) throw new Error('SigningSecret env var must be provided');
 if (!process.env.ASSET_BUCKET) throw new Error('ASSET_BUCKET env var must be provided');
