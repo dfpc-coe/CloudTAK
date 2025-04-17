@@ -30,6 +30,14 @@ export function AllBooleanCast(allBoolean: AllBoolean): boolean | null {
         : allBoolean === AllBoolean.FALSE ? false : null;
 }
 
+export enum Basemap_FeatureAction {
+    QUERY = 'query',
+    FETCH = 'fetch',
+    CREATE = 'create',
+    UPDATE = 'update',
+    DELETE = 'delete'
+}
+
 export enum BasicGeometryType {
     POINT = 'Point',
     LINESTRING = 'LineString',

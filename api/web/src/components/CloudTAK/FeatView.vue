@@ -31,6 +31,16 @@
                         stroke='1'
                     />
                 </TablerIconButton>
+                <TablerIconButton
+                    :title='overlay'
+                    @click='zoomTo'
+                >
+                    <IconZoomPan
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+
                 <div
                     class='ms-auto'
                     style='margin-right: 14px;'
@@ -115,7 +125,8 @@
 <script setup lang='ts'>
 import { ref, computed } from 'vue';
 import { useMapStore } from '../../stores/map.ts';
-import type { LngLatLike } from 'maplibre-gl';
+import Overlay from '../../base/overlay.ts';
+import type { LngLatLike, MapGeoJSONFeature } from 'maplibre-gl';
 import type { Feature } from 'geojson';
 import pointOnFeature from '@turf/point-on-feature';
 import Coordinate from './util/Coordinate.vue';
@@ -131,10 +142,17 @@ import {
 const mapStore = useMapStore();
 
 const props = defineProps<{
-    feat: Feature
+    feat: Feature | MapGeoJSONFeature
 }>();
 
 const mode = ref('default');
+
+const overlay = computed<Overlay | null>(() => {
+    if (!props.feat.source) return null
+    const ov = mapStore.getOverlayById(props.feat.source);
+    return ov;
+})
+
 const center = computed(() => {
     return pointOnFeature(props.feat).geometry.coordinates;
 });

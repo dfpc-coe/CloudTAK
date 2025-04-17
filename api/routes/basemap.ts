@@ -1,7 +1,7 @@
 import path from 'node:path';
 import Err from '@openaddresses/batch-error';
 import { bbox } from '@turf/bbox';
-import TileJSON, { TileJSONType } from '../lib/control/tilejson.js';
+import TileJSON, { TileJSONType, TileJSONActions } from '../lib/control/tilejson.js';
 import Auth, { AuthUserAccess, ResourceCreationScope } from '../lib/auth.js';
 import Cacher from '../lib/cacher.js';
 import busboy from 'busboy';
@@ -26,7 +26,8 @@ const AugmentedBasemapResponse = Type.Composite([
     Type.Omit(BasemapResponse, ['bounds', 'center']),
     Type.Object({
         bounds: Type.Optional(Type.Array(Type.Number(), { minItems: 4, maxItems: 4 })),
-        center: Type.Optional(Type.Array(Type.Number()))
+        center: Type.Optional(Type.Array(Type.Number())),
+        actions: TileJSONActions
     })
 ])
 
@@ -259,6 +260,7 @@ export default async function router(schema: Schema, config: Config) {
                         ...basemap,
                         bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
                         center: basemap.center ? basemap.center.coordinates : undefined,
+                        actions: TileJSON.actions(basemap)
                     };
                 })
             });
@@ -328,6 +330,7 @@ export default async function router(schema: Schema, config: Config) {
                 ...basemap,
                 bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
                 center: basemap.center ? basemap.center.coordinates : undefined,
+                actions: TileJSON.actions(basemap)
             });
         } catch (err) {
             Err.respond(err, res);
@@ -407,6 +410,7 @@ export default async function router(schema: Schema, config: Config) {
                 ...basemap,
                 bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
                 center: basemap.center ? basemap.center.coordinates : undefined,
+                actions: TileJSON.actions(basemap)
             });
         } catch (err) {
             Err.respond(err, res);
@@ -463,6 +467,7 @@ export default async function router(schema: Schema, config: Config) {
                     ...basemap,
                     bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
                     center: basemap.center ? basemap.center.coordinates : undefined,
+                    actions: TileJSON.actions(basemap)
                 });
             }
         } catch (err) {

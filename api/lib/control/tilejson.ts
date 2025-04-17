@@ -8,8 +8,15 @@ import type { Response } from 'express';
 import { pointOnFeature } from '@turf/point-on-feature';
 import { bboxPolygon } from '@turf/bbox-polygon';
 import { Static, Type } from '@sinclair/typebox'
+import { InferSelectModel } from 'drizzle-orm';
 import Err from '@openaddresses/batch-error';
+import { Basemap_FeatureAction } from '../enums.js';
 import { validateStyleMin } from '@maplibre/maplibre-gl-style-spec';
+import { Basemap } from '../schema.js';
+
+export const TileJSONActions = Type.Object({
+    feature: Type.Array(Type.Enum(Basemap_FeatureAction))
+})
 
 export const TileJSONType = Type.Object({
     tilejson: Type.String(),
@@ -54,6 +61,18 @@ export default class TileJSON {
         })
 
         if (errors.length) throw new Err(400, null, JSON.stringify(errors));
+    }
+
+    static actions(basemap: InferSelectModel<typeof Basemap>): Static<typeof TileJSONActions> {
+        const actions: Static<typeof TileJSONActions> = {
+            feature: []
+        }
+
+        if (basemap.url.match(/FeatureServer\/\d+/)) {
+            actions.feature.push(Basemap_FeatureAction.FETCH)
+        }
+
+        return actions;
     }
 
     static isValidURL(str: string): void {
