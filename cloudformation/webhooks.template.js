@@ -109,6 +109,7 @@ export default cf.merge(
             CloudTAKWebhooksHealthCheckFunction: {
                 Type: 'AWS::Lambda::Function',
                 Properties: {
+                    FunctionName: cf.join([cf.stackName, '-health']),
                     Handler: 'index.handler',
                     Role: cf.getAtt('CloudTAKWebhooksHealthCheckFunctionRole', 'Arn'),
                     Code: {

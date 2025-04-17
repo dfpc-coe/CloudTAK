@@ -109,7 +109,7 @@ export default class Config {
             process.env.StackName = 'test';
 
             SigningSecret = process.env.SigningSecret || 'coe-wildland-fire';
-            MediaSecret = process.env.SigningSecret || 'coe-wildland-fire-video';
+            MediaSecret = process.env.MediaSecret || 'coe-wildland-fire-video';
             Bucket = process.env.ASSET_BUCKET;
             API_URL = process.env.API_URL || 'http://localhost:5001';
             PMTILES_URL = process.env.PMTILES_URL || 'http://localhost:5001';
@@ -129,8 +129,8 @@ export default class Config {
 
             Bucket = process.env.ASSET_BUCKET;
             DynamoDB = process.env.StackName;
-            SigningSecret = await Config.fetchSecret(process.env.StackName, 'secret');
-            MediaSecret = await Config.fetchSecret(process.env.StackName, 'media');
+            SigningSecret = process.env.SigningSecret || await Config.fetchSecret(process.env.StackName, 'secret');
+            MediaSecret = process.env.MediaSecret || await Config.fetchSecret(process.env.StackName, 'media');
         }
 
         const pg: Pool<typeof pgtypes> = await Pool.connect(args.postgres, pgtypes, {
