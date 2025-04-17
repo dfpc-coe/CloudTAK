@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### 8.9.0 - 2025-04-17
+
+- :bug: Fix UI Build step due to getOverlayById
+- :bug: Fix Stale check on COTs
+- :arrow_up: Update Node-CoT
+
 ### 8.8.0 - 2025-04-16
 
 - :rocket: Allow opening attachments in a Floating Pane
