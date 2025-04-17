@@ -93,6 +93,7 @@ const supportedIcon = computed<string | null>(() => {
 watch(canvas, async () => {
     if (!canvas.value) return;
 
+    if (!supportedIcon.value) return;
     const icon = mapStore.map.getImage(supportedIcon.value)
     if (!icon) return;
 
