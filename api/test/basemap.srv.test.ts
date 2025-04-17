@@ -110,6 +110,7 @@ test('POST: api/basemap', async (t) => {
         t.deepEqual(res.body, {
             id: 1,
             name: 'Test Basemap',
+            actions: { feature: [] },
             url: 'https://test.com/test/{z}/{x}/{y}',
             overlay: false,
             title: 'callsign',
@@ -175,6 +176,7 @@ test('PATCH: api/basemap/1', async (t) => {
         t.deepEqual(res.body, {
             id: 1,
             name: 'Test Basemap2',
+            actions: { feature: [] },
             url: 'https://test.com/test/{z}/{x}/{y}',
             overlay: false,
             title: 'callsign',
