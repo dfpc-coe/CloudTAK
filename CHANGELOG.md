@@ -12,9 +12,14 @@
 
 ### Pending Release
 
+### 8.9.2 - 2025-04-17
+
+- :arrow_up: Update `@tak-ps/node-cot` to latest version
+- :rocket: Increase number of supported rendered features in FeatureIcon component
+
 ### 8.9.1 - 2025-04-17
 
-- :arrow_up: Update to `@tak-ps/serverless-http` in PMTiles Task for better express@5 compat.t 
+- :arrow_up: Update to `@tak-ps/serverless-http` in PMTiles Task for better express@5 compat.t
 
 ### 8.9.0 - 2025-04-17
 
