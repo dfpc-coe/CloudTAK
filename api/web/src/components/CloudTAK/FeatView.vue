@@ -31,16 +31,6 @@
                         stroke='1'
                     />
                 </TablerIconButton>
-                <TablerIconButton
-                    :title='overlay'
-                    @click='zoomTo'
-                >
-                    <IconZoomPan
-                        :size='32'
-                        stroke='1'
-                    />
-                </TablerIconButton>
-
                 <div
                     class='ms-auto'
                     style='margin-right: 14px;'
@@ -148,8 +138,10 @@ const props = defineProps<{
 const mode = ref('default');
 
 const overlay = computed<Overlay | null>(() => {
-    if (!props.feat.source) return null
-    const ov = mapStore.getOverlayById(props.feat.source);
+    // @ts-expect-error Doesn't exist in typedef
+    const source: number | undefined = Number(props.feat.source);
+    if (!source || isNaN(source)) return null
+    const ov = mapStore.getOverlayById(source);
     return ov;
 })
 

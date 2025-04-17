@@ -212,11 +212,8 @@ export default async function router(schema: Schema, config: Config) {
                     }
                 }
             } else {
-                const now = new Date();
-                cots = cots.filter((cot) => {
-                    // Don't push already stale data as they will instantly disappear on the device
-                    return new Date(cot.raw.event._attributes.stale) > now;
-                });
+                // Don't push already stale data as they will instantly disappear on the device
+                cots = cots.filter(cot => cot.is_stale);
             }
 
             if (cots.length === 0 && !errors.length) {
