@@ -25,7 +25,7 @@
         "express": "^5.0.0",
         "jsonwebtoken": "^9.0.0",
         "pmtiles": "^4.0.0",
-        "serverless-http": "^3.2.0"
+        "@tak-ps/serverless-http": "^3.4.0"
     },
     "devDependencies": {
         "@types/aws-lambda": "^8.10.108",
