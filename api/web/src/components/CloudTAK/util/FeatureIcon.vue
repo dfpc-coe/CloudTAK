@@ -6,7 +6,7 @@
         `'
     >
         <canvas
-            v-if='feature.properties.icon'
+            v-if='supportedIcon'
             ref='imgCanvas'
             :width='props.size'
             :height='props.size'
@@ -50,7 +50,7 @@
 </template>
 
 <script setup lang='ts'>
-import { useTemplateRef, watch } from 'vue';
+import { useTemplateRef, watch, computed } from 'vue';
 import {
     IconVideo,
     IconPointFilled,
@@ -69,18 +69,31 @@ const props = defineProps({
     },
     size: {
         type: Number,
-        required: true,
         default: 20
     }
 });
 
 const canvas = useTemplateRef<HTMLCanvasElement>('imgCanvas');
 
+const supportedIcon = computed<string | null>(() => {
+    if (!props.feature.properties.icon) return null;
+
+    if (props.feature.properties.icon.startsWith('COT_MAPPING_2525C')) {
+        return props.feature.properties.type;
+    } else {
+        const icon = mapStore.map.getImage(props.feature.properties.icon)
+        if (icon) {
+            return props.feature.properties.icon;
+        } else {
+            return null;
+        }
+    }
+});
+
 watch(canvas, async () => {
     if (!canvas.value) return;
 
-    const icon = mapStore.map.getImage(props.feature.properties.icon)
-
+    const icon = mapStore.map.getImage(supportedIcon.value)
     if (!icon) return;
 
     const context = canvas.value.getContext('2d');
