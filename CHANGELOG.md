@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### 8.10.0 - 2025-04-18
+
+- :bug: Fix count stats when updating or deleting a DataSync managed via a Connection
+- :rocket: `UI` Migrate DataGroups & DataLayers comp to setup
+- :rocket: `UI` Migrate WarnChannels component to setup & ts
+
 ### 8.9.2 - 2025-04-17
 
 - :arrow_up: Update `@tak-ps/node-cot` to latest version
