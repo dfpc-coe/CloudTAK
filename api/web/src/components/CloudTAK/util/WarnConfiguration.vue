@@ -5,7 +5,7 @@
             type='button'
             class='btn-close'
             aria-label='Close'
-            @click='$emit("close")'
+            @click='emit("close")'
         />
         <div class='modal-header text-white'>
             <div class='d-flex align-items-center'>
@@ -19,13 +19,13 @@
         <div class='modal-body text-white'>
             <SettingsCallsign
                 mode='emit'
-                @update='$emit("close")'
+                @update='emit("close")'
             />
         </div>
     </TablerModal>
 </template>
 
-<script>
+<script setup lang='ts'>
 import {
     TablerModal,
 } from '@tak-ps/vue-tabler';
@@ -35,21 +35,5 @@ import {
 
 import SettingsCallsign from './SettingsCallsign.vue';
 
-export default {
-    name: 'WarnConfiguration',
-    components: {
-        TablerModal,
-        IconInfoSquare,
-        SettingsCallsign
-    },
-    emits: [
-        'close'
-    ],
-    methods: {
-        selectChannels: function() {
-            this.$emit('close');
-            this.$router.push('/menu/channels');
-        },
-    }
-}
+const emit = defineEmits([ 'close' ]);
 </script>
