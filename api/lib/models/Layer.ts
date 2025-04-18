@@ -1,4 +1,4 @@
-import Modeler, { GenericList, GenericIterInput, GenericListInput } from '@openaddresses/batch-generic';
+import Modeler, { GenericList, GenericCountInput, GenericIterInput, GenericListInput } from '@openaddresses/batch-generic';
 import Err from '@openaddresses/batch-error';
 import { jsonBuildObject } from './utils.js';
 import { StyleContainer } from '../style.js';
@@ -181,6 +181,19 @@ export default class LayerModel extends Modeler<typeof Layer> {
         if (pgres.length !== 1) throw new Err(404, null, `Item Not Found`);
 
         return this.parse(pgres[0] as Static<typeof AugmentedLayer>);
+    }
+
+    async augmented_count(query: GenericCountInput = {}): Promise<number> {
+        const pgres = await this.pool
+            .select({
+                count: sql<string>`count(*) OVER()`.as('count'),
+            })
+            .from(Layer)
+            .leftJoin(LayerIncoming, eq(LayerIncoming.layer, Layer.id))
+            .leftJoin(LayerOutgoing, eq(LayerOutgoing.layer, Layer.id))
+            .where(query.where)
+
+        return pgres.length ? Number(pgres[0].count) : 0;
     }
 
     async augmented_list(query: GenericListInput = {}): Promise<GenericList<Static<typeof AugmentedLayer>>> {
