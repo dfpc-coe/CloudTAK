@@ -537,14 +537,14 @@ export default class VideoServiceControl {
         try {
             await this.path(lease.path);
 
-            const url = new URL(`/v3/config/paths/add/${lease.path}`, video.url);
+            const url = new URL(`/v3/config/paths/patch/${lease.path}`, video.url);
             url.port = '9997';
 
             const headers = this.headers(video.username, video.password);
             headers.append('Content-Type', 'application/json');
 
             const res = await fetch(url, {
-                method: 'POST',
+                method: 'PATCH',
                 headers,
                 body: JSON.stringify({
                     name: lease.path,
