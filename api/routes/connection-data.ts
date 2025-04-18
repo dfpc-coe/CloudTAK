@@ -187,8 +187,8 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
-            if (req.body.mission_diff && await config.models.Layer.count({
-                where: sql`data = ${req.params.dataid}`
+            if (req.body.mission_diff && await config.models.Layer.augmented_count({
+                where: sql`layers_incoming.data = ${req.params.dataid}`
             }) > 1) {
                 throw new Err(400, null, 'MissionDiff can only be enabled with a single layer')
             }
@@ -280,8 +280,8 @@ export default async function router(schema: Schema, config: Config) {
             const data = await config.models.Data.from(req.params.dataid);
             if (data.connection !== connection.id) throw new Err(400, null, 'Data Sync does not belong to given Connection');
 
-            if (await config.models.Layer.count({
-                where: sql`data = ${req.params.dataid}`
+            if (await config.models.Layer.augmented_count({
+                where: sql`layers_incoming.data = ${req.params.dataid}`
             }) > 0) throw new Err(400, null, 'Data has active Layers - Delete layers before deleting Data Sync');
 
             await S3.del(`data-${String(req.params.dataid)}/`, { recurse: true });
