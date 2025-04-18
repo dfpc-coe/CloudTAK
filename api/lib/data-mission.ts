@@ -81,9 +81,9 @@ export default class DataMission {
             });
         }
 
-        const layers = await config.models.Layer.list({
+        const layers = await config.models.Layer.augmented_list({
             limit: MAX_LAYERS_IN_DATA_SYNC,
-            where: sql`data = ${data.id}`
+            where: sql`layers_incoming.data = ${data.id}`
         });
 
         const existMap: Map<string, Static<typeof MissionLayer>> = new Map();
