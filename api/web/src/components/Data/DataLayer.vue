@@ -8,8 +8,8 @@
             <div class='ms-auto btn-list'>
                 <TablerIconButton
                     title='Create Layer'
-                    @click='$router.push(
-                        `/connection/${$route.params.connectionid}/data/${$route.params.dataid}/layer/new`
+                    @click='router.push(
+                        `/connection/${route.params.connectionid}/data/${route.params.dataid}/layer/new`
                     )'
                 >
                     <IconPlus
@@ -17,15 +17,10 @@
                         stroke='1'
                     />
                 </TablerIconButton>
-                <TablerIconButton
-                    title='Refresh'
+                <TablerRefreshButton
+                    :loading='loading'
                     @click='listLayers'
-                >
-                    <IconRefresh
-                        :size='32'
-                        stroke='1'
-                    />
-                </TablerIconButton>
+                />
             </div>
         </div>
 
@@ -56,7 +51,7 @@
                             v-for='layer of list.items'
                             :key='layer.id'
                             class='cursor-pointer'
-                            @click='$router.push(`/connection/${$route.params.connectionid}/layer/${layer.id}`)'
+                            @click='router.push(`/connection/${route.params.connectionid}/layer/${layer.id}`)'
                         >
                             <td>
                                 <div class='d-flex align-items-center'>
@@ -84,80 +79,66 @@
     </div>
 </template>
 
-<script>
-import { std, stdurl } from '/src/std.ts';
+<script setup>
+import { ref, watch, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { std, stdurl } from '../../std.ts';
 import TableFooter from '../util/TableFooter.vue';
 import {
     IconPlus,
-    IconRefresh
 } from '@tabler/icons-vue';
 import {
     TablerAlert,
     TablerNone,
     TablerIconButton,
+    TablerRefreshButton,
     TablerLoading
 } from '@tak-ps/vue-tabler'
 import LayerStatus from '../Layer/utils/StatusDot.vue';
 
-export default {
-    name: 'DataLayers',
-    components: {
-        TablerNone,
-        TablerAlert,
-        IconPlus,
-        IconRefresh,
-        TablerLoading,
-        TableFooter,
-        LayerStatus,
-        TablerIconButton,
-    },
-    props: {
-        connection: {
-            type: Object,
-            required: true
-        }
-    },
-    data: function() {
-        return {
-            loading: true,
-            err: null,
-            paging: {
-                filter: '',
-                limit: 10,
-                page: 0
-            },
-            list: {
-                total: 0,
-                items: []
-            },
-        }
-    },
-    watch: {
-       'paging.page': async function() {
-           await this.listLayers();
-       },
-       'paging.filter': async function() {
-           await this.listLayers();
-       },
-    },
-    mounted: async function() {
-        await this.listLayers();
-    },
-    methods: {
-        listLayers: async function() {
-            this.loading = true;
-            try {
-                const url = stdurl('/api/layer');
-                url.searchParams.append('data', this.$route.params.dataid);
-                url.searchParams.append('limit', this.paging.limit);
-                url.searchParams.append('page', this.paging.page);
-                url.searchParams.append('filter', this.paging.filter);
-                this.list = await std(url);
-            } catch (err) {
-                this.err = err;
-            }
-            this.loading = false
-        }
+defineProps({
+    connection: {
+        type: Object,
+        required: true
     }
+});
+
+const route = useRoute();
+const router = useRouter();
+
+const loading = ref(true);
+const error = ref();
+const paging = ref({
+    filter: '',
+    limit: 10,
+    page: 0
+});
+
+const list = ref({
+    total: 0,
+    items: []
+});
+
+onMounted(async () => {
+    await listLayers();
+});
+
+watch(paging.value, async () => {
+   await listLayers();
+});
+
+async function listLayers() {
+    loading.value = true;
+    try {
+        const url = stdurl('/api/layer');
+        url.searchParams.append('data', route.params.dataid);
+        url.searchParams.append('limit', paging.value.limit);
+        url.searchParams.append('page', paging.value.page);
+        url.searchParams.append('filter', paging.value.filter);
+        list.value = await std(url);
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    }
+    loading.value = false
 }
 </script>
