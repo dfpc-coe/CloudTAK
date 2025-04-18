@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### 8.10.1 - 2025-04-18
+
+- :bug: Fix path error when editing Lease
+
 ### 8.10.0 - 2025-04-18
 
 - :bug: Fix count stats when updating or deleting a DataSync managed via a Connection
