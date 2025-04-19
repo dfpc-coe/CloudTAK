@@ -583,7 +583,7 @@ const noMenuShown = computed<boolean>(() => {
         && (!route.name || !String(route.name).startsWith('home-menu'))
 });
 
-watch(mapStore.radial, (newValue, oldValue) => {
+watch(mapStore.radial, () => {
     if (mapStore.radial.cot) {
         mapStore.map.scrollZoom.disable();
         mapStore.map.touchZoomRotate.disableRotation();
