@@ -85,10 +85,6 @@ export default class COT {
 
         this.origin = origin || { mode: OriginMode.CONNECTION };
 
-        if (this._properties.callsign === 'TESTING') {
-            console.error(new Date().toISOString(), 'INSTANCE:Create', this.instance);
-        }
-
         if (!this._properties.archived) {
             this._properties.archived = false
         }
@@ -154,8 +150,6 @@ export default class COT {
         skipSave?: boolean;
     }): Promise<boolean> {
         if (this._remote) {
-            console.error(new Date().toISOString(), 'INSTANCE:Update:Remote', this.instance);
-
             const atlas = this._atlas as Remote<Atlas>;
             await atlas.db.add(this.as_feature());
 
