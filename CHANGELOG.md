@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### 8.11.0 - 2025-04-19
+
+- :bug: Migrate RadialMenu to Vue Setup
+
 ### 8.10.1 - 2025-04-18
 
 - :bug: Fix path error when editing Lease
