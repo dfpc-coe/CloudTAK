@@ -416,7 +416,6 @@
 
             <RadialMenu
                 v-else-if='mapStore.radial.mode'
-                ref='radial'
                 @close='closeRadial'
                 @click='handleRadial($event)'
             />
