@@ -114,12 +114,11 @@ export default class COT {
             // Atlas database has a COT update, resulting in a sync with the frontend
             this._remote.onmessage = async (ev) => {
                 if (ev.data.id === this.id) {
-                    if (feat) {
-                        this.path = ev.data.path;
-                        this.origin = ev.data.origin;
-                        Object.assign(this._properties, ev.data.properties);
-                        Object.assign(this._geometry, ev.data.geometry);
-                    }
+
+                    this.path = ev.data.path;
+                    this.origin = ev.data.origin;
+                    Object.assign(this._properties, ev.data.properties);
+                    Object.assign(this._geometry, ev.data.geometry);
                 }
             };
         }
