@@ -1,11 +1,11 @@
 <template>
     <div
-        ref='radialMenu'
+        ref='radial-menu'
         class='position-absolute'
         style='pointer-events: none;'
         :style='{
-            top: `${radial.y - (size / 2)}px`,
-            left: `${radial.x - (size / 2)}px`,
+            top: `${mapStore.radial.y - (size / 2)}px`,
+            left: `${mapStore.radial.x - (size / 2)}px`,
         }'
     />
 
@@ -124,93 +124,88 @@
     </svg>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted, onUnmounted, nextTick, useTemplateRef } from 'vue';
 import { OriginMode } from '../../../base/cot.ts';
 import RadialMenu from './RadialMenu.js';
 import './RadialMenu.css';
 import { useMapStore } from '../../../stores/map.ts';
-import { mapState, mapActions } from 'pinia'
 
 const mapStore = useMapStore();
 
-export default {
-    name: 'RadialMenu',
-    props: {
-        size: {
-            type: Number,
-            default: 200
-        },
-    },
-    emits: ['close', 'click'],
-    data: function() {
-        return {
-            menuItems: [],
-            menu: null
-        }
-    },
-    computed: {
-        ...mapState(useMapStore, ['radial']),
-    },
-    unmounted: function() {
-        this.$emit('close')
-    },
-    mounted: async function() {
-        await this.genMenuItems();
+const props = defineProps({
+    size: {
+        type: Number,
+        default: 200
+    }
+});
 
-        this.$nextTick(() => {
-            this.menu = new RadialMenu({
-                parent: this.$refs.radialMenu,
-                size: this.size,
-                closeOnClick: true,
-                menuItems: this.menuItems,
-                onClick: (item) => {
-                    this.$emit('click', `${this.radial.mode}:${item.id}`);
-                },
+const emit = defineEmits(['close', 'click']);
+
+const menuRef = useTemplateRef('radial-menu');
+const menuItems = ref([]);
+const menu = ref();
+
+onUnmounted(() => {
+    emit('close')
+});
+
+onMounted(async () => {
+    await genMenuItems();
+
+    nextTick(() => {
+        if (!menuRef.value) throw new Error('Could not mount Menu');
+
+        menu.value = new RadialMenu({
+            parent: menuRef.value,
+            size: props.size,
+            closeOnClick: true,
+            menuItems: menuItems.value,
+            onClick: (item) => {
+                emit('click', `${mapStore.radial.mode}:${item.id}`);
+            },
+        });
+        menu.value.open();
+    })
+});
+
+async function genMenuItems() {
+    menuItems.value.splice(0, menuItems.value.length);
+    if (mapStore.radial.mode === 'cot') {
+        if (mapStore.radial.cot && mapStore.radial.cot.properties) {
+            const cot = await mapStore.worker.db.get(mapStore.radial.cot.properties.id, {
+                mission: true
             });
-            this.menu.open();
-        })
-    },
-    methods: {
-        ...mapActions(useMapStore, ['radialClick']),
-        genMenuItems: async function() {
-            this.menuItems.splice(0, this.menuItems.length);
-            if (this.radial.mode === 'cot') {
-                if (this.radial.cot && this.radial.cot.properties) {
-                    const cot = await mapStore.worker.db.get(this.radial.cot.properties.id, {
-                        mission: true
-                    });
 
-                    if (!cot) throw new Error('Could not find marker');
+            if (!cot) throw new Error('Could not find marker');
 
-                    if (await cot.origin.mode === OriginMode.CONNECTION) {
-                        this.menuItems.push({ id: 'edit', icon: '#radial-pencil' })
-                        this.menuItems.push({ id: 'delete', icon: '#radial-trash' })
+            if (await cot.origin.mode === OriginMode.CONNECTION) {
+                menuItems.value.push({ id: 'edit', icon: '#radial-pencil' })
+                menuItems.value.push({ id: 'delete', icon: '#radial-trash' })
 
-                        if (await cot.geometry.type === 'Point') {
-                            this.menuItems.push({ id: 'lock', icon: '#radial-lock' })
-                        }
-                    } else if (await cot.origin.mode === OriginMode.MISSION && await cot.origin.mode_id) {
-                        const sub = await mapStore.worker.db.subscriptions.get(await cot.origin.mode_id);
-
-                        if (sub.role && sub.role.permissions.includes("MISSION_WRITE")) {
-                            this.menuItems.push({ id: 'edit', icon: '#radial-pencil' })
-                            this.menuItems.push({ id: 'delete', icon: '#radial-trash' })
-                        }
-                    }
-
-                    if (await cot.properties.video) {
-                        this.menuItems.push({ id: 'play', icon: '#radial-play' })
-                    }
+                if (await cot.geometry.type === 'Point') {
+                    menuItems.value.push({ id: 'lock', icon: '#radial-lock' })
                 }
+            } else if (await cot.origin.mode === OriginMode.MISSION && await cot.origin.mode_id) {
+                const sub = await mapStore.worker.db.subscriptions.get(await cot.origin.mode_id);
 
-                this.menuItems.push({ id: 'view', icon: '#radial-view' })
-            } else if (this.radial.mode === 'feat') {
-                this.menuItems.push({ id: 'view', icon: '#radial-view' })
-            } else if (this.radial.mode === 'context') {
-                this.menuItems.push({ id: 'new', icon: '#radial-pencil-plus' })
-                this.menuItems.push({ id: 'info', icon: '#radial-question' })
+                if (sub.role && sub.role.permissions.includes("MISSION_WRITE")) {
+                    menuItems.value.push({ id: 'edit', icon: '#radial-pencil' })
+                    menuItems.value.push({ id: 'delete', icon: '#radial-trash' })
+                }
+            }
+
+            if (await cot.properties.video) {
+                menuItems.value.push({ id: 'play', icon: '#radial-play' })
             }
         }
+
+        menuItems.value.push({ id: 'view', icon: '#radial-view' })
+    } else if (mapStore.radial.mode === 'feat') {
+        menuItems.value.push({ id: 'view', icon: '#radial-view' })
+    } else if (mapStore.radial.mode === 'context') {
+        menuItems.value.push({ id: 'new', icon: '#radial-pencil-plus' })
+        menuItems.value.push({ id: 'info', icon: '#radial-question' })
     }
 }
 </script>

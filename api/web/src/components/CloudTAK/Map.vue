@@ -416,7 +416,6 @@
 
             <RadialMenu
                 v-else-if='mapStore.radial.mode'
-                ref='radial'
                 @close='closeRadial'
                 @click='handleRadial($event)'
             />
@@ -584,7 +583,7 @@ const noMenuShown = computed<boolean>(() => {
         && (!route.name || !String(route.name).startsWith('home-menu'))
 });
 
-watch(mapStore.radial, () => {
+watch(mapStore.radial, (newValue, oldValue) => {
     if (mapStore.radial.cot) {
         mapStore.map.scrollZoom.disable();
         mapStore.map.touchZoomRotate.disableRotation();
