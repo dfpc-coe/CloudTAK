@@ -154,7 +154,10 @@ onMounted(async () => {
     await genMenuItems();
 
     nextTick(() => {
-        if (!menuRef.value) throw new Error('Could not mount Menu');
+        if (!menuRef.value) {
+            console.warn('Warning: Could not mount Menu. menuRef is null.');
+            return; // Skip menu initialization
+        }
 
         menu.value = new RadialMenu({
             parent: menuRef.value,
