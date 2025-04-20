@@ -89,7 +89,10 @@ export default async function router(schema: Schema, config: Config) {
                             if (map.url) imported.url = map.url._text;
 
                             if (map.tileType) {
-                                imported.format = toEnum.fromString(Type.Enum(Basemap_Format), map.tileType._text);
+                                imported.format = toEnum.fromString(
+                                    Type.Enum(Basemap_Format),
+                                    map.tileType._text.replace(/^image\//, '')
+                                );
                             }
 
                             res.json(imported);
