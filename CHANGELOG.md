@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### 8.12.0 - 2025-04-20
+
+- :bug: Handle Basemap.collection being null in Basemap UI
+- :bug: Allow ZXY Tiles hosted by ESRI MapServer by tightening MapServer matching
+- :rocket: Allow parsing `image/<type>` formats in PUT Basemap endpoint
+
 ### 8.11.0 - 2025-04-19
 
 - :bug: Migrate RadialMenu to Vue Setup
