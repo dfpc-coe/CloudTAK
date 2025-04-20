@@ -107,9 +107,9 @@ export default async function router(schema: Schema, config: Config) {
                 const url = new URL(String(await stream2buffer(req)));
 
                 if (
-                    String(url).includes('/FeatureServer')
-                    || String(url).includes('/MapServer')
-                    || String(url).includes('/ImageServer')
+                    String(url).match(/\/FeatureServer\/\d+$/)
+                    || String(url).match(/\/MapServer\/\d+$/)
+                    || String(url).match(/\/ImageServer$/)
                 ) {
                     const base = new EsriBase(url);
                     const layer = new EsriProxyLayer(base);
