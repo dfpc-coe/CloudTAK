@@ -89,7 +89,10 @@ export default async function router(schema: Schema, config: Config) {
                             if (map.url) imported.url = map.url._text;
 
                             if (map.tileType) {
-                                imported.format = toEnum.fromString(Type.Enum(Basemap_Format), map.tileType._text);
+                                imported.format = toEnum.fromString(
+                                    Type.Enum(Basemap_Format),
+                                    map.tileType._text.replace(/^image\//, '')
+                                );
                             }
 
                             res.json(imported);
@@ -104,9 +107,9 @@ export default async function router(schema: Schema, config: Config) {
                 const url = new URL(String(await stream2buffer(req)));
 
                 if (
-                    String(url).includes('/FeatureServer')
-                    || String(url).includes('/MapServer')
-                    || String(url).includes('/ImageServer')
+                    String(url).match(/\/FeatureServer\/\d+$/)
+                    || String(url).match(/\/MapServer\/\d+$/)
+                    || String(url).match(/\/ImageServer$/)
                 ) {
                     const base = new EsriBase(url);
                     const layer = new EsriProxyLayer(base);
