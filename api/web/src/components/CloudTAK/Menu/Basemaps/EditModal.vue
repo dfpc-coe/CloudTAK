@@ -338,7 +338,7 @@ async function create() {
             if (!body.bounds || !body.bounds.length) delete body.bounds;
             if (!body.center || !body.center.length) delete body.center;
 
-            if (body.collection.trim().length === 0) {
+            if (!body.collection || body.collection.trim().length === 0) {
                 body.collection = null;
             }
 
@@ -356,7 +356,7 @@ async function create() {
             if (!body.bounds || !body.bounds.length) delete body.bounds;
             if (!body.center || !body.center.length) delete body.center;
 
-            if (body.collection.trim().length === 0) {
+            if (!body.collection || body.collection.trim().length === 0) {
                 body.collection = null;
             }
 
