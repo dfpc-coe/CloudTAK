@@ -2,7 +2,7 @@ import AWSS3 from '@aws-sdk/client-s3';
 import Err from '@openaddresses/batch-error';
 import Schema from '@openaddresses/batch-schema';
 import { Type } from '@sinclair/typebox'
-import { FileTiles, TileJSON } from '../lib/tiles.js'
+import { FileTiles, TileJSON, QueryResponse } from '../lib/tiles.js'
 import auth from '../lib/auth.js';
 
 export default async function router(schema: Schema) {
@@ -70,7 +70,7 @@ export default async function router(schema: Schema) {
 
     schema.get('/tiles/public/:name', {
         name: 'Get TileJSON',
-        group: 'ProfileTiles',
+        group: 'PublicTiles',
         description: 'Return TileJSON for a given file',
         params: Type.Object({
             name: Type.String()
@@ -85,6 +85,60 @@ export default async function router(schema: Schema) {
 
             const file = new FileTiles(`public/${req.params.name}`);
             res.json(await file.tilejson(req.query.token));
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    })
+
+    schema.get('/tiles/public/:name/query', {
+        name: 'Get TileJSON',
+        group: 'PublicTiles',
+        description: 'Return TileJSON for a given file',
+        params: Type.Object({
+            name: Type.String()
+        }),
+        query: Type.Object({
+            token: Type.String(),
+            query: Type.String(),
+            zoom: Type.Optional(Type.Integer()),
+            limit: Type.Integer({ default: 1 })
+        }),
+        res: QueryResponse
+    }, async (req, res) => {
+        try {
+            auth(req.query.token);
+
+            const file = new FileTiles(`public/${req.params.name}`);
+            res.json(await file.query(req.query.query, {
+                limit: req.query.limit,
+                zoom: req.query.zoom
+            }));
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    })
+
+    schema.get('/tiles/public/:name/tiles/:z/:x/:y.:ext', {
+        name: 'Get Tile',
+        group: 'PublicTiles',
+        description: 'Return tile for a given zxy',
+        query: Type.Object({
+            token: Type.String()
+        }),
+        params: Type.Object({
+            name: Type.String(),
+            z: Type.Integer(),
+            x: Type.Integer(),
+            y: Type.Integer(),
+            ext: Type.String()
+        }),
+    }, async (req, res) => {
+        try {
+            auth(req.query.token);
+
+            const file = new FileTiles(`public/${req.params.name}/${req.params.name}`);
+
+            await file.tile(res, req.params.z, req.params.x, req.params.y, req.params.ext);
         } catch (err) {
             Err.respond(err, res);
         }
