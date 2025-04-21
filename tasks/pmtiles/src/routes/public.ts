@@ -2,6 +2,7 @@ import AWSS3 from '@aws-sdk/client-s3';
 import Err from '@openaddresses/batch-error';
 import Schema from '@openaddresses/batch-schema';
 import { Type } from '@sinclair/typebox'
+import { FileTiles, TileJSON } from '../lib/tiles.js'
 import auth from '../lib/auth.js';
 
 export default async function router(schema: Schema) {
@@ -52,7 +53,7 @@ export default async function router(schema: Schema) {
                 items: Contents
                     .filter((Content) => {
                         return Content.ETag && Content.Key
-                    }) 
+                    })
                     .map((Content) => {
                         return {
                             name: (Content.Key || ''),
@@ -66,4 +67,26 @@ export default async function router(schema: Schema) {
             Err.respond(err, res);
         }
     });
+
+    schema.get('/tiles/public/:name', {
+        name: 'Get TileJSON',
+        group: 'ProfileTiles',
+        description: 'Return TileJSON for a given file',
+        params: Type.Object({
+            name: Type.String()
+        }),
+        query: Type.Object({
+            token: Type.String()
+        }),
+        res: TileJSON
+    }, async (req, res) => {
+        try {
+            auth(req.query.token);
+
+            const file = new FileTiles(`public/${req.params.name}`);
+            res.json(await file.tilejson(req.query.token));
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    })
 }
