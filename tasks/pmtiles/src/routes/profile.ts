@@ -25,7 +25,7 @@ export default async function router(schema: Schema) {
             }
 
             const file = new FileTiles(`profile/${req.params.username}/${req.params.file}`);
-            return res.json(await file.tilejson(req.query.token));
+            res.json(await file.tilejson(req.query.token));
         } catch (err) {
             Err.respond(err, res);
         }
@@ -54,7 +54,7 @@ export default async function router(schema: Schema) {
             }
 
             const file = new FileTiles(`profile/${req.params.username}/${req.params.file}`);
-            return res.json(await file.query(req.query.query, {
+            res.json(await file.query(req.query.query, {
                 limit: req.query.limit,
                 zoom: req.query.zoom
             }));
@@ -87,7 +87,7 @@ export default async function router(schema: Schema) {
 
             const file = new FileTiles(`profile/${req.params.username}/${req.params.file}`);
 
-            await file.tile(res, req.params.z, req.params.x, req.params.y, req.params.exit);
+            await file.tile(res, req.params.z, req.params.x, req.params.y, req.params.ext);
         } catch (err) {
             Err.respond(err, res);
         }

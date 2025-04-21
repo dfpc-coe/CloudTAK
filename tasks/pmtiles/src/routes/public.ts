@@ -2,7 +2,7 @@ import AWSS3 from '@aws-sdk/client-s3';
 import Err from '@openaddresses/batch-error';
 import Schema from '@openaddresses/batch-schema';
 import { Type } from '@sinclair/typebox'
-import { TileJSON } from '../lib/tiles.js'
+import { FileTiles, TileJSON } from '../lib/tiles.js'
 import auth from '../lib/auth.js';
 
 export default async function router(schema: Schema) {
@@ -81,41 +81,10 @@ export default async function router(schema: Schema) {
         res: TileJSON
     }, async (req, res) => {
         try {
-            const token = auth(req.query.token);
-            if (token.email !== req.params.username || token.access !== 'profile') {
-                throw new Err(401, null, 'Unauthorized Access');
-            }
+            auth(req.query.token);
 
-            const path = `public/${req.params.name}`;
-            const p = new pmtiles.PMTiles(new S3Source(path), CACHE, nativeDecompress);
-            const header = await p.getHeader();
-
-            let format = 'mvt';
-            for (const pair of [
-                [pmtiles.TileType.Mvt, "mvt"],
-                [pmtiles.TileType.Png, "png"],
-                [pmtiles.TileType.Jpeg, "jpg"],
-                [pmtiles.TileType.Webp, "webp"],
-                [pmtiles.TileType.Avif, "avif"],
-            ]) {
-                if (header.tileType === pair[0]) {
-                    format = String(pair[1]);
-                }
-            }
-
-            res.json({
-                "tilejson": "2.2.0",
-                "name": `${req.params.name}.pmtiles`,
-                "description": "Hosted by CloudTAK",
-                "version": "1.0.0",
-                "scheme": "xyz",
-                "tiles": [ process.env.APIROOT + `/tiles/${path}/tiles/{z}/{x}/{y}.${format}?token=${req.query.token}`],
-                "minzoom": header.minZoom,
-                "maxzoom": header.maxZoom,
-                "bounds": [ header.minLon, header.minLat, header.maxLon, header.maxLat ],
-                "meta": header,
-                "center": [ header.centerLon, header.centerLat, header.centerZoom ]
-            });
+            const file = new FileTiles(`public/${req.params.name}`);
+            res.json(await file.tilejson(req.query.token));
         } catch (err) {
             Err.respond(err, res);
         }
