@@ -92,7 +92,7 @@ export class FileTiles {
     }
 
     async query(
-        query: string,
+        rawQuery: string,
         opts: {
             zoom?: number,
             limit: number
@@ -113,7 +113,7 @@ export class FileTiles {
             limit: opts.limit
         }
 
-        const lnglat: number[] = query
+        const lnglat: number[] = rawQuery
             .split(',')
             .map((comp) => { return Number(comp) });
 

@@ -2,7 +2,7 @@ import AWSS3 from '@aws-sdk/client-s3';
 import Err from '@openaddresses/batch-error';
 import Schema from '@openaddresses/batch-schema';
 import { Type } from '@sinclair/typebox'
-import { TileJSON } from '../lib/tile.js'
+import { TileJSON } from '../lib/tiles.js'
 import auth from '../lib/auth.js';
 
 export default async function router(schema: Schema) {
