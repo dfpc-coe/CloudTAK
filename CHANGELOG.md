@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### 8.13.0 - 2025-04-21
+
+- :rocket: Abstract PMTile operations into class
+- :rocket: Update Profile Tile routes to use new shared class
+- :rocket: Add TileJSON support for public PMTiles files
+
 ### 8.12.0 - 2025-04-20
 
 - :bug: Handle Basemap.collection being null in Basemap UI
