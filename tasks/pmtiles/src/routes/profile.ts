@@ -2,7 +2,7 @@ import Err from '@openaddresses/batch-error';
 import Schema from '@openaddresses/batch-schema';
 import { Type } from '@sinclair/typebox'
 import auth from '../lib/auth.js';
-import { FileTiles, TileJSON, QueryResponse } from '../lib/tile.js';
+import { FileTiles, TileJSON, QueryResponse } from '../lib/tiles.js';
 
 export default async function router(schema: Schema) {
     schema.get('/tiles/profile/:username/:file', {
