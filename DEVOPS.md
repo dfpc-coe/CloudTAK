@@ -43,9 +43,39 @@ Restarting CloudTAK can be done by following these steps:
    as of this writing only uses a single Load Balancer Port on 443 for all API & UI operations.
 
 8. Task can be updated one of two ways
-     1. The recommended way to restart the server is to force a new deployment. This will tell ECS to attempt to bring a new CloudTAK instanec online BEFORE terminating the problematic task. This will not result in downtime.
-     2. The second way is to terminate the CloudTAK Task.
+    - The recommended way to restart the server is to force a new deployment. This will tell ECS to attempt to bring a new CloudTAK instanec online BEFORE terminating the problematic task. This will not result in downtime.
+    - The second way is to terminate the CloudTAK Task.
   
+### 8.1: Creating a new Deployment
+
+> [!NOTE]
+> Creating a new deployment is the recommended way to force a CloudTAK Restart
+
+1. From the Health and Metrics tab, click the `Update Service` button in the upper right-hand corner. This will take you to the `Deployment configuration` page.
+2. Under deployment Configuration set the following and leave all other settings unchanged.
+    - `Force new deployment = True/Checked`
+    - `Desired Tasks = 1`
+   Click the `Update Service` button at the bottom of the page
+3. The button will take you to the `Deployments` tab of the ECS Service you updated. Continue to refresh this page while the service
+   deploys. The deployment status can be found under `Deployment Status`. A deployment usually takes 5-10 minutes to roll over the task.
+   Information about the task being terminated and about the new task being started can be seen at the bottom of the page under `Events`
+4. If the Service Deployment does not succeed (Multiple tasks being lauched but failing to stabilize under the `Events` heading) the service
+    is unlikely to stabilize on it's own and additional engineering work will need to be done to determine root cause. As the service is unlikely
+    to stabilize you can temporarily shut the CloudTAK ECS Service down byfollowing the 8.1 steps again except setting `Desired Tasks = 0`. This will
+    tell ECS that you dont want any running tasks.
+
+> [!WARNING]
+> Deployments should almost always succeed with the first task launch. If a deployment fails to launch a task successfully contact 
+> Application Specific Engineering immediately.
+
+### 8.2: Terminate CloudTAK Task
+
 > [!CAUTION]
 > Following #2 and terminating the CloudTAK task WILL RESULT IN DOWNTIME. The ECS Service will detect that the minimum task capacity of 1 task is not met and will create a new task
 > but this process can lead to up to 5 minutes of downtime while the service launches the new instance
+
+1. From the Health and Metrics tab, click the `Tasks` tab.
+2. Select the `Stop` dropdown in the upper right-hand corner
+3. Select `Stop All`.
+4. Tasks should shutdown and will be replaced by the number of tasks set in the ECS Service `Desired Tasks` setting (Usually 1).
+
