@@ -1,6 +1,7 @@
 import { createHash } from "crypto";
+import type { Response } from 'express';
 import Err from '@openaddresses/batch-error';
-import { Type } from '@sinclair/typebox'
+import { Static, Type } from '@sinclair/typebox'
 import { S3Source, nativeDecompress, CACHE } from '../lib/pmtiles.js';
 import * as pmtiles from 'pmtiles';
 import zlib from "zlib";
@@ -59,7 +60,7 @@ export class FileTiles {
 
     async tilejson(
         token: string
-    ): Static<typeof TileJSON> {
+    ): Promise<Static<typeof TileJSON>> {
         const p = new pmtiles.PMTiles(new S3Source(this.path), CACHE, nativeDecompress);
         const header = await p.getHeader();
 
@@ -99,7 +100,7 @@ export class FileTiles {
         } = {
             limit: 1
         }
-    ): Static<typeof QueryResponse> {
+    ): Promise<Static<typeof QueryResponse>> {
         const p = new pmtiles.PMTiles(new S3Source(this.path), CACHE, nativeDecompress);
         const header = await p.getHeader();
 
@@ -165,7 +166,7 @@ export class FileTiles {
         x: number,
         y: number,
         ext: string,
-    ): Promise<Buffer> {
+    ): Promise<void> {
         const p = new pmtiles.PMTiles(new S3Source(this.path), CACHE, nativeDecompress);
         const header = await p.getHeader();
 
