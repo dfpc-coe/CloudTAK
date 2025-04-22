@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### 8.14.0 - 2025-04-21
+
+- :rocket: Expose Public PMTile Endpoints
+
 ### 8.13.0 - 2025-04-21
 
 - :rocket: Abstract PMTile operations into class
