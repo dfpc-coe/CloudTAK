@@ -14,19 +14,6 @@
                 <span v-if='route.params.overlay === "new"' class='mx-2'>New Overlay</span>
                 <span v-else class='mx-2'>Edit Overlay</span>
             </h1>
-
-            <div class='ms-auto btn-list'>
-                <TablerIconButton
-                    v-if='route.params.overlay === "new"'
-                    title='Create from Public Tiles'
-                    @click='publicTileSelect = true'
-                >
-                    <IconFileDownload
-                        :size='32'
-                        stroke='1'
-                    />
-                </TablerIconButton>
-            </div>
         </div>
         <div
             style='min-height: 20vh; margin-bottom: 61px'
@@ -124,19 +111,12 @@
             </div>
         </div>
     </div>
-
-    <PublicTiles
-        v-if='publicTileSelect'
-        @close='publicTileSelect = false'
-        @select=''
-    />
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { std, stdurl } from '/src/std.ts';
-import PublicTiles from './Overlays/PublicTiles.vue';
 import StyleContainer from '../Styling/Style.vue';
 import UserSelect from '../util/UserSelect.vue';
 import {
