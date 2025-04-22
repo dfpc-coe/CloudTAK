@@ -12,6 +12,15 @@
 
 ### Pending Release
 
+### 8.15.0 - 2025-04-22
+
+- :tada: Update TileJSON output to v3.0.0
+- :rocket: Remove connection wizard as it hasn't gotten any use and significantly increases code base complexity. 
+- :bug: Fix style overlay update in Admin Overlay editor
+- :bug: Fix query style display in Layer Incoming Style Component
+- :rocket: Migrate Style Single to `setup`
+- :tada: Add the ability to delete features matching a query
+
 ### 8.14.0 - 2025-04-21
 
 - :rocket: Expose Public PMTile Endpoints
