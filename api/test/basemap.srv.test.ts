@@ -85,7 +85,7 @@ test('POST: api/basemap - Invalid URL - No Variables', async (t) => {
 
         t.fail()
     } catch (err) {
-        t.equals(String(err), 'AssertionError [ERR_ASSERTION]: {"status":400,"message":"Either ZXY, Quadkey variables OR ESRI FeatureServer/ImageServer must be used","messages":[]}');
+        t.equals(String(err), 'AssertionError [ERR_ASSERTION]: {"status":400,"message":"Either XYZ, Quadkey variables OR ESRI FeatureServer/ImageServer must be used","messages":[]}');
     }
 
     t.end();
@@ -119,7 +119,7 @@ test('POST: api/basemap', async (t) => {
             minzoom: 0,
             maxzoom: 16,
             format: 'png',
-            style: 'zyx',
+            style: 'xyz',
             styles: [],
             type: 'raster'
         })
@@ -187,7 +187,7 @@ test('PATCH: api/basemap/1', async (t) => {
             minzoom: 0,
             maxzoom: 16,
             format: 'png',
-            style: 'zyx',
+            style: 'xyz',
             styles: [],
             type: 'raster'
         })
