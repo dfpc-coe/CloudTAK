@@ -292,6 +292,7 @@ export default class Style {
                     const expression = jsonata(q.query);
 
                     if (await expression.evaluate(feature) === true) {
+console.error('QUERY');
                         if (q.delete === true) return null;
 
                         this.#by_geom(q.styles, feature);
