@@ -19,22 +19,35 @@ export const TileJSONActions = Type.Object({
 })
 
 export const TileJSONType = Type.Object({
-    tilejson: Type.String(),
+    tilejson: Type.Literal('3.0.0'),
     version: Type.String(),
+    scheme: Type.Literal('xyz'),
+
     name: Type.String(),
+    description: Type.String(),
+    attribution: Type.Optional(Type.String()),
+
     minzoom: Type.Integer(),
     maxzoom: Type.Integer(),
     tiles: Type.Array(Type.String()),
     bounds: Type.Array(Type.Number()),
     center: Type.Array(Type.Number()),
     type: Type.String(),
-    layers: Type.Array(Type.Unknown()),
     format: Type.Optional(Type.String()),
+
+    vector_layers: Type.Array(Type.Object({
+        id: Type.String(),
+        minzoom: Type.Integer(),
+        maxzoom: Type.Integer(),
+        fields: Type.Record(Type.String(), Type.String())
+    }))
 })
 
 export interface TileJSONInterface {
     name: string;
     url: string;
+    description?: string;
+    attribution?: string;
     bounds?: Array<number>;
     center?: Array<number>;
     type?: string;
@@ -88,7 +101,7 @@ export default class TileJSON {
             throw new Err(400, null, 'Only HTTP and HTTPS Protocols are supported');
         }
 
-        // Consistent Mapbox Style ZXY Endpoints: {z} vs TAK: {$z}
+        // Consistent Mapbox Style XYZ Endpoints: {z} vs TAK: {$z}
         const pathname = decodeURIComponent(url.pathname).replace(/\{\$/g, '{');
 
         if (
@@ -97,7 +110,7 @@ export default class TileJSON {
             && !pathname.includes('/FeatureServer/')
             && !pathname.includes('/ImageServer')
         ) {
-            throw new Err(400, null, 'Either ZXY, Quadkey variables OR ESRI FeatureServer/ImageServer must be used');
+            throw new Err(400, null, 'Either XYZ, Quadkey variables OR ESRI FeatureServer/ImageServer must be used');
         }
     }
 
@@ -106,15 +119,17 @@ export default class TileJSON {
         const center = config.center || pointOnFeature(bboxPolygon(bounds as BBox)).geometry.coordinates;
 
         return {
-            tilejson: "2.2.0",
+            tilejson: "3.0.0",
             version: config.version || '1.0.0',
             name: config.name,
+            description: '',
+            scheme: 'xyz',
             type: config.type || 'raster',
             bounds, center,
             minzoom: config.minzoom || 0,
             maxzoom: config.maxzoom || 16,
             tiles: [ String(config.url) ],
-            layers: []
+            vector_layers: []
         }
     }
 
