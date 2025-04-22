@@ -5,35 +5,17 @@
                 :loading='loading'
                 @click='fetchList'
             />
+            <TablerIconButton
+                title='Create Connection'
+                @click='router.push("/connection/new")'
+            >
+                <IconPlus
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
         </template>
         <template #default>
-            <div class='row g-0 py-2'>
-                <div class='col-6 px-2'>
-                    <button
-                        class='btn btn-primary w-100'
-                        @click='wizard = true'
-                    >
-                        <IconWand
-                            v-tooltip='"Create Connection"'
-                            :size='20'
-                            stroke='1'
-                        /><span class='mx-2'>Wizard</span>
-                    </button>
-                </div>
-                <div class='col-6 px-2'>
-                    <button
-                        class='btn btn-secondary w-100'
-                        @click='router.push("/connection/new")'
-                    >
-                        <IconPlus
-                            v-tooltip='"Create Connection"'
-                            :size='20'
-                            stroke='1'
-                        /><span class='mx-2'>New Connection</span>
-                    </button>
-                </div>
-            </div>
-
             <div class='col-12 px-2 pb-2'>
                 <TablerInput
                     v-model='paging.filter'
@@ -108,11 +90,6 @@
             </div>
         </template>
     </MenuTemplate>
-
-    <IntegrationWizard
-        v-if='wizard'
-        @close='wizard = false'
-    />
 </template>
 
 <script setup lang='ts'>
@@ -120,18 +97,17 @@ import { ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import type { ETLConnectionList } from '../../../types.ts';
 import { std, stdurl } from '../../../std.ts';
-import IntegrationWizard from '../util/IntegrationWizard.vue';
 import {
     TablerNone,
     TablerAlert,
     TablerInput,
     TablerPager,
     TablerLoading,
+    TablerIconButton,
     TablerRefreshButton
 } from '@tak-ps/vue-tabler';
 import {
     IconPlus,
-    IconWand,
 } from '@tabler/icons-vue';
 
 import MenuTemplate from '../util/MenuTemplate.vue';
@@ -143,7 +119,6 @@ const router = useRouter();
 
 const error = ref<Error | undefined>();
 const loading = ref(true);
-const wizard  = ref(false);
 const paging = ref({
     limit: 20,
     filter: '',

@@ -124,12 +124,19 @@
             </div>
         </div>
     </div>
+
+    <PublicTiles
+        v-if='publicTileSelect'
+        @close='publicTileSelect = false'
+        @select=''
+    />
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { std, stdurl } from '/src/std.ts';
+import PublicTiles from './Overlays/PublicTiles.vue';
 import StyleContainer from '../Styling/Style.vue';
 import UserSelect from '../util/UserSelect.vue';
 import {
