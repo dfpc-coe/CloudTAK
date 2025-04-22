@@ -76,7 +76,7 @@
 
 <script setup lang='ts'>
 import { ref, onMounted, watch } from 'vue'
-import { std } from '../../std.ts';
+import { std, stdurl } from '../../std.ts';
 import type { User, UserList } from '../../types.ts';
 import {
     IconTrash,
@@ -114,8 +114,8 @@ watch(selected, () => {
     );
 })
 
-watch(paging, async () => {
-    await listData();
+watch(paging.value, async () => {
+    await listUsers();
 });
 
 watch(props, async () => {
@@ -129,7 +129,7 @@ onMounted(async () => {
         await getUser();
     }
 
-    await listData();
+    await listUsers();
 
     loading.value = false;
 });
@@ -140,7 +140,9 @@ async function getUser() {
     loading.value = false;
 }
 
-async function listData() {
-    list.value = await std(`/api/user`) as UserList;
+async function listUsers() {
+    const url = stdurl(`/api/user`);
+    url.searchParams.append('filter', paging.value.filter);
+    list.value = await std(url) as UserList;
 }
 </script>
