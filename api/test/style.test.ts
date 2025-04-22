@@ -147,7 +147,7 @@ test('Style: Global Remarks & Callsign', async () => {
         }
     });
 
-    assert.deepEqual((await style.feat({
+    const feat = await style.feat({
         type: 'Feature',
         properties: {
             metadata: {
@@ -159,7 +159,11 @@ test('Style: Global Remarks & Callsign', async () => {
             type: 'Point',
             coordinates: [0, 0]
         }
-    })).properties, {
+    });
+
+    if (!feat) assert.fail('Feature marked as null');
+
+    assert.deepEqual(feat.properties, {
         stale: 123000,
         remarks: 'OVERRIDE',
         callsign: 'OVERRIDE_CALLSIGN',
@@ -184,7 +188,7 @@ test('Style: Global Remarks & Callsign - Override by Point', async () => {
         }
     });
 
-    assert.deepEqual((await style.feat({
+    const feat = await style.feat({
         type: 'Feature',
         properties: {
             metadata: {
@@ -198,7 +202,11 @@ test('Style: Global Remarks & Callsign - Override by Point', async () => {
             type: 'Point',
             coordinates: [0, 0]
         }
-    })).properties, {
+    });
+
+    if (!feat) assert.fail('Feature marked as null');
+
+    assert.deepEqual(feat.properties, {
         stale: 123000,
         remarks: 'OVERRIDE_POINT',
         callsign: 'OVERRIDE_POINT_CALLSIGN',
@@ -232,7 +240,7 @@ test('Style: Global Remarks & Callsign - Override by Global Query', async () => 
         }
     });
 
-    assert.deepEqual((await style.feat({
+    const feat = await style.feat({
         type: 'Feature',
         properties: {
             metadata: {
@@ -248,7 +256,11 @@ test('Style: Global Remarks & Callsign - Override by Global Query', async () => 
             type: 'Point',
             coordinates: [0, 0]
         }
-    })).properties, {
+    });
+
+    if (!feat) assert.fail('Feature marked as null');
+
+    assert.deepEqual(feat.properties, {
         stale: 123000,
         remarks: 'OVERRIDE_QUERY',
         callsign: 'OVERRIDE_QUERY_CALLSIGN',
@@ -288,7 +300,7 @@ test('Style: Global Remarks & Callsign - Override by Query Point', async () => {
         }
     });
 
-    assert.deepEqual((await style.feat({
+    const feat = await style.feat({
         type: 'Feature',
         properties: {
             metadata: {
@@ -306,7 +318,11 @@ test('Style: Global Remarks & Callsign - Override by Query Point', async () => {
             type: 'Point',
             coordinates: [0, 0]
         }
-    })).properties, {
+    });
+
+    if (!feat) assert.fail('Feature marked as null');
+
+    assert.deepEqual(feat.properties, {
         stale: 123000,
         remarks: 'OVERRIDE_QUERY_POINT',
         callsign: 'OVERRIDE_QUERY_POINT_CALLSIGN',
@@ -340,7 +356,7 @@ test('Style: Lowest Level Remarks', async () => {
         }
     });
 
-    assert.deepEqual((await style.feat({
+    const feat = await style.feat({
         type: 'Feature',
         properties: {
             metadata: {
@@ -352,7 +368,11 @@ test('Style: Lowest Level Remarks', async () => {
             type: 'Point',
             coordinates: [0, 0]
         }
-    })).properties, {
+    });
+
+    if (!feat) assert.fail('Feature marked as null');
+
+    assert.deepEqual(feat.properties, {
         stale: 123000,
         remarks: 'LOWEST_REMARKS',
         callsign: 'LOWEST_CALLSIGN',
@@ -760,19 +780,46 @@ test('Style: {{fallback p1 p2 ...}}', async () => {
         type: 'Feature',
         properties: {
             callsign: 'I exist',
-            metadata: {                                                                                                                                                          
-                yes1: 'I exist',                                                             
-                yes2: "I exist but shouldn't be picked"                                    
-            },                   
-            stale: 123000       
-        },               
+            metadata: {
+                yes1: 'I exist',
+                yes2: "I exist but shouldn't be picked"
+            },
+            stale: 123000
+        },
         geometry: {
             coordinates: [
                 0,
-                0          
+                0
             ],
             type: 'Point'
-        },                     
+        },
     });
 });
 
+test('Style: Delete Feature by Style', async () => {
+    const style = new Style({
+        stale: 123,
+        enabled_styles: true,
+        styles: {
+            queries: [{
+                query: 'properties.metadata.delete = true',
+                delete: true
+            }]
+        }
+    });
+
+    const feat = await style.feat({
+        type: 'Feature',
+        properties: {
+            metadata: {
+                delete: true
+            }
+        },
+        geometry: {
+            type: 'Point',
+            coordinates: [0, 0]
+        }
+    });
+
+    assert.equal(feat, null);
+});

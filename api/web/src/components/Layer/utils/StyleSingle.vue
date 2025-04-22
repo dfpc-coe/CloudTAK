@@ -20,7 +20,7 @@
                 v-model='filters.id'
                 :rows='1'
                 :disabled='disabled'
-                :schema='schema'
+                :schema='props.schema'
             />
         </div>
 
@@ -44,7 +44,7 @@
                 v-model='filters.callsign'
                 :rows='1'
                 :disabled='disabled'
-                :schema='schema'
+                :schema='props.schema'
             />
         </div>
 
@@ -67,7 +67,7 @@
                 v-if='enabled.remarks'
                 v-model='filters.remarks'
                 :disabled='disabled'
-                :schema='schema'
+                :schema='props.schema'
             />
         </div>
 
@@ -90,7 +90,7 @@
                 v-if='enabled.links'
                 v-model='filters.links'
                 :disabled='disabled'
-                :schema='schema'
+                :schema='props.schema'
             />
         </div>
 
@@ -172,7 +172,7 @@
                 v-model='filters[mode].properties.id'
                 placeholder='ID Override'
                 :disabled='disabled'
-                :schema='schema'
+                :schema='props.schema'
             />
         </div>
 
@@ -196,7 +196,7 @@
                 v-model='filters[mode].properties.callsign'
                 placeholder='Callsign Override'
                 :disabled='disabled'
-                :schema='schema'
+                :schema='props.schema'
             />
         </div>
 
@@ -220,7 +220,7 @@
                 v-model='filters[mode].properties.remarks'
                 placeholder='Remarks Override'
                 :disabled='disabled'
-                :schema='schema'
+                :schema='props.schema'
             />
         </div>
 
@@ -244,7 +244,7 @@
                 v-model='filters[mode].properties.links'
                 :label='""'
                 :disabled='disabled'
-                :schema='schema'
+                :schema='props.schema'
             />
         </div>
 
@@ -269,7 +269,7 @@
                     placeholder='Type Override (a-f-G)'
                     :disabled='disabled'
                     :rows='1'
-                    :schema='schema'
+                    :schema='props.schema'
                 />
             </div>
             <div class='col-md-12 hover-light rounded px-2 py-2'>
@@ -504,7 +504,8 @@
     </div>
 </template>
 
-<script>
+<script setup>
+import { ref, watch, onMounted } from 'vue';
 import StyleTemplate from './StyleTemplate.vue';
 import {
     IconLink,
@@ -529,200 +530,163 @@ import {
     TablerEnum
 } from '@tak-ps/vue-tabler';
 
-export default {
-    name: 'StyleSingle',
-    components: {
-        IconRuler2,
-        IconGhost,
-        IconPaint,
-        IconPoint,
-        IconLine,
-        IconPolygon,
-        IconPhoto,
-        IconLink,
-        IconBlockquote,
-        IconBorderStyle2,
-        IconCategory,
-        IconSelect,
-        IconLicense,
-        TablerToggle,
-        TablerRange,
-        TablerEnum,
-        TablerInput,
-        StyleTemplate,
-        StyleLinks,
-    },
-    props: {
-        modelValue: {
-            type: Object,
-            default: function() {
-                return {};
-            },
-            required: true
+const props = defineProps({
+    modelValue: {
+        type: Object,
+        default: function() {
+            return {};
         },
-        schema: {
-            type: Object,
-            required: true
-        },
-        disabled: {
-            type: Boolean,
-            default: false
-        }
+        required: true
     },
-    emits: [
-        'update:modelValue'
-    ],
-    data: function() {
-        return {
-            mode: 'point',
-            enabled: {
-                id: false,
-                remarks: false,
-                callsign: false,
-                links: false,
-            },
-            filters: {
-                id: '',
-                callsign: '',
-                remarks: '',
-                links: [],
-                point: {
-                    enabled: {
-                        id: false,
-                        icon: false,
-                        links: false,
-                        'marker-color': false,
-                        'marker-opacity': false,
-                        remarks: false,
-                        callsign: false
-                    },
-                    properties: {
-                        id: '',
-                        icon: '',
-                        'marker-color': '#d63939',
-                        'marker-opacity': 1,
-                        remarks: '',
-                        callsign: '',
-                        links: []
-                    }
-                },
-                line: {
-                    enabled: {
-                        id: false,
-                        stroke: false,
-                        'stroke-style': false,
-                        'stroke-opacity': false,
-                        'stroke-width': false,
-                        links: false,
-                        remarks: false,
-                        callsign: false
-                    },
-                    properties: {
-                        id: '',
-                        stroke: '#d63939',
-                        'stroke-style': 'solid',
-                        'stroke-opacity': 1,
-                        'stroke-width': 3,
-                        remarks: '',
-                        callsign: '',
-                        links: []
-                    }
-                },
-                polygon: {
-                    enabled: {
-                        id: false,
-                        stroke: false,
-                        'stroke-style': false,
-                        'stroke-opacity': false,
-                        'stroke-width': false,
-                        fill: false,
-                        links: false,
-                        'fill-opacity': false,
-                        remarks: false,
-                        callsign: false,
-                    },
-                    properties: {
-                        id: '',
-                        stroke: '#d63939',
-                        'stroke-style': 'solid',
-                        'stroke-opacity': 1,
-                        'stroke-width': 3,
-                        'fill': '#d63939',
-                        'fill-opacity': 1,
-                        remarks: '',
-                        callsign: '',
-                        links: []
-                    }
-                }
-            }
-        };
+    schema: {
+        type: Object,
+        required: true
     },
-    watch: {
+    disabled: {
+        type: Boolean,
+        default: false
+    }
+});
+
+const emit = defineEmits([ 'update:modelValue' ]);
+
+const mode = ref('point');
+
+const enabled = ref({
+    id: false,
+    remarks: false,
+    callsign: false,
+    links: false,
+});
+
+const filters = ref({
+    id: '',
+    callsign: '',
+    remarks: '',
+    links: [],
+    point: {
         enabled: {
-            deep: true,
-            handler: function() {
-                this.format();
-            }
+            id: false,
+            icon: false,
+            links: false,
+            'marker-color': false,
+            'marker-opacity': false,
+            remarks: false,
+            callsign: false
         },
-        filters: {
-            deep: true,
-            handler: function() {
-                this.format();
-            }
+        properties: {
+            id: '',
+            icon: '',
+            'marker-color': '#d63939',
+            'marker-opacity': 1,
+            remarks: '',
+            callsign: '',
+            links: []
         }
     },
-    mounted: function() {
-        for (const prop of ['id', 'remarks', 'callsign', 'links']) {
-            if (!this.modelValue[prop] || (Array.isArray(this.modelValue[prop]) && this.modelValue[prop].length === 0)) {
-                continue;
-            }
-
-            this.filters[prop] = this.modelValue[prop];
-            this.enabled[prop] = true;
+    line: {
+        enabled: {
+            id: false,
+            stroke: false,
+            'stroke-style': false,
+            'stroke-opacity': false,
+            'stroke-width': false,
+            links: false,
+            remarks: false,
+            callsign: false
+        },
+        properties: {
+            id: '',
+            stroke: '#d63939',
+            'stroke-style': 'solid',
+            'stroke-opacity': 1,
+            'stroke-width': 3,
+            remarks: '',
+            callsign: '',
+            links: []
         }
-
-        for (const key of ['point', 'line', 'polygon']) {
-            if (!this.modelValue[key]) continue;
-            for (const prop in this.modelValue[key]) {
-                if (this.modelValue[key][prop] !== undefined) {
-                    this.filters[key].enabled[prop] = true;
-                }
-            }
-
-            const style = JSON.parse(JSON.stringify(this.modelValue[key]));
-            Object.assign(this.filters[key].properties, style);
-        }
-
-        this.format();
     },
-    methods: {
-        format: function() {
-            const styles = JSON.parse(JSON.stringify(this.filters));
-
-            const res = {};
-
-            for (const prop of ['id', 'remarks', 'callsign', 'links']) {
-                if (!this.enabled[prop]) continue;
-                res[prop] = styles[prop];
-            }
-
-            for (const geom of ['point', 'line', 'polygon']) {
-                res[geom] = {};
-                for (const key in styles[geom].enabled) {
-                    if (!styles[geom].enabled[key]) continue;
-
-                    if (['fill-opacity', 'stroke-width', 'stroke-opacity'].includes(key)) {
-                        if (styles[geom].properties[key] !== undefined) res[geom][key] = Number(styles[geom].properties[key])
-                    } else if (['remarks', 'callsign'].includes(key)) {
-                        if (styles[geom].properties[key]) res[geom][key] = styles[geom].properties[key];
-                    } else {
-                        res[geom][key] = styles[geom].properties[key];
-                    }
-                }
-            }
-
-            this.$emit('update:modelValue', res);
+    polygon: {
+        enabled: {
+            id: false,
+            stroke: false,
+            'stroke-style': false,
+            'stroke-opacity': false,
+            'stroke-width': false,
+            fill: false,
+            links: false,
+            'fill-opacity': false,
+            remarks: false,
+            callsign: false,
+        },
+        properties: {
+            id: '',
+            stroke: '#d63939',
+            'stroke-style': 'solid',
+            'stroke-opacity': 1,
+            'stroke-width': 3,
+            'fill': '#d63939',
+            'fill-opacity': 1,
+            remarks: '',
+            callsign: '',
+            links: []
         }
     }
+});
+
+watch(enabled.value, format);
+watch(filters.value, format);
+
+onMounted(() => {
+    for (const prop of ['id', 'remarks', 'callsign', 'links']) {
+        if (!props.modelValue[prop] || (Array.isArray(props.modelValue[prop]) && props.modelValue[prop].length === 0)) {
+            continue;
+        }
+
+        filters.value[prop] = props.modelValue[prop];
+        enabled.value[prop] = true;
+    }
+
+    for (const key of ['point', 'line', 'polygon']) {
+        if (!props.modelValue[key]) continue;
+        for (const prop in props.modelValue[key]) {
+            if (props.modelValue[key][prop] !== undefined) {
+                filters.value[key].enabled[prop] = true;
+            }
+        }
+
+        const style = JSON.parse(JSON.stringify(props.modelValue[key]));
+        Object.assign(filters.value[key].properties, style);
+    }
+
+    format();
+});
+
+function format() {
+    const styles = JSON.parse(JSON.stringify(filters.value));
+
+    const res = {};
+
+    for (const prop of ['id', 'remarks', 'callsign', 'links']) {
+        if (!enabled.value[prop]) continue;
+        res[prop] = styles[prop];
+    }
+
+    for (const geom of ['point', 'line', 'polygon']) {
+        res[geom] = {};
+        for (const key in styles[geom].enabled) {
+            if (!styles[geom].enabled[key]) continue;
+
+            if (['fill-opacity', 'stroke-width', 'stroke-opacity'].includes(key)) {
+                if (styles[geom].properties[key] !== undefined) res[geom][key] = Number(styles[geom].properties[key])
+            } else if (['remarks', 'callsign'].includes(key)) {
+                if (styles[geom].properties[key]) res[geom][key] = styles[geom].properties[key];
+            } else {
+                res[geom][key] = styles[geom].properties[key];
+            }
+        }
+    }
+
+    emit('update:modelValue', res);
 }
 </script>

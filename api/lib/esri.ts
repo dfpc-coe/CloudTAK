@@ -1,7 +1,7 @@
 import Err from '@openaddresses/batch-error';
 import { Static, Type } from '@sinclair/typebox';
 import { OptionalTileJSON } from './types.js';
-import { Basemap_Format, Basemap_Type, Basemap_Style  } from './enums.js';
+import { Basemap_Format, Basemap_Type, Basemap_Scheme  } from './enums.js';
 import { fetch } from '@tak-ps/etl';
 import type { ESRILayerList } from './esri/types.js';
 import {
@@ -497,7 +497,7 @@ class EsriProxyLayer {
                 bounds: [json.extent.xmin, json.extent.ymin, json.extent.xmax, json.extent.ymax],
                 minzoom: 0,
                 maxzoom: 20,
-                style: Basemap_Style.ZXY,
+                style: Basemap_Scheme.XYZ,
                 format: Basemap_Format.MVT
             }
         } else if (this.type === EsriLayerType.IMAGE) {
@@ -513,7 +513,7 @@ class EsriProxyLayer {
                 bounds: [json.extent.xmin, json.extent.ymin, json.extent.xmax, json.extent.ymax],
                 minzoom: 0,
                 maxzoom: 20,
-                style: Basemap_Style.ZXY,
+                style: Basemap_Scheme.XYZ,
                 format: Basemap_Format.PNG
             }
         } else {

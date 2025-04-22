@@ -5,7 +5,7 @@ import { TAKGroup, TAKRole } from './api/types.js';
 import { Profile_Projection, Profile_Zoom, Profile_Stale, Profile_Distance, Profile_Elevation, Profile_Speed, Profile_Text } from './enums.js';
 import { AugmentedData } from './models/Data.js';
 import { AugmentedLayer, AugmentedLayerIncoming, AugmentedLayerOutgoing } from './models/Layer.js';
-import { Basemap_Format, Basemap_Style, Basemap_Type } from '../lib/enums.js';
+import { Basemap_Format, Basemap_Scheme, Basemap_Type } from '../lib/enums.js';
 import { Feature } from '@tak-ps/node-cot';
 
 export const LayerResponse = AugmentedLayer;
@@ -21,7 +21,7 @@ export const OptionalTileJSON = Type.Object({
     center: Type.Optional(Type.Any()),
     minzoom: Type.Optional(Type.Integer()),
     maxzoom: Type.Optional(Type.Integer()),
-    style: Type.Optional(Type.Enum(Basemap_Style)),
+    style: Type.Optional(Type.Enum(Basemap_Scheme)),
     format: Type.Optional(Type.Enum(Basemap_Format))
 });
 

@@ -73,8 +73,8 @@ export enum Basemap_Format {
     MVT = 'mvt'
 }
 
-export enum Basemap_Style {
-    ZXY = 'zxy'
+export enum Basemap_Scheme {
+    XYZ = 'xyz'
 }
 
 export enum Basemap_Type {
