@@ -89,11 +89,10 @@ export const StyleSingle = Type.Object({
 
 export const StyleSingleContainer = Type.Object({
     query: Type.String(),
-    id: Type.Optional(Type.String()),
-    remarks: Type.Optional(Type.String()),
-    callsign: Type.Optional(Type.String()),
-    links: Type.Optional(Type.Array(StyleLink)),
-    styles: StyleSingle
+
+    delete: Type.Optional(Type.Boolean()),
+
+    styles: Type.Optional(StyleSingle)
 })
 
 export const StyleContainer = Type.Object({
@@ -137,7 +136,9 @@ export default class Style {
                 for (const q of styles.queries) {
                     jsonata(q.query);
 
-                    this.#validateTemplate(q.styles);
+                    if (q.styles) {
+                        this.#validateTemplate(q.styles);
+                    }
                 }
             }
 
@@ -260,7 +261,9 @@ export default class Style {
      * @param feature       GeoJSON Feature
      * @returns             GeoJSON Feature
      */
-    async feat(feature: Static<typeof Feature.InputFeature>): Promise<Static<typeof Feature.InputFeature>> {
+    async feat(
+        feature: Static<typeof Feature.InputFeature>
+    ): Promise<null | Static<typeof Feature.InputFeature>> {
         try {
             if (!feature.properties) feature.properties = {};
 
@@ -276,28 +279,32 @@ export default class Style {
             if (this.style.styles.callsign) feature.properties.callsign = this.compile(this.style.styles.callsign, feature.properties.metadata);
             if (this.style.styles.remarks) feature.properties.remarks = this.compile(this.style.styles.remarks, feature.properties.metadata);
 
-
             if (this.style.styles.links) {
                 this.#links(this.style.styles.links, feature);
             }
 
             this.#by_geom(this.style.styles, feature);
 
-            if (!this.style.styles.queries) this.style.styles.queries = [];
+            if (!this.style.styles.queries) {
+                this.style.styles.queries = [];
+            }
+
             for (const q of this.style.styles.queries) {
                 try {
                     const expression = jsonata(q.query);
 
                     if (await expression.evaluate(feature) === true) {
-                        if (q.styles.id) feature.id = this.compile(q.styles.id, feature.properties.metadata);
-                        if (q.styles.callsign) feature.properties.callsign = this.compile(q.styles.callsign, feature.properties.metadata);
-                        if (q.styles.remarks) feature.properties.remarks = this.compile(q.styles.remarks, feature.properties.metadata);
+                        if (q.delete === true) return null;
 
-                        if (q.links) this.#links(q.links, feature);
+                        if (q.styles) {
+                            if (q.styles.id) feature.id = this.compile(q.styles.id, feature.properties.metadata);
+                            if (q.styles.callsign) feature.properties.callsign = this.compile(q.styles.callsign, feature.properties.metadata);
+                            if (q.styles.remarks) feature.properties.remarks = this.compile(q.styles.remarks, feature.properties.metadata);
+                            if (q.styles.links) this.#links(q.styles.links, feature);
 
-                        this.#by_geom(q.styles, feature);
+                            this.#by_geom(q.styles, feature);
+                        }
                     }
-
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 } catch (err) {
                     // Ignore queries that result in invalid output - this is explicitly allowed
