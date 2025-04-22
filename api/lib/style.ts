@@ -292,8 +292,12 @@ export default class Style {
                     const expression = jsonata(q.query);
 
                     if (await expression.evaluate(feature) === true) {
-console.error('QUERY');
                         if (q.delete === true) return null;
+
+                        if (q.styles.id) feature.id = this.compile(q.styles.id, feature.properties.metadata);
+                        if (q.styles.callsign) feature.properties.callsign = this.compile(q.styles.callsign, feature.properties.metadata);
+                        if (q.styles.remarks) feature.properties.remarks = this.compile(q.styles.remarks, feature.properties.metadata);
+                        if (q.styles.links) this.#links(q.styles.links, feature);
 
                         this.#by_geom(q.styles, feature);
                     }

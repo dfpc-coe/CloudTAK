@@ -796,7 +796,7 @@ test('Style: {{fallback p1 p2 ...}}', async () => {
     });
 });
 
-test.skip('Style: Delete Feature by Style', async () => {
+test('Style: Delete Feature by Style', async () => {
     const style = new Style({
         stale: 123,
         enabled_styles: true,
@@ -821,5 +821,5 @@ test.skip('Style: Delete Feature by Style', async () => {
         }
     });
 
-    assert.equals(feat, null);
+    assert.equal(feat, null);
 });
