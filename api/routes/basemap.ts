@@ -359,6 +359,7 @@ export default async function router(schema: Schema, config: Config) {
         body: Type.Object({
             name: Type.Optional(Default.NameField),
             collection: Type.Optional(Type.Union([Type.Null(), Type.String()])),
+            overlay: Type.Optional(Type.Boolean()),
             scope: Type.Enum(ResourceCreationScope, { default: ResourceCreationScope.USER }),
             url: Type.Optional(Type.String()),
             minzoom: Type.Optional(Type.Integer()),
