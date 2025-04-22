@@ -120,7 +120,6 @@ import { std, stdurl } from '/src/std.ts';
 import StyleContainer from '../Styling/Style.vue';
 import UserSelect from '../util/UserSelect.vue';
 import {
-    IconFileDownload,
     IconCircleArrowLeft
 } from '@tabler/icons-vue';
 import {
@@ -137,7 +136,6 @@ const route = useRoute();
 const router = useRouter();
 
 const loading = ref(true);
-const publicTileSelect = ref(false);
 const overlay = ref({
     name: '',
     url: '',

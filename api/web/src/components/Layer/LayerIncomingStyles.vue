@@ -160,7 +160,7 @@
 
                     <StyleSingle
                         v-model='queries[query].styles'
-                        :schema='layer.schema'
+                        :schema='capabilities.incoming.schema.output'
                         :disabled='disabled'
                     />
                 </div>
