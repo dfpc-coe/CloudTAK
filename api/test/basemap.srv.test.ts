@@ -119,7 +119,7 @@ test('POST: api/basemap', async (t) => {
             minzoom: 0,
             maxzoom: 16,
             format: 'png',
-            style: 'xyz',
+            scheme: 'xyz',
             styles: [],
             type: 'raster'
         })
@@ -187,7 +187,7 @@ test('PATCH: api/basemap/1', async (t) => {
             minzoom: 0,
             maxzoom: 16,
             format: 'png',
-            style: 'xyz',
+            scheme: 'xyz',
             styles: [],
             type: 'raster'
         })
