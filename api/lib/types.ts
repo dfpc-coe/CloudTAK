@@ -13,6 +13,18 @@ export const LayerIncomingResponse = AugmentedLayerIncoming;
 export const LayerOutgoingResponse = AugmentedLayerOutgoing;
 export const DataResponse = AugmentedData;
 
+export const GeoJSONFeature = Type.Object({
+    id: Type.String(),
+    type: Type.Literal('Feature'),
+    properties: Type.Record(Type.String(), Type.Unknown()),
+    geometry: Feature.Geometry
+})
+
+export const GeoJSONFeatureCollection = Type.Object({
+    type: Type.Literal('FeatureCollection'),
+    features: Type.Array(GeoJSONFeature)
+});
+
 export const OptionalTileJSON = Type.Object({
     name: Type.Optional(Type.String()),
     type: Type.Optional(Type.Enum(Basemap_Type)),

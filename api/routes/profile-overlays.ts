@@ -1,4 +1,4 @@
-import { Type } from '@sinclair/typebox'
+import { Static, Type } from '@sinclair/typebox'
 import TileJSON from '../lib/control/tilejson.js';
 import path from 'node:path';
 import Config from '../lib/config.js';
@@ -7,12 +7,20 @@ import S3 from '../lib/aws/s3.js';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import { ProfileOverlay } from '../lib/schema.js';
+import { TileJSONActions } from '../lib/control/tilejson.js';
 import { StandardResponse, ProfileOverlayResponse } from '../lib/types.js'
 import { sql } from 'drizzle-orm';
 import TAKAPI, {
     APIAuthCertificate,
 } from '../lib/tak-api.js';
 import * as Default from '../lib/limits.js';
+
+const AugmentedProfileOverlayResponse = Type.Composite([
+    ProfileOverlayResponse,
+    Type.Object({
+        actions: TileJSONActions
+    })
+])
 
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/profile/overlay', {
@@ -33,7 +41,7 @@ export default async function router(schema: Schema, config: Config) {
         res: Type.Object({
             total: Type.Integer(),
             removed: Type.Array(ProfileOverlayResponse),
-            items: Type.Array(ProfileOverlayResponse)
+            items: Type.Array(AugmentedProfileOverlayResponse)
         })
 
     }, async (req, res) => {
@@ -52,7 +60,9 @@ export default async function router(schema: Schema, config: Config) {
                 `
             });
 
-            const removed = [];
+            let total = overlays.total;
+            const removed: Static<typeof ProfileOverlayResponse>[] = [];
+            const items: Static<typeof AugmentedProfileOverlayResponse>[] = [];
 
             for (let i = 0; i < overlays.items.length; i++) {
                 const item = overlays.items[i];
@@ -63,19 +73,20 @@ export default async function router(schema: Schema, config: Config) {
                 ) {
                     await config.models.ProfileOverlay.delete(item.id);
                     removed.push(...overlays.items.splice(i, 1).map((o) => {
-                        return { ...o, opacity: Number(o.opacity) }
+                        return { ...item, opacity: Number(o.opacity) }
                     }));
-                    overlays.total--;
+                    total--;
                 } else if (item.mode === 'basemap') {
                     try {
-                        await config.models.Basemap.from(item.mode_id);
+                        const basemap = await config.models.Basemap.from(item.mode_id);
+                        items.push({ ...item, opacity: Number(item.opacity), actions: TileJSON.actions() });
                     } catch (err) {
                         console.error('Could not find basemap', err);
                         await config.models.ProfileOverlay.delete(item.id);
                         removed.push(...overlays.items.splice(i, 1).map((o) => {
-                            return { ...o, opacity: Number(o.opacity) }
+                            return { ...item, opacity: Number(o.opacity) }
                         }));
-                        overlays.total--;
+                        total--;
                     }
                 } else if (item.mode === 'mission' && item.mode_id && !(await api.Mission.access(
                         item.mode_id,
@@ -84,22 +95,15 @@ export default async function router(schema: Schema, config: Config) {
                 ) {
                     await config.models.ProfileOverlay.delete(item.id);
                     removed.push(...overlays.items.splice(i, 1).map((o) => {
-                        return { ...o, opacity: Number(o.opacity) }
+                        return { ...item, opacity: Number(item.opacity) }
                     }));
-                    overlays.total--;
+                    total--;
+                } else {
+                    items.push({ ...item, opacity: Number(item.opacity), actions: TileJSON.actions() });
                 }
             }
 
-            res.json({
-                removed,
-                total: overlays.total,
-                items: overlays.items.map((o) => {
-                    return {
-                        ...o,
-                        opacity: Number(o.opacity)
-                    }
-                })
-            });
+            res.json({ removed, total, items });
         } catch (err) {
              Err.respond(err, res);
         }
@@ -112,7 +116,7 @@ export default async function router(schema: Schema, config: Config) {
         params: Type.Object({
             overlay: Type.Integer()
         }),
-        res: ProfileOverlayResponse
+        res: AugmentedProfileOverlayResponse
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -120,10 +124,21 @@ export default async function router(schema: Schema, config: Config) {
             const overlay = await config.models.ProfileOverlay.from(req.params.overlay)
             if (overlay.username !== user.email) throw new Err(401, null, 'Cannot get another\'s overlay');
 
-            res.json({
-                ...overlay,
-                opacity: Number(overlay.opacity)
-            });
+            if (overlay.mode === 'basemap') {
+                const basemap = await config.models.Basemap.from(overlay.mode_id);
+
+                res.json({
+                    ...overlay,
+                    actions: TileJSON.actions(basemap.url),
+                    opacity: Number(overlay.opacity)
+                });
+            } else {
+                res.json({
+                    ...overlay,
+                    actions: TileJSON.actions(),
+                    opacity: Number(overlay.opacity)
+                });
+            }
         } catch (err) {
              Err.respond(err, res);
         }
@@ -145,7 +160,7 @@ export default async function router(schema: Schema, config: Config) {
             mode_id: Type.Optional(Type.String()),
             styles: Type.Optional(Type.Array(Type.Unknown())),
         }),
-        res: ProfileOverlayResponse
+        res: AugmentedProfileOverlayResponse
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -164,10 +179,21 @@ export default async function router(schema: Schema, config: Config) {
 
             overlay = await config.models.ProfileOverlay.commit(req.params.overlay, req.body)
 
-            res.json({
-                ...overlay,
-                opacity: Number(overlay.opacity)
-            });
+            if (overlay.mode === 'basemap') {
+                const basemap = await config.models.Basemap.from(overlay.mode_id);
+
+                res.json({
+                    ...overlay,
+                    actions: TileJSON.actions(basemap.url),
+                    opacity: Number(overlay.opacity)
+                });
+            } else {
+                res.json({
+                    ...overlay,
+                    actions: TileJSON.actions(),
+                    opacity: Number(overlay.opacity)
+                });
+            }
         } catch (err) {
              Err.respond(err, res);
         }
@@ -189,7 +215,7 @@ export default async function router(schema: Schema, config: Config) {
             url: Type.String(),
             name: Type.String()
         }),
-        res: ProfileOverlayResponse
+        res: AugmentedProfileOverlayResponse
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -230,10 +256,21 @@ export default async function router(schema: Schema, config: Config) {
                 });
             }
 
-            res.json({
-                ...overlay,
-                opacity: Number(overlay.opacity)
-            });
+            if (overlay.mode === 'basemap') {
+                const basemap = await config.models.Basemap.from(overlay.mode_id);
+
+                res.json({
+                    ...overlay,
+                    actions: TileJSON.actions(basemap.url),
+                    opacity: Number(overlay.opacity)
+                });
+            } else {
+                res.json({
+                    ...overlay,
+                    actions: TileJSON.actions(),
+                    opacity: Number(overlay.opacity)
+                });
+            }
         } catch (err) {
             if (String(err).includes('duplicate key value violates unique constraint')) {
                  Err.respond(new Err(400, err instanceof Error ? err : new Error(String(err)), 'Overlay appears to exist - cannot add duplicate'), res)

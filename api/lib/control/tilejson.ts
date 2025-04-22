@@ -5,10 +5,11 @@ import { tileToBBOX } from '../tilebelt.js';
 import vtpbf from 'vt-pbf';
 import type { BBox } from 'geojson';
 import type { Response } from 'express';
+import { fetch } from '@tak-ps/etl'
+import { GeoJSONFeatureCollection, GeoJSONFeature } from '../types.js';
 import { pointOnFeature } from '@turf/point-on-feature';
 import { bboxPolygon } from '@turf/bbox-polygon';
 import { Static, Type } from '@sinclair/typebox'
-import { InferSelectModel } from 'drizzle-orm';
 import Err from '@openaddresses/batch-error';
 import { Basemap_FeatureAction } from '../enums.js';
 import { validateStyleMin } from '@maplibre/maplibre-gl-style-spec';
@@ -76,16 +77,41 @@ export default class TileJSON {
         if (errors.length) throw new Err(400, null, JSON.stringify(errors));
     }
 
-    static actions(basemap: InferSelectModel<typeof Basemap>): Static<typeof TileJSONActions> {
+    static actions(url?: string): Static<typeof TileJSONActions> {
         const actions: Static<typeof TileJSONActions> = {
             feature: []
         }
 
-        if (basemap.url.match(/FeatureServer\/\d+/)) {
+        if (!url) return actions;
+
+        if (url.match(/FeatureServer\/\d+/)) {
+            actions.feature.push(Basemap_FeatureAction.FETCH)
+        } else if (url.match(/MapServer\/\d+/)) {
             actions.feature.push(Basemap_FeatureAction.FETCH)
         }
 
         return actions;
+    }
+
+    static async featureFetch(
+        url: string,
+        id: string
+    ): Promise<Static<typeof GeoJSONFeature>> {
+        const actions = TileJSON.actions(url)
+
+        if (actions.feature.includes(Basemap_FeatureAction.FETCH)) {
+            throw new Err(400, null, 'Basemap does not support Feature.FETCH');
+        }
+
+        if (url.match(/FeatureServer\/\d+/)) {
+            const res = await fetch(url + `/query?objectIds=${id}&f=geojson`);
+            return await res.typed(GeoJSONFeature);
+         } else if (url.match(/MapServer\/\d+/)) {
+            const res = await fetch(url + `/query?objectIds=${id}&f=geojson`);
+            return await res.typed(GeoJSONFeature);
+        } else {
+            throw new Err(500, null, 'Could not determine strategy to fetch Basemap');
+        }
     }
 
     static isValidURL(str: string): void {
@@ -267,7 +293,7 @@ export default class TileJSON {
 
                 if (!tileRes.ok) throw new Err(400, null, `Upstream Error: ${await tileRes.text()}`);
 
-                const fc = await tileRes.json();
+                const fc = await tileRes.typed(GeoJSONFeatureCollection);
 
                 if (!fc.features.length) {
                     res.status(404).json({

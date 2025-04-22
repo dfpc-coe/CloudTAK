@@ -14,11 +14,11 @@ import { sql } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import { Geometry, BBox } from 'geojson';
 import { Static, Type } from '@sinclair/typebox'
-import { StandardResponse, BasemapResponse, OptionalTileJSON } from '../lib/types.js';
+import { StandardResponse, BasemapResponse, OptionalTileJSON, GeoJSONFeature } from '../lib/types.js';
 import { BasemapCollection } from '../lib/models/Basemap.js';
 import { Basemap as BasemapParser } from '@tak-ps/node-cot';
 import { Basemap } from '../lib/schema.js';
-import { toEnum, Basemap_Format, Basemap_Scheme, Basemap_Type } from '../lib/enums.js';
+import { toEnum, Basemap_Format, Basemap_Scheme, Basemap_Type, Basemap_FeatureAction } from '../lib/enums.js';
 import { EsriBase, EsriProxyLayer } from '../lib/esri.js';
 import * as Default from '../lib/limits.js';
 
@@ -263,7 +263,7 @@ export default async function router(schema: Schema, config: Config) {
                         ...basemap,
                         bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
                         center: basemap.center ? basemap.center.coordinates : undefined,
-                        actions: TileJSON.actions(basemap)
+                        actions: TileJSON.actions(basemap.url)
                     };
                 })
             });
@@ -333,7 +333,7 @@ export default async function router(schema: Schema, config: Config) {
                 ...basemap,
                 bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
                 center: basemap.center ? basemap.center.coordinates : undefined,
-                actions: TileJSON.actions(basemap)
+                actions: TileJSON.actions(basemap.url)
             });
         } catch (err) {
             Err.respond(err, res);
@@ -414,7 +414,7 @@ export default async function router(schema: Schema, config: Config) {
                 ...basemap,
                 bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
                 center: basemap.center ? basemap.center.coordinates : undefined,
-                actions: TileJSON.actions(basemap)
+                actions: TileJSON.actions(basemap.url)
             });
         } catch (err) {
             Err.respond(err, res);
@@ -471,7 +471,7 @@ export default async function router(schema: Schema, config: Config) {
                     ...basemap,
                     bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
                     center: basemap.center ? basemap.center.coordinates : undefined,
-                    actions: TileJSON.actions(basemap)
+                    actions: TileJSON.actions(basemap.url)
                 });
             }
         } catch (err) {
@@ -558,6 +558,33 @@ export default async function router(schema: Schema, config: Config) {
                     }
                 }
             );
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/basemap/:basemapid/feature/:featureid', {
+        name: 'Get Basemap Feature',
+        group: 'BaseMap',
+        description: 'Get a basemap feature',
+        params: Type.Object({
+            basemapid: Type.Integer({ minimum: 1 }),
+            featureid: Type.String()
+        }),
+        res: GeoJSONFeature
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req, { token: true });
+
+            const basemap = await config.cacher.get(Cacher.Miss(req.query, `basemap-${req.params.basemapid}`), async () => {
+                return await config.models.Basemap.from(Number(req.params.basemapid))
+            });
+
+            if (basemap.username && basemap.username !== user.email && user.access === AuthUserAccess.USER) {
+                throw new Err(400, null, 'You don\'t have permission to access this resource');
+            }
+
+            res.json(await TileJSON.featureFetch(basemap.url, req.params.featureid));
         } catch (err) {
             Err.respond(err, res);
         }
