@@ -92,7 +92,7 @@ export const StyleSingleContainer = Type.Object({
 
     delete: Type.Optional(Type.Boolean()),
 
-    styles: StyleSingle
+    styles: Type.Optional(StyleSingle)
 })
 
 export const StyleContainer = Type.Object({
@@ -136,7 +136,9 @@ export default class Style {
                 for (const q of styles.queries) {
                     jsonata(q.query);
 
-                    this.#validateTemplate(q.styles);
+                    if (q.styles) {
+                        this.#validateTemplate(q.styles);
+                    }
                 }
             }
 
@@ -294,12 +296,14 @@ export default class Style {
                     if (await expression.evaluate(feature) === true) {
                         if (q.delete === true) return null;
 
-                        if (q.styles.id) feature.id = this.compile(q.styles.id, feature.properties.metadata);
-                        if (q.styles.callsign) feature.properties.callsign = this.compile(q.styles.callsign, feature.properties.metadata);
-                        if (q.styles.remarks) feature.properties.remarks = this.compile(q.styles.remarks, feature.properties.metadata);
-                        if (q.styles.links) this.#links(q.styles.links, feature);
+                        if (q.styles) {
+                            if (q.styles.id) feature.id = this.compile(q.styles.id, feature.properties.metadata);
+                            if (q.styles.callsign) feature.properties.callsign = this.compile(q.styles.callsign, feature.properties.metadata);
+                            if (q.styles.remarks) feature.properties.remarks = this.compile(q.styles.remarks, feature.properties.metadata);
+                            if (q.styles.links) this.#links(q.styles.links, feature);
 
-                        this.#by_geom(q.styles, feature);
+                            this.#by_geom(q.styles, feature);
+                        }
                     }
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 } catch (err) {
