@@ -207,6 +207,10 @@ const code = ref(new Set());
 const open = ref(new Set());
 const mode = ref('visual');
 
+watch(styles, () => {
+    emit('update:modelValue', styles.value);
+});
+
 watch(styles.value, () => {
     emit('update:modelValue', styles.value);
 });
