@@ -69,6 +69,11 @@
         "query": true,
         "res": false
     },
+    "GET /basemap/:basemapid/feature/:featureid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "DELETE /basemap/:basemapid": {
         "body": false,
         "query": false,

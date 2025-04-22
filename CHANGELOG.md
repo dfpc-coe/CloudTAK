@@ -12,10 +12,15 @@
 
 ### Pending Release
 
+### 8.16.0 - 2025-04-22
+
+- :tada: Return TileJSON Actions on ProfileOverlays
+- :tada: Introduce Feature API for Basemaps
+
 ### 8.15.0 - 2025-04-22
 
 - :tada: Update TileJSON output to v3.0.0
-- :rocket: Remove connection wizard as it hasn't gotten any use and significantly increases code base complexity. 
+- :rocket: Remove connection wizard as it hasn't gotten any use and significantly increases code base complexity.
 - :bug: Fix style overlay update in Admin Overlay editor
 - :bug: Fix query style display in Layer Incoming Style Component
 - :rocket: Migrate Style Single to `setup`
