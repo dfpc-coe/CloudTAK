@@ -10,7 +10,7 @@ import { Layer_Config } from './models/Layer.js';
 import {
     Layer_Priority,
     Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Text, Profile_Projection, Profile_Zoom,
-    Basemap_Type, Basemap_Format, Basemap_Style, VideoLease_SourceType, BasicGeometryType
+    Basemap_Type, Basemap_Format, Basemap_Scheme, VideoLease_SourceType, BasicGeometryType
 } from  './enums.js';
 import { json, boolean, uuid, numeric, integer, timestamp, pgTable, serial, varchar, text, unique, index } from 'drizzle-orm/pg-core';
 
@@ -136,7 +136,7 @@ export const Basemap = pgTable('basemaps', {
     maxzoom: integer().notNull().default(16),
     collection: text(),
     format: text().$type<Basemap_Format>().notNull().default(Basemap_Format.PNG),
-    style: text().$type<Basemap_Style>().notNull().default(Basemap_Style.XYZ),
+    schema: text().$type<Basemap_Scheme>().notNull().default(Basemap_Scheme.XYZ),
     styles: json().$type<Array<unknown>>().notNull().default([]),
     type: text().$type<Basemap_Type>().notNull().default(Basemap_Type.RASTER)
 }, (table) => {
