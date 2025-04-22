@@ -780,19 +780,46 @@ test('Style: {{fallback p1 p2 ...}}', async () => {
         type: 'Feature',
         properties: {
             callsign: 'I exist',
-            metadata: {                                                                                                                                                          
-                yes1: 'I exist',                                                             
-                yes2: "I exist but shouldn't be picked"                                    
-            },                   
-            stale: 123000       
-        },               
+            metadata: {
+                yes1: 'I exist',
+                yes2: "I exist but shouldn't be picked"
+            },
+            stale: 123000
+        },
         geometry: {
             coordinates: [
                 0,
-                0          
+                0
             ],
             type: 'Point'
-        },                     
+        },
     });
 });
 
+test.skip('Style: Delete Feature by Style', async () => {
+    const style = new Style({
+        stale: 123,
+        enabled_styles: true,
+        styles: {
+            queries: [{
+                query: 'properties.metadata.delete = true',
+                delete: true
+            }]
+        }
+    });
+
+    const feat = await style.feat({
+        type: 'Feature',
+        properties: {
+            metadata: {
+                delete: true
+            }
+        },
+        geometry: {
+            type: 'Point',
+            coordinates: [0, 0]
+        }
+    });
+
+    assert.equals(feat, null);
+});
