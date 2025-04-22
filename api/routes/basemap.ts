@@ -168,9 +168,6 @@ export default async function router(schema: Schema, config: Config) {
         }),
         res: Type.Object({
             total: Type.Integer(),
-            tiles: Type.Object({
-                url: Type.String()
-            }),
             collections: Type.Array(BasemapCollection),
             items: Type.Array(AugmentedBasemapResponse)
         })
@@ -261,9 +258,6 @@ export default async function router(schema: Schema, config: Config) {
             res.json({
                 total: list.total,
                 collections,
-                tiles: {
-                    url: config.PMTILES_URL
-                },
                 items: list.items.map((basemap) => {
                     return {
                         ...basemap,
