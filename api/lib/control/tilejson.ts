@@ -21,7 +21,7 @@ export const TileJSONActions = Type.Object({
 export const TileJSONType = Type.Object({
     tilejson: Type.Literal('3.0.0'),
     version: Type.String(),
-    scheme: Type.Literal('zyx'),
+    scheme: Type.Literal('xyz'),
 
     name: Type.String(),
     description: Type.String(),
@@ -101,7 +101,7 @@ export default class TileJSON {
             throw new Err(400, null, 'Only HTTP and HTTPS Protocols are supported');
         }
 
-        // Consistent Mapbox Style ZXY Endpoints: {z} vs TAK: {$z}
+        // Consistent Mapbox Style XYZ Endpoints: {z} vs TAK: {$z}
         const pathname = decodeURIComponent(url.pathname).replace(/\{\$/g, '{');
 
         if (
@@ -110,7 +110,7 @@ export default class TileJSON {
             && !pathname.includes('/FeatureServer/')
             && !pathname.includes('/ImageServer')
         ) {
-            throw new Err(400, null, 'Either ZXY, Quadkey variables OR ESRI FeatureServer/ImageServer must be used');
+            throw new Err(400, null, 'Either XYZ, Quadkey variables OR ESRI FeatureServer/ImageServer must be used');
         }
     }
 
@@ -123,7 +123,7 @@ export default class TileJSON {
             version: config.version || '1.0.0',
             name: config.name,
             description: '',
-            scheme: 'zyx',
+            scheme: 'xyz',
             type: config.type || 'raster',
             bounds, center,
             minzoom: config.minzoom || 0,

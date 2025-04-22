@@ -74,7 +74,7 @@ export enum Basemap_Format {
 }
 
 export enum Basemap_Style {
-    ZXY = 'zxy'
+    XYZ = 'xyz'
 }
 
 export enum Basemap_Type {

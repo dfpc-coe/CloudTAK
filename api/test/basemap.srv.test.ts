@@ -119,7 +119,7 @@ test('POST: api/basemap', async (t) => {
             minzoom: 0,
             maxzoom: 16,
             format: 'png',
-            style: 'zxy',
+            style: 'zyx',
             styles: [],
             type: 'raster'
         })
@@ -140,8 +140,10 @@ test('GET: api/basemap/1/tiles', async (t) => {
         }, true);
 
         t.deepEqual(res.body, {
-            tilejson: '2.2.0',
+            tilejson: '3.0.0',
             version: '1.0.0',
+            description: '',
+            scheme: 'xyz',
             name: 'Test Basemap',
             type: 'raster',
             bounds: [ -180, -90, 180, 90 ],
@@ -149,7 +151,7 @@ test('GET: api/basemap/1/tiles', async (t) => {
             minzoom: 0,
             maxzoom: 16,
             tiles: [ 'http://localhost:5001/api/basemap/1/tiles/{z}/{x}/{y}' ],
-            layers: []
+            vector_layers: []
         })
     } catch (err) {
         t.error(err)
@@ -185,7 +187,7 @@ test('PATCH: api/basemap/1', async (t) => {
             minzoom: 0,
             maxzoom: 16,
             format: 'png',
-            style: 'zxy',
+            style: 'zyx',
             styles: [],
             type: 'raster'
         })

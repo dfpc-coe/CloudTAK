@@ -497,7 +497,7 @@ class EsriProxyLayer {
                 bounds: [json.extent.xmin, json.extent.ymin, json.extent.xmax, json.extent.ymax],
                 minzoom: 0,
                 maxzoom: 20,
-                style: Basemap_Style.ZXY,
+                style: Basemap_Style.XYZ,
                 format: Basemap_Format.MVT
             }
         } else if (this.type === EsriLayerType.IMAGE) {
@@ -513,7 +513,7 @@ class EsriProxyLayer {
                 bounds: [json.extent.xmin, json.extent.ymin, json.extent.xmax, json.extent.ymax],
                 minzoom: 0,
                 maxzoom: 20,
-                style: Basemap_Style.ZXY,
+                style: Basemap_Style.XYZ,
                 format: Basemap_Format.PNG
             }
         } else {

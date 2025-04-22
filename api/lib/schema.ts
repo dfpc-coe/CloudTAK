@@ -136,7 +136,7 @@ export const Basemap = pgTable('basemaps', {
     maxzoom: integer().notNull().default(16),
     collection: text(),
     format: text().$type<Basemap_Format>().notNull().default(Basemap_Format.PNG),
-    style: text().$type<Basemap_Style>().notNull().default(Basemap_Style.ZXY),
+    style: text().$type<Basemap_Style>().notNull().default(Basemap_Style.XYZ),
     styles: json().$type<Array<unknown>>().notNull().default([]),
     type: text().$type<Basemap_Type>().notNull().default(Basemap_Type.RASTER)
 }, (table) => {
