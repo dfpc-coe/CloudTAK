@@ -78,8 +78,6 @@ export const StylePolygon = Type.Object({
 });
 
 export const StyleSingle = Type.Object({
-    delete: Type.Optional(Type.Boolean()),
-
     id: Type.Optional(Type.String()),
     remarks: Type.Optional(Type.String()),
     callsign: Type.Optional(Type.String()),
@@ -94,10 +92,6 @@ export const StyleSingleContainer = Type.Object({
 
     delete: Type.Optional(Type.Boolean()),
 
-    id: Type.Optional(Type.String()),
-    remarks: Type.Optional(Type.String()),
-    callsign: Type.Optional(Type.String()),
-    links: Type.Optional(Type.Array(StyleLink)),
     styles: StyleSingle
 })
 
