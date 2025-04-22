@@ -158,11 +158,68 @@
                         />
                     </div>
 
-                    <StyleSingle
-                        v-model='queries[query].styles'
-                        :schema='layer.schema'
-                        :disabled='disabled'
-                    />
+                    <div
+                        class='px-2 py-2 round btn-group w-100'
+                        role='group'
+                    >
+                        <input
+                            id='query-style'
+                            type='radio'
+                            class='btn-check'
+                            autocomplete='off'
+                            :checked='!queries[query].delete'
+                            :disabled='disabled'
+                            @click='queries[query].delete = false'
+                        >
+                        <label
+                            for='query-style'
+                            type='button'
+                            class='btn btn-sm'
+                        >
+                            <IconBrush
+                                :size='32'
+                                stroke='1'
+                            />
+                            <span class='mx-2'>Style Query</span>
+                        </label>
+
+                        <input
+                            id='query-delete'
+                            type='radio'
+                            class='btn-check'
+                            autocomplete='off'
+                            :disabled='disabled'
+                            :checked='queries[query].delete'
+                            @click='queries[query].delete = true'
+                        >
+                        <label
+                            for='query-delete'
+                            type='button'
+                            class='btn btn-sm'
+                        >
+                            <IconTrash
+                                :size='32'
+                                stroke='1'
+                            />
+                            <span class='mx-2'>Delete Features</span>
+                        </label>
+                    </div>
+
+                    <template v-if='queries[query].delete'>
+                        <div class='border rounded mx-2 d-flex justify-content-center'>
+                            <div class='mx-2 my-2'>
+                                <IconTrash size='24' :stroke='1'/>
+                                All features matching this query will not be submitted to the TAK Server
+                            </div>
+                        </div>
+                    </template>
+                    <template v-else>
+                        <StyleSingle
+                            v-model='queries[query].styles'
+                            :schema='capabilities.incoming.schema.output'
+                            :disabled='disabled'
+                        />
+                    </template>
                 </div>
             </template>
         </template>
@@ -179,6 +236,7 @@ import {
     IconHelp,
     IconTrash,
     IconPencil,
+    IconBrush,
     IconDeviceFloppy
 } from '@tabler/icons-vue'
 import jsonata from 'jsonata';
