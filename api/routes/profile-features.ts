@@ -7,7 +7,7 @@ import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
-import { StandardResponse, ProfileFeature, GeoJSONFeatureCollection } from '../lib/types.js'
+import { StandardResponse, ProfileFeature, GeoJSONFeatureCollection, GeoJSONFeature } from '../lib/types.js'
 import { ProfileFeatureFormat } from '../lib/enums.js'
 import { sql } from 'drizzle-orm';
 import * as Default from '../lib/limits.js';
@@ -80,7 +80,7 @@ export default async function router(schema: Schema, config: Config) {
                             type: 'Feature',
                             properties: feat.properties,
                             geometry: feat.geometry
-                        } as Static<typeof ProfileFeature>
+                        } as Static<typeof GeoJSONFeature>
                     })
                 }
 

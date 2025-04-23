@@ -19,7 +19,7 @@ test('GET: api/profile/feature?format=geojson&download=true', async (t) => {
         }, false);
 
         t.ok(res.headers.get('content-disposition').includes('attachment; filename="admin@example.com-export-'));
-        t.equals(res.headers.get('content-type'), "application/geo+json; charset=utf-8");
+        t.equals(res.headers.get('content-type'), "application/geo+json");
         t.equals(res.headers.get('content-length'), "55");
 
         t.deepEquals(res.body, {
@@ -45,7 +45,7 @@ test('GET: api/profile/feature?format=kml&download=true', async (t) => {
         });
 
         t.ok(res.headers.get('content-disposition').includes('attachment; filename="admin@example.com-export-'));
-        t.equals(res.headers.get('content-type'), "application/vnd.google-earth.kml+xml; charset=utf-8");
+        t.equals(res.headers.get('content-type'), "application/vnd.google-earth.kml+xml");
         t.equals(res.headers.get('content-length'), "220");
 
         t.equals(
@@ -129,7 +129,7 @@ test('GET: api/profile/feature?format=geojson&download=true', async (t) => {
         });
 
         t.ok(res.headers.get('content-disposition').includes('attachment; filename="admin@example.com-export-'));
-        t.equals(res.headers.get('content-type'), "application/geo+json; charset=utf-8");
+        t.equals(res.headers.get('content-type'), "application/geo+json");
         t.equals(res.headers.get('content-length'), "995");
 
         res.body = JSON.parse(res.body.replace(/\d{4}-\d{2}-\d{2}T.*?Z/g, 'DATE')),
@@ -153,7 +153,7 @@ test('GET: api/profile/feature?format=kml&download=true', async (t) => {
         });
 
         t.ok(res.headers.get('content-disposition').includes('attachment; filename="admin@example.com-export-'));
-        t.equals(res.headers.get('content-type'), "application/vnd.google-earth.kml+xml; charset=utf-8");
+        t.equals(res.headers.get('content-type'), "application/vnd.google-earth.kml+xml");
         t.equals(res.headers.get('content-length'), "806");
 
         t.equals(
