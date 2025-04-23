@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v8.18.0 - 2025-04-23
+
+- :tada: Allow uploading file from MenuFiles
+- :rocket: Migrate MenuTiles to Typescript
+
 ### v8.17.0 - 2025-04-23
 
 - :rocket: Show Connection name in Admin Layer List
