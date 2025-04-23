@@ -114,55 +114,6 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.get('/profile/feature/export', {
-        name: 'Export Features',
-        group: 'ProfileFeature',
-        description: `
-            Return a list of Profile Features
-        `,
-        query: Type.Object({
-            limit: Type.Integer({ default: 1000 }),
-            page: Default.Page,
-            order: Default.Order
-        }),
-        res: Type.Object({
-            total: Type.Integer(),
-            items: Type.Array(ProfileFeature)
-        })
-
-    }, async (req, res) => {
-        try {
-            const user = await Auth.as_user(config, req);
-
-            const list = await config.models.ProfileFeature.list({
-                limit: req.query.limit,
-                page: req.query.page,
-                order: req.query.order,
-                where: sql`
-                    username = ${user.email}
-                `
-            });
-
-            res.json({
-                total: list.total,
-                items: list.items.map((feat) => {
-                    // @ts-expect-error Legacy features
-                    feat.properties.archived = true;
-
-                    return {
-                        id: feat.id,
-                        path: feat.path,
-                        type: 'Feature',
-                        properties: feat.properties,
-                        geometry: feat.geometry
-                    } as Static<typeof ProfileFeature>
-                })
-            })
-        } catch (err) {
-             Err.respond(err, res);
-        }
-    });
-
     await schema.delete('/profile/feature', {
         name: 'Delete Feature',
         group: 'ProfileFeature',
