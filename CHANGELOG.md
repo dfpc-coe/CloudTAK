@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v8.19.0 - 2025-04-23
+
+- :rocket: Allow exporting Profile Features as GeoJSON or KML
+
 ### v8.18.0 - 2025-04-23
 
 - :tada: Allow uploading file from MenuFiles
