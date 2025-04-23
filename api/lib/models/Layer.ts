@@ -5,7 +5,7 @@ import { StyleContainer } from '../style.js';
 import { Layer_Priority } from '../enums.js';
 import { Static, Type } from '@sinclair/typebox'
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import { Layer, LayerIncoming, LayerOutgoing } from '../schema.js';
+import { Connection, Layer, LayerIncoming, LayerOutgoing } from '../schema.js';
 import { sql, eq, asc, desc, is, SQL } from 'drizzle-orm';
 
 export const Layer_Config = Type.Object({
@@ -56,6 +56,12 @@ export const AugmentedLayer = Type.Object({
     memory: Type.Integer(),
     timeout: Type.Integer(),
     priority: Type.Enum(Layer_Priority),
+
+    parent: Type.Object({
+        id: Type.Integer(),
+        name: Type.String(),
+        enabled: Type.Boolean()
+    }),
 
     incoming: Type.Optional(AugmentedLayerIncoming),
     outgoing: Type.Optional(AugmentedLayerOutgoing)
@@ -145,6 +151,12 @@ export default class LayerModel extends Modeler<typeof Layer> {
                 memory: Layer.memory,
                 timeout: Layer.timeout,
 
+                parent: jsonBuildObject({
+                    id: Connection.id,
+                    name: Connection.name,
+                    enabled: Connection.enabled
+                }),
+
                 incoming: jsonBuildObject({
                     layer: LayerIncoming.layer,
                     created: LayerIncoming.created,
@@ -173,6 +185,7 @@ export default class LayerModel extends Modeler<typeof Layer> {
                 })
             })
             .from(Layer)
+            .innerJoin(Connection, eq(Layer.connection, Connection.id))
             .leftJoin(LayerIncoming, eq(LayerIncoming.layer, Layer.id))
             .leftJoin(LayerOutgoing, eq(LayerOutgoing.layer, Layer.id))
             .where(is(id, SQL)? id as SQL<unknown> : eq(this.requiredPrimaryKey(), id))
@@ -217,6 +230,12 @@ export default class LayerModel extends Modeler<typeof Layer> {
                 memory: Layer.memory,
                 timeout: Layer.timeout,
 
+                parent: jsonBuildObject({
+                    id: Connection.id,
+                    name: Connection.name,
+                    enabled: Connection.enabled
+                }),
+
                 incoming: jsonBuildObject({
                     layer: LayerIncoming.layer,
                     created: LayerIncoming.created,
@@ -245,6 +264,7 @@ export default class LayerModel extends Modeler<typeof Layer> {
                 })
             })
             .from(Layer)
+            .innerJoin(Connection, eq(Layer.connection, Connection.id))
             .leftJoin(LayerIncoming, eq(LayerIncoming.layer, Layer.id))
             .leftJoin(LayerOutgoing, eq(LayerOutgoing.layer, Layer.id))
             .where(query.where)

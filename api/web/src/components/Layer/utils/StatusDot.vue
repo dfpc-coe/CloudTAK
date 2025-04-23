@@ -3,7 +3,7 @@
         class='d-flex justify-content-center align-items-center'
         style='width: 36px;'
     >
-        <template v-if='!layer.enabled'>
+        <template v-if='!props.layer.enabled'>
             <IconPlayerPause
                 :size='32'
                 stroke='1'
@@ -13,9 +13,9 @@
             <span
                 class='status-indicator status-indicator-animated'
                 :class='{
-                    "status-green": layer.status === "healthy",
-                    "status-red": layer.status === "alarm",
-                    "status-dark": layer.status === "unknown",
+                    "status-green": props.layer.status === "healthy",
+                    "status-red": props.layer.status === "alarm",
+                    "status-dark": props.layer.status === "unknown",
                 }'
             >
                 <span class='status-indicator-circle' />
@@ -26,18 +26,13 @@
     </div>
 </template>
 
-<script>
+<script setup lang='ts'>
+import type { ETLLayer } from '../../../types.ts';
 import {
     IconPlayerPause
 } from '@tabler/icons-vue';
 
-export default {
-    name: 'LayerStatus',
-    components: {
-        IconPlayerPause
-    },
-    props: {
-        layer: Object
-    }
-}
+const props = defineProps<{
+    layer: ETLLayer
+}>()
 </script>

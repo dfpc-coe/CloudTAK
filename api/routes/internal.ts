@@ -53,7 +53,7 @@ export default async function router(schema: Schema, config: Config) {
                 order: req.query.order,
                 sort: req.query.sort,
                 where: sql`
-                    name ~* ${req.query.filter}
+                    layers.name ~* ${req.query.filter}
                     AND (${Param(req.query.connection)}::BIGINT IS NULL OR ${Param(req.query.connection)}::BIGINT = layers.connection)
                     AND (${Param(req.query.data)}::BIGINT IS NULL OR ${Param(req.query.data)}::BIGINT = layers_incoming.data)
                     AND (${Param(req.query.task)}::TEXT IS NULL OR Starts_With(layers.task, ${Param(req.query.task)}::TEXT))

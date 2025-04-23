@@ -18,7 +18,7 @@ import { StandardResponse, BasemapResponse, OptionalTileJSON, GeoJSONFeature } f
 import { BasemapCollection } from '../lib/models/Basemap.js';
 import { Basemap as BasemapParser } from '@tak-ps/node-cot';
 import { Basemap } from '../lib/schema.js';
-import { toEnum, Basemap_Format, Basemap_Scheme, Basemap_Type, Basemap_FeatureAction } from '../lib/enums.js';
+import { toEnum, Basemap_Format, Basemap_Scheme, Basemap_Type } from '../lib/enums.js';
 import { EsriBase, EsriProxyLayer } from '../lib/esri.js';
 import * as Default from '../lib/limits.js';
 

@@ -45,20 +45,23 @@ export default async function router(schema: Schema, config: Config) {
 
             const style = new Style(layer.incoming);
 
+            const styled = [];
             for (let i = 0; i < req.body.features.length; i++) {
                 if (!req.body.features[i].properties) req.body.features[i].properties = {};
 
                 const styledFeat = await style.feat(req.body.features[i])
                 if (!styledFeat) continue;
-                req.body.features[i] = styledFeat;
 
-                if (req.body.features[i].properties.flow === undefined) {
-                    req.body.features[i].properties.flow = {};
+                if (styledFeat.properties.flow === undefined) {
+                    styledFeat.properties.flow = {};
                 }
 
-                // @ts-expect-error TS claims this could be undefined
-                req.body.features[i].properties.flow[`CloudTAK-Layer-${req.params.layerid}`] = new Date().toISOString();
+                styledFeat.properties.flow[`CloudTAK-Layer-${req.params.layerid}`] = new Date().toISOString();
+
+                styled.push(styledFeat);
             }
+
+            req.body.features = styled;
 
             let pooledClient;
             let data;
