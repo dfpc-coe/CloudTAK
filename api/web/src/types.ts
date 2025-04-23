@@ -93,6 +93,10 @@ export type Palette = paths["/palette/{:palette}"]["get"]["responses"]["200"]["c
 export type PaletteList = paths["/palette"]["get"]["responses"]["200"]["content"]["application/json"]
 export type PaletteFeature = paths["/palette/{:palette}/feature/{:feature}"]["get"]["responses"]["200"]["content"]["application/json"]
 
+export type ProfileAssetList = paths["/profile/asset"]["get"]["responses"]["200"]["content"]["application/json"]
+
+export type ProfileAsset = ProfileAssetList["assets"][0];
+
 export type Feature = paths["/profile/feature/{:id}"]["get"]["responses"]["200"]["content"]["application/json"] & {
     origin?: Origin
     properties: {

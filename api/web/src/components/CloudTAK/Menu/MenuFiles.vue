@@ -1,12 +1,36 @@
 <template>
     <MenuTemplate name='User Files'>
         <template #buttons>
+            <TablerIconButton
+                v-if='!loading && !upload'
+                title='New Import'
+                @click='upload = true'
+            >
+                <IconPlus
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
+
             <TablerRefreshButton
                 :loading='loading'
                 @click='fetchList'
             />
         </template>
         <template #default>
+            <div
+                v-if='upload'
+                class='py-2 px-4'
+            >
+                <Upload
+                    :url='stdurl(`/api/import`)'
+                    :headers='uploadHeaders()'
+                    method='PUT'
+                    @cancel='upload = false'
+                    @done='uploadComplete($event)'
+                />
+            </div>
+
             <TablerLoading
                 v-if='loading'
             />
@@ -61,16 +85,6 @@
                                     @delete='deleteAsset(asset)'
                                 />
                                 <TablerIconButton
-                                    v-if='!asset.visualized'
-                                    title='Convert Asset'
-                                    @click='initTransform(asset)'
-                                >
-                                    <IconTransform
-                                        :size='32'
-                                        stroke='1'
-                                    />
-                                </TablerIconButton>
-                                <TablerIconButton
                                     title='Download Asset'
                                     @click='downloadAsset(asset)'
                                 >
@@ -84,25 +98,14 @@
                     </div>
                 </div>
             </template>
-
-            <div class='px-2 py-2 d-flex'>
-                <div class='ms-auto'>
-                    <TablerPager
-                        v-if='list.total > paging.limit'
-                        :page='paging.page'
-                        :total='list.total'
-                        :limit='paging.limit'
-                        @page='paging.page = $event'
-                    />
-                </div>
-            </div>
         </template>
     </MenuTemplate>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { useRouter } from 'vue-router';
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted } from 'vue';
+import type { ProfileAsset, ProfileAssetList } from '../../../types.ts';
 import { std, stdurl } from '../../../std.ts';
 import {
     TablerDelete,
@@ -110,53 +113,53 @@ import {
     TablerRefreshButton,
     TablerAlert,
     TablerNone,
-    TablerPager,
     TablerLoading,
     TablerBytes,
     TablerEpoch
 } from '@tak-ps/vue-tabler';
 import {
+    IconPlus,
     IconMapOff,
     IconMapPlus,
-    IconTransform,
     IconDownload,
 } from '@tabler/icons-vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
-import { useMapStore } from '/src/stores/map.ts';
+import { useMapStore } from '../../../stores/map.ts';
 import Overlay from '../../../base/overlay.ts';
+import Upload from '../../util/Upload.vue';
+
 const mapStore = useMapStore();
 
 const router = useRouter();
-const error = ref(undefined);
+const upload = ref(false)
+const error = ref<Error | undefined>(undefined);
 const loading = ref(true);
-const transform = ref({});
 
-const paging = ref({
-    limit: 20,
-    page: 0
-});
-
-const list = ref({
-    assets: []
-});
-
-watch(paging.value, async () => {
-    await fetchList()
+const list = ref<ProfileAssetList>({
+    total: 0,
+    tiles: { url: '' },
+    assets: [],
 });
 
 onMounted(async () => {
     await fetchList();
 });
 
-async function createOverlay(asset) {
+async function createOverlay(asset: ProfileAsset) {
+    if (!asset.visualized) throw new Error('Cannot add an Overlay for an asset that is not Cloud Optimized');
+
     const url = stdurl(`/api/profile/asset/${encodeURIComponent(asset.visualized)}/tile`);
 
     loading.value = true;
-    const res = await std(url);
+
+    // TODO type PMTiles endpoints
+    const res = await std(url) as {
+        tiles: [ string ];
+    };
 
     if (new URL(res.tiles[0]).pathname.endsWith('.mvt')) {
         await mapStore.overlays.push(await Overlay.create(mapStore.map, {
-            url,
+            url: String(url),
             name: asset.name,
             mode: 'profile',
             mode_id: asset.name,
@@ -164,7 +167,7 @@ async function createOverlay(asset) {
         }));
     } else {
         await mapStore.overlays.push(await Overlay.create(mapStore.map, {
-            url: url,
+            url: String(url),
             name: asset.name,
             mode: 'profile',
             mode_id: asset.name,
@@ -177,7 +180,19 @@ async function createOverlay(asset) {
     router.push('/menu/overlays');
 }
 
-async function downloadAsset(asset) {
+function uploadHeaders() {
+    return {
+        Authorization: `Bearer ${localStorage.token}`
+    };
+}
+
+function uploadComplete(event: string) {
+    upload.value = false;
+    const imp = JSON.parse(event) as { imports: Array<{ uid: string }> };
+    router.push(`/menu/imports/${imp.imports[0].uid}`)
+}
+
+async function downloadAsset(asset: ProfileAsset) {
     const url = stdurl(`/api/profile/asset/${asset.name}`);
     url.searchParams.append('token', localStorage.token);
     window.open(url, "_blank")
@@ -187,29 +202,19 @@ async function fetchList() {
     try {
         loading.value = true;
         error.value = undefined;
-        list.value = await std(`/api/profile/asset`);
+        list.value = await std(`/api/profile/asset`) as ProfileAssetList;
         loading.value = false;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }
 }
 
-async function deleteAsset(asset) {
+async function deleteAsset(asset: ProfileAsset) {
     loading.value = true;
     await std(`/api/profile/asset/${asset.name}`, {
         method: 'DELETE'
     });
 
     await fetchList();
-}
-
-async function initTransform(asset) {
-    if (!asset) {
-        transform.value.asset = {};
-        transform.value.shown = false;
-    } else {
-        transform.value.asset = asset;
-        transform.value.shown = true;
-    }
 }
 </script>
