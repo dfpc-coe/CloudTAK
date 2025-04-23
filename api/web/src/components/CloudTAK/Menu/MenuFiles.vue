@@ -1,12 +1,44 @@
 <template>
     <MenuTemplate name='User Files'>
         <template #buttons>
+            <TablerIconButton
+                v-if='!loading && !upload'
+                title='New Import'
+                @click='upload = true'
+            >
+                <IconPlus
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
+
             <TablerRefreshButton
                 :loading='loading'
                 @click='fetchList'
             />
         </template>
         <template #default>
+            <div
+                v-if='upload'
+                class='py-2 px-4'
+            >
+                <Upload
+                    :url='stdurl(`/api/import`)'
+                    :headers='uploadHeaders()'
+                    method='PUT'
+                    @cancel='upload = false'
+                    @done='uploadComplete($event)'
+                />
+            </div>
+
+            <div class='col-12 px-2 py-2'>
+                <TablerInput
+                    v-model='paging.filter'
+                    icon='search'
+                    placeholder='Filter'
+                />
+            </div>
+
             <TablerLoading
                 v-if='loading'
             />
@@ -61,16 +93,6 @@
                                     @delete='deleteAsset(asset)'
                                 />
                                 <TablerIconButton
-                                    v-if='!asset.visualized'
-                                    title='Convert Asset'
-                                    @click='initTransform(asset)'
-                                >
-                                    <IconTransform
-                                        :size='32'
-                                        stroke='1'
-                                    />
-                                </TablerIconButton>
-                                <TablerIconButton
                                     title='Download Asset'
                                     @click='downloadAsset(asset)'
                                 >
@@ -100,7 +122,7 @@
     </MenuTemplate>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { useRouter } from 'vue-router';
 import { ref, onMounted, watch } from 'vue';
 import { std, stdurl } from '../../../std.ts';
@@ -116,6 +138,7 @@ import {
     TablerEpoch
 } from '@tak-ps/vue-tabler';
 import {
+    IconPlus,
     IconMapOff,
     IconMapPlus,
     IconTransform,
@@ -124,9 +147,12 @@ import {
 import MenuTemplate from '../util/MenuTemplate.vue';
 import { useMapStore } from '/src/stores/map.ts';
 import Overlay from '../../../base/overlay.ts';
+import Upload from '../../util/Upload.vue';
+
 const mapStore = useMapStore();
 
 const router = useRouter();
+const upload = ref(false)
 const error = ref(undefined);
 const loading = ref(true);
 const transform = ref({});
@@ -177,6 +203,18 @@ async function createOverlay(asset) {
     router.push('/menu/overlays');
 }
 
+function uploadHeaders() {
+    return {
+        Authorization: `Bearer ${localStorage.token}`
+    };
+}
+
+function uploadComplete(event: string) {
+    upload.value = false;
+    const imp = JSON.parse(event) as { imports: Array<{ uid: string }> };
+    router.push(`/menu/imports/${imp.imports[0].uid}`)
+}
+
 async function downloadAsset(asset) {
     const url = stdurl(`/api/profile/asset/${asset.name}`);
     url.searchParams.append('token', localStorage.token);
@@ -201,15 +239,5 @@ async function deleteAsset(asset) {
     });
 
     await fetchList();
-}
-
-async function initTransform(asset) {
-    if (!asset) {
-        transform.value.asset = {};
-        transform.value.shown = false;
-    } else {
-        transform.value.asset = asset;
-        transform.value.shown = true;
-    }
 }
 </script>
