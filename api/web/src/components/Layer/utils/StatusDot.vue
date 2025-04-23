@@ -26,18 +26,13 @@
     </div>
 </template>
 
-<script>
+<script setup lang='ts'>
+import type { ETLLayer } from '../../../types.ts';
 import {
     IconPlayerPause
 } from '@tabler/icons-vue';
 
-export default {
-    name: 'LayerStatus',
-    components: {
-        IconPlayerPause
-    },
-    props: {
-        layer: Object
-    }
-}
+const props = defineProps<{
+    layer: ETLLayer
+}>()
 </script>
