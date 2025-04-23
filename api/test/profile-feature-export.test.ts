@@ -132,7 +132,7 @@ test('GET: api/profile/feature?format=geojson&download=true', async (t) => {
         t.equals(res.headers.get('content-type'), "application/geo+json");
         t.equals(res.headers.get('content-length'), "995");
 
-        res.body = JSON.parse(res.body.replace(/\d{4}-\d{2}-\d{2}T.*?Z/g, 'DATE')),
+        res.body = JSON.parse(res.body.replace(/\d{4}-\d{2}-\d{2}T.*?Z/g, 'DATE'))
         t.deepEquals(res.body, { type: 'FeatureCollection', features: [ { id: '123', path: '/Test Features/', type: 'Feature', properties: { type: 'a-f-g', how: 'm-g', time: 'DATE', start: 'DATE', stale: 'DATE', callsign: 'Test Callsign', archived: true, center: [ 123.3223, 123.0002 ] }, geometry: { type: 'Point', coordinates: [ 123.3223, 123.0002, 123 ], bbox: [ 123.3223, 123.0002, 123.3223, 123.0002 ] } } ] });
     } catch (err) {
         t.error(err, 'no error');
