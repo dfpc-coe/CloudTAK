@@ -88,6 +88,7 @@
         "spritesmith": "^3.4.1",
         "suncalc": "^1.9.0",
         "swagger-ui-express": "^5.0.0",
+        "tokml": "^0.4.0",
         "tough-cookie": "^5.0.0",
         "tsx": "^4.15.1",
         "undici": "^7.0.0",

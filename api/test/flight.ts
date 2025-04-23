@@ -122,10 +122,11 @@ export default class Flight {
      * @param {boolean} [t.verify] Verify Schema Validation
      * @param {boolean} [t.json=true] Expect JSON in response
      */
-    async fetch(url: string | URL, req: any, t: boolean | {
-        verify: boolean;
-        json: true;
-    }): Promise<any> {
+    async fetch(
+        url: string | URL,
+        req: any,
+        t: boolean | { verify?: boolean; json?: boolean }
+    ): Promise<any> {
         if (t === undefined) throw new Error('flight.fetch requires two arguments - pass (<url>, <req>, false) to disable schema testing');
 
         const defs = {

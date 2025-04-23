@@ -1,18 +1,121 @@
 import { Type, Static } from '@sinclair/typebox'
 import { CoT } from '@tak-ps/node-tak';
+import tokml from 'tokml';
 import { coordEach } from '@turf/meta';
 import { GenerateUpsert } from '@openaddresses/batch-generic';
 import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
-import { StandardResponse, ProfileFeature } from '../lib/types.js'
+import { StandardResponse, ProfileFeature, GeoJSONFeatureCollection } from '../lib/types.js'
+import { ProfileFeatureFormat } from '../lib/enums.js'
 import { sql } from 'drizzle-orm';
 import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/profile/feature', {
         name: 'Get Features',
+        group: 'ProfileFeature',
+        description: `
+            Return a list of Profile Features
+        `,
+        query: Type.Object({
+            format: Type.Enum(ProfileFeatureFormat, {
+                default: ProfileFeatureFormat.GEOJSON
+            }),
+            download: Type.Boolean({
+                default: false,
+                description: 'Set Content-Disposition to download the file'
+            }),
+            token: Type.Optional(Type.String()),
+            limit: Type.Integer({ default: 1000 }),
+            page: Default.Page,
+            order: Default.Order
+        }),
+        res: Type.Object({
+            total: Type.Integer(),
+            items: Type.Array(ProfileFeature)
+        })
+
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req, { token: true });
+
+            const list = await config.models.ProfileFeature.list({
+                limit: req.query.limit,
+                page: req.query.page,
+                order: req.query.order,
+                where: sql`
+                    username = ${user.email}
+                `
+            });
+
+            if (!req.query.download) {
+                res.json({
+                    total: list.total,
+                    items: list.items.map((feat) => {
+                        // @ts-expect-error Legacy features
+                        feat.properties.archived = true;
+
+                        return {
+                            id: feat.id,
+                            path: feat.path,
+                            type: 'Feature',
+                            properties: feat.properties,
+                            geometry: feat.geometry
+                        } as Static<typeof ProfileFeature>
+                    })
+                })
+            } else {
+                const filename = `${user.email}-export-${new Date().toISOString()}`;
+
+                res.setHeader('Content-Disposition', `attachment; filename="${filename}.${req.query.format}"`);
+
+                const feats: Static<typeof GeoJSONFeatureCollection> = {
+                    type: 'FeatureCollection',
+                    features: list.items.map((feat) => {
+                        return {
+                            id: feat.id,
+                            path: feat.path,
+                            type: 'Feature',
+                            properties: feat.properties,
+                            geometry: feat.geometry
+                        } as Static<typeof ProfileFeature>
+                    })
+                }
+
+                if (req.query.format === ProfileFeatureFormat.GEOJSON) {
+                    res.set('Content-Type', 'application/geo+json');
+                    const output = Buffer.from(JSON.stringify(feats, null, 4));
+
+                    res.set('Content-Length', String(Buffer.byteLength(output)));
+                    res.write(output);
+                    res.end();
+                } else if (req.query.format === ProfileFeatureFormat.KML) {
+                    res.set('Content-Type', 'application/vnd.google-earth.kml+xml');
+
+                    const output = Buffer.from(tokml(feats, {
+                        documentName: filename,
+                        documentDescription: 'Exported from CloudTAK',
+                        simplestyle: true,
+                        name: 'callsign',
+                        description: 'remarks'
+                    }));
+
+                    res.set('Content-Length', String(Buffer.byteLength(output)));
+                    res.write(output);
+                    res.end();
+                } else {
+                    throw new Err(400, null, `Unknown Export Format: ${req.query.format}`);
+                }
+            }
+        } catch (err) {
+             Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/profile/feature/export', {
+        name: 'Export Features',
         group: 'ProfileFeature',
         description: `
             Return a list of Profile Features

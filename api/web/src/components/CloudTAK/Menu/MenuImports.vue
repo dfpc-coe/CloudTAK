@@ -6,7 +6,7 @@
                 title='New Import'
                 @click='upload = true'
             >
-                <IconPlus
+                <IconUpload
                     :size='32'
                     stroke='1'
                 />
@@ -129,7 +129,7 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
-    IconPlus,
+    IconUpload,
     IconFile,
     IconAmbulance,
     IconPackages,
