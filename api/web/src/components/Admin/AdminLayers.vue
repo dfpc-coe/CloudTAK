@@ -6,13 +6,15 @@
             </h1>
 
             <div class='ms-auto btn-list'>
-                <IconCloudUpload
-                    v-tooltip='"Redeploy"'
-                    :size='32'
-                    stroke='1'
-                    class='cursor-pointer'
+                <TablerIconButton
+                    title='Redeploy'
                     @click='redeploy'
-                />
+                >
+                    <IconCloudUpload
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
 
                 <TablerRefreshButton
                     :loading='loading'
@@ -147,6 +149,7 @@ import {
     TablerEnum,
     TablerLoading,
     TablerAlert,
+    TablerIconButton,
     TablerRefreshButton
 } from '@tak-ps/vue-tabler';
 import {
