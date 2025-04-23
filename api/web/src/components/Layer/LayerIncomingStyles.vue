@@ -286,7 +286,7 @@ const error_query = computed(() => {
     if (!query.value) return '';
 
     try {
-        jsonata(query.value.query)
+        jsonata(queries.value[query.value].query)
         return '';
     } catch (err) {
         return err.message;
