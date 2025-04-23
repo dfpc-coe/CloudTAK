@@ -9,8 +9,8 @@
                     title='Export'
                 >
                     <IconDownload
-                        size='32'
-                        :stroke='1'
+                        :size='32'
+                        stroke='1'
                     />
                 </TablerIconButton>
 
@@ -19,14 +19,14 @@
                         class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2 py-2'
                         @click.stop.prevent='download("geojson")'
                     >
-                        <IconFile size='32' :stroke='1'/>
+                        <IconFile :size='32' stroke='1'/>
                         <span class='mx-2'>GeoJSON</span>
                     </div>
                     <div
                         class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2 py-2'
                         @click.stop.prevent='download("geojson")'
                     >
-                        <IconFile size='32' :stroke='1'/>
+                        <IconFile :size='32' stroke='1'/>
                         <span class='mx-2'>KML</span>
                     </div>
                 </template>
@@ -206,7 +206,7 @@ async function refresh(load = false): Promise<void> {
 }
 
 async function download(format: string) {
-    window.location.href = stdurl(`/api/profile/feature?format=${format}&download=true&token=${localStorage.token}`);
+    window.location.href = String(stdurl(`/api/profile/feature?format=${format}&download=true&token=${localStorage.token}`));
 }
 
 async function closePath(path: Path): Promise<void> {
