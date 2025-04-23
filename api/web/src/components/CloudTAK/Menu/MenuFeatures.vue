@@ -4,6 +4,34 @@
         :loading='!mapStore.isLoaded'
     >
         <template #buttons>
+            <TablerDropdown>
+                <TablerIconButton
+                    title='Export'
+                >
+                    <IconDownload
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+
+                <template #dropdown>
+                    <div
+                        class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2 py-2'
+                        @click.stop.prevent='download("geojson")'
+                    >
+                        <IconFile :size='32' stroke='1'/>
+                        <span class='mx-2'>GeoJSON</span>
+                    </div>
+                    <div
+                        class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2 py-2'
+                        @click.stop.prevent='download("geojson")'
+                    >
+                        <IconFile :size='32' stroke='1'/>
+                        <span class='mx-2'>KML</span>
+                    </div>
+                </template>
+            </TablerDropdown>
+
             <TablerRefreshButton
                 :loading='loading'
                 @click='refresh(true)'
@@ -84,6 +112,7 @@
 
 <script setup lang='ts'>
 import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
+import { stdurl } from '../../../std.ts';
 import COT from '../../../base/cot.ts';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import Feature from '../util/Feature.vue';
@@ -91,12 +120,16 @@ import {
     TablerNone,
     TablerInput,
     TablerLoading,
+    TablerDropdown,
+    TablerIconButton,
     TablerRefreshButton
 } from '@tak-ps/vue-tabler';
 import type { WorkerMessage } from '../../../base/events.ts';
 import { WorkerMessageType } from '../../../base/events.ts';
 import {
+    IconFile,
     IconFolder,
+    IconDownload,
     IconChevronRight,
     IconChevronDown
 } from '@tabler/icons-vue';
@@ -170,6 +203,10 @@ async function refresh(load = false): Promise<void> {
         });
 
     loading.value = false
+}
+
+async function download(format: string) {
+    window.location.href = String(stdurl(`/api/profile/feature?format=${format}&download=true&token=${localStorage.token}`));
 }
 
 async function closePath(path: Path): Promise<void> {
