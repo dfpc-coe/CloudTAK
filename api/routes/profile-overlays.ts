@@ -79,7 +79,7 @@ export default async function router(schema: Schema, config: Config) {
                 } else if (item.mode === 'basemap') {
                     try {
                         const basemap = await config.models.Basemap.from(item.mode_id);
-                        items.push({ ...item, opacity: Number(item.opacity), actions: TileJSON.actions() });
+                        items.push({ ...item, opacity: Number(item.opacity), actions: TileJSON.actions(basemap.url) });
                     } catch (err) {
                         console.error('Could not find basemap', err);
                         await config.models.ProfileOverlay.delete(item.id);
@@ -95,7 +95,7 @@ export default async function router(schema: Schema, config: Config) {
                 ) {
                     await config.models.ProfileOverlay.delete(item.id);
                     removed.push(...overlays.items.splice(i, 1).map((o) => {
-                        return { ...item, opacity: Number(item.opacity) }
+                        return { ...item, opacity: Number(o.opacity) }
                     }));
                     total--;
                 } else {

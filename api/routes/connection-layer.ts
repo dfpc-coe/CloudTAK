@@ -37,7 +37,7 @@ export default async function router(schema: Schema, config: Config) {
             let page = 0;
             let list;
             do {
-                list = await config.models.Layer.list({ page, limit: 25 });
+                list = await config.models.Layer.augmented_list({ page, limit: 25 });
                 ++page;
 
                 for (const layer of list.items) {
