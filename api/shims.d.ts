@@ -1,3 +1,16 @@
+declare module 'tokml' {
+    export default function(
+        geojson: Static<typeof GeoJSONFeatureCollection>,
+        opts: {
+            documentName?: string;
+            documentDescription?: string;
+            simplestyle?: boolean
+            name?: string
+            description?: string
+        }
+    ): string;
+}
+
 declare module '@openaddresses/cloudfriend' {
     const accountId: object;
     const notificationArns: object;

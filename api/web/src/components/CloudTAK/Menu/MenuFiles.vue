@@ -3,10 +3,10 @@
         <template #buttons>
             <TablerIconButton
                 v-if='!loading && !upload'
-                title='New Import'
+                title='File Upload'
                 @click='upload = true'
             >
-                <IconPlus
+                <IconUpload
                     :size='32'
                     stroke='1'
                 />
@@ -118,7 +118,7 @@ import {
     TablerEpoch
 } from '@tak-ps/vue-tabler';
 import {
-    IconPlus,
+    IconUpload,
     IconMapOff,
     IconMapPlus,
     IconDownload,
