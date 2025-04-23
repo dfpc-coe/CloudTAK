@@ -12,12 +12,21 @@
 
 ### Pending Release
 
-### 8.16.0 - 2025-04-22
+### v8.17.0 - 2025-04-23
+
+- :rocket: Show Connection name in Admin Layer List
+- :rocket: Show incoming/outgoing/bidirectional status in Admin Layer List
+- :rocket: Remove `cron` header by default in Admin Layer List as that is specific to incoming layers
+- :bug: Fix filtering bug when JSONata query is set to delete data
+- :rocket: Migrate AdminConnection Component to `setup`
+- :rocket: Migrate AdminLayer Component to `setup`
+
+### v8.16.0 - 2025-04-22
 
 - :tada: Return TileJSON Actions on ProfileOverlays
 - :tada: Introduce Feature API for Basemaps
 
-### 8.15.0 - 2025-04-22
+### v8.15.0 - 2025-04-22
 
 - :tada: Update TileJSON output to v3.0.0
 - :rocket: Remove connection wizard as it hasn't gotten any use and significantly increases code base complexity.
@@ -26,56 +35,56 @@
 - :rocket: Migrate Style Single to `setup`
 - :tada: Add the ability to delete features matching a query
 
-### 8.14.0 - 2025-04-21
+### v8.14.0 - 2025-04-21
 
 - :rocket: Expose Public PMTile Endpoints
 
-### 8.13.0 - 2025-04-21
+### v8.13.0 - 2025-04-21
 
 - :rocket: Abstract PMTile operations into class
 - :rocket: Update Profile Tile routes to use new shared class
 - :rocket: Add TileJSON support for public PMTiles files
 
-### 8.12.0 - 2025-04-20
+### v8.12.0 - 2025-04-20
 
 - :bug: Handle Basemap.collection being null in Basemap UI
 - :bug: Allow ZXY Tiles hosted by ESRI MapServer by tightening MapServer matching
 - :rocket: Allow parsing `image/<type>` formats in PUT Basemap endpoint
 
-### 8.11.0 - 2025-04-19
+### v8.11.0 - 2025-04-19
 
 - :bug: Migrate RadialMenu to Vue Setup
 
-### 8.10.1 - 2025-04-18
+### v8.10.1 - 2025-04-18
 
 - :bug: Fix path error when editing Lease
 
-### 8.10.0 - 2025-04-18
+### v8.10.0 - 2025-04-18
 
 - :bug: Fix count stats when updating or deleting a DataSync managed via a Connection
 - :rocket: `UI` Migrate DataGroups & DataLayers comp to setup
 - :rocket: `UI` Migrate WarnChannels component to setup & ts
 
-### 8.9.2 - 2025-04-17
+### v8.9.2 - 2025-04-17
 
 - :arrow_up: Update `@tak-ps/node-cot` to latest version
 - :rocket: Increase number of supported rendered features in FeatureIcon component
 
-### 8.9.1 - 2025-04-17
+### v8.9.1 - 2025-04-17
 
 - :arrow_up: Update to `@tak-ps/serverless-http` in PMTiles Task for better express@5 compat.t
 
-### 8.9.0 - 2025-04-17
+### v8.9.0 - 2025-04-17
 
 - :bug: Fix UI Build step due to getOverlayById
 - :bug: Fix Stale check on COTs
 - :arrow_up: Update Node-CoT
 
-### 8.8.0 - 2025-04-16
+### v8.8.0 - 2025-04-16
 
 - :rocket: Allow opening attachments in a Floating Pane
 
-### 8.7.0 - 2025-04-15
+### v8.7.0 - 2025-04-15
 
 - :rocket: Add username/password support for HLS Streams
 - :bug: Fix bug related to authentication payloads from MediaMTX read/write seperated streams
@@ -83,7 +92,7 @@
 - :rocket: Migrate CoordInput component to `setup lang='ts'`
 - :bug: Fix Coordinate creation due to proxy error
 
-### 8.6.0 - 2025-04-14
+### v8.6.0 - 2025-04-14
 
 - :rocket: Begin process of merging data and events tasks
 - :bug: Fix permanent lease loss if re-saving a permanent lease
@@ -91,42 +100,42 @@
 - :rocket: `UI` Add RefreshButton component as a cleaner indication of reloading
 - :tada: Show active status in returned User Response
 
-### 8.5.0 - 2025-04-14
+### v8.5.0 - 2025-04-14
 
 - :rocket: Migrate PMTiles Service to routes directory in anticipation of setting up public tiles endpoints
 
-### 8.4.0 - 2025-04-14
+### v8.4.0 - 2025-04-14
 
 - :bug: Ensure Atlas worker isn't constructed more than once by moving shared class into it's own helper file
 - :bug: Create new BroadcastChannel for each COT in a remote context
 - :rocket: Add `instance` ID to each COT created to greatly assist in debugging
 
-### 8.3.3 - 2025-04-11
+### v8.3.3 - 2025-04-11
 
 - :bug: Allow Null value in CreatorUID in Package List API
 
-### 8.3.2 - 2025-04-10
+### v8.3.2 - 2025-04-10
 
 - :bug: Update DockerCompose with new EnvVars for MediaServer
 
-### 8.3.1 - 2025-04-10
+### v8.3.1 - 2025-04-10
 
 - :bug: Include permanent leases when `expired=false` on VideoLease API
 
-### 8.3.0 - 2025-04-10
+### v8.3.0 - 2025-04-10
 
 - :rocket: Add AllBoolean to expired query param on VideoLease
 - :rocket: Implement `lease` AuthResource type on API tokens
 
-### 8.2.0 - 2025-04-10
+### v8.2.0 - 2025-04-10
 
 - :rocket: Add AllBoolean to ephemeral query param on VideoLease
 
-### 8.1.0 - 2025-04-10
+### v8.1.0 - 2025-04-10
 
 - :tada: Handle MediaMTX Auth requests on `/api/video/auth` when `authMethod: internal` is set in MediaMTX
 
-### 8.0.0 - 2025-04-09
+### v8.0.0 - 2025-04-09
 
 - :rocket: Remove Connection Sinks in favor of outgoing layers
 - :rocket: Note: Sinks must be migrated manually to etl-arcgis outgoing layer
