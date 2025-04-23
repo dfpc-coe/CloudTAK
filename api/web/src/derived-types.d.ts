@@ -302,7 +302,7 @@ export interface paths {
                     /** @description No Description */
                     type?: "raster" | "raster-dem" | "vector";
                     /** @description No Description */
-                    sort: "id" | "created" | "updated" | "name" | "title" | "url" | "overlay" | "username" | "bounds" | "center" | "minzoom" | "maxzoom" | "collection" | "format" | "style" | "styles" | "type" | "enableRLS";
+                    sort: "id" | "created" | "updated" | "name" | "title" | "url" | "overlay" | "username" | "bounds" | "center" | "minzoom" | "maxzoom" | "collection" | "format" | "scheme" | "styles" | "type" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description Only show Basemaps belonging to a given collection */
@@ -340,7 +340,7 @@ export interface paths {
                                 maxzoom: number;
                                 collection: (null | string) | null;
                                 format: string;
-                                style: string;
+                                scheme: string;
                                 styles: unknown[];
                                 type: string;
                                 bounds?: number[];
@@ -384,7 +384,7 @@ export interface paths {
                             minzoom?: number;
                             maxzoom?: number;
                             /** @constant */
-                            style?: "zxy";
+                            style?: "xyz";
                             format?: "png" | "jpeg" | "mvt";
                         };
                     };
@@ -417,7 +417,7 @@ export interface paths {
                         maxzoom?: number;
                         format?: "png" | "jpeg" | "mvt";
                         /** @constant */
-                        style?: "zxy";
+                        style?: "xyz";
                         type?: "raster" | "raster-dem" | "vector";
                         bounds?: number[];
                         center?: number[];
@@ -445,7 +445,7 @@ export interface paths {
                             maxzoom: number;
                             collection: (null | string) | null;
                             format: string;
-                            style: string;
+                            scheme: string;
                             styles: unknown[];
                             type: string;
                             bounds?: number[];
@@ -507,7 +507,7 @@ export interface paths {
                             maxzoom: number;
                             collection: (null | string) | null;
                             format: string;
-                            style: string;
+                            scheme: string;
                             styles: unknown[];
                             type: string;
                             bounds?: number[];
@@ -565,6 +565,7 @@ export interface paths {
                         /** @description Human readable name */
                         name?: string;
                         collection?: null | string;
+                        overlay?: boolean;
                         /** @default user */
                         scope: "server" | "user";
                         url?: string;
@@ -572,7 +573,7 @@ export interface paths {
                         maxzoom?: number;
                         format?: "png" | "jpeg" | "mvt";
                         /** @constant */
-                        style?: "zxy";
+                        style?: "xyz";
                         type?: "raster" | "raster-dem" | "vector";
                         bounds?: number[];
                         center?: number[];
@@ -600,7 +601,7 @@ export interface paths {
                             maxzoom: number;
                             collection: (null | string) | null;
                             format: string;
-                            style: string;
+                            scheme: string;
                             styles: unknown[];
                             type: string;
                             bounds?: number[];
@@ -642,17 +643,27 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            tilejson: string;
+                            /** @constant */
+                            tilejson: "3.0.0";
                             version: string;
+                            /** @constant */
+                            scheme: "xyz";
                             name: string;
+                            description: string;
+                            attribution?: string;
                             minzoom: number;
                             maxzoom: number;
                             tiles: string[];
                             bounds: number[];
                             center: number[];
                             type: string;
-                            layers: unknown[];
                             format?: string;
+                            vector_layers: {
+                                id: string;
+                                minzoom: number;
+                                maxzoom: number;
+                                fields: Record<string, never>;
+                            }[];
                         };
                     };
                 };
@@ -692,6 +703,60 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/basemap/{:basemapid}/feature/{:featureid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a basemap feature */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            /** @constant */
+                            type: "Feature";
+                            properties: Record<string, never>;
+                            geometry: {
+                                /** @constant */
+                                type: "Point";
+                                coordinates: number[];
+                            } | {
+                                /** @constant */
+                                type: "LineString";
+                                coordinates: number[][];
+                            } | {
+                                /** @constant */
+                                type: "Polygon";
+                                coordinates: number[][][];
+                            };
+                        };
+                    };
                 };
             };
         };
@@ -2949,6 +3014,11 @@ export interface paths {
                                 memory: number;
                                 timeout: number;
                                 priority: "high" | "low" | "off";
+                                parent: {
+                                    id: number;
+                                    name: string;
+                                    enabled: boolean;
+                                };
                                 incoming?: {
                                     layer: number;
                                     created: string;
@@ -3016,14 +3086,8 @@ export interface paths {
                                         }[];
                                         queries?: {
                                             query: string;
-                                            id?: string;
-                                            remarks?: string;
-                                            callsign?: string;
-                                            links?: {
-                                                remarks: string;
-                                                url: string;
-                                            }[];
-                                            styles: {
+                                            delete?: boolean;
+                                            styles?: {
                                                 id?: string;
                                                 remarks?: string;
                                                 callsign?: string;
@@ -3144,6 +3208,11 @@ export interface paths {
                             memory: number;
                             timeout: number;
                             priority: "high" | "low" | "off";
+                            parent: {
+                                id: number;
+                                name: string;
+                                enabled: boolean;
+                            };
                             incoming?: {
                                 layer: number;
                                 created: string;
@@ -3211,14 +3280,8 @@ export interface paths {
                                     }[];
                                     queries?: {
                                         query: string;
-                                        id?: string;
-                                        remarks?: string;
-                                        callsign?: string;
-                                        links?: {
-                                            remarks: string;
-                                            url: string;
-                                        }[];
-                                        styles: {
+                                        delete?: boolean;
+                                        styles?: {
                                             id?: string;
                                             remarks?: string;
                                             callsign?: string;
@@ -3369,14 +3432,8 @@ export interface paths {
                             }[];
                             queries?: {
                                 query: string;
-                                id?: string;
-                                remarks?: string;
-                                callsign?: string;
-                                links?: {
-                                    remarks: string;
-                                    url: string;
-                                }[];
-                                styles: {
+                                delete?: boolean;
+                                styles?: {
                                     id?: string;
                                     remarks?: string;
                                     callsign?: string;
@@ -3514,14 +3571,8 @@ export interface paths {
                                 }[];
                                 queries?: {
                                     query: string;
-                                    id?: string;
-                                    remarks?: string;
-                                    callsign?: string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
-                                    styles: {
+                                    delete?: boolean;
+                                    styles?: {
                                         id?: string;
                                         remarks?: string;
                                         callsign?: string;
@@ -3673,14 +3724,8 @@ export interface paths {
                             }[];
                             queries?: {
                                 query: string;
-                                id?: string;
-                                remarks?: string;
-                                callsign?: string;
-                                links?: {
-                                    remarks: string;
-                                    url: string;
-                                }[];
-                                styles: {
+                                delete?: boolean;
+                                styles?: {
                                     id?: string;
                                     remarks?: string;
                                     callsign?: string;
@@ -3821,14 +3866,8 @@ export interface paths {
                                 }[];
                                 queries?: {
                                     query: string;
-                                    id?: string;
-                                    remarks?: string;
-                                    callsign?: string;
-                                    links?: {
-                                        remarks: string;
-                                        url: string;
-                                    }[];
-                                    styles: {
+                                    delete?: boolean;
+                                    styles?: {
                                         id?: string;
                                         remarks?: string;
                                         callsign?: string;
@@ -4033,6 +4072,11 @@ export interface paths {
                             memory: number;
                             timeout: number;
                             priority: "high" | "low" | "off";
+                            parent: {
+                                id: number;
+                                name: string;
+                                enabled: boolean;
+                            };
                             incoming?: {
                                 layer: number;
                                 created: string;
@@ -4100,14 +4144,8 @@ export interface paths {
                                     }[];
                                     queries?: {
                                         query: string;
-                                        id?: string;
-                                        remarks?: string;
-                                        callsign?: string;
-                                        links?: {
-                                            remarks: string;
-                                            url: string;
-                                        }[];
-                                        styles: {
+                                        delete?: boolean;
+                                        styles?: {
                                             id?: string;
                                             remarks?: string;
                                             callsign?: string;
@@ -4253,6 +4291,11 @@ export interface paths {
                             memory: number;
                             timeout: number;
                             priority: "high" | "low" | "off";
+                            parent: {
+                                id: number;
+                                name: string;
+                                enabled: boolean;
+                            };
                             incoming?: {
                                 layer: number;
                                 created: string;
@@ -4320,14 +4363,8 @@ export interface paths {
                                     }[];
                                     queries?: {
                                         query: string;
-                                        id?: string;
-                                        remarks?: string;
-                                        callsign?: string;
-                                        links?: {
-                                            remarks: string;
-                                            url: string;
-                                        }[];
-                                        styles: {
+                                        delete?: boolean;
+                                        styles?: {
                                             id?: string;
                                             remarks?: string;
                                             callsign?: string;
@@ -6960,6 +6997,11 @@ export interface paths {
                                 memory: number;
                                 timeout: number;
                                 priority: "high" | "low" | "off";
+                                parent: {
+                                    id: number;
+                                    name: string;
+                                    enabled: boolean;
+                                };
                                 incoming?: {
                                     layer: number;
                                     created: string;
@@ -7027,14 +7069,8 @@ export interface paths {
                                         }[];
                                         queries?: {
                                             query: string;
-                                            id?: string;
-                                            remarks?: string;
-                                            callsign?: string;
-                                            links?: {
-                                                remarks: string;
-                                                url: string;
-                                            }[];
-                                            styles: {
+                                            delete?: boolean;
+                                            styles?: {
                                                 id?: string;
                                                 remarks?: string;
                                                 callsign?: string;
@@ -7157,6 +7193,11 @@ export interface paths {
                             memory: number;
                             timeout: number;
                             priority: "high" | "low" | "off";
+                            parent: {
+                                id: number;
+                                name: string;
+                                enabled: boolean;
+                            };
                             incoming?: {
                                 layer: number;
                                 created: string;
@@ -7224,14 +7265,8 @@ export interface paths {
                                     }[];
                                     queries?: {
                                         query: string;
-                                        id?: string;
-                                        remarks?: string;
-                                        callsign?: string;
-                                        links?: {
-                                            remarks: string;
-                                            url: string;
-                                        }[];
-                                        styles: {
+                                        delete?: boolean;
+                                        styles?: {
                                             id?: string;
                                             remarks?: string;
                                             callsign?: string;
@@ -12640,6 +12675,9 @@ export interface paths {
                                 mode: string;
                                 mode_id: string | null;
                                 url: string;
+                                actions: {
+                                    feature: ("query" | "fetch" | "create" | "update" | "delete")[];
+                                };
                             }[];
                         };
                     };
@@ -12693,6 +12731,9 @@ export interface paths {
                             mode: string;
                             mode_id: string | null;
                             url: string;
+                            actions: {
+                                feature: ("query" | "fetch" | "create" | "update" | "delete")[];
+                            };
                         };
                     };
                 };
@@ -12768,6 +12809,9 @@ export interface paths {
                             mode: string;
                             mode_id: string | null;
                             url: string;
+                            actions: {
+                                feature: ("query" | "fetch" | "create" | "update" | "delete")[];
+                            };
                         };
                     };
                 };
@@ -12821,6 +12865,9 @@ export interface paths {
                             mode: string;
                             mode_id: string | null;
                             url: string;
+                            actions: {
+                                feature: ("query" | "fetch" | "create" | "update" | "delete")[];
+                            };
                         };
                     };
                 };

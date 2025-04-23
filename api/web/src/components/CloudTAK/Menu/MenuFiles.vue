@@ -7,7 +7,9 @@
             />
         </template>
         <template #default>
-            <TablerLoading v-if='loading' />
+            <TablerLoading
+                v-if='loading'
+            />
             <TablerAlert
                 v-else-if='error'
                 :err='error'

@@ -13,7 +13,6 @@ import { Static, Type } from '@sinclair/typebox'
 import Err from '@openaddresses/batch-error';
 import { Basemap_FeatureAction } from '../enums.js';
 import { validateStyleMin } from '@maplibre/maplibre-gl-style-spec';
-import { Basemap } from '../schema.js';
 
 export const TileJSONActions = Type.Object({
     feature: Type.Array(Type.Enum(Basemap_FeatureAction))
