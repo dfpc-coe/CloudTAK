@@ -30,6 +30,11 @@ export function AllBooleanCast(allBoolean: AllBoolean): boolean | null {
         : allBoolean === AllBoolean.FALSE ? false : null;
 }
 
+export enum ProfileFeatureFormat {
+    GEOJSON = 'geojson',
+    KML = 'kml'
+}
+
 export enum Basemap_FeatureAction {
     QUERY = 'query',
     FETCH = 'fetch',
