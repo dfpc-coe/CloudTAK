@@ -6,18 +6,18 @@
             </h1>
 
             <div class='ms-auto btn-list'>
-                <IconPlus
-                    v-tooltip='"Create Connection"'
-                    :size='32'
-                    stroke='1'
-                    class='cursor-pointer'
-                    @click='$router.push("/connection/new")'
-                />
-                <IconRefresh
-                    v-tooltip='"Refresh"'
-                    :size='32'
-                    stroke='1'
-                    class='cursor-pointer'
+                <TablerIconButton
+                    title='Create Connection'
+                    @click='router.push("/connection/new")'
+                >
+                    <IconPlus
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+
+                <TablerRefreshButton
+                    :loading='loading'
                     @click='fetchList'
                 />
             </div>
@@ -33,6 +33,10 @@
             <TablerLoading
                 v-if='loading'
                 desc='Loading Connections'
+            />
+            <TablerAlert
+                v-else-if='error'
+                :err='error'
             />
             <TablerNone
                 v-else-if='!list.items.length'
@@ -54,7 +58,7 @@
                             v-for='connection in list.items'
                             :key='connection.id'
                             class='cursor-pointer'
-                            @click='stdclick($router, $event, `/connection/${connection.id}`)'
+                            @click='stdclick(router, $event, `/connection/${connection.id}`)'
                         >
                             <template v-for='h in header'>
                                 <template v-if='h.display && h.name === "name"'>
@@ -91,92 +95,83 @@
     </div>
 </template>
 
-<script>
+<script setup>
+import { ref, watch, onMounted } from 'vue'
+import { useRouter } from 'vue-router';
 import { std, stdurl, stdclick } from '/src/std.ts';
 import TableHeader from '../util/TableHeader.vue'
 import TableFooter from '../util/TableFooter.vue'
+import Status from '../Connection/StatusDot.vue';
 import {
     TablerNone,
+    TablerAlert,
     TablerInput,
-    TablerLoading
+    TablerLoading,
+    TablerIconButton,
+    TablerRefreshButton,
 } from '@tak-ps/vue-tabler';
 import {
-    IconRefresh,
     IconPlus,
 } from '@tabler/icons-vue'
-import Status from '../Connection/StatusDot.vue';
 
-export default {
-    name: 'LayerAdmin',
-    components: {
-        Status,
-        TablerNone,
-        TablerInput,
-        TablerLoading,
-        IconRefresh,
-        IconPlus,
-        TableHeader,
-        TableFooter,
-    },
-    data: function() {
+const router = useRouter();
+const error = ref(false);
+const loading = ref(true);
+const header = ref([]);
+const paging = ref({
+    filter: '',
+    sort: 'name',
+    order: 'asc',
+    limit: 100,
+    page: 0
+})
+
+const list = ref({
+    total: 0,
+    items: []
+})
+
+watch(paging.value, async () => {
+    await fetchList();
+});
+
+onMounted(async () => {
+    await listLayerSchema();
+    await fetchList();
+});
+
+async function listLayerSchema() {
+    const schema = await std('/api/schema?method=GET&url=/connection');
+    header.value = ['id', 'name'].map((h) => {
+        return { name: h, display: true };
+    });
+
+    header.value.push(...schema.query.properties.sort.enum.map((h) => {
         return {
-            err: false,
-            loading: true,
-            header: [],
-            paging: {
-                filter: '',
-                sort: 'name',
-                order: 'asc',
-                limit: 100,
-                page: 0
-            },
-            list: {
-                total: 0,
-                items: []
-            }
+            name: h,
+            display: false
         }
-    },
-    watch: {
-       paging: {
-            deep: true,
-            handler: async function() {
-                await this.fetchList();
-            }
+    }).filter((h) => {
+        for (const hknown of header.value) {
+            if (hknown.name === h.name) return false;
         }
-    },
-    mounted: async function() {
-        await this.listLayerSchema();
-        await this.fetchList();
-    },
-    methods: {
-        stdclick,
-        listLayerSchema: async function() {
-            const schema = await std('/api/schema?method=GET&url=/connection');
-            this.header = ['id', 'name'].map((h) => {
-                return { name: h, display: true };
-            });
+        return true;
+    }));
+}
 
-            this.header.push(...schema.query.properties.sort.enum.map((h) => {
-                return {
-                    name: h,
-                    display: false
-                }
-            }).filter((h) => {
-                for (const hknown of this.header) {
-                    if (hknown.name === h.name) return false;
-                }
-                return true;
-            }));
-        },
-        fetchList: async function() {
-            this.loading = true;
-            const url = stdurl('/api/connection');
-            url.searchParams.append('filter', this.paging.filter);
-            url.searchParams.append('limit', this.paging.limit);
-            url.searchParams.append('page', this.paging.page);
-            this.list = await std(url);
-            this.loading = false;
-        }
+async function fetchList() {
+    loading.value = true;
+  
+    try {
+        const url = stdurl('/api/connection');
+        url.searchParams.append('filter', paging.value.filter);
+        url.searchParams.append('limit', paging.value.limit);
+        url.searchParams.append('page', paging.value.page);
+        list.value = await std(url);
+        loading.value = false;
+    } catch (err) {
+        loading.value = false;
+        error.value = err instanceof Error ? err : new Error(String(err));
     }
 }
 </script>
