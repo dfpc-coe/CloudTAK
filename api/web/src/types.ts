@@ -108,6 +108,8 @@ export type Feature = paths["/profile/feature/{:id}"]["get"]["responses"]["200"]
     }
 }
 
+export type FeaturePropertyCreator = Exclude<Feature["properties"]["creator"], undefined>
+
 export type FeatureCollection = {
     type: string
     features: Array<Feature>

@@ -12,7 +12,7 @@
             <div class='col-12 card-header row my-2 d-flex'>
                 <div class='card-title d-flex'>
                     <div class='col-auto ms-2 my-1'>
-                        <Battery
+                        <PropertyBattery
                             v-if='cot && cot.properties.status && cot.properties.status.battery && !isNaN(parseInt(cot.properties.status.battery))'
                             :battery='Number(cot.properties.status.battery)'
                         />
@@ -331,7 +331,7 @@
                     v-if='center.length > 2'
                     class='col-md-4 pt-2'
                 >
-                    <Elevation
+                    <PropertyElevation
                         :unit='units.display_elevation'
                         :elevation='cot.properties.center[2]'
                     />
@@ -364,7 +364,7 @@
                         "col-12": !cot.properties.course,
                     }'
                 >
-                    <Speed
+                    <PropertySpeed
                         :unit='units.display_speed'
                         :speed='cot.properties.speed'
                         class='py-2'
@@ -379,7 +379,7 @@
                         "col-12": !cot.properties.course,
                     }'
                 >
-                    <Course
+                    <PropertyCourse
                         :course='cot.properties.course'
                         class='py-2'
                     />
@@ -389,7 +389,7 @@
                     v-if='cot.properties.contact && cot.properties.contact.phone'
                     class='pt-2'
                 >
-                    <Phone
+                    <PropertyPhone
                         :phone='cot.properties.contact.phone'
                     />
                 </div>
@@ -399,12 +399,12 @@
                 v-if='username'
                 class='col-12 pt-2'
             >
-                <Email
+                <PropertyEmail
                     :email='username'
                 />
             </div>
 
-            <Attachments
+            <PropertyAttachments
                 v-if='!cot.properties.contact && cot.properties.attachments !== undefined'
                 :attachments='cot.properties.attachments || []'
                 @attachment='addAttachment($event)'
@@ -495,7 +495,7 @@
                 </div>
             </div>
 
-            <CoTSensor
+            <PropertySensor
                 v-if='cot.properties.sensor !== undefined'
                 v-model='cot.properties.sensor'
                 class='my-2 mx-2'
@@ -604,6 +604,15 @@
                         </template>
                     </div>
                 </div>
+            </div>
+
+            <div
+                v-if='cot.properties.creator && cot.properties.creator'
+                class='pt-2'
+            >
+                <PropertyCreator
+                    :creator='cot.properties.creator'
+                />
             </div>
 
             <div
@@ -717,19 +726,20 @@ import {
 
 import CopyField from './util/CopyField.vue';
 import IconSelect from '../util/IconSelect.vue';
-import Battery from './util/Battery.vue';
 import Share from './util/Share.vue';
 import LineLength from './util/LineLength.vue';
 import PolygonArea from './util/PolygonArea.vue';
 import Coordinate from './util/Coordinate.vue';
-import Course from './util/Course.vue';
-import CoTSensor from './util/Sensor.vue';
-import Phone from './util/Phone.vue';
-import Email from './util/Email.vue';
-import Speed from './util/Speed.vue';
+import PropertyBattery from './util/PropertyBattery.vue';
+import PropertyCourse from './util/PropertyCourse.vue';
+import PropertySensor from './util/PropertySensor.vue';
+import PropertyPhone from './util/PropertyPhone.vue';
+import PropertyCreator from './util/PropertyCreator.vue';
+import PropertyEmail from './util/PropertyEmail.vue';
+import PropertySpeed from './util/PropertySpeed.vue';
 import Breadcrumb from './util/Breadcrumb.vue';
-import Elevation from './util/Elevation.vue';
-import Attachments from './util/Attachments.vue';
+import PropertyElevation from './util/PropertyElevation.vue';
+import PropertyAttachments from './util/PropertyAttachments.vue';
 import {
     IconPencil,
     IconMovie,

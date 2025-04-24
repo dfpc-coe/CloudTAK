@@ -16,7 +16,11 @@ export default class AtlasTeam {
         await Promise.all([ this.load() ])
     }
 
-    async load() {
+    async get(uid: string): Promise<Contact | undefined> {
+        return this.contacts.get(uid);
+    }
+
+    async load(): Promise<Map<string, Contact>> {
         const url = stdurl('/api/marti/api/contacts/all');
         const contacts = await std(url, {
             token: this.atlas.token
@@ -26,5 +30,7 @@ export default class AtlasTeam {
             if (!contact.uid) continue;
             this.contacts.set(contact.uid, contact);
         }
+
+        return this.contacts;
     }
 }

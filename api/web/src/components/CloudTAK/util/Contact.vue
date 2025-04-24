@@ -19,14 +19,14 @@
                 />
                 <ContactPuck
                     v-else
-                    :contact='contact'
+                    :team='contact.team'
                     :compact='compact'
                 />
             </div>
             <div
                 :class='{
-                    "col-7": buttonChat || buttonZoom,
-                    "col-9": !buttonChat && !buttonZoom
+                    "col-7": props.buttonChat || buttonZoom,
+                    "col-9": !props.buttonChat && !buttonZoom
                 }'
             >
                 <div
@@ -35,27 +35,27 @@
                 />
                 <div
                     class='text-truncate subheader user-select-none'
-                    v-text='contact.notes.trim()'
+                    v-text='contact.notes ? contact.notes.trim() : ""'
                 />
             </div>
             <div
-                v-if='buttonChat || buttonZoom'
+                v-if='props.buttonChat || buttonZoom'
                 class='col-auto ms-auto btn-list'
             >
                 <IconMessage
-                    v-if='buttonChat && isChatable(contact)'
+                    v-if='props.buttonChat && isChatable(contact)'
                     v-tooltip='"Start Chat"'
                     :size='compact ? 20 : 32'
                     stroke='1'
                     class='cursor-pointer'
-                    @click='$emit("chat", contact)'
+                    @click='emit("chat", contact)'
                 />
             </div>
         </div>
     </div>
 </template>
 
-<script>
+<script setup>
 import {
     IconCheck,
     IconMessage,
@@ -64,59 +64,53 @@ import ContactPuck from './ContactPuck.vue';
 import { useMapStore } from '/src/stores/map.ts';
 const mapStore = useMapStore();
 
-export default {
-    name: 'TAKContact',
-    components: {
-        IconCheck,
-        IconMessage,
-        ContactPuck
+const props = defineProps({
+    contact: {
+        type: Object,
+        required: true
     },
-    props: {
-        contact: {
-            type: Object,
-            required: true
-        },
-        selected: {
-            type: Boolean,
-            default: false
-        },
-        buttonZoom: {
-            type: Boolean,
-            default: true
-        },
-        buttonChat: {
-            type: Boolean,
-            default: true
-        },
-        hover: {
-            type: Boolean,
-            default: true
-        },
-        compact: {
-            type: Boolean,
-            default: false
-        }
+    selected: {
+        type: Boolean,
+        default: false
     },
-    emits: [
-        'chat'
-    ],
-    methods: {
-        isZoomable: async function(contact) {
-            return mapStore.worker.db.has(contact.uid);
-        },
-        isChatable: async function(contact) {
-            if (!await mapStore.worker.db.has(contact.uid)) return false;
-            const cot = await mapStore.worker.db.get(contact.uid);
-            return cot.properties.contact && cot.properties.contact.endpoint;
-        },
-        flyTo: async function(contact) {
-            if (!this.buttonZoom || !await this.isZoomable(contact)) return;
-
-            const cot = await mapStore.worker.db.get(contact.uid);
-            if (!cot) return;
-
-            cot.flyTo();
-        }
+    buttonZoom: {
+        type: Boolean,
+        default: true
+    },
+    buttonChat: {
+        type: Boolean,
+        default: true
+    },
+    hover: {
+        type: Boolean,
+        default: true
+    },
+    compact: {
+        type: Boolean,
+        default: false
     }
+});
+
+const emit = defineEmits([
+    'chat'
+]);
+
+async function isZoomable(contact) {
+    return mapStore.worker.db.has(contact.uid);
+}
+
+async function isChatable(contact) {
+    if (!await mapStore.worker.db.has(contact.uid)) return false;
+    const cot = await mapStore.worker.db.get(contact.uid);
+    return cot.properties.contact && cot.properties.contact.endpoint;
+}
+
+async function flyTo(contact) {
+    if (!props.buttonZoom || !await isZoomable(contact)) return;
+
+    const cot = await mapStore.worker.db.get(contact.uid);
+    if (!cot) return;
+
+    cot.flyTo();
 }
 </script>

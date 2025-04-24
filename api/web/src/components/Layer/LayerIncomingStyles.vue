@@ -208,7 +208,10 @@
                     <template v-if='queries[query].delete'>
                         <div class='border rounded mx-2 d-flex justify-content-center'>
                             <div class='mx-2 my-2'>
-                                <IconTrash size='24' :stroke='1'/>
+                                <IconTrash
+                                    size='24'
+                                    :stroke='1'
+                                />
                                 All features matching this query will not be submitted to the TAK Server
                             </div>
                         </div>

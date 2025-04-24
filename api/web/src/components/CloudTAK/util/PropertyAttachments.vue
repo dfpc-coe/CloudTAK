@@ -45,10 +45,10 @@
                             <img
                                 v-if='[".png", ".jpg", "jpeg", "webp"].includes(file.ext)'
                                 class='cursor-pointer'
-                                @click='attachmentPane(file)'
                                 :src='downloadAssetUrl(file)'
                                 :size='24'
                                 stroke='1'
+                                @click='attachmentPane(file)'
                             >
                             <IconFile
                                 v-else
