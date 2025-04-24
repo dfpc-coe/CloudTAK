@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v8.21.0 - 2025-04-24
+
+- :tada: Send new `environment:<direction>` Lambda Event on an Environment change in a Layer
+
 ### v8.20.0 - 2025-04-24
 
 - :arrow_up: Update to latest node-cot library
