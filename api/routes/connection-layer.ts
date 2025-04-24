@@ -439,6 +439,10 @@ export default async function router(schema: Schema, config: Config) {
 
             await config.cacher.del(`layer-${req.params.layerid}`);
 
+            if (req.body.environment) {
+                await Lambda.invoke(config, layer.id, 'environment:incoming')
+            }
+
             res.json(incoming);
         } catch (err) {
             Err.respond(err, res);
@@ -592,6 +596,10 @@ export default async function router(schema: Schema, config: Config) {
             const outgoing = await config.models.LayerOutgoing.commit(layer.id, updated);
 
             await config.cacher.del(`layer-${req.params.layerid}`);
+
+            if (req.body.environment) {
+                await Lambda.invoke(config, layer.id, 'environment:outgoing')
+            }
 
             res.json(outgoing);
         } catch (err) {
