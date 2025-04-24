@@ -837,6 +837,11 @@ export const useMapStore = defineStore('cloudtak', {
                         draw.setMode('static');
                         this.drawOptions.mode = 'static';
                         draw.stop();
+
+                        if (!(await this.worker.db.has(feat.id))) {
+                            feat.properties.creator = await this.worker.profile.creator();
+                        }
+
                         await this.worker.db.add(feat);
                         await this.updateCOT();
                     }
