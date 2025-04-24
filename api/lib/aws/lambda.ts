@@ -13,34 +13,40 @@ import { Capabilities } from '@tak-ps/etl'
  * @class
  */
 export default class Lambda {
-    static async capabilities(config: Config, layerid: number): Promise<Static<typeof Capabilities>> {
-        const lambda = new AWSLambda.LambdaClient({ region: process.env.AWS_REGION });
-        const FunctionName = `${config.StackName}-layer-${layerid}`;
+    static async capabilities(
+        config: Config,
+        layerid: number
+    ): Promise<Static<typeof Capabilities>> {
+        const res = await Lambda.invoke(config, layerid, 'capabilities');
 
-        const res = await lambda.send(new AWSLambda.InvokeCommand({
-            FunctionName,
-            InvocationType: 'RequestResponse',
-            Payload: Buffer.from(JSON.stringify({
-                type: 'capabilities'
-            }))
-        }));
-
-        if (!res.Payload) {
+        if (!res) {
             throw new Err(400, null, 'Capabilities API returned empty response');
         }
 
-        return JSON.parse(Buffer.from(res.Payload).toString());
+        return JSON.parse(res.toString()) as Static<typeof Capabilities>;
     }
 
-    static async invoke(config: Config, layerid: number): Promise<void> {
+
+    static async invoke(config: Config, layerid: number, type?: string): Promise<Buffer | undefined> {
         const lambda = new AWSLambda.LambdaClient({ region: process.env.AWS_REGION });
         const FunctionName = `${config.StackName}-layer-${layerid}`;
 
-        await lambda.send(new AWSLambda.InvokeCommand({
+        let InvocationType: AWSLambda.InvocationType = 'Event';
+        if (type && ['capabilities'].includes(type)) {
+            InvocationType = 'RequestResponse';
+        }
+
+        const res = await lambda.send(new AWSLambda.InvokeCommand({
             FunctionName,
-            InvocationType: 'Event',
-            Payload: Buffer.from('')
+            InvocationType,
+            Payload: type ? Buffer.from(JSON.stringify({ type })) : Buffer.from('')
         }));
+
+        if (res.Payload) {
+            return Buffer.from(res.Payload);
+        } else {
+            return
+        }
     }
 
     static generate(
