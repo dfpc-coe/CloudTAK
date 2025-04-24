@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v8.19.1 - 2025-04-24
+
+- :bug: KML download should download a KML, not GeoJSON
+
 ### v8.19.0 - 2025-04-23
 
 - :rocket: Allow exporting Profile Features as GeoJSON or KML

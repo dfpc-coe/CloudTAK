@@ -24,7 +24,7 @@
                     </div>
                     <div
                         class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2 py-2'
-                        @click.stop.prevent='download("geojson")'
+                        @click.stop.prevent='download("kml")'
                     >
                         <IconFile :size='32' stroke='1'/>
                         <span class='mx-2'>KML</span>
