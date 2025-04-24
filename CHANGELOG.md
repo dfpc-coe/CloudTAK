@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v8.20.0 - 2025-04-24
+
+- :arrow_up: Update to latest node-cot library
+- :tada: Support displaying `creator` tags
+- :tada: Automatically add `creator` tags on created features
+
 ### v8.19.1 - 2025-04-24
 
 - :bug: KML download should download a KML, not GeoJSON
