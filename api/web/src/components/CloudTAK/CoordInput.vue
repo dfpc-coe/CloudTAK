@@ -78,7 +78,8 @@ async function submitPoint() {
             start: new Date().toISOString(),
             stale: new Date().toISOString(),
             center: toRaw(config.value.coordinates),
-            callsign: toRaw(config.value.name || 'New Feature')
+            callsign: toRaw(config.value.name || 'New Feature'),
+            creator: await mapStore.worker.profile.creator()
         },
         geometry: {
             type: 'Point',

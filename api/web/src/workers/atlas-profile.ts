@@ -2,7 +2,7 @@ import { toRaw } from 'vue';
 import type Atlas from './atlas.ts';
 import { std, stdurl } from '../std.ts';
 import { WorkerMessageType, LocationState } from '../base/events.ts'
-import type { Feature, Group, Server, Profile, Profile_Update } from '../types.ts';
+import type { Feature, Group, Server, Profile, Profile_Update, FeaturePropertyCreator } from '../types.ts';
 
 export type TAKNotification = {
     type: string;
@@ -65,6 +65,15 @@ export default class AtlasProfile {
     async username(): Promise<string> {
         const profile = await this.load();
         return profile.username;
+    }
+
+    async creator(): Promise<FeaturePropertyCreator> {
+        return {
+            uid: await this.uid(),
+            type: 'a-f-G-E-V-C',
+            callsign: await this.callsign(),
+            time: new Date().toISOString(),
+        }
     }
 
     async callsign(): Promise<string> {
