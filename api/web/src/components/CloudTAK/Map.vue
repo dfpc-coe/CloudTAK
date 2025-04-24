@@ -756,7 +756,9 @@ async function handleRadial(event: string): Promise<void> {
         selectFeat(mapStore.radial.cot as MapGeoJSONFeature);
         closeRadial()
     } else if (event === 'context:new') {
-        await mapStore.worker.db.add(toRaw(mapStore.radial.cot as Feature));
+        const feat = toRaw(mapStore.radial.cot as Feature) as Feature;
+        feat.properties.creator = await mapStore.worker.profile.creator();
+        await mapStore.worker.db.add(feat);
         mapStore.updateCOT();
         closeRadial()
     } else if (event === 'context:info') {

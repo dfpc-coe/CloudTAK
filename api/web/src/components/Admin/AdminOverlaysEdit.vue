@@ -11,8 +11,14 @@
                 />
             </TablerIconButton>
             <h1 class='card-title'>
-                <span v-if='route.params.overlay === "new"' class='mx-2'>New Overlay</span>
-                <span v-else class='mx-2'>Edit Overlay</span>
+                <span
+                    v-if='route.params.overlay === "new"'
+                    class='mx-2'
+                >New Overlay</span>
+                <span
+                    v-else
+                    class='mx-2'
+                >Edit Overlay</span>
             </h1>
         </div>
         <div

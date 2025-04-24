@@ -342,7 +342,7 @@ export default class AtlasDatabase {
         }) as APIList<Feature>;
 
         for (const a of archive.items) {
-            this.add(a, undefined, {
+            this.add(a, {
                 skipSave: true,
                 skipBroadcast: true
             });
@@ -442,14 +442,16 @@ export default class AtlasDatabase {
      */
     async add(
         feat: Feature,
-        mission_guid?: string,
         opts?: {
             skipSave?: boolean;
             skipBroadcast?: boolean;
+
+            mission_guid?: string,
         }
     ): Promise<void> {
         if (!opts) opts = {};
-        mission_guid = mission_guid || this.subscriptionPending.get(feat.id);
+
+        const mission_guid = opts.mission_guid || this.subscriptionPending.get(feat.id);
 
         if (mission_guid)  {
             const sub = this.subscriptions.get(mission_guid);
