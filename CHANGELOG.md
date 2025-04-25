@@ -12,6 +12,8 @@
 
 ### Pending Release
 
+### v8.22.0 - 2025-04-25
+
 - :rocket: Migrate Icon component to Setup
 - :bug: Fix paging update on Data Imports Menu
 
