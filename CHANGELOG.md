@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v8.23.0 - 2025-04-25
+
+- :bug: Fix a bug where the COT View Component couldn't add new properties due to Vue conflicting with the internal use of a custom Proxy
+
 ### v8.22.0 - 2025-04-25
 
 - :rocket: Migrate Icon component to Setup
