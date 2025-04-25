@@ -246,13 +246,14 @@ async function fetchList() {
 
     try {
         const url = stdurl('/api/iconset');
-        url.searchParams.append('page', this.paging.page);
-        url.searchParams.append('filter', this.paging.filter);
-        url.searchParams.append('limit', this.paging.limit);
+        url.searchParams.append('page', paging.value.page);
+        url.searchParams.append('filter', paging.value.filter);
+        url.searchParams.append('limit', paging.value.limit);
         list.value = await std(url);
         loading.value = false;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
+        loading.value = false;
     }
 }
 </script>

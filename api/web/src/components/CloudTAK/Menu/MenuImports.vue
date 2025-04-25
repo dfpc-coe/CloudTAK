@@ -155,7 +155,7 @@ const list = ref<ImportList>({
     items: []
 });
 
-watch(paging, async function() {
+watch(paging.value, async function() {
     await fetchList()
 });
 
