@@ -707,7 +707,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, watch, onMounted, toRaw } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
 import FeatureIcon from './util/FeatureIcon.vue';
 import type COT from '../../base/cot.ts';
