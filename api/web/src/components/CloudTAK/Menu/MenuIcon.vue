@@ -2,17 +2,21 @@
     <MenuTemplate :name='icon.name'>
         <template #buttons>
             <TablerDelete
-                v-if='iconset.username || profile.system_admin'
+                v-if='iconset.username || isSystemAdmin'
                 displaytype='icon'
                 @delete='deleteIcon'
             />
-            <IconSettings
-                v-if='iconset.username || profile.system_admin'
-                :size='32'
-                stroke='1'
-                class='cursor-pointer'
+
+            <TablerIconButton
+                v-if='iconset.username || isSystemAdmin'
+                title='Edit'
                 @click='editModal = icon'
-            />
+            >
+                <IconSettings
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
         </template>
         <template #default>
             <div class='mx-4'>
@@ -71,9 +75,11 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { std, stdurl } from '../../../std.ts';
+import { useMapStore } from '../../../stores/map.ts';
 import {
     TablerDelete,
-    TablerLoading
+    TablerLoading,
+    TablerIconButton
 } from '@tak-ps/vue-tabler';
 import {
     IconSettings,
@@ -84,8 +90,11 @@ import IconEditModal from './Icon/EditModal.vue';
 const route = useRoute();
 const router = useRouter();
 
+const mapStore = useMapStore();
+
 const loading = ref(true);
 const editModal = ref(false);
+const isSystemAdmin = ref(false);
     
 const iconset = ref({});
 const icon = ref({
@@ -93,6 +102,7 @@ const icon = ref({
 });
 
 onMounted(async () => {
+    isSystemAdmin.value = await mapStore.worker.profile.isSystemAdmin();
     await refresh();
 });
 
