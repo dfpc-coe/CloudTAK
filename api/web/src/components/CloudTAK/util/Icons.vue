@@ -18,6 +18,10 @@
                 v-if='loading'
                 desc='Loading Icons'
             />
+            <TablerAlert
+                v-else-if='error'
+                :err='error'
+            />
             <TablerNone
                 v-else-if='!list.items.length'
                 label='Icons'
@@ -29,7 +33,7 @@
                         v-for='icon in list.items'
                         :key='icon.name'
                         class='col-sm-2'
-                        @click='$router.push(`/menu/iconset/${icon.iconset}/${encodeURIComponent(icon.name)}`)'
+                        @click='router.push(`/menu/iconset/${icon.iconset}/${encodeURIComponent(icon.name)}`)'
                     >
                         <div class='card card-sm hover-dark cursor-pointer'>
                             <div class='col-12'>
@@ -81,76 +85,73 @@
     </div>
 </template>
 
-<script>
-import { std, stdurl } from '/src/std.ts';
+<script setup>
+import { ref, watch, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { std, stdurl } from '../../../std.ts';
 import {
     TablerNone,
     TablerPager,
     TablerInput,
+    TablerAlert,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
 } from '@tabler/icons-vue'
 
-export default {
-    name: 'IconsCombined',
-    components: {
-        TablerNone,
-        TablerPager,
-        TablerInput,
-        TablerLoading
+const props = defineProps({
+    iconset: {
+        type: String
     },
-    props: {
-        iconset: {
-            type: String
-        },
-        labels: {
-            type: Boolean,
-            default: true
-        }
-    },
-    data: function() {
-        return {
-            err: false,
-            loading: true,
-            paging: {
-                filter: '',
-                limit: 100 - 4, // keeps the icon in an even grid
-                page: 0
-            },
-            list: {
-                total: 0,
-                items: []
-            }
-        }
-    },
-    watch: {
-        paging: {
-            deep: true,
-            handler: async function() {
-                await this.fetchList();
-            }
-        }
-    },
-    mounted: async function() {
-        await this.fetchList();
-    },
-    methods: {
-        iconurl: function(icon) {
-            const url = stdurl(`/api/iconset/${icon.iconset}/icon/${encodeURIComponent(icon.name)}/raw`);
-            url.searchParams.append('token', localStorage.token);
-            return String(url);
-        },
-        fetchList: async function() {
-            this.loading = true;
-            const url = stdurl('/api/icon');
-            url.searchParams.append('filter', this.paging.filter);
-            url.searchParams.append('limit', this.paging.limit);
-            url.searchParams.append('page', this.paging.page);
-            if (this.iconset) url.searchParams.append('iconset', this.iconset);
-            this.list = await std(url);
-            this.loading = false;
-        }
+    labels: {
+        type: Boolean,
+        default: true
+    }
+});
+
+const router = useRouter();
+const error = ref();
+const loading = ref(true);
+
+const paging = ref({
+    filter: '',
+    limit: 100 - 4, // keeps the icon in an even grid
+    page: 0
+});
+
+const list = ref({
+    total: 0,
+    items: []
+});
+
+watch(paging.value, async () => {
+    await fetchList();
+});
+
+onMounted(async () => {
+    await fetchList();
+});
+
+function iconurl(icon) {
+    const url = stdurl(`/api/iconset/${icon.iconset}/icon/${encodeURIComponent(icon.name)}/raw`);
+    url.searchParams.append('token', localStorage.token);
+    return String(url);
+}
+
+async function fetchList() {
+    loading.value = true;
+
+    try {
+        const url = stdurl('/api/icon');
+        url.searchParams.append('filter', paging.value.filter);
+        url.searchParams.append('limit', paging.value.limit);
+        url.searchParams.append('page', paging.value.page);
+        if (props.iconset) url.searchParams.append('iconset', props.iconset);
+        list.value = await std(url);
+        loading.value = false;
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+        loading.value = false;
     }
 }
 </script>
