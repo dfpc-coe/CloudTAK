@@ -791,13 +791,15 @@ const time = ref('relative');
 
 watch(cot, async () => {
     if (cot.value) {
+        cot.value.update({});
+
         if (cot.value.origin.mode === OriginMode.MISSION && cot.value.origin.mode_id) {
             subscription.value = await mapStore.worker.db.subscriptionGet(cot.value.origin.mode_id);
         } else {
             subscription.value = undefined;
         }
     }
-});
+}, { deep: true });
 
 watch(route, async () => {
     mode.value = 'default'
@@ -846,7 +848,7 @@ async function load_cot() {
     }
 
     if (baseCOT) {
-        cot.value = baseCOT.as_proxy();
+        cot.value = baseCOT
 
         if (cot.value.is_skittle) {
             username.value = await cot.value.username()

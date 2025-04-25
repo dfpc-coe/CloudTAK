@@ -143,15 +143,21 @@ export default class COT {
     /**
      * Update the COT and return a boolean as to whether the COT needs to be re-rendered
      */
-    async update(update: {
-        properties?: Feature["properties"],
-        geometry?: Feature["geometry"]
-    }, opts?: {
-        skipSave?: boolean;
-    }): Promise<boolean> {
+    async update(
+        update: {
+            properties?: Feature["properties"],
+            geometry?: Feature["geometry"]
+        },
+        opts?: {
+            skipSave?: boolean;
+        }
+    ): Promise<boolean> {
         if (this._remote) {
             const atlas = this._atlas as Remote<Atlas>;
-            await atlas.db.add(this.as_feature());
+
+            // We do the parse/stringify to ensure that deep Proxies created with Vue3 ref/reactive are removed
+            // As they cannot be Cloned accross the ComLink Bridge
+            await atlas.db.add(JSON.parse(JSON.stringify(this.as_feature())));
 
             return false;
         } else {
@@ -288,6 +294,10 @@ export default class COT {
         }
     }
 
+    /**
+     * Returns a proxy that will correctly call the intenral update function if changes are made
+     * Warning: Cannot be used with Vue3's reactivity system
+     */
     as_proxy(): COT {
         return new Proxy(this, {
             set(target, prop, val) {
