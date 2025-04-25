@@ -12,6 +12,9 @@
 
 ### Pending Release
 
+- :rocket: Migrate Icon component to Setup
+- :bug: Fix paging update on Data Imports Menu
+
 ### v8.21.0 - 2025-04-24
 
 - :tada: Send new `environment:<direction>` Lambda Event on an Environment change in a Layer
