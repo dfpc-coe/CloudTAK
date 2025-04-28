@@ -16,6 +16,7 @@
         <div class='modal-body overflow-auto'>
             <CopyField
                 v-model='json'
+                :rows='10'
                 :pre='true'
             />
         </div>

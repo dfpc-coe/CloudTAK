@@ -285,6 +285,7 @@ export default class Overlay {
 
         for (const click of opts.clickable) {
             const hoverIds = new Set<string>();
+
             mapStore.map.on('mouseenter', click.id, () => {
                 if (mapStore.draw.mode !== DrawToolMode.STATIC) return;
                 mapStore.map.getCanvas().style.cursor = 'pointer';
