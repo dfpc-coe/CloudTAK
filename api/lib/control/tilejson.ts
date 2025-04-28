@@ -322,6 +322,11 @@ export default class TileJSON {
                     return;
                 }
 
+                fc.features = fc.features.map((feat) => {
+                    feat.id = Number(feat.id);
+                    return feat;
+                });
+
                 const tiles = geojsonvt(fc, {
                     maxZoom: 24,
                     tolerance: 3,
