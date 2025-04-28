@@ -1,5 +1,4 @@
-import fs from 'node:fs';
-import { Static, Type } from '@sinclair/typebox'
+import { Type } from '@sinclair/typebox'
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
@@ -17,7 +16,7 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req, { admin: true });
+            await Auth.as_user(config, req, { admin: true });
 
             const auth = config.serverCert();
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
