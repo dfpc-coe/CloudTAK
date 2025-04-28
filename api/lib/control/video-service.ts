@@ -4,7 +4,7 @@ import { Type, Static } from '@sinclair/typebox';
 import { VideoLeaseResponse } from '../types.js';
 import { VideoLease_SourceType } from '../enums.js';
 import fetch from '../fetch.js';
-import TAKAPI, { APIAuthCertificate } from '../tak-api.js';
+import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 
 export enum ProtocolPopulation {
     TEMPLATE,

@@ -2,16 +2,14 @@ import { Static, Type } from '@sinclair/typebox'
 import { StandardResponse, GenericMartiResponse } from '../lib/types.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
-import { MissionOptions } from '../lib/api/mission.js';
-import { MissionLog } from '../lib/api/mission-log.js';
+import { MissionOptions } from '@tak-ps/node-tak/lib/api/mission';
+import { MissionLog } from '@tak-ps/node-tak/lib/api/mission-log';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import {
     TAKItem
-} from '../lib/api/types.js';
-import TAKAPI, {
-    APIAuthCertificate,
-} from '../lib/tak-api.js';
+} from '@tak-ps/node-tak/lib/api/types';
+import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/marti/missions/:name/log', {

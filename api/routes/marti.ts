@@ -4,15 +4,10 @@ import Err from '@openaddresses/batch-error';
 import { GenericMartiResponse } from '../lib/types.js';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
-import { Contact } from '../lib/api/contacts.js'
-import { Group } from '../lib/api/groups.js'
-import {
-    TAKList,
-} from '../lib/api/types.js';
-import TAKAPI, {
-    APIAuthPassword,
-    APIAuthCertificate
-} from '../lib/tak-api.js';
+import { Contact } from '@tak-ps/node-tak/lib/api/contacts'
+import { Group } from '@tak-ps/node-tak/lib/api/groups'
+import { TAKList } from '@tak-ps/node-tak/lib/api/types';
+import { TAKAPI, APIAuthPassword, APIAuthCertificate } from '@tak-ps/node-tak';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/marti/group', {

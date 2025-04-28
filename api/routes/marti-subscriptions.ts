@@ -3,13 +3,11 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
-import { Subscription, ListSubscriptionInput } from '../lib/api/subscriptions.js'
+import { Subscription, ListSubscriptionInput } from '@tak-ps/node-tak/lib/api/subscriptions'
 import {
     TAKList,
-} from '../lib/api/types.js';
-import TAKAPI, {
-    APIAuthCertificate
-} from '../lib/tak-api.js';
+} from '@tak-ps/node-tak/lib/api/types';
+import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/marti/subscription', {

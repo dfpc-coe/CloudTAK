@@ -8,13 +8,11 @@ import {
     VideoConnectionInput,
     VideoConnectionList,
     VideoConnectionListInput,
-} from '../lib/api/video.js';
+} from '@tak-ps/node-tak/lib/api/video';
 import {
     StandardResponse
 } from '../lib/types.js';
-import TAKAPI, {
-    APIAuthCertificate,
-} from '../lib/tak-api.js';
+import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/marti/video', {

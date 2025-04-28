@@ -3,11 +3,10 @@ import ImportControl, { ImportModeEnum }  from './control/import.js';
 import Sinks from './sinks.js';
 import Config from './config.js';
 import { randomUUID } from 'node:crypto';
-import TAK, { CoT } from '@tak-ps/node-tak';
 import Modeler from '@openaddresses/batch-generic';
 import { Connection } from './schema.js';
 import sleep from './sleep.js';
-import TAKAPI, { APIAuthCertificate, } from '../lib/tak-api.js';
+import TAK, { TAKAPI, APIAuthCertificate, CoT } from '@tak-ps/node-tak';
 import type ConnectionConfig from './connection-config.js';
 import { MachineConnConfig } from './connection-config.js';
 
