@@ -55,6 +55,24 @@
                                 class='mx-3'
                             >Injectors</span>
                         </span>
+                        <span
+                            tabindex='0'
+                            role='menuitem'
+                            class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
+                            :class='{
+                                "active": String($route.name) === "admin-server-repeater",
+                                "cursor-pointer": String($route.name) !== "admin-server-repeater"
+                            }'
+                            @click='$router.push(`/admin/server/repeater`)'
+                        >
+                            <IconBuildingLighthouse
+                                :size='32'
+                                stroke='1'
+                            />
+                            <span
+                                class='mx-3'
+                            >Repeaters</span>
+                        </span>
                     </div>
                 </div>
             </div>
@@ -76,6 +94,7 @@ import {
     TablerLoading,
 } from '@tak-ps/vue-tabler'
 import {
+    IconBuildingLighthouse,
     IconVaccine,
     IconServer,
 } from '@tabler/icons-vue'
