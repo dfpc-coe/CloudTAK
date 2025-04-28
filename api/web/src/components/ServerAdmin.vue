@@ -15,11 +15,21 @@
                             />
                             <div
                                 v-else
+                                style='height: 100%;'
                                 class='row g-0'
                             >
-                                <div class='col-12 col-md-3 border-end'>
+                                <div
+                                    class='border-end'
+                                    :style='nest ? "width: 64px;" : ""'
+                                    :class='{
+                                        "col-12 col-md-3": !nest
+                                    }'
+                                >
                                     <div class='card-body'>
-                                        <h4 class='subheader user-select-none'>
+                                        <h4
+                                            v-if='!nest'
+                                            class='subheader user-select-none'
+                                        >
                                             CloudTAK Admin
                                         </h4>
                                         <div
@@ -31,15 +41,20 @@
                                                 role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
-                                                    "active": String($route.name) === "admin-server",
-                                                    "cursor-pointer": String($route.name) !== "admin-server"
+                                                    "active": String($route.name).startsWith("admin-server"),
+                                                    "cursor-pointer": !String($route.name).startsWith("admin-server")
                                                 }'
                                                 @click='$router.push(`/admin/server`)'
                                             >
                                                 <IconServer
+                                                    v-tooltip='nest ? "TAK Server Connection" : false'
                                                     :size='32'
                                                     stroke='1'
-                                                /><span class='mx-3'>TAK Server Connection</span>
+                                                />
+                                                <span
+                                                    v-if='!nest'
+                                                    class='mx-3'
+                                                >TAK Server Connection</span>
                                             </span>
                                             <span
                                                 tabindex='0'
@@ -50,12 +65,22 @@
                                                     "cursor-pointer": String($route.name) !== "admin-config"
                                                 }'
                                                 @click='$router.push(`/admin/config`)'
-                                            ><IconSettings
-                                                :size='32'
-                                                stroke='1'
-                                            /><span class='mx-3'>CloudTAK Settings</span></span>
+                                            >
+                                                <IconSettings
+                                                    v-tooltip='nest ? "CloudTAK Settings" : false'
+                                                    :size='32'
+                                                    stroke='1'
+                                                />
+                                                <span
+                                                    v-if='!nest'
+                                                    class='mx-3'
+                                                >CloudTAK Settings</span>
+                                            </span>
                                         </div>
-                                        <h4 class='subheader user-select-none py-2 my-0'>
+                                        <h4
+                                            v-if='!nest'
+                                            class='subheader user-select-none py-2 my-0'
+                                        >
                                             Map Settings
                                         </h4>
                                         <div class='list-group list-group-transparent'>
@@ -68,10 +93,17 @@
                                                     "cursor-pointer": !String($route.name).startsWith("admin-user")
                                                 }'
                                                 @click='$router.push(`/admin/user`)'
-                                            ><IconUsers
-                                                :size='32'
-                                                stroke='1'
-                                            /><span class='mx-3'>Users</span></span>
+                                            >
+                                                <IconUsers
+                                                    v-tooltip='nest ? "Users" : false'
+                                                    :size='32'
+                                                    stroke='1'
+                                                />
+                                                <span
+                                                    v-if='!nest'
+                                                    class='mx-3'
+                                                >Users</span>
+                                            </span>
                                             <span
                                                 tabindex='0'
                                                 role='menuitem'
@@ -81,10 +113,17 @@
                                                     "cursor-pointer": !String($route.name).includes("admin-overlays")
                                                 }'
                                                 @click='$router.push(`/admin/overlay`)'
-                                            ><IconMap
-                                                :size='32'
-                                                stroke='1'
-                                            /><span class='mx-3'>Basemaps &amp; Overlays</span></span>
+                                            >
+                                                <IconMap
+                                                    v-tooltip='nest ? "Basemaps & Overlays" : false'
+                                                    :size='32'
+                                                    stroke='1'
+                                                />
+                                                <span
+                                                    v-if='!nest'
+                                                    class='mx-3'
+                                                >Basemaps &amp; Overlays</span>
+                                            </span>
                                             <span
                                                 tabindex='0'
                                                 role='menuitem'
@@ -94,12 +133,22 @@
                                                     "cursor-pointer": !String($route.name).startsWith("admin-palette")
                                                 }'
                                                 @click='$router.push(`/admin/palette`)'
-                                            ><IconBrush
-                                                :size='32'
-                                                stroke='1'
-                                            /><span class='mx-3'>Draw Palette</span></span>
+                                            >
+                                                <IconBrush
+                                                    v-tooltip='nest ? "Draw Palette" : false'
+                                                    :size='32'
+                                                    stroke='1'
+                                                />
+                                                <span
+                                                    v-if='!nest'
+                                                    class='mx-3'
+                                                >Draw Palette</span>
+                                            </span>
                                         </div>
-                                        <h4 class='subheader user-select-none py-2 my-0'>
+                                        <h4
+                                            v-if='!nest'
+                                            class='subheader user-select-none py-2 my-0'
+                                        >
                                             ETL Settings
                                         </h4>
                                         <div class='list-group list-group-transparent'>
@@ -112,10 +161,17 @@
                                                     "cursor-pointer": String($route.name) !== "admin-connection"
                                                 }'
                                                 @click='$router.push(`/admin/connection`)'
-                                            ><IconNetwork
-                                                :size='32'
-                                                stroke='1'
-                                            /><span class='mx-3'>Connections</span></span>
+                                            >
+                                                <IconNetwork
+                                                    v-tooltip='nest ? "Connections" : false'
+                                                    :size='32'
+                                                    stroke='1'
+                                                />
+                                                <span
+                                                    v-if='!nest'
+                                                    class='mx-3'
+                                                >Connections</span>
+                                            </span>
                                             <span
                                                 tabindex='0'
                                                 role='menuitem'
@@ -125,10 +181,17 @@
                                                     "cursor-pointer": String($route.name) !== "admin-layer"
                                                 }'
                                                 @click='$router.push(`/admin/layer`)'
-                                            ><IconBuildingBroadcastTower
-                                                :size='32'
-                                                stroke='1'
-                                            /><span class='mx-3'>Layers</span></span>
+                                            >
+                                                <IconBuildingBroadcastTower
+                                                    v-tooltip='nest ? "Layers" : false'
+                                                    :size='32'
+                                                    stroke='1'
+                                                />
+                                                <span
+                                                    v-if='!nest'
+                                                    class='mx-3'
+                                                >Layers</span>
+                                            </span>
                                             <span
                                                 tabindex='0'
                                                 role='menuitem'
@@ -138,10 +201,17 @@
                                                     "cursor-pointer": !String($route.name).includes("admin-templates")
                                                 }'
                                                 @click='$router.push(`/admin/template`)'
-                                            ><IconTemplate
-                                                :size='32'
-                                                stroke='1'
-                                            /><span class='mx-3'>Layer Templates</span></span>
+                                            >
+                                                <IconTemplate
+                                                    v-tooltip='nest ? "Layer Templates" : false'
+                                                    :size='32'
+                                                    stroke='1'
+                                                />
+                                                <span
+                                                    v-if='!nest'
+                                                    class='mx-3'
+                                                >Layer Templates</span>
+                                            </span>
                                             <span
                                                 tabindex='0'
                                                 role='menuitem'
@@ -151,10 +221,17 @@
                                                     "cursor-pointer": !String($route.name).startsWith("admin-tasks")
                                                 }'
                                                 @click='$router.push(`/admin/tasks`)'
-                                            ><IconBrandDocker
-                                                :size='32'
-                                                stroke='1'
-                                            /><span class='mx-3'>ETL Task Runners</span></span>
+                                            >
+                                                <IconBrandDocker
+                                                    v-tooltip='nest ? "ETL Task Runners" : false'
+                                                    :size='32'
+                                                    stroke='1'
+                                                />
+                                                <span
+                                                    v-if='!nest'
+                                                    class='mx-3'
+                                                >ETL Task Runners</span>
+                                            </span>
                                             <span
                                                 tabindex='0'
                                                 role='menuitem'
@@ -164,12 +241,22 @@
                                                     "cursor-pointer": String($route.name) !== "admin-data"
                                                 }'
                                                 @click='$router.push(`/admin/data`)'
-                                            ><IconDatabase
-                                                :size='32'
-                                                stroke='1'
-                                            /><span class='mx-3'>Data Syncs</span></span>
+                                            >
+                                                <IconDatabase
+                                                    v-tooltip='nest ? "Data Syncs" : false'
+                                                    :size='32'
+                                                    stroke='1'
+                                                />
+                                                <span
+                                                    v-if='!nest'
+                                                    class='mx-3'
+                                                >Data Syncs</span>
+                                            </span>
                                         </div>
-                                        <h4 class='subheader user-select-none py-2 my-0'>
+                                        <h4
+                                            v-if='!nest'
+                                            class='subheader user-select-none py-2 my-0'
+                                        >
                                             External Services
                                         </h4>
                                         <div class='list-group list-group-transparent'>
@@ -178,31 +265,52 @@
                                                 role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
-                                                    "active": String($route.name).includes("admin-video"),
-                                                    "cursor-pointer": !String($route.name).includes("admin-video")
+                                                    "active": String(route.name).includes("admin-video"),
+                                                    "cursor-pointer": !String(route.name).includes("admin-video")
                                                 }'
-                                                @click='$router.push(`/admin/video`)'
-                                            ><IconVideo
-                                                :size='32'
-                                                stroke='1'
-                                            /><span class='mx-3'>Video Services</span></span>
+                                                @click='router.push(`/admin/video`)'
+                                            >
+                                                <IconVideo
+                                                    v-tooltip='nest ? "Video Services" : false'
+                                                    :size='32'
+                                                    stroke='1'
+                                                />
+                                                <span
+                                                    v-if='!nest'
+                                                    class='mx-3'
+                                                >Video Services</span>
+                                            </span>
                                             <span
                                                 tabindex='0'
                                                 role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
-                                                    "active": String($route.name).includes("admin-export"),
-                                                    "cursor-pointer": !String($route.name).includes("admin-export")
+                                                    "active": String(route.name).includes("admin-export"),
+                                                    "cursor-pointer": !String(route.name).includes("admin-export")
                                                 }'
-                                                @click='$router.push(`/admin/export`)'
-                                            ><IconDatabaseExport
-                                                :size='32'
-                                                stroke='1'
-                                            /><span class='mx-3'>Export</span></span>
+                                                @click='router.push(`/admin/export`)'
+                                            >
+                                                <IconDatabaseExport
+                                                    v-tooltip='nest ? "Export" : false'
+                                                    :size='32'
+                                                    stroke='1'
+                                                />
+                                                <span
+                                                    v-if='!nest'
+                                                    class='mx-3'
+                                                >Export</span>
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
-                                <div class='col-12 col-md-9 position-relative'>
+                                <div
+                                    class='col-12 position-relative'
+                                    style='height: 100%;'
+                                    :style='nest ? "width: calc(100% - 64px);" : ""'
+                                    :class='{
+                                        "col-md-9": !nest,
+                                    }'
+                                >
                                     <Suspense>
                                         <router-view />
 
@@ -212,6 +320,7 @@
                                     </Suspense>
                                 </div>
                             </div>
+                            `
                         </div>
                     </div>
                 </div>
@@ -223,7 +332,8 @@
 </template>
 
 <script setup lang='ts'>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import type { Profile } from '../types.ts';
 import { std } from '../std.ts';
 import PageFooter from './PageFooter.vue';
@@ -246,7 +356,17 @@ import {
     IconMap,
 } from '@tabler/icons-vue'
 
+const route = useRoute();
+const router = useRouter();
 const isAdmin = ref<boolean | undefined>(undefined)
+
+const nest = computed(() => {
+    if (String(route.name).startsWith('admin-server')) {
+        return true;
+    } else {
+        return false;
+    }
+});
 
 onMounted(async () => {
     const profile = await std('/api/profile') as Profile;

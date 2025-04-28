@@ -151,6 +151,9 @@ export type VideoService = paths["/video/service"]["get"]["responses"]["200"]["c
 export type VideoServer = paths["/video/server"]["post"]["responses"]["200"]["content"]["application/json"];
 export type VideoServerList = paths["/video/server"]["get"]["responses"]["200"]["content"]["application/json"];
 
+export type InjectorList = paths["/server/injector"]["get"]["responses"]["200"]["content"]["application/json"];
+export type Injector = paths["/server/injector"]["get"]["responses"]["200"]["content"]["application/json"]["items"][0];
+
 // Pattern properties are not yet supported
 export type ETLRawTaskList = {
     total: number;
