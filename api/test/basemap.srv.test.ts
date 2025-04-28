@@ -151,7 +151,7 @@ test('GET: api/basemap/1/tiles', async (t) => {
             minzoom: 0,
             maxzoom: 16,
             tiles: [ 'http://localhost:5001/api/basemap/1/tiles/{z}/{x}/{y}' ],
-            vector_layers: []
+            vector_layers: [{ id: 'out', fields: {} }]
         })
     } catch (err) {
         t.error(err)
