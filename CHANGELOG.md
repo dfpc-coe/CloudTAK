@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v8.25.0 - 2025-04-28
+
+- :rocket: Migrate fully to `@tak-ps/node-tak` for TAK Server API Operations
+
 ### v8.24.0 - 2025-04-28
 
 - :rocket: Move drawing tools into a submodule of mapStore for significantly cleaner code and future expansion
