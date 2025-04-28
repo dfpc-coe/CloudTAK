@@ -40,7 +40,7 @@
                     </div>
                 </div>
             </div>
-            <div class='col-12 col-md-9 position-relative' >
+            <div class='col-12 col-md-9 position-relative'>
                 <Suspense>
                     <router-view />
 
@@ -50,7 +50,7 @@
                 </Suspense>
             </div>
         </div>
-   </div>
+    </div>
 </template>
 
 <script setup lang='ts'>
@@ -58,18 +58,7 @@ import {
     TablerLoading,
 } from '@tak-ps/vue-tabler'
 import {
-    IconBrush,
-    IconNetwork,
-    IconTemplate,
-    IconVideo,
-    IconUsers,
-    IconSettings,
     IconServer,
-    IconDatabase,
-    IconDatabaseExport,
-    IconBrandDocker,
-    IconBuildingBroadcastTower,
-    IconMap,
 } from '@tabler/icons-vue'
 
 </script>
