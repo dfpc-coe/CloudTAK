@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v8.24.0 - 2025-04-28
+
+- :rocket: Move drawing tools into a submodule of mapStore for significantly cleaner code and future expansion
+
 ### v8.23.0 - 2025-04-25
 
 - :bug: Fix a bug where the COT View Component couldn't add new properties due to Vue conflicting with the internal use of a custom Proxy
