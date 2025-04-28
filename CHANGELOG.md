@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v8.26.0 - 2025-04-28
+
+- :rocket: Sketch out support for UIs for TAK Server operations relevant to CloudTAK
+
 ### v8.25.0 - 2025-04-28
 
 - :rocket: Migrate fully to `@tak-ps/node-tak` for TAK Server API Operations
