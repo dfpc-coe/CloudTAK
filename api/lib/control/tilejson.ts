@@ -18,6 +18,15 @@ export const TileJSONActions = Type.Object({
     feature: Type.Array(Type.Enum(Basemap_FeatureAction))
 })
 
+export const VectorLayer = Type.Object({
+    id: Type.String(),
+    fields: Type.Record(Type.String(), Type.String()),
+
+    minzoom: Type.Optional(Type.Integer()),
+    maxzoom: Type.Optional(Type.Integer()),
+    description: Type.Optional(Type.String())
+});
+
 export const TileJSONType = Type.Object({
     tilejson: Type.Literal('3.0.0'),
     version: Type.String(),
@@ -35,12 +44,7 @@ export const TileJSONType = Type.Object({
     type: Type.String(),
     format: Type.Optional(Type.String()),
 
-    vector_layers: Type.Array(Type.Object({
-        id: Type.String(),
-        minzoom: Type.Integer(),
-        maxzoom: Type.Integer(),
-        fields: Type.Record(Type.String(), Type.String())
-    }))
+    vector_layers: Type.Array(VectorLayer)
 })
 
 export interface TileJSONInterface {
@@ -54,6 +58,7 @@ export interface TileJSONInterface {
     version?: string;
     minzoom?: number;
     maxzoom?: number;
+    vector_layers?: Array<Static<typeof VectorLayer>>
 }
 
 export default class TileJSON {
@@ -143,6 +148,17 @@ export default class TileJSON {
         const bounds = config.bounds || [-180, -90, 180, 90];
         const center = config.center || pointOnFeature(bboxPolygon(bounds as BBox)).geometry.coordinates;
 
+        const vector_layers: Array<Static<typeof VectorLayer>> = [];
+
+        if (!config.vector_layers) {
+            vector_layers.push({
+                id: 'out',
+                fields: {}
+            });
+        } else {
+            vector_layers.push(...config.vector_layers);
+        }
+
         return {
             tilejson: "3.0.0",
             version: config.version || '1.0.0',
@@ -154,7 +170,7 @@ export default class TileJSON {
             minzoom: config.minzoom || 0,
             maxzoom: config.maxzoom || 16,
             tiles: [ String(config.url) ],
-            vector_layers: []
+            vector_layers
         }
     }
 
@@ -259,7 +275,7 @@ export default class TileJSON {
         if (!opts) opts = {};
         if (!opts.headers) opts.headers = {};
 
-        if (config.url.includes("/ImageServer")) {
+        if (config.url.endsWith("/ImageServer")) {
             try {
                 const url = this.esriRasterTileURL(config.url, z, x, y)
 
@@ -284,7 +300,10 @@ export default class TileJSON {
                     throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Failed to fetch ESRI tile')
                 }
             }
-        } else if (config.url.includes("/FeatureServer/")) {
+        } else if (
+            config.url.match(/\/FeatureServer\/\d+$/)
+            || config.url.match(/\/MapServer\/\d+$/)
+        ) {
             try {
                 const url = this.esriVectorTileURL(config.url, z, x, y)
 
@@ -310,7 +329,9 @@ export default class TileJSON {
                     buffer: 64,
                 });
 
-                const tile = vtpbf.fromGeojsonVt({ 'out': tiles.getTile(z, x, y) });
+                const tile = vtpbf.fromGeojsonVt({
+                    'out': tiles.getTile(z, x, y)
+                });
 
                 res.writeHead(200, {
                     ...opts.headers,
