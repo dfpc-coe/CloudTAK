@@ -880,8 +880,7 @@ function updateCenter(center: number[]) {
 
 async function editGeometry() {
     if (!cot.value) return;
-
-    mapStore.editGeometry(cot.value.id);
+    mapStore.draw.edit(cot.value);
 }
 
 async function fetchType() {
