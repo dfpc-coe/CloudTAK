@@ -47,6 +47,7 @@
                                                 @click='$router.push(`/admin/server`)'
                                             >
                                                 <IconServer
+                                                    v-tooltip='nest ? "TAK Server Connection" : false'
                                                     :size='32'
                                                     stroke='1'
                                                 />
@@ -66,6 +67,7 @@
                                                 @click='$router.push(`/admin/config`)'
                                             >
                                                 <IconSettings
+                                                    v-tooltip='nest ? "CloudTAK Settings" : false'
                                                     :size='32'
                                                     stroke='1'
                                                 />
@@ -93,6 +95,7 @@
                                                 @click='$router.push(`/admin/user`)'
                                             >
                                                 <IconUsers
+                                                    v-tooltip='nest ? "Users" : false'
                                                     :size='32'
                                                     stroke='1'
                                                 />
@@ -112,6 +115,7 @@
                                                 @click='$router.push(`/admin/overlay`)'
                                             >
                                                 <IconMap
+                                                    v-tooltip='nest ? "Basemaps & Overlays" : false'
                                                     :size='32'
                                                     stroke='1'
                                                 />
@@ -131,6 +135,7 @@
                                                 @click='$router.push(`/admin/palette`)'
                                             >
                                                 <IconBrush
+                                                    v-tooltip='nest ? "Draw Palette" : false'
                                                     :size='32'
                                                     stroke='1'
                                                 />
@@ -158,6 +163,7 @@
                                                 @click='$router.push(`/admin/connection`)'
                                             >
                                                 <IconNetwork
+                                                    v-tooltip='nest ? "Connections" : false'
                                                     :size='32'
                                                     stroke='1'
                                                 />
@@ -177,6 +183,7 @@
                                                 @click='$router.push(`/admin/layer`)'
                                             >
                                                 <IconBuildingBroadcastTower
+                                                    v-tooltip='nest ? "Layers" : false'
                                                     :size='32'
                                                     stroke='1'
                                                 />
@@ -196,6 +203,7 @@
                                                 @click='$router.push(`/admin/template`)'
                                             >
                                                 <IconTemplate
+                                                    v-tooltip='nest ? "Layer Templates" : false'
                                                     :size='32'
                                                     stroke='1'
                                                 />
@@ -215,6 +223,7 @@
                                                 @click='$router.push(`/admin/tasks`)'
                                             >
                                                 <IconBrandDocker
+                                                    v-tooltip='nest ? "ETL Task Runners" : false'
                                                     :size='32'
                                                     stroke='1'
                                                 />
@@ -234,6 +243,7 @@
                                                 @click='$router.push(`/admin/data`)'
                                             >
                                                 <IconDatabase
+                                                    v-tooltip='nest ? "Data Syncs" : false'
                                                     :size='32'
                                                     stroke='1'
                                                 />
@@ -255,12 +265,13 @@
                                                 role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
-                                                    "active": String($route.name).includes("admin-video"),
-                                                    "cursor-pointer": !String($route.name).includes("admin-video")
+                                                    "active": String(route.name).includes("admin-video"),
+                                                    "cursor-pointer": !String(route.name).includes("admin-video")
                                                 }'
-                                                @click='$router.push(`/admin/video`)'
+                                                @click='router.push(`/admin/video`)'
                                             >
                                                 <IconVideo
+                                                    v-tooltip='nest ? "Video Services" : false'
                                                     :size='32'
                                                     stroke='1'
                                                 />
@@ -274,12 +285,13 @@
                                                 role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
-                                                    "active": String($route.name).includes("admin-export"),
-                                                    "cursor-pointer": !String($route.name).includes("admin-export")
+                                                    "active": String(route.name).includes("admin-export"),
+                                                    "cursor-pointer": !String(route.name).includes("admin-export")
                                                 }'
-                                                @click='$router.push(`/admin/export`)'
+                                                @click='router.push(`/admin/export`)'
                                             >
                                                 <IconDatabaseExport
+                                                    v-tooltip='nest ? "Export" : false'
                                                     :size='32'
                                                     stroke='1'
                                                 />
@@ -321,7 +333,7 @@
 
 <script setup lang='ts'>
 import { onMounted, ref, computed } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import type { Profile } from '../types.ts';
 import { std } from '../std.ts';
 import PageFooter from './PageFooter.vue';
@@ -345,10 +357,11 @@ import {
 } from '@tabler/icons-vue'
 
 const route = useRoute();
+const router = useRouter();
 const isAdmin = ref<boolean | undefined>(undefined)
 
 const nest = computed(() => {
-    if (route.name.startsWith('admin-server')) {
+    if (String(route.name).startsWith('admin-server')) {
         return true;
     } else {
         return false;
