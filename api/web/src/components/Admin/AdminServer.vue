@@ -27,7 +27,7 @@
                                 "active": String($route.name) === "admin-server-connection",
                                 "cursor-pointer": String($route.name) !== "admin-server-connection"
                             }'
-                            @click='$router.push(`/admin/server`)'
+                            @click='$router.push(`/admin/server/connection`)'
                         >
                             <IconServer
                                 :size='32'
@@ -36,6 +36,24 @@
                             <span
                                 class='mx-3'
                             >Connection</span>
+                        </span>
+                        <span
+                            tabindex='0'
+                            role='menuitem'
+                            class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
+                            :class='{
+                                "active": String($route.name) === "admin-server-injector",
+                                "cursor-pointer": String($route.name) !== "admin-server-injector"
+                            }'
+                            @click='$router.push(`/admin/server/injector`)'
+                        >
+                            <IconVaccine
+                                :size='32'
+                                stroke='1'
+                            />
+                            <span
+                                class='mx-3'
+                            >Injectors</span>
                         </span>
                     </div>
                 </div>
@@ -58,6 +76,7 @@ import {
     TablerLoading,
 } from '@tak-ps/vue-tabler'
 import {
+    IconVaccine,
     IconServer,
 } from '@tabler/icons-vue'
 
