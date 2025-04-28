@@ -741,11 +741,10 @@ async function handleRadial(event: string): Promise<void> {
         mapStore.locked.push(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
         closeRadial()
     } else if (event === 'cot:edit') {
-        if (mapStore.radial.cot instanceof COT) {
-            await mapStore.draw.edit(mapStore.radial.cot);
-        } else {
-            throw new Error('Can only edit COT Markers');
-        }
+        const cot = await mapStore.worker.db.get(String(mapStore.radial.cot.id ? mapStore.radial.cot.id : mapStore.radial.cot.properties.id))
+        if (!cot) throw new Error('Cannot Find COT Marker');
+        await mapStore.draw.edit(cot);
+
         closeRadial()
     } else if (event === 'feat:view') {
         selectFeat(mapStore.radial.cot as MapGeoJSONFeature);
