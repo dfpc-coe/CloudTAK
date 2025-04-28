@@ -22,7 +22,7 @@
             />
 
             <DrawOverlay
-                v-if='mapStore.drawOptions.mode !== "static"'
+                v-if='mapStore.draw.mode !== DrawToolMode.STATIC'
             />
             <div
                 class='position-absolute bottom-0 begin-0 text-white'
@@ -302,7 +302,7 @@
                         </div>
                         <div
                             class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
-                            @click='startDraw("point")'
+                            @click='mapStore.draw.start(DrawToolMode.POINT)'
                         >
                             <IconPoint
                                 :size='25'
@@ -311,7 +311,7 @@
                         </div>
                         <div
                             class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
-                            @click='startDraw("linestring")'
+                            @click='mapStore.draw.start(DrawToolMode.LINESTRING)'
                         >
                             <IconLine
                                 :size='25'
@@ -320,7 +320,7 @@
                         </div>
                         <div
                             class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
-                            @click='startDraw("polygon")'
+                            @click='mapStore.draw.start(DrawToolMode.POLYGON)'
                         >
                             <IconPolygon
                                 :size='25'
@@ -329,7 +329,7 @@
                         </div>
                         <div
                             class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
-                            @click='startDraw("angled-rectangle")'
+                            @click='mapStore.draw.start(DrawToolMode.RECTANGLE)'
                         >
                             <IconVector
                                 :size='25'
@@ -338,7 +338,7 @@
                         </div>
                         <div
                             class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
-                            @click='startDraw("circle")'
+                            @click='mapStore.draw.start(DrawToolMode.CIRCLE)'
                         >
                             <IconCircle
                                 :size='25'
@@ -347,7 +347,7 @@
                         </div>
                         <div
                             class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
-                            @click='startDraw("sector")'
+                            @click='mapStore.draw.start(DrawToolMode.SECTOR)'
                         >
                             <IconCone
                                 :size='25'
@@ -356,7 +356,7 @@
                         </div>
                         <div
                             class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
-                            @click='startDraw("freehand")'
+                            @click='mapStore.draw.start(DrawToolMode.FREEHAND)'
                         >
                             <IconLasso
                                 :size='25'
@@ -466,7 +466,7 @@
 </template>
 
 <script setup lang='ts'>
-import {ref, watch, computed, toRaw, onMounted, onBeforeUnmount, useTemplateRef } from 'vue';
+import { ref, watch, computed, toRaw, onMounted, onBeforeUnmount, useTemplateRef } from 'vue';
 import {useRoute, useRouter } from 'vue-router';
 import FloatingVideo from './util/FloatingVideo.vue';
 import FloatingAttachment from './util/FloatingAttachment.vue';
@@ -475,6 +475,7 @@ import WarnChannels from './util/WarnChannels.vue';
 import SearchBox from './util/SearchBox.vue';
 import WarnConfiguration from './util/WarnConfiguration.vue';
 import CoordInput from './CoordInput.vue';
+import COT from '../../base/cot.ts';
 import type { MapGeoJSONFeature, LngLatLike } from 'maplibre-gl';
 import type { Feature } from '../../types.ts';
 import CloudTAKFeatView from './FeatView.vue';
@@ -516,6 +517,7 @@ import MapLoading from './MapLoading.vue';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import RadialMenu from './RadialMenu/RadialMenu.vue';
 import { useMapStore } from '../../stores/map.ts';
+import { DrawToolMode } from '../../stores/modules/draw.ts';
 import { useFloatStore, PaneType } from '../../stores/float.ts';
 import UploadImport from './util/UploadImport.vue'
 const mapStore = useMapStore();
@@ -715,17 +717,6 @@ function fileUpload(event: string) {
     router.push(`/menu/imports/${imp.id}`)
 }
 
-async function startDraw(type: string) {
-    if (!mapStore.draw) throw new Error('Drawing Tools haven\'t loaded');
-
-    mapStore.drawOptions.snapping = await mapStore.worker.db.snapping(mapStore.map.getBounds().toArray());
-
-    mapStore.draw.start();
-
-    mapStore.draw.setMode(type);
-    mapStore.drawOptions.mode = type;
-}
-
 async function handleRadial(event: string): Promise<void> {
     if (!mapStore.radial.cot) return;
     if (!mapStore.radial.cot.properties) mapStore.radial.cot.properties = {};
@@ -750,7 +741,11 @@ async function handleRadial(event: string): Promise<void> {
         mapStore.locked.push(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
         closeRadial()
     } else if (event === 'cot:edit') {
-        await mapStore.editGeometry(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
+        if (mapStore.radial.cot instanceof COT) {
+            await mapStore.draw.edit(mapStore.radial.cot);
+        } else {
+            throw new Error('Can only edit COT Markers');
+        }
         closeRadial()
     } else if (event === 'feat:view') {
         selectFeat(mapStore.radial.cot as MapGeoJSONFeature);
@@ -786,7 +781,6 @@ async function mountMap(): Promise<void> {
             await mapStore.worker.db.updateImages(mapStore.map.listImages());
 
             await mapStore.initOverlays();
-            await mapStore.initDraw();
 
             timer.value = setInterval(async () => {
                 if (!mapStore.map) return;

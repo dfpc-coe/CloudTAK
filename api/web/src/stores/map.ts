@@ -8,23 +8,19 @@
 */
 
 import { defineStore } from 'pinia'
-import { coordEach } from '@turf/meta';
-import { distance } from '@turf/distance';
+import DrawTool, { DrawToolMode } from './modules/draw.ts';
 import * as Comlink from 'comlink';
 import AtlasWorker from '../workers/atlas.ts?worker&url';
 import COT from '../base/cot.ts';
 import { WorkerMessageType, LocationState } from '../base/events.ts';
-import type { WorkerMessage }from '../base/events.ts';
+import type { WorkerMessage } from '../base/events.ts';
 import Overlay from '../base/overlay.ts';
 import { std, stdurl } from '../std.js';
 import mapgl from 'maplibre-gl'
-import * as terraDraw from 'terra-draw';
-import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 import type Atlas from '../workers/atlas.ts';
 import { CloudTAKTransferHandler } from '../base/handler.ts';
 
 import type { ProfileOverlay, Basemap, APIList, Feature, IconsetList } from '../types.ts';
-import type { Polygon, Position } from 'geojson';
 import type { LngLat, LngLatLike, Point, MapMouseEvent, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl';
 
 export type TAKNotification = { type: string; name: string; body: string; url: string; }
@@ -32,7 +28,7 @@ export type TAKNotification = { type: string; name: string; body: string; url: s
 export const useMapStore = defineStore('cloudtak', {
     state: (): {
         _map?: mapgl.Map;
-        _draw?: terraDraw.TerraDraw;
+        _draw?: DrawTool;
         channel: BroadcastChannel;
 
         // Lock the map view to a given CoT - The last element is the currently locked value
@@ -49,7 +45,6 @@ export const useMapStore = defineStore('cloudtak', {
         }
 
         worker: Comlink.Remote<Atlas>;
-        edit: COT | undefined;
         mission: string | undefined;
         notifications: Array<TAKNotification>;
         container?: HTMLElement;
@@ -60,11 +55,6 @@ export const useMapStore = defineStore('cloudtak', {
         isOpen: boolean;
         bearing: number;
         selected: Map<string, COT>;
-        drawOptions: {
-            mode: string;
-            pointMode: string;
-            snapping: Set<[number, number]>;
-        },
         select: {
             mode?: string;
             e?: MapMouseEvent;
@@ -105,7 +95,6 @@ export const useMapStore = defineStore('cloudtak', {
             isLoaded: false,
             bearing: 0,
             mission: undefined,
-            edit: undefined,
             permissions: {
                 location: false,
                 notification: false
@@ -114,11 +103,6 @@ export const useMapStore = defineStore('cloudtak', {
                 mode: undefined,
                 feats: [],
                 x: 0, y: 0,
-            },
-            drawOptions: {
-                mode: 'static',
-                pointMode: 'u-d-p',
-                snapping: new Set()
             },
             radial: {
                 mode: undefined,
@@ -136,9 +120,9 @@ export const useMapStore = defineStore('cloudtak', {
             // @ts-expect-error Maplibre Type difference, need to investigate
             return this._map;
         },
-        draw: function(): terraDraw.TerraDraw {
+        draw: function(): DrawTool {
             if (!this._draw) throw new Error('Drawing Tools have not yet initialized');
-            // @ts-expect-error Maplibre Type difference, need to investigate
+            // @ts-expect-error Type difference, need to investigate
             return this._draw;
         }
     },
@@ -420,6 +404,7 @@ export const useMapStore = defineStore('cloudtak', {
             const map = new mapgl.Map(init);
 
             this._map = map;
+            this._draw = new DrawTool(this);
 
             // If we missed the Profile_Location_Source make sure it gets synced
             const loc = await this.worker.profile.location;
@@ -441,15 +426,15 @@ export const useMapStore = defineStore('cloudtak', {
             })
 
             map.on('moveend', async () => {
-                if (this.drawOptions.mode !== 'static') {
-                    this.drawOptions.snapping = await this.worker.db.snapping(this.map.getBounds().toArray());
+                if (this.draw.mode !== DrawToolMode.STATIC) {
+                    this.draw.snapping = await this.worker.db.snapping(this.map.getBounds().toArray());
                 } else {
-                    this.drawOptions.snapping.clear();
+                    this.draw.snapping.clear();
                 }
             });
 
             map.on('click', async (e: MapMouseEvent) => {
-                if (this.draw.getMode() !== 'static') return;
+                if (this.draw.mode !== DrawToolMode.STATIC) return;
 
                 if (this.radial.mode) this.radial.mode = undefined;
                 if (this.select.feats) this.select.feats = [];
@@ -511,7 +496,7 @@ export const useMapStore = defineStore('cloudtak', {
             });
 
             map.on('contextmenu', (e) => {
-                if (this.edit) return;
+                if (this.draw.editing) return;
 
                 const id = window.crypto.randomUUID();
                 this.radialClick({
@@ -610,6 +595,8 @@ export const useMapStore = defineStore('cloudtak', {
                     }
                 }
             }
+
+            this.isLoaded = true;
         },
         /**
          * Determine if the feature is from the CoT store or a clicked VT feature
@@ -655,255 +642,6 @@ export const useMapStore = defineStore('cloudtak', {
 
             this.radial.cot = feat;
             this.radial.mode = opts.mode;
-        },
-        initDraw: async function() {
-            const toCustom = (event: terraDraw.TerraDrawMouseEvent): Position | undefined => {
-                let closest: {
-                    dist: number
-                    coord: Position
-                } | undefined = undefined;
-
-                for (const coord of this.drawOptions.snapping.values()) {
-                    const dist = distance([event.lng, event.lat], coord);
-
-                    if (!closest || (dist < closest.dist)) {
-                        closest = { dist, coord }
-                    }
-                }
-
-                if (closest) {
-                    // Base Threshold / Math.pow(decayFactor, zoomLevel)
-                    const threshold = 1000 / Math.pow(2, this.map.getZoom());
-
-                    if (closest.dist < threshold) {
-                        return closest.coord;
-                    }
-
-                    return;
-                } else {
-                    return;
-                }
-            }
-
-            const draw = new terraDraw.TerraDraw({
-                adapter: new TerraDrawMapLibreGLAdapter({
-                    map: this.map,
-                    // @ts-expect-error TS is complaining
-                    lib: mapgl
-                }),
-                idStrategy: {
-                    isValidId: (id: string | number): boolean => {
-                        return typeof id === "string"
-                    },
-                    getId: (function () {
-                        return function () {
-                            return crypto.randomUUID()
-                        };
-                    })()
-                },
-                modes: [
-                    new terraDraw.TerraDrawPointMode({
-                        editable: true
-                    }),
-                    new terraDraw.TerraDrawLineStringMode({
-                        editable: true,
-                        snapping: { toCustom }
-                    }),
-                    new terraDraw.TerraDrawPolygonMode({
-                        editable: true,
-                        showCoordinatePoints: true,
-                        snapping: { toCustom }
-                    }),
-                    new terraDraw.TerraDrawAngledRectangleMode(),
-                    new terraDraw.TerraDrawFreehandMode(),
-                    new terraDraw.TerraDrawSectorMode(),
-                    new terraDraw.TerraDrawCircleMode(),
-                    new terraDraw.TerraDrawSelectMode({
-                        flags: {
-                            polygon: {
-                                feature: {
-                                    draggable: true,
-                                    coordinates: {
-                                        snappable: true,
-                                        deletable: true,
-                                        midpoints: {
-                                            draggable: true
-                                        },
-                                        draggable: true,
-                                    }
-                                }
-                            },
-                            linestring: {
-                                feature: {
-                                    draggable: true,
-                                    coordinates: {
-                                        snappable: true,
-                                        deletable: true,
-                                        midpoints: {
-                                            draggable: true
-                                        },
-                                        draggable: true,
-                                    }
-                                }
-                            },
-                            point: {
-                                feature: {
-                                    draggable: true,
-                                }
-                            }
-                        }
-                    })
-                ]
-            });
-
-            // Deselect event is for editing existing features
-            draw.on('deselect', async () => {
-                if (!this.edit) return;
-
-                const feat = draw.getSnapshotFeature(this.edit.id);
-
-                if (!feat) throw new Error('Could not find underlying marker');
-
-                delete feat.properties.center;
-
-                await this.worker.db.unhide(this.edit.id);
-
-                this.edit = undefined
-
-                draw.setMode('static');
-                this.drawOptions.mode = 'static';
-                draw.stop();
-
-                await this.worker.db.add(feat as Feature);
-
-                await this.updateCOT();
-            })
-
-            // Finish event is for creating new features
-            draw.on('finish', async (id, context) => {
-                if (context.action === "draw") {
-                    if (draw.getMode() === 'select' || this.edit) {
-                        return;
-                    } else if (draw.getMode() === 'freehand') {
-                        const feat = draw.getSnapshotFeature(id);
-                        if (!feat) throw new Error('Could not find underlying marker');
-                        draw.removeFeatures([id]);
-                        draw.setMode('static');
-                        this.drawOptions.mode = 'static';
-                        draw.stop();
-
-                        const touching = await this.worker.db.touching(feat.geometry as Polygon);
-                        for (const cot of touching.values()) {
-                            this.selected.set(cot.id, cot);
-                        }
-                    } else {
-                        const storeFeat = draw.getSnapshotFeature(id);
-                        if (!storeFeat) throw new Error('Could not find underlying marker');
-
-                        const now = new Date();
-                        const feat: Feature = {
-                            id: String(id),
-                            type: 'Feature',
-                            path: '/',
-                            properties: {
-                                id: String(id),
-                                type: 'u-d-p',
-                                how: 'h-g-i-g-o',
-                                archived: true,
-                                callsign: 'New Feature',
-                                time: now.toISOString(),
-                                start: now.toISOString(),
-                                stale: new Date(now.getTime() + 3600).toISOString(),
-                                center: [0,0]
-                            },
-                            geometry: JSON.parse(JSON.stringify(storeFeat.geometry))
-                        };
-
-                        if (
-                            draw.getMode() === 'polygon'
-                            || draw.getMode() === 'angled-rectangle'
-                            || draw.getMode() === 'sector'
-                        ) {
-                            feat.properties.type = 'u-d-f';
-                        } else if (draw.getMode() === 'linestring') {
-                            feat.properties.type = 'u-d-f';
-                        } else if (draw.getMode() === 'point') {
-                            feat.properties.type = this.drawOptions.pointMode || 'u-d-p';
-                            feat.properties["marker-opacity"] = 1;
-                            feat.properties["marker-color"] = '#00FF00';
-                        }
-
-                        draw.removeFeatures([id]);
-                        draw.setMode('static');
-                        this.drawOptions.mode = 'static';
-                        draw.stop();
-
-                        if (!(await this.worker.db.has(feat.id))) {
-                            feat.properties.creator = await this.worker.profile.creator();
-                        }
-
-                        await this.worker.db.add(feat);
-                        await this.updateCOT();
-                    }
-                }
-            });
-
-
-            this._draw = draw;
-            this.isLoaded = true;
-        },
-        editGeometry: async function (featid: string): Promise<void> {
-            const cot = await this.worker.db.get(featid, { mission: true });
-
-            if (!cot) return;
-
-            try {
-                this.edit = cot;
-                this.draw.start();
-                this.draw.setMode('select');
-                this.drawOptions.mode = 'select';
-
-                const feat = cot.as_feature({ clone: true });
-                if (feat.geometry.type === 'Polygon') {
-                    feat.properties.mode = 'polygon';
-                } else if (feat.geometry.type === 'LineString') {
-                    feat.properties.mode = 'linestring';
-                } else if (feat.geometry.type === 'Point') {
-                    feat.properties.mode = 'point';
-                }
-
-                coordEach(feat, (coord) => {
-                    if (coord.length > 2) {
-                        coord.splice(2, coord.length - 2);
-                    }
-
-                    // Ensure precision is within bounds
-                    for (let i = 0; i < coord.length; i++) {
-                        coord[i] = Math.round(coord[i] * Math.pow(10, 9)) / Math.pow(10, 9);
-                    }
-                });
-
-                await this.worker.db.hide(cot.id);
-                this.updateCOT();
-
-                const errorStatus = this.draw.addFeatures([feat as terraDraw.GeoJSONStoreFeatures]).filter((status) => {
-                    return !status.valid;
-                });
-
-                if (errorStatus.length) {
-                    throw new Error('Error editing this feature: ' + errorStatus[0].reason)
-                }
-
-                this.draw.selectFeature(cot.id);
-            } catch (err) {
-                await this.worker.db.unhide(cot.id);
-                this.draw.setMode('static');
-                this.updateCOT();
-                this.drawOptions.mode = 'static';
-                this.draw.stop();
-
-                throw err;
-            }
         }
-    },
+    }
 })
