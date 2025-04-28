@@ -5,9 +5,7 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import { Channel, ChannelAccess } from '../lib/external.js';
-import TAKAPI, {
-    APIAuthPassword,
-} from '../lib/tak-api.js';
+import { TAKAPI, APIAuthPassword, } from '@tak-ps/node-tak';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/ldap/channel', {

@@ -15,13 +15,11 @@ import {
     MissionDeleteInput,
     MissionCreateInput,
     MissionSubscriber
-} from '../lib/api/mission.js';
+} from '@tak-ps/node-tak/lib/api/mission';
 import {
     TAKList,
-} from '../lib/api/types.js';
-import TAKAPI, {
-    APIAuthCertificate,
-} from '../lib/tak-api.js';
+} from '@tak-ps/node-tak/lib/api/types';
+import { TAKAPI, APIAuthCertificate, } from '@tak-ps/node-tak';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/marti/missions/:name', {

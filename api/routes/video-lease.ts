@@ -13,7 +13,7 @@ import { VideoLease } from '../lib/schema.js'
 import { eq } from 'drizzle-orm';
 import ECSVideoControl, { Action, Protocols, PathConfig, PathListItem, ProtocolPopulation } from '../lib/control/video-service.js';
 import * as Default from '../lib/limits.js';
-import TAKAPI, { APIAuthCertificate } from '../lib/tak-api.js';
+import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 
 export default async function router(schema: Schema, config: Config) {
     const videoControl = new ECSVideoControl(config);
