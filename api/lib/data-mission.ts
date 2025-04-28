@@ -2,13 +2,11 @@ import type { Data } from './schema.js';
 import { Static } from '@sinclair/typebox';
 import { sql } from 'drizzle-orm';
 import { InferSelectModel } from 'drizzle-orm';
-import TAKAPI, {
-    APIAuthCertificate,
-} from './tak-api.js';
-import type { MissionLayer } from './api/mission-layer.js';
-import { MissionLayerType } from './api/mission-layer.js';
+import { TAKAPI, APIAuthCertificate, } from '@tak-ps/node-tak';
+import type { MissionLayer } from '@tak-ps/node-tak/lib/api/mission-layer.js';
+import { MissionLayerType } from '@tak-ps/node-tak/lib/api/mission-layer.js';
 import Config from './config.js';
-import type { Mission } from './api/mission.js';
+import type { Mission } from '@tak-ps/node-tak/lib/api/mission.js';
 
 export const MAX_LAYERS_IN_DATA_SYNC = 5;
 

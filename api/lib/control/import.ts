@@ -5,9 +5,7 @@ import Batch from '../aws/batch.js';
 import type { ImportResponse } from '../types.js';
 import crypto from 'node:crypto';
 import { sql } from 'drizzle-orm';
-import TAKAPI, {
-    APIAuthCertificate,
-} from '../tak-api.js';
+import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 
 export enum ImportModeEnum {
     UNKNOWN = 'Unknown',

@@ -322,12 +322,15 @@ export default class TileJSON {
                     return;
                 }
 
-                fc.features = fc.features.map((feat) => {
-                    feat.id = Number(feat.id);
-                    return feat;
-                });
 
-                const tiles = geojsonvt(fc, {
+                const tiles = geojsonvt({
+                    type: 'FeatureCollection',
+                    features: fc.features.map((feat) => {
+                        // @ts-expect-error Vector Tiles need a int parsable ID
+                        feat.id = Number(feat.id);
+                        return feat;
+                    })
+                }, {
                     maxZoom: 24,
                     tolerance: 3,
                     extent: 4096,

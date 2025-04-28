@@ -6,11 +6,11 @@ import Cacher from '../lib/cacher.js';
 import Auth, { AuthResourceAccess } from '../lib/auth.js';
 import Style from '../lib/style.js';
 import Config from '../lib/config.js';
-import { HistoryOptions } from '../lib/api/query.js';
+import { HistoryOptions } from '@tak-ps/node-tak/lib/api/query';
 import CoT, { Feature } from '@tak-ps/node-cot';
-import { MissionLayerType } from '../lib/api/mission-layer.js';
+import { MissionLayerType } from '@tak-ps/node-tak/lib/api/mission-layer';
 import { StandardLayerResponse, LayerError } from '../lib/types.js';
-import TAKAPI, { APIAuthCertificate, } from '../lib/tak-api.js';
+import { TAKAPI, APIAuthCertificate, } from '@tak-ps/node-tak';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.post('/layer/:layerid/cot', {

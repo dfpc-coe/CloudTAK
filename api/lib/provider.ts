@@ -4,7 +4,7 @@ import Err from '@openaddresses/batch-error';
 import moment from 'moment';
 import type { Profile } from './schema.js';
 import { X509Certificate } from 'crypto';
-import TAKAPI, { APIAuthPassword, APIAuthCertificate } from '../lib/tak-api.js';
+import { TAKAPI, APIAuthPassword, APIAuthCertificate } from '@tak-ps/node-tak';
 
 export enum AuthProviderAccess {
     ADMIN = 'admin',

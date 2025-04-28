@@ -13,11 +13,9 @@ import Err from '@openaddresses/batch-error';
 import Auth, { AuthUserAccess }  from '../lib/auth.js';
 import Config from '../lib/config.js';
 import { Basemap as BasemapParser } from '@tak-ps/node-cot';
-import { Content } from '../lib/api/files.js';
-import { Package } from '../lib/api/package.js';
-import TAKAPI, {
-    APIAuthCertificate,
-} from '../lib/tak-api.js';
+import { Content } from '@tak-ps/node-tak/lib/api/files';
+import { Package } from '@tak-ps/node-tak/lib/api/package';
+import { TAKAPI, APIAuthCertificate, } from '@tak-ps/node-tak';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.post('/marti/package', {

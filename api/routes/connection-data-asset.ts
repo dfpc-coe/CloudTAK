@@ -14,9 +14,7 @@ import DataMission from '../lib/data-mission.js';
 import { InferSelectModel } from 'drizzle-orm';
 import type { Data } from '../lib/schema.js';
 import { StandardResponse, AssetResponse, GenericMartiResponse } from '../lib/types.js';
-import TAKAPI, {
-    APIAuthCertificate,
-} from '../lib/tak-api.js';
+import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/connection/:connectionid/data/:dataid/asset', {

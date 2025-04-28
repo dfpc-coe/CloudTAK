@@ -10,9 +10,7 @@ import { ProfileOverlay } from '../lib/schema.js';
 import { TileJSONActions } from '../lib/control/tilejson.js';
 import { StandardResponse, ProfileOverlayResponse } from '../lib/types.js'
 import { sql } from 'drizzle-orm';
-import TAKAPI, {
-    APIAuthCertificate,
-} from '../lib/tak-api.js';
+import { TAKAPI, APIAuthCertificate, } from '@tak-ps/node-tak';
 import * as Default from '../lib/limits.js';
 
 const AugmentedProfileOverlayResponse = Type.Composite([

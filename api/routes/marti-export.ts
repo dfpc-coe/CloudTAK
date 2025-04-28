@@ -2,13 +2,11 @@ import { Static, Type } from '@sinclair/typebox'
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import { Feature } from '@tak-ps/node-cot'
-import { HistoryOptions } from '../lib/api/query.js';
+import { HistoryOptions } from '@tak-ps/node-tak/lib/api/query';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
-import { ExportInput } from '../lib/api/export.js';
-import TAKAPI, {
-    APIAuthCertificate,
-} from '../lib/tak-api.js';
+import { ExportInput } from '@tak-ps/node-tak/lib/api/export';
+import { TAKAPI, APIAuthCertificate, } from '@tak-ps/node-tak';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.post('/marti/export', {

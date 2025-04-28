@@ -5,7 +5,7 @@ import type { PaletteFeatureStyle } from './palette.js';
 import { Polygon, Point } from 'geojson';
 import { geometry, GeometryType } from '@openaddresses/batch-generic';
 import { ConnectionAuth } from './connection-config.js';
-import { TAKGroup, TAKRole } from  './api/types.js';
+import { TAKGroup, TAKRole } from  '@tak-ps/node-tak/lib/api/types';
 import { Layer_Config } from './models/Layer.js';
 import {
     Layer_Priority,

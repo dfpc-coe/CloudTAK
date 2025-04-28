@@ -1,7 +1,7 @@
 import Err from '@openaddresses/batch-error';
 import Auth, { AuthResourceAccess } from '../lib/auth.js';
 import Config from '../lib/config.js';
-import TAKAPI, { APIAuthCertificate, } from '../lib/tak-api.js';
+import { TAKAPI, APIAuthCertificate, } from '@tak-ps/node-tak';
 import { Type } from '@sinclair/typebox'
 import { GenericMartiResponse } from '../lib/types.js';
 import Schema from '@openaddresses/batch-schema';
