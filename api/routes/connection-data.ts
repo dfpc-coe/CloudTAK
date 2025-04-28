@@ -8,7 +8,7 @@ import S3 from '../lib/aws/s3.js';
 import { sql, inArray, and } from 'drizzle-orm';
 import DataMission from '../lib/data-mission.js';
 import { StandardResponse, DataResponse, DataListResponse } from '../lib/types.js';
-import { MissionSubscriberRole } from '../lib/api/mission.js';
+import { MissionSubscriberRole } from '@tak-ps/node-tak/lib/api/mission';
 import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: Config) {
