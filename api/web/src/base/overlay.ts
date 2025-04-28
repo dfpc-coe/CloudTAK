@@ -2,6 +2,7 @@ import type {
     ProfileOverlay,
     ProfileOverlay_Create
 } from '../types.ts';
+import { DrawToolMode } from '../stores/modules/draw.ts';
 import type { FeatureCollection } from 'geojson';
 import { bbox } from '@turf/bbox'
 import type { Map, LngLatBoundsLike, LayerSpecification, VectorTileSource, RasterTileSource, GeoJSONSource } from 'maplibre-gl'
@@ -285,12 +286,12 @@ export default class Overlay {
         for (const click of opts.clickable) {
             const hoverIds = new Set<string>();
             mapStore.map.on('mouseenter', click.id, () => {
-                if (mapStore.drawOptions.mode !== 'static') return;
+                if (mapStore.draw.mode !== DrawToolMode.STATIC) return;
                 mapStore.map.getCanvas().style.cursor = 'pointer';
             })
 
             mapStore.map.on('mousemove', click.id, (e) => {
-                if (mapStore.drawOptions.mode !== 'static') return;
+                if (mapStore.draw.mode !== DrawToolMode.STATIC) return;
 
                 if (this.type === 'vector' && e.features) {
                     const newIds = e.features.map(f => String(f.id));
@@ -320,7 +321,7 @@ export default class Overlay {
             });
 
             mapStore.map.on('mouseleave', click.id, () => {
-                if (mapStore.drawOptions.mode !== 'static') return;
+                if (mapStore.draw.mode !== DrawToolMode.STATIC) return;
                 mapStore.map.getCanvas().style.cursor = '';
 
                 if (this.type === 'vector') {
