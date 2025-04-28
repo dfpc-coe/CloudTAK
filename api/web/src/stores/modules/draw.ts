@@ -1,4 +1,5 @@
 import * as terraDraw from 'terra-draw';
+import mapgl from 'maplibre-gl'
 import { coordEach } from '@turf/meta';
 import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 import { distance } from '@turf/distance';
@@ -16,14 +17,14 @@ export enum DrawToolMode {
     POINT = 'point',
     LINESTRING = 'linestring',
     POLYGON = 'polygon',
-    RECTANGLE = 'rectangle',
+    RECTANGLE = 'angled-rectangle',
     CIRCLE = 'circle',
     SECTOR = 'sector',
 }
 
 export default class DrawTool {
-    #draw: terraDraw.TerraDraw;
-    #editing: COT | null;
+    private draw: terraDraw.TerraDraw;
+    public editing: COT | null;
 
     public mode: DrawToolMode;
 
@@ -67,7 +68,7 @@ export default class DrawTool {
             }
         }
 
-        this.#draw = new terraDraw.TerraDraw({
+        this.draw = new terraDraw.TerraDraw({
             adapter: new TerraDrawMapLibreGLAdapter({
                 map: this.mapStore.map,
                 // @ts-expect-error TS is complaining
@@ -138,12 +139,12 @@ export default class DrawTool {
             ]
         });
 
-        this.#draw.on('finish', async (id, context) => {
+        this.draw.on('finish', async (id, context) => {
             if (context.action === "draw") {
-                if (this.#draw.getMode() === DrawToolMode.STATIC || this.#editing) {
+                if (this.draw.getMode() === DrawToolMode.STATIC || this.editing) {
                     return;
                 } else if (this.mode === DrawToolMode.FREEHAND) {
-                    const feat = this.#draw.getSnapshotFeature(id);
+                    const feat = this.draw.getSnapshotFeature(id);
                     if (!feat) throw new Error('Could not find underlying marker');
                     this.removeFeature(id);
                     this.stop();
@@ -153,7 +154,7 @@ export default class DrawTool {
                         this.mapStore.selected.set(cot.id, cot);
                     }
                 } else {
-                    const storeFeat = this.#draw.getSnapshotFeature(id);
+                    const storeFeat = this.draw.getSnapshotFeature(id);
                     if (!storeFeat) throw new Error('Could not find underlying marker');
 
                     const now = new Date();
@@ -204,18 +205,18 @@ export default class DrawTool {
         })
 
         // Deselect event is for editing existing features
-        this.#draw.on('deselect', async () => {
-            if (!this.#editing) return;
+        this.draw.on('deselect', async () => {
+            if (!this.editing) return;
 
-            const feat = this.#draw.getSnapshotFeature(this.#editing.id);
+            const feat = this.draw.getSnapshotFeature(this.editing.id);
 
             if (!feat) throw new Error('Could not find underlying marker');
 
             delete feat.properties.center;
 
-            await this.mapStore.worker.db.unhide(this.#editing.id);
+            await this.mapStore.worker.db.unhide(this.editing.id);
 
-            this.#editing = null;
+            this.editing = null;
 
             this.stop();
 
@@ -226,7 +227,7 @@ export default class DrawTool {
 
         this.mode = DrawToolMode.STATIC;
         this.snapping = new Set();
-        this.#editing = null;
+        this.editing = null;
 
         this.point = {
             type: 'u-d-p'
@@ -235,7 +236,8 @@ export default class DrawTool {
 
     async start(mode: DrawToolMode): Promise<void> {
         this.mode = mode;
-        this.#draw.setMode(mode)
+        this.draw.start();
+        this.draw.setMode(mode)
 
         this.snapping = await this.mapStore.worker.db.snapping(
             this.mapStore.map.getBounds().toArray()
@@ -244,20 +246,15 @@ export default class DrawTool {
 
     async stop(): Promise<void> {
         this.mode = DrawToolMode.STATIC;
-        this.#draw.stop();
+        this.draw.stop();
 
         this.snapping.clear()
     }
 
-    get editing(): boolean {
-        return !!this.#editing;
-    }
-
     async edit(cot: COT) {
-        this.#editing = cot;
+        this.editing = cot;
 
-        this.#draw.start();
-        this.mode = DrawToolMode.SELECT;
+        this.start(DrawToolMode.SELECT);
 
         try {
             const feat = cot.as_feature({ clone: true });
@@ -283,7 +280,7 @@ export default class DrawTool {
             await this.mapStore.worker.db.hide(cot.id);
             await this.mapStore.updateCOT();
 
-            const errorStatus = this.#draw.addFeatures([feat as terraDraw.GeoJSONStoreFeatures]).filter((status) => {
+            const errorStatus = this.draw.addFeatures([feat as terraDraw.GeoJSONStoreFeatures]).filter((status) => {
                 return !status.valid;
             });
 
@@ -291,7 +288,7 @@ export default class DrawTool {
                 throw new Error('Error editing this feature: ' + errorStatus[0].reason)
             }
 
-            this.#draw.selectFeature(cot.id);
+            this.draw.selectFeature(cot.id);
         } catch (err) {
             await this.mapStore.worker.db.unhide(cot.id);
             this.mode = DrawToolMode.STATIC;
@@ -304,10 +301,10 @@ export default class DrawTool {
     }
 
     getFeature(id: GeoJSONFeatureId) {
-        return this.#draw.getSnapshotFeature(id);
+        return this.draw.getSnapshotFeature(id);
     }
 
     removeFeature(id: GeoJSONFeatureId): void {
-        return this.#draw.removeFeatures([id]);
+        return this.draw.removeFeatures([id]);
     }
 }
