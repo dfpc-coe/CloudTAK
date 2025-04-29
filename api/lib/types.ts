@@ -1,7 +1,7 @@
 import { createSelectSchema } from 'drizzle-typebox';
 import { Type } from '@sinclair/typebox'
 import * as schemas from './schema.js';
-import { TAKGroup, TAKRole } from '@tak-ps/node-tak/lib/api/types.js';
+import { TAKGroup, TAKRole } from '@tak-ps/node-tak/lib/api/types';
 import { Profile_Projection, Profile_Zoom, Profile_Stale, Profile_Distance, Profile_Elevation, Profile_Speed, Profile_Text } from './enums.js';
 import { AugmentedData } from './models/Data.js';
 import { AugmentedLayer, AugmentedLayerIncoming, AugmentedLayerOutgoing } from './models/Layer.js';
