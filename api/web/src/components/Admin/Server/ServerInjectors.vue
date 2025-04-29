@@ -7,7 +7,7 @@
             <div class='ms-auto btn-list'>
                 <TablerIconButton
                     title='New Injector'
-                    @click=''
+                    @click='injector = true'
                 >
                     <IconPlus
                         :size='32'
@@ -33,19 +33,31 @@
                 :create='false'
             />
             <template v-else>
-                <template v-for='injector in list.items'>
-                    <span v-text='injector.uid'/>
-                    <span v-text='injector.toInject'/>
+                <template v-for='i in list.items'>
+                    <div
+                        class='col-12 hover-light'
+                        @click='injector = i'
+                    >
+                        <span v-text='i.uid'/>
+                        <span v-text='i.toInject'/>
+                    </div>
                 </template>
             </template>
         </div>
     </div>
+
+    <ServerInjectorModal
+        v-if='injector'
+        :injector='injector'
+        @close='injector = false'
+    />
 </template>
 
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue';
 import { std } from '../../../std.ts';
-import type { InjectorList } from '../../../types.ts';
+import ServerInjectorModal from './ServerInjectorModal.vue';
+import type { InjectorList, Injector } from '../../../types.ts';
 import {
     TablerRefreshButton,
     TablerIconButton,
@@ -59,6 +71,7 @@ import {
 } from '@tabler/icons-vue';
 
 const loading = ref(true);
+const injector = ref<boolean | Injector>(false);
 const error = ref<Error | undefined>();
 const list = ref<InjectorList>({
     total: 0,
