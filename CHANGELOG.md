@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v8.27.0 - 2025-04-29
+
+- :rocket: Initial support for Repeater Listing & Deleting in Admin UI
+
 ### v8.26.0 - 2025-04-28
 
 - :rocket: Sketch out support for UIs for TAK Server operations relevant to CloudTAK
