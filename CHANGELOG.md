@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v8.27.1 - 2025-04-29
+
+- :bug: Small fixes to import system from node-tak
+
 ### v8.27.0 - 2025-04-29
 
 - :rocket: Initial support for Repeater Listing & Deleting in Admin UI
