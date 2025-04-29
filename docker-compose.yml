@@ -14,8 +14,6 @@ services:
         environment:
             - CLOUDTAK_Mode=docker-compose
             - CLOUDTAK_Config_media_url=http://media
-            - CLOUDTAK_Config_media_username=management
-            - CLOUDTAK_Config_media_password=ChangeMeInProduction
             - SigningSecret=coe-wildland-fire
             - MediaSecret=coe-wildland-fire-video
             - ASSET_BUCKET=cloudtak
@@ -44,7 +42,7 @@ services:
             - AWS_S3_SecretAccessKey=cloudtakminioadmin
 
     media:
-        image: ghcr.io/dfpc-coe/media-infra:v3.3.3
+        image: ghcr.io/dfpc-coe/media-infra:v3.3.4
         restart: 'always'
         environment:
             - FORCE_NEW_CONFIG=false
