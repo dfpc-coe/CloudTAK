@@ -201,8 +201,11 @@ export default async function router(schema: Schema, config: Config) {
             source_model: Type.Optional(Type.String()),
             channel: Type.Optional(Type.Union([Type.String(), Type.Null()])),
             secure: Type.Optional(Type.Boolean()),
-            permanent: Type.Boolean({
+            secure_rotate: Type.Boolean({
                 default: false,
+                description: 'Rotate Read-User Credentials if using seperate read/write user - infers secure: true'
+            }),
+            permanent: Type.Boolean({
                 description: 'System Admins can create non-expiring leases'
             }),
             recording: Type.Boolean({
@@ -235,10 +238,17 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'Only Administrators can request permanent leases')
             }
 
+            if (req.body.secure === false && req.body.secure_rotate) {
+                throw new Err(400, null, 'Secure_Rotate infers Secure: true');
+            }
+
+            if (req.body.secure_rotate) req.body.secure = true;
+
             const lease = await videoControl.commit(req.params.lease, {
                 name: req.body.name,
                 channel: req.body.channel ? req.body.channel : null,
                 secure: req.body.secure,
+                secure_rotate: req.body.secure_rotate,
                 expiration: req.body.permanent ? null : moment().add(req.body.duration, 'seconds').toISOString(),
                 recording: req.body.recording,
                 publish: req.body.publish,
