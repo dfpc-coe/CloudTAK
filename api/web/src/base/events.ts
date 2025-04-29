@@ -15,6 +15,8 @@ export enum WorkerMessageType {
     Channels_None = 'channels:none',
     Channels_List = 'channels:list',
 
+    Contact_Change = 'contact:change',
+
     Connection_Open = 'connection:open',
     Connection_Close = 'connection:close',
 

@@ -152,7 +152,6 @@ export default class AtlasDatabase {
             const render = cot.as_rendered();
             const stale = new Date(cot.properties.stale).getTime();
 
-
             if (this.pendingHidden.has(String(cot.id))) {
                 this.hidden.add(cot.id);
                 diff.remove.push(String(cot.id))
@@ -484,7 +483,7 @@ export default class AtlasDatabase {
 
             if (is_mission_cot) return;
 
-            const exists = this.cots.get(feat.id);
+            let exists = this.cots.get(feat.id);
 
             if (exists) {
                 exists.update({
@@ -492,15 +491,19 @@ export default class AtlasDatabase {
                     geometry: feat.geometry
                 }, { skipSave: opts.skipSave })
             } else {
-                const cot = new COT(this.atlas, feat, {
+                exists = new COT(this.atlas, feat, {
                     mode: OriginMode.CONNECTION
                 }, opts);
 
-                if (opts.skipBroadcast !== true && cot.properties.archived) {
+                if (opts.skipBroadcast !== true && exists.properties.archived) {
                     this.atlas.postMessage({
                         type: WorkerMessageType.Feature_Archived_Added,
                     });
                 }
+            }
+
+            if (exists.is_skittle) {
+                await this.atlas.team.set(exists);
             }
         }
     }
