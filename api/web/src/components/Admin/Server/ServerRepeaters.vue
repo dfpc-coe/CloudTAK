@@ -32,13 +32,13 @@
                                 <span v-text='repeater.callsign'/>
                             </div>
                             <div class='col-12 subheader'>
-                                <span v-text='repeater.cotType'/> - <span class='cursor-pointer' @click='relative = !relative' v-text='relative ? timeDiff(new Date(Number(repeater.dateTimeActivated))) : new Date(Number(repeater.dateTimeActivated))'/>
+                                <span v-text='repeater.cotType'/> - <span class='cursor-pointer' @click='relative = !relative' v-text='relative ? timeDiff(Number(repeater.dateTimeActivated)) : new Date(Number(repeater.dateTimeActivated))'/>
                             </div>
                         </div>
                         <div class='ms-auto'>
                             <TablerDelete
                                 displaytype='icon'
-                                @delete='deleteRepeater'
+                                @delete='deleteRepeater(repeater)'
                             />
                         </div>
                     </div>
@@ -51,7 +51,7 @@
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue';
 import { std } from '../../../std.ts';
-import type { RepeaterList } from '../../../types.ts';
+import type { RepeaterList, Repeater } from '../../../types.ts';
 import timeDiff from '../../../timediff.ts';
 import {
     TablerRefreshButton,
@@ -83,7 +83,16 @@ async function fetchList() {
     }
 }
 
-async function deleteRepeater() {
-
+async function deleteRepeater(repeater: Repeater) {
+    loading.value = true;
+    try {
+        await std(`/api/server/repeater/${repeater.uid}`, {
+            method: 'DELETE'
+        })
+    
+        await fetchList();
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    }
 }
 </script>
