@@ -192,7 +192,7 @@ export default class DrawTool {
 
                     this.removeFeature(id);
 
-                    this.stop();
+                    await this.stop();
 
                     if (!(await this.mapStore.worker.db.has(feat.id))) {
                         feat.properties.creator = await this.mapStore.worker.profile.creator();
@@ -214,11 +214,7 @@ export default class DrawTool {
 
             delete feat.properties.center;
 
-            await this.mapStore.worker.db.unhide(this.editing.id);
-
-            this.editing = null;
-
-            this.stop();
+            await this.stop();
 
             await this.mapStore.worker.db.add(feat as Feature);
 
@@ -249,6 +245,12 @@ export default class DrawTool {
         this.draw.stop();
 
         this.snapping.clear()
+
+        if (this.editing) {
+            await this.mapStore.worker.db.unhide(this.editing.id);
+            this.editing = null;
+            await this.mapStore.updateCOT();
+        }
     }
 
     async edit(cot: COT) {
@@ -290,11 +292,7 @@ export default class DrawTool {
 
             this.draw.selectFeature(cot.id);
         } catch (err) {
-            await this.mapStore.worker.db.unhide(cot.id);
-            this.mode = DrawToolMode.STATIC;
-
-            await this.mapStore.updateCOT();
-            this.stop();
+            await this.stop();
 
             throw err;
         }

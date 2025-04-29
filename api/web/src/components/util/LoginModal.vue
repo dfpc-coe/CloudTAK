@@ -14,7 +14,7 @@
                 Authentication Expired
             </h2>
             <div class='w-100 text-center'>
-                Your WebTAK session has expired, login to continue
+                Your session has expired, login to continue
             </div>
 
             <TablerLoading
