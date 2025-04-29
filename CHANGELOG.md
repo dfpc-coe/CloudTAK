@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v8.29.0 - 2025-04-29
+
+- :bug: Ensure polgon is unhidden if editing is manually stopped
+- :tada: Notify on new users popping online
+- :bug: Fix Chat Notification message between worker & main thread
+
 ### v8.28.0 - 2025-04-29
 
 - :tada: Complete Injector Management UI
