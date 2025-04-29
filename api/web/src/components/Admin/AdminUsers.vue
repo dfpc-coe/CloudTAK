@@ -65,6 +65,12 @@
                                                 v-text='user[h.name]'
                                             />
                                         </div>
+                                        <div
+                                            v-else-if='h.name === "last_login"'
+                                        >
+                                            <div v-text='timeDiff(user[h.name])'/>
+                                            <div class='subheader' v-text='user[h.name]'/>
+                                        </div>
                                         <span
                                             v-else
                                             v-text='user[h.name]'
@@ -93,6 +99,7 @@
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
 import { std, stdurl } from '../../std.ts';
+import timeDiff from '../../timediff.ts';
 import type { User, UserList } from '../../types.ts';
 import TableHeader from '../util/TableHeader.vue'
 import TableFooter from '../util/TableFooter.vue'
