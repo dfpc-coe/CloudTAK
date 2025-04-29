@@ -400,6 +400,10 @@ const router = VueRouter.createRouter({
                     path: 'injector',
                     name: 'admin-server-injector',
                     component: () => import('./components/Admin/Server/ServerInjectors.vue')
+                },{
+                    path: 'repeater',
+                    name: 'admin-server-repeater',
+                    component: () => import('./components/Admin/Server/ServerRepeaters.vue')
                 }]
             },{
                 path: 'config',
