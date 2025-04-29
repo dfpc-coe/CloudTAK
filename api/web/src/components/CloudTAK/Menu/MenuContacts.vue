@@ -2,7 +2,7 @@
     <MenuTemplate name='Contacts'>
         <template #buttons>
             <TablerRefreshButton
-                :loading='loading'
+                :loading='loading || refresh'
                 @click='fetchList'
             />
         </template>
@@ -144,7 +144,8 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
+import type { Ref } from 'vue';
 import { std, stdurl } from '../../../std.ts';
 import type { ContactList, ConfigGroups } from '../../../types.ts';
 import { useMapStore } from '../../../stores/map.ts';
@@ -165,9 +166,12 @@ import {
 import Contact from '../util/Contact.vue';
 import ContactPuck from '../util/ContactPuck.vue';
 import EmptyInfo from '../util/EmptyInfo.vue';
+import type { WorkerMessage } from '../../../base/events.ts';
+import { WorkerMessageType } from '../../../base/events.ts';
 
 const error = ref<Error | undefined>();
 const loading = ref(true);
+const refresh = ref(false);
 const contacts = ref<ContactList>([])
 const showOffline = ref(false);
 const paging = ref({
@@ -184,13 +188,33 @@ const teams = ref<Set<string>>(new Set());
 const visibleActiveContacts = ref<ContactList>([]);
 const visibleOfflineContacts = ref<ContactList>([]);
 
+const channel = new BroadcastChannel("cloudtak");
+
+channel.onmessage = async (event: MessageEvent<WorkerMessage>) => {
+    const msg = event.data;
+    if (!msg || !msg.type) return;
+
+    if (msg.type === WorkerMessageType.Contact_Change) {
+        console.error('CONTACT UPDATE')
+        await fetchList(refresh);
+        await updateContacts();
+    }
+}
+
 onMounted(async () => {
     await Promise.all([
-        fetchList(),
+        fetchList(loading),
         fetchConfig()
     ]);
+
     await updateContacts();
 });
+
+onBeforeUnmount(() => {
+    if (channel) {
+        channel.close();
+    }
+})
 
 watch(paging.value, async () => {
     await updateContacts();
@@ -222,12 +246,12 @@ async function updateContacts() {
     }
 }
 
-async function fetchList() {
+async function fetchList(loading: Ref<boolean>) {
     loading.value = true;
 
     try {
-        const url = stdurl('/api/marti/api/contacts/all');
-        contacts.value = await std(url) as ContactList;
+        const team = await mapStore.worker.team.load();
+        contacts.value = Array.from(team.values())
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err))
     }

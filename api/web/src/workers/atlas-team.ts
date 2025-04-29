@@ -31,7 +31,7 @@ export default class AtlasTeam {
             const contact: Contact = {
                 uid: cot.id,
                 notes: '',
-                filterGroups: '',
+                filterGroups: null,
                 callsign: cot.properties.callsign,
                 team: cot.properties.group.name,
                 role: cot.properties.group.role,
