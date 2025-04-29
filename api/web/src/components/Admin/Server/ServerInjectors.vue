@@ -35,11 +35,11 @@
             <template v-else>
                 <template v-for='i in list.items'>
                     <div
-                        class='col-12 hover-light'
+                        class='col-12 hover-light px-2 py-2 rounded cursor-pointer'
                         @click='injector = i'
                     >
-                        <span v-text='i.uid'/>
-                        <span v-text='i.toInject'/>
+                        <div class='subheader' v-text='i.uid'/>
+                        <pre class='pre' v-text='i.toInject'/>
                     </div>
                 </template>
             </template>
@@ -49,7 +49,7 @@
     <ServerInjectorModal
         v-if='injector'
         :injector='injector'
-        @close='injector = false'
+        @close='fetchList'
     />
 </template>
 
@@ -83,6 +83,7 @@ onMounted(async () => {
 });
 
 async function fetchList() {
+    injector.value = false;
     loading.value = true;
     try {
         list.value = await std(`/api/server/injector`) as InjectorList;
