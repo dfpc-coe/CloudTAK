@@ -5,7 +5,7 @@
             type='button'
             class='btn-close'
             aria-label='Close'
-            @click='$emit("close")'
+            @click='emit("close")'
         />
         <div class='modal-header'>
             <div
@@ -24,44 +24,35 @@
     </TablerModal>
 </template>
 
-<script>
-import { std } from '/src/std.ts';
+<script setup>
+import { ref, onMounted } from 'vue';
+import { std } from '../../../std.ts';
 import {
     TablerModal,
     TablerLoading,
 } from '@tak-ps/vue-tabler'
 
-export default {
-    name: 'VideoConfigPath',
-    components: {
-        TablerLoading,
-        TablerModal
-    },
-    props: {
-        pathid: {
-            type: String,
-            required: true
-        }
-    },
-    emits: [
-        'close',
-        'refresh'
-    ],
-    data: function() {
-        return {
-            loading: true,
-            path: false
-        }
-    },
-    mounted: async function() {
-        await this.fetchPath();
-    },
-    methods: {
-        fetchPath: async function() {
-            this.loading = true;
-            this.path = await std(`/api/video/service/path/${this.pathid}`);
-            this.loading = false;
-        }
+const props = defineProps({
+    pathid: {
+        type: String,
+        required: true
     }
+});
+
+const emit = defineEmits([
+    'close',
+]);
+
+const loading = ref(true);
+const path = ref(false);
+
+onMounted(async () => {
+    await fetchPath();
+});
+
+async function fetchPath() {
+    loading.value = true;
+    path.value = await std(`/api/video/service/path/${props.pathid}`);
+    loading.value = false;
 }
 </script>

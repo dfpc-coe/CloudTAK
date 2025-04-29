@@ -4,13 +4,21 @@
             <h3 class='card-title'>
                 TAK Server COT Injectors
             </h3>
-            <div class='ms-auto'>
-                <div class='btn-list'>
-                    <TablerRefreshButton
-                        :loading='loading'
-                        @click='fetchList'
+            <div class='ms-auto btn-list'>
+                <TablerIconButton
+                    title='New Injector'
+                    @click=''
+                >
+                    <IconPlus
+                        :size='32'
+                        stroke='1'
                     />
-                </div>
+                </TablerIconButton>
+
+                <TablerRefreshButton
+                    :loading='loading'
+                    @click='fetchList'
+                />
             </div>
         </div>
         <TablerLoading v-if='loading' />
@@ -20,7 +28,7 @@
         />
         <div v-else class='card-body row'>
             <TablerNone
-                v-if='list.total === 0'
+                v-if='list.items.length === 0'
                 label='Injectors'
                 :create='false'
             />
@@ -40,10 +48,15 @@ import { std } from '../../../std.ts';
 import type { InjectorList } from '../../../types.ts';
 import {
     TablerRefreshButton,
+    TablerIconButton,
     TablerLoading,
     TablerAlert,
     TablerNone,
 } from '@tak-ps/vue-tabler';
+
+import {
+    IconPlus
+} from '@tabler/icons-vue';
 
 const loading = ref(true);
 const error = ref<Error | undefined>();
