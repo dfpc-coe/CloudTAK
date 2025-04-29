@@ -267,7 +267,19 @@
                                     @click='router.push(n.url)'
                                 >
                                     <IconMessage
-                                        title='Chat Message Icon'
+                                        title='Chat Message'
+                                        :size='32'
+                                        stroke='1'
+                                    />
+                                    <span v-text='n.name' />
+                                </div>
+                                <div
+                                    v-if='n.type === "Contact"'
+                                    class='col-12 cursor-pointer hover-dark'
+                                    @click='router.push(n.url)'
+                                >
+                                    <IconUser
+                                        title='User Online'
                                         :size='32'
                                         stroke='1'
                                     />
@@ -479,6 +491,7 @@ import type { MapGeoJSONFeature, LngLatLike } from 'maplibre-gl';
 import type { Feature } from '../../types.ts';
 import CloudTAKFeatView from './FeatView.vue';
 import {
+    IconUser,
     IconSearch,
     IconMessage,
     IconLocationOff,

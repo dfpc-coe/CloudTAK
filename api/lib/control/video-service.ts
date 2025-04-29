@@ -350,14 +350,24 @@ export default class VideoServiceControl {
         return protocols;
     }
 
-    async updateSecure(lease: Static<typeof VideoLeaseResponse>, secure: boolean): Promise<void> {
+    async updateSecure(
+        lease: Static<typeof VideoLeaseResponse>,
+        secure: boolean,
+        rotate?: boolean
+    ): Promise<void> {
         const video = await this.settings();
+
         if (!video.configured || !video.username) return;
 
         if (secure && (!lease.stream_user || !lease.stream_pass || !lease.read_user || !lease.read_pass)) {
             await this.config.models.VideoLease.commit(lease.id, {
                 stream_user: `write${lease.id}`,
                 stream_pass: Math.random().toString(20).substr(2, 6),
+                read_user: `read${lease.id}`,
+                read_pass: Math.random().toString(20).substr(2, 6)
+            });
+        } else if (secure && rotate) {
+            await this.config.models.VideoLease.commit(lease.id, {
                 read_user: `read${lease.id}`,
                 read_pass: Math.random().toString(20).substr(2, 6)
             });
@@ -510,11 +520,12 @@ export default class VideoServiceControl {
             name?: string,
             channel?: string | null,
             secure?: boolean,
+            secure_rotate?: boolean
             expiration: string | null,
             recording: boolean,
             publish: boolean,
             source_type?: VideoLease_SourceType,
-            source_model?: string
+            source_model?: string,
         },
         opts: {
             connection?: number;
@@ -531,7 +542,7 @@ export default class VideoServiceControl {
         const lease = await this.config.models.VideoLease.commit(leaseid, body);
 
         if (body.secure !== undefined) {
-            await this.updateSecure(lease, body.secure);
+            await this.updateSecure(lease, body.secure, body.secure_rotate);
         }
 
         try {
@@ -577,6 +588,7 @@ export default class VideoServiceControl {
                 throw err;
             }
         }
+
         return lease;
     }
 

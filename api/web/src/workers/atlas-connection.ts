@@ -88,7 +88,7 @@ export default class AtlasConnection {
             } else if (body.type === 'chat') {
                 const chat = (body.data as Feature).properties;
                 if (chat.chat) {
-                    self.postMessage({
+                    this.atlas.postMessage({
                         type: WorkerMessageType.Notification,
                         body: {
                             type: 'Chat',
