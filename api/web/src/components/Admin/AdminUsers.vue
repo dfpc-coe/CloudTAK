@@ -40,11 +40,16 @@
                         v-model:order='paging.order'
                         v-model:header='header'
                     />
-                    <tbody>
+                    <tbody
+                        role='menu'
+                    >
                         <tr
                             v-for='user in list.items'
                             :key='user.username'
                             class='cursor-pointer'
+                            role='menuitem'
+                            tabindex='0'
+                            @keyup.enter='$router.push(`/admin/user/${user.username}`)'
                             @click='$router.push(`/admin/user/${user.username}`)'
                         >
                             <template v-for='h in header'>
