@@ -2,6 +2,7 @@ import { Type } from '@sinclair/typebox'
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
+import Schema from '@openaddresses/batch-schema';
 import { Injector } from '@tak-ps/node-tak/lib/api/injectors';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 

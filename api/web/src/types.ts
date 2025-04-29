@@ -154,6 +154,9 @@ export type VideoServerList = paths["/video/server"]["get"]["responses"]["200"][
 export type InjectorList = paths["/server/injector"]["get"]["responses"]["200"]["content"]["application/json"];
 export type Injector = paths["/server/injector"]["get"]["responses"]["200"]["content"]["application/json"]["items"][0];
 
+export type RepeaterList = paths["/server/repeater"]["get"]["responses"]["200"]["content"]["application/json"];
+export type Repeater = paths["/server/repeater"]["get"]["responses"]["200"]["content"]["application/json"]["items"][0];
+
 // Pattern properties are not yet supported
 export type ETLRawTaskList = {
     total: number;
