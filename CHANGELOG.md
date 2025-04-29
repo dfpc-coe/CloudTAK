@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v8.28.0 - 2025-04-29
+
+- :tada: Complete Injector Management UI
+- :bug: Update Media Docker image to 3.3.4 to remove some env var requirements
+
 ### v8.27.1 - 2025-04-29
 
 - :bug: Small fixes to import system from node-tak
