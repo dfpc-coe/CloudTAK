@@ -490,10 +490,6 @@ export default class AtlasDatabase {
                     properties: feat.properties,
                     geometry: feat.geometry
                 }, { skipSave: opts.skipSave })
-
-                if (exists.is_skittle) {
-                    this.atlas.team.set(exists);
-                }
             } else {
                 exists = new COT(this.atlas, feat, {
                     mode: OriginMode.CONNECTION
@@ -507,7 +503,7 @@ export default class AtlasDatabase {
             }
 
             if (exists.is_skittle) {
-                this.atlas.team.set(exists);
+                await this.atlas.team.set(exists);
             }
         }
     }

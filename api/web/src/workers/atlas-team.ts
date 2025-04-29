@@ -44,7 +44,7 @@ export default class AtlasTeam {
                 type: WorkerMessageType.Contact_Change
             });
 
-            self.postMessage({
+            this.atlas.postMessage({
                 type: WorkerMessageType.Notification,
                 body: {
                     type: 'Contact',
