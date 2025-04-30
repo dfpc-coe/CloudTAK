@@ -39,6 +39,7 @@ test('POST: api/token', async (t) => {
             }
         }, true);
 
+        const token = res.body.token;
         t.ok(res.body.token);
         delete res.body.token;
 
@@ -53,10 +54,22 @@ test('POST: api/token', async (t) => {
             email: 'admin@example.com',
             name: 'Test Token'
         });
+
+        // List features of user just to test the token
+        const features = await flight.fetch('/api/profile/feature', {
+            method: 'GET',
+            auth: {
+                bearer: token
+            },
+        }, true);
+
+        t.deepEquals(features.body, {
+            total: 0,
+            items: []
+        });
     } catch (err) {
         t.error(err, 'no error');
     }
-
     t.end();
 });
 
