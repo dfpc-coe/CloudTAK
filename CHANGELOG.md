@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v8.31.3 - 2025-04-30
+
+- :bug: `API` Publish & Recording should be optional
+
 ### v8.31.2 - 2025-04-30
 
 - :bug: `API` Permanent should be an optional field
