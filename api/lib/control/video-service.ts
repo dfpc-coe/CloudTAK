@@ -247,9 +247,27 @@ export default class VideoServiceControl {
             const url = new URL(`/${lease.path}`, c.url.replace(/^http(s)?:/, 'rtsp:'))
             url.port = c.config.rtspAddress.replace(':', '');
 
-            protocols.rtsp = {
-                name: 'Real-Time Streaming Protocol (RTSP)',
-                url: String(url)
+            if (populated === ProtocolPopulation.READ && lease.read_user && lease.read_pass) {
+                url.username = lease.read_user;
+                url.password = lease.read_pass;
+
+                protocols.rtsp = {
+                    name: 'Real-Time Streaming Protocol (RTSP)',
+                    url: String(url)
+                }
+            } else if (populated === ProtocolPopulation.WRITE && lease.stream_user && lease.stream_pass) {
+                url.username = lease.stream_user;
+                url.password = lease.stream_pass;
+
+                protocols.rtsp = {
+                    name: 'Real-Time Streaming Protocol (RTSP)',
+                    url: String(url)
+                }
+            } else {
+                protocols.rtsp = {
+                    name: 'Real-Time Streaming Protocol (RTSP)',
+                    url: String(url)
+                }
             }
         }
 
