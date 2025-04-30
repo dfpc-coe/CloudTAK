@@ -1134,6 +1134,11 @@
         "query": false,
         "res": true
     },
+    "GET /type/cot": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
     "GET /type/cot/:type": {
         "body": false,
         "query": false,
