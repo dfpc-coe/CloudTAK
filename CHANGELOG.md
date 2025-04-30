@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v8.31.0 - 2025-04-30
+
+- :rocket: `API` Add RTSP Username/Password Template
+
 ### v8.30.0 - 2025-04-30
 
 - :rocket: `API` Add Types API for search COT Types
