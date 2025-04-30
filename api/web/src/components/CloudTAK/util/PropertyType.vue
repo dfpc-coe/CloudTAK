@@ -97,7 +97,6 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue']);
 
 const meta = ref<COTType | undefined>();
-const mode = ref(props.modelValue.split('-')[1])
 const type = ref(props.modelValue);
 const loading = ref(true);
 const StandardIdentity: Record<string, string> = {
