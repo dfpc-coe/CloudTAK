@@ -146,7 +146,7 @@
 <script setup lang='ts'>
 import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import type { Ref } from 'vue';
-import { std, stdurl } from '../../../std.ts';
+import { std } from '../../../std.ts';
 import type { ContactList, ConfigGroups } from '../../../types.ts';
 import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();
