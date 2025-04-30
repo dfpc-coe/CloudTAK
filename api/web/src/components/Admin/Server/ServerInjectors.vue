@@ -26,7 +26,10 @@
             v-else-if='error'
             :err='error'
         />
-        <div v-else class='card-body row'>
+        <div
+            v-else
+            class='card-body row'
+        >
             <TablerNone
                 v-if='list.items.length === 0'
                 label='Injectors'
@@ -38,8 +41,14 @@
                         class='col-12 hover-light px-2 py-2 rounded cursor-pointer'
                         @click='injector = i'
                     >
-                        <div class='subheader' v-text='i.uid'/>
-                        <pre class='pre' v-text='i.toInject'/>
+                        <div
+                            class='subheader'
+                            v-text='i.uid'
+                        />
+                        <pre
+                            class='pre'
+                            v-text='i.toInject'
+                        />
                     </div>
                 </template>
             </template>

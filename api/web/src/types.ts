@@ -18,6 +18,7 @@ export type APIList<T> = {
 
 // Below are TAK/CloudTAK Specific Data Types
 
+export type COTTypeList = paths["/type/cot"]["get"]["responses"]["200"]["content"]["application/json"];
 export type COTType = paths["/type/cot/{:type}"]["get"]["responses"]["200"]["content"]["application/json"];
 
 export type SearchSuggest = paths["/search/suggest"]["get"]["responses"]["200"]["content"]["application/json"];

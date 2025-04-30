@@ -68,8 +68,11 @@
                                         <div
                                             v-else-if='h.name === "last_login"'
                                         >
-                                            <div v-text='timeDiff(user[h.name])'/>
-                                            <div class='subheader' v-text='user[h.name]'/>
+                                            <div v-text='timeDiff(user[h.name])' />
+                                            <div
+                                                class='subheader'
+                                                v-text='user[h.name]'
+                                            />
                                         </div>
                                         <span
                                             v-else

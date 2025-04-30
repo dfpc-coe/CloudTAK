@@ -6,19 +6,18 @@
             </h2>
 
             <div class='ms-auto btn-list'>
-                <IconPlus
-                    v-tooltip='"Create Layer"'
-                    :size='32'
-                    stroke='1'
-                    class='cursor-pointer'
-                    @click='$router.push(`/connection/${$route.params.connectionid}/layer/new`)'
-                />
+                <TablerIconButton
+                    title='Create Layer'
+                    @click='router.push(`/connection/${route.params.connectionid}/layer/new`)'
+                >
+                    <IconPlus
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
 
-                <IconRefresh
-                    v-tooltip='"Refresh"'
-                    :size='32'
-                    stroke='1'
-                    class='cursor-pointer'
+                <TablerRefreshButton
+                    :loading='loading'
                     @click='listLayers'
                 />
             </div>
@@ -51,7 +50,7 @@
                             v-for='layer of list.items'
                             :key='layer.id'
                             class='cursor-pointer'
-                            @click='$router.push(`/connection/${$route.params.connectionid}/layer/${layer.id}`)'
+                            @click='router.push(`/connection/${route.params.connectionid}/layer/${layer.id}`)'
                         >
                             <td>
                                 <div class='d-flex align-items-center'>
@@ -62,12 +61,31 @@
 
                                     <div class='ms-auto btn-list'>
                                         <IconDatabase
-                                            v-if='layer.data'
+                                            v-if='layer.incoming && layer.incoming.data'
                                             v-tooltip='`Pushing to Data Sync`'
                                             :size='32'
                                             stroke='1'
-                                            @click.stop.prevent='$router.push(`/connection/${$route.params.connectionid}/data/${layer.data}`)'
-                                        />                                
+                                            @click.stop.prevent='router.push(`/connection/${route.params.connectionid}/data/${layer.incoming.data}`)'
+                                        />
+
+                                        <IconExchange
+                                            v-if='layer.incoming && layer.outgoing'
+                                            title='Outgoing/Incoming'
+                                            size='32'
+                                            :stroke='1'
+                                        />
+                                        <IconStackPop
+                                            v-else-if='layer.outgoing'
+                                            title='Outgoing'
+                                            size='32'
+                                            :stroke='1'
+                                        />
+                                        <IconStackPush
+                                            v-else-if='layer.incoming'
+                                            title='Incoming'
+                                            size='32'
+                                            :stroke='1'
+                                        />
                                     </div>
                                 </div>
                             </td>
@@ -89,80 +107,65 @@
     </div>
 </template>
 
-<script>
-import { std, stdurl } from '/src/std.ts';
+<script setup>
+import { ref, onMounted, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router'
+import { std, stdurl } from '../../std.ts';
 import TableFooter from '../util/TableFooter.vue';
 import {
     IconPlus,
-    IconRefresh,
+    IconExchange,
+    IconStackPop,
+    IconStackPush,
     IconDatabase
 } from '@tabler/icons-vue';
 import {
     TablerNone,
     TablerAlert,
-    TablerLoading
+    TablerLoading,
+    TablerIconButton,
+    TablerRefreshButton,
 } from '@tak-ps/vue-tabler'
 import LayerStatus from '../Layer/utils/StatusDot.vue';
 
-export default {
-    name: 'ConnectionLayers',
-    components: {
-        TablerNone,
-        TablerAlert,
-        IconPlus,
-        IconRefresh,
-        IconDatabase,
-        TablerLoading,
-        TableFooter,
-        LayerStatus,
-    },
-    props: {
-        connection: {
-            type: Object,
-            required: true
-        }
-    },
-    data: function() {
-        return {
-            loading: true,
-            err: null,
-            paging: {
-                filter: '',
-                limit: 10,
-                page: 0
-            },
-            list: {
-                total: 0,
-                items: []
-            },
-        }
-    },
-    watch: {
-        paging: {
-            deep: true,
-            handler: async function() {
-                await this.listLayers();
-            },
-        }
-    },
-    mounted: async function() {
-        await this.listLayers();
-    },
-    methods: {
-        listLayers: async function() {
-            this.loading = true;
-            try {
-                const url = stdurl(`/api/connection/${this.$route.params.connectionid}/layer`);
-                url.searchParams.append('alarms', String(true));
-                url.searchParams.append('limit', this.paging.limit);
-                url.searchParams.append('page', this.paging.page);
-                url.searchParams.append('filter', this.paging.filter);
-                this.list = await std(url);
-            } catch (err) {
-                this.err = err;
-            }
-            this.loading = false
-        }
+const route = useRoute();
+const router = useRouter();
+
+const loading = ref(true);
+const error = ref();
+
+const paging = ref( {
+    filter: '',
+    limit: 10,
+    page: 0
+})
+
+const list = ref({
+    total: 0,
+    items: []
+});
+
+watch(paging.value, async () => {
+    await listLayers();
+});
+
+onMounted(async () => {
+    await listLayers();
+});
+
+async function listLayers() {
+    loading.value = true;
+    try {
+        const url = stdurl(`/api/connection/${route.params.connectionid}/layer`);
+        url.searchParams.append('alarms', String(true));
+        url.searchParams.append('limit', paging.value.limit);
+        url.searchParams.append('page', paging.value.page);
+        url.searchParams.append('filter', paging.value.filter);
+        list.value = await std(url);
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
     }
+
+    loading.value = false
 }
 </script>
