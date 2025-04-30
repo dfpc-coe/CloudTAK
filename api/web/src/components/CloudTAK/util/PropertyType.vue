@@ -1,18 +1,32 @@
 <template>
-    <div class='col-12'>
+    <div
+        v-if='type'
+        class='col-12'
+    >
+        <label class='subheader mx-2'>Type</label>
         <div class='mx-2'>
             <TablerDropdown>
                 <div
-                    class='bg-gray-500 rounded-top py-2 px-2 text-truncate d-flex'
+                    class='bg-gray-500 rounded-top py-2 px-2 text-truncate d-flex align-items-center'
                     :class='{
                         "hover-button hover-border cursor-pointer": hover,
-                  }'
+                    }'
                 >
                     <FeatureIcon
-                        :feature='{ properties: { type } }'
+                        :key='type'
+                        :feature='{ properties: { icon: type } }'
                     />
 
-                    <div class='mx-2' v-text='type'/>
+                    <div
+                        class='mx-2'
+                        v-text='meta ? meta.full : type'
+                    />
+
+                    <div
+                        v-if='meta'
+                        class='ms-auto'
+                        v-text='`(${type})`'
+                    />
                 </div>
 
                 <template #dropdown>
@@ -20,25 +34,39 @@
                         class='rounded border border-white px-2 py-2'
                         style='width: 384px;'
                     >
-                        <TablerInput
-                            :autofocus='true'
-                            v-model='paging.filter'
-                        />
+                        <div class='row g-2'>
+                            <div class='col-8'>
+                                <TablerInput
+                                    v-model='paging.filter'
+                                    :autofocus='true'
+                                />
+                            </div>
+                            <div class='col-4'>
+                                <TablerEnum
+                                    v-model='paging.identity'
+                                    :default='StandardIdentity.FRIENDLY'
+                                    :options='Object.keys(StandardIdentity)'
+                                />
+                            </div>
+                        </div>
 
                         <template v-for='item of list.items'>
                             <div
-                                @click='type = item.cot'
-                                class='d-flex px-2 py-2 hover-dark cursor-pointer rounded'
+                                class='d-flex align-items-center px-2 py-2 hover-dark cursor-pointer rounded'
+                                @click='updateType(item)'
                             >
                                 <FeatureIcon
                                     :feature='{ properties: { icon: item.cot.replace(/^a-\.-/, "a-u-") } }'
                                 />
 
-                                <div class='mx-2' v-text='item.full'/>
+                                <div
+                                    class='mx-2'
+                                    v-text='item.full'
+                                />
                             </div>
                         </template>
                     </div>
-            </template>
+                </template>
             </TablerDropdown>
         </div>
     </div>
@@ -47,8 +75,10 @@
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
 import { std, stdurl } from '../../../std.ts';
+import type { COTType, COTTypeList } from '../../../std.ts';
 import FeatureIcon from './FeatureIcon.vue';
 import {
+    TablerEnum,
     TablerInput,
     TablerDropdown
 } from '@tak-ps/vue-tabler';
@@ -66,21 +96,35 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue']);
 
+const meta = ref<COTType | undefined>();
 const mode = ref(props.modelValue.split('-')[1])
 const type = ref(props.modelValue);
 const loading = ref(true);
+const StandardIdentity: Record<string, string> = {
+    'PENDING': 'p',
+    'UNKNOWN': 'u',
+    'ASSUMED_FRIEND': 'a',
+    'FRIEND': 'f',
+    'NEUTRAL': 'n',
+    'SUSPECT': 's',
+    'HOSTILE': 'h',
+    'JOKER': 'j',
+    'FAKER': 'k',
+    'NONE': 'o'
+}
 
 const paging = ref({
-    filter: ''
-})
+    filter: '',
+    identity: 'FRIEND'
+});
 
-const list = ref({
+const list = ref<COTTypeList>({
     total: 0,
     items: []
 });
 
-watch(props.modelValue, () => {
-    console.error('PROP CHANGE');
+watch(type, () => {
+    emit('update:modelValue', type.value);
 });
 
 watch(paging.value, async () => {
@@ -88,16 +132,28 @@ watch(paging.value, async () => {
 });
 
 onMounted(async () => {
+    await fetchType();
     await fetchList();
 });
+
+function updateType(item: COTType) {
+    meta.value = item;
+    type.value = item.cot;
+}
+
+async function fetchType() {
+    const url = stdurl(`/api/type/cot/${type.value}`);
+    meta.value = await std(url) as COTType;
+}
 
 async function fetchList() {
     loading.value = true;
 
     const url = stdurl('/api/type/cot');
     url.searchParams.append('filter', paging.value.filter);
+    url.searchParams.append('identity', StandardIdentity[paging.value.identity]);
 
-    list.value = await std(url);
+    list.value = await std(url) as COTTypeList;
 }
 
 </script>

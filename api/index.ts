@@ -176,7 +176,7 @@ export default async function server(config: Config): Promise<ServerManager> {
                 format: String(params.get('format') || 'raw')
             }
 
-            const auth = tokenParser(config, parsedParams.token, config.SigningSecret);
+            const auth = await tokenParser(config, parsedParams.token, config.SigningSecret);
 
             if (!config.wsClients.has(parsedParams.connection)) config.wsClients.set(parsedParams.connection, [])
 

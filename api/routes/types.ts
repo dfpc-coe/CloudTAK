@@ -4,6 +4,7 @@ import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
 import { Type } from '@sinclair/typebox'
 import { CoTTypes } from '@tak-ps/node-cot';
+import { MilSymType } from '@tak-ps/node-cot';
 import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: Config) {
@@ -15,8 +16,10 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Get Type',
         query: Type.Object({
             filter: Type.String({
-                default: ''
+                default: '',
             }),
+            domain: Type.Optional(Type.Enum(MilSymType.Domain)),
+            identity: Type.Enum(MilSymType.StandardIdentity),
             limit: Default.Limit
         }),
         res: Type.Object({
@@ -27,7 +30,9 @@ export default async function router(schema: Schema, config: Config) {
         try {
             await Auth.is_auth(config, req);
 
-            const items = Array.from(types.cots.values()).filter((type) => {
+            const items = Array.from(types.types(req.query.identity, {
+                domain: req.query.domain
+            })).filter((type) => {
                 return type.full && type.full.toLowerCase().includes(req.query.filter.toLowerCase())
             });
 
@@ -52,7 +57,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             await Auth.is_auth(config, req);
 
-            const type = req.params.type.replace(/a-.-/, 'a-.-');
+            const type = req.params.type.replace(/a-.-/, `a-.-`);
 
             const info = types.cots.get(type);
 
