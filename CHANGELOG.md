@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v8.30.0 - 2025-04-30
+
+- :rocket: `API` Add Types API for search COT Types
+- :rocket: `UI` Add Types Component for searching COT Types
+- :bug: Treat Profile API Tokens as User Actions
+
 ### v8.29.0 - 2025-04-29
 
 - :bug: Ensure polgon is unhidden if editing is manually stopped
