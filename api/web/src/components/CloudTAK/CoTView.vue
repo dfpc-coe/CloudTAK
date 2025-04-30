@@ -34,17 +34,6 @@
                             :minheight='44'
                             :hover='cot.is_editable'
                         />
-
-                        <div>
-                            <span
-                                class='subheader'
-                                v-text='type ? type.full : cot.properties.type'
-                            />
-                            <span
-                                class='subheader ms-auto'
-                                v-text='" (" + (cot.properties.how || "Unknown") + ")"'
-                            />
-                        </div>
                     </div>
                 </div>
                 <div class='col-12 d-flex my-2 mx-2'>
@@ -311,6 +300,20 @@
                             v-text='subscription.meta.name'
                         />
                     </div>
+                </div>
+
+                <div
+                    class='pt-2'
+                    :class='{
+                        "col-md-8": center.length > 2,
+                        "col-12": center.length <= 2,
+                    }'
+                >
+                    <PropertyType
+                        :edit='cot.is_editable'
+                        :hover='cot.is_editable'
+                        :model-value='cot.properties.type'
+                    />
                 </div>
 
                 <div
@@ -730,6 +733,7 @@ import Share from './util/Share.vue';
 import LineLength from './util/LineLength.vue';
 import PolygonArea from './util/PolygonArea.vue';
 import Coordinate from './util/Coordinate.vue';
+import PropertyType from './util/PropertyType.vue';
 import PropertyBattery from './util/PropertyBattery.vue';
 import PropertyCourse from './util/PropertyCourse.vue';
 import PropertySensor from './util/PropertySensor.vue';
