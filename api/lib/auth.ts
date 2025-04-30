@@ -308,6 +308,7 @@ export function tokenParser(token: string, secret: string): AuthUser | AuthResou
         if (!decoded.id) throw new Err(401, null, 'Invalid Token');
         const access = castResourceAccessEnum(decoded.access);
         if (!access) throw new Err(400, null, 'Invalid Resource Access Value');
+
         return new AuthResource(`etl.${token}`, access, decoded.id, decoded.internal);
     } else {
         const decoded = jwt.verify(token, secret);

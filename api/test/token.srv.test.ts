@@ -1,0 +1,115 @@
+import test from 'tape';
+import Flight from './flight.js';
+
+const flight = new Flight();
+
+flight.init();
+flight.takeoff();
+flight.user();
+
+test('GET: api/token', async (t) => {
+    try {
+        const res = await flight.fetch('/api/token', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin
+            }
+        }, true);
+
+        t.deepEquals(res.body, {
+            total: 0,
+            items: []
+        });
+    } catch (err) {
+        t.error(err, 'no error');
+    }
+
+    t.end();
+});
+
+test('POST: api/token', async (t) => {
+    try {
+        const res = await flight.fetch('/api/token', {
+            method: 'POST',
+            auth: {
+                bearer: flight.token.admin
+            },
+            body: {
+                name: 'Test Token'
+            }
+        }, true);
+
+        t.ok(res.body.token);
+        delete res.body.token;
+
+        t.ok(res.body.created);
+        delete res.body.created;
+
+        t.ok(res.body.updated);
+        delete res.body.updated;
+
+        t.deepEquals(res.body, {
+            id: 1,
+            email: 'admin@example.com',
+            name: 'Test Token'
+        });
+    } catch (err) {
+        t.error(err, 'no error');
+    }
+
+    t.end();
+});
+
+test('GET: api/token', async (t) => {
+    try {
+        const res = await flight.fetch('/api/token', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin
+            }
+        }, true);
+
+        t.ok(res.body.items[0].created);
+        delete res.body.items[0].created;
+
+        t.ok(res.body.items[0].updated);
+        delete res.body.items[0].updated;
+
+        t.deepEquals(res.body, {
+            total: 1,
+            items: [{
+                id: 1,
+                name: 'Test Token'
+            }]
+        });
+    } catch (err) {
+        t.error(err, 'no error');
+    }
+
+    t.end();
+});
+
+test('PATCH: api/token/1', async (t) => {
+    try {
+        const res = await flight.fetch('/api/token/1', {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin
+            },
+            body: {
+                name: 'Test Token Rename'
+            }
+        }, true);
+
+        t.deepEquals(res.body, {
+            status: 200,
+            message: 'Token Updated'
+        });
+    } catch (err) {
+        t.error(err, 'no error');
+    }
+
+    t.end();
+});
+
+flight.landing();
