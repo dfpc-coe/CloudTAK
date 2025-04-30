@@ -18,6 +18,7 @@
                         />
                         <FeatureIcon
                             v-else
+                            :key='cot.properties.type'
                             :size='32'
                             :feature='cot'
                         />
@@ -313,6 +314,7 @@
                         :edit='cot.is_editable'
                         :hover='cot.is_editable'
                         :model-value='cot.properties.type'
+                        @update:model-value='updateType($event)'
                     />
                 </div>
 
@@ -872,7 +874,17 @@ function timediffFormat(date: string) {
     }
 }
 
-function updateCenter(center: number[]) {
+function updateType(type: string): void {
+    if (!cot.value) return;
+
+    cot.value.properties.type = type;
+
+    if (!cot.value.properties.icon || !cot.value.properties.icon.includes(':')) {
+        cot.value.properties.icon = type;
+    }
+}
+
+function updateCenter(center: number[]): void {
     if (!cot.value) return;
 
     cot.value.properties.center = center;
