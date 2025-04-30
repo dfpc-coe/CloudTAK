@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v8.31.1 - 2025-04-30
+
+- :bug: `API` Fix URL Encoding
+
 ### v8.31.0 - 2025-04-30
 
 - :rocket: `API` Add RTSP Username/Password Template
