@@ -247,21 +247,32 @@ export default class VideoServiceControl {
             const url = new URL(`/${lease.path}`, c.url.replace(/^http(s)?:/, 'rtsp:'))
             url.port = c.config.rtspAddress.replace(':', '');
 
-            if (populated === ProtocolPopulation.READ && lease.read_user && lease.read_pass) {
-                url.username = lease.read_user;
-                url.password = lease.read_pass;
+            if (lease.read_user && lease.stream_user) {
+                if (populated === ProtocolPopulation.READ && lease.read_user && lease.read_pass) {
+                    url.username = lease.read_user;
+                    url.password = lease.read_pass;
 
-                protocols.rtsp = {
-                    name: 'Real-Time Streaming Protocol (RTSP)',
-                    url: String(url)
-                }
-            } else if (populated === ProtocolPopulation.WRITE && lease.stream_user && lease.stream_pass) {
-                url.username = lease.stream_user;
-                url.password = lease.stream_pass;
+                    protocols.rtsp = {
+                        name: 'Real-Time Streaming Protocol (RTSP)',
+                        url: String(url)
+                    }
+                } else if (populated === ProtocolPopulation.WRITE && lease.stream_user && lease.stream_pass) {
+                    url.username = lease.stream_user;
+                    url.password = lease.stream_pass;
 
-                protocols.rtsp = {
-                    name: 'Real-Time Streaming Protocol (RTSP)',
-                    url: String(url)
+                    protocols.rtsp = {
+                        name: 'Real-Time Streaming Protocol (RTSP)',
+                        url: String(url)
+                    }
+                } else {
+                    const rtspurl = new URL(String(url))
+                    rtspurl.username = 'username';
+                    rtspurl.password = 'password';
+
+                    protocols.rtsp = {
+                        name: 'Real-Time Streaming Protocol (RTSP)',
+                        url: String(rtspurl).replace(/username:password/, '{{username}}:{{password}}')
+                    }
                 }
             } else {
                 protocols.rtsp = {
@@ -328,23 +339,34 @@ export default class VideoServiceControl {
             const url = new URL(`/${lease.path}/index.m3u8`, c.url);
             url.port = c.config.hlsAddress.replace(':', '');
 
-            if (populated === ProtocolPopulation.READ && lease.read_user && lease.read_pass) {
-                const hlsurl = new URL(String(url))
-                hlsurl.username = lease.read_user;
-                hlsurl.password = lease.read_pass;
+            if (lease.stream_user && lease.read_user) {
+                if (populated === ProtocolPopulation.READ && lease.read_user && lease.read_pass) {
+                    const hlsurl = new URL(String(url))
+                    hlsurl.username = lease.read_user;
+                    hlsurl.password = lease.read_pass;
 
-                protocols.hls = {
-                    name: 'HTTP Live Streaming (HLS)',
-                    url: String(hlsurl)
-                }
-            } else if (populated === ProtocolPopulation.WRITE && lease.stream_user && lease.stream_pass) {
-                const hlsurl = new URL(String(url))
-                hlsurl.username = lease.stream_user;
-                hlsurl.password = lease.stream_pass;
+                    protocols.hls = {
+                        name: 'HTTP Live Streaming (HLS)',
+                        url: String(hlsurl)
+                    }
+                } else if (populated === ProtocolPopulation.WRITE && lease.stream_user && lease.stream_pass) {
+                    const hlsurl = new URL(String(url))
+                    hlsurl.username = lease.stream_user;
+                    hlsurl.password = lease.stream_pass;
 
-                protocols.hls = {
-                    name: 'HTTP Live Streaming (HLS)',
-                    url: String(hlsurl)
+                    protocols.hls = {
+                        name: 'HTTP Live Streaming (HLS)',
+                        url: String(hlsurl)
+                    }
+                } else {
+                    const hlsurl = new URL(String(url))
+                    hlsurl.username = 'username';
+                    hlsurl.password = 'password';
+
+                    protocols.hls = {
+                        name: 'HTTP Live Streaming (HLS)',
+                        url: String(hlsurl).replace(/username:password/, '{{username}}:{{password}}')
+                    }
                 }
             } else {
                 protocols.hls = {

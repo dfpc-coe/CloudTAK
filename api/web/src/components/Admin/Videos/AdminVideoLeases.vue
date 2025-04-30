@@ -174,6 +174,7 @@ function expired(expiration: string | null): boolean {
 }
 
 async function fetchList() {
+    error.value = undefined;
     modal.value = undefined;
     loading.value = true;
 
