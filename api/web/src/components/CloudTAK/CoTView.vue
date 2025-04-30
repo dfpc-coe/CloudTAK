@@ -311,6 +311,7 @@
                     }'
                 >
                     <PropertyType
+                        v-if='cot.properties.type.startsWith("a-")'
                         :edit='cot.is_editable'
                         :hover='cot.is_editable'
                         :model-value='cot.properties.type'
