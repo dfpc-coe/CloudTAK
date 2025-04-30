@@ -562,8 +562,8 @@ export default class VideoServiceControl {
             secure?: boolean,
             secure_rotate?: boolean
             expiration: string | null,
-            recording: boolean,
-            publish: boolean,
+            recording?: boolean,
+            publish?: boolean,
             source_type?: VideoLease_SourceType,
             source_model?: string,
         },

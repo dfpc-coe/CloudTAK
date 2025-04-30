@@ -192,11 +192,11 @@ export default async function router(schema: Schema, config: Config) {
         }),
         body: Type.Object({
             name: Type.Optional(Type.String()),
-            duration: Type.Integer({
+            duration: Type.Optional(Type.Integer({
                 minimum: 0,
                 default: 60 * 60,
                 description: 'Duration in Seconds'
-            }),
+            })),
             source_type: Type.Optional(Type.Enum(VideoLease_SourceType)),
             source_model: Type.Optional(Type.String()),
             channel: Type.Optional(Type.Union([Type.String(), Type.Null()])),
@@ -208,12 +208,12 @@ export default async function router(schema: Schema, config: Config) {
             permanent: Type.Optional(Type.Boolean({
                 description: 'System Admins can create non-expiring leases'
             })),
-            recording: Type.Boolean({
+            recording: Type.Optional(Type.Boolean({
                 description: 'Record streams to disk'
-            }),
-            publish: Type.Boolean({
+            })),
+            publish: Type.Optional(Type.Boolean({
                 description: 'Publish stream URL to TAK Server Video Manager'
-            }),
+            })),
         }),
         res: Type.Object({
             lease: VideoLeaseResponse,
