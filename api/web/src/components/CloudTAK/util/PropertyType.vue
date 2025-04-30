@@ -75,7 +75,7 @@
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
 import { std, stdurl } from '../../../std.ts';
-import type { COTType, COTTypeList } from '../../../std.ts';
+import type { COTType, COTTypeList } from '../../../types.ts';
 import FeatureIcon from './FeatureIcon.vue';
 import {
     TablerEnum,
