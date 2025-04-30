@@ -18,7 +18,10 @@
             v-else-if='error'
             :err='error'
         />
-        <div v-else class='card-body row'>
+        <div
+            v-else
+            class='card-body row'
+        >
             <TablerNone
                 v-if='list.total === 0'
                 label='Repeaters'
@@ -29,10 +32,14 @@
                     <div class='col-12 hover-light d-flex align-items-center px-2 py-2'>
                         <div class='row'>
                             <div class='col-12'>
-                                <span v-text='repeater.callsign'/>
+                                <span v-text='repeater.callsign' />
                             </div>
                             <div class='col-12 subheader'>
-                                <span v-text='repeater.cotType'/> - <span class='cursor-pointer' @click='relative = !relative' v-text='relative ? timeDiff(Number(repeater.dateTimeActivated)) : new Date(Number(repeater.dateTimeActivated))'/>
+                                <span v-text='repeater.cotType' /> - <span
+                                    class='cursor-pointer'
+                                    @click='relative = !relative'
+                                    v-text='relative ? timeDiff(Number(repeater.dateTimeActivated)) : new Date(Number(repeater.dateTimeActivated))'
+                                />
                             </div>
                         </div>
                         <div class='ms-auto'>

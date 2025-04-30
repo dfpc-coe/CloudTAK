@@ -8,7 +8,9 @@
             @click='emit("close")'
         />
         <div class='modal-header'>
-            <div class='modal-title'>Injector Editor</div>
+            <div class='modal-title'>
+                Injector Editor
+            </div>
 
             <div class='ms-auto btn-list'>
                 <TablerDelete
@@ -26,22 +28,34 @@
         >
             <div class='col-12'>
                 <TablerInput
+                    v-model='injector.uid'
                     label='UID'
                     :disabled='typeof props.injector !== "boolean"'
-                    v-model='injector.uid'
                 />
             </div>
             <div class='col-12'>
                 <TablerInput
+                    v-model='injector.toInject'
                     label='toInject'
                     :disabled='typeof props.injector !== "boolean"'
-                    v-model='injector.toInject'
                 />
             </div>
         </div>
         <div class='modal-footer'>
-            <button v-if='typeof props.injector === "boolean"' @click='saveInjector' class='btn btn-primary'>Save</button>
-            <button v-else @click='emit("close")' class='btn btn-primary'>Close</button>
+            <button
+                v-if='typeof props.injector === "boolean"'
+                class='btn btn-primary'
+                @click='saveInjector'
+            >
+                Save
+            </button>
+            <button
+                v-else
+                class='btn btn-primary'
+                @click='emit("close")'
+            >
+                Close
+            </button>
         </div>
     </TablerModal>
 </template>

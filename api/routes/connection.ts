@@ -276,6 +276,10 @@ export default async function router(schema: Schema, config: Config) {
                 where: sql`connection = ${req.params.connectionid}`
             }) > 0) throw new Err(400, null, 'Connection has active Data Syncs - Delete Syncs before deleting Connection');
 
+            if (await config.models.VideoLease.count({
+                where: sql`connection = ${req.params.connectionid}`
+            }) > 0) throw new Err(400, null, 'Connection has active Video LEases - Delete Leases before deleting Connection');
+
             await S3.del(`connection/${String(req.params.connectionid)}/`, { recurse: true });
 
             await config.models.ConnectionToken.delete(sql`

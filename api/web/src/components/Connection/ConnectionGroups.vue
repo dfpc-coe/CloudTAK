@@ -6,11 +6,8 @@
             </h3>
 
             <div class='ms-auto btn-list'>
-                <IconRefresh
-                    v-tooltip='"Refresh"'
-                    :size='32'
-                    stroke='1'
-                    class='cursor-pointer'
+                <TablerRefreshButton
+                    :loading='loading'
                     @click='fetch'
                 />
             </div>
@@ -100,14 +97,14 @@ import { std, stdurl } from '../../std.ts';
 import {
     IconEye,
     IconEyeOff,
-    IconRefresh,
     IconLocation,
     IconLocationOff,
 } from '@tabler/icons-vue';
 import {
     TablerNone,
     TablerAlert,
-    TablerLoading
+    TablerLoading,
+    TablerRefreshButton,
 } from '@tak-ps/vue-tabler';
 
 const route = useRoute();
