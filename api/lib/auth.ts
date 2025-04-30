@@ -31,7 +31,10 @@ export enum AuthResourceAccess {
     LAYER = 'layer',
     IMPORT = 'import',
     LEASE = 'lease',
-    CONNECTION = 'connection'
+    CONNECTION = 'connection',
+
+    // Becomes AuthUser
+    PROFILE = 'profile'
 }
 
 function castResourceAccessEnum(str: string): AuthResourceAccess | undefined {
@@ -101,7 +104,7 @@ export default class Auth {
         if (!opts.resources) opts.resources = [];
         if (!opts.anyResources) opts.anyResources = false;
 
-        const auth = auth_request(config, req, { token: opts.token });
+        const auth = await auth_request(config, req, { token: opts.token });
 
         if (!auth || !auth.access) {
             throw new Err(403, null, 'Authentication Required');
@@ -262,9 +265,13 @@ export default class Auth {
     }
 }
 
-function auth_request(config: Config, req: Request<any, any, any, any>, opts?: {
-    token: boolean
-}): AuthResource | AuthUser {
+async function auth_request(
+    config: Config,
+    req: Request<any, any, any, any>,
+    opts?: {
+        token: boolean
+    }
+): Promise<AuthResource | AuthUser> {
     try {
         if (req.headers && req.header('authorization')) {
             const authorization = (req.header('authorization') || '').split(' ');
@@ -277,7 +284,7 @@ function auth_request(config: Config, req: Request<any, any, any, any>, opts?: {
                 throw new Err(401, null, 'No bearer token present');
             }
 
-            return tokenParser(authorization[1], config.SigningSecret);
+            return await tokenParser(config, authorization[1], config.SigningSecret);
         } else if (
             opts
             && opts.token
@@ -285,7 +292,7 @@ function auth_request(config: Config, req: Request<any, any, any, any>, opts?: {
             && req.query.token
             && typeof req.query.token === 'string'
         ) {
-            return tokenParser(req.query.token, config.SigningSecret);
+            return await tokenParser(config, req.query.token, config.SigningSecret);
         } else {
             throw new Err(401, null, 'No Auth Present')
         }
@@ -298,7 +305,11 @@ function auth_request(config: Config, req: Request<any, any, any, any>, opts?: {
     }
 }
 
-export function tokenParser(token: string, secret: string): AuthUser | AuthResource {
+export async function tokenParser(
+    config: Config,
+    token: string,
+    secret: string
+): Promise<AuthUser | AuthResource> {
     if (token.startsWith('etl.')) {
         token = token.replace(/^etl\./, '');
         const decoded = jwt.verify(token, secret);
@@ -306,10 +317,23 @@ export function tokenParser(token: string, secret: string): AuthUser | AuthResou
         if (!decoded.access || typeof decoded.access !== 'string') throw new Err(401, null, 'Invalid Token');
         if (!decoded.internal || typeof decoded.internal !== 'boolean') decoded.internal = false;
         if (!decoded.id) throw new Err(401, null, 'Invalid Token');
+
         const access = castResourceAccessEnum(decoded.access);
         if (!access) throw new Err(400, null, 'Invalid Resource Access Value');
 
-        return new AuthResource(`etl.${token}`, access, decoded.id, decoded.internal);
+        if (access == AuthResourceAccess.PROFILE) {
+            const profile = await config.models.Profile.from(decoded.id);
+
+            if (profile.system_admin) {
+                return new AuthUser(AuthUserAccess.ADMIN, profile.username);
+            } else if (profile.agency_admin.length) {
+                return new AuthUser(AuthUserAccess.AGENCY, profile.username);
+            } else {
+                return new AuthUser(AuthUserAccess.USER, profile.username);
+            }
+        } else {
+            return new AuthResource(`etl.${token}`, access, decoded.id, decoded.internal);
+        }
     } else {
         const decoded = jwt.verify(token, secret);
         if (typeof decoded === 'string') throw new Err(400, null, 'Decoded JWT Should be Object');
