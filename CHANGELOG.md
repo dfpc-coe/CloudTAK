@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v8.31.2 - 2025-04-30
+
+- :bug: `API` Permanent should be an optional field
+
 ### v8.31.1 - 2025-04-30
 
 - :bug: `API` Fix URL Encoding

@@ -205,9 +205,9 @@ export default async function router(schema: Schema, config: Config) {
                 default: false,
                 description: 'Rotate Read-User Credentials if using seperate read/write user - infers secure: true'
             }),
-            permanent: Type.Boolean({
+            permanent: Type.Optional(Type.Boolean({
                 description: 'System Admins can create non-expiring leases'
-            }),
+            })),
             recording: Type.Boolean({
                 description: 'Record streams to disk'
             }),
