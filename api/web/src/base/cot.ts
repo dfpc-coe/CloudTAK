@@ -260,13 +260,12 @@ export default class COT {
         return !this.is_skittle;
     }
 
+    /**
+     * Determines if the COT type allows editing
+     * But does not determine if a COT is part of a Misison Sync, if the mission allows editing
+     */
     get is_editable(): boolean {
-        if (this.origin.mode === OriginMode.MISSION) {
-            // TODO Check role and allow editing if role allows & also auto update mission with edited CoT
-            return false;
-        } else {
-            return this.properties.archived || this.is_self || false;
-        }
+        return this.properties.archived || this.is_self || false;
     }
 
     async subscription(): Promise<Subscription> {
