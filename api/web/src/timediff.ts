@@ -14,11 +14,11 @@ export default function(updated: string | number): string {
     if (updated < now) {
         const elapsed = now - updated;
 
-        if (elapsed < msPerMinute) return Math.round(elapsed/1000) + ' seconds ago';
-        if (elapsed < msPerHour) return Math.round(elapsed/msPerMinute) + ' minutes ago';
-        if (elapsed < msPerDay ) return Math.round(elapsed/msPerHour ) + ' hours ago';
-        if (elapsed < msPerMonth) return '~' + Math.round(elapsed/msPerDay) + ' days ago';
-        if (elapsed < msPerYear) return '~' + Math.round(elapsed/msPerMonth) + ' months ago';
+        if (elapsed < msPerMinute) return Math.round(elapsed/1000) + ` second${Math.round(elapsed/1000) > 1 ? "s" : ""} ago`;
+        if (elapsed < msPerHour) return Math.round(elapsed/msPerMinute) + ` minute${Math.round(elapsed/msPerMinute) > 1 ? "s" : ""} ago`;
+        if (elapsed < msPerDay ) return Math.round(elapsed/msPerHour ) + ` hour${Math.round(elapsed/msPerHour) > 1 ? "s" : ""} ago`;
+        if (elapsed < msPerMonth) return '~' + Math.round(elapsed/msPerDay) + ` day${Math.round(elapsed/msPerDay) > 1 ? "s" : ""} ago`;
+        if (elapsed < msPerYear) return '~' + Math.round(elapsed/msPerMonth) + ` month${Math.round(elapsed/msPerMonth) > 1 ? "s" : ""} ago`;
         return '~' + Math.round(elapsed/msPerYear ) + ' years ago';
     } else {
         const elapsed = updated - now;
