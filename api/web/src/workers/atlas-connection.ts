@@ -82,6 +82,16 @@ export default class AtlasConnection {
                 } else if (task.properties.type === 't-x-d-d') {
                     // CoT Delete Tasking
                     console.error('DELETE', task.properties);
+                } else if (task.properties.type === 't-x-m-n') {
+                    this.atlas.postMessage({
+                        type: WorkerMessageType.Notification,
+                        body: {
+                            type: 'Mission',
+                            name: `${task.properties.mission.name} Created`,
+                            body: '',
+                            url: `/menu/mission/${task.properties.mission.guid}`
+                        }
+                    });
                 } else {
                     console.warn('Unknown Task', JSON.stringify(task));
                 }
