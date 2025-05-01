@@ -355,25 +355,41 @@ export default class AtlasDatabase {
     /**
      * Remove a given CoT from the store
      */
-    async remove(id: string, skipNetwork = false): Promise<void> {
-        this.pendingDelete.add(id);
+    async remove(
+        id: string,
+        opts: {
+            mission: boolean,
+            skipNetwork: boolean
+        } = {
+            mission: false,
+            skipNetwork: false
+        }
+    ): Promise<void> {
+        const cot = this.cots.get(id, {
+            mission: opts.mission
+        });
 
-        const cot = this.cots.get(id);
+        // TODO Throw an error?
         if (!cot) return;
 
-        this.cots.delete(id);
+        if (cot.origin === OriginMode.CONNECTION) {
+            this.pendingDelete.add(id);
+            this.cots.delete(id);
 
-        if (cot.properties.archived) {
-            this.atlas.postMessage({
-                type: WorkerMessageType.Feature_Archived_Removed
-            });
-
-            if (!skipNetwork) {
-                await std(`/api/profile/feature/${id}`, {
-                    token: this.atlas.token,
-                    method: 'DELETE'
+            if (cot.properties.archived) {
+                this.atlas.postMessage({
+                    type: WorkerMessageType.Feature_Archived_Removed
                 });
+
+                if (!skipNetwork) {
+                    await std(`/api/profile/feature/${id}`, {
+                        token: this.atlas.token,
+                        method: 'DELETE'
+                    });
+                }
             }
+        } else if (cot.origin === OriginMode.MISSION) {
+            console.error('Mission Delete');
         }
     }
 
@@ -387,7 +403,9 @@ export default class AtlasDatabase {
         for (const feat of this.cots.values()) {
             if (opts.ignoreArchived && feat.properties.archived) continue;
 
-            this.remove(feat.id, opts.skipNetwork);
+            this.remove(feat.id, {
+                skipNetwork: opts.skipNetwork
+            });
         }
     }
 
@@ -511,11 +529,14 @@ export default class AtlasDatabase {
     /**
      * Return a CoT by ID if it exists
      */
-    get(id: string, opts: {
-        mission?: boolean,
-    } = {
-        mission: false
-    }): COT | undefined {
+    get(
+        id: string,
+        opts: {
+            mission?: boolean,
+        } = {
+            mission: false
+        }
+    ): COT | undefined {
         if (!opts) opts = {};
 
         let cot = this.cots.get(id);
