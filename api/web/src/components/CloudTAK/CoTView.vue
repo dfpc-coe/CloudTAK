@@ -112,8 +112,8 @@
                         />
 
                         <TablerIconButton
-                            title='Edit'
                             v-if='is_editable'
+                            title='Edit'
                             @click='editGeometry'
                         >
                             <IconPencil

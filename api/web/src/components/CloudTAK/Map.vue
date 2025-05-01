@@ -222,73 +222,32 @@
                 '
             >
                 <TablerDropdown>
-                    <template #default>
-                        <div class='mx-2 cursor-pointer'>
-                            <IconBell
-                                role='button'
-                                tabindex='0'
-                                :size='40'
-                                stroke='1'
-                                title='Notifications Icon'
-                                class='hover-button'
-                            />
-                            <span
-                                v-if='mapStore.notifications.length'
-                                class='badge bg-red mb-2'
-                            />
-                            <span
-                                v-else
-                                style='width: 10px;'
-                            />
-                        </div>
-                    </template>
-                    <template #dropdown>
-                        <TablerNone
-                            v-if='!mapStore.notifications.length'
-                            label='New Notifications'
-                            :create='false'
+                    <TablerIconButton
+                        id='map-notifications'
+                        title='Notifications Icon'
+                    >
+                        <IconBell
+                            :size='40'
+                            stroke='1'
                         />
-                        <template v-else>
-                            <div class='col-12 d-flex py-2 px-2'>
-                                <div
-                                    class='ms-auto cursor-pointer'
-                                    @click='mapStore.notifications.splice(0, mapStore.notifications.length)'
-                                >
-                                    Clear All
-                                </div>
-                            </div>
-                            <div
-                                v-for='n of mapStore.notifications'
-                                class='col-12 px-2 py-2'
-                            >
-                                <div
-                                    v-if='n.type === "Chat"'
-                                    class='col-12 cursor-pointer hover-dark'
-                                    @click='router.push(n.url)'
-                                >
-                                    <IconMessage
-                                        title='Chat Message'
-                                        :size='32'
-                                        stroke='1'
-                                    />
-                                    <span v-text='n.name' />
-                                </div>
-                                <div
-                                    v-if='n.type === "Contact"'
-                                    class='col-12 cursor-pointer hover-dark'
-                                    @click='router.push(n.url)'
-                                >
-                                    <IconUser
-                                        title='User Online'
-                                        :size='32'
-                                        stroke='1'
-                                    />
-                                    <span v-text='n.name' />
-                                </div>
-                            </div>
-                        </template>
+                    </TablerIconButton>
+                    <template #dropdown>
+                        <Notifications
+                            @close='closeNotifications'
+                        />
                     </template>
                 </TablerDropdown>
+
+                <span
+                    v-if='mapStore.notifications.length'
+                    class='badge bg-red mb-2'
+                />
+                <span
+                    v-else
+                    style='width: 10px;'
+                />
+
+
                 <TablerDropdown>
                     <template #default>
                         <TablerIconButton
@@ -484,6 +443,7 @@ import FloatingVideo from './util/FloatingVideo.vue';
 import FloatingAttachment from './util/FloatingAttachment.vue';
 import DrawOverlay from './util/DrawOverlay.vue';
 import WarnChannels from './util/WarnChannels.vue';
+import Notifications from './Notifications.vue';
 import SearchBox from './util/SearchBox.vue';
 import WarnConfiguration from './util/WarnConfiguration.vue';
 import CoordInput from './CoordInput.vue';
@@ -491,9 +451,7 @@ import type { MapGeoJSONFeature, LngLatLike } from 'maplibre-gl';
 import type { Feature } from '../../types.ts';
 import CloudTAKFeatView from './FeatView.vue';
 import {
-    IconUser,
     IconSearch,
-    IconMessage,
     IconLocationOff,
     IconLocationPin,
     IconLocation,
@@ -522,7 +480,6 @@ import {
     TablerIconButton,
     TablerDropdown,
     TablerModal,
-    TablerNone,
 } from '@tak-ps/vue-tabler';
 import { LocationState } from '../../base/events.ts';
 import MapLoading from './MapLoading.vue';
