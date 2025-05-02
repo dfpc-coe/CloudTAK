@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v8.32.0 - 2025-05-02
+
+- :rocket: `API` Support deleting Mission CoTs
+- :rocket: Hide edit buttons in CoT view if the user can't edit a COT
+- :rocket: Rewrite Notifications pane to be much nicer
+- :rocket: Support Mission Creation Notifications
+
 ### v8.31.3 - 2025-04-30
 
 - :bug: `API` Publish & Recording should be optional
