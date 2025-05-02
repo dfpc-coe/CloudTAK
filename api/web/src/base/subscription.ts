@@ -49,7 +49,11 @@ export default class Subscription {
         this.meta = mission;
         this.role = role;
         this.logs = logs;
-        if (opts && opts.token) this.token = opts.token;
+
+        if (opts && opts.token) {
+            this.token = opts.token;
+        }
+
         this.cots = new Map();
 
         this.auto = false;
@@ -77,6 +81,21 @@ export default class Subscription {
 
         await Subscription.delete(this.meta.guid, this.token);
         mapStore.worker.db.subscriptionDelete(this.meta.guid);
+    }
+
+    async deleteFeature(uid: string): Promise<void> {
+        if (this._remote) return;
+
+        this.cots.delete(uid);
+
+        const atlas = this._atlas as Atlas;
+
+        const url = stdurl(`/api/marti/missions/${this.meta.guid}/cot/${uid}`);
+        await std(url, {
+            method: 'DELETE',
+            headers: Subscription.headers(this.token),
+            token:  atlas.token
+        })
     }
 
     async updateLogs(): Promise<void> {

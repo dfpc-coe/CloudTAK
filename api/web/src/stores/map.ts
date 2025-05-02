@@ -23,7 +23,7 @@ import { CloudTAKTransferHandler } from '../base/handler.ts';
 import type { ProfileOverlay, Basemap, APIList, Feature, IconsetList } from '../types.ts';
 import type { LngLat, LngLatLike, Point, MapMouseEvent, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl';
 
-export type TAKNotification = { type: string; name: string; body: string; url: string; }
+export type TAKNotification = { type: string; name: string; body: string; url: string; created: string; }
 
 export const useMapStore = defineStore('cloudtak', {
     state: (): {
@@ -297,7 +297,10 @@ export const useMapStore = defineStore('cloudtak', {
                 } else if (msg.type === WorkerMessageType.Channels_List) {
                     this.hasNoChannels = false;
                 } else if (msg.type === WorkerMessageType.Notification) {
-                    this.notifications.push(msg.body as TAKNotification);
+                    this.notifications.push({
+                        ...msg.body,
+                        created: new Date().toISOString()
+                    } as TAKNotification);
                 } else if (msg.type === WorkerMessageType.Mission_Change_Feature) {
                     this.loadMission(msg.body.guid);
                 }

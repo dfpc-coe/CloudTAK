@@ -295,7 +295,9 @@ export default class AtlasDatabase {
 
         const all = [];
         for (const cot of cots.values()) {
-            all.push(this.remove(cot.id));
+            all.push(this.remove(cot.id, {
+                mission: opts.mission || false
+            }));
         }
 
         await Promise.allSettled(all);
@@ -355,25 +357,44 @@ export default class AtlasDatabase {
     /**
      * Remove a given CoT from the store
      */
-    async remove(id: string, skipNetwork = false): Promise<void> {
-        this.pendingDelete.add(id);
+    async remove(
+        id: string,
+        opts: {
+            mission?: boolean,
+            skipNetwork?: boolean
+        } = {
+            mission: false,
+            skipNetwork: false
+        }
+    ): Promise<void> {
+        const cot = this.get(id, {
+            mission: opts.mission
+        });
 
-        const cot = this.cots.get(id);
+        // TODO Throw an error?
         if (!cot) return;
 
-        this.cots.delete(id);
+        if (cot.origin.mode === OriginMode.CONNECTION) {
+            this.pendingDelete.add(id);
+            this.cots.delete(id);
 
-        if (cot.properties.archived) {
-            this.atlas.postMessage({
-                type: WorkerMessageType.Feature_Archived_Removed
-            });
-
-            if (!skipNetwork) {
-                await std(`/api/profile/feature/${id}`, {
-                    token: this.atlas.token,
-                    method: 'DELETE'
+            if (cot.properties.archived) {
+                this.atlas.postMessage({
+                    type: WorkerMessageType.Feature_Archived_Removed
                 });
+
+                if (!opts.skipNetwork) {
+                    await std(`/api/profile/feature/${id}`, {
+                        token: this.atlas.token,
+                        method: 'DELETE'
+                    });
+                }
             }
+        } else if (cot.origin.mode === OriginMode.MISSION && cot.origin.mode_id) {
+            const subscription = await this.subscriptionGet(cot.origin.mode_id);
+            if (!subscription) throw new Error('Could not delete as Mission Subscription does not exist');
+
+            await subscription.deleteFeature(cot.id);
         }
     }
 
@@ -387,7 +408,9 @@ export default class AtlasDatabase {
         for (const feat of this.cots.values()) {
             if (opts.ignoreArchived && feat.properties.archived) continue;
 
-            this.remove(feat.id, opts.skipNetwork);
+            this.remove(feat.id, {
+                skipNetwork: opts.skipNetwork
+            });
         }
     }
 
@@ -511,11 +534,14 @@ export default class AtlasDatabase {
     /**
      * Return a CoT by ID if it exists
      */
-    get(id: string, opts: {
-        mission?: boolean,
-    } = {
-        mission: false
-    }): COT | undefined {
+    get(
+        id: string,
+        opts: {
+            mission?: boolean,
+        } = {
+            mission: false
+        }
+    ): COT | undefined {
         if (!opts) opts = {};
 
         let cot = this.cots.get(id);
