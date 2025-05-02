@@ -233,7 +233,12 @@ export default class COT {
      * Attempt to save the CoT to the database if necessary
      */
     async save(): Promise<void> {
-        if (!this._remote && !this.is_self && this.properties.archived) {
+        if (
+            !this._remote
+            && !this.is_self
+            && this.properties.archived
+            && this.origin.mode === OriginMode.CONNETION
+        ) {
             const atlas = this._atlas as Atlas;
 
             await std('/api/profile/feature', {

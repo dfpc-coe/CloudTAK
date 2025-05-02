@@ -79,6 +79,11 @@ export default class Subscription {
         mapStore.worker.db.subscriptionDelete(this.meta.guid);
     }
 
+    async deleteFeature(uid: string): Promise<void> {
+        this.cots.delete(uid);
+        await Subscription.featureDelete(this.meta.guid, uid, this.token);
+    }
+
     async updateLogs(): Promise<void> {
         if (this._remote) return;
 
@@ -204,6 +209,14 @@ export default class Subscription {
             token: opts.token,
             headers: Subscription.headers(opts.missionToken)
         }) as FeatureCollection;
+    }
+
+    static async featDelete(guid: string, uid: string, token?: string): Promise<void> {
+        const url = stdurl(`/api/marti/missions/${guid}/cot/${uid}`);
+        await std(url, {
+            method: 'DELETE',
+            headers: Subscription.headers(token)
+        })
     }
 
     static async changes(guid: string, token: string | undefined): Promise<MissionChanges> {

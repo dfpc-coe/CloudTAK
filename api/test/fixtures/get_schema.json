@@ -724,7 +724,12 @@
         "query": true,
         "res": true
     },
-    "GET /marti/missions/:name/cot": {
+    "GET /marti/missions/:guid/cot": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /marti/missions/:guid/cot/:uid": {
         "body": false,
         "query": false,
         "res": true
