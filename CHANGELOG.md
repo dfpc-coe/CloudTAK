@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v8.32.1 - 2025-05-02
+
+- :bug: Ensure patch Video Lease requests don't reset expiration
+- :rocket: Include supported Basemap Actions in TileJSON
+
 ### v8.32.0 - 2025-05-02
 
 - :rocket: `API` Support deleting Mission CoTs
