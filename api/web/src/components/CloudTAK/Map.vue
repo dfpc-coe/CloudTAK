@@ -232,9 +232,7 @@
                         />
                     </TablerIconButton>
                     <template #dropdown>
-                        <Notifications
-                            @close='closeNotifications'
-                        />
+                        <Notifications/>
                     </template>
                 </TablerDropdown>
 
@@ -704,7 +702,10 @@ async function handleRadial(event: string): Promise<void> {
             router.push('/');
         }
 
-        await mapStore.worker.db.remove(String(cot.id))
+        await mapStore.worker.db.remove(String(cot.id), {
+            mission: true
+        })
+
         await mapStore.updateCOT();
     } else if (event === 'cot:lock') {
         mapStore.locked.push(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);

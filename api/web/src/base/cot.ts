@@ -237,7 +237,7 @@ export default class COT {
             !this._remote
             && !this.is_self
             && this.properties.archived
-            && this.origin.mode === OriginMode.CONNETION
+            && this.origin.mode === OriginMode.CONNECTION
         ) {
             const atlas = this._atlas as Atlas;
 
