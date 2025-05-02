@@ -150,6 +150,7 @@ test('GET: api/basemap/1/tiles', async (t) => {
             center: [ 0, 0 ],
             minzoom: 0,
             maxzoom: 16,
+            actions: { feature: [] },
             tiles: [ 'http://localhost:5001/api/basemap/1/tiles/{z}/{x}/{y}' ],
             vector_layers: [{ id: 'out', fields: {} }]
         })
