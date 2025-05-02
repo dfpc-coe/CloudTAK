@@ -561,7 +561,7 @@ export default class VideoServiceControl {
             channel?: string | null,
             secure?: boolean,
             secure_rotate?: boolean
-            expiration: string | null,
+            expiration?: string | null,
             recording?: boolean,
             publish?: boolean,
             source_type?: VideoLease_SourceType,
