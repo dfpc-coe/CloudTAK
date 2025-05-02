@@ -31,6 +31,13 @@ const AugmentedBasemapResponse = Type.Composite([
     })
 ])
 
+const AugmentedTileJSONType = Type.Composite([
+    TileJSONType,
+    Type.Object({
+        actions: TileJSONActions
+    })
+])
+
 export default async function router(schema: Schema, config: Config) {
     await schema.put('/basemap', {
         name: 'Import Basemaps',
@@ -489,7 +496,7 @@ export default async function router(schema: Schema, config: Config) {
         query: Type.Object({
             token: Type.Optional(Type.String()),
         }),
-        res: TileJSONType
+        res: AugmentedTileJSONType
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req, { token: true });
@@ -509,10 +516,13 @@ export default async function router(schema: Schema, config: Config) {
                 ...basemap,
                 bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
                 center: basemap.center ? basemap.center.coordinates : undefined,
-                url
+                url,
             });
 
-            res.json(json);
+            res.json({
+                ...json,
+                actions: TileJSON.actions(basemap.url),
+            });
         } catch (err) {
             Err.respond(err, res);
         }
