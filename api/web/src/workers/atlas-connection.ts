@@ -82,7 +82,7 @@ export default class AtlasConnection {
                 } else if (task.properties.type === 't-x-d-d') {
                     // CoT Delete Tasking
                     console.error('DELETE', task.properties);
-                } else if (task.properties.type === 't-x-m-n') {
+                } else if (task.properties.type === 't-x-m-n' && task.properties.mission) {
                     this.atlas.postMessage({
                         type: WorkerMessageType.Notification,
                         body: {

@@ -296,7 +296,7 @@ export default class AtlasDatabase {
         const all = [];
         for (const cot of cots.values()) {
             all.push(this.remove(cot.id, {
-                mission: opts.mission
+                mission: opts.mission || false
             }));
         }
 
@@ -360,21 +360,21 @@ export default class AtlasDatabase {
     async remove(
         id: string,
         opts: {
-            mission: boolean,
-            skipNetwork: boolean
+            mission?: boolean,
+            skipNetwork?: boolean
         } = {
             mission: false,
             skipNetwork: false
         }
     ): Promise<void> {
-        const cot = this.cots.get(id, {
+        const cot = this.get(id, {
             mission: opts.mission
         });
 
         // TODO Throw an error?
         if (!cot) return;
 
-        if (cot.origin === OriginMode.CONNECTION) {
+        if (cot.origin.mode === OriginMode.CONNECTION) {
             this.pendingDelete.add(id);
             this.cots.delete(id);
 
@@ -383,7 +383,7 @@ export default class AtlasDatabase {
                     type: WorkerMessageType.Feature_Archived_Removed
                 });
 
-                if (!skipNetwork) {
+                if (!opts.skipNetwork) {
                     await std(`/api/profile/feature/${id}`, {
                         token: this.atlas.token,
                         method: 'DELETE'

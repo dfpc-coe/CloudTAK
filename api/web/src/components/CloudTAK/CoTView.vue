@@ -836,7 +836,7 @@ onMounted(async () => {
 });
 
 const is_editable = computed(() => {
-    if (!cot.value.is_editable) return false;
+    if (!cot.value || !cot.value.is_editable) return false;
 
     if (!subscription.value) {
         return true
