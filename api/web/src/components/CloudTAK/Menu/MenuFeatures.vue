@@ -57,7 +57,7 @@
                 desc='Loading Features'
             />
             <TablerNone
-                v-if='cots.length === 0'
+                v-else-if='cots.length === 0'
                 :create='false'
                 label='Archived Features'
             />
