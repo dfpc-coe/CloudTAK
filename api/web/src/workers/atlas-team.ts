@@ -44,15 +44,17 @@ export default class AtlasTeam {
                 type: WorkerMessageType.Contact_Change
             });
 
-            this.atlas.postMessage({
-                type: WorkerMessageType.Notification,
-                body: {
-                    type: 'Contact',
-                    name: `${cot.properties.callsign} Online`,
-                    body: '',
-                    url: `/cot/${cot.id}`
-                }
-            });
+            if (this.atlas.profile.uid() !== cot.id) {
+                this.atlas.postMessage({
+                    type: WorkerMessageType.Notification,
+                    body: {
+                        type: 'Contact',
+                        name: `${cot.properties.callsign} Online`,
+                        body: '',
+                        url: `/cot/${cot.id}`
+                    }
+                });
+            }
 
             return contact;
         }
