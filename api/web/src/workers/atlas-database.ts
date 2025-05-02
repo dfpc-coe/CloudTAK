@@ -295,7 +295,9 @@ export default class AtlasDatabase {
 
         const all = [];
         for (const cot of cots.values()) {
-            all.push(this.remove(cot.id));
+            all.push(this.remove(cot.id, {
+                mission: opts.mission
+            }));
         }
 
         await Promise.allSettled(all);
@@ -388,8 +390,11 @@ export default class AtlasDatabase {
                     });
                 }
             }
-        } else if (cot.origin === OriginMode.MISSION) {
-            console.error('Mission Delete');
+        } else if (cot.origin.mode === OriginMode.MISSION && cot.origin.mode_id) {
+            const subscription = await this.subscriptionGet(cot.origin.mode_id);
+            if (!subscription) throw new Error('Could not delete as Mission Subscription does not exist');
+
+            await subscription.deleteFeature(cot.id);
         }
     }
 
