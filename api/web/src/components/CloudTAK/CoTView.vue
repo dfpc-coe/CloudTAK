@@ -31,9 +31,9 @@
                     >
                         <CopyField
                             v-model='cot.properties.callsign'
-                            :edit='cot.is_editable'
+                            :edit='is_editable'
                             :minheight='44'
-                            :hover='cot.is_editable'
+                            :hover='is_editable'
                         />
                     </div>
                 </div>
@@ -106,12 +106,13 @@
                         </TablerDropdown>
 
                         <TablerDelete
-                            v-if='!cot.is_self'
+                            v-if='is_editable'
                             displaytype='icon'
                             @delete='deleteCOT'
                         />
 
                         <TablerIconButton
+                            v-if='is_editable'
                             title='Edit'
                             @click='editGeometry'
                         >
@@ -134,7 +135,7 @@
                         </TablerIconButton>
 
                         <TablerDropdown
-                            v-if='cot.is_editable && !cot.is_self'
+                            v-if='is_editable'
                         >
                             <TablerIconButton
                                 title='Add Properties'
@@ -312,8 +313,8 @@
                 >
                     <PropertyType
                         v-if='cot.properties.type.startsWith("a-")'
-                        :edit='cot.is_editable'
-                        :hover='cot.is_editable'
+                        :edit='is_editable'
+                        :hover='is_editable'
                         :model-value='cot.properties.type'
                         @update:model-value='updateType($event)'
                     />
@@ -327,8 +328,8 @@
                     }'
                 >
                     <Coordinate
-                        :edit='cot.is_editable'
-                        :hover='cot.is_editable'
+                        :edit='is_editable'
+                        :hover='is_editable'
                         :model-value='center'
                         @update:model-value='updateCenter($event)'
                     />
@@ -424,8 +425,8 @@
                 <CopyField
                     v-model='cot.properties.remarks'
                     :rows='10'
-                    :edit='cot.is_editable'
-                    :hover='cot.is_editable'
+                    :edit='is_editable'
+                    :hover='is_editable'
                 />
             </div>
 
@@ -508,7 +509,7 @@
             />
 
             <div
-                v-if='cot.is_editable && !cot.is_self'
+                v-if='is_editable && !cot.is_self'
                 class='px-1 pb-2 col-12'
             >
                 <label class='mx-1 subheader'>COT Style</label>
@@ -834,6 +835,16 @@ onMounted(async () => {
     }
 });
 
+const is_editable = computed(() => {
+    if (!cot.value || !cot.value.is_editable) return false;
+
+    if (!subscription.value) {
+        return true
+    } else {
+        return subscription.value.role && subscription.value.role.permissions.includes("MISSION_WRITE");
+    }
+});
+
 const center = computed(() => {
     if (!cot.value) return [0,0];
 
@@ -917,7 +928,9 @@ function addAttachment(hash: string) {
 
 async function deleteCOT() {
     if (!cot.value) return;
-    await mapStore.worker.db.remove(cot.value.id);
+    await mapStore.worker.db.remove(cot.value.id, {
+        mission: !!subscription.value
+    });
     router.push('/');
 }
 </script>

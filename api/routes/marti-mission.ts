@@ -66,11 +66,11 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.get('/marti/missions/:name/cot', {
-        name: 'Mission Changes',
+    await schema.get('/marti/missions/:guid/cot', {
+        name: 'Mission Features',
         group: 'MartiMissions',
         params: Type.Object({
-            name: Type.String(),
+            guid: Type.String(),
         }),
         description: 'Helper API to get latest CoTs',
         res: Type.Object({
@@ -85,11 +85,46 @@ export default async function router(schema: Schema, config: Config) {
 
             const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
                 ? { token: String(req.headers['missionauthorization']) }
-                : await config.conns.subscription(user.email, req.params.name)
+                : await config.conns.subscription(user.email, req.params.guid)
 
-            const features = await api.Mission.latestFeats(req.params.name, opts);
+            const features = await api.Mission.latestFeats(req.params.guid, opts);
 
             res.json({ type: 'FeatureCollection', features });
+        } catch (err) {
+             Err.respond(err, res);
+        }
+    });
+
+    await schema.delete('/marti/missions/:guid/cot/:uid', {
+        name: 'Mission Features Delete',
+        group: 'MartiMissions',
+        params: Type.Object({
+            guid: Type.String(),
+            uid: Type.String()
+        }),
+        description: 'Delete an upload by hash',
+        res: GenericMartiResponse
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+            const profile = await config.models.Profile.from(user.email);
+            const auth = profile.auth;
+
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+
+            const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
+                ? { token: String(req.headers['missionauthorization']) }
+                : await config.conns.subscription(user.email, req.params.guid)
+
+            const missionContent = await api.Mission.detachContents(
+                req.params.guid,
+                {
+                    uid: req.params.uid
+                },
+                opts
+            );
+
+            res.json(missionContent);
         } catch (err) {
              Err.respond(err, res);
         }

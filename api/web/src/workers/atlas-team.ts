@@ -50,7 +50,7 @@ export default class AtlasTeam {
                     type: 'Contact',
                     name: `${cot.properties.callsign} Online`,
                     body: '',
-                    url: `/menu/contacts`
+                    url: `/cot/${cot.id}`
                 }
             });
 
