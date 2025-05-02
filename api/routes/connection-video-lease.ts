@@ -194,7 +194,6 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.Optional(Type.String()),
             duration: Type.Optional(Type.Integer({
                 minimum: 0,
-                default: 60 * 60,
                 description: 'Duration in Seconds'
             })),
             source_type: Type.Optional(Type.Enum(VideoLease_SourceType)),
@@ -244,12 +243,19 @@ export default async function router(schema: Schema, config: Config) {
 
             if (req.body.secure_rotate) req.body.secure = true;
 
+            let expiration: null | string | undefined = undefined;
+            if (req.body.permanent) {
+                expiration = null;
+            } else if (req.body.duration) {
+                expiration = moment().add(req.body.duration, 'seconds').toISOString()
+            }
+
             const lease = await videoControl.commit(req.params.lease, {
                 name: req.body.name,
                 channel: req.body.channel ? req.body.channel : null,
                 secure: req.body.secure,
                 secure_rotate: req.body.secure_rotate,
-                expiration: req.body.permanent ? null : moment().add(req.body.duration, 'seconds').toISOString(),
+                expiration,
                 recording: req.body.recording,
                 publish: req.body.publish,
                 source_type: req.body.source_type,

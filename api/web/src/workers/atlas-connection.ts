@@ -89,7 +89,7 @@ export default class AtlasConnection {
                             type: 'Mission',
                             name: `${task.properties.mission.name} Created`,
                             body: '',
-                            url: `/menu/mission/${task.properties.mission.guid}`
+                            url: `/menu/missions/${task.properties.mission.guid}`
                         }
                     });
                 } else {

@@ -137,7 +137,8 @@ export default class TileJSON {
         if (
             !(pathname.includes('{z}') && pathname.includes('{x}') && pathname.includes('{y}'))
             && !pathname.includes('{q}')
-            && !pathname.includes('/FeatureServer/')
+            && !pathname.match(/\/FeatureServer\/\d+$/)
+            && !pathname.match(/\/MapServer\/\d+$/)
             && !pathname.includes('/ImageServer')
         ) {
             throw new Err(400, null, 'Either XYZ, Quadkey variables OR ESRI FeatureServer/ImageServer must be used');
