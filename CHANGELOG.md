@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v8.32.3 - 2025-05-03
+
+- :bug: Fix CloudTAK API URL in Docker Compose setup
+
 ### v8.32.2 - 2025-05-03
 
 - :bug: Don't notify on your own connection
