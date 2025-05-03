@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v8.32.2 - 2025-05-03
+
+- :bug: Don't notify on your own connection
+
 ### v8.32.1 - 2025-05-02
 
 - :bug: Ensure patch Video Lease requests don't reset expiration
