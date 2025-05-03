@@ -133,6 +133,7 @@ export const PathsList = Type.Object({
 export const Configuration = Type.Object({
     configured: Type.Boolean(),
     url: Type.Optional(Type.String()),
+    external: Type.Optional(Type.String()),
     config: Type.Optional(VideoConfig),
     paths: Type.Optional(Type.Array(PathListItem))
 });
@@ -225,9 +226,16 @@ export default class VideoServiceControl {
 
         const paths = await resPaths.typed(PathsList);
 
+        // Special case for supporting internal Docker Compose network
+        let external = video.url;
+        if (video.url && new URL(video.url).hostname === 'media') {
+            external = 'http://localhost'
+        }
+
         return {
             configured: video.configured,
             url: video.url,
+            external,
             config: body,
             paths: paths.items,
         };
@@ -240,11 +248,11 @@ export default class VideoServiceControl {
         const protocols: Static<typeof Protocols> = {};
         const c = await this.configuration();
 
-        if (!c.configured || !c.url) return protocols;
+        if (!c.configured || !c.external) return protocols;
 
         if (c.config && c.config.rtsp) {
             // Format: rtsp://localhost:8554/mystream
-            const url = new URL(`/${lease.path}`, c.url.replace(/^http(s)?:/, 'rtsp:'))
+            const url = new URL(`/${lease.path}`, c.external.replace(/^http(s)?:/, 'rtsp:'))
             url.port = c.config.rtspAddress.replace(':', '');
 
             if (lease.read_user && lease.stream_user) {
@@ -284,7 +292,7 @@ export default class VideoServiceControl {
 
         if (c.config && c.config.rtmp) {
             // Format: rtmp://localhost/mystream
-            const url = new URL(`/${lease.path}`, c.url.replace(/^http(s)?:/, 'rtmp:'))
+            const url = new URL(`/${lease.path}`, c.external.replace(/^http(s)?:/, 'rtmp:'))
             url.port = c.config.rtmpAddress.replace(':', '');
 
             protocols.rtmp = {
@@ -306,7 +314,7 @@ export default class VideoServiceControl {
 
         if (c.config && c.config.srt) {
             // Format: srt://localhost:8890?streamid=publish:mystream
-            const url = new URL(c.url.replace(/^http(s)?:/, 'srt:'))
+            const url = new URL(c.external.replace(/^http(s)?:/, 'srt:'))
             url.port = c.config.srtAddress.replace(':', '');
 
             if (lease.stream_user && lease.read_user) {
@@ -336,7 +344,7 @@ export default class VideoServiceControl {
 
         if (c.config && c.config.hls) {
             // Format: http://localhost:8888/mystream/index.m3u8
-            const url = new URL(`/${lease.path}/index.m3u8`, c.url);
+            const url = new URL(`/${lease.path}/index.m3u8`, c.external);
             url.port = c.config.hlsAddress.replace(':', '');
 
             if (lease.stream_user && lease.read_user) {
@@ -378,7 +386,7 @@ export default class VideoServiceControl {
 
         if (c.config && c.config.webrtc) {
             // Format: http://localhost:8889/mystream
-            const url = new URL(`/${lease.path}`, c.url);
+            const url = new URL(`/${lease.path}`, c.external);
             url.port = c.config.webrtcAddress.replace(':', '');
 
             protocols.webrtc = {
