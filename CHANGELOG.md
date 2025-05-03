@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v8.32.4 - 2025-05-03
+
+- :bug: Handle edge case of using named network location for media server in Docker Compose not being valid in browser context
+
 ### v8.32.3 - 2025-05-03
 
 - :bug: Fix CloudTAK API URL in Docker Compose setup
