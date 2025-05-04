@@ -69,7 +69,7 @@
                             stroke='1'
                         />
                         <span
-                            class='mx-2 text-truncate'
+                            class='mx-2 text-truncate user-select-none'
                             style='font-size: 18px; width: 240px;'
                             v-text='collection.name'
                         />
@@ -87,7 +87,7 @@
                             stroke='1'
                         />
                         <span
-                            class='mx-2 text-truncate'
+                            class='mx-2 text-truncate user-select-none'
                             style='font-size: 18px; width: 220px;'
                             v-text='basemap.name'
                         />
@@ -274,7 +274,7 @@ async function setBasemap(basemap: Basemap) {
         mapStore.overlays.unshift(await Overlay.create(mapStore.map, {
             name: basemap.name,
             pos: -1,
-            type: 'raster',
+            type: basemap.type,
             url: `/api/basemap/${basemap.id}/tiles`,
             mode: 'basemap',
             mode_id: String(basemap.id)
