@@ -6,13 +6,8 @@ const flight = new Flight();
 flight.init();
 flight.takeoff();
 
-flight.user({
-    username: 'first'
-});
-
-flight.user({
-    username: 'second'
-});
+flight.user({ username: 'first' });
+flight.user({ username: 'second' });
 
 test('GET: api/token', async (t) => {
     try {
@@ -80,6 +75,26 @@ test('POST: api/token', async (t) => {
     t.end();
 });
 
+test('GET: api/token - Ensure ACL is respected', async (t) => {
+    try {
+        const res = await flight.fetch('/api/token', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.second
+            }
+        }, true);
+
+        t.deepEquals(res.body, {
+            total: 0,
+            items: []
+        });
+    } catch (err) {
+        t.error(err, 'no error');
+    }
+
+    t.end();
+});
+
 test('GET: api/token', async (t) => {
     try {
         const res = await flight.fetch('/api/token', {
@@ -109,6 +124,31 @@ test('GET: api/token', async (t) => {
     t.end();
 });
 
+test('PATCH: api/token/1 - Ensure ACL is respected', async (t) => {
+    try {
+        const res = await flight.fetch('/api/token/1', {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.second
+            },
+            body: {
+                name: 'Test Token Rename'
+            }
+        }, false);
+
+        t.deepEquals(res.body, {
+            status: 403,
+            message: 'You can only modify your own tokens',
+            messages: []
+        });
+    } catch (err) {
+        t.error(err, 'no error');
+    }
+
+    t.end();
+});
+
+
 test('PATCH: api/token/1', async (t) => {
     try {
         const res = await flight.fetch('/api/token/1', {
@@ -124,6 +164,27 @@ test('PATCH: api/token/1', async (t) => {
         t.deepEquals(res.body, {
             status: 200,
             message: 'Token Updated'
+        });
+    } catch (err) {
+        t.error(err, 'no error');
+    }
+
+    t.end();
+});
+
+test('DELETE: api/token/1 - Ensure ACL is respected', async (t) => {
+    try {
+        const res = await flight.fetch('/api/token/1', {
+            method: 'DELETE',
+            auth: {
+                bearer: flight.token.second
+            },
+        }, false);
+
+        t.deepEquals(res.body, {
+            status: 403,
+            message: 'You can only modify your own tokens',
+            messages: []
         });
     } catch (err) {
         t.error(err, 'no error');
