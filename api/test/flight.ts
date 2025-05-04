@@ -255,7 +255,8 @@ export default class Flight {
         admin?: boolean;
     } = {}) {
         if (opts.admin === undefined) opts.admin = true;
-        if (!opts.username) opts.username = opts.admin ? 'admin' : 'user';
+
+        const username: string = opts.username ?? opts.admin ? 'admin' : 'user';
 
         test('Create User', async (t) => {
             if (!this.config) throw new Error('TakeOff not completed');
