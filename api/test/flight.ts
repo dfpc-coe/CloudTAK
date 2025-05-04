@@ -251,14 +251,17 @@ export default class Flight {
      * Create a new user and return an API token for that user
      */
     user(opts: {
+        username?: string;
         admin?: boolean;
     } = {}) {
         if (opts.admin === undefined) opts.admin = true;
+        if (!opts.username) opts.username = opts.admin ? 'admin' : 'user';
 
         test('Create User', async (t) => {
             if (!this.config) throw new Error('TakeOff not completed');
 
-            const username = `${opts.admin ? 'admin' : 'user'}@example.com`;
+            const username = opts.username ? `${opts.username}@example.com` : `${opts.admin ? 'admin' : 'user'}@example.com`;
+
             this.config.models.Profile.generate({
                 username,
                 system_admin: opts.admin,
@@ -266,9 +269,9 @@ export default class Flight {
             });
 
             if (opts.admin) {
-                this.token.admin = jwt.sign({ access: 'admin', email: username }, 'coe-wildland-fire')
+                this.token[opts.username] = jwt.sign({ access: 'admin', email: username }, 'coe-wildland-fire')
             } else {
-                this.token.user = jwt.sign({ access: 'user', email: username }, 'coe-wildland-fire')
+                this.token[opts.username] = jwt.sign({ access: 'user', email: username }, 'coe-wildland-fire')
             }
             t.end();
         });
