@@ -5,14 +5,21 @@ const flight = new Flight();
 
 flight.init();
 flight.takeoff();
-flight.user();
+
+flight.user({
+    username: 'first'
+});
+
+flight.user({
+    username: 'second'
+});
 
 test('GET: api/token', async (t) => {
     try {
         const res = await flight.fetch('/api/token', {
             method: 'GET',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.first
             }
         }, true);
 
@@ -32,7 +39,7 @@ test('POST: api/token', async (t) => {
         const res = await flight.fetch('/api/token', {
             method: 'POST',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.first
             },
             body: {
                 name: 'Test Token'
@@ -51,7 +58,7 @@ test('POST: api/token', async (t) => {
 
         t.deepEquals(res.body, {
             id: 1,
-            email: 'admin@example.com',
+            email: 'first@example.com',
             name: 'Test Token'
         });
 
@@ -78,7 +85,7 @@ test('GET: api/token', async (t) => {
         const res = await flight.fetch('/api/token', {
             method: 'GET',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.first
             }
         }, true);
 
@@ -107,7 +114,7 @@ test('PATCH: api/token/1', async (t) => {
         const res = await flight.fetch('/api/token/1', {
             method: 'PATCH',
             auth: {
-                bearer: flight.token.admin
+                bearer: flight.token.first
             },
             body: {
                 name: 'Test Token Rename'
@@ -117,6 +124,26 @@ test('PATCH: api/token/1', async (t) => {
         t.deepEquals(res.body, {
             status: 200,
             message: 'Token Updated'
+        });
+    } catch (err) {
+        t.error(err, 'no error');
+    }
+
+    t.end();
+});
+
+test('DELETE: api/token/1', async (t) => {
+    try {
+        const res = await flight.fetch('/api/token/1', {
+            method: 'DELETE',
+            auth: {
+                bearer: flight.token.first
+            },
+        }, true);
+
+        t.deepEquals(res.body, {
+            status: 200,
+            message: 'Token Deleted'
         });
     } catch (err) {
         t.error(err, 'no error');
