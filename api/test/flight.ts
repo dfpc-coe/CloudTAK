@@ -261,18 +261,18 @@ export default class Flight {
         test('Create User', async (t) => {
             if (!this.config) throw new Error('TakeOff not completed');
 
-            const username = opts.username ? `${opts.username}@example.com` : `${opts.admin ? 'admin' : 'user'}@example.com`;
+            const username = opts.username ? `${opts.username}` : opts.admin ? 'admin' : 'user';
 
-            this.config.models.Profile.generate({
-                username,
+           this.config.models.Profile.generate({
+                username: username + '@example.com',
                 system_admin: opts.admin,
                 auth: { cert: 'cert123', key: 'key123' },
             });
 
             if (opts.admin) {
-                this.token[opts.username] = jwt.sign({ access: 'admin', email: username }, 'coe-wildland-fire')
+                this.token[username] = jwt.sign({ access: 'admin', email: username }, 'coe-wildland-fire')
             } else {
-                this.token[opts.username] = jwt.sign({ access: 'user', email: username }, 'coe-wildland-fire')
+                this.token[username] = jwt.sign({ access: 'user', email: username }, 'coe-wildland-fire')
             }
             t.end();
         });
