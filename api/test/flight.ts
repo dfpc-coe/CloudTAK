@@ -270,9 +270,9 @@ export default class Flight {
             });
 
             if (opts.admin) {
-                this.token[username] = jwt.sign({ access: 'admin', email: username }, 'coe-wildland-fire')
+                this.token[username] = jwt.sign({ access: 'admin', email: username + '@example.com' }, 'coe-wildland-fire')
             } else {
-                this.token[username] = jwt.sign({ access: 'user', email: username }, 'coe-wildland-fire')
+                this.token[username] = jwt.sign({ access: 'user', email: username + '@example.com' }, 'coe-wildland-fire')
             }
             t.end();
         });
