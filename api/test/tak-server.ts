@@ -1,6 +1,7 @@
-import { MockAgent, /*setGlobalDispatcher */ } from 'undici';
 import CP from 'node:child_process'
 import tls from 'node:tls'
+import https from 'node:https'
+import type { IncomingMessage, ServerResponse } from 'node:http'
 import fs from 'node:fs'
 
 export default class MockTAKServer {
@@ -9,62 +10,101 @@ export default class MockTAKServer {
         key: string
     };
 
-    server: ReturnType<typeof tls.createServer>;
-    sockets: Set<tls.TLSSocket>;
-    mockAgent: MockAgent;
+    streaming: ReturnType<typeof tls.createServer>;
+    marti: ReturnType<typeof https.createServer>;
 
-    constructor() {
+    mockMarti: Array<(request: IncomingMessage, response: ServerResponse) => Promise<boolean>>;
+
+    constructor(opts: {
+        defaultMartiResponses: boolean
+    } = {
+        defaultMartiResponses: true
+    }) {
+        if (!opts) opts = {};
+        if (opts.defaultMartiResponses === undefined) opts.defaultMartiResponses = true;
+
         this.keys = {
             cert: '/tmp/cloudtak-test-server.cert',
             key: '/tmp/cloudtak-test-server.key',
         }
 
-        this.sockets = new Set();
+        this.mockMarti = [];
+
+        if (opts.defaultMartiResponses) {
+            this.mockMartiDefaultResponses();
+        }
 
         CP.execSync(`openssl req -x509 -newkey rsa:2048 -nodes -sha256 -subj '/CN=localhost' -keyout ${this.keys.key} -out ${this.keys.cert}`);
 
-        this.server = tls.createServer({
+        this.streaming = tls.createServer({
             cert: fs.readFileSync(this.keys.cert),
             key: fs.readFileSync(this.keys.key),
             requestCert: true,
             rejectUnauthorized: false,
             ca: fs.readFileSync(this.keys.cert)
-        }, (socket) => {
-            this.sockets.add(socket)
-            console.error('ok - MockTAK Connection');
+        }, (request) => {
+            console.error('SOCKET TODO');
         });
 
-        this.server.on('error', (e) => {
+        this.streaming.on('error', (e) => {
             console.error('Server Error', e);
         });
 
-        this.server.listen(8089, 'localhost', () => {
-            console.log('opened TCP server on', this.server.address())
+        this.streaming.listen(8089, 'localhost', () => {
+            console.log('opened TCP streaming on', this.streaming.address())
         })
 
-        this.mockAgent = new MockAgent()
-        //setGlobalDispatcher(this.mockAgent);
+        this.marti = https.createServer({
+            cert: fs.readFileSync(this.keys.cert),
+            key: fs.readFileSync(this.keys.key),
+            requestCert: true,
+            rejectUnauthorized: false,
+            ca: fs.readFileSync(this.keys.cert)
+        }, async (request, response) => {
+            let handled = false;
+            for (const handler of this.mockMarti) {
+                if (await handler(request, response)) {
+                    handled = true;
+                    break;
+                }
+            }
 
-        //const mockPool = this.mockAgent.get(/.*localhost:8443.*/);
+            if (!handled) {
+                throw new Error(`Unhandled TAK API Operation: ${request.url}`);
+            }
+        });
 
-        //mockPool.intercept({
-        //    path: /.*/
-        //}).reply((req) => {
-        //    console.error('TAK API', req);
-        //});
+        this.marti.listen(8443, 'localhost', () => {
+            console.log('opened MARTI API on', this.marti.address())
+        })
+    }
+
+    mockMartiDefaultResponses(): void {
+         this.mockMarti.push(async (request, response) => {
+            if (request.url === '/files/api/config') {
+                response.setHeader('Content-Type', 'application/json');
+                response.write(JSON.stringify({ uploadSizeLimit: 50 }))
+                response.end();
+
+                return true;
+            } else {
+                return false;
+            }
+        });
     }
 
     async close(): Promise<void> {
-        await this.mockAgent.close();
-
-        return new Promise((resolve) => {
-            this.server.close(() => {
-                return resolve();
-            });
-
-            for (const socket of this.sockets.values()) {
-                socket.destroy();
-            }
-        })
+        await Promise.all([
+            new Promise<void>((resolve) => {
+                this.streaming.close(() => {
+                    return resolve();
+                });
+            }),
+            new Promise<void>((resolve) => {
+                this.marti.close(() => {
+                    return resolve();
+                });
+            })
+        ])
     }
 }

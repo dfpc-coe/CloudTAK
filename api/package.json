@@ -5,7 +5,7 @@
     "description": "Facilitate ETL operations to bring non-TAK sources into a TAK Server",
     "main": "index.js",
     "scripts": {
-        "pretest": "mkdir -p dist/test/fixtures/ && cp test/fixtures/* dist/test/fixtures/",
+        "pretest": "mkdir -p dist/test/fixtures/ && cp test/fixtures/* dist/test/fixtures/ && npm run build",
         "test": "StackName='test' c8 --reporter html tape dist/test/*.test.js",
         "tstest": "test/test",
         "build": "tsc && cp .env* dist/ || true && cp ./icons dist/icons -r && cp ./fonts dist/fonts -r && cp package.json dist/ && cp migrations/ dist/ -r",
