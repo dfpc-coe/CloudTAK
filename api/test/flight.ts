@@ -279,7 +279,7 @@ export default class Flight {
         });
     }
 
-    server() {
+    server(username: string, password: string) {
         test('Creating Server', async (t) => {
             await this.fetch('/api/server', {
                 method: 'PATCH',
@@ -290,7 +290,10 @@ export default class Flight {
                     name: 'Test Server',
                     url: 'ssl://localhost:8089',
                     api: 'https://localhost:8443',
-                    webtak: 'https://locahost.8443',
+                    webtak: 'https://locahost:8443',
+                    
+                    username,
+                    password,
 
                     auth: {
                         cert: String(fs.readFileSync(this.tak.keys.cert)),

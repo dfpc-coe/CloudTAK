@@ -15,13 +15,24 @@ export default class MockTAKServer {
 
     mockMarti: Array<(request: IncomingMessage, response: ServerResponse) => Promise<boolean>>;
 
-    constructor() {
+    constructor(opts: {
+        defaultMartiResponses: boolean
+    } = {
+        defaultMartiResponses: true
+    }) {
+        if (!opts) opts = {};
+        if (opts.defaultMartiResponses === undefined) opts.defaultMartiResponses = true;
+
         this.keys = {
             cert: '/tmp/cloudtak-test-server.cert',
             key: '/tmp/cloudtak-test-server.key',
         }
 
         this.mockMarti = [];
+
+        if (opts.defaultMartiResponses) {
+            this.mockMartiDefaultResponses();
+        }
 
         CP.execSync(`openssl req -x509 -newkey rsa:2048 -nodes -sha256 -subj '/CN=localhost' -keyout ${this.keys.key} -out ${this.keys.cert}`);
 
@@ -32,7 +43,7 @@ export default class MockTAKServer {
             rejectUnauthorized: false,
             ca: fs.readFileSync(this.keys.cert)
         }, (request) => {
-            console.error('SOCKET');
+            console.error('SOCKET TODO');
         });
 
         this.streaming.on('error', (e) => {
@@ -50,16 +61,36 @@ export default class MockTAKServer {
             rejectUnauthorized: false,
             ca: fs.readFileSync(this.keys.cert)
         }, async (request, response) => {
+            let handled = false;
             for (const handler of this.mockMarti) {
-                if (await this.handler(request, response)) break;
+                if (await handler(request, response)) {
+                    handled = true;
+                    break;
+                }
             }
 
-            throw new Error(`Unhandled TAK API Operation: ${request.url}`);
+            if (!handled) {
+                throw new Error(`Unhandled TAK API Operation: ${request.url}`);
+            }
         });
 
         this.marti.listen(8443, 'localhost', () => {
             console.log('opened MARTI API on', this.marti.address())
         })
+    }
+
+    mockMartiDefaultResponses(): void {
+         this.mockMarti.push(async (request, response) => {
+            if (request.url === '/files/api/config') {
+                response.setHeader('Content-Type', 'application/json');
+                response.write(JSON.stringify({ uploadSizeLimit: 50 }))
+                response.end();
+
+                return true;
+            } else {
+                return false;
+            }
+        });
     }
 
     async close(): Promise<void> {
