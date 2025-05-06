@@ -46,11 +46,14 @@ export default class Flight {
     schema?: object;
     routes: Record<string, RegExp>;
     token: Record<string, string>;
+    tak: MockTAKServer;
 
     constructor() {
         this.base = 'http://localhost:5001';
         this.token = {};
         this.routes = {};
+
+        this.tak = new MockTAKServer();
     }
 
     /**
@@ -261,8 +264,6 @@ export default class Flight {
         test('Create User', async (t) => {
             if (!this.config) throw new Error('TakeOff not completed');
 
-            const username = opts.username ? `${opts.username}` : opts.admin ? 'admin' : 'user';
-
            this.config.models.Profile.generate({
                 username: username + '@example.com',
                 system_admin: opts.admin,
@@ -278,10 +279,32 @@ export default class Flight {
         });
     }
 
+    server() {
+        test('Creating Server', async (t) => {
+            await this.fetch('/api/server', {
+                method: 'PATCH',
+                auth: {
+                    bearer: this.token.admin
+                },
+                body: {
+                    name: 'Test Server',
+                    url: 'ssl://localhost:8089',
+                    api: 'https://localhost:8443',
+                    webtak: 'https://locahost.8443',
+
+                    auth: {
+                        cert: String(fs.readFileSync(this.tak.keys.cert)),
+                        key: String(fs.readFileSync(this.tak.keys.key))
+                    }
+                }
+            }, true);
+
+            t.end();
+        })
+    }
+
     connection() {
         test(`Creating Connection`, async (t) => {
-            const tak = new MockTAKServer();
-
             CP.execSync(`
                 openssl req \
                     -newkey rsa:4096 \
@@ -295,8 +318,8 @@ export default class Flight {
                openssl x509 \
                     -req \
                     -in /tmp/cloudtak-test-alice.csr \
-                    -CA ${tak.keys.cert} \
-                    -CAkey ${tak.keys.key} \
+                    -CA ${this.tak.keys.cert} \
+                    -CAkey ${this.tak.keys.key} \
                     -out /tmp/cloudtak-test-alice.cert \
                     -set_serial 01 \
                     -days 365
@@ -338,7 +361,6 @@ export default class Flight {
                 setTimeout(resolve, 1000);
             })
 
-            await tak.close();
             t.end();
        })
     }
@@ -348,6 +370,7 @@ export default class Flight {
      */
     landing() {
         test('test server landing - api', async (t) => {
+            await this.tak.close();
             await this.srv.close();
             t.end();
         });
