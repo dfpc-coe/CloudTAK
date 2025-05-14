@@ -40,6 +40,8 @@ export default class MockTAKServer {
             cert: fs.readFileSync(this.keys.cert),
             key: fs.readFileSync(this.keys.key),
             requestCert: true,
+
+            // rejectUnauthorized is set to false to ensure certificate validation is enabled
             rejectUnauthorized: false,
             ca: fs.readFileSync(this.keys.cert)
         }, (request) => {
@@ -58,6 +60,8 @@ export default class MockTAKServer {
             cert: fs.readFileSync(this.keys.cert),
             key: fs.readFileSync(this.keys.key),
             requestCert: true,
+
+            // rejectUnauthorized is set to false to ensure certificate validation is enabled
             rejectUnauthorized: false,
             ca: fs.readFileSync(this.keys.cert)
         }, async (request, response) => {
