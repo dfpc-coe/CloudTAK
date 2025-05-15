@@ -85,11 +85,15 @@ export default class MockTAKServer {
 
     mockMartiDefaultResponses(): void {
          this.mockMarti.push(async (request, response) => {
-            if (request.url === '/files/api/config') {
+            console.log(`ok - Mock TAK Request: ${request.method} ${request.url}`);
+            if (request.method === 'GET' && request.url === '/files/api/config') {
                 response.setHeader('Content-Type', 'application/json');
                 response.write(JSON.stringify({ uploadSizeLimit: 50 }))
                 response.end();
-
+                return true;
+            } else if (request.method = 'POST' && request.url === '/oauth/token') {
+                response.write('fake-oauth-token')
+                response.end();
                 return true;
             } else {
                 return false;
