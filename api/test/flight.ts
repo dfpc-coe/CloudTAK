@@ -1,6 +1,7 @@
 process.env.StackName = 'test';
 
 import assert from 'assert';
+import { fetch } from 'undici';
 import CP from 'node:child_process';
 import MockTAKServer from './tak-server.js'
 import jwt from 'jsonwebtoken';
