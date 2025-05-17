@@ -123,6 +123,11 @@ export default class MockTAKServer {
                 response.write(JSON.stringify({ access_token: jwt.sign({}, 'fake-test-token') }))
                 response.end();
                 return true;
+            } else if (request.method === 'GET' && request.url === '/Marti/api/tls/config') {
+                response.setHeader('Content-Type', 'text/xml');
+                response.write('<ns2:certificateConfig><nameEntries><nameEntry O="test"/><nameEntry OU="test"/></nameEntries></ns2:certificateConfig>')
+                response.end();
+                return true;
             } else {
                 return false;
             }
