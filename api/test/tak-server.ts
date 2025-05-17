@@ -87,7 +87,7 @@ export default class MockTAKServer {
             }
 
             if (!handled) {
-                throw new Error(`Unhandled TAK API Operation: ${request.url}`);
+                throw new Error(`Unhandled TAK API Operation: ${request.method} ${request.url}`);
             }
         });
 
@@ -107,7 +107,7 @@ export default class MockTAKServer {
             }
 
             if (!handled) {
-                throw new Error(`Unhandled TAK (WebTAK) API Operation: ${request.url}`);
+                throw new Error(`Unhandled TAK (WebTAK) API Operation: ${request.method} ${request.url}`);
             }
         });
 
@@ -126,6 +126,13 @@ export default class MockTAKServer {
             } else if (request.method === 'GET' && request.url === '/Marti/api/tls/config') {
                 response.setHeader('Content-Type', 'text/xml');
                 response.write('<ns2:certificateConfig><nameEntries><nameEntry O="test"/><nameEntry OU="test"/></nameEntries></ns2:certificateConfig>')
+                response.end();
+                return true;
+            } else if (request.method === 'POST' && request.url.startsWith('/Marti/api/tls/signClient/v2')) {
+                response.setHeader('Content-Type', 'application/json');
+                response.write(JSON.stringify({
+                    signedCert: '' //TODO Sign cert
+                }))
                 response.end();
                 return true;
             } else {
