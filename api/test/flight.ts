@@ -289,9 +289,9 @@ export default class Flight {
                 },
                 body: {
                     name: 'Test Server',
-                    url: 'ssl://localhost:8089',
-                    api: 'https://localhost:8443',
-                    webtak: 'https://locahost:8443',
+                    url:    'ssl://localhost:8089',
+                    api:    'https://localhost:8443',
+                    webtak: 'http://localhost:8444',
                     
                     username,
                     password,
