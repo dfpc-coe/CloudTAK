@@ -33,4 +33,29 @@ test('POST: api/login', async (t) => {
 
 flight.server('admin@example.com', 'password123');
 
+test('POST: api/login', async (t) => {
+    try {
+        const res = await flight.fetch('/api/login', {
+            method: 'POST',
+            auth: {
+                bearer: flight.token.admin
+            },
+            body: {
+                username: 'admin@example.com',
+                password: 'password123'
+            }
+        }, false);
+
+        t.deepEquals(res.body, {
+            status: 400,
+            message: 'Server has not been configured',
+            messages: []
+        });
+    } catch (err) {
+        t.error(err, 'no error');
+    }
+
+    t.end();
+});
+
 flight.landing();
