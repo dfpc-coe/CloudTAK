@@ -3,6 +3,8 @@ import jwt from 'jsonwebtoken';
 import tls from 'node:tls'
 import https from 'node:https'
 import http from 'node:http'
+import stream2buffer from '../lib/stream.js';
+import crypto from 'node:crypto';
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import fs from 'node:fs'
 
@@ -119,8 +121,11 @@ export default class MockTAKServer {
     mockWebtakDefaultResponses(): void {
          this.mockWebtak.push(async (request, response) => {
             if (request.method === 'POST' && request.url.startsWith('/oauth/token')) {
+                const url = new URL(request.url, 'http://localhost');
                 response.setHeader('Content-Type', 'application/json');
-                response.write(JSON.stringify({ access_token: jwt.sign({}, 'fake-test-token') }))
+                response.write(JSON.stringify({ access_token: jwt.sign({
+                    sub: url.searchParams.get('username')
+                }, 'fake-test-token') }))
                 response.end();
                 return true;
             } else if (request.method === 'GET' && request.url === '/Marti/api/tls/config') {
@@ -129,10 +134,20 @@ export default class MockTAKServer {
                 response.end();
                 return true;
             } else if (request.method === 'POST' && request.url.startsWith('/Marti/api/tls/signClient/v2')) {
+                const csr = crypto.randomUUID();
+                fs.writeFileSync(`/tmp/${csr}.csr`, String(await stream2buffer(request)));
+
+                CP.execSync(`openssl x509 -req -days 365 -in /tmp/${csr}.csr -signkey ${this.keys.key} -out /tmp/${csr}.pem`)
+
+                let signedCertArr = String(fs.readFileSync(`/tmp/${csr}.pem`))
+                    .split('\n')
+                    .filter((line) => { return line.length });
+                
+                const signedCert = signedCertArr.slice(1, signedCertArr.length - 1)
+                    .join('\n')
+
                 response.setHeader('Content-Type', 'application/json');
-                response.write(JSON.stringify({
-                    signedCert: '' //TODO Sign cert
-                }))
+                response.write(JSON.stringify({ signedCert: signedCert }))
                 response.end();
                 return true;
             } else {
