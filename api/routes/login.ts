@@ -45,7 +45,6 @@ export default async function router(schema: Schema, config: Config) {
                             agency_admin: [],
                             last_login: new Date().toISOString()
                         });
-                        console.error(err);
                     }
                 } else {
                     await config.models.Profile.commit(email, {
