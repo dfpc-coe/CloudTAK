@@ -55,8 +55,8 @@ export default class MockTAKServer {
             key: fs.readFileSync(this.keys.key),
             requestCert: true,
 
-            // rejectUnauthorized is set to false to ensure certificate validation is enabled
-            rejectUnauthorized: false,
+            // rejectUnauthorized is set to true to ensure certificate validation is enforced
+            rejectUnauthorized: process.env.ALLOW_INSECURE_TLS === 'true' ? false : true,
             ca: fs.readFileSync(this.keys.cert)
         }, (request) => {
             console.error('SOCKET TODO');
@@ -75,8 +75,8 @@ export default class MockTAKServer {
             key: fs.readFileSync(this.keys.key),
             requestCert: true,
 
-            // rejectUnauthorized is set to false to ensure certificate validation is enabled
-            rejectUnauthorized: false,
+            // rejectUnauthorized is set to true to ensure certificate validation is enforced
+            rejectUnauthorized: process.env.ALLOW_INSECURE_TLS === 'true' ? false : true,
             ca: fs.readFileSync(this.keys.cert)
         }, async (request, response) => {
             console.log(`ok - Mock TAK Request: ${request.method} ${request.url}`);
