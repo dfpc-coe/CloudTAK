@@ -86,7 +86,7 @@ export default async function router(schema: Schema, config: Config) {
             const user = await Auth.as_user(config, req);
 
             const token = await config.models.Token.from(sql`id = ${Number(req.params.id)}::INT`);
-            if (token.email !== user.email) throw new Err(400, null, 'You can only modify your own tokens');
+            if (token.email !== user.email) throw new Err(403, null, 'You can only modify your own tokens');
 
             await config.models.Token.commit(sql`id = ${token.id}::INT`, {
                 updated: sql`Now()`,
@@ -111,7 +111,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req);
             const token = await config.models.Token.from(sql`id = ${Number(req.params.id)}::INT`);
-            if (token.email !== user.email) throw new Err(400, null, 'You can only modify your own tokens');
+            if (token.email !== user.email) throw new Err(403, null, 'You can only modify your own tokens');
 
             await config.models.Token.delete(sql`id = ${token.id}::INT`);
 

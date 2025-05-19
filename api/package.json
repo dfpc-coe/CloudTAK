@@ -5,8 +5,7 @@
     "description": "Facilitate ETL operations to bring non-TAK sources into a TAK Server",
     "main": "index.js",
     "scripts": {
-        "pretest": "mkdir -p dist/test/fixtures/ && cp test/fixtures/* dist/test/fixtures/",
-        "test": "StackName='test' c8 --reporter html tape dist/test/*.test.js",
+        "test": "StackName='test' c8 --reporter html test/test",
         "tstest": "test/test",
         "build": "tsc && cp .env* dist/ || true && cp ./icons dist/icons -r && cp ./fonts dist/fonts -r && cp package.json dist/ && cp migrations/ dist/ -r",
         "lint": "eslint index.ts lib/ routes/ test/",
@@ -54,7 +53,7 @@
         "@sinclair/typebox": "^0.34.0",
         "@tak-ps/etl": "^9.0.0",
         "@tak-ps/node-cot": "^12.32.3",
-        "@tak-ps/node-tak": "^8.8.1",
+        "@tak-ps/node-tak": "^9.1.0",
         "@turf/bbox": "^7.1.0",
         "@turf/bbox-polygon": "^7.2.0",
         "@turf/meta": "^7.0.0",
