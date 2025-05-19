@@ -42,6 +42,8 @@ export default class MockTAKServer {
         this.mockMarti = [];
         this.mockWebtak = [];
 
+        this.sockets = new Set();
+
         if (opts.defaultMartiResponses) {
             this.mockMartiDefaultResponses();
         }
