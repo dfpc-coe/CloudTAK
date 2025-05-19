@@ -22,7 +22,8 @@ export default class MockTAKServer {
     mockWebtak: Array<(request: IncomingMessage, response: ServerResponse) => Promise<boolean>>;
 
     constructor(opts: {
-        defaultMartiResponses: boolean
+        defaultMartiResponses?: boolean,
+        defaultWebtakResponses?: boolean
     } = {
         defaultMartiResponses: true,
         defaultWebtakResponses: true
@@ -98,7 +99,7 @@ export default class MockTAKServer {
         })
 
         this.webtak = http.createServer({}, async (request, response) => {
-            console.log(`ok - Mock TAK (WebTAK) Request: ${request.method} ${request.url}`);
+            console.log(`ok - Mock TAK (WebTAK) Request: ${request.method} ${request.url || ''}`);
 
             let handled = false;
             for (const handler of this.mockWebtak) {
@@ -120,7 +121,9 @@ export default class MockTAKServer {
 
     mockWebtakDefaultResponses(): void {
          this.mockWebtak.push(async (request, response) => {
-            if (request.method === 'POST' && request.url.startsWith('/oauth/token')) {
+            if (!request.method || !request.url) {
+                return false;
+            } else if (request.method === 'POST' && request.url.startsWith('/oauth/token')) {
                 const url = new URL(request.url, 'http://localhost');
                 response.setHeader('Content-Type', 'application/json');
                 response.write(JSON.stringify({ access_token: jwt.sign({
@@ -137,7 +140,7 @@ export default class MockTAKServer {
                 const csr = crypto.randomUUID();
                 fs.writeFileSync(`/tmp/${csr}.csr`, String(await stream2buffer(request)));
 
-                CP.execSync(`openssl x509 -req -days 365 -in /tmp/${csr}.csr -signkey ${this.keys.key} -out /tmp/${csr}.pem`)
+                CP.execSync(`openssl x509 -req -in /tmp/${csr}.csr -CA ${this.keys.cert} -CAkey ${this.keys.key} -CAcreateserial -out /tmp/${csr}.pem -days 365 -sha256`)
 
                 let signedCertArr = String(fs.readFileSync(`/tmp/${csr}.pem`))
                     .split('\n')
@@ -158,7 +161,9 @@ export default class MockTAKServer {
 
     mockMartiDefaultResponses(): void {
          this.mockMarti.push(async (request, response) => {
-            if (request.method === 'GET' && request.url === '/files/api/config') {
+            if (!request.method || !request.url) {
+                return false;
+            } else if (request.method === 'GET' && request.url === '/files/api/config') {
                 response.setHeader('Content-Type', 'application/json');
                 response.write(JSON.stringify({ uploadSizeLimit: 50 }))
                 response.end();

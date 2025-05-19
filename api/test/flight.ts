@@ -2,6 +2,7 @@ process.env.StackName = 'test';
 
 import assert from 'assert';
 import { fetch } from 'undici';
+import type { Response } from 'undici';
 import CP from 'node:child_process';
 import MockTAKServer from './tak-server.js'
 import jwt from 'jsonwebtoken';
@@ -193,7 +194,9 @@ export default class Flight {
         schemaurl.searchParams.append('method', match.split(' ')[0]);
         schemaurl.searchParams.append('url', match.split(' ')[1]);
 
-        const rawschema = await (await fetch(schemaurl)).json();
+        const rawschema = await (await fetch(schemaurl)).json() as {
+            res: object
+        };
 
         if (!rawschema.res) throw new Error('Cannot validate resultant schema - no result schema defined');
 
