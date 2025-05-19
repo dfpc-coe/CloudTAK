@@ -263,10 +263,10 @@ export default class Flight {
     } = {}) {
         if (opts.admin === undefined) opts.admin = true;
 
-        const username: string = opts.username ?? opts.admin ? 'admin' : 'user';
-
         test('Create User', async (t) => {
-            if (!this.config) throw new Error('TakeOff not completed');
+            const username = opts.username || (opts.admin ? 'admin' : 'user');
+
+           if (!this.config) throw new Error('TakeOff not completed');
 
            this.config.models.Profile.generate({
                 username: username + '@example.com',
