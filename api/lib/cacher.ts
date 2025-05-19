@@ -28,16 +28,15 @@ export default class Cacher {
         try {
             if (!key || this.nocache) throw new Error('Miss');
 
-            let cached: any = await this.cache.get(key);
+            const cached = await this.cache.get(key);
 
             if (!cached.value) throw new Error('Miss');
-            if (isJSON) {
-                cached = JSON.parse(String(cached.value));
-            } else {
-                cached = cached.value;
-            }
 
-            return cached;
+            if (isJSON) {
+                return JSON.parse(String(cached.value)) as T;
+            } else {
+                return cached.value as T;
+            }
         } catch (err) {
             if (!(err instanceof Error) || (err instanceof Error &&  err.message !== 'Miss')) {
                 console.error('Cache Error', err);
