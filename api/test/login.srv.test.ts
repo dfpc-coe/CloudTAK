@@ -45,11 +45,13 @@ test('POST: api/login', async (t) => {
                 password: 'password123'
             }
         }, false);
+        
+        t.ok(res.body.token);
+        delete res.body.token;
 
         t.deepEquals(res.body, {
-            status: 400,
-            message: 'Server has not been configured',
-            messages: []
+            access: 'admin',
+            email: 'admin@example.com',
         });
     } catch (err) {
         t.error(err, 'no error');
