@@ -198,7 +198,7 @@ export default class MockTAKServer {
             })
         ])
 
-        for (const socket in this.sockets) {
+        for (const socket of this.sockets.values()) {
             socket.destroy();
         }
     }
