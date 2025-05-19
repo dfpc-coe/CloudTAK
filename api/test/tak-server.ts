@@ -56,7 +56,7 @@ export default class MockTAKServer {
             requestCert: true,
             rejectUnauthorized: true,
             ca: fs.readFileSync(this.keys.cert)
-        }, (request) => {
+        }, () => {
             console.error('SOCKET TODO');
         });
 
@@ -138,7 +138,7 @@ export default class MockTAKServer {
 
                 CP.execSync(`openssl x509 -req -in /tmp/${csr}.csr -CA ${this.keys.cert} -CAkey ${this.keys.key} -CAcreateserial -out /tmp/${csr}.pem -days 365 -sha256`)
 
-                let signedCertArr = String(fs.readFileSync(`/tmp/${csr}.pem`))
+                const signedCertArr = String(fs.readFileSync(`/tmp/${csr}.pem`))
                     .split('\n')
                     .filter((line) => { return line.length });
                 
