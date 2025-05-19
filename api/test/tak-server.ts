@@ -18,6 +18,8 @@ export default class MockTAKServer {
     webtak: ReturnType<typeof http.createServer>;
     marti: ReturnType<typeof https.createServer>;
 
+    sockets: Set<tls.TLSSocket>
+
     mockMarti: Array<(request: IncomingMessage, response: ServerResponse) => Promise<boolean>>;
     mockWebtak: Array<(request: IncomingMessage, response: ServerResponse) => Promise<boolean>>;
 
@@ -56,8 +58,8 @@ export default class MockTAKServer {
             requestCert: true,
             rejectUnauthorized: true,
             ca: fs.readFileSync(this.keys.cert)
-        }, () => {
-            console.error('SOCKET TODO');
+        }, (socket) => {
+            this.sockets.add(socket);
         });
 
         this.streaming.on('error', (e) => {
@@ -193,5 +195,9 @@ export default class MockTAKServer {
                 });
             })
         ])
+
+        for (const socket in this.sockets) {
+            socket.destroy();
+        }
     }
 }
