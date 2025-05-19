@@ -13,9 +13,9 @@ on:
 
 jobs:
   data:
-    runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
-    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
         with:
@@ -31,9 +31,9 @@ jobs:
         run: docker run cloudtak-data:latest npm run test
 
   pmtiles:
-    runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
-    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
         with:
@@ -61,9 +61,9 @@ jobs:
         run: npm run build
 
   test:
-    runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
-    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
         with:
