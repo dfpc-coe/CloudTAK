@@ -185,6 +185,12 @@ export default class MockTAKServer {
                 this.streaming.close(() => {
                     return resolve();
                 });
+
+                for (const socket of this.sockets.values()) {
+                    socket.destroy();
+                }
+
+                this.sockets.clear();
             }),
             new Promise<void>((resolve) => {
                 this.webtak.close(() => {
@@ -197,9 +203,5 @@ export default class MockTAKServer {
                 });
             })
         ])
-
-        for (const socket of this.sockets.values()) {
-            socket.destroy();
-        }
     }
 }
