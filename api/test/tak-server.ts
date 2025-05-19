@@ -54,9 +54,7 @@ export default class MockTAKServer {
             cert: fs.readFileSync(this.keys.cert),
             key: fs.readFileSync(this.keys.key),
             requestCert: true,
-
-            // rejectUnauthorized is set to true to ensure certificate validation is enforced
-            rejectUnauthorized: process.env.ALLOW_INSECURE_TLS === 'true' ? false : true,
+            rejectUnauthorized: true,
             ca: fs.readFileSync(this.keys.cert)
         }, (request) => {
             console.error('SOCKET TODO');
@@ -74,9 +72,7 @@ export default class MockTAKServer {
             cert: fs.readFileSync(this.keys.cert),
             key: fs.readFileSync(this.keys.key),
             requestCert: true,
-
-            // rejectUnauthorized is set to true to ensure certificate validation is enforced
-            rejectUnauthorized: process.env.ALLOW_INSECURE_TLS === 'true' ? false : true,
+            rejectUnauthorized: true,
             ca: fs.readFileSync(this.keys.cert)
         }, async (request, response) => {
             console.log(`ok - Mock TAK Request: ${request.method} ${request.url}`);
@@ -166,6 +162,11 @@ export default class MockTAKServer {
             } else if (request.method === 'GET' && request.url === '/files/api/config') {
                 response.setHeader('Content-Type', 'application/json');
                 response.write(JSON.stringify({ uploadSizeLimit: 50 }))
+                response.end();
+                return true;
+            } else if (request.method === 'GET' && request.url === '/Marti/api/contacts/all') {
+                response.setHeader('Content-Type', 'application/json');
+                response.write(JSON.stringify([]))
                 response.end();
                 return true;
             } else {
