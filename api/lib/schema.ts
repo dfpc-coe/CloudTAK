@@ -56,6 +56,7 @@ export const Profile = pgTable('profile', {
     tak_remarks: text().notNull().default('CloudTAK User'),
     tak_group: text().$type<TAKGroup>().notNull().default(TAKGroup.ORANGE),
     tak_role: text().$type<TAKRole>().notNull().default(TAKRole.TEAM_MEMBER),
+    tak_type: text().notNull().default('a-f-G-E-V-C'),
     tak_loc: geometry({ srid: 4326, type: GeometryType.Point }),
     tak_loc_freq: integer().notNull().default(2000),
     display_stale: text().$type<Profile_Stale>().notNull().default(Profile_Stale.TenMinutes),
