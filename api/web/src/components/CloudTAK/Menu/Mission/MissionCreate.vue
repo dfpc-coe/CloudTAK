@@ -181,6 +181,7 @@ const mission = ref({
 });
 
 const missionNameValidity = computed<string>(() => {
+    // eslint-disable next-line no-useless-escape
     if (!mission.value.name.match(/^[\p{L}\p{N}\w\d\s\.\(\)!=@#$&^*_\-\+\[\]\{\}:,\.\/\|\\]*$/u)) {
         return 'Contains Invalid Character'
     } else if (mission.value.name.length > 1024) {
