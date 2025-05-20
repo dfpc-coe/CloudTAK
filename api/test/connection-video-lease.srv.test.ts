@@ -53,4 +53,26 @@ test('POST: api/connection/1/video/lease', async (t) => {
     t.end();
 });
 
+test('PUT api/config', async (t) => {
+    try {
+        const res = await flight.fetch('/api/config', {
+            method: 'PUT',
+            auth: {
+                bearer: flight.token.admin
+            },
+            body: {
+                'media::url': 'https://video.example.com'
+            }
+        }, false);
+
+        t.deepEquals(res.body, {
+            'media::url': 'https://video.example.com'
+        });
+    } catch (err) {
+        t.error(err, 'no error');
+    }
+
+    t.end();
+});
+
 flight.landing();

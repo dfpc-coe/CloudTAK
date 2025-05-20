@@ -34,6 +34,7 @@
                 <div class='col-12'>
                     <TablerInput
                         v-model='mission.name'
+                        :error='missionNameValidity'
                         label='Name'
                     />
                 </div>
@@ -138,7 +139,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { std, stdurl } from '../../../../std.ts';
 import type { Mission, Mission_Create } from '../../../../types.ts';
 import { useMapStore } from '../../../../stores/map.ts'
@@ -168,6 +169,7 @@ const modal = ref({
     groups: false
 });
 const advanced = ref(false);
+
 const mission = ref({
     name: '',
     password: '',
@@ -176,6 +178,16 @@ const mission = ref({
     description: '',
     groups: [],
     hashtags: ''
+});
+
+const missionNameValidity = computed<string>(() => {
+    if (!mission.value.name.match(/^[\p{L}\p{N}\w\d\s\.\(\)!=@#$&^*_\-\+\[\]\{\}:,\.\/\|\\]*$/u)) {
+        return 'Contains Invalid Character'
+    } else if (mission.value.name.length > 1024) {
+        return 'Exceeds 1024 Characters'
+    }
+
+    return '';
 });
 
 async function createMission() {
