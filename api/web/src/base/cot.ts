@@ -115,7 +115,7 @@ export default class COT {
      * Begin listening for remote updates
      * This is a seperate function due to the issues outlined in: https://stackoverflow.com/q/70184129
      */
-    remote() {
+    reactivity() {
         if (this._remote) {
             // The sync BroadcastChannel will post a message anytime the underlying
             // Atlas database has a COT update, resulting in a sync with the frontend
