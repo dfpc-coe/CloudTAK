@@ -90,7 +90,8 @@
 
             <MissionLayerEdit
                 v-if='edit.has(layer.uid)'
-                :mission='mission'
+                :mission='props.mission'
+                :token='props.token'
                 :layer='layer'
                 :role='role'
                 @cancel='edit.delete(layer.uid)'
@@ -190,7 +191,9 @@ function cots(layer: MissionLayer): Array<Feature> {
 async function deleteLayer(layer: MissionLayer) {
     loading.value = true;
 
-    await Subscription.layerDelete(props.mission.guid, layer.uid, props.token);
+    await Subscription.layerDelete(props.mission.guid, layer.uid, {
+        missionToken: props.token
+    });
 
     emit('refresh')
 

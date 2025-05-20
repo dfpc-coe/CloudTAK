@@ -141,6 +141,7 @@ import Overlay from '../../../../base/overlay.ts';
 import { useMapStore } from '../../../../stores/map.ts';
 const mapStore = useMapStore();
 
+const emit = defineEmits(['refresh']);
 const props = defineProps({
     mission: {
         type: Object,
@@ -171,7 +172,9 @@ const subscribed = computed(() => {
 
 async function fetchSubscriptions() {
     loading.value.users = true;
-    subscriptions.value = await Subscription.subscriptions(props.mission.guid, props.token)
+    subscriptions.value = await Subscription.subscriptions(props.mission.guid, {
+        missionToken: props.token
+    })
     loading.value.users = false;
 }
 
@@ -191,8 +194,12 @@ async function subscribe(subscribed: boolean) {
 
         mapStore.overlays.push(missionOverlay);
         await mapStore.loadMission(props.mission.guid);
+
+        emit('refresh');
     } else if (subscribed === false && overlay) {
         await mapStore.removeOverlay(overlay);
+
+        emit('refresh');
     }
 
     loading.value.subscribe = false;

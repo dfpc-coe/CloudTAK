@@ -1,8 +1,8 @@
 <template>
     <div class='col-12 border rounded my-2'>
         <TablerAlert
-            v-if='err'
-            :err='err'
+            v-if='error'
+            :err='error'
         />
         <TablerLoading v-else-if='loading.layer' />
         <template v-else>
@@ -16,7 +16,7 @@
                 <div class='col-12 d-flex py-3'>
                     <button
                         class='btn btn-secondary'
-                        @click='$emit("cancel")'
+                        @click='emit("cancel")'
                     >
                         Cancel
                     </button>
@@ -34,68 +34,47 @@
     </div>
 </template>
 
-<script>
-import { std, stdurl } from '/src/std.ts';
+<script setup lang='ts'>
+import { ref } from 'vue'
 import {
     TablerAlert,
     TablerInput,
     TablerLoading
 } from '@tak-ps/vue-tabler';
+import Subscription from '../../../../base/subscription.ts';
+import type { Mission, MissionLayer } from '../../../../types.ts';
 
-export default {
-    name: 'MissionLayerEdit',
-    components: {
-        TablerAlert,
-        TablerLoading,
-        TablerInput,
-    },
-    props: {
-        mission: {
-            type: Object
-        },
-        token: {
-            type: String
-        },
-        layer: {
-            type: Object
-        }
-    },
-    emits: ['layer', 'cancel'],
-    data: function() {
-        return {
-            err: null,
-            loading: {
-                layer: false,
-            },
-            editing: JSON.parse(JSON.stringify(this.layer))
-        }
-    },
-    methods: {
-        editLayer: async function() {
-            try {
-                this.loading.layer = true;
+const emit = defineEmits(['layer', 'cancel']);
+const props = defineProps<{
+    mission: Mission,
+    layer: MissionLayer,
+    token?: string,
+}>();
 
-                const url = stdurl(`/api/marti/missions/${this.mission.name}/layer/${this.layer.uid}`);
+const error = ref<Error | undefined>();
+const loading = ref({
+    layer: false,
+});
+const editing = ref<MissionLayer>(JSON.parse(JSON.stringify(props.layer)) as MissionLayer)
 
-                await std(url, {
-                    headers: {
-                        MissionAuthorization: this.token
-                    },
-                    method: 'PATCH',
-                    body: {
-                        name: this.editing.name
-                    }
-                });
+async function editLayer() {
+    try {
+        loading.value.layer = true;
 
-                this.$emit('layer', {
-                    ...this.layer,
-                    name: this.editing.name,
-                });
-            } catch (err) {
-                this.err = err;
-            }
-            this.loading.layer = false;
-        }
+        await Subscription.layerUpdate(props.mission.guid, props.layer.uid, {
+            name: editing.value.name
+        }, {
+            missionToken: props.token
+        });
+
+        emit('layer', {
+            ...props.layer,
+            name: editing.value.name,
+        });
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
     }
+
+    loading.value.layer = false;
 }
 </script>

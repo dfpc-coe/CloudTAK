@@ -14,9 +14,12 @@ import type {
     MissionLog,
     MissionRole,
     MissionList,
+    MissionLayer,
     MissionChanges,
     MissionLogList,
     MissionLayerList,
+    MissionLayer_Create,
+    MissionLayer_Update,
     MissionSubscriptions
 } from '../types.ts';
 
@@ -199,12 +202,19 @@ export default class Subscription {
         return headers;
     }
 
-    static async subscriptions(guid: string, token: string | undefined): Promise<MissionSubscriptions> {
+    static async subscriptions(
+        guid: string,
+        opts: {
+            token?: string,
+            missionToken?: string
+        } = {}
+    ): Promise<MissionSubscriptions> {
         const url = stdurl(`/api/marti/missions/${encodeURIComponent(guid)}/subscriptions/roles`);
 
         const res = await std(url, {
             method: 'GET',
-            headers: Subscription.headers(token)
+            token: opts.token,
+            headers: Subscription.headers(opts.missionToken)
         }) as {
             data: MissionSubscriptions
         };
@@ -225,12 +235,16 @@ export default class Subscription {
         }) as FeatureCollection;
     }
 
-    static async changes(guid: string, token: string | undefined): Promise<MissionChanges> {
+    static async changes(guid: string, opts: {
+        token?: string,
+        missionToken?: string
+    } = {}): Promise<MissionChanges> {
         const url = stdurl('/api/marti/missions/' + encodeURIComponent(guid) + '/changes');
 
         return await std(url, {
             method: 'GET',
-            headers: Subscription.headers(token)
+            token: opts.token,
+            headers: Subscription.headers(opts.missionToken)
         }) as MissionChanges;
     }
 
@@ -314,11 +328,56 @@ export default class Subscription {
         }) as MissionLayerList;
     }
 
-    static async layerDelete(guid: string, layeruid: string, token?: string): Promise<void> {
+    static async layerUpdate(
+        guid: string,
+        layerid: string,
+        layer: MissionLayer_Update,
+        opts: {
+            token?: string,
+            missionToken?: string
+        } = {}
+    ): Promise<MissionLayer> {
+         const url = stdurl(`/api/marti/missions/${guid}/layer/${layerid}`);
+
+         return await std(url, {
+             method: 'PATCH',
+             body: layer,
+             token: opts.token,
+             headers: Subscription.headers(opts.missionToken)
+         }) as MissionLayer;
+    }
+
+    static async layerCreate(
+        guid: string,
+        layer: MissionLayer_Create,
+        opts: {
+            token?: string,
+            missionToken?: string
+        } = {}
+    ): Promise<MissionLayer> {
+         const url = stdurl(`/api/marti/missions/${guid}/layer`);
+
+         return await std(url, {
+             method: 'POST',
+             body: layer,
+             token: opts.token,
+             headers: Subscription.headers(opts.missionToken)
+         }) as MissionLayer;
+    }
+
+    static async layerDelete(
+        guid: string,
+        layeruid: string,
+        opts: {
+            token?: string,
+            missionToken?: string
+        } = {}
+    ): Promise<void> {
         const url = stdurl(`/api/marti/missions/${guid}/layer/${layeruid}`);
         await std(url, {
             method: 'DELETE',
-            headers: Subscription.headers(token)
+            token: opts.token,
+            headers: Subscription.headers(opts.missionToken)
         })
     }
 }
