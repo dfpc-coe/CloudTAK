@@ -63,7 +63,7 @@
                 :err='error'
             />
             <ShareToPackage
-                v-if='shareToPackage.shown && missionSub'
+                v-else-if='shareToPackage.shown && missionSub'
                 :feats='shareToPackage.features'
                 @close='shareToPackage.shown = false'
             />
