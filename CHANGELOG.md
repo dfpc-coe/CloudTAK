@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v8.34.0 - 2025-05-20
+
+- :tada: Add the ability to set personal COT type
+
 ### v8.33.0 - 2025-05-20
 
 - :rocket: Add the beginnings of integration tests for Connection Managed Video Leases
