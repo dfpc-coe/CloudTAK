@@ -665,6 +665,9 @@ export interface paths {
                                 maxzoom?: number;
                                 description?: string;
                             }[];
+                            actions: {
+                                feature: ("query" | "fetch" | "create" | "update" | "delete")[];
+                            };
                         };
                     };
                 };
@@ -5155,11 +5158,8 @@ export interface paths {
                 content: {
                     "application/json": {
                         name?: string;
-                        /**
-                         * @description Duration in Seconds
-                         * @default 3600
-                         */
-                        duration: number;
+                        /** @description Duration in Seconds */
+                        duration?: number;
                         source_type?: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
                         source_model?: string;
                         channel?: string | null;
@@ -5170,11 +5170,11 @@ export interface paths {
                          */
                         secure_rotate: boolean;
                         /** @description System Admins can create non-expiring leases */
-                        permanent: boolean;
+                        permanent?: boolean;
                         /** @description Record streams to disk */
-                        recording: boolean;
+                        recording?: boolean;
                         /** @description Publish stream URL to TAK Server Video Manager */
-                        publish: boolean;
+                        publish?: boolean;
                     };
                 };
             };
@@ -9167,7 +9167,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/marti/missions/{:name}/cot": {
+    "/marti/missions/{:guid}/cot": {
         parameters: {
             query?: never;
             header?: never;
@@ -9423,6 +9423,48 @@ export interface paths {
         put?: never;
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marti/missions/{:guid}/cot/{:uid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete an upload by hash */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            version: string;
+                            type: string;
+                            data: unknown;
+                            messages?: string[];
+                            nodeId?: string;
+                        };
+                    };
+                };
+            };
+        };
         options?: never;
         head?: never;
         patch?: never;
@@ -12987,6 +13029,7 @@ export interface paths {
                             tak_remarks: string;
                             tak_group: "White" | "Yellow" | "Orange" | "Magenta" | "Red" | "Maroon" | "Purple" | "Dark Blue" | "Blue" | "Cyan" | "Teal" | "Green" | "Dark Green" | "Brown";
                             tak_role: "Team Member" | "Team Lead" | "HQ" | "Sniper" | "Medic" | "Forward Observer" | "RTO" | "K9";
+                            tak_type: string;
                             tak_loc: {
                                 /** @constant */
                                 type: "Point";
@@ -13031,6 +13074,7 @@ export interface paths {
                         tak_callsign?: string;
                         tak_remarks?: string;
                         tak_group?: "White" | "Yellow" | "Orange" | "Magenta" | "Red" | "Maroon" | "Purple" | "Dark Blue" | "Blue" | "Cyan" | "Teal" | "Green" | "Dark Green" | "Brown";
+                        tak_type?: string;
                         tak_role?: "Team Member" | "Team Lead" | "HQ" | "Sniper" | "Medic" | "Forward Observer" | "RTO" | "K9";
                         tak_loc_freq?: number;
                         tak_loc?: null | {
@@ -13061,6 +13105,7 @@ export interface paths {
                             tak_remarks: string;
                             tak_group: "White" | "Yellow" | "Orange" | "Magenta" | "Red" | "Maroon" | "Purple" | "Dark Blue" | "Blue" | "Cyan" | "Teal" | "Green" | "Dark Green" | "Brown";
                             tak_role: "Team Member" | "Team Lead" | "HQ" | "Sniper" | "Medic" | "Forward Observer" | "RTO" | "K9";
+                            tak_type: string;
                             tak_loc: {
                                 /** @constant */
                                 type: "Point";
@@ -14110,6 +14155,10 @@ export interface paths {
                 query: {
                     /** @description No Description */
                     filter: string;
+                    /** @description No Description */
+                    domain?: "a" | "b" | "r" | "t" | "c" | "y";
+                    /** @description No Description */
+                    identity: "p" | "u" | "a" | "f" | "n" | "s" | "h" | "j" | "k" | "o";
                     /** @description Limit the number of responses returned */
                     limit: number;
                 };
@@ -14129,8 +14178,8 @@ export interface paths {
                             total: number;
                             items: {
                                 cot: string;
-                                full?: string;
                                 desc: string;
+                                full?: string;
                             }[];
                         };
                     };
@@ -14170,8 +14219,8 @@ export interface paths {
                     content: {
                         "application/json": {
                             cot: string;
-                            full?: string;
                             desc: string;
+                            full?: string;
                         };
                     };
                 };
@@ -14203,7 +14252,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort?: "id" | "name" | "username" | "last_login" | "auth" | "created" | "updated" | "phone" | "tak_callsign" | "tak_remarks" | "tak_group" | "tak_role" | "tak_loc" | "tak_loc_freq" | "display_stale" | "display_distance" | "display_elevation" | "display_speed" | "display_projection" | "display_zoom" | "display_text" | "system_admin" | "agency_admin" | "enableRLS";
+                    sort?: "id" | "name" | "username" | "last_login" | "auth" | "created" | "updated" | "phone" | "tak_callsign" | "tak_remarks" | "tak_group" | "tak_role" | "tak_type" | "tak_loc" | "tak_loc_freq" | "display_stale" | "display_distance" | "display_elevation" | "display_speed" | "display_projection" | "display_zoom" | "display_text" | "system_admin" | "agency_admin" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                 };
@@ -14235,6 +14284,7 @@ export interface paths {
                                 tak_remarks: string;
                                 tak_group: "White" | "Yellow" | "Orange" | "Magenta" | "Red" | "Maroon" | "Purple" | "Dark Blue" | "Blue" | "Cyan" | "Teal" | "Green" | "Dark Green" | "Brown";
                                 tak_role: "Team Member" | "Team Lead" | "HQ" | "Sniper" | "Medic" | "Forward Observer" | "RTO" | "K9";
+                                tak_type: string;
                                 tak_loc: {
                                     /** @constant */
                                     type: "Point";
@@ -14299,6 +14349,7 @@ export interface paths {
                             tak_remarks: string;
                             tak_group: "White" | "Yellow" | "Orange" | "Magenta" | "Red" | "Maroon" | "Purple" | "Dark Blue" | "Blue" | "Cyan" | "Teal" | "Green" | "Dark Green" | "Brown";
                             tak_role: "Team Member" | "Team Lead" | "HQ" | "Sniper" | "Medic" | "Forward Observer" | "RTO" | "K9";
+                            tak_type: string;
                             tak_loc: {
                                 /** @constant */
                                 type: "Point";
@@ -14358,6 +14409,7 @@ export interface paths {
                             tak_remarks: string;
                             tak_group: "White" | "Yellow" | "Orange" | "Magenta" | "Red" | "Maroon" | "Purple" | "Dark Blue" | "Blue" | "Cyan" | "Teal" | "Green" | "Dark Green" | "Brown";
                             tak_role: "Team Member" | "Team Lead" | "HQ" | "Sniper" | "Medic" | "Forward Observer" | "RTO" | "K9";
+                            tak_type: string;
                             tak_loc: {
                                 /** @constant */
                                 type: "Point";
@@ -14933,6 +14985,7 @@ export interface paths {
                         "application/json": {
                             configured: boolean;
                             url?: string;
+                            external?: string;
                             config?: {
                                 api: boolean;
                                 apiAddress: string;
