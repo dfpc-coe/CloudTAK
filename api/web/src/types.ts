@@ -56,6 +56,8 @@ export type MissionLog = paths["/marti/missions/{:name}/log/{:logid}"]["patch"][
 export type MissionLogList = paths["/marti/missions/{:name}/log"]["get"]["responses"]["200"]["content"]["application/json"];
 
 export type MissionLayer = paths["/marti/missions/{:name}/layer/{:layerid}"]["get"]["responses"]["200"]["content"]["application/json"]["data"];
+export type MissionLayer_Create = paths["/marti/missions/{:name}/layer"]["post"]["requestBody"]["content"]["application/json"];
+export type MissionLayer_Update = paths["/marti/missions/{:name}/layer/{:uid}"]["patch"]["requestBody"]["content"]["application/json"];
 export type MissionLayerList = paths["/marti/missions/{:name}/layer"]["get"]["responses"]["200"]["content"]["application/json"];
 
 export type MissionChanges = paths["/marti/missions/{:name}/changes"]["get"]["responses"]["200"]["content"]["application/json"];

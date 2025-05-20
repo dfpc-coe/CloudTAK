@@ -1,8 +1,8 @@
 <template>
     <div class='col-12 border rounded my-2'>
         <TablerAlert
-            v-if='err'
-            :err='err'
+            v-if='error'
+            :err='error'
         />
         <TablerLoading v-else-if='loading.layer' />
         <template v-else>
@@ -48,7 +48,7 @@
                 <div class='col-12 d-flex'>
                     <button
                         class='btn btn-secondary'
-                        @click='$emit("cancel")'
+                        @click='emit("cancel")'
                     >
                         Cancel
                     </button>
@@ -66,8 +66,8 @@
     </div>
 </template>
 
-<script>
-import { std, stdurl } from '/src/std.ts';
+<script setup lang='ts'>
+import { ref } from 'vue';
 import {
     IconSquareChevronRight,
     IconChevronDown,
@@ -78,56 +78,40 @@ import {
     TablerEnum,
     TablerLoading
 } from '@tak-ps/vue-tabler';
+import Subscription from '../../../../base/subscription.ts';
+import type { Mission, MissionLayer_Create } from '../../../../types.ts';
 
-export default {
-    name: 'MissionLayerCreate',
-    components: {
-        IconSquareChevronRight,
-        IconChevronDown,
-        TablerAlert,
-        TablerLoading,
-        TablerInput,
-        TablerEnum,
-    },
-    props: {
-        mission: Object,
-        token: String
-    },
-    emits: ['layer', 'cancel'],
-    data: function() {
-        return {
-            err: null,
-            loading: {
-                layer: false,
-            },
-            advanced: false,
-            layer: {
-                name: '',
-                type: 'GROUP'
-            }
-        }
-    },
-    methods: {
-        createLayer: async function() {
-            try {
-                this.loading.layer = true;
+const emit = defineEmits(['layer', 'cancel']);
 
-                const url = stdurl(`/api/marti/missions/${this.mission.name}/layer`);
+const props = defineProps<{
+    mission: Mission,
+    token?: string,
+}>();
 
-                const res = await std(url, {
-                    method: 'POST',
-                    body: this.layer,
-                    headers: {
-                        MissionAuthorization: this.token
-                    }
-                });
+const error = ref<Error | undefined>();
+const loading = ref({
+    layer: false,
+});
 
-                this.$emit('layer', res.data[0]);
-            } catch (err) {
-                this.err = err;
-            }
-            this.loading.layer = false;
-        }
+const advanced = ref(false);
+const layer = ref<MissionLayer_Create>({
+    name: '',
+    type: 'GROUP'
+});
+
+async function createLayer() {
+    try {
+        loading.value.layer = true;
+
+        const res = await Subscription.layerCreate(props.mission.guid, layer.value, {
+            missionToken: props.token
+        });
+
+        emit('layer', res);
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
     }
+
+    loading.value.layer = false;
 }
 </script>
