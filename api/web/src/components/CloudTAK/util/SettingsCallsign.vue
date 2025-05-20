@@ -30,6 +30,16 @@
                 label='Location Reporting Frequency (ms)'
             />
         </div>
+        <div
+            v-if='mode === "router"'
+            class='col-12'
+        >
+            <PropertyType
+                :edit='true'
+                :hover='true'
+                v-model='profile.tak_type'
+            />
+        </div>
         <div class='col-12 d-flex py-3'>
             <div class='ms-auto'>
                 <button
@@ -46,6 +56,7 @@
 <script setup lang='ts'>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import PropertyType from './PropertyType.vue';
 import type { Profile, ConfigGroups } from '../../../../src/types.ts';
 import { std } from '../../../../src/std.ts';
 import {
@@ -112,6 +123,7 @@ async function updateProfile() {
 
     await mapStore.worker.profile.update({
         tak_callsign: p.tak_callsign,
+        tak_type: p.tak_type,
         tak_role: p.tak_role,
         tak_group: p.tak_group.replace(/\s-\s.*$/, '') as Profile["tak_group"],
         tak_loc_freq: p.tak_loc_freq

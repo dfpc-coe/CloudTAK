@@ -130,6 +130,7 @@ export const ProfileResponse = Type.Object({
     tak_remarks: Type.String(),
     tak_group: Type.Enum(TAKGroup),
     tak_role: Type.Enum(TAKRole),
+    tak_type: Type.String(),
     tak_loc: Type.Union([Type.Object({
         type: Type.Literal('Point'),
         coordinates: Type.Array(Type.Number())
