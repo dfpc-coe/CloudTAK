@@ -134,7 +134,9 @@ onMounted(async () => {
 async function fetchChanges() {
     loading.value = true;
     try {
-        changes.value = (await Subscription.changes(props.mission.guid, props.mission.token)).data;
+        changes.value = (await Subscription.changes(props.mission.guid, {
+            missionToken: props.token
+        })).data;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }

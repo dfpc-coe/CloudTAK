@@ -70,7 +70,9 @@ onMounted(async () => {
 
 async function fetchSubscriptions() {
     loading.value = true;
-    subscriptions.value = await Subscription.subscriptions(props.mission.guid, props.token);
+    subscriptions.value = await Subscription.subscriptions(props.mission.guid, {
+        missionToken: props.token
+    });
     loading.value = false;
 }
 </script>

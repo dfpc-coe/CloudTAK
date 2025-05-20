@@ -69,6 +69,7 @@
                                 class='d-flex'
                             >
                                 <TablerInput
+                                    type='password'
                                     v-model='missionPasswords[mission.guid]'
                                     placeholder='Password'
                                     :error='errors[mission.guid]'

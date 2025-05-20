@@ -28,7 +28,8 @@
             <MissionLayerCreate
                 v-if='createLayer'
                 class='px-2'
-                :mission='mission'
+                :mission='props.mission'
+                :token='props.token'
                 @layer='refresh'
                 @cancel='createLayer = false'
             />
