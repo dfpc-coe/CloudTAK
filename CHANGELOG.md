@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v8.33.0 - 2025-05-20
+
+- :rocket: Add the beginnings of integration tests for Connection Managed Video Leases
+- :rocket: Perform Mission Name Validation to avoid potential 5xx Error from TAK Server
+
 ### v8.32.4 - 2025-05-03
 
 - :bug: Handle edge case of using named network location for media server in Docker Compose not being valid in browser context
