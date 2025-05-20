@@ -868,6 +868,8 @@ async function load_cot() {
     if (baseCOT) {
         cot.value = baseCOT
 
+        cot.value.remote();
+
         if (cot.value.is_skittle) {
             username.value = await cot.value.username()
         } else {
