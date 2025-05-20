@@ -48,14 +48,12 @@ export default class Flight {
     schema?: object;
     routes: Record<string, RegExp>;
     token: Record<string, string>;
-    tak: MockTAKServer;
+    tak?: MockTAKServer;
 
     constructor() {
         this.base = 'http://localhost:5001';
         this.token = {};
         this.routes = {};
-
-        this.tak = new MockTAKServer();
     }
 
     /**
@@ -90,6 +88,8 @@ export default class Flight {
                     t.fail(`Could not parse ${route} as RegExp: ` + err);
                 }
             }
+
+            this.tak = new MockTAKServer();
 
             t.end();
         });
@@ -285,6 +285,8 @@ export default class Flight {
 
     server(username: string, password: string) {
         test('Creating Server', async (t) => {
+            if (!this.tak) throw new Error('Mock TAK Server not started');
+
             await this.fetch('/api/server', {
                 method: 'PATCH',
                 auth: {
@@ -312,6 +314,8 @@ export default class Flight {
 
     connection() {
         test(`Creating Connection`, async (t) => {
+            if (!this.tak) throw new Error('Mock TAK Server not started');
+
             CP.execSync(`
                 openssl req \
                     -newkey rsa:4096 \
@@ -377,7 +381,10 @@ export default class Flight {
      */
     landing() {
         test('test server landing - api', async (t) => {
-            await this.tak.close();
+            if (this.tak) {
+                await this.tak.close();
+            }
+
             await this.srv.close();
             t.end();
         });
