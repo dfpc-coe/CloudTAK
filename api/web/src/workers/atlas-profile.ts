@@ -216,7 +216,7 @@ export default class AtlasProfile {
             skipNetwork: false
         })
 
-        return await this.updateChannels(this.channels);        
+        return await this.updateChannels(this.channels);
     }
 
     async setAllChannels(active: boolean): Promise<Array<Group>> {
@@ -229,7 +229,7 @@ export default class AtlasProfile {
             skipNetwork: false
         })
 
-        return await this.updateChannels(this.channels); 
+        return await this.updateChannels(this.channels);
     }
 
     async updateChannels(channels: Array<Group>): Promise<Array<Group>> {
@@ -304,7 +304,7 @@ export default class AtlasProfile {
             });
         }
 
-        if (body.tak_loc) {
+        if (body.tak_loc || body.tak_type) {
             this.updateLocation();
         }
 
@@ -332,7 +332,7 @@ export default class AtlasProfile {
             type: 'Feature',
             properties: {
                 id: this.uid(),
-                type: 'a-f-G-E-V-C',
+                type: this.profile.tak_type,
                 how: 'm-g',
                 callsign: this.profile.tak_callsign,
                 remarks: this.profile.tak_remarks,

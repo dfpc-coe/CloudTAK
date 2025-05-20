@@ -69,8 +69,10 @@ export default async function server(config: Config): Promise<ServerManager> {
         console.log(`ok - failed to flush cache: ${err instanceof Error? err.message : String(err)}`);
     }
 
-    // If the database is empty, populate it with generally sensible defaults
-    await Bulldozer.fireItUp(config);
+    if (config.StackName !== 'test') {
+        // If the database is empty, populate it with generally sensible defaults
+        await Bulldozer.fireItUp(config);
+    }
 
     await config.conns.init();
 

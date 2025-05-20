@@ -58,6 +58,8 @@
                             <div class='col-8'>
                                 <TablerInput
                                     v-model='paging.filter'
+                                    icon='search'
+                                    placeholder='Filter'
                                     :autofocus='true'
                                 />
                             </div>
