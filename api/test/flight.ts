@@ -268,7 +268,7 @@ export default class Flight {
 
            if (!this.config) throw new Error('TakeOff not completed');
 
-           this.config.models.Profile.generate({
+           await this.config.models.Profile.generate({
                 username: username + '@example.com',
                 system_admin: opts.admin,
                 auth: { cert: 'cert123', key: 'key123' },
