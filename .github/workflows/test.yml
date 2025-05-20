@@ -78,8 +78,13 @@ jobs:
       - name: Docker API Lint
         run: docker run cloudtak-api:latest sh -c "npm install --include=dev && npm run lint"
 
-      - name: Docker API Test
-        run: docker run --network cloudtak_default -e "POSTGRES=postgres://docker:docker@postgis:5432/gis" cloudtak-api:latest npm test
+      - name: Docker Test & Coverage
+        run: docker run --network cloudtak_default -v ./coverage/:./coverage -e "POSTGRES=postgres://docker:docker@postgis:5432/gis" cloudtak-api:latest npm run coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage/lcov.info
 
       - name: Docker Cleanup
         run: docker compose kill
