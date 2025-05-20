@@ -47,6 +47,7 @@ export class CloudTAKTransferHandler {
             }
 
             return [{
+                token: subscription.token,
                 mission: subscription.meta,
                 role: subscription.role,
                 logs: subscription.logs,

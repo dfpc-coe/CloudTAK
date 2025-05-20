@@ -12,6 +12,14 @@
 
 ### Pending Release
 
+### v8.35.0 - 2025-05-20
+
+- :bug: Fix bugs related to MissionToken use in Password Protected Missions
+
+### v8.34.0 - 2025-05-20
+
+- :tada: Add the ability to set personal COT type
+
 ### v8.34.0 - 2025-05-20
 
 - :tada: Add the ability to set personal COT type
