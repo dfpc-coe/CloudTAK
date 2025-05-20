@@ -82,7 +82,7 @@ jobs:
         run: docker run --network cloudtak_default -v ./coverage/:./coverage -e "POSTGRES=postgres://docker:docker@postgis:5432/gis" cloudtak-api:latest npm run coverage
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           files: ./coverage/lcov.info
 
