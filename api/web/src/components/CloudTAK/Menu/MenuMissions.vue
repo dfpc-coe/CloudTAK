@@ -69,8 +69,8 @@
                                 class='d-flex'
                             >
                                 <TablerInput
-                                    type='password'
                                     v-model='missionPasswords[mission.guid]'
+                                    type='password'
                                     placeholder='Password'
                                     :error='errors[mission.guid]'
                                     @keyup.enter='openMission(mission, true)'

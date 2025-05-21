@@ -35,9 +35,9 @@
             class='col-12'
         >
             <PropertyType
+                v-model='profile.tak_type'
                 :edit='true'
                 :hover='true'
-                v-model='profile.tak_type'
             />
         </div>
         <div class='col-12 d-flex py-3'>

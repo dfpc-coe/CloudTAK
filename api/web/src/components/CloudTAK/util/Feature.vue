@@ -1,5 +1,5 @@
 <template>
-    <template v-if='!isDeleted'>
+    <div v-if='!isDeleted'>
         <Contact
             v-if='feature.properties.group'
             class='px-2 py-2'
@@ -23,6 +23,17 @@
             }'
             @click='flyTo'
         >
+            <div
+                v-if='props.gripHandle'
+                :id='feature.id'
+                class='d-flex me-2 drag-handle cursor-grab'
+            >
+                <IconGripVertical
+                    size='18'
+                    :stroke='1'
+                />
+            </div>
+
             <span class='me-2'>
                 <FeatureIcon
                     :feature='feature'
@@ -64,7 +75,7 @@
                 </TablerIconButton>
             </div>
         </div>
-    </template>
+    </div>
 </template>
 
 <script setup lang='ts'>
@@ -78,6 +89,7 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     IconListDetails,
+    IconGripVertical,
     IconTrash,
 } from '@tabler/icons-vue';
 import { useMapStore } from '../../../stores/map.ts';
@@ -95,6 +107,10 @@ const props = defineProps({
     deleteAction: {
         type: String,
         default: 'delete' //emit or delete
+    },
+    gripHandle: {
+        type: Boolean,
+        default: false
     },
     infoButton: {
         type: Boolean,
