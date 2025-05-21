@@ -1,4 +1,3 @@
-import { reactive } from 'vue';
 import { std } from '../std.ts';
 import { bbox } from '@turf/bbox'
 import { isEqual } from '@react-hookz/deep-equal';
