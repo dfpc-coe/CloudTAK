@@ -278,6 +278,12 @@ async function download(format: string) {
 
 async function closePath(path: Path): Promise<void> {
     path.opened = false;
+    path.cots.clear();
+
+    if (path.sortable) {
+        path.sortable.destroy();
+        path.sortable = undefined;
+    }
 }
 
 async function openPath(path: Path): Promise<void> {
