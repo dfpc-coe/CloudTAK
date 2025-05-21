@@ -94,9 +94,12 @@
                         v-if='path.opened'
                         class='ms-2'
                     >
-                        <TablerLoading v-if='path.loading' />
-                        <template v-else>
-                            <div class='folder'>
+                        <div
+                            :id='`folder-${path.id}`'
+                            class='folder'
+                        >
+                            <TablerLoading v-if='path.loading' />
+                            <template v-else>
                                 <Feature
                                     v-for='cot of path.cots.values()'
                                     :key='cot.id'
@@ -105,8 +108,8 @@
                                     :info-button='true'
                                     :feature='cot'
                                 />
-                            </div>
-                        </template>
+                            </template>
+                        </div>
                     </div>
                 </template>
 
@@ -126,7 +129,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, watch, onMounted, onBeforeUnmount, useTemplateRef } from 'vue';
+import { ref, watch, nextTick, onMounted, onBeforeUnmount, useTemplateRef } from 'vue';
 import { stdurl } from '../../../std.ts';
 import COT from '../../../base/cot.ts';
 import MenuTemplate from '../util/MenuTemplate.vue';
@@ -155,9 +158,11 @@ import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();
 
 type Path = {
+    id: string;
     name: string;
     opened: boolean;
     loading: boolean;
+    sortable?: Sortable;
     cots: Set<COT>;
 };
 
@@ -199,6 +204,7 @@ onMounted(async () => {
 
     sortableFiles = new Sortable(sortableFilesRef.value, {
         sort: true,
+        group: 'features',
         handle: '.drag-handle',
         dataIdAttr: 'id',
         onStart: () => {
@@ -208,22 +214,6 @@ onMounted(async () => {
             dragging.value = false;
         }
     })
-
-    for (const folder of document.querySelectorAll('.folder')) {
-        console.error(folder);
-
-        sortableFolders = new Sortable(sortableFoldersRef.value, {
-            sort: true,
-            handle: '.drag-handle',
-            dataIdAttr: 'id',
-            onStart: () => {
-                dragging.value = true;
-            },
-            onEnd: () => {
-                dragging.value = false;
-            }
-        })
-    }
 });
 
 onBeforeUnmount(() => {
@@ -271,6 +261,7 @@ async function refresh(load = false): Promise<void> {
             return path !== '/'
         }).map((path) => {
             return {
+                id: crypto.randomUUID(),
                 name: path,
                 opened: false,
                 loading: false,
@@ -294,6 +285,21 @@ async function openPath(path: Path): Promise<void> {
     path.loading = true;
     path.cots = await mapStore.worker.db.pathFeatures(path.name);
     path.loading = false;
+
+    const folderDiv = document.getElementById(`folder-${path.id}`);
+
+    path.sortable = new Sortable(folderDiv, {
+        sort: true,
+        group: 'features',
+        handle: '.drag-handle',
+        dataIdAttr: 'id',
+        onStart: () => {
+            dragging.value = true;
+        },
+        onEnd: () => {
+            dragging.value = false;
+        }
+    })
 }
 
 </script>
