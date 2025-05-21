@@ -68,6 +68,9 @@
                 >
                     <div
                         class='d-flex align-items-center px-3 py-2 me-2 hover-button cursor-pointer user-select-none'
+                        :style='hover === path ? "background-color: rgba(0, 0, 0, 0.2);" : ""'
+                        @dragover.prevent='dragOverFolder(path)'
+                        @dragleave='dragLeaveFolder(path)'
                         @click='path.opened ? closePath(path) : openPath(path)'
                     >
                         <IconChevronRight
@@ -93,31 +96,37 @@
                     >
                         <TablerLoading v-if='path.loading' />
                         <template v-else>
-                            <Feature
-                                v-for='cot of path.cots.values()'
-                                :key='cot.id'
-                                :delete-button='true'
-                                :info-button='true'
-                                :feature='cot'
-                            />
+                            <div class='folder'>
+                                <Feature
+                                    v-for='cot of path.cots.values()'
+                                    :key='cot.id'
+                                    :grip-handle='true'
+                                    :delete-button='true'
+                                    :info-button='true'
+                                    :feature='cot'
+                                />
+                            </div>
                         </template>
                     </div>
                 </template>
 
-                <Feature
-                    v-for='cot of cots'
-                    :key='cot.id'
-                    :delete-button='true'
-                    :info-button='true'
-                    :feature='cot'
-                />
+                <div ref='sortableFilesRef'>
+                    <Feature
+                        v-for='cot of cots'
+                        :key='cot.id'
+                        :grip-handle='true'
+                        :delete-button='true'
+                        :info-button='true'
+                        :feature='cot'
+                    />
+                </div>
             </template>
         </template>
     </MenuTemplate>
 </template>
 
 <script setup lang='ts'>
-import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
+import { ref, watch, onMounted, onBeforeUnmount, useTemplateRef } from 'vue';
 import { stdurl } from '../../../std.ts';
 import COT from '../../../base/cot.ts';
 import MenuTemplate from '../util/MenuTemplate.vue';
@@ -139,6 +148,8 @@ import {
     IconChevronRight,
     IconChevronDown
 } from '@tabler/icons-vue';
+import Sortable from 'sortablejs';
+import type { SortableEvent } from 'sortablejs'
 import { useMapStore } from '../../../stores/map.ts';
 
 const mapStore = useMapStore();
@@ -149,6 +160,8 @@ type Path = {
     loading: boolean;
     cots: Set<COT>;
 };
+
+const sortableFilesRef = useTemplateRef<HTMLElement>('sortableFilesRef');
 
 const channel = new BroadcastChannel("cloudtak");
 
@@ -168,7 +181,14 @@ const paths = ref<Array<Path>>();
 const query = ref({
     filter: ''
 })
+
+let sortableFiles: Sortable;
+
+const dragging = ref(false);
 const loading = ref(true);
+
+const hover = ref<Path | undefined>();
+const hoverTimer = ref<ReturnType<setTimeout> | undefined>();
 
 watch(query.value, async () => {
     await refresh();
@@ -176,13 +196,63 @@ watch(query.value, async () => {
 
 onMounted(async () => {
     await refresh();
+
+    sortableFiles = new Sortable(sortableFilesRef.value, {
+        sort: true,
+        handle: '.drag-handle',
+        dataIdAttr: 'id',
+        onStart: () => {
+            dragging.value = true;
+        },
+        onEnd: () => {
+            dragging.value = false;
+        }
+    })
+
+    for (const folder of document.querySelectorAll('.folder')) {
+        console.error(folder);
+
+        sortableFolders = new Sortable(sortableFoldersRef.value, {
+            sort: true,
+            handle: '.drag-handle',
+            dataIdAttr: 'id',
+            onStart: () => {
+                dragging.value = true;
+            },
+            onEnd: () => {
+                dragging.value = false;
+            }
+        })
+    }
 });
 
 onBeforeUnmount(() => {
     if (channel) {
         channel.close();
     }
+
+    sortableFiles.destroy();
 })
+
+async function dragOverFolder(path: Path) {
+    if (!dragging.value || path.opened) return;
+
+    if (!path.opened) {
+        hover.value = path;
+        hoverTimer.value = setTimeout(async () => {
+            await openPath(path);
+        }, 1000);
+    }
+}
+
+async function dragLeaveFolder() {
+    hover.value = undefined;
+
+    if (hoverTimer.value) {
+        clearTimeout(hoverTimer.value);
+        hoverTimer.value = undefined;
+    }
+}
 
 async function refresh(load = false): Promise<void> {
     if (load) loading.value = true;
