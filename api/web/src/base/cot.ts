@@ -108,7 +108,13 @@ export default class COT {
         if (!opts || (opts && opts.skipSave !== true)) {
             this.save();
         }
+    }
 
+    /**
+     * Begin listening for remote updates
+     * This is a seperate function due to the issues outlined in: https://stackoverflow.com/q/70184129
+     */
+    reactivity() {
         if (this._remote) {
             // The sync BroadcastChannel will post a message anytime the underlying
             // Atlas database has a COT update, resulting in a sync with the frontend
@@ -121,6 +127,8 @@ export default class COT {
                     Object.assign(this._geometry, ev.data.geometry);
                 }
             };
+        } else {
+            throw new Error('Only Remote instances can listen for updates');
         }
     }
 
