@@ -222,6 +222,12 @@ onBeforeUnmount(() => {
     }
 
     sortableFiles.destroy();
+
+    for (const path of paths.value) {
+        if (path.sortable) {
+            path.sortable.destroy();
+        }
+    }
 })
 
 async function dragOverFolder(path: Path) {
@@ -231,6 +237,9 @@ async function dragOverFolder(path: Path) {
         hover.value = path;
         hoverTimer.value = setTimeout(async () => {
             await openPath(path);
+
+            clearTimeout(hoverTimer.value);
+            hoverTimer.value = undefined;
         }, 1000);
     }
 }
