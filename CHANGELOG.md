@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v8.35.1 - 2025-05-20
+
+- :bug: Fix Vue3 related bug on COT Reactivity
+
 ### v8.35.0 - 2025-05-20
 
 - :bug: Fix bugs related to MissionToken use in Password Protected Missions
