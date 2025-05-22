@@ -42,7 +42,7 @@
                     @click='updateGroup(group)'
                 >
                     <IconCircleFilled
-                        v-if='selected.has(group)'
+                        v-if='selected.has(group.name)'
                         :size='32'
                         stroke='1'
                         class='cursor-pointer'
@@ -114,14 +114,14 @@ onMounted(async () => {
 });
 
 function updateGroup(group: string) {
-    if (selected.value.has(group)) {
-        selected.value.delete(group)
+    if (selected.value.has(group.name)) {
+        selected.value.delete(group.name)
     } else {
         if (props.limit && selected.value.size >= props.limit) {
             throw new Error(`Cannot select more than ${props.limit} Channels`);
         }
 
-        selected.value.add(group)
+        selected.value.add(group.name)
     }
 
     emit('update:modelValue', Array.from(selected.value));

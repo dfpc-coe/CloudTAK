@@ -25,10 +25,6 @@
             v-if='loading'
             desc='Saving Mission'
         />
-        <TablerAlert
-            v-else-if='error'
-            :err='error'
-        />
         <template v-else>
             <div class='modal-body row g-2'>
                 <div class='col-12'>
@@ -142,7 +138,6 @@ const mapStore = useMapStore();
 const emit = defineEmits(['mission']);
 
 const attempted = ref(false);
-const error = ref<Error | undefined>();
 const loading = ref(false);
 const advanced = ref(false);
 
@@ -210,9 +205,11 @@ async function createMission() {
         await mapStore.loadMission(res.guid);
 
         emit('mission', res);
+
+        loading.value = false;
     } catch (err) {
-        error.value = err instanceof Error ? err : new Error(String(err));
+        loading.value = false;
+        throw err;
     }
-    loading.value = false;
 }
 </script>
