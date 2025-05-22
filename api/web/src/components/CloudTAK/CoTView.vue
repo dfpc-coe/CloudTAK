@@ -489,13 +489,13 @@
                         </thead>
                         <tbody class='bg-gray-500'>
                             <tr>
-                                <td>Time</td><td v-text='timediffFormat(cot.properties.time)' />
+                                <td>Time</td><td v-text='timeProp' />
                             </tr>
                             <tr>
-                                <td>Start</td><td v-text='timediffFormat(cot.properties.start)' />
+                                <td>Start</td><td v-text='startProp' />
                             </tr>
                             <tr>
-                                <td>Stale</td><td v-text='timediffFormat(cot.properties.stale)' />
+                                <td>Stale</td><td v-text='staleProp' />
                             </tr>
                         </tbody>
                     </table>
@@ -794,13 +794,13 @@ const chevrons = ref<Set<string>>(new Set());
 const username = ref<string | undefined>();
 const type = ref<COTType | undefined>();
 const mode = ref('default');
+
+const currentTime = ref(new Date());
 const interval = ref<ReturnType<typeof setInterval> | undefined>();
 const time = ref('relative');
 
 watch(cot, async () => {
     if (cot.value) {
-        cot.value.update({});
-
         if (cot.value.origin.mode === OriginMode.MISSION && cot.value.origin.mode_id) {
             subscription.value = await mapStore.worker.db.subscriptionGet(cot.value.origin.mode_id);
         } else {
@@ -824,15 +824,13 @@ onMounted(async () => {
         units.value.display_distance = profile.display_distance;
     }
 
-    if (!cot.value) {
-        interval.value = setInterval(async () => {
-            await load_cot();
+    interval.value = setInterval(async () => {
+        currentTime.value = new Date();
 
-            if (cot.value) {
-                clearInterval(interval.value);
-            }
-        }, 1000)
-    }
+        if (!cot.value) {
+            await load_cot();
+        }
+    }, 1000)
 });
 
 const is_editable = computed(() => {
@@ -880,13 +878,17 @@ async function load_cot() {
     }
 }
 
-function timediffFormat(date: string) {
-    if (time.value === 'relative') {
-        return timediff(date);
-    } else {
-        return date;
-    }
-}
+const staleProp = computed(() => {
+    return (currentTime.value && time.value === 'relative') ? timediff(cot.value.properties.stale) : cot.value.properties.stale;
+});
+
+const startProp = computed(() => {
+    return (currentTime.value && time.value === 'relative') ? timediff(cot.value.properties.start) : cot.value.properties.start;
+});
+
+const timeProp = computed(() => {
+    return (currentTime.value && time.value === 'relative') ? timediff(cot.value.properties.time) : cot.value.properties.time;
+});
 
 function updateType(type: string): void {
     if (!cot.value) return;

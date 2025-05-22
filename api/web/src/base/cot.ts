@@ -122,6 +122,10 @@ export default class COT {
             this._remote.onmessage = async (ev) => {
                 if (ev.data.id === this.id) {
 
+                    if (ev.data.id === 'ANDROID-CloudTAK-nicholas.ingalls@state.co.us') {
+                        console.error('CHANNEL UPDATE');
+                    }
+
                     this._path = ev.data.path;
                     this.origin = ev.data.origin;
                     Object.assign(this._properties, ev.data.properties);
@@ -325,7 +329,7 @@ export default class COT {
     }
 
     /**
-     * Returns a proxy that will correctly call the intenral update function if changes are made
+     * Returns a proxy that will correctly call the internal update function if changes are made
      * Warning: Cannot be used with Vue3's reactivity system
      */
     as_proxy(): COT {
