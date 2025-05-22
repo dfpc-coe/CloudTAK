@@ -203,7 +203,7 @@ onMounted(async () => {
 
     if (!sortableFilesRef.value) throw new Error('Could not load sortable');
 
-    sortableFiles = new Sortable(sortableFilesRef.value, {
+    new Sortable(sortableFilesRef.value, {
         sort: true,
         group: 'features',
         handle: '.drag-handle',
