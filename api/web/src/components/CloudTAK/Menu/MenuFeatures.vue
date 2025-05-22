@@ -287,9 +287,9 @@ async function refresh(load = false): Promise<void> {
     paths.value = (await mapStore.worker.db.paths())
         .map(p => p.path)
         .sort((a, b) => {
-            if (a.name < b.name) {
+            if (a < b) {
                 return -1;
-            } else if (a.name > b.name) {
+            } else if (a > b) {
                 return 1;
             } else {
               return 0;

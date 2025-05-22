@@ -82,6 +82,7 @@
 <script setup lang='ts'>
 import { useRouter } from 'vue-router';
 import { ref, onMounted, computed } from 'vue';
+import COT from '../../../base/cot.ts';
 import FeatureIcon from './FeatureIcon.vue';
 import Contact from './Contact.vue';
 import {
@@ -169,9 +170,9 @@ async function deleteCOT() {
 }
 
 async function selectClick() {
-    if (!props.select) return;
+    if (!props.select && !(props.feature instanceof COT)) return;
 
-    mapStore.selected.set(props.feature.id, props.feature);
+    mapStore.selected.set(props.feature.id, props.feature as COT);
 }
 
 async function flyToClick() {

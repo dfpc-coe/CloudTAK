@@ -37,7 +37,7 @@
             >
                 <div
                     v-for='group in filtered'
-                    :key='group'
+                    :key='`${group.name}-${group.direction}`'
                     class='col-12 cursor-pointer'
                     @click='updateGroup(group)'
                 >
@@ -113,7 +113,7 @@ onMounted(async () => {
     loading.value = false;
 });
 
-function updateGroup(group: string) {
+function updateGroup(group: Group) {
     if (selected.value.has(group.name)) {
         selected.value.delete(group.name)
     } else {

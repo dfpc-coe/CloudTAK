@@ -891,18 +891,23 @@ async function load_cot() {
 }
 
 const staleProp = computed(() => {
+    if (!cot.value) return '';
     return (currentTime.value && time.value === 'relative') ? timediff(cot.value.properties.stale) : cot.value.properties.stale;
 });
 
 const startProp = computed(() => {
+    if (!cot.value) return '';
     return (currentTime.value && time.value === 'relative') ? timediff(cot.value.properties.start) : cot.value.properties.start;
 });
 
 const timeProp = computed(() => {
+    if (!cot.value) return '';
     return (currentTime.value && time.value === 'relative') ? timediff(cot.value.properties.time) : cot.value.properties.time;
 });
 
-function updateProperty(key, event) {
+function updateProperty(key: string, event: any) {
+    if (!cot.value) return;
+
     if (typeof event === 'string' || typeof event === 'number') {
         if (cot.value.properties[key] !== event) {
             cot.value.properties[key] = event;
@@ -914,8 +919,21 @@ function updateProperty(key, event) {
     }
 }
 
-function updatePropertyIcon(event: string) {
-    if (event.replace(/\.png$/g, '').replace(':', '/') !== cot.value.properties.icon.replace(/\.png$/, '').replace(':', '/')) {
+function updatePropertyIcon(event: string | null) {
+    if (!cot.value) return;
+
+    if (!cot.value.properties.icon && event) {
+        cot.value.properties.icon = event;
+        cot.value.update({});
+    } else if (cot.value.properties.icon && !event)
+        if (cot.value.properties.type !== 'u-d-p') {
+            cot.value.properties.icon = cot.value.properties.type;
+        } else {
+            cot.value.properties.icon = undefined;
+        }
+
+        cot.value.update({});
+    if (event && cot.value.properties.icon && event.replace(/\.png$/g, '').replace(':', '/') !== cot.value.properties.icon.replace(/\.png$/, '').replace(':', '/')) {
         cot.value.properties.icon = event;
         cot.value.update({});
     }

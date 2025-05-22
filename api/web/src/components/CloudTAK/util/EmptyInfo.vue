@@ -23,8 +23,8 @@
                     @click='router.push("/menu/channels")'
                 >
                     <IconAffiliate
-                        size='32'
-                        :stroke='1'
+                        :size='32'
+                        stroke='1'
                     />
                 </TablerIconButton>
             </div>
