@@ -173,6 +173,10 @@ export default class COT {
         if (this._remote) {
             const atlas = this._atlas as Remote<Atlas>;
 
+            if (update.path) this._path = update.path;
+            if (update.properties) this._properties = update.properties;
+            if (update.geometry) this._geometry = update.geometry;
+
             // We do the parse/stringify to ensure that deep Proxies created with Vue3 ref/reactive are removed
             // As they cannot be Cloned accross the ComLink Bridge
             await atlas.db.add(JSON.parse(JSON.stringify(this.as_feature())));
