@@ -224,14 +224,6 @@ onBeforeUnmount(() => {
     if (channel) {
         channel.close();
     }
-
-    sortableFiles.destroy();
-
-    for (const path of paths.value) {
-        if (path.sortable) {
-            path.sortable.destroy();
-        }
-    }
 })
 
 async function onFeatureAdd(ev: SortableEvent): Promise<void> {
@@ -325,11 +317,6 @@ async function download(format: string): Promise<void> {
 async function closePath(path: Path): Promise<void> {
     path.opened = false;
     path.cots.clear();
-
-    if (path.sortable) {
-        path.sortable.destroy();
-        path.sortable = undefined;
-    }
 }
 
 async function openPath(path: Path): Promise<void> {
