@@ -317,7 +317,7 @@
                         :edit='is_editable'
                         :hover='is_editable'
                         :model-value='cot.properties.type'
-                        @update:model-value='updateType($event)'
+                        @update:model-value='updatePropertyType($event)'
                     />
                 </div>
 
@@ -332,7 +332,7 @@
                         :edit='is_editable'
                         :hover='is_editable'
                         :model-value='center'
-                        @update:model-value='updateCenter($event)'
+                        @update:model-value='updatePropertyCenter($event)'
                     />
                 </div>
                 <div

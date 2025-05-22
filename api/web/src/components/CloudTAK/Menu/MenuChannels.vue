@@ -39,7 +39,10 @@
                 />
             </div>
 
-            <EmptyInfo v-if='mapStore.hasNoChannels' />
+            <EmptyInfo
+                v-if='mapStore.hasNoChannels'
+                :button='false'
+            />
 
             <TablerLoading v-if='loading' />
             <TablerAlert
