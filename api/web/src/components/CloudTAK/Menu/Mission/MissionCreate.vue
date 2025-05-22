@@ -52,6 +52,7 @@
                     <GroupSelect
                         v-model='mission.groups'
                         :active='true'
+                        direction='IN'
                     />
                 </div>
 
@@ -140,6 +141,7 @@ import {
 const mapStore = useMapStore();
 const emit = defineEmits(['mission']);
 
+const attempted = ref(false);
 const error = ref<Error | undefined>();
 const loading = ref(false);
 const advanced = ref(false);
@@ -160,12 +162,18 @@ const missionNameValidity = computed<string>(() => {
         return 'Contains Invalid Character'
     } else if (mission.value.name.length > 1024) {
         return 'Exceeds 1024 Characters'
+    } else if (attempted.value && mission.value.name.length === 0) {
+        return 'Cannot be empty'
     }
 
     return '';
 });
 
 async function createMission() {
+    attempted.value = true;
+
+    if (missionNameValidity.value) return;
+
     loading.value = true;
     try {
         loading.value = true;
