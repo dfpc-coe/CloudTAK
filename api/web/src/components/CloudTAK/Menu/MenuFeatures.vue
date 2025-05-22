@@ -295,6 +295,7 @@ async function refresh(load = false): Promise<void> {
     cots.value = new Set(Array.from(await mapStore.worker.db
         .filter(`
             properties.archived
+            and path = "/"
             and $contains($lowercase(properties.callsign), "${query.value.filter.toLowerCase()}")
         `)))
 
