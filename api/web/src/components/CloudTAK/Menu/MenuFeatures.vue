@@ -291,8 +291,14 @@ async function refresh(load = false): Promise<void> {
 
     paths.value = (await mapStore.worker.db.paths())
         .map(p => p.path)
-        .sort((a) => {
-            return a === '/' ? 1 : -1;
+        .sort((a, b) => {
+            if (a.name < b.name) {
+                return -1;
+            } else if (a.name > b.name) {
+                return 1;
+            } else {
+              return 0;
+            }
         }).filter((path) => {
             return path !== '/'
         }).map((path) => {
