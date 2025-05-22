@@ -114,8 +114,14 @@
                                 </div>
                             </div>
 
-                            <div class='card-footer'>
-                                Last updated <span v-text='timeDiff(data.updated)' />
+                            <div class='card-footer d-flex'>
+                                <div>
+                                    Last updated <span v-text='timeDiff(data.updated)' />
+                                </div>
+                                <div class='ms-auto'> 
+                                    Inital Creation
+                                    <span v-text='data.username' />
+                                </div>
                             </div>
                         </div>
                     </div>
