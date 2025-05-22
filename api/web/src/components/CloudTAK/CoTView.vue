@@ -903,10 +903,15 @@ const timeProp = computed(() => {
 });
 
 function updateProperty(key, event) {
-    console.error('UPDATE', key);
-    
-    cot.value.properties[key] = event;
-    cot.value.update({})
+    if (typeof event === 'string' || typeof event === 'number') {
+        if (cot.value.properties[key] !== event) {
+            cot.value.properties[key] = event;
+            cot.value.update({})
+        }
+    } else {
+        cot.value.properties[key] = event;
+        cot.value.update({})
+    }
 }
 
 function updateType(type: string): void {
