@@ -34,7 +34,7 @@
             <TablerNone
                 v-if='!list.length'
                 :create='false'
-                label='Data Sync'
+                label='Data Syncs'
             />
             <TablerAlert
                 v-else-if='error'
