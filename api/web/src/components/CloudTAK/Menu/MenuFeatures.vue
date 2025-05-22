@@ -215,17 +215,12 @@ async function onFeatureAdd(ev: SortableEvent): Promise<void> {
     const id = ev.item.id;
     if (!id) return;
 
-    console.error('ID')
-
     const cot = await mapStore.worker.db.get(id);
     if (!cot) throw new Error("Marker Not Found");
-
-    console.error('COT')
 
     let target = ev.target.id
     if (!target) throw new Error("Sorting Error");
 
-    console.error('TARGET', target);
     if (target === 'general') {
         const ps = paths.value.filter((p) => { return p.name === cot.path; });
         if (ps.length) {
@@ -246,12 +241,11 @@ async function onFeatureAdd(ev: SortableEvent): Promise<void> {
             cot.path = p.name;
             cots.value.delete(cot);
         } else {
-            const ps = paths.value.filter((p) => { return p.name === cot.path; });
-            if (ps.length !== 0) return;
+            const ps = paths.value.filter((p) => { console.error(p.name, cot.path); return p.name === cot.path; });
+            if (ps.length !== 1) return;
             ps[0].cots.delete(cot);
 
             cot.path = p.name;
-
             p.cots.add(cot);
         }
     }
