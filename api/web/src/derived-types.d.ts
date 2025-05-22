@@ -1446,7 +1446,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort?: "id" | "created" | "updated" | "name" | "description" | "auto_transform" | "mission_sync" | "mission_diff" | "mission_role" | "mission_token" | "mission_groups" | "assets" | "connection" | "enableRLS";
+                    sort?: "id" | "created" | "updated" | "username" | "name" | "description" | "auto_transform" | "mission_sync" | "mission_diff" | "mission_role" | "mission_token" | "mission_groups" | "assets" | "connection" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                 };
@@ -1468,6 +1468,7 @@ export interface paths {
                                 id: number;
                                 created: string;
                                 updated: string;
+                                username: string | null;
                                 name: string;
                                 description: string;
                                 auto_transform: boolean;
@@ -1523,6 +1524,7 @@ export interface paths {
                             id: number;
                             created: string;
                             updated: string;
+                            username: null | string;
                             name: string;
                             /** @description Allow a single layer to diff sync with TAK Server */
                             mission_diff: boolean;
@@ -1576,6 +1578,7 @@ export interface paths {
                             id: number;
                             created: string;
                             updated: string;
+                            username: null | string;
                             name: string;
                             /** @description Allow a single layer to diff sync with TAK Server */
                             mission_diff: boolean;
@@ -1653,6 +1656,7 @@ export interface paths {
                             id: number;
                             created: string;
                             updated: string;
+                            username: null | string;
                             name: string;
                             /** @description Allow a single layer to diff sync with TAK Server */
                             mission_diff: boolean;
@@ -3002,7 +3006,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort?: "id" | "uuid" | "created" | "updated" | "name" | "enabled" | "description" | "priority" | "connection" | "logging" | "task" | "memory" | "timeout" | "enableRLS";
+                    sort?: "id" | "uuid" | "created" | "updated" | "username" | "name" | "enabled" | "description" | "priority" | "connection" | "logging" | "task" | "memory" | "timeout" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description No Description */
@@ -3032,6 +3036,7 @@ export interface paths {
                                 status?: string;
                                 created: string;
                                 updated: string;
+                                username: null | string;
                                 uuid: string;
                                 name: string;
                                 description: string;
@@ -3226,6 +3231,7 @@ export interface paths {
                             status?: string;
                             created: string;
                             updated: string;
+                            username: null | string;
                             uuid: string;
                             name: string;
                             description: string;
@@ -4090,6 +4096,7 @@ export interface paths {
                             status?: string;
                             created: string;
                             updated: string;
+                            username: null | string;
                             uuid: string;
                             name: string;
                             description: string;
@@ -4309,6 +4316,7 @@ export interface paths {
                             status?: string;
                             created: string;
                             updated: string;
+                            username: null | string;
                             uuid: string;
                             name: string;
                             description: string;
@@ -5254,7 +5262,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort?: "id" | "agency" | "created" | "updated" | "name" | "description" | "enabled" | "auth" | "enableRLS";
+                    sort?: "id" | "agency" | "created" | "updated" | "username" | "name" | "description" | "enabled" | "auth" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                 };
@@ -5291,6 +5299,7 @@ export interface paths {
                                 };
                                 created: string;
                                 updated: string;
+                                username: null | string;
                                 name: string;
                                 description: string;
                                 enabled: boolean;
@@ -5345,6 +5354,7 @@ export interface paths {
                             };
                             created: string;
                             updated: string;
+                            username: null | string;
                             name: string;
                             description: string;
                             enabled: boolean;
@@ -5393,6 +5403,7 @@ export interface paths {
                             };
                             created: string;
                             updated: string;
+                            username: null | string;
                             name: string;
                             description: string;
                             enabled: boolean;
@@ -5471,6 +5482,7 @@ export interface paths {
                             };
                             created: string;
                             updated: string;
+                            username: null | string;
                             name: string;
                             description: string;
                             enabled: boolean;
@@ -5517,6 +5529,7 @@ export interface paths {
                             };
                             created: string;
                             updated: string;
+                            username: null | string;
                             name: string;
                             description: string;
                             enabled: boolean;
@@ -6979,7 +6992,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort?: "id" | "uuid" | "created" | "updated" | "name" | "enabled" | "description" | "priority" | "connection" | "logging" | "task" | "memory" | "timeout" | "enableRLS";
+                    sort?: "id" | "uuid" | "created" | "updated" | "username" | "name" | "enabled" | "description" | "priority" | "connection" | "logging" | "task" | "memory" | "timeout" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description No Description */
@@ -7014,6 +7027,7 @@ export interface paths {
                                 status?: string;
                                 created: string;
                                 updated: string;
+                                username: null | string;
                                 uuid: string;
                                 name: string;
                                 description: string;
@@ -7210,6 +7224,7 @@ export interface paths {
                             status?: string;
                             created: string;
                             updated: string;
+                            username: null | string;
                             uuid: string;
                             name: string;
                             description: string;
