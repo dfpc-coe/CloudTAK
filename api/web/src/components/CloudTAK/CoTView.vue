@@ -905,6 +905,7 @@ const timeProp = computed(() => {
     return (currentTime.value && time.value === 'relative') ? timediff(cot.value.properties.time) : cot.value.properties.time;
 });
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function updateProperty(key: string, event: any) {
     if (!cot.value) return;
 
