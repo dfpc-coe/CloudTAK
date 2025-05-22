@@ -188,8 +188,6 @@ const query = ref({
     filter: ''
 })
 
-let sortableFiles: Sortable;
-
 const dragging = ref(false);
 const loading = ref(true);
 
