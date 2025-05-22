@@ -152,7 +152,7 @@
                                     <div
                                         v-if='
                                             cot.properties.attachments !== undefined
-                                                && cot.properties.attachments !== undefined
+                                                && cot.properties.video !== undefined
                                                 && cot.properties.sensor !== undefined
                                         '
                                     >
@@ -163,7 +163,7 @@
                                             v-if='cot.properties.attachments === undefined'
                                             role='button'
                                             class='hover-dark px-2 py-2 d-flex align-items-center'
-                                            @click='cot.properties.attachments = []'
+                                            @click='updateProperty("attachments", [])'
                                         >
                                             <IconPaperclip
                                                 stroke='1'
@@ -176,7 +176,7 @@
                                             v-if='cot.properties.video === undefined'
                                             role='button'
                                             class='hover-dark px-2 py-2 d-flex align-items-center'
-                                            @click='cot.properties.video = { url: "" }'
+                                            @click='updateProperty("video", { url: "" })'
                                         >
                                             <IconMovie
                                                 stroke='1'
@@ -189,7 +189,7 @@
                                             v-if='cot.properties.sensor === undefined'
                                             role='button'
                                             class='hover-dark px-2 py-2 d-flex align-items-center'
-                                            @click='cot.properties.sensor = {}'
+                                            @click='updateProperty("sensor", {})'
                                         >
                                             <IconCone
                                                 stroke='1'
