@@ -195,7 +195,6 @@ channel.onmessage = async (event: MessageEvent<WorkerMessage>) => {
     if (!msg || !msg.type) return;
 
     if (msg.type === WorkerMessageType.Contact_Change) {
-        console.error('CONTACT UPDATE')
         await fetchList(refresh);
         await updateContacts();
     }
