@@ -102,6 +102,7 @@
                             <template v-else>
                                 <Feature
                                     v-for='cot of path.cots.values()'
+                                    :id='cot.id'
                                     :key='cot.id'
                                     :grip-handle='true'
                                     :delete-button='true'
@@ -113,7 +114,7 @@
                     </div>
                 </template>
 
-                <div ref='sortableFilesRef'>
+                <div id='general' ref='sortableFilesRef'>
                     <Feature
                         v-for='cot of cots.values()'
                         :id='cot.id'
@@ -130,7 +131,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, watch, onMounted, onBeforeUnmount, useTemplateRef } from 'vue';
+import { ref, watch, nextTick, onMounted, onBeforeUnmount, useTemplateRef } from 'vue';
 import { stdurl } from '../../../std.ts';
 import COT from '../../../base/cot.ts';
 import MenuTemplate from '../util/MenuTemplate.vue';
@@ -200,22 +201,6 @@ watch(query.value, async () => {
 
 onMounted(async () => {
     await refresh();
-
-    if (!sortableFilesRef.value) throw new Error('Could not load sortable');
-
-    new Sortable(sortableFilesRef.value, {
-        sort: true,
-        group: 'features',
-        handle: '.drag-handle',
-        dataIdAttr: 'id',
-        onAdd: onFeatureAdd,
-        onStart: () => {
-            dragging.value = true;
-        },
-        onEnd: () => {
-            dragging.value = false;
-        }
-    })
 });
 
 onBeforeUnmount(() => {
@@ -228,31 +213,45 @@ async function onFeatureAdd(ev: SortableEvent): Promise<void> {
     const id = ev.item.id;
     if (!id) return;
 
+    console.error('ID')
+
     const cot = await mapStore.worker.db.get(id);
-    if (!cot) return;
+    if (!cot) throw new Error("Marker Not Found");
+
+    console.error('COT')
 
     let target = ev.target.id
-    if (!target) return;
+    if (!target) throw new Error("Sorting Error");
 
-    target = target.replace('folder-', '');
-    const ps = paths.value.filter((p) => {
-        return p.id === target;
-    });
-
-    if (ps.length !== 1) return;
-    const p = ps[0];
-
-    if (cot.path === '/') {
-        cot.path = p.name;
-        cots.value.delete(cot);
-    } else {
+    console.error('TARGET', target);
+    if (target === 'general') {
         const ps = paths.value.filter((p) => { return p.name === cot.path; });
-        if (ps.length !== 0) return;
-        ps[0].cots.delete(cot);
+        if (ps.length) {
+            ps[0].cots.delete(cot);
+        }
 
-        cot.path = p.name;
+        cot.path = '/';
+    } else {
+        target = target.replace('folder-', '');
+        const ps = paths.value.filter((p) => {
+            return p.id === target;
+        });
 
-        p.cots.add(cot);
+        if (ps.length !== 1) return;
+        const p = ps[0];
+
+        if (cot.path === '/') {
+            cot.path = p.name;
+            cots.value.delete(cot);
+        } else {
+            const ps = paths.value.filter((p) => { return p.name === cot.path; });
+            if (ps.length !== 0) return;
+            ps[0].cots.delete(cot);
+
+            cot.path = p.name;
+
+            p.cots.add(cot);
+        }
     }
 }
 
@@ -312,6 +311,24 @@ async function refresh(load = false): Promise<void> {
         });
 
     loading.value = false
+
+    nextTick(() => {
+        if (!sortableFilesRef.value) throw new Error('Could not load sortable');
+
+        new Sortable(sortableFilesRef.value, {
+            sort: true,
+            group: 'features',
+            handle: '.drag-handle',
+            dataIdAttr: 'id',
+            onAdd: onFeatureAdd,
+            onStart: () => {
+                dragging.value = true;
+            },
+            onEnd: () => {
+                dragging.value = false;
+            }
+        })
+    })
 }
 
 async function download(format: string): Promise<void> {

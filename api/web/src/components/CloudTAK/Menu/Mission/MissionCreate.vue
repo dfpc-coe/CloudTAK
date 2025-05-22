@@ -127,7 +127,6 @@ import {
 import GroupSelect from '../../util/GroupSelect.vue';
 import Overlay from '../../../../base/overlay.ts';
 import {
-    TablerAlert,
     TablerInput,
     TablerEnum,
     TablerToggle,
