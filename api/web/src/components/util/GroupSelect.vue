@@ -77,6 +77,7 @@ import {
 const props = defineProps<{
     connection?: number,
     limit?: number,
+    active?: boolean,
     modelValue: Array<string>
 }>();
 
@@ -135,6 +136,11 @@ async function fetch() {
     JSON.parse(JSON.stringify(list)).sort((a: Group, b: Group) => {
         return (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0);
     }).forEach((channel: Group) => {
+        console.error(channel);
+        if (props.active && !channel.active) {
+            return;
+        }
+
         if (channels[channel.name]) {
             // @ts-expect-error Need to make these human readable strings instead of array to sync with type
             channels[channel.name].direction.push(channel.direction);

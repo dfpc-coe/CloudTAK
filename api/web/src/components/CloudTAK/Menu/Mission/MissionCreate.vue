@@ -40,34 +40,18 @@
                 </div>
 
                 <div class='col-12'>
-                    <label class='px-2 w-100'>Groups (Channels)</label>
-                    <div
-                        class='mx-1 d-flex'
-                        style='padding-right: 15px;'
-                    >
-                        <input
-                            type='text'
-                            class='form-control'
-                            disabled
-                            :value='mission.groups.length ? mission.groups.join(", ") : "All Channels"'
-                        >
-                        <button
-                            class='btn btn-sm'
-                            @click='modal.groups = true'
-                        >
-                            <IconListSearch
-                                :size='32'
-                                stroke='1'
-                                class='cursor-pointer mx-2'
-                            />
-                        </button>
-                    </div>
-                </div>
-
-                <div class='col-12'>
                     <TablerInput
                         v-model='mission.description'
                         label='Description'
+                    />
+                </div>
+
+                <div class='col-12'>
+                    <label class='px-2 w-100'>Channels</label>
+
+                    <GroupSelect
+                        v-model='mission.groups'
+                        :active='true'
                     />
                 </div>
 
@@ -129,12 +113,6 @@
                 </div>
             </div>
         </template>
-
-        <GroupSelect
-            v-if='modal.groups'
-            v-model='mission.groups'
-            @close='modal.groups = false'
-        />
     </div>
 </template>
 
@@ -146,11 +124,10 @@ import { useMapStore } from '../../../../stores/map.ts'
 import {
     IconLock,
     IconLockOpen,
-    IconListSearch,
     IconSquareChevronRight,
     IconChevronDown,
 } from '@tabler/icons-vue';
-import GroupSelect from '../../../util/GroupSelectModal.vue';
+import GroupSelect from '../../util/GroupSelect.vue';
 import Overlay from '../../../../base/overlay.ts';
 import {
     TablerAlert,
@@ -165,9 +142,6 @@ const emit = defineEmits(['mission']);
 
 const error = ref<Error | undefined>();
 const loading = ref(false);
-const modal = ref({
-    groups: false
-});
 const advanced = ref(false);
 
 const mission = ref({

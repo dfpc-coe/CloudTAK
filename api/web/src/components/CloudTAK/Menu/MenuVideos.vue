@@ -82,6 +82,8 @@
 
             <template v-if='mode === "connections"'>
                 <div class='col-12'>
+                    <EmptyInfo v-if='mapStore.hasNoChannels' />
+
                     <TablerLoading
                         v-if='loading.connections'
                     />
@@ -225,6 +227,7 @@
 <script setup lang='ts'>
 import MenuTemplate from '../util/MenuTemplate.vue';
 import VideoLeaseModal from './Videos/VideoLeaseModal.vue';
+import EmptyInfo from '../util/EmptyInfo.vue';
 import Feature from '../util/Feature.vue';
 import { std, stdurl } from '../../../std.ts';
 import COT from '../../../base/cot.ts';
