@@ -30,7 +30,8 @@
                         `'
                     >
                         <CopyField
-                            v-model='cot.properties.callsign'
+                            :model-value='cot.properties.callsign'
+                            @update:model-value='updateProperty("callsign", $event)'
                             :edit='is_editable'
                             :minheight='44'
                             :hover='is_editable'
@@ -312,7 +313,7 @@
                     }'
                 >
                     <PropertyType
-                        v-if='cot.properties.type.startsWith("a-")'
+                        v-if='cot.properties.type.startsWith("a-") || cot.properties.type === "u-d-p"'
                         :edit='is_editable'
                         :hover='is_editable'
                         :model-value='cot.properties.type'
@@ -423,7 +424,8 @@
             >
                 <label class='subheader mx-2'>Remarks</label>
                 <CopyField
-                    v-model='cot.properties.remarks'
+                    :model-value='cot.properties.remarks'
+                    @update:model-value='updateProperty("remarks", $event)'
                     :rows='10'
                     :edit='is_editable'
                     :hover='is_editable'
@@ -504,7 +506,8 @@
 
             <PropertySensor
                 v-if='cot.properties.sensor !== undefined'
-                v-model='cot.properties.sensor'
+                :model-value='cot.properties.sensor'
+                @update:model-value='updateProperty("sensor", $event)'
                 class='my-2 mx-2'
             />
 
@@ -518,7 +521,8 @@
                         <template v-if='cot.geometry.type === "Point"'>
                             <div class='col-12'>
                                 <IconSelect
-                                    v-model='cot.properties.icon'
+                                    :model-value='cot.properties.icon'
+                                    @update:model-value='updateProperty("icon", $event)'
                                     label='Point Icon'
                                     :size='32'
                                     stroke='1'
@@ -527,7 +531,8 @@
                             <div class='col-12'>
                                 <label class='subheader'>Point Colour</label>
                                 <TablerInput
-                                    v-model='cot.properties["marker-color"]'
+                                    :model-value='cot.properties["marker-color"]'
+                                    @update:model-value='updateProperty("marker-color", $event)'
                                     label=''
                                     default='#00FF00'
                                     type='color'
@@ -537,7 +542,8 @@
                             <div class='col-12'>
                                 <label class='subheader'>Point Opacity</label>
                                 <TablerRange
-                                    v-model='cot.properties["marker-opacity"]'
+                                    :model-value='cot.properties["marker-opacity"]'
+                                    @update:model-value='updateProperty("marker-opacity", $event)'
                                     label=''
                                     :default='1'
                                     :min='0'
@@ -550,7 +556,8 @@
                             <div class='col-12'>
                                 <label class='subheader'>Line Colour</label>
                                 <TablerInput
-                                    v-model='cot.properties.stroke'
+                                    :model-value='cot.properties["stroke"]'
+                                    @update:model-value='updateProperty("stroke", $event)'
                                     label=''
                                     type='color'
                                 />
@@ -559,7 +566,8 @@
                             <div class='col-12'>
                                 <label class='subheader'>Line Style</label>
                                 <TablerEnum
-                                    v-model='cot.properties["stroke-style"]'
+                                    :model-value='cot.properties["stroke-style"]'
+                                    @update:model-value='updateProperty("stroke-style", $event)'
                                     label=''
                                     :options='["solid", "dashed", "dotted", "outlined"]'
                                     default='solid'
@@ -568,7 +576,8 @@
                             <div class='col-12'>
                                 <label class='subheader'>Line Thickness</label>
                                 <TablerRange
-                                    v-model='cot.properties["stroke-width"]'
+                                    :model-value='cot.properties["stroke-width"]'
+                                    @update:model-value='updateProperty("stroke-width", $event)'
                                     label=''
                                     :default='1'
                                     :min='1'
@@ -579,7 +588,8 @@
                             <div class='col-12'>
                                 <label class='subheader'>Line Opacity</label>
                                 <TablerRange
-                                    v-model='cot.properties["stroke-opacity"]'
+                                    :model-value='cot.properties["stroke-opacity"]'
+                                    @update:model-value='updateProperty("stroke-opacity", $event)'
                                     label=''
                                     :default='1'
                                     :min='0'
@@ -592,7 +602,8 @@
                             <div class='col-12'>
                                 <label class='subheader'>Fill Colour</label>
                                 <TablerInput
-                                    v-model='cot.properties.fill'
+                                    :model-value='cot.properties["fill"]'
+                                    @update:model-value='updateProperty("fill", $event)'
                                     label=''
                                     type='color'
                                 />
@@ -600,7 +611,8 @@
                             <div class='col-12 round'>
                                 <label class='subheader'>Fill Opacity</label>
                                 <TablerRange
-                                    v-model='cot.properties["fill-opacity"]'
+                                    :model-value='cot.properties["fill-opacity"]'
+                                    @update:model-value='updateProperty("fill-opacity", $event)'
                                     label=''
                                     :default='1'
                                     :min='0'
@@ -807,7 +819,7 @@ watch(cot, async () => {
             subscription.value = undefined;
         }
     }
-}, { deep: true });
+});
 
 watch(route, async () => {
     mode.value = 'default'
@@ -890,6 +902,13 @@ const timeProp = computed(() => {
     return (currentTime.value && time.value === 'relative') ? timediff(cot.value.properties.time) : cot.value.properties.time;
 });
 
+function updateProperty(key, event) {
+    console.error('UPDATE', key);
+    
+    cot.value.properties[key] = event;
+    cot.value.update({})
+}
+
 function updateType(type: string): void {
     if (!cot.value) return;
 
@@ -898,6 +917,8 @@ function updateType(type: string): void {
     if (!cot.value.properties.icon || !cot.value.properties.icon.includes(':')) {
         cot.value.properties.icon = type;
     }
+
+    cot.value.update({});
 }
 
 function updateCenter(center: number[]): void {
@@ -908,6 +929,8 @@ function updateCenter(center: number[]): void {
     if (cot.value.geometry.type === 'Point') {
         cot.value.geometry.coordinates = center;
     }
+
+    cot.value.update({});
 }
 
 async function editGeometry() {
