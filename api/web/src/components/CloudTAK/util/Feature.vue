@@ -21,7 +21,7 @@
                 "hover-button": hover,
                 "py-2": !compact
             }'
-            @click='flyToClick'
+            @click.exact='flyToClick'
             @click.ctrl='selectClick'
         >
             <div
