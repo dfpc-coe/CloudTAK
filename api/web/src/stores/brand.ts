@@ -3,7 +3,6 @@
 */
 
 import { defineStore } from 'pinia'
-const mapStore = useMapStore();
 
 export const useBrandStore = defineStore('brand', {
     state: (): {

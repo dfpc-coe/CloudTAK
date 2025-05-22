@@ -3,7 +3,7 @@ import sleep from '../lib/sleep.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Cacher from '../lib/cacher.js';
-import Auth, { AuthResourceAccess } from '../lib/auth.js';
+import Auth, { AuthResourceAccess, AuthUser } from '../lib/auth.js';
 import Lambda from '../lib/aws/lambda.js';
 import CloudFormation from '../lib/aws/cloudformation.js';
 import Style, { StyleContainer } from '../lib/style.js';
@@ -169,13 +169,14 @@ export default async function router(schema: Schema, config: Config) {
         res: LayerResponse
     }, async (req, res) => {
         try {
-            await Auth.is_connection(config, req, {
+            const auth = await Auth.is_connection(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             }, req.params.connectionid);
 
             const base = await config.models.Layer.generate({
                 connection: req.params.connectionid,
-                ...req.body
+                ...req.body,
+                username: auth.auth instanceof AuthUser ? auth.auth.email : null
             });
 
             const layer = await config.models.Layer.augmented_from(base.id);
