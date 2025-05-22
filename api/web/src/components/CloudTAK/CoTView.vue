@@ -522,7 +522,7 @@
                             <div class='col-12'>
                                 <IconSelect
                                     :model-value='cot.properties.icon'
-                                    @update:model-value='updateProperty("icon", $event)'
+                                    @update:model-value='updatePropertyIcon($event)'
                                     label='Point Icon'
                                     :size='32'
                                     stroke='1'
@@ -914,7 +914,14 @@ function updateProperty(key, event) {
     }
 }
 
-function updateType(type: string): void {
+function updatePropertyIcon(event: string) {
+    if (event.replace(/\.png$/g, '').replace(':', '/') !== cot.value.properties.icon.replace(/\.png$/, '').replace(':', '/')) {
+        cot.value.properties.icon = event;
+        cot.value.update({});
+    }
+}
+
+function updatePropertyType(type: string): void {
     if (!cot.value) return;
 
     cot.value.properties.type = type;
@@ -926,7 +933,7 @@ function updateType(type: string): void {
     cot.value.update({});
 }
 
-function updateCenter(center: number[]): void {
+function updatePropertyCenter(center: number[]): void {
     if (!cot.value) return;
 
     cot.value.properties.center = center;
