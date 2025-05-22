@@ -43,10 +43,10 @@ export const RENDERED_PROPERTIES = [
 
 export default class COT {
     id: string;
-    path: string;
 
     instance: string;
 
+    _path: string;
     _properties: Feature["properties"];
     _geometry: Feature["geometry"];
 
@@ -74,7 +74,8 @@ export default class COT {
         }
 
         this.id = feat.id || crypto.randomUUID();
-        this.path = feat.path || '/';
+
+        this._path = feat.path || '/';
         this._properties = feat["properties"] || {};
         this._geometry = feat["geometry"];
 
@@ -121,7 +122,7 @@ export default class COT {
             this._remote.onmessage = async (ev) => {
                 if (ev.data.id === this.id) {
 
-                    this.path = ev.data.path;
+                    this._path = ev.data.path;
                     this.origin = ev.data.origin;
                     Object.assign(this._properties, ev.data.properties);
                     Object.assign(this._geometry, ev.data.geometry);
@@ -130,6 +131,14 @@ export default class COT {
         } else {
             throw new Error('Only Remote instances can listen for updates');
         }
+    }
+
+    set path(path: string) {
+        this.update({ path });
+    }
+
+    get path() {
+        return this._path;
     }
 
     set properties(properties: Feature["properties"]) {
@@ -153,6 +162,7 @@ export default class COT {
      */
     async update(
         update: {
+            path?: string,
             properties?: Feature["properties"],
             geometry?: Feature["geometry"]
         },
@@ -169,7 +179,15 @@ export default class COT {
 
             return false;
         } else {
+            if (!update.geometry && !update.properties && !update.path) {
+                return false;
+            }
+
             const atlas = this._atlas as Atlas;
+
+            if (update.path) {
+                this._path = update.path;
+            }
 
             let visuallyChanged = false;
             if (update.geometry) {
@@ -196,10 +214,6 @@ export default class COT {
 
                     Object.assign(this._properties, update.properties);
                 }
-            }
-
-            if (!update.geometry && !update.properties) {
-                return false;
             }
 
             if (update.geometry || !this._properties.center || (this._properties.center[0] === 0 && this._properties.center[1] === 0)) {
@@ -345,7 +359,7 @@ export default class COT {
         const feat = {
             id: this.id,
             type: 'Feature',
-            path: this.path,
+            path: this._path,
             origin: this.origin,
             properties: this._properties,
             geometry: this._geometry

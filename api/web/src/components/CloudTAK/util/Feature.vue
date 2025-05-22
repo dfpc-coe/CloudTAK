@@ -29,8 +29,8 @@
                 class='d-flex me-2 drag-handle cursor-grab'
             >
                 <IconGripVertical
-                    size='18'
-                    :stroke='1'
+                    :size='18'
+                    stroke='1'
                 />
             </div>
 

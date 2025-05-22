@@ -57,7 +57,7 @@
                 desc='Loading Features'
             />
             <TablerNone
-                v-else-if='cots.length === 0'
+                v-else-if='cots.size === 0'
                 :create='false'
                 label='Archived Features'
             />
@@ -70,7 +70,7 @@
                         class='d-flex align-items-center px-3 py-2 me-2 hover-button cursor-pointer user-select-none'
                         :style='hover === path ? "background-color: rgba(0, 0, 0, 0.2);" : ""'
                         @dragover.prevent='dragOverFolder(path)'
-                        @dragleave='dragLeaveFolder(path)'
+                        @dragleave='dragLeaveFolder()'
                         @click='path.opened ? closePath(path) : openPath(path)'
                     >
                         <IconChevronRight
@@ -115,7 +115,8 @@
 
                 <div ref='sortableFilesRef'>
                     <Feature
-                        v-for='cot of cots'
+                        v-for='cot of cots.values()'
+                        :id='cot.id'
                         :key='cot.id'
                         :grip-handle='true'
                         :delete-button='true'
@@ -129,7 +130,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, watch, nextTick, onMounted, onBeforeUnmount, useTemplateRef } from 'vue';
+import { ref, watch, onMounted, onBeforeUnmount, useTemplateRef } from 'vue';
 import { stdurl } from '../../../std.ts';
 import COT from '../../../base/cot.ts';
 import MenuTemplate from '../util/MenuTemplate.vue';
@@ -181,8 +182,8 @@ channel.onmessage = async (event: MessageEvent<WorkerMessage>) => {
     }
 }
 
-const cots = ref<COT[]>([]);
-const paths = ref<Array<Path>>();
+const cots = ref<Set<COT>>(new Set());
+const paths = ref<Array<Path>>([]);
 const query = ref({
     filter: ''
 })
@@ -193,7 +194,7 @@ const dragging = ref(false);
 const loading = ref(true);
 
 const hover = ref<Path | undefined>();
-const hoverTimer = ref<ReturnType<setTimeout> | undefined>();
+const hoverTimer = ref<ReturnType<typeof setTimeout> | undefined>();
 
 watch(query.value, async () => {
     await refresh();
@@ -202,11 +203,14 @@ watch(query.value, async () => {
 onMounted(async () => {
     await refresh();
 
+    if (!sortableFilesRef.value) throw new Error('Could not load sortable');
+
     sortableFiles = new Sortable(sortableFilesRef.value, {
         sort: true,
         group: 'features',
         handle: '.drag-handle',
         dataIdAttr: 'id',
+        onAdd: onFeatureAdd,
         onStart: () => {
             dragging.value = true;
         },
@@ -230,7 +234,39 @@ onBeforeUnmount(() => {
     }
 })
 
-async function dragOverFolder(path: Path) {
+async function onFeatureAdd(ev: SortableEvent): Promise<void> {
+    const id = ev.item.id;
+    if (!id) return;
+
+    const cot = await mapStore.worker.db.get(id);
+    if (!cot) return;
+
+    let target = ev.target.id
+    if (!target) return;
+
+    target = target.replace('folder-', '');
+    const ps = paths.value.filter((p) => {
+        return p.id === target;
+    });
+
+    if (ps.length !== 1) return;
+    const p = ps[0];
+
+    if (cot.path === '/') {
+        cot.path = p.name;
+        cots.value.delete(cot);
+    } else {
+        const ps = paths.value.filter((p) => { return p.name === cot.path; });
+        if (ps.length !== 0) return;
+        ps[0].cots.delete(cot);
+
+        cot.path = p.name;
+
+        p.cots.add(cot);
+    }
+}
+
+async function dragOverFolder(path: Path): Promise<void> {
     if (!dragging.value || path.opened) return;
 
     if (!path.opened) {
@@ -240,11 +276,11 @@ async function dragOverFolder(path: Path) {
 
             clearTimeout(hoverTimer.value);
             hoverTimer.value = undefined;
-        }, 1000);
+        }, 500);
     }
 }
 
-async function dragLeaveFolder() {
+async function dragLeaveFolder(): Promise<void> {
     hover.value = undefined;
 
     if (hoverTimer.value) {
@@ -256,11 +292,11 @@ async function dragLeaveFolder() {
 async function refresh(load = false): Promise<void> {
     if (load) loading.value = true;
 
-    cots.value = Array.from(await mapStore.worker.db
+    cots.value = new Set(Array.from(await mapStore.worker.db
         .filter(`
             properties.archived
             and $contains($lowercase(properties.callsign), "${query.value.filter.toLowerCase()}")
-        `))
+        `)))
 
     paths.value = (await mapStore.worker.db.paths())
         .map(p => p.path)
@@ -281,7 +317,7 @@ async function refresh(load = false): Promise<void> {
     loading.value = false
 }
 
-async function download(format: string) {
+async function download(format: string): Promise<void> {
     window.location.href = String(stdurl(`/api/profile/feature?format=${format}&download=true&token=${localStorage.token}`));
 }
 
@@ -302,12 +338,14 @@ async function openPath(path: Path): Promise<void> {
     path.loading = false;
 
     const folderDiv = document.getElementById(`folder-${path.id}`);
+    if (!folderDiv) throw new Error('Could not load sortable');
 
     path.sortable = new Sortable(folderDiv, {
         sort: true,
         group: 'features',
         handle: '.drag-handle',
         dataIdAttr: 'id',
+        onAdd: onFeatureAdd,
         onStart: () => {
             dragging.value = true;
         },
