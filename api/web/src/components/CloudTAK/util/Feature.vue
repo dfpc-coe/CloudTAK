@@ -21,7 +21,8 @@
                 "hover-button": hover,
                 "py-2": !compact
             }'
-            @click='flyTo'
+            @click='flyToClick'
+            @click.ctrl='selectClick'
         >
             <div
                 v-if='props.gripHandle'
@@ -100,6 +101,10 @@ const props = defineProps({
         type: Object,
         required: true
     },
+    select: {
+        type: Boolean,
+        default: false
+    },
     deleteButton: {
         type: Boolean,
         default: true
@@ -163,7 +168,13 @@ async function deleteCOT() {
     }
 }
 
-async function flyTo() {
+async function selectClick() {
+    if (!props.select) return;
+
+    mapStore.selected.set(props.feature.id, props.feature);
+}
+
+async function flyToClick() {
     if (!isZoomable.value || isDeleting.value || isDeleted.value) return;
 
     const cot = await mapStore.worker.db.get(props.feature.id, {
