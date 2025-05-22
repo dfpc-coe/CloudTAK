@@ -1,11 +1,12 @@
 <template>
-    <div class='modal-body'>
-        <TablerInput
-            v-model='filter'
-            icon='search'
-            label='Channel Selection'
-            placeholder='Filter Channels...'
-        />
+    <div class='mx-2'>
+        <div class='sticky-top py-2 bg-dark border-bottom'>
+            <TablerInput
+                v-model='filter'
+                icon='search'
+                placeholder='Filter Channels...'
+            />
+        </div>
 
         <div
             v-if='props.limit'
@@ -28,8 +29,7 @@
         />
         <template v-else>
             <div
-                class='my-2 overflow-auto'
-                style='height: 25vh;'
+                class='my-2 mx-2 overflow-auto'
             >
                 <div
                     v-for='group in filtered'
