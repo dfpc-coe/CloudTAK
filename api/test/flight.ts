@@ -363,6 +363,7 @@ export default class Flight {
                 },
                 id: 1,
                 agency: null,
+                username: 'admin@example.com',
                 name: 'Test Connection',
                 description: 'Connection created by Flight Test Runner',
                 enabled: true
