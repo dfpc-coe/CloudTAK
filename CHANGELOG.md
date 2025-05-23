@@ -12,6 +12,8 @@
 
 ### Pending Release
 
+### v8.36.0 - 2025-05-23
+
 - :rocket: Make Feature in Feature Menu Draggable
 - :rocket: Hovering on Folder should open it after a short timeout
 - :rocket: Dropping Feature in folder should append the path and save it
