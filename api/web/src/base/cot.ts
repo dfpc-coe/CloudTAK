@@ -43,10 +43,10 @@ export const RENDERED_PROPERTIES = [
 
 export default class COT {
     id: string;
-    path: string;
 
     instance: string;
 
+    _path: string;
     _properties: Feature["properties"];
     _geometry: Feature["geometry"];
 
@@ -74,7 +74,8 @@ export default class COT {
         }
 
         this.id = feat.id || crypto.randomUUID();
-        this.path = feat.path || '/';
+
+        this._path = feat.path || '/';
         this._properties = feat["properties"] || {};
         this._geometry = feat["geometry"];
 
@@ -121,7 +122,11 @@ export default class COT {
             this._remote.onmessage = async (ev) => {
                 if (ev.data.id === this.id) {
 
-                    this.path = ev.data.path;
+                    if (ev.data.id === 'ANDROID-CloudTAK-nicholas.ingalls@state.co.us') {
+                        console.error('CHANNEL UPDATE');
+                    }
+
+                    this._path = ev.data.path;
                     this.origin = ev.data.origin;
                     Object.assign(this._properties, ev.data.properties);
                     Object.assign(this._geometry, ev.data.geometry);
@@ -130,6 +135,14 @@ export default class COT {
         } else {
             throw new Error('Only Remote instances can listen for updates');
         }
+    }
+
+    set path(path: string) {
+        this.update({ path });
+    }
+
+    get path() {
+        return this._path;
     }
 
     set properties(properties: Feature["properties"]) {
@@ -153,6 +166,7 @@ export default class COT {
      */
     async update(
         update: {
+            path?: string,
             properties?: Feature["properties"],
             geometry?: Feature["geometry"]
         },
@@ -163,13 +177,25 @@ export default class COT {
         if (this._remote) {
             const atlas = this._atlas as Remote<Atlas>;
 
+            if (update.path) this._path = update.path;
+            if (update.properties) this._properties = update.properties;
+            if (update.geometry) this._geometry = update.geometry;
+
             // We do the parse/stringify to ensure that deep Proxies created with Vue3 ref/reactive are removed
             // As they cannot be Cloned accross the ComLink Bridge
             await atlas.db.add(JSON.parse(JSON.stringify(this.as_feature())));
 
             return false;
         } else {
+            if (!update.geometry && !update.properties && !update.path) {
+                return false;
+            }
+
             const atlas = this._atlas as Atlas;
+
+            if (update.path) {
+                this._path = update.path;
+            }
 
             let visuallyChanged = false;
             if (update.geometry) {
@@ -196,10 +222,6 @@ export default class COT {
 
                     Object.assign(this._properties, update.properties);
                 }
-            }
-
-            if (!update.geometry && !update.properties) {
-                return false;
             }
 
             if (update.geometry || !this._properties.center || (this._properties.center[0] === 0 && this._properties.center[1] === 0)) {
@@ -307,7 +329,7 @@ export default class COT {
     }
 
     /**
-     * Returns a proxy that will correctly call the intenral update function if changes are made
+     * Returns a proxy that will correctly call the internal update function if changes are made
      * Warning: Cannot be used with Vue3's reactivity system
      */
     as_proxy(): COT {
@@ -345,7 +367,7 @@ export default class COT {
         const feat = {
             id: this.id,
             type: 'Feature',
-            path: this.path,
+            path: this._path,
             origin: this.origin,
             properties: this._properties,
             geometry: this._geometry

@@ -62,8 +62,14 @@
                                 class='card-body'
                                 :markdown='layer.description'
                             />
-                            <div class='card-footer'>
-                                Last updated <span v-text='timeDiff(layer.updated)' />
+                            <div class='card-footer d-flex'>
+                                <div>
+                                    Last updated <span v-text='timeDiff(layer.updated)' />
+                                </div>
+                                <div class='ms-auto'> 
+                                    Inital Creation
+                                    <span v-text='layer.username' />
+                                </div>
                             </div>
                         </div>
                     </div>

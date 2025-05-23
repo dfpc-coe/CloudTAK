@@ -25,10 +25,6 @@
             v-if='loading'
             desc='Saving Mission'
         />
-        <TablerAlert
-            v-else-if='error'
-            :err='error'
-        />
         <template v-else>
             <div class='modal-body row g-2'>
                 <div class='col-12'>
@@ -40,34 +36,19 @@
                 </div>
 
                 <div class='col-12'>
-                    <label class='px-2 w-100'>Groups (Channels)</label>
-                    <div
-                        class='mx-1 d-flex'
-                        style='padding-right: 15px;'
-                    >
-                        <input
-                            type='text'
-                            class='form-control'
-                            disabled
-                            :value='mission.groups.length ? mission.groups.join(", ") : "All Channels"'
-                        >
-                        <button
-                            class='btn btn-sm'
-                            @click='modal.groups = true'
-                        >
-                            <IconListSearch
-                                :size='32'
-                                stroke='1'
-                                class='cursor-pointer mx-2'
-                            />
-                        </button>
-                    </div>
-                </div>
-
-                <div class='col-12'>
                     <TablerInput
                         v-model='mission.description'
                         label='Description'
+                    />
+                </div>
+
+                <div class='col-12'>
+                    <label class='px-2 w-100'>Channels</label>
+
+                    <GroupSelect
+                        v-model='mission.groups'
+                        :active='true'
+                        direction='IN'
                     />
                 </div>
 
@@ -129,12 +110,6 @@
                 </div>
             </div>
         </template>
-
-        <GroupSelect
-            v-if='modal.groups'
-            v-model='mission.groups'
-            @close='modal.groups = false'
-        />
     </div>
 </template>
 
@@ -146,14 +121,12 @@ import { useMapStore } from '../../../../stores/map.ts'
 import {
     IconLock,
     IconLockOpen,
-    IconListSearch,
     IconSquareChevronRight,
     IconChevronDown,
 } from '@tabler/icons-vue';
-import GroupSelect from '../../../util/GroupSelectModal.vue';
+import GroupSelect from '../../util/GroupSelect.vue';
 import Overlay from '../../../../base/overlay.ts';
 import {
-    TablerAlert,
     TablerInput,
     TablerEnum,
     TablerToggle,
@@ -163,11 +136,8 @@ import {
 const mapStore = useMapStore();
 const emit = defineEmits(['mission']);
 
-const error = ref<Error | undefined>();
+const attempted = ref(false);
 const loading = ref(false);
-const modal = ref({
-    groups: false
-});
 const advanced = ref(false);
 
 const mission = ref({
@@ -186,12 +156,18 @@ const missionNameValidity = computed<string>(() => {
         return 'Contains Invalid Character'
     } else if (mission.value.name.length > 1024) {
         return 'Exceeds 1024 Characters'
+    } else if (attempted.value && mission.value.name.length === 0) {
+        return 'Cannot be empty'
     }
 
     return '';
 });
 
 async function createMission() {
+    attempted.value = true;
+
+    if (missionNameValidity.value) return;
+
     loading.value = true;
     try {
         loading.value = true;
@@ -228,9 +204,11 @@ async function createMission() {
         await mapStore.loadMission(res.guid);
 
         emit('mission', res);
+
+        loading.value = false;
     } catch (err) {
-        error.value = err instanceof Error ? err : new Error(String(err));
+        loading.value = false;
+        throw err;
     }
-    loading.value = false;
 }
 </script>

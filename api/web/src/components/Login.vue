@@ -20,13 +20,39 @@
                 <div class='col-lg'>
                     <div class='container-tight'>
                         <div class='card card-md'>
-                            <div class='card-body'>
+                            <div
+                                v-if='!brandStore || !brandStore.loaded'
+                                class='card-body'
+                                style='height: 400px;'
+                            >
+                                <div class='col-12 d-flex justify-content-center pb-4'>
+                                    <img
+                                        class='user-select-none'
+                                        draggable='false'
+                                        style='
+                                            height: 64px;
+                                        '
+                                        src='/CloudTAKLogo.svg'
+                                        alt='CloudTAK Logo'
+                                    >
+                                </div>
+                                <div class='col-12 d-flex justify-content-center pb-4'>
+                                    <h2 class='h2 text-center mb-4'>
+                                        Loading CloudTAK
+                                    </h2>
+                                </div>
+                                <TablerLoading/>
+                            </div>
+                            <div
+                                v-else
+                                class='card-body'
+                            >
                                 <div
                                     class='text-center'
                                     style='margin-bottom: 24px;'
                                 >
                                     <img
-                                        :src='config && config.logo ? config.logo : "/logo.png"'
+                                        :src='brandStore.login && brandStore.login.logo ? brandStore.login.logo : "/CloudTAKLogo.svg"'
                                         style='height: 150px;'
                                         draggable='false'
                                         class='user-select-none'
@@ -57,9 +83,9 @@
                                             </label>
                                             <span class='ms-auto'>
                                                 <a
-                                                    v-if='config && config.forgot'
+                                                    v-if='brandStore.login && brandStore.login.forgot'
                                                     class='cursor-pointer'
-                                                    :href='config.forgot'
+                                                    :href='brandStore.login.forgot'
                                                 >Forgot Password</a>
                                             </span>
                                         </div>
@@ -84,10 +110,10 @@
                             </div>
                         </div>
                         <div
-                            v-if='config && config.signup'
+                            v-if='brandStore.login && brandStore.login.signup'
                             class='text-center text-muted mt-3'
                         >
-                            Don't have an account yet? <a :href='config.signup'>Sign Up</a>
+                            Don't have an account yet? <a :href='brandStore.login.signup'>Sign Up</a>
                         </div>
                     </div>
                 </div>
@@ -97,8 +123,9 @@
 </template>
 
 <script setup lang='ts'>
-import type { Login_Create, Login_CreateRes, LoginConfig } from '../types.ts'
+import type { Login_Create, Login_CreateRes } from '../types.ts'
 import { ref, onMounted } from 'vue';
+import { useBrandStore } from '../stores/brand.ts';
 import { useRouter, useRoute } from 'vue-router'
 import { std } from '../std.ts';
 import {
@@ -110,16 +137,16 @@ const emit = defineEmits([ 'login' ]);
 
 const route = useRoute();
 const router = useRouter();
+const brandStore = useBrandStore();
 
 const loading = ref(false);
 const body = ref<Login_Create>({
     username: '',
     password: ''
 });
-const config = ref<LoginConfig | undefined>();
 
 onMounted(async () => {
-    config.value = await std('/api/config/login') as LoginConfig;
+    await brandStore.init();
 })
 
 async function createLogin() {

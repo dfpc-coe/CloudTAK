@@ -268,10 +268,9 @@ async function deleteMission() {
 
         router.replace('/menu/missions');
     } catch (err) {
+        loading.value = false;
         error.value = err instanceof Error ? err : new Error(String(err));
     }
-
-    loading.value = false;
 }
 
 async function exportToPackage(): Promise<void> {

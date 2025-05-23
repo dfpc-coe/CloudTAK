@@ -13,7 +13,7 @@
                     :size='28'
                     stroke='1'
                 />
-                <span class='mx-2'>No Channels Selected</span>
+                <span class='mx-2'>No Channels Active</span>
             </div>
         </div>
         <div class='modal-body text-white'>
@@ -37,7 +37,8 @@
     </TablerModal>
 </template>
 
-<script>
+<script setup lang='ts'>
+import { useRouter } from 'vue-router';
 import {
     TablerModal,
 } from '@tak-ps/vue-tabler';
@@ -45,20 +46,11 @@ import {
     IconInfoSquare,
 } from '@tabler/icons-vue';
 
-export default {
-    name: 'WarnChannels',
-    components: {
-        TablerModal,
-        IconInfoSquare,
-    },
-    emits: [
-        'close'
-    ],
-    methods: {
-        selectChannels: function() {
-            this.$emit('close');
-            this.$router.push('/menu/channels');
-        },
-    }
+const router = useRouter();
+const emit = defineEmits([ 'close' ]);
+
+function selectChannels() {
+    emit('close');
+    router.push('/menu/channels');
 }
 </script>
