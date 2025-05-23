@@ -119,6 +119,7 @@
 <script lang='ts'>
 import { defineComponent } from 'vue'
 import type { Login, Server } from './types.ts';
+import { useBrandStore } from './stores/brand.ts';
 import '@tabler/core/dist/js/tabler.min.js';
 import '@tabler/core/dist/css/tabler.min.css';
 import LoginModal from './components/util/LoginModal.vue'
@@ -202,6 +203,9 @@ export default defineComponent({
             console.warn('Server Error (Likely the server is in a configured state)', err);
             status = 'configured';
         }
+
+        const brandStore = useBrandStore();
+        await brandStore.init();
 
         window.addEventListener('unhandledrejection', (e) => {
             this.err = e.reason;

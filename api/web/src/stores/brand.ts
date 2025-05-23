@@ -2,16 +2,27 @@
 * BrandStore - Maintain Branding accross pages
 */
 
+import { std } from '../std.ts';
+import type { LoginConfig } from '../types.ts';
 import { defineStore } from 'pinia'
 
 export const useBrandStore = defineStore('brand', {
     state: (): {
-        logo: string
+        loaded: boolean;
+        login: LoginConfig | undefined;
     } => {
         return {
-            logo: ''
+            loaded: false,
+            login: undefined
         }
     },
     actions: {
+        init: async function() {
+            if (!this.login) {
+                this.login = await std('/api/config/login') as LoginConfig;
+            }
+
+            this.loaded = true;
+        }
     }
 })
