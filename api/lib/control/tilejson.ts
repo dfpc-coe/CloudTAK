@@ -191,7 +191,9 @@ export default class TileJSON {
         const bbox = this.extent(z, x, y);
 
         url.searchParams.append('imageSR', '3857');
-        url.searchParams.append('size', '256,256');
+        url.searchParams.append('size', '512,512');
+
+        url.searchParams.append('interpolation', 'RSP_CubicConvolution');
 
         url.searchParams.append('bboxSR', '4326');
         url.searchParams.append('bbox', `${bbox[0]},${bbox[1]},${bbox[2]},${bbox[3]}`);

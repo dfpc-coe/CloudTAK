@@ -510,6 +510,7 @@ export default class AtlasDatabase {
 
             if (exists) {
                 exists.update({
+                    path: feat.path,
                     properties: feat.properties,
                     geometry: feat.geometry
                 }, { skipSave: opts.skipSave })

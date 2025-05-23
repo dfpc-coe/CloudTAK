@@ -53,6 +53,7 @@
                                         v-else
                                         v-tooltip='"Not Cloud Optimized"'
                                         size='32'
+                                        stroke='1'
                                     />
                                 </div>
 

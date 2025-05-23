@@ -30,7 +30,8 @@
                         `'
                     >
                         <CopyField
-                            v-model='cot.properties.callsign'
+                            :model-value='cot.properties.callsign'
+                            @update:model-value='updateProperty("callsign", $event)'
                             :edit='is_editable'
                             :minheight='44'
                             :hover='is_editable'
@@ -151,7 +152,7 @@
                                     <div
                                         v-if='
                                             cot.properties.attachments !== undefined
-                                                && cot.properties.attachments !== undefined
+                                                && cot.properties.video !== undefined
                                                 && cot.properties.sensor !== undefined
                                         '
                                     >
@@ -162,7 +163,7 @@
                                             v-if='cot.properties.attachments === undefined'
                                             role='button'
                                             class='hover-dark px-2 py-2 d-flex align-items-center'
-                                            @click='cot.properties.attachments = []'
+                                            @click='updateProperty("attachments", [])'
                                         >
                                             <IconPaperclip
                                                 stroke='1'
@@ -175,7 +176,7 @@
                                             v-if='cot.properties.video === undefined'
                                             role='button'
                                             class='hover-dark px-2 py-2 d-flex align-items-center'
-                                            @click='cot.properties.video = { url: "" }'
+                                            @click='updateProperty("video", { url: "" })'
                                         >
                                             <IconMovie
                                                 stroke='1'
@@ -188,7 +189,7 @@
                                             v-if='cot.properties.sensor === undefined'
                                             role='button'
                                             class='hover-dark px-2 py-2 d-flex align-items-center'
-                                            @click='cot.properties.sensor = {}'
+                                            @click='updateProperty("sensor", {})'
                                         >
                                             <IconCone
                                                 stroke='1'
@@ -312,11 +313,11 @@
                     }'
                 >
                     <PropertyType
-                        v-if='cot.properties.type.startsWith("a-")'
+                        v-if='cot.properties.type.startsWith("a-") || cot.properties.type === "u-d-p"'
                         :edit='is_editable'
                         :hover='is_editable'
                         :model-value='cot.properties.type'
-                        @update:model-value='updateType($event)'
+                        @update:model-value='updatePropertyType($event)'
                     />
                 </div>
 
@@ -331,7 +332,7 @@
                         :edit='is_editable'
                         :hover='is_editable'
                         :model-value='center'
-                        @update:model-value='updateCenter($event)'
+                        @update:model-value='updatePropertyCenter($event)'
                     />
                 </div>
                 <div
@@ -423,7 +424,8 @@
             >
                 <label class='subheader mx-2'>Remarks</label>
                 <CopyField
-                    v-model='cot.properties.remarks'
+                    :model-value='cot.properties.remarks'
+                    @update:model-value='updateProperty("remarks", $event)'
                     :rows='10'
                     :edit='is_editable'
                     :hover='is_editable'
@@ -489,13 +491,13 @@
                         </thead>
                         <tbody class='bg-gray-500'>
                             <tr>
-                                <td>Time</td><td v-text='timediffFormat(cot.properties.time)' />
+                                <td>Time</td><td v-text='timeProp' />
                             </tr>
                             <tr>
-                                <td>Start</td><td v-text='timediffFormat(cot.properties.start)' />
+                                <td>Start</td><td v-text='startProp' />
                             </tr>
                             <tr>
-                                <td>Stale</td><td v-text='timediffFormat(cot.properties.stale)' />
+                                <td>Stale</td><td v-text='staleProp' />
                             </tr>
                         </tbody>
                     </table>
@@ -504,7 +506,8 @@
 
             <PropertySensor
                 v-if='cot.properties.sensor !== undefined'
-                v-model='cot.properties.sensor'
+                :model-value='cot.properties.sensor'
+                @update:model-value='updateProperty("sensor", $event)'
                 class='my-2 mx-2'
             />
 
@@ -518,7 +521,8 @@
                         <template v-if='cot.geometry.type === "Point"'>
                             <div class='col-12'>
                                 <IconSelect
-                                    v-model='cot.properties.icon'
+                                    :model-value='cot.properties.icon'
+                                    @update:model-value='updatePropertyIcon($event)'
                                     label='Point Icon'
                                     :size='32'
                                     stroke='1'
@@ -527,7 +531,8 @@
                             <div class='col-12'>
                                 <label class='subheader'>Point Colour</label>
                                 <TablerInput
-                                    v-model='cot.properties["marker-color"]'
+                                    :model-value='cot.properties["marker-color"]'
+                                    @update:model-value='updateProperty("marker-color", $event)'
                                     label=''
                                     default='#00FF00'
                                     type='color'
@@ -537,7 +542,8 @@
                             <div class='col-12'>
                                 <label class='subheader'>Point Opacity</label>
                                 <TablerRange
-                                    v-model='cot.properties["marker-opacity"]'
+                                    :model-value='cot.properties["marker-opacity"]'
+                                    @update:model-value='updateProperty("marker-opacity", $event)'
                                     label=''
                                     :default='1'
                                     :min='0'
@@ -550,7 +556,8 @@
                             <div class='col-12'>
                                 <label class='subheader'>Line Colour</label>
                                 <TablerInput
-                                    v-model='cot.properties.stroke'
+                                    :model-value='cot.properties["stroke"]'
+                                    @update:model-value='updateProperty("stroke", $event)'
                                     label=''
                                     type='color'
                                 />
@@ -559,7 +566,8 @@
                             <div class='col-12'>
                                 <label class='subheader'>Line Style</label>
                                 <TablerEnum
-                                    v-model='cot.properties["stroke-style"]'
+                                    :model-value='cot.properties["stroke-style"]'
+                                    @update:model-value='updateProperty("stroke-style", $event)'
                                     label=''
                                     :options='["solid", "dashed", "dotted", "outlined"]'
                                     default='solid'
@@ -568,7 +576,8 @@
                             <div class='col-12'>
                                 <label class='subheader'>Line Thickness</label>
                                 <TablerRange
-                                    v-model='cot.properties["stroke-width"]'
+                                    :model-value='cot.properties["stroke-width"]'
+                                    @update:model-value='updateProperty("stroke-width", $event)'
                                     label=''
                                     :default='1'
                                     :min='1'
@@ -579,7 +588,8 @@
                             <div class='col-12'>
                                 <label class='subheader'>Line Opacity</label>
                                 <TablerRange
-                                    v-model='cot.properties["stroke-opacity"]'
+                                    :model-value='cot.properties["stroke-opacity"]'
+                                    @update:model-value='updateProperty("stroke-opacity", $event)'
                                     label=''
                                     :default='1'
                                     :min='0'
@@ -592,7 +602,8 @@
                             <div class='col-12'>
                                 <label class='subheader'>Fill Colour</label>
                                 <TablerInput
-                                    v-model='cot.properties.fill'
+                                    :model-value='cot.properties["fill"]'
+                                    @update:model-value='updateProperty("fill", $event)'
                                     label=''
                                     type='color'
                                 />
@@ -600,7 +611,8 @@
                             <div class='col-12 round'>
                                 <label class='subheader'>Fill Opacity</label>
                                 <TablerRange
-                                    v-model='cot.properties["fill-opacity"]'
+                                    :model-value='cot.properties["fill-opacity"]'
+                                    @update:model-value='updateProperty("fill-opacity", $event)'
                                     label=''
                                     :default='1'
                                     :min='0'
@@ -794,20 +806,20 @@ const chevrons = ref<Set<string>>(new Set());
 const username = ref<string | undefined>();
 const type = ref<COTType | undefined>();
 const mode = ref('default');
+
+const currentTime = ref(new Date());
 const interval = ref<ReturnType<typeof setInterval> | undefined>();
 const time = ref('relative');
 
 watch(cot, async () => {
     if (cot.value) {
-        cot.value.update({});
-
         if (cot.value.origin.mode === OriginMode.MISSION && cot.value.origin.mode_id) {
             subscription.value = await mapStore.worker.db.subscriptionGet(cot.value.origin.mode_id);
         } else {
             subscription.value = undefined;
         }
     }
-}, { deep: true });
+});
 
 watch(route, async () => {
     mode.value = 'default'
@@ -824,15 +836,13 @@ onMounted(async () => {
         units.value.display_distance = profile.display_distance;
     }
 
-    if (!cot.value) {
-        interval.value = setInterval(async () => {
-            await load_cot();
+    interval.value = setInterval(async () => {
+        currentTime.value = new Date();
 
-            if (cot.value) {
-                clearInterval(interval.value);
-            }
-        }, 1000)
-    }
+        if (!cot.value) {
+            await load_cot();
+        }
+    }, 1000)
 });
 
 const is_editable = computed(() => {
@@ -880,15 +890,57 @@ async function load_cot() {
     }
 }
 
-function timediffFormat(date: string) {
-    if (time.value === 'relative') {
-        return timediff(date);
+const staleProp = computed(() => {
+    if (!cot.value) return '';
+    return (currentTime.value && time.value === 'relative') ? timediff(cot.value.properties.stale) : cot.value.properties.stale;
+});
+
+const startProp = computed(() => {
+    if (!cot.value) return '';
+    return (currentTime.value && time.value === 'relative') ? timediff(cot.value.properties.start) : cot.value.properties.start;
+});
+
+const timeProp = computed(() => {
+    if (!cot.value) return '';
+    return (currentTime.value && time.value === 'relative') ? timediff(cot.value.properties.time) : cot.value.properties.time;
+});
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function updateProperty(key: string, event: any) {
+    if (!cot.value) return;
+
+    if (typeof event === 'string' || typeof event === 'number') {
+        if (cot.value.properties[key] !== event) {
+            cot.value.properties[key] = event;
+            cot.value.update({})
+        }
     } else {
-        return date;
+        cot.value.properties[key] = event;
+        cot.value.update({})
     }
 }
 
-function updateType(type: string): void {
+function updatePropertyIcon(event: string | null) {
+    if (!cot.value) return;
+
+    if (!cot.value.properties.icon && event) {
+        cot.value.properties.icon = event;
+        cot.value.update({});
+    } else if (cot.value.properties.icon && !event)
+        if (cot.value.properties.type !== 'u-d-p') {
+            cot.value.properties.icon = cot.value.properties.type;
+        } else {
+            cot.value.properties.icon = undefined;
+        }
+
+        cot.value.update({});
+    if (event && cot.value.properties.icon && event.replace(/\.png$/g, '').replace(':', '/') !== cot.value.properties.icon.replace(/\.png$/, '').replace(':', '/')) {
+        cot.value.properties.icon = event;
+        cot.value.update({});
+    }
+}
+
+function updatePropertyType(type: string): void {
     if (!cot.value) return;
 
     cot.value.properties.type = type;
@@ -896,9 +948,11 @@ function updateType(type: string): void {
     if (!cot.value.properties.icon || !cot.value.properties.icon.includes(':')) {
         cot.value.properties.icon = type;
     }
+
+    cot.value.update({});
 }
 
-function updateCenter(center: number[]): void {
+function updatePropertyCenter(center: number[]): void {
     if (!cot.value) return;
 
     cot.value.properties.center = center;
@@ -906,6 +960,8 @@ function updateCenter(center: number[]): void {
     if (cot.value.geometry.type === 'Point') {
         cot.value.geometry.coordinates = center;
     }
+
+    cot.value.update({});
 }
 
 async function editGeometry() {

@@ -232,7 +232,7 @@
                         />
                     </TablerIconButton>
                     <template #dropdown>
-                        <Notifications/>
+                        <Notifications />
                     </template>
                 </TablerDropdown>
 

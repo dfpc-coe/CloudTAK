@@ -1,6 +1,6 @@
 <template>
     <div class='mx-2'>
-        <div class='sticky-top py-2 bg-dark border-bottom'>
+        <div class='sticky-top py-2 bg-dark'>
             <TablerInput
                 v-model='filter'
                 icon='search'
@@ -18,27 +18,31 @@
             </div>
         </div>
 
+        <EmptyInfo v-if='mapStore.hasNoChannels' />
+
         <TablerLoading
             v-if='loading'
             desc='Loading Channels'
         />
         <TablerNone
             v-else-if='!filtered.length'
+            :compact='true'
             label='Groups'
             :create='false'
         />
         <template v-else>
             <div
+                style='max-height: 20vh;'
                 class='my-2 mx-2 overflow-auto'
             >
                 <div
                     v-for='group in filtered'
-                    :key='group'
+                    :key='`${group.name}-${group.direction}`'
                     class='col-12 cursor-pointer'
                     @click='updateGroup(group)'
                 >
                     <IconCircleFilled
-                        v-if='selected.has(group)'
+                        v-if='selected.has(group.name)'
                         :size='32'
                         stroke='1'
                         class='cursor-pointer'
@@ -51,7 +55,7 @@
                     />
                     <span
                         class='mx-2'
-                        v-text='group'
+                        v-text='group.name'
                     />
                 </div>
             </div>
@@ -61,8 +65,9 @@
 
 <script setup lang='ts'>
 import { ref, computed, onMounted } from 'vue';
-import { std, stdurl } from '../../../src/std.ts';
-import type { Group } from '../../../src/types.ts';
+import EmptyInfo from '../util/EmptyInfo.vue';
+import { useMapStore } from '../../../stores/map.ts';
+import type { Group } from '../../../types.ts';
 import {
     TablerLoading,
     TablerInput,
@@ -74,10 +79,13 @@ import {
     IconCircleFilled
 } from '@tabler/icons-vue';
 
+const mapStore = useMapStore();
+
 const props = defineProps<{
     connection?: number,
     limit?: number,
     active?: boolean,
+    direction?: string,
     modelValue: Array<string>
 }>();
 
@@ -88,71 +96,34 @@ const emit = defineEmits([
 const filter = ref('');
 const loading = ref(true);
 const selected = ref<Set<string>>(new Set(props.modelValue))
-const groups = ref<Record<string, Group>>({});
+const groups = ref<Array<Group>>([])
 
 const filtered = computed(() => {
-    return Object.keys(groups.value).filter((g) => {
-        return g.toLowerCase().includes(filter.value.toLowerCase());
+    return groups.value.filter((g) => {
+        return g.name.toLowerCase().includes(filter.value.toLowerCase());
     });
 })
 
 onMounted(async () => {
-    await fetch();
+    groups.value = (await mapStore.worker.profile.loadChannels()).filter((group) => {
+        return props.active ? group.active : true;
+    }).filter((group) => {
+        return props.direction ? group.direction === props.direction : true;
+    });
+    loading.value = false;
 });
 
-function updateGroup(group: string) {
-    if (selected.value.has(group)) {
-        selected.value.delete(group)
+function updateGroup(group: Group) {
+    if (selected.value.has(group.name)) {
+        selected.value.delete(group.name)
     } else {
         if (props.limit && selected.value.size >= props.limit) {
             throw new Error(`Cannot select more than ${props.limit} Channels`);
         }
 
-        selected.value.add(group)
+        selected.value.add(group.name)
     }
 
     emit('update:modelValue', Array.from(selected.value));
-}
-
-async function fetch() {
-    loading.value = true;
-
-    let list: Group[];
-    if (props.connection) {
-        const url = stdurl(`/api/connection/${props.connection}/channel`);
-        list = (await std(url) as {
-            data: Group[]
-        }).data;
-    } else {
-        const url = stdurl('/api/marti/group');
-        url.searchParams.append('useCache', 'true');
-        list = ((await std(url)) as {
-            data: Group[]
-        }).data
-    }
-
-    const channels: Record<string, Group> = {};
-
-    JSON.parse(JSON.stringify(list)).sort((a: Group, b: Group) => {
-        return (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0);
-    }).forEach((channel: Group) => {
-        console.error(channel);
-        if (props.active && !channel.active) {
-            return;
-        }
-
-        if (channels[channel.name]) {
-            // @ts-expect-error Need to make these human readable strings instead of array to sync with type
-            channels[channel.name].direction.push(channel.direction);
-        } else {
-            // @ts-expect-error Need to make these human readable strings instead of array to sync with type
-            channel.direction = [channel.direction];
-            channels[channel.name] = channel;
-        }
-    });
-
-    groups.value = channels;
-
-    loading.value = false;
 }
 </script>

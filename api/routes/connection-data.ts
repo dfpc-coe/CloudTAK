@@ -1,7 +1,7 @@
 import { Type } from '@sinclair/typebox'
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
-import Auth, { AuthResourceAccess } from '../lib/auth.js';
+import Auth, { AuthResourceAccess, AuthUser } from '../lib/auth.js';
 import { Data, Connection } from '../lib/schema.js';
 import Config from '../lib/config.js';
 import S3 from '../lib/aws/s3.js';
@@ -124,7 +124,7 @@ export default async function router(schema: Schema, config: Config) {
         res: DataResponse
     }, async (req, res) => {
         try {
-            await Auth.is_connection(config, req, {
+            const auth = await Auth.is_connection(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             }, req.params.connectionid);
 
@@ -134,7 +134,8 @@ export default async function router(schema: Schema, config: Config) {
 
             let data = await config.models.Data.generate({
                 ...req.body,
-                connection: req.params.connectionid
+                connection: req.params.connectionid,
+                username: auth.auth instanceof AuthUser ? auth.auth.email : null
             });
 
             try {
