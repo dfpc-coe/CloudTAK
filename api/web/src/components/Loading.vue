@@ -12,7 +12,8 @@
                                 >
                                     <img
                                         alt='Agency Logo'
-                                        :src='config && config.logo ? config.logo : "/logo.png"'
+                                        :src='brandStore.login && brandStore.login.logo ? brandStore.login.logo : "/CloudTAKLogo.svg"'
+                                        draggable='false'
                                         style='height: 150px;'
                                     >
                                 </div>
@@ -27,16 +28,17 @@
 </template>
 
 <script setup lang='ts'>
-import type { LoginConfig } from '../types.ts'
-import { std } from '../std.js';
-import { ref, onMounted } from 'vue'
+import { useBrandStore } from '../stores/brand.ts';
+import { onMounted } from 'vue'
 import {
     TablerLoading
 } from '@tak-ps/vue-tabler'
 
-const config = ref<LoginConfig | undefined>();
+const brandStore = useBrandStore();
+
+console.error(brandStore);
 
 onMounted(async () => {
-    config.value = await std('/api/config/login') as LoginConfig;
+    await brandStore.init();
 })
 </script>
