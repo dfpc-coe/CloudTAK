@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+- :rocket: Make Feature in Feature Menu Draggable
+- :rocket: Hovering on Folder should open it after a short timeout
+- :rocket: Dropping Feature in folder should append the path and save it
+- :rocket: Dragging Feature out of folder should remove path
+- :rocket: Improvements to logo customization
+- :rocket: Store creator in Connection/Layer/Data objects when possible
+
 ### v8.35.1 - 2025-05-20
 
 - :bug: Fix Vue3 related bug on COT Reactivity
