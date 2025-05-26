@@ -199,6 +199,11 @@
                 @close='pointInput = false'
             />
 
+            <RangeInput
+                v-if='rangeInput'
+                @close='rangeInput = false'
+            />
+
             <SearchBox
                 v-if='searchBoxShown'
                 style='
@@ -268,6 +273,15 @@
                                 :size='25'
                                 stroke='1'
                             /> Coordinate Input
+                        </div>
+                        <div
+                            class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
+                            @click='rangeInput = true'
+                        >
+                            <IconCompass
+                                :size='25'
+                                stroke='1'
+                            /> Range &amp; Bearing
                         </div>
                         <div
                             class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
@@ -370,6 +384,7 @@
                 v-if='
                     mapStore.isLoaded
                         && !pointInput
+                        && !rangeInput
                         && (
                             (noMenuShown && !mobileDetected)
                             || (!noMenuShown)
@@ -445,11 +460,13 @@ import Notifications from './Notifications.vue';
 import SearchBox from './util/SearchBox.vue';
 import WarnConfiguration from './util/WarnConfiguration.vue';
 import CoordInput from './CoordInput.vue';
+import RangeInput from './RangeInput.vue';
 import type { MapGeoJSONFeature, LngLatLike } from 'maplibre-gl';
 import type { Feature } from '../../types.ts';
 import CloudTAKFeatView from './FeatView.vue';
 import {
     IconSearch,
+    IconCompass,
     IconLocationOff,
     IconLocationPin,
     IconLocation,
@@ -506,6 +523,7 @@ const warnConfiguration = ref<boolean>(false);
 
 const searchBoxShown = ref(false);
 const pointInput = ref<boolean>(false);
+const rangeInput = ref<boolean>(false);
 const feat = ref()        // Show the Feat Viewer sidebar
 
 const upload = ref({
@@ -549,6 +567,7 @@ const mapRef = useTemplateRef<HTMLElement>('map');
 const noMenuShown = computed<boolean>(() => {
     return !feat.value
         && !pointInput.value
+        && !rangeInput.value
         && (!route.name || !String(route.name).startsWith('home-menu'))
 });
 
@@ -639,6 +658,7 @@ function closeAllMenu() {
     feat.value = false;
     router.push("/");
     pointInput.value = false;
+    rangeInput.value = false;
 }
 
 function closeRadial() {
