@@ -796,6 +796,45 @@ test('Style: {{fallback p1 p2 ...}}', async () => {
     });
 });
 
+test('Style: {{htmlstrip remarks}}', async () => {
+    const style = new Style({
+        stale: 123,
+        enabled_styles: true,
+        styles: {
+            callsign: '{{htmlstrip remarks}}'
+        }
+    });
+
+    assert.deepEqual(await style.feat({
+        type: 'Feature',
+        properties: {
+            metadata: {
+                remarks: '<h1>I exist</h1>',
+            }
+        },
+        geometry: {
+            type: 'Point',
+            coordinates: [0, 0]
+        }
+    }), {
+        type: 'Feature',
+        properties: {
+            callsign: 'I exist',
+            metadata: {
+                remarks: '<h1>I exist</h1>',
+            },
+            stale: 123000
+        },
+        geometry: {
+            coordinates: [
+                0,
+                0
+            ],
+            type: 'Point'
+        },
+    });
+});
+
 test('Style: Delete Feature by Style', async () => {
     const style = new Style({
         stale: 123,

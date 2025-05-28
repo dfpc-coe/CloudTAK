@@ -3,12 +3,20 @@ import jsonata from 'jsonata';
 import type { Feature } from '@tak-ps/node-cot';
 import handlebars from 'handlebars';
 import Err from '@openaddresses/batch-error';
+import sanitizer from 'sanitize-html';
 
 handlebars.registerHelper('fallback', (...params: Array<unknown>) => {
     params.pop(); // Contains Config stuff from handlebars
     const found = params.find(el => !!el)
     return found;
 })
+
+handlebars.registerHelper('htmlstrip', function (text: string) {
+    return sanitizer(text, {
+        allowedTags: [],
+    });
+});
+
 
 interface ValidateStyle {
     id?: string;
