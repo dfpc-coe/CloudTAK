@@ -387,7 +387,7 @@
                         "col-12": !cot.properties.course,
                     }'
                 >
-                    <PropertyCourse
+                    <PropertyBearing
                         :course='cot.properties.course'
                         class='py-2'
                     />
@@ -751,7 +751,7 @@ import PolygonArea from './util/PolygonArea.vue';
 import Coordinate from './util/Coordinate.vue';
 import PropertyType from './util/PropertyType.vue';
 import PropertyBattery from './util/PropertyBattery.vue';
-import PropertyCourse from './util/PropertyCourse.vue';
+import PropertyBearing from './util/PropertyBearing.vue';
 import PropertySensor from './util/PropertySensor.vue';
 import PropertyPhone from './util/PropertyPhone.vue';
 import PropertyCreator from './util/PropertyCreator.vue';
