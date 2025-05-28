@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v8.37.0 - 2025-05-27
+
+- :tada: Allow stripping HTML in template defs
+
 ### v8.36.0 - 2025-05-23
 
 - :rocket: Make Feature in Feature Menu Draggable
