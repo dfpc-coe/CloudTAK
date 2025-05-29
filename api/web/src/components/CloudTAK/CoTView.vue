@@ -388,7 +388,8 @@
                     }'
                 >
                     <PropertyBearing
-                        :course='cot.properties.course'
+                        label='Course'
+                        :modelValue='cot.properties.course'
                         class='py-2'
                     />
                 </div>

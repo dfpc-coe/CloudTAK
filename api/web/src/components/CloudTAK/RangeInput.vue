@@ -22,13 +22,11 @@
             />
 
             <PropertyBearing
-                label='Bearing (deg)'
                 :modelValue='config.bearing'
             />
 
-            <TablerInput
-                label='Range (deg)'
-                v-model='config.range'
+            <PropertyDistance
+                :modelValue='config.range'
             />
 
             <button
@@ -46,6 +44,7 @@ import { ref, toRaw } from 'vue'
 import { destination } from '@turf/destination'
 import Coordinate from './util/Coordinate.vue';
 import PropertyBearing from './util/PropertyBearing.vue';
+import PropertyDistance from './util/PropertyDistance.vue';
 import {
     TablerInput,
 } from '@tak-ps/vue-tabler';
@@ -82,7 +81,7 @@ async function submitPoint() {
         path: '/',
         properties: {
             id,
-            type: 'u-d-f-',
+            type: 'u-rb-a',
             how: 'h-g-i-g-o',
             color: '#00FF00',
             archived: true,

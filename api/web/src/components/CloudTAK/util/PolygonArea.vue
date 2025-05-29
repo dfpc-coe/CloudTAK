@@ -8,20 +8,24 @@
             />
             <span
                 v-tooltip='"Square Feet"'
-                class='my-1 px-2'
+                class='my-1 px-2 user-select-none'
                 :class='{
                     "bg-gray-500 rounded-bottom": mode === "sqfeet",
                     "cursor-pointer": mode !== "sqfeet",
                 }'
+                role='menuitem'
+                tabindex='0'
                 @click='mode = "sqfeet"'
             >Feet<sup>2</sup></span>
             <span
                 v-tooltip='"Square Meters"'
-                class='my-1 px-2'
+                class='my-1 px-2 user-select-none'
                 :class='{
                     "bg-gray-500 rounded-bottom": mode === "sqmeter",
                     "cursor-pointer": mode !== "sqmeter",
                 }'
+                role='menuitem'
+                tabindex='0'
                 @click='mode = "sqmeter"'
             >Meters<sup>2</sup></span>
         </div>
