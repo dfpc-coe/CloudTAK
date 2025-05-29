@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v8.38.0 - 2025-05-29
+
+- :rocket: Improvements to plain text output of HTML Strip function in handlebar templates
+- :rocket: Calculate stale value from current time if not explicitly set
+
 ### v8.37.0 - 2025-05-27
 
 - :tada: Allow stripping HTML in template defs
