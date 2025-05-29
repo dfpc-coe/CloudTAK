@@ -33,7 +33,7 @@ COPY --from=0 /usr/local/bin/tile-join /usr/local/bin/
 RUN apt-get update \
     && apt-get install -y curl gdal-bin
 
-RUN export VERSION_NODE='22.14.0' && \
+RUN export VERSION_NODE='22.16.0' && \
     curl "https://nodejs.org/dist/v${VERSION_NODE}/node-v${VERSION_NODE}-linux-x64.tar.gz" | tar -xzv > /dev/null \
     && cp ./node-v${VERSION_NODE}-linux-x64/bin/node /usr/bin/ \
     && ./node-v${VERSION_NODE}-linux-x64/bin/npm install -g npm
