@@ -3,12 +3,42 @@ import jsonata from 'jsonata';
 import type { Feature } from '@tak-ps/node-cot';
 import handlebars from 'handlebars';
 import Err from '@openaddresses/batch-error';
+import sanitizer from 'sanitize-html';
 
 handlebars.registerHelper('fallback', (...params: Array<unknown>) => {
     params.pop(); // Contains Config stuff from handlebars
     const found = params.find(el => !!el)
     return found;
 })
+
+handlebars.registerHelper('htmlstrip', function (text: string) {
+    let addLine = false;
+    let addSpace = false;
+    const newLine = ['tr'];
+    const newSpace = ['td'];
+
+    return sanitizer(text, {
+        allowedTags: [],
+        onCloseTag: (tagName) => {
+            addLine = newLine.includes(tagName);
+            addSpace = newSpace.includes(tagName);
+        },
+        textFilter: (text) => {
+            if (addLine) {
+                addLine = false;
+                text = '\n' + text;
+            }
+
+            if (addSpace) {
+                addSpace = false;
+                text = ': ' + text;
+            }
+
+            return text;
+        }
+    }).trim();
+});
+
 
 interface ValidateStyle {
     id?: string;
