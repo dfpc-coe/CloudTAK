@@ -8,20 +8,24 @@
             />
             <span
                 v-tooltip='"Feet"'
-                class='my-1 px-2'
+                class='my-1 px-2 user-select-none'
                 :class='{
                     "bg-gray-500 rounded-bottom": mode === "feet",
                     "cursor-pointer": mode !== "feet",
                 }'
+                role='menuitem'
+                tabindex='0'
                 @click='mode = "feet"'
             >Feet</span>
             <span
                 v-tooltip='"Meters"'
-                class='my-1 px-2'
+                class='my-1 px-2 user-select-none'
                 :class='{
                     "bg-gray-500 rounded-bottom": mode === "meter",
                     "cursor-pointer": mode !== "meter",
                 }'
+                role='menuitem'
+                tabindex='0'
                 @click='mode = "meter"'
             >Meters</span>
         </div>

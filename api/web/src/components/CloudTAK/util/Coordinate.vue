@@ -20,7 +20,7 @@
                         v-tooltip='"Decimal Degrees"'
                         role='menuitem'
                         tabindex='0'
-                        class='my-1 px-2'
+                        class='my-1 px-2 user-select-none'
                         :class='{
                             "bg-gray-500 rounded-bottom": config.mode === "dd",
                             "cursor-pointer": config.mode !== "dd",
@@ -30,7 +30,7 @@
                     <span
                         v-if='modes.includes("dms")'
                         v-tooltip='"Decimal Minutes Seconds"'
-                        class='my-1 px-2'
+                        class='my-1 px-2 user-select-none'
                         role='menuitem'
                         tabindex='0'
                         :class='{
@@ -42,7 +42,7 @@
                     <span
                         v-if='modes.includes("mgrs")'
                         v-tooltip='"Military Grid Reference System"'
-                        class='my-1 px-2'
+                        class='my-1 px-2 user-select-none'
                         role='menuitem'
                         tabindex='0'
                         :class='{
@@ -54,7 +54,7 @@
                     <span
                         v-if='modes.includes("utm")'
                         v-tooltip='"Universal Transverse Mercator"'
-                        class='my-1 px-2'
+                        class='my-1 px-2 user-select-none'
                         role='menuitem'
                         tabindex='0'
                         :class='{

@@ -1,6 +1,6 @@
 <template>
     <div class='col-12'>
-        <label class='subheader mx-2'>Bearing</label>
+        <label class='subheader mx-2' v-text='props.label'/>
         <div class='mx-2'>
             <CopyField
                 v-model='inMode'
@@ -8,29 +8,35 @@
             />
             <span
                 v-tooltip='"Degrees"'
-                class='my-1 px-2'
+                class='my-1 px-2 user-select-none'
                 :class='{
                     "bg-gray-500 rounded-bottom": mode === "deg",
                     "cursor-pointer": mode !== "deg",
                 }'
+                role='menuitem'    
+                tabindex='0'
                 @click='mode = "deg"'
             >Deg</span>
             <span
                 v-tooltip='"Degrees"'
-                class='my-1 px-2'
+                class='my-1 px-2 user-select-none'
                 :class='{
                     "bg-gray-500 rounded-bottom": mode === "deg",
                     "cursor-pointer": mode !== "deg",
                 }'
+                role='menuitem'    
+                tabindex='0'
                 @click='mode = "rad"'
             >Rads</span>
             <span
                 v-tooltip='"Degrees"'
-                class='my-1 px-2'
+                class='my-1 px-2 user-select-none'
                 :class='{
                     "bg-gray-500 rounded-bottom": mode === "deg",
                     "cursor-pointer": mode !== "deg",
                 }'
+                role='menuitem'    
+                tabindex='0'
                 @click='mode = "mil"'
             >Mils</span>
         </div>
@@ -42,13 +48,25 @@ import { ref, computed } from 'vue';
 import CopyField from './CopyField.vue';
 
 const props = defineProps({
-    course: {
+    label: {
+        type: String,
+        default: 'Bearing'
+    },
+    modelValue: {
         type: Number,
         required: true
     },
     unit: {
         type: String,
         default: 'deg'
+    },
+    hover: {
+        type: Boolean,
+        default: false
+    },
+    edit: {
+        type: Boolean,
+        default: false
     }
 });
 
