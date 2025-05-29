@@ -9,13 +9,13 @@ RUN apt-get update \
     && apt-get install -y python3 python3-pip python3-dev python3-setuptools
 
 # PMTiles: https://github.com/protomaps/go-pmtiles/releases
-RUN export VERSION_PMTILES='1.26.1' && \
+RUN export VERSION_PMTILES='1.28.0' && \
     curl -L "https://github.com/protomaps/go-pmtiles/releases/download/v${VERSION_PMTILES}/go-pmtiles_${VERSION_PMTILES}_Linux_x86_64.tar.gz" > /tmp/pmtiles.tar.gz && \
     tar -xzvf /tmp/pmtiles.tar.gz && \
     mv pmtiles /usr/local/bin/
 
 # TippeCanoe: https://github.com/felt/tippecanoe/releases
-RUN export VERSION_TIPPECANOE='2.75.1' && \
+RUN export VERSION_TIPPECANOE='2.78.0' && \
     git clone -b "${VERSION_TIPPECANOE}" --depth 1 https://github.com/felt/tippecanoe.git /tmp/tippecanoe && \
     cd /tmp/tippecanoe && \
     make && \
