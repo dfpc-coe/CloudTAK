@@ -835,6 +835,60 @@ test('Style: {{htmlstrip remarks}}', async () => {
     });
 });
 
+test('Style: {{htmlstrip remarks}} (NewLine Creation)', async () => {
+    const style = new Style({
+        stale: 123,
+        enabled_styles: true,
+        styles: {
+            remarks: '{{htmlstrip popupinfo}}'
+        }
+    });
+
+    assert.deepEqual(await style.feat({
+        type: 'Feature',
+        properties: {
+            metadata: {
+                popupinfo: '<table><tr><td>Date</td><td data-field="Date">05/26/2025</td></tr><tr><td>Time</td><td data-field="Time">09:49</td></tr><tr><td>Tail Number</td><td data-field="TailNumber">N328SF</td></tr><tr><td>Detection Name</td><td data-field="DetectionName">N327SF-CO-GJC-DET-05260946_20250526_1546Z</td></tr><tr><td>Latitude</td><td data-field="Latitude">N039 41.1167</td></tr><tr><td>Longitude</td><td data-field="Longitude">W106 54.6474</td></tr><tr><td>Size</td><td data-field="Size">0.1 ac</td></tr><tr><td>Elevation</td><td data-field="Elevation">7,491 ft</td></tr><tr><td>Character Of Fire</td><td data-field="CharacterOfFire">Smoldering</td></tr><tr><td>Position On Slope</td><td data-field="PositionOnSlope">Lower 1/3</td></tr><tr><td>Fuel Type</td><td data-field="FuelType">Timber</td></tr><tr><td>Adjacent Fuels</td><td data-field="AdjacentFuels">Brush</td></tr><tr><td>Proximity To Values</td><td data-field="ProximityToValues">.25 Mile to East</td></tr><tr><td>Aspect</td><td data-field="Aspect">N</td></tr></table>',
+            }
+        },
+        geometry: {
+            type: 'Point',
+            coordinates: [0, 0]
+        }
+    }), {
+        type: 'Feature',
+        properties: {
+            remarks: [
+                'Date: 05/26/2025',
+                'Time: 09:49',
+                'Tail Number: N328SF',
+                'Detection Name: N327SF-CO-GJC-DET-05260946_20250526_1546Z',
+                'Latitude: N039 41.1167',
+                'Longitude: W106 54.6474',
+                'Size: 0.1 ac',
+                'Elevation: 7,491 ft',
+                'Character Of Fire: Smoldering',
+                'Position On Slope: Lower 1/3',
+                'Fuel Type: Timber',
+                'Adjacent Fuels: Brush',
+                'Proximity To Values: .25 Mile to East',
+                'Aspect: N'
+            ].join('\n'),
+            metadata: {
+                popupinfo: '<table><tr><td>Date</td><td data-field="Date">05/26/2025</td></tr><tr><td>Time</td><td data-field="Time">09:49</td></tr><tr><td>Tail Number</td><td data-field="TailNumber">N328SF</td></tr><tr><td>Detection Name</td><td data-field="DetectionName">N327SF-CO-GJC-DET-05260946_20250526_1546Z</td></tr><tr><td>Latitude</td><td data-field="Latitude">N039 41.1167</td></tr><tr><td>Longitude</td><td data-field="Longitude">W106 54.6474</td></tr><tr><td>Size</td><td data-field="Size">0.1 ac</td></tr><tr><td>Elevation</td><td data-field="Elevation">7,491 ft</td></tr><tr><td>Character Of Fire</td><td data-field="CharacterOfFire">Smoldering</td></tr><tr><td>Position On Slope</td><td data-field="PositionOnSlope">Lower 1/3</td></tr><tr><td>Fuel Type</td><td data-field="FuelType">Timber</td></tr><tr><td>Adjacent Fuels</td><td data-field="AdjacentFuels">Brush</td></tr><tr><td>Proximity To Values</td><td data-field="ProximityToValues">.25 Mile to East</td></tr><tr><td>Aspect</td><td data-field="Aspect">N</td></tr></table>',
+            },
+            stale: 123000
+        },
+        geometry: {
+            coordinates: [
+                0,
+                0
+            ],
+            type: 'Point'
+        },
+    });
+});
+
 test('Style: Delete Feature by Style', async () => {
     const style = new Style({
         stale: 123,

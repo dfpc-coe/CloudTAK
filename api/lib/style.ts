@@ -12,9 +12,31 @@ handlebars.registerHelper('fallback', (...params: Array<unknown>) => {
 })
 
 handlebars.registerHelper('htmlstrip', function (text: string) {
+    let addLine = false;
+    let addSpace = false;
+    const newLine = ['tr'];
+    const newSpace = ['td'];
+
     return sanitizer(text, {
         allowedTags: [],
-    });
+        onCloseTag: (tagName) => {
+            addLine = newLine.includes(tagName);
+            addSpace = newSpace.includes(tagName);
+        },
+        textFilter: (text) => {
+            if (addLine) {
+                addLine = false;
+                text = '\n' + text;
+            }
+
+            if (addSpace) {
+                addSpace = false;
+                text = ': ' + text;
+            }
+
+            return text;
+        }
+    }).trim();
 });
 
 
