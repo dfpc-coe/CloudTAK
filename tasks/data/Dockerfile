@@ -3,8 +3,7 @@ FROM ubuntu:24.04 AS build
 ENV HOME=/home/etl
 WORKDIR $HOME
 
-RUN sed -i 's|^deb http://|deb https://|g' /etc/apt/sources.list \
-    && apt-get update \
+RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends apt-utils tzdata \
     && apt-get install -y build-essential curl cmake autoconf libtool software-properties-common git libsqlite3-dev \
     && apt-get install -y python3 python3-pip python3-dev python3-setuptools
@@ -31,8 +30,7 @@ COPY --from=0 /usr/local/bin/pmtiles* /usr/local/bin/
 COPY --from=0 /usr/local/bin/tippecanoe* /usr/local/bin/
 COPY --from=0 /usr/local/bin/tile-join /usr/local/bin/
 
-RUN sed -i 's|^deb http://|deb https://|g' /etc/apt/sources.list \
-    && apt-get update \
+RUN apt-get update \
     && apt-get install -y curl gdal-bin
 
 RUN export VERSION_NODE='22.16.0' && \
