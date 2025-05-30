@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v8.40.0 - 2025-05-30
+
+- :tada: Add pitch reset icon to Map view
+
 ### v8.39.0 - 2025-05-30
 
 - :tada: Initial Range & Bearing support
