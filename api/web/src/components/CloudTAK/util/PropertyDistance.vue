@@ -49,6 +49,10 @@
 import { ref, computed, watch } from 'vue';
 import CopyField from './CopyField.vue';
 
+const emit = defineEmits([
+    'update:modelValue'
+]);
+
 const props = defineProps({
     label: {
         type: String,
