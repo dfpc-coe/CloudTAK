@@ -46,7 +46,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, watch } from 'vue';
+import { ref, watch } from 'vue';
 import CopyField from './CopyField.vue';
 
 const emit = defineEmits([
@@ -60,11 +60,13 @@ const props = defineProps({
     },
     modelValue: {
         type: Number,
-        required: true
+        required: true,
+        description: 'Initial Degrees'
     },
     unit: {
         type: String,
-        default: 'deg'
+        default: 'deg',
+        description: 'Desired default unit'
     },
     hover: {
         type: Boolean,
@@ -79,6 +81,7 @@ const props = defineProps({
 const mode = ref(props.unit);
 
 const config = ref({
+    // Units coming into props should always be Deg
     bearing: toCustom(mode.value, props.modelValue)
 });
 
@@ -91,11 +94,11 @@ watch(config.value, () => {
 
 function toDegrees(mode: string, bearing: number): number {
     if (mode === 'rad') {
-        return config.value.bearing * 57.295779513;
+        return bearing * 57.295779513;
     } else if (mode === 'mil') {
-        return config.value.bearing * 0.05625;
+        return bearing * 0.05625;
     } else if (mode === 'deg') {
-        return config.value.bearing;
+        return bearing;
     } else {
         throw new Error(`Invalid Bearing Unit: ${mode}`);
     }
