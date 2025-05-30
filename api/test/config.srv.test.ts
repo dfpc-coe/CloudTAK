@@ -156,7 +156,7 @@ test('GET api/config/map', async (t) => {
         }, true);
 
         t.deepEquals(res.body, {
-            center: '48.04,3.86',
+            center: '-100,40',
             zoom: 4,
             pitch: 0,
             bearing: 0
