@@ -134,6 +134,7 @@
                     />
 
                     <div
+                        v-if='mapStore.bearing !== 0'
                         style='margin: 5px 8px'
                         class='cursor-pointer hover-button'
                         @click='mapStore.map.setBearing(0)'
@@ -150,6 +151,25 @@
                             v-if='mapStore.bearing !== 0'
                             class='text-center'
                             v-text='humanBearing'
+                        />
+                    </div>
+                    <div
+                        v-if='mapStore.pitch !== 0'
+                        style='margin: 5px 8px'
+                        class='cursor-pointer hover-button'
+                        @click='mapStore.map.setPitch(0)'
+                    >
+                        <IconAngle
+                            v-tooltip='"Snap Flat"'
+                            tabindex='0'
+                            :alt='`Map Pitch to ${humanPitch}`'
+                            :size='40'
+                            stroke='1'
+                        />
+                        <div
+                            v-if='mapStore.pitch !== 0'
+                            class='text-center'
+                            v-text='humanPitch'
                         />
                     </div>
                     <div
@@ -499,6 +519,7 @@ import {
     IconCursorText,
     IconVector,
     IconBell,
+    IconAngle,
     IconCircleArrowUp,
     Icon3dCubeSphere,
 } from '@tabler/icons-vue';
@@ -574,6 +595,10 @@ const humanBearing = computed(() => {
     } else {
         return Math.round(360 - mapStore.bearing) + '°';
     }
+})
+
+const humanPitch = computed(() => {
+    return Math.round(mapStore.pitch) + '°'
 })
 
 const mapRef = useTemplateRef<HTMLElement>('map');
