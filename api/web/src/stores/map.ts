@@ -387,7 +387,7 @@ export const useMapStore = defineStore('cloudtak', {
                 pitch: mapStateDefault.pitch,
                 bearing: mapStateDefault.bearing,
                 maxPitch: 85,
-                center: mapStateDefault.center.split(',').map(Number),
+                center: mapStateDefault.center.split(',').map(Number) as LngLatLike,
                 style: {
                     version: 8,
                     glyphs: String(stdurl('/fonts')) + '/{fontstack}/{range}.pbf',
