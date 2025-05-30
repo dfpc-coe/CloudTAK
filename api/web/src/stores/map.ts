@@ -376,15 +376,18 @@ export const useMapStore = defineStore('cloudtak', {
                 });
             }
 
+            const mapStateDefault = await std('/api/config/map');
+
             const init: mapgl.MapOptions = {
                 container: this.container,
                 hash: true,
                 attributionControl: false,
                 fadeDuration: 0,
-                zoom: 8, pitch: 0,
-                bearing: 0,
+                zoom: mapStateDefault.zoom,
+                pitch: mapStateDefault.pitch,
+                bearing: mapStateDefault.bearing,
                 maxPitch: 85,
-                center: [-105.91873757464982, 39.2473040734323],
+                center: mapStateDefault.center.split(',').map(Number),
                 style: {
                     version: 8,
                     glyphs: String(stdurl('/fonts')) + '/{fontstack}/{range}.pbf',

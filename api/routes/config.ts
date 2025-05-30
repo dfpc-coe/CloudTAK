@@ -43,6 +43,14 @@ export default async function router(schema: Schema, config: Config) {
             'media::url': Type.Optional(Type.String()),
 
             'map::center': Type.Optional(Type.String()),
+            'map::pitch': Type.Optional(Type.Integer({
+                minimum: 0,
+                maximum: 90
+            })),
+            'map::bearing': Type.Optional(Type.String({
+                minimum: 0,
+                maximum: 360
+            })),
             'map::zoom': Type.Optional(Type.Integer({
                 minimum: 0,
                 maximum: 20
@@ -177,6 +185,43 @@ export default async function router(schema: Schema, config: Config) {
                 roles: [ "Team Member", "Team Lead", "HQ", "Sniper", "Medic", "Forward Observer", "RTO", "K9" ],
                 groups: final
             });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/config/map', {
+        name: 'Map Config',
+        group: 'Config',
+        description: 'Return Map Config',
+        res: Type.Object({
+            center: Type.String({ default: '48.04,3.86' }),
+            zoom: Type.Integer({ default: 4 }),
+            pitch: Type.Integer({ default: 0 }),
+            bearing: Type.Integer({ default: 0 }),
+        })
+    }, async (req, res) => {
+        try {
+            const keys = [
+                'map::center',
+                'map::pitch',
+                'map::bearing',
+                'map::zoom',
+            ];
+
+            const final: Record<string, string> = {};
+            (await Promise.allSettled(keys.map((key) => {
+                return config.models.Setting.from(key);
+            }))).forEach((k) => {
+                if (k.status === 'rejected') return;
+                return final[k.value.key.replace('map::', '')] = String(k.value.value);
+            });
+
+            for (let map of keys) {
+                map = map.replace('map::', '')
+            }
+
+            res.json(final);
         } catch (err) {
             Err.respond(err, res);
         }
