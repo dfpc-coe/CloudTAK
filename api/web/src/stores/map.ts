@@ -53,6 +53,7 @@ export const useMapStore = defineStore('cloudtak', {
         isTerrainEnabled: boolean;
         isLoaded: boolean;
         isOpen: boolean;
+        pitch: number;
         bearing: number;
         selected: Map<string, COT>;
         select: {
@@ -93,6 +94,7 @@ export const useMapStore = defineStore('cloudtak', {
             isTerrainEnabled: false,
             isOpen: false,
             isLoaded: false,
+            pitch: 0,
             bearing: 0,
             mission: undefined,
             permissions: {
@@ -426,6 +428,10 @@ export const useMapStore = defineStore('cloudtak', {
 
             map.on('rotate', () => {
                 this.bearing = map.getBearing()
+            })
+
+            map.on('pitch', () => {
+                this.pitch = map.getPitch()
             })
 
             map.on('moveend', async () => {
