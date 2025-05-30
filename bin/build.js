@@ -25,7 +25,6 @@ if (!process.argv[2]) {
     console.error('ok - building all containers');
 
     await cloudtak_api();
-    await cloudtak_ui();
 
     for (const dir of await fs.readdir(new URL('./tasks/', import.meta.url))) {
         await cloudtak_task(dir);
@@ -33,8 +32,6 @@ if (!process.argv[2]) {
 } else {
     if (process.argv[2] === 'api') {
         await cloudtak_api();
-    } else if (process.argv[2] === 'ui') {
-        await cloudtak_ui();
     } else {
         await cloudtak_task(process.argv[2]);
     }
@@ -66,22 +63,6 @@ function cloudtak_api() {
             docker compose build api \
             && docker tag cloudtak-api:latest "$\{AWS_ACCOUNT_ID\}.dkr.ecr.$\{AWS_REGION\}.amazonaws.com/coe-ecr-etl:$\{GITSHA\}" \
             && docker push "$\{AWS_ACCOUNT_ID\}.dkr.ecr.$\{AWS_REGION\}.amazonaws.com/coe-ecr-etl:$\{GITSHA\}"
-        `, (err) => {
-            if (err) return reject(err);
-            return resolve();
-        });
-
-        $.stdout.pipe(process.stdout);
-        $.stderr.pipe(process.stderr);
-    });
-}
-
-function cloudtak_ui() {
-    return new Promise((resolve, reject) => {
-        const $ = CP.exec(`
-            cd api/web/ \
-            && npm run builds3 \
-            && aws s3 cp --recursive "dist/" "s3://coe-etl-$\{Environment\}-$\{AWS_ACCOUNT_ID\}-$\{AWS_REGION\}-public/$\{GITSHA\}/"
         `, (err) => {
             if (err) return reject(err);
             return resolve();
