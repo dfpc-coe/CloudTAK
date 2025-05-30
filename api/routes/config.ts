@@ -195,7 +195,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Config',
         description: 'Return Map Config',
         res: Type.Object({
-            center: Type.String({ default: '48.04,3.86' }),
+            center: Type.String({ default: '-100,40' }),
             zoom: Type.Integer({ default: 4 }),
             pitch: Type.Integer({ default: 0 }),
             bearing: Type.Integer({ default: 0 }),
@@ -223,7 +223,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             res.json({
-                center: final.center || '48.04,3.86',
+                center: final.center || '-100,40',
                 zoom: final.zoom || 4,
                 pitch: final.pitch || 0,
                 bearing: final.bearing || 0

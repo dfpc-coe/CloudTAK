@@ -304,7 +304,7 @@ export default {
 
             'media::url': '',
 
-            'map::center': '3.86,48.04',
+            'map::center': '-100,40',
             'map::zoom': 4,
             'map::bearing': 0,
             'map::pitch': 0,
