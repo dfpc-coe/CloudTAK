@@ -3,7 +3,7 @@
         <label class='subheader mx-2'>Distance</label>
         <div class='mx-2'>
             <CopyField
-                v-model='inMode'
+                v-model='config.distance'
                 :edit='props.edit'
                 :hover='props.hover'
                 :size='24'
@@ -17,7 +17,7 @@
                 }'
                 role='menuitem'
                 tabindex='0'
-                @click='mode = "meter"'
+                @click='changeMode("meter")'
             >Meters</span>
             <span
                 v-tooltip='"Kilometers"'
@@ -28,7 +28,7 @@
                 }'
                 role='menuitem'
                 tabindex='0'
-                @click='mode = "kilometer"'
+                @click='changeMode("kilometer")'
             >Kilometers</span>
             <span
                 v-tooltip='"Miles"'
@@ -39,14 +39,14 @@
                 }'
                 role='menuitem'
                 tabindex='0'
-                @click='mode = "mile"'
+                @click='changeMode("mile")'
             >Miles</span>
         </div>
     </div>
 </template>
 
 <script setup lang='ts'>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import CopyField from './CopyField.vue';
 
 const props = defineProps({
@@ -60,7 +60,7 @@ const props = defineProps({
     },
     unit: {
         type: String,
-        default: 'deg'
+        default: 'mile'
     },
     hover: {
         type: Boolean,
@@ -72,17 +72,52 @@ const props = defineProps({
     }
 })
 
-const mode = ref(props.unit || 'mile');
+const mode = ref(props.unit);
 
-const inMode = computed(() => {
-    if (mode.value === 'meter') {
-        return props.modelValue * 1000;
-    } else if (mode.value === 'kilometer') {
-        return props.modelValue;
-    } else if (mode.value === 'mile') {
-        return props.modelValue * 0.621371;
+const config = ref({
+    // Units coming into props should always be kilometers
+    distance: toCustom(mode.value, props.modelValue)
+});
+
+watch(config.value, () => {
+    emit(
+        'update:modelValue',
+        toKilometers(mode.value, config.value.distance)
+    );
+});
+
+function toKilometers(mode: string, distance: number): number {
+    if (mode === 'mile') {
+        return
+    } else if (mode === 'meter') {
+        return
+    } else if (mode === 'kilometer') {
+        return distance;
     } else {
-        return 'UNKNOWN';
+        throw new Error(`Invalid Distance Unit: ${mode}`);
     }
-})
+}
+
+function toCustom(mode: string, kilometers: number): number {
+    if (mode === 'kilometer') {
+        return kilometers
+    } else if (mode === 'mile') {
+        return Math.round((kilometers * 0.621371) * 1000) / 1000;
+    } else if (mode === 'meter') {
+        return kilometers * 1000;
+    } else {
+        throw new Error(`Invalid Bearing Unit: ${mode}`);
+    }
+}
+
+function changeMode(newMode: string): void {
+    if (mode.value === newMode) return;
+
+    const degrees = toKilometers(mode.value, config.value.distance);
+
+    config.value.distance = toCustom(newMode, degrees);
+
+    mode.value = newMode;
+}
+
 </script>

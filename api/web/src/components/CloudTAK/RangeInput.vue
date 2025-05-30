@@ -23,13 +23,13 @@
             />
 
             <PropertyBearing
-                :modelValue='config.bearing'
+                v-model='config.bearing'
                 :edit='true'
                 :hover='true'
             />
 
             <PropertyDistance
-                :modelValue='config.range'
+                v-model='config.range'
                 :edit='true'
                 :hover='true'
             />
@@ -76,8 +76,8 @@ async function submitPoint() {
 
     const end = destination(
         config.value.coordinates,
-        Number(config.value.range),
-        Number(config.value.bearing)
+        config.value.range,
+        config.value.bearing
     )
 
     await mapStore.worker.db.add({
@@ -94,6 +94,8 @@ async function submitPoint() {
             start: new Date().toISOString(),
             stale: new Date().toISOString(),
             center: toRaw(config.value.coordinates),
+            bearing: config.value.bearing,
+            range: config.value.range,
             callsign: toRaw(config.value.name || 'New Feature'),
             creator: await mapStore.worker.profile.creator()
         },
