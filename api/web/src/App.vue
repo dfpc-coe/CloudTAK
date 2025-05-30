@@ -3,7 +3,6 @@
         <header
             v-if='navShown'
             class='navbar navbar-expand-md d-print-none'
-            data-bs-theme='dark'
         >
             <div class='container-xl'>
                 <div class='col-auto'>

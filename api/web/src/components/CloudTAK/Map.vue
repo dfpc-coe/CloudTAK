@@ -1,8 +1,10 @@
 <template>
     <div
-        data-bs-theme='dark'
         class='d-flex position-relative'
         style='height: calc(100vh) !important;'
+        data-bs-theme='dark'
+        data-bs-theme-base='neutral'
+        data-bs-theme-primary='blue'
     >
         <div
             ref='map'
@@ -116,26 +118,64 @@
                 <div
                     style='
                         z-index: 1;
-                        width: 60px;
+                        height: 40px;
+                        max-width: 400px;
                         background-color: rgba(0, 0, 0, 0.5);
                         border-radius: 0px 0px 6px 0px;
                     '
                 >
-                    <IconSearch
-                        v-tooltip='"Search"'
-                        tabindex='0'
-                        title='Search Button'
-                        :size='40'
-                        stroke='1'
-                        :color='searchBoxShown ? "#1E90FF" : "#FFFFFF"'
-                        style='margin: 5px 8px'
-                        class='cursor-pointer hover-button'
-                        @click='searchBoxShown = !searchBoxShown'
-                    />
+                    <template v-if='!mapStore.mission'>
+                        <div class='d-flex align-items-center user-select-none'>
+                            <IconMap
+                                :size='32'
+                                stroke='1'
+                                style='margin: 3px 3px'
+                            />
+                            <div class='me-3'>No Mission</div>
+                        </div>
+                    </template>
+                    <template v-else>
+                        <div class='d-flex align-items-center user-select-none'>
+                            <IconAmbulance
+                                :size='32'
+                                stroke='1'
+                                style='margin: 3px 3px'
+                            />
+
+                            <a
+                                class='me-3 text-truncate cursor-pointer text-white'
+                                @click='router.push(`/menu/missions/${mapStore.mission.meta.guid}`)'
+                                v-text='mapStore.mission.meta.name'>
+                            </a>
+                        </div>
+                    </template>
+                </div>
+                <div
+                    class='border'
+                    style='
+                        z-index: 1;
+                        width: 40px;
+                        background-color: rgba(0, 0, 0, 0.2);
+                        border-radius: 0px 0px 6px 0px;
+                    '
+                >
+                    <div>
+                        <IconSearch
+                            v-tooltip='"Search"'
+                            tabindex='0'
+                            title='Search Button'
+                            :size='32'
+                            stroke='2'
+                            :color='searchBoxShown ? "#1E90FF" : "#ffffff"'
+                            style='margin: 3px 2px'
+                            class='cursor-pointer hover-button'
+                            @click='searchBoxShown = !searchBoxShown'
+                        />
+                    </div>
 
                     <div
                         v-if='mapStore.bearing !== 0'
-                        style='margin: 5px 8px'
+                        style='margin: 3px 3px'
                         class='cursor-pointer hover-button'
                         @click='mapStore.map.setBearing(0)'
                     >
@@ -144,8 +184,8 @@
                             tabindex='0'
                             :alt='`Map Rotated to ${humanBearing}`'
                             :transform='`rotate(${360 - mapStore.bearing})`'
-                            :size='40'
-                            stroke='1'
+                            :size='32'
+                            stroke='2'
                         />
                         <div
                             v-if='mapStore.bearing !== 0'
@@ -155,7 +195,7 @@
                     </div>
                     <div
                         v-if='mapStore.pitch !== 0'
-                        style='margin: 5px 8px'
+                        style='margin: 3px 3px'
                         class='cursor-pointer hover-button'
                         @click='mapStore.map.setPitch(0)'
                     >
@@ -163,8 +203,8 @@
                             v-tooltip='"Snap Flat"'
                             tabindex='0'
                             :alt='`Map Pitch to ${humanPitch}`'
-                            :size='40'
-                            stroke='1'
+                            :size='32'
+                            stroke='2'
                         />
                         <div
                             v-if='mapStore.pitch !== 0'
@@ -180,10 +220,10 @@
                             role='button'
                             tabindex='0'
                             title='Zoom In Button'
-                            :size='40'
-                            stroke='1'
+                            :size='32'
+                            stroke='2'
                             class='cursor-pointer hover-button'
-                            style='margin: 5px 8px'
+                            style='margin: 3px 3px'
                             @click='mapStore.map.setZoom(mapStore.map.getZoom() + 1);'
                         />
                         <IconMinus
@@ -191,10 +231,10 @@
                             role='button'
                             tabindex='0'
                             title='Zoom Out Button'
-                            :size='40'
-                            stroke='1'
+                            :size='32'
+                            stroke='2'
                             class='cursor-pointer hover-button'
-                            style='margin: 5px 8px'
+                            style='margin: 3px 3px'
                             @click='mapStore.map.setZoom(mapStore.map.getZoom() - 1);'
                         />
                     </div>
@@ -204,11 +244,11 @@
                         role='button'
                         tabindex='0'
                         title='3D Terrain'
-                        :size='40'
-                        stroke='1'
+                        :size='32'
+                        stroke='2'
                         class='cursor-pointer hover-button'
                         :color='mapStore.isTerrainEnabled ? "#1E90FF" : "#FFFFFF"'
-                        style='margin: 5px 8px'
+                        style='margin: 3px 3px'
                         @click='mapStore.isTerrainEnabled ? mapStore.removeTerrain() : mapStore.addTerrain()'
                     />
                 </div>
@@ -228,8 +268,8 @@
                 v-if='searchBoxShown'
                 style='
                     z-index: 1;
-                    top: 8px;
-                    left: 70px;
+                    top: 50px;
+                    left: 50px;
                     width: 200px;
                 '
                 @close='searchBoxShown = false'
@@ -508,8 +548,10 @@ import {
     IconPlus,
     IconMinus,
     IconLockAccess,
+    IconAmbulance,
     IconPencil,
     IconLasso,
+    IconMap,
     IconX,
     IconPoint,
     IconLine,
