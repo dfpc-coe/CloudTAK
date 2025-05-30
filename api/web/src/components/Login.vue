@@ -41,7 +41,7 @@
                                         Loading CloudTAK
                                     </h2>
                                 </div>
-                                <TablerLoading/>
+                                <TablerLoading />
                             </div>
                             <div
                                 v-else
