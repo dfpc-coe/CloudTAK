@@ -147,6 +147,52 @@
 
                 <div
                     class='col-lg-12 hover-light py-2 cursor-pointer'
+                    @click='opened.has("map") ? opened.delete("map") : opened.add("map")'
+                >
+                    <IconChevronDown v-if='opened.has("map")' />
+                    <IconChevronRight v-else />
+
+                    <span class='mx-2 user-select-none'>Map Settings</span>
+                </div>
+
+                <div
+                    v-if='opened.has("map")'
+                    class='col-lg-12 py-2 border rounded'
+                >
+                    <div class='row'>
+                        <div class='col-lg-12'>
+                            <TablerInput
+                                v-model='config[`map::center`]'
+                                label='Inital Map Center'
+                                :disabled='!edit'
+                            />
+                        </div>
+                        <div class='col-lg-12'>
+                            <TablerInput
+                                v-model='config[`map::zoom`]'
+                                label='Initial Map Zoom'
+                                :disabled='!edit'
+                            />
+                        </div>
+                        <div class='col-lg-12'>
+                            <TablerInput
+                                v-model='config[`map::pitch`]'
+                                label='Initial Map Pitch'
+                                :disabled='!edit'
+                            />
+                        </div>
+                        <div class='col-lg-12'>
+                            <TablerInput
+                                v-model='config[`map::bearing`]'
+                                label='Initial Map Bearing'
+                                :disabled='!edit'
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    class='col-lg-12 hover-light py-2 cursor-pointer'
                     @click='opened.has("provider") ? opened.delete("provider") : opened.add("provider")'
                 >
                     <IconChevronDown v-if='opened.has("provider")' />
@@ -257,6 +303,11 @@ export default {
             'agol::token': '',
 
             'media::url': '',
+
+            'map::center': '-100,40',
+            'map::zoom': 4,
+            'map::bearing': 0,
+            'map::pitch': 0,
 
             'provider::url': '',
             'provider::secret': '',
