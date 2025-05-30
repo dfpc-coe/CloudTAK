@@ -21,7 +21,7 @@ import mapgl from 'maplibre-gl'
 import type Atlas from '../workers/atlas.ts';
 import { CloudTAKTransferHandler } from '../base/handler.ts';
 
-import type { ProfileOverlay, Basemap, APIList, Feature, IconsetList } from '../types.ts';
+import type { ProfileOverlay, Basemap, APIList, Feature, IconsetList, MapConfig } from '../types.ts';
 import type { LngLat, LngLatLike, Point, MapMouseEvent, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl';
 
 export type TAKNotification = { type: string; name: string; body: string; url: string; created: string; }
@@ -376,7 +376,7 @@ export const useMapStore = defineStore('cloudtak', {
                 });
             }
 
-            const mapStateDefault = await std('/api/config/map');
+            const mapStateDefault = await std('/api/config/map') as MapConfig;
 
             const init: mapgl.MapOptions = {
                 container: this.container,

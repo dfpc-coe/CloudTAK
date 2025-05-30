@@ -209,7 +209,8 @@ export default async function router(schema: Schema, config: Config) {
                 'map::zoom',
             ];
 
-            const final: Record<string, string> = {};
+            const final: Record<string, any> = {};
+
             (await Promise.allSettled(keys.map((key) => {
                 return config.models.Setting.from(key);
             }))).forEach((k) => {
@@ -221,7 +222,12 @@ export default async function router(schema: Schema, config: Config) {
                 map = map.replace('map::', '')
             }
 
-            res.json(final);
+            res.json({
+                center: final.center || '48.04,3.86',
+                zoom: final.zoom || 4,
+                pitch: final.pitch || 0,
+                bearing: final.bearing || 0
+            });
         } catch (err) {
             Err.respond(err, res);
         }

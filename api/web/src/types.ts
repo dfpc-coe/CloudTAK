@@ -67,6 +67,8 @@ export type MissionSubscriptions = paths["/marti/missions/{:name}/subscriptions/
 export type Server_Update = paths["/server"]["patch"]["requestBody"]["content"]["application/json"]
 export type Server = paths["/server"]["get"]["responses"]["200"]["content"]["application/json"]
 
+export type MapConfig = paths["/config/map"]["get"]["responses"]["200"]["content"]["application/json"]
+
 export type Login = paths["/login"]["get"]["responses"]["200"]["content"]["application/json"]
 export type LoginConfig = paths["/config/login"]["get"]["responses"]["200"]["content"]["application/json"]
 export type Login_Create = paths["/login"]["post"]["requestBody"]["content"]["application/json"]
