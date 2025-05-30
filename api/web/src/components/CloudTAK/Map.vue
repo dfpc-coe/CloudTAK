@@ -266,85 +266,99 @@
                     </template>
                     <template #dropdown>
                         <div
-                            class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
-                            @click='pointInput = true'
+                            class='card py-1'
+                            style='min-width: 200px;'
                         >
-                            <IconCursorText
-                                :size='25'
-                                stroke='1'
-                            /> Coordinate Input
-                        </div>
-                        <div
-                            class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
-                            @click='rangeInput = true'
-                        >
-                            <IconCompass
-                                :size='25'
-                                stroke='1'
-                            /> Range &amp; Bearing
-                        </div>
-                        <div
-                            class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
-                            @click='mapStore.draw.start(DrawToolMode.POINT)'
-                        >
-                            <IconPoint
-                                :size='25'
-                                stroke='1'
-                            /> Draw Point
-                        </div>
-                        <div
-                            class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
-                            @click='mapStore.draw.start(DrawToolMode.LINESTRING)'
-                        >
-                            <IconLine
-                                :size='25'
-                                stroke='1'
-                            /> Draw Line
-                        </div>
-                        <div
-                            class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
-                            @click='mapStore.draw.start(DrawToolMode.POLYGON)'
-                        >
-                            <IconPolygon
-                                :size='25'
-                                stroke='1'
-                            /> Draw Polygon
-                        </div>
-                        <div
-                            class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
-                            @click='mapStore.draw.start(DrawToolMode.RECTANGLE)'
-                        >
-                            <IconVector
-                                :size='25'
-                                stroke='1'
-                            /> Draw Rectangle
-                        </div>
-                        <div
-                            class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
-                            @click='mapStore.draw.start(DrawToolMode.CIRCLE)'
-                        >
-                            <IconCircle
-                                :size='25'
-                                stroke='1'
-                            /> Draw Circle
-                        </div>
-                        <div
-                            class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
-                            @click='mapStore.draw.start(DrawToolMode.SECTOR)'
-                        >
-                            <IconCone
-                                :size='25'
-                                stroke='1'
-                            /> Draw Sector
-                        </div>
-                        <div
-                            class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
-                            @click='mapStore.draw.start(DrawToolMode.FREEHAND)'
-                        >
-                            <IconLasso
-                                :size='25'
-                                stroke='1'
-                            /> Lasso Select
+                            <div
+                                class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
+                                @click='pointInput = true'
+                            >
+                                <IconCursorText
+                                    :size='25'
+                                    stroke='1'
+                                />
+                                <span class='ps-2'>Coordinate Input</span>
+                            </div>
+                            <div
+                                class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
+                                @click='rangeInput = true'
+                            >
+                                <IconCompass
+                                    :size='25'
+                                    stroke='1'
+                                />
+                                <span class='ps-2'>Range &amp; Bearing</span>
+                            </div>
+                            <div
+                                class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
+                                @click='mapStore.draw.start(DrawToolMode.POINT)'
+                            >
+                                <IconPoint
+                                    :size='25'
+                                    stroke='1'
+                                />
+                                <span class='ps-2'>Draw Point</span>
+                            </div>
+                            <div
+                                class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
+                                @click='mapStore.draw.start(DrawToolMode.LINESTRING)'
+                            >
+                                <IconLine
+                                    :size='25'
+                                    stroke='1'
+                                />
+                                <span class='ps-2'>Draw Line</span>
+                            </div>
+                            <div
+                                class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
+                                @click='mapStore.draw.start(DrawToolMode.POLYGON)'
+                            >
+                                <IconPolygon
+                                    :size='25'
+                                    stroke='1'
+                                />
+                                <span class='ps-2'>Draw Polygon</span>
+                            </div>
+                            <div
+                                class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
+                                @click='mapStore.draw.start(DrawToolMode.RECTANGLE)'
+                            >
+                                <IconVector
+                                    :size='25'
+                                    stroke='1'
+                                />
+                                <span class='ps-2'>Draw Rectangle</span>
+                            </div>
+                            <div
+                                class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
+                                @click='mapStore.draw.start(DrawToolMode.CIRCLE)'
+                            >
+                                <IconCircle
+                                    :size='25'
+                                    stroke='1'
+                                />
+                                <span class='ps-2'>Draw Circle</span>
+                            </div>
+                            <div
+                                class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
+                                @click='mapStore.draw.start(DrawToolMode.SECTOR)'
+                            >
+                                <IconCone
+                                    :size='25'
+                                    stroke='1'
+                                />
+                                <span class='ps-2'>Draw Sector</span>
+                            </div>
+                            <div
+                                class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
+                                @click='mapStore.draw.start(DrawToolMode.FREEHAND)'
+                            >
+                                <IconLasso
+                                    :size='25'
+                                    stroke='1'
+                                />
+                                <span class='ps-2'>Lasso Select</span>
+                            </div>
                         </div>
                     </template>
                 </TablerDropdown>
