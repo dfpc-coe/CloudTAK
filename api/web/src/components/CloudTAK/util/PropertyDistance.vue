@@ -92,9 +92,9 @@ watch(config.value, () => {
 
 function toKilometers(mode: string, distance: number): number {
     if (mode === 'mile') {
-        return
+        return distance * 1.60934;
     } else if (mode === 'meter') {
-        return
+        return distance / 1000;
     } else if (mode === 'kilometer') {
         return distance;
     } else {
