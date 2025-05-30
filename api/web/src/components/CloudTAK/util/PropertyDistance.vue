@@ -4,6 +4,8 @@
         <div class='mx-2'>
             <CopyField
                 v-model='inMode'
+                :edit='props.edit'
+                :hover='props.hover'
                 :size='24'
             />
             <span
@@ -48,13 +50,25 @@ import { ref, computed } from 'vue';
 import CopyField from './CopyField.vue';
 
 const props = defineProps({
+    label: {
+        type: String,
+        default: 'Distance'
+    },
     modelValue: {
         type: Number,
         required: true
     },
     unit: {
         type: String,
-        default: 'mile'
+        default: 'deg'
+    },
+    hover: {
+        type: Boolean,
+        default: false
+    },
+    edit: {
+        type: Boolean,
+        default: false
     }
 })
 

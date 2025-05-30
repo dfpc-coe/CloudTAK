@@ -3,7 +3,7 @@
         <label class='subheader mx-2' v-text='props.label'/>
         <div class='mx-2'>
             <CopyField
-                :model-value='inMode'
+                v-model='config.bearing'
                 :edit='props.edit'
                 :hover='props.hover'
                 :size='24'
@@ -17,7 +17,7 @@
                 }'
                 role='menuitem'
                 tabindex='0'
-                @click='mode = "deg"'
+                @click='changeMode("deg")'
             >Deg</span>
             <span
                 v-tooltip='"Radians"'
@@ -28,7 +28,7 @@
                 }'
                 role='menuitem'
                 tabindex='0'
-                @click='mode = "rad"'
+                @click='changeMode("rad")'
             >Rads</span>
             <span
                 v-tooltip='"Mil-Radians"'
@@ -39,15 +39,19 @@
                 }'
                 role='menuitem'
                 tabindex='0'
-                @click='mode = "mil"'
+                @click='changeMode("mil")'
             >Mils</span>
         </div>
     </div>
 </template>
 
 <script setup lang='ts'>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import CopyField from './CopyField.vue';
+
+const emit = defineEmits([
+    'update:modelValue'
+]);
 
 const props = defineProps({
     label: {
@@ -74,15 +78,48 @@ const props = defineProps({
 
 const mode = ref(props.unit);
 
-const inMode = computed(() => {
-    if (mode.value === 'deg') {
-        return Math.round((props.modelValue) * 1000) / 1000;
-    } else if (mode.value === 'rad') {
-        return Math.round((props.modelValue * 0.0174533) * 1000) / 1000;
-    } else if (mode.value === 'mil') {
-        return Math.round((props.modelValue * 17.777778) * 1000) / 1000;
-    } else {
-        return 'UNKNOWN';
-    }
+const config = ref({
+    bearing: toCustom(mode.value, props.modelValue)
 });
+
+watch(config.value, () => {
+    emit(
+        'update:modelValue',
+        toDegrees(mode.value, config.value.bearing)
+    );
+});
+
+function toDegrees(mode: string, bearing: number): number {
+    if (mode === 'rad') {
+        return config.value.bearing * 57.295779513;
+    } else if (mode === 'mil') {
+        return config.value.bearing * 0.05625;
+    } else if (mode === 'deg') {
+        return config.value.bearing;
+    } else {
+        throw new Error(`Invalid Bearing Unit: ${mode}`);
+    }
+}
+
+function toCustom(mode: string, degrees: number): number {
+    if (mode === 'deg') {
+        return Math.round(degrees * 1000) / 1000;
+    } else if (mode === 'rad') {
+        return Math.round((degrees * 0.0174533) * 1000) / 1000;
+    } else if (mode === 'mil') {
+        return Math.round((degrees * 17.777778) * 1000) / 1000;
+    } else {
+        throw new Error(`Invalid Bearing Unit: ${mode}`);
+    }
+}
+
+function changeMode(newMode: string): void {
+    if (mode.value === newMode) return;
+
+    const degrees = toDegrees(mode.value, config.value.bearing);
+
+    config.value.bearing = toCustom(newMode, degrees);
+
+    mode.value = newMode;
+}
 </script>
