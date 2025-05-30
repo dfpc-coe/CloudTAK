@@ -20,22 +20,22 @@
                 @click='mode = "deg"'
             >Deg</span>
             <span
-                v-tooltip='"Degrees"'
+                v-tooltip='"Radians"'
                 class='my-1 px-2 user-select-none'
                 :class='{
-                    "bg-gray-500 rounded-bottom": mode === "deg",
-                    "cursor-pointer": mode !== "deg",
+                    "bg-gray-500 rounded-bottom": mode === "rad",
+                    "cursor-pointer": mode !== "rad",
                 }'
                 role='menuitem'
                 tabindex='0'
                 @click='mode = "rad"'
             >Rads</span>
             <span
-                v-tooltip='"Degrees"'
+                v-tooltip='"Mil-Radians"'
                 class='my-1 px-2 user-select-none'
                 :class='{
-                    "bg-gray-500 rounded-bottom": mode === "deg",
-                    "cursor-pointer": mode !== "deg",
+                    "bg-gray-500 rounded-bottom": mode === "mil",
+                    "cursor-pointer": mode !== "mil",
                 }'
                 role='menuitem'
                 tabindex='0'
@@ -75,7 +75,14 @@ const props = defineProps({
 const mode = ref(props.unit);
 
 const inMode = computed(() => {
-    if (mode.value === 'deg') return Math.round((props.course) * 1000) / 1000;
-    return 'UNKNOWN';
+    if (mode.value === 'deg') {
+        return Math.round((props.modelValue) * 1000) / 1000;
+    } else if (mode.value === 'rad') {
+        return Math.round((props.modelValue * 0.0174533) * 1000) / 1000;
+    } else if (mode.value === 'mil') {
+        return Math.round((props.modelValue * 17.777778) * 1000) / 1000;
+    } else {
+        return 'UNKNOWN';
+    }
 });
 </script>
