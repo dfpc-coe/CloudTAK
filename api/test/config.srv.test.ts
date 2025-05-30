@@ -146,4 +146,26 @@ test('GET api/config/login', async (t) => {
     t.end();
 });
 
+test('GET api/config/map', async (t) => {
+    try {
+        const res = await flight.fetch('/api/config/map', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin
+            },
+        }, true);
+
+        t.deepEquals(res.body, {
+            center: '48.04,3.86',
+            zoom: 4,
+            pitch: 0,
+            bearing: 0
+        });
+    } catch (err) {
+        t.error(err, 'no error');
+    }
+
+    t.end();
+});
+
 flight.landing();

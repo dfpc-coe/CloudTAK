@@ -174,6 +174,20 @@
                                 :disabled='!edit'
                             />
                         </div>
+                        <div class='col-lg-12'>
+                            <TablerInput
+                                v-model='config[`map::pitch`]'
+                                label='Initial Map Pitch'
+                                :disabled='!edit'
+                            />
+                        </div>
+                        <div class='col-lg-12'>
+                            <TablerInput
+                                v-model='config[`map::bearing`]'
+                                label='Initial Map Bearing'
+                                :disabled='!edit'
+                            />
+                        </div>
                     </div>
                 </div>
 
@@ -290,8 +304,10 @@ export default {
 
             'media::url': '',
 
-            'map::center': '38.779,-105.044',
-            'map::zoom': 7,
+            'map::center': '3.86,48.04',
+            'map::zoom': 4,
+            'map::bearing': 0,
+            'map::pitch': 0,
 
             'provider::url': '',
             'provider::secret': '',
