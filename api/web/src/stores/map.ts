@@ -15,6 +15,7 @@ import COT from '../base/cot.ts';
 import { WorkerMessageType, LocationState } from '../base/events.ts';
 import type { WorkerMessage } from '../base/events.ts';
 import Overlay from '../base/overlay.ts';
+import Subscription from '../base/subscription.ts';
 import { std, stdurl } from '../std.js';
 import mapgl from 'maplibre-gl'
 import type Atlas from '../workers/atlas.ts';
@@ -45,7 +46,7 @@ export const useMapStore = defineStore('cloudtak', {
         }
 
         worker: Comlink.Remote<Atlas>;
-        mission: string | undefined;
+        mission: Subscription | undefined;
         notifications: Array<TAKNotification>;
         container?: HTMLElement;
         hasTerrain: boolean;

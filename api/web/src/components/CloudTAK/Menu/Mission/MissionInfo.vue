@@ -101,10 +101,10 @@
                             </button>
 
                             <button
-                                v-if='mapStore.mission !== props.mission.guid'
+                                v-if='!mapStore.mission || mapStore.mission.meta.guid !== props.mission.guid && sub'
                                 class='btn btn-green'
                                 style='height: 32px;'
-                                @click='mapStore.mission = props.mission.guid'
+                                @click='mapStore.mission = sub'
                             >
                                 Make Active
                             </button>
@@ -154,8 +154,14 @@ const props = defineProps({
     }
 });
 
+const sub = ref<Subscription | undefined>();
+
 onMounted(async () => {
     await fetchSubscriptions();
+
+    if (subscribed.value) {
+        sub.value = await mapStore.worker.db.subscriptionGet(props.mission.guid);
+    }
 });
 
 const loading = ref({
@@ -195,9 +201,13 @@ async function subscribe(subscribed: boolean) {
         mapStore.overlays.push(missionOverlay);
         await mapStore.loadMission(props.mission.guid);
 
+        sub.value = await mapStore.worker.db.subscriptionGet(props.mission.guid);
+
         emit('refresh');
     } else if (subscribed === false && overlay) {
         await mapStore.removeOverlay(overlay);
+
+        sub.value = undefined;
 
         emit('refresh');
     }
