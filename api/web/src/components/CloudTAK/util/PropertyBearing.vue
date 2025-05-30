@@ -3,7 +3,9 @@
         <label class='subheader mx-2' v-text='props.label'/>
         <div class='mx-2'>
             <CopyField
-                v-model='inMode'
+                :model-value='inMode'
+                :edit='props.edit'
+                :hover='props.hover'
                 :size='24'
             />
             <span
@@ -13,7 +15,7 @@
                     "bg-gray-500 rounded-bottom": mode === "deg",
                     "cursor-pointer": mode !== "deg",
                 }'
-                role='menuitem'    
+                role='menuitem'
                 tabindex='0'
                 @click='mode = "deg"'
             >Deg</span>
@@ -24,7 +26,7 @@
                     "bg-gray-500 rounded-bottom": mode === "deg",
                     "cursor-pointer": mode !== "deg",
                 }'
-                role='menuitem'    
+                role='menuitem'
                 tabindex='0'
                 @click='mode = "rad"'
             >Rads</span>
@@ -35,7 +37,7 @@
                     "bg-gray-500 rounded-bottom": mode === "deg",
                     "cursor-pointer": mode !== "deg",
                 }'
-                role='menuitem'    
+                role='menuitem'
                 tabindex='0'
                 @click='mode = "mil"'
             >Mils</span>
