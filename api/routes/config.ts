@@ -13,7 +13,7 @@ export default async function router(schema: Schema, config: Config) {
         query: Type.Object({
             keys: Type.String()
         }),
-        res: Type.Any()
+        res: Type.Record(Type.String(), Type.Any())
     }, async (req, res) => {
         try {
             await Auth.as_user(config, req, { admin: true });
@@ -41,6 +41,12 @@ export default async function router(schema: Schema, config: Config) {
             'agol::token': Type.Optional(Type.String()),
 
             'media::url': Type.Optional(Type.String()),
+
+            'map::center': Type.Optional(Type.String()),
+            'map::zoom': Type.Optional(Type.Integer({
+                minimum: 0,
+                maximum: 20
+            })),
 
             'group::Yellow': Type.Optional(Type.String()),
             'group::Cyan': Type.Optional(Type.String()),

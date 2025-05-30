@@ -3,6 +3,9 @@
         <header
             v-if='navShown'
             class='navbar navbar-expand-md d-print-none'
+            data-bs-theme='dark'
+            data-bs-theme-base='neutral'
+            data-bs-theme-primary='blue'
         >
             <div class='container-xl'>
                 <div class='col-auto'>
