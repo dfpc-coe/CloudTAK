@@ -31,10 +31,10 @@
                     >
                         <CopyField
                             :model-value='cot.properties.callsign'
-                            @update:model-value='updateProperty("callsign", $event)'
                             :edit='is_editable'
                             :minheight='44'
                             :hover='is_editable'
+                            @update:model-value='updateProperty("callsign", $event)'
                         />
                     </div>
                 </div>
@@ -387,8 +387,9 @@
                         "col-12": !cot.properties.course,
                     }'
                 >
-                    <PropertyCourse
-                        :course='cot.properties.course'
+                    <PropertyBearing
+                        label='Course'
+                        :model-value='cot.properties.course'
                         class='py-2'
                     />
                 </div>
@@ -425,10 +426,10 @@
                 <label class='subheader mx-2'>Remarks</label>
                 <CopyField
                     :model-value='cot.properties.remarks'
-                    @update:model-value='updateProperty("remarks", $event)'
                     :rows='10'
                     :edit='is_editable'
                     :hover='is_editable'
+                    @update:model-value='updateProperty("remarks", $event)'
                 />
             </div>
 
@@ -507,8 +508,8 @@
             <PropertySensor
                 v-if='cot.properties.sensor !== undefined'
                 :model-value='cot.properties.sensor'
-                @update:model-value='updateProperty("sensor", $event)'
                 class='my-2 mx-2'
+                @update:model-value='updateProperty("sensor", $event)'
             />
 
             <div
@@ -522,33 +523,33 @@
                             <div class='col-12'>
                                 <IconSelect
                                     :model-value='cot.properties.icon'
-                                    @update:model-value='updatePropertyIcon($event)'
                                     label='Point Icon'
                                     :size='32'
                                     stroke='1'
+                                    @update:model-value='updatePropertyIcon($event)'
                                 />
                             </div>
                             <div class='col-12'>
                                 <label class='subheader'>Point Colour</label>
                                 <TablerInput
                                     :model-value='cot.properties["marker-color"]'
-                                    @update:model-value='updateProperty("marker-color", $event)'
                                     label=''
                                     default='#00FF00'
                                     type='color'
                                     class='pb-2'
+                                    @update:model-value='updateProperty("marker-color", $event)'
                                 />
                             </div>
                             <div class='col-12'>
                                 <label class='subheader'>Point Opacity</label>
                                 <TablerRange
                                     :model-value='cot.properties["marker-opacity"]'
-                                    @update:model-value='updateProperty("marker-opacity", $event)'
                                     label=''
                                     :default='1'
                                     :min='0'
                                     :max='1'
                                     :step='0.01'
+                                    @update:model-value='updateProperty("marker-opacity", $event)'
                                 />
                             </div>
                         </template>
@@ -557,9 +558,9 @@
                                 <label class='subheader'>Line Colour</label>
                                 <TablerInput
                                     :model-value='cot.properties["stroke"]'
-                                    @update:model-value='updateProperty("stroke", $event)'
                                     label=''
                                     type='color'
+                                    @update:model-value='updateProperty("stroke", $event)'
                                 />
                             </div>
 
@@ -567,34 +568,34 @@
                                 <label class='subheader'>Line Style</label>
                                 <TablerEnum
                                     :model-value='cot.properties["stroke-style"]'
-                                    @update:model-value='updateProperty("stroke-style", $event)'
                                     label=''
                                     :options='["solid", "dashed", "dotted", "outlined"]'
                                     default='solid'
+                                    @update:model-value='updateProperty("stroke-style", $event)'
                                 />
                             </div>
                             <div class='col-12'>
                                 <label class='subheader'>Line Thickness</label>
                                 <TablerRange
                                     :model-value='cot.properties["stroke-width"]'
-                                    @update:model-value='updateProperty("stroke-width", $event)'
                                     label=''
                                     :default='1'
                                     :min='1'
                                     :max='6'
                                     :step='1'
+                                    @update:model-value='updateProperty("stroke-width", $event)'
                                 />
                             </div>
                             <div class='col-12'>
                                 <label class='subheader'>Line Opacity</label>
                                 <TablerRange
                                     :model-value='cot.properties["stroke-opacity"]'
-                                    @update:model-value='updateProperty("stroke-opacity", $event)'
                                     label=''
                                     :default='1'
                                     :min='0'
                                     :max='1'
                                     :step='0.01'
+                                    @update:model-value='updateProperty("stroke-opacity", $event)'
                                 />
                             </div>
                         </template>
@@ -603,21 +604,21 @@
                                 <label class='subheader'>Fill Colour</label>
                                 <TablerInput
                                     :model-value='cot.properties["fill"]'
-                                    @update:model-value='updateProperty("fill", $event)'
                                     label=''
                                     type='color'
+                                    @update:model-value='updateProperty("fill", $event)'
                                 />
                             </div>
                             <div class='col-12 round'>
                                 <label class='subheader'>Fill Opacity</label>
                                 <TablerRange
                                     :model-value='cot.properties["fill-opacity"]'
-                                    @update:model-value='updateProperty("fill-opacity", $event)'
                                     label=''
                                     :default='1'
                                     :min='0'
                                     :max='1'
                                     :step='0.01'
+                                    @update:model-value='updateProperty("fill-opacity", $event)'
                                 />
                             </div>
                         </template>
@@ -751,7 +752,7 @@ import PolygonArea from './util/PolygonArea.vue';
 import Coordinate from './util/Coordinate.vue';
 import PropertyType from './util/PropertyType.vue';
 import PropertyBattery from './util/PropertyBattery.vue';
-import PropertyCourse from './util/PropertyCourse.vue';
+import PropertyBearing from './util/PropertyBearing.vue';
 import PropertySensor from './util/PropertySensor.vue';
 import PropertyPhone from './util/PropertyPhone.vue';
 import PropertyCreator from './util/PropertyCreator.vue';

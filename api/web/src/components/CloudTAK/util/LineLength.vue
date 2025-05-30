@@ -8,29 +8,35 @@
             />
             <span
                 v-tooltip='"Meters"'
-                class='my-1 px-2'
+                class='my-1 px-2 user-select-none'
                 :class='{
                     "bg-gray-500 rounded-bottom": mode === "meter",
                     "cursor-pointer": mode !== "meter",
                 }'
+                role='menuitem'
+                tabindex='0'
                 @click='mode = "meter"'
             >Meters</span>
             <span
                 v-tooltip='"Kilometers"'
-                class='my-1 px-2'
+                class='my-1 px-2 user-select-none'
                 :class='{
                     "bg-gray-500 rounded-bottom": mode === "kilometer",
                     "cursor-pointer": mode !== "kilometer",
                 }'
+                role='menuitem'
+                tabindex='0'
                 @click='mode = "kilometer"'
             >Kilometers</span>
             <span
                 v-tooltip='"Miles"'
-                class='my-1 px-2'
+                class='my-1 px-2 user-select-none'
                 :class='{
                     "bg-gray-500 rounded-bottom": mode === "mile",
                     "cursor-pointer": mode !== "mile",
                 }'
+                role='menuitem'
+                tabindex='0'
                 @click='mode = "mile"'
             >Miles</span>
         </div>
