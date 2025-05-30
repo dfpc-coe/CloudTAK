@@ -1,6 +1,9 @@
 <template>
     <div class='col-12'>
-        <label class='subheader mx-2' v-text='props.label'/>
+        <label
+            class='subheader mx-2'
+            v-text='props.label'
+        />
         <div class='mx-2'>
             <CopyField
                 v-model='config.bearing'
