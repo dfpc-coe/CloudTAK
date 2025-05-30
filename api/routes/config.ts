@@ -13,7 +13,7 @@ export default async function router(schema: Schema, config: Config) {
         query: Type.Object({
             keys: Type.String()
         }),
-        res: Type.Any()
+        res: Type.Record(Type.String(), Type.Any())
     }, async (req, res) => {
         try {
             await Auth.as_user(config, req, { admin: true });
@@ -41,6 +41,20 @@ export default async function router(schema: Schema, config: Config) {
             'agol::token': Type.Optional(Type.String()),
 
             'media::url': Type.Optional(Type.String()),
+
+            'map::center': Type.Optional(Type.String()),
+            'map::pitch': Type.Optional(Type.Integer({
+                minimum: 0,
+                maximum: 90
+            })),
+            'map::bearing': Type.Optional(Type.String({
+                minimum: 0,
+                maximum: 360
+            })),
+            'map::zoom': Type.Optional(Type.Integer({
+                minimum: 0,
+                maximum: 20
+            })),
 
             'group::Yellow': Type.Optional(Type.String()),
             'group::Cyan': Type.Optional(Type.String()),
@@ -170,6 +184,49 @@ export default async function router(schema: Schema, config: Config) {
             res.json({
                 roles: [ "Team Member", "Team Lead", "HQ", "Sniper", "Medic", "Forward Observer", "RTO", "K9" ],
                 groups: final
+            });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/config/map', {
+        name: 'Map Config',
+        group: 'Config',
+        description: 'Return Map Config',
+        res: Type.Object({
+            center: Type.String({ default: '-100,40' }),
+            zoom: Type.Integer({ default: 4 }),
+            pitch: Type.Integer({ default: 0 }),
+            bearing: Type.Integer({ default: 0 }),
+        })
+    }, async (req, res) => {
+        try {
+            const keys = [
+                'map::center',
+                'map::pitch',
+                'map::bearing',
+                'map::zoom',
+            ];
+
+            const final: Record<string, any> = {};
+
+            (await Promise.allSettled(keys.map((key) => {
+                return config.models.Setting.from(key);
+            }))).forEach((k) => {
+                if (k.status === 'rejected') return;
+                return final[k.value.key.replace('map::', '')] = String(k.value.value);
+            });
+
+            for (let map of keys) {
+                map = map.replace('map::', '')
+            }
+
+            res.json({
+                center: final.center || '-100,40',
+                zoom: final.zoom || 4,
+                pitch: final.pitch || 0,
+                bearing: final.bearing || 0
             });
         } catch (err) {
             Err.respond(err, res);
