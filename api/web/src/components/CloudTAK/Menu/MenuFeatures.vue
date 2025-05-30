@@ -115,7 +115,10 @@
                     </div>
                 </template>
 
-                <div id='general' ref='sortableFilesRef'>
+                <div
+                    id='general'
+                    ref='sortableFilesRef'
+                >
                     <Feature
                         v-for='cot of cots.values()'
                         :id='cot.id'

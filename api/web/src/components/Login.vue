@@ -41,7 +41,7 @@
                                         Loading CloudTAK
                                     </h2>
                                 </div>
-                                <TablerLoading/>
+                                <TablerLoading />
                             </div>
                             <div
                                 v-else
@@ -84,6 +84,7 @@
                                             <span class='ms-auto'>
                                                 <a
                                                     v-if='brandStore.login && brandStore.login.forgot'
+                                                    tabindex='-1'
                                                     class='cursor-pointer'
                                                     :href='brandStore.login.forgot'
                                                 >Forgot Password</a>
@@ -113,7 +114,12 @@
                             v-if='brandStore.login && brandStore.login.signup'
                             class='text-center text-muted mt-3'
                         >
-                            Don't have an account yet? <a :href='brandStore.login.signup'>Sign Up</a>
+                            Don't have an account yet?
+                            <a
+                                tabindex='-1'
+                                class='cursor-pointer'
+                                :href='brandStore.login.signup'
+                            >Sign Up</a>
                         </div>
                     </div>
                 </div>
