@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v8.41.0 - 2025-05-30
+
+- :tada: Begin to sketch out Mission Mode include wiring up `Make Active` Mission Button
+- :rocket: Move around zoom buttons to make room for Active Mission Mode
+- :tada: Allow server admins to specify default map mode
+
 ### v8.40.0 - 2025-05-30
 
 - :tada: Add pitch reset icon to Map view
