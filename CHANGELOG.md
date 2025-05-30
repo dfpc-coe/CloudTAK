@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v8.39.0 - 2025-05-30
+
+- :tada: Initial Range & Bearing support
+
 ### v8.38.0 - 2025-05-29
 
 - :rocket: Improvements to plain text output of HTML Strip function in handlebar templates
