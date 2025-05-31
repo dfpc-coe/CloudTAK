@@ -14,7 +14,7 @@
 
 ### v8.42.0 - 2025-05-31
 
-- :rocket: Remove unused Public Bucket
+- :rocket: Remove unused Public Bucket **Note** You will need to empty the bucket before deploying
 
 ### v8.41.0 - 2025-05-30
 
