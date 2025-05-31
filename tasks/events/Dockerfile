@@ -1,4 +1,4 @@
-FROM alpine:3.21 AS build
+FROM alpine:3.22 AS build
 
 ENV HOME=/home/etl
 WORKDIR $HOME

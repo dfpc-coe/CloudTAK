@@ -1,4 +1,4 @@
-FROM nginx:alpine3.21
+FROM nginx:alpine3.22
 
 EXPOSE 5000
 
