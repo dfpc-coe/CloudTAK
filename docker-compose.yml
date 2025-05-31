@@ -21,9 +21,9 @@ services:
             - AWS_S3_AccessKeyId=cloudtakminioadmin
             - AWS_S3_SecretAccessKey=cloudtakminioadmin
             - POSTGRES=postgres://docker:docker@postgis:5432/gis
-            - API_URL=localhost:5000
-            - ROOT_URL=localhost:5001
-            - PMTILES_URL=localhost:5002
+            - API_URL=http://localhost:5000
+            - ROOT_URL=http://localhost:5001
+            - PMTILES_URL=http://localhost:5002
 
     tiles:
         platform: linux/amd64
@@ -54,7 +54,7 @@ services:
             - "5003:5003"
         environment:
             - CLOUDTAK_Mode=docker-compose
-            - API_URL=localhost:5000
+            - API_URL=http://localhost:5000
             - SigningSecret=coe-wildland-fire
             - ASSET_BUCKET=cloudtak
             - AWS_S3_Endpoint=http://store:9000
