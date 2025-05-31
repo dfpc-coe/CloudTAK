@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v8.42.0 - 2025-05-31
+
+- :rocket: Remove unused Public Bucket
+
 ### v8.41.0 - 2025-05-30
 
 - :tada: Begin to sketch out Mission Mode include wiring up `Make Active` Mission Button
