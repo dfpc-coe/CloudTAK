@@ -25,6 +25,22 @@ services:
             - ROOT_URL=localhost:5001
             - PMTILES_URL=localhost:5002
 
+    tiles:
+        platform: linux/amd64
+        build:
+          context: ./tasks/pmtiles/
+          dockerfile: Dockerfile.compose
+        restart: 'always'
+        ports:
+            - "5002:5002"
+        environment:
+            - SigningSecret=coe-wildland-fire
+            - MediaSecret=coe-wildland-fire-video
+            - ASSET_BUCKET=cloudtak
+            - AWS_S3_Endpoint=http://store:9000
+            - AWS_S3_AccessKeyId=cloudtakminioadmin
+            - AWS_S3_SecretAccessKey=cloudtakminioadmin
+
     events:
         platform: linux/amd64
         build:
@@ -40,22 +56,6 @@ services:
             - CLOUDTAK_Mode=docker-compose
             - API_URL=localhost:5000
             - SigningSecret=coe-wildland-fire
-            - ASSET_BUCKET=cloudtak
-            - AWS_S3_Endpoint=http://store:9000
-            - AWS_S3_AccessKeyId=cloudtakminioadmin
-            - AWS_S3_SecretAccessKey=cloudtakminioadmin
-
-    tiles:
-        platform: linux/amd64
-        build:
-          context: ./tasks/pmtiles/
-          dockerfile: Dockerfile.compose
-        restart: 'always'
-        ports:
-            - "5002:5002"
-        environment:
-            - SigningSecret=coe-wildland-fire
-            - MediaSecret=coe-wildland-fire-video
             - ASSET_BUCKET=cloudtak
             - AWS_S3_Endpoint=http://store:9000
             - AWS_S3_AccessKeyId=cloudtakminioadmin
