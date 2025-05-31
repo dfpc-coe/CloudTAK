@@ -1,3 +1,5 @@
+import express from 'express';
+import Schema from '@openaddresses/batch-schema';
 import os from 'node:os';
 import fs from 'node:fs';
 import Lambda from "aws-lambda";
@@ -133,6 +135,29 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         // Lambda will handle it's own shutdown
         // eslint-disable-next-line no-constant-condition
         } while (true)
+    } else if (process.env.CLOUDTAK_Mode === 'docker-compose') {
+        const app = express();
+
+        const schema = new Schema(express.Router(), {
+            logging: true,
+            limit: 50
+        })
+
+        const config = {};
+
+        app.disable('x-powered-by');
+
+        app.use(schema.router);
+
+        await schema.load(
+            new URL('./routes/', import.meta.url),
+            config,
+           { silent: false }
+        )
+
+        app.listen(5003, () => {
+            console.log('ok - events server on http://localhost:5003');
+        });
     } else {
         try {
             const dotfile = new URL('../.env', import.meta.url);
