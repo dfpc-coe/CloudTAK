@@ -312,10 +312,10 @@ async function refresh(load = false): Promise<void> {
     loading.value = false
 
     nextTick(() => {
-        if (!sortableFilesRef.value) throw new Error('Could not load sortable');
-
         // Sortable will throw an error if there are no sortable objects
         if (cots.value.size === 0) return;
+
+        if (!sortableFilesRef.value) throw new Error('Could not load sortable');
 
         new Sortable(sortableFilesRef.value, {
             sort: true,
