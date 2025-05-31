@@ -5,8 +5,9 @@ services:
           context: ./api/
           dockerfile: Dockerfile
         restart: 'always'
-        links:
+        depends_on:
             - postgis
+            - media
             - store
         ports:
             - "5000:5000"
@@ -47,7 +48,7 @@ services:
           context: ./tasks/pmtiles/
           dockerfile: Dockerfile.compose
         restart: 'always'
-        links:
+        depends_on:
             - api
             - store
         ports:
