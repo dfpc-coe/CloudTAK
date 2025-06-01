@@ -31,7 +31,7 @@
                     />
                 </div>
 
-                <div class='col-lg-12 py-2'>
+                <div class='col-lg-4 col-12 py-2'>
                     <TablerInput
                         v-model='server.url'
                         :disabled='!edit'
@@ -40,7 +40,7 @@
                         :error='errors.url'
                     />
                 </div>
-                <div class='col-lg-12 py-2'>
+                <div class='col-lg-4 col-12 py-2'>
                     <TablerInput
                         v-model='server.api'
                         :disabled='!edit'
@@ -49,7 +49,7 @@
                         :error='errors.api'
                     />
                 </div>
-                <div class='col-lg-12 py-2'>
+                <div class='col-lg-4 col-12 py-2'>
                     <TablerInput
                         v-model='server.webtak'
                         :disabled='!edit'
@@ -96,14 +96,26 @@
                     </div>
                 </template>
                 <template v-else>
-                    <div class='col-auto'>
-                        <IconLock
-                            :size='50'
-                            stroke='1'
-                        />
-                    </div>
-                    <div class='col-auto d-flex align-items-center'>
+                    <div class='d-flex align-items-center'>
+                        <div class='me-2'>
+                            <IconLock
+                                :size='50'
+                                stroke='1'
+                            />
+                        </div>
                         Once Certificates are uploaded they cannot be viewed
+
+                        <div 
+                            v-if='edit'
+                            class='col-auto ms-auto'
+                        >
+                            <button
+                                class='btn btn-secondary'
+                                @click='regen=true'
+                            >
+                                Replace Certificate
+                            </button>
+                        </div>
                     </div>
                     <div
                         v-if='server.certificate'
@@ -136,17 +148,6 @@
                                 v-text='server.certificate.subject'
                             />
                         </div>
-                    </div>
-                    <div
-                        v-if='edit'
-                        class='col-auto ms-auto'
-                    >
-                        <button
-                            class='btn btn-secondary'
-                            @click='regen=true'
-                        >
-                            Replace Certificate
-                        </button>
                     </div>
                 </template>
 
