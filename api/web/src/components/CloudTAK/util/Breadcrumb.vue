@@ -68,7 +68,7 @@ async function loadBreadcrumb() {
     try {
         const url = stdurl(`/api/marti/cot/${props.uid}/all`)
 
-        url.searchParams.append('secago', String(60 * Number(query.value.relative.split(' ')[0])))
+        url.searchParams.append('secago', String(60 * 60 * Number(query.value.relative.split(' ')[0])))
         url.searchParams.append('track', String(true))
         const crumb = await std(url) as FeatureCollection;
 
