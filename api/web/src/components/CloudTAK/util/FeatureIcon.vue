@@ -23,6 +23,12 @@
             :color='feature.properties.stroke || "white"'
             stroke='1'
         />
+        <IconRoute
+            v-else-if='feature.properties && feature.properties.type === "b-m-r"'
+            :size='props.size'
+            :color='feature.properties.stroke || "white"'
+            stroke='1'
+        />
         <IconLine
             v-else-if='feature.geometry && feature.geometry.type === "LineString"'
             :size='props.size'
@@ -53,6 +59,7 @@
 import { useTemplateRef, watch, computed } from 'vue';
 import {
     IconVideo,
+    IconRoute,
     IconPointFilled,
     IconMapPin,
     IconLine,
