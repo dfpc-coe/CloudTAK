@@ -298,6 +298,34 @@
                             "py-2 px-3 hover-dark": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
+                        @click='router.push("/menu/routes")'
+                        @keyup.enter='router.push("/menu/routes")'
+                    >
+                        <IconRoute
+                            v-tooltip='{
+                                content: "Routes",
+                                placement: "left",
+                            }'
+                            :tabindex='compact ? 0 : undefined'
+                            title='Open Routes Panel'
+                            :class='{ "mx-2": compact }'
+                            :size='32'
+                            stroke='1'
+                        />
+                        <span
+                            v-if='!compact'
+                            class='mx-2 user-select-none'
+                            style='font-size: 18px;'
+                        >Routes</span>
+                    </div>
+                    <div
+                        role='menuitem'
+                        :tabindex='compact ? undefined : 0'
+                        class='cursor-pointer col-12 d-flex align-items-center'
+                        :class='{
+                            "py-2 px-3 hover-dark": !compact,
+                            "py-1 px-2 hover-button": compact
+                        }'
                         @click='router.push("/menu/files")'
                         @keyup.enter='router.push("/menu/files")'
                     >
@@ -587,6 +615,7 @@ import {
     IconUsers,
     IconVideo,
     IconPhoto,
+    IconRoute,
     IconMapPin,
     IconLogout,
     IconMessage,
