@@ -50,9 +50,7 @@
                                 v-text='cot.properties.callsign'
                             />
                             <div class='col-12 subheader'>
-                                <span class='mx-2'>
-                                    LENGTH
-                                </span>
+                                <span class='mx-2' v-text='Math.round(length(cot.geometry) * 1000) / 1000 + " km"'/>
                             </div>
                         </div>
                         <div class='col-auto ms-auto'>
@@ -84,6 +82,7 @@ import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import COT from '../../../base/cot.ts';
 import MenuTemplate from '../util/MenuTemplate.vue';
+import { length } from '@turf/length';
 import {
     TablerNone,
     TablerInput,
