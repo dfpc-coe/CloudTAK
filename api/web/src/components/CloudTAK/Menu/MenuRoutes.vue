@@ -50,7 +50,11 @@
                                 v-text='cot.properties.callsign'
                             />
                             <div class='col-12 subheader'>
-                                <span class='mx-2' v-text='Math.round(length(cot.geometry) * 1000) / 1000 + " km"'/>
+                                <span
+                                    v-if='cot.geometry.type === "LineString"'
+                                    class='mx-2'
+                                    v-text='Math.round(cot.length() * 1000) / 1000 + " km"'
+                                />
                             </div>
                         </div>
                         <div class='col-auto ms-auto'>
@@ -59,15 +63,6 @@
                                     displaytype='icon'
                                     @delete='deleteRoute(cot.id)'
                                 />
-                                <TablerIconButton
-                                    title='Download Asset'
-                                    @click='downloadAsset(asset)'
-                                >
-                                    <IconDownload
-                                        :size='32'
-                                        stroke='1'
-                                    />
-                                </TablerIconButton>
                             </div>
                         </div>
                     </div>
@@ -82,20 +77,17 @@ import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import COT from '../../../base/cot.ts';
 import MenuTemplate from '../util/MenuTemplate.vue';
-import { length } from '@turf/length';
 import {
     TablerNone,
     TablerInput,
     TablerDelete,
     TablerLoading,
-    TablerIconButton,
     TablerRefreshButton
 } from '@tak-ps/vue-tabler';
 import type { WorkerMessage } from '../../../base/events.ts';
 import { WorkerMessageType } from '../../../base/events.ts';
 import {
     IconRoute,
-    IconDownload,
 } from '@tabler/icons-vue';
 import { useMapStore } from '../../../stores/map.ts';
 
@@ -138,7 +130,7 @@ onBeforeUnmount(() => {
 
 async function deleteRoute(id: string): Promise<void> {
     await mapStore.worker.db.remove(id);
-    await this.refresh();
+    await refresh();
 }
 
 async function clickRoute(cot: COT): Promise<void> {
