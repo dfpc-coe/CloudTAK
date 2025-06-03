@@ -587,6 +587,16 @@
                     v-else-if='["home", "home-menu"].includes(String(route.name))'
                 >
                     <div class='d-flex justify-content-center'>
+                        <img
+                            class='cursor-pointer'
+                            height='50'
+                            width='50'
+                            :src='brandStore.login && brandStore.login.logo ? brandStore.login.logo : "/CloudTAKLogo.svg"'
+                            @click='router.push("/")'
+                            @keyup.enter='router.push("/")'
+                        />
+                    </div>
+                    <div class='d-flex justify-content-center'>
                         <StatusDot
                             class='mx-2 mt-2 mb-1'
                             :status='mapStore.isOpen ? "success" : "fail"'
@@ -630,11 +640,13 @@ import {
 } from '@tabler/icons-vue';
 import StatusDot from '../util/StatusDot.vue';
 import { useMapStore } from '../../stores/map.ts';
+import { useBrandStore } from '../../stores/brand.ts';   
 import { useRouter, useRoute } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
 
 const mapStore = useMapStore();
+const brandStore = useBrandStore();
 const version = ref('');
 const username = ref<string>('Username')
 const isSystemAdmin = ref<boolean>(false)
