@@ -47,6 +47,7 @@ export const useMapStore = defineStore('cloudtak', {
 
         worker: Comlink.Remote<Atlas>;
         mission: Subscription | undefined;
+        mapConfig: MapConfig;
         notifications: Array<TAKNotification>;
         container?: HTMLElement;
         hasTerrain: boolean;
@@ -106,6 +107,12 @@ export const useMapStore = defineStore('cloudtak', {
                 mode: undefined,
                 feats: [],
                 x: 0, y: 0,
+            },
+            mapConfig: {
+                center: '-100,40',
+                zoom: 4,
+                pitch: 0,
+                bearing: 0
             },
             radial: {
                 mode: undefined,
@@ -207,6 +214,18 @@ export const useMapStore = defineStore('cloudtak', {
             this.map.removeSource('-2');
 
             this.isTerrainEnabled = false;
+        },
+
+        returnHome: function(): void {
+            const flyTo = {
+                zoom: this.mapConfig.zoom,
+                pitch: this.mapConfig.pitch,
+                bearing: this.mapConfig.bearing,
+                center: this.mapConfig.center.split(',').map(Number) as LngLatLike,
+                speed: Infinity
+            };
+
+            this.map.flyTo(flyTo);
         },
 
         updateCOT: async function(): Promise<void> {
@@ -376,18 +395,18 @@ export const useMapStore = defineStore('cloudtak', {
                 });
             }
 
-            const mapStateDefault = await std('/api/config/map') as MapConfig;
+            this.mapConfig = await std('/api/config/map') as MapConfig;
 
             const init: mapgl.MapOptions = {
                 container: this.container,
                 hash: true,
                 attributionControl: false,
                 fadeDuration: 0,
-                zoom: mapStateDefault.zoom,
-                pitch: mapStateDefault.pitch,
-                bearing: mapStateDefault.bearing,
+                zoom: this.mapConfig.zoom,
+                pitch: this.mapConfig.pitch,
+                bearing: this.mapConfig.bearing,
+                center: this.mapConfig.center.split(',').map(Number) as LngLatLike,
                 maxPitch: 85,
-                center: mapStateDefault.center.split(',').map(Number) as LngLatLike,
                 style: {
                     version: 8,
                     glyphs: String(stdurl('/fonts')) + '/{fontstack}/{range}.pbf',
