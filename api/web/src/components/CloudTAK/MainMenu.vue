@@ -596,7 +596,7 @@
                                 :src='brandStore.login && brandStore.login.logo ? brandStore.login.logo : "/CloudTAKLogo.svg"'
                                 @click='returnHome'
                                 @keyup.enter='returnHome'
-                            />
+                            >
                         </div>
                         <div
                             class='position-absolute'
