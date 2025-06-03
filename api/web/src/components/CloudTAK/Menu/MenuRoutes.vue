@@ -29,8 +29,8 @@
             />
             <template v-else>
                 <div
-                    :key='cot.id'
                     v-for='cot of routes.values()'
+                    :key='cot.id'
                 >
                     <div
                         class='col-12 py-2 px-3 d-flex align-items-center hover-dark user-select-none cursor-pointer'

@@ -1,19 +1,13 @@
 <template>
-    <div class='card'>
-        <div class='card-header'>
-            <h3 class='card-title'>
-                Icons
-            </h3>
-        </div>
-
-        <div class='col-12 px-2'>
-            <TablerInput
-                v-model='paging.filter'
-                placeholder='Filter'
-            />
-        </div>
-
+    <div>
         <div class='card-body'>
+            <div class='col-12 px-2 pt-2'>
+                <TablerInput
+                    v-model='paging.filter'
+                    placeholder='Filter'
+                />
+            </div>
+
             <TablerLoading
                 v-if='loading'
                 desc='Loading Icons'

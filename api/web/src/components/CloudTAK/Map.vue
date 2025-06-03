@@ -131,7 +131,9 @@
                                 stroke='1'
                                 style='margin: 3px 3px'
                             />
-                            <div class='me-3'>No Mission</div>
+                            <div class='me-3'>
+                                No Mission
+                            </div>
                         </div>
                     </template>
                     <template v-else>
@@ -145,8 +147,8 @@
                             <a
                                 class='me-3 text-truncate cursor-pointer text-white'
                                 @click='router.push(`/menu/missions/${mapStore.mission.meta.guid}`)'
-                                v-text='mapStore.mission.meta.name'>
-                            </a>
+                                v-text='mapStore.mission.meta.name'
+                            />
                         </div>
                     </template>
                 </div>
