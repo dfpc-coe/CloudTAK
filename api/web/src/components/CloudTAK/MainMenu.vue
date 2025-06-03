@@ -586,22 +586,33 @@
                 <div
                     v-else-if='["home", "home-menu"].includes(String(route.name))'
                 >
-                    <div class='d-flex justify-content-center'>
-                        <img
-                            class='cursor-pointer'
-                            height='50'
-                            width='50'
-                            :src='brandStore.login && brandStore.login.logo ? brandStore.login.logo : "/CloudTAKLogo.svg"'
-                            @click='router.push("/")'
-                            @keyup.enter='router.push("/")'
-                        />
-                    </div>
-                    <div class='d-flex justify-content-center'>
-                        <StatusDot
-                            class='mx-2 mt-2 mb-1'
-                            :status='mapStore.isOpen ? "success" : "fail"'
-                            :dark='true'
-                        />
+                    <div class='d-flex justify-content-center mb-2'>
+                        <div class='position-relative'>
+                            <img
+                                v-tooltip='"Return Home"'
+                                class='cursor-pointer'
+                                height='50'
+                                width='50'
+                                :src='brandStore.login && brandStore.login.logo ? brandStore.login.logo : "/CloudTAKLogo.svg"'
+                                @click='returnHome'
+                                @keyup.enter='returnHome'
+                            />
+                        </div>
+                        <div
+                            class='position-absolute'
+                            style='
+                                bottom: 20px;
+                                right: 10px;
+                            '
+                        >
+                            <div
+                                class='status'
+                                :class='{
+                                    "status-green": mapStore.isOpen,
+                                    "status-red": !mapStore.isOpen
+                                }'
+                            />
+                        </div>
                     </div>
                     <div class='d-flex justify-content-center mb-1'>
                         <div
@@ -638,7 +649,6 @@ import {
     IconFileImport,
     IconAffiliate,
 } from '@tabler/icons-vue';
-import StatusDot from '../util/StatusDot.vue';
 import { useMapStore } from '../../stores/map.ts';
 import { useBrandStore } from '../../stores/brand.ts';   
 import { useRouter, useRoute } from 'vue-router';
@@ -663,8 +673,31 @@ onMounted(async () => {
     isAgencyAdmin.value = await mapStore.worker.profile.isAgencyAdmin();
 })
 
+function returnHome() {
+    router.push("/");
+    mapStore.returnHome();
+}
+
 function logout() {
     delete localStorage.token;
     router.push("/login");
 }
 </script>
+
+<style>
+.status {
+    height: 10px;
+    width: 10px;
+    margin: 0px;
+    padding: 0px;
+    border-radius: 50%;
+}
+
+.status-green {
+    background-color: #2fb344;
+}
+
+.status-red {
+    background-color: #d63939;
+}
+</style>
