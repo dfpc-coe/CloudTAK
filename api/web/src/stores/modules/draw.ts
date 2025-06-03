@@ -194,11 +194,10 @@ export default class DrawTool {
 
                     await this.stop();
 
-                    if (!(await this.mapStore.worker.db.has(feat.id))) {
-                        feat.properties.creator = await this.mapStore.worker.profile.creator();
-                    }
+                    await this.mapStore.worker.db.add(feat, {
+                        authored: !(await this.mapStore.worker.db.has(feat.id))
+                    });
 
-                    await this.mapStore.worker.db.add(feat);
                     await this.mapStore.updateCOT();
                 }
             }

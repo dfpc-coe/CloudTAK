@@ -822,8 +822,10 @@ async function handleRadial(event: string): Promise<void> {
         closeRadial()
     } else if (event === 'context:new') {
         const feat = toRaw(mapStore.radial.cot as Feature) as Feature;
-        feat.properties.creator = await mapStore.worker.profile.creator();
-        await mapStore.worker.db.add(feat);
+
+        await mapStore.worker.db.add(feat, {
+            authored: true
+        });
         mapStore.updateCOT();
         closeRadial()
     } else if (event === 'context:info') {

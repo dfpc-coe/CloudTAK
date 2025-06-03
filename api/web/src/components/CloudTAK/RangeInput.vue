@@ -97,12 +97,13 @@ async function submitPoint() {
             bearing: config.value.bearing,
             range: config.value.range,
             callsign: toRaw(config.value.name || 'New Feature'),
-            creator: await mapStore.worker.profile.creator()
         },
         geometry: {
             type: 'LineString',
             coordinates: [toRaw(config.value.coordinates), end.geometry.coordinates]
         }
+    }, {
+        authored: true
     });
 
     if (mapStore.map) {
