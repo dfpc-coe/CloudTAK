@@ -12,6 +12,15 @@
 
 ### Pending Release
 
+### v8.43.0 - 2025-06-03
+
+- :rocket: Add GOTO Home Logo
+- :rocket: Continue to iterate on merging of data and events codebase
+- :rocket: Automatically add archived tags to routes
+- :bug: Fix double tooltip 
+- :bug: Remove a bunch of console.error calls
+- :bug: Fix time calc for breadcrumb loading
+
 ### v8.42.0 - 2025-05-31
 
 - :rocket: Remove unused Public Bucket **Note** You will need to empty the bucket before deploying
