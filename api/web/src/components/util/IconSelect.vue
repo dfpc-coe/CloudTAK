@@ -86,13 +86,13 @@
                                     <h3 class='card-title'>
                                         Icons
                                     </h3>
-                                        <IconSearch
-                                            :size='32'
-                                            stroke='1'
-                                            class='ms-auto cursor-pointer mx-2'
-                                            :color='params.showFilter ? "#83b7e8" : "#ffffff"'
-                                            @click.stop.prevent='params.showFilter = !params.showFilter'
-                                        />
+                                    <IconSearch
+                                        :size='32'
+                                        stroke='1'
+                                        class='ms-auto cursor-pointer mx-2'
+                                        :color='params.showFilter ? "#83b7e8" : "#ffffff"'
+                                        @click.stop.prevent='params.showFilter = !params.showFilter'
+                                    />
                                 </div>
 
                                 <div class='card-body row g-2'>
