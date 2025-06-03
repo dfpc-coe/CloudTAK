@@ -79,12 +79,13 @@ async function submitPoint() {
             stale: new Date().toISOString(),
             center: toRaw(config.value.coordinates),
             callsign: toRaw(config.value.name || 'New Feature'),
-            creator: await mapStore.worker.profile.creator()
         },
         geometry: {
             type: 'Point',
             coordinates: toRaw(config.value.coordinates)
         }
+    }, {
+        authored: true
     });
 
     if (mapStore.map) {

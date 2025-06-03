@@ -461,6 +461,14 @@ export default class AtlasDatabase {
 
     /**
      * Add or Update a CoT GeoJSON to the store and modify props to meet MapLibre style requirements
+     *
+     * @param feat - GeoJSON Feature to create/update in Store
+     *
+     * @param opts - Optional Options
+     * @param opts.skipSave - Don't save the COT to the Profile Feature Database
+     * @param opts.skipBroadcast - Don't broadcast the COT on the internal message bus to the UI
+     * @param opts.authored - If the COT is new, append creator information
+     * @param opts.mission_guid - Explicitly use Mission Store
      */
     async add(
         feat: Feature,
@@ -468,10 +476,15 @@ export default class AtlasDatabase {
             skipSave?: boolean;
             skipBroadcast?: boolean;
 
+            authored?: boolean,
             mission_guid?: string,
         }
     ): Promise<void> {
         if (!opts) opts = {};
+
+        if (opts.authored) {
+            feat.properties.creator = await this.atlas.profile.creator();
+        }
 
         const mission_guid = opts.mission_guid || this.subscriptionPending.get(feat.id);
 
