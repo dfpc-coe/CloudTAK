@@ -675,6 +675,7 @@ watch(mapStore.radial, () => {
 onMounted(async () => {
     // ensure uncaught errors in the stack are captured into vue context
     window.addEventListener('error', (evt) => {
+        console.error(evt);
         evt.preventDefault();
         emit('err', new Error(evt.message));
     });
