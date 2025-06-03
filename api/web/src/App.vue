@@ -189,7 +189,10 @@ export default defineComponent({
 
         if (e.message === '401') {
             // Popup Modal if reauthenticating vs initial login
-            this.login = true;
+
+            if (this.$route.name !== 'login') {
+                this.login = true;
+            }
         } else if (String(e) === 'Error: Authentication Required') {
             this.routeLogin();
         } else {

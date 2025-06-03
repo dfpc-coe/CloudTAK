@@ -675,6 +675,7 @@ watch(mapStore.radial, () => {
 onMounted(async () => {
     // ensure uncaught errors in the stack are captured into vue context
     window.addEventListener('error', (evt) => {
+        console.error(evt);
         evt.preventDefault();
         emit('err', new Error(evt.message));
     });
@@ -751,7 +752,6 @@ async function toLocation() {
     const location = await mapStore.worker.profile.location;
 
     if ([LocationState.Preset, LocationState.Live].includes(location.source)) {
-        console.error(location);
         mapStore.map.flyTo({
             center: location.coordinates as LngLatLike,
             zoom: 14

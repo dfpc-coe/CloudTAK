@@ -437,10 +437,11 @@ export default {
                                 ':5432/tak_ps_etl?sslmode=require'
                             ])
                         },
+                        { Name: 'AWS_REGION', Value: cf.region },
+                        { Name: 'CLOUDTAK_Mode', Value: 'AWS' },
                         { Name: 'StackName', Value: cf.stackName },
                         { Name: 'ASSET_BUCKET', Value: cf.ref('AssetBucket') },
                         { Name: 'API_URL', Value: cf.ref('HostedURL') },
-                        { Name: 'AWS_REGION', Value: cf.region },
                         { Name: 'VpcId', Value: cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-vpc'])) },
                         { Name: 'SubnetPublicA', Value: cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-subnet-public-a'])) },
                         { Name: 'SubnetPublicB', Value: cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-subnet-public-b'])) },

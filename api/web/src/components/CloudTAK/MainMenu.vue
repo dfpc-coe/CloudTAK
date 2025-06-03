@@ -298,6 +298,34 @@
                             "py-2 px-3 hover-dark": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
+                        @click='router.push("/menu/routes")'
+                        @keyup.enter='router.push("/menu/routes")'
+                    >
+                        <IconRoute
+                            v-tooltip='{
+                                content: "Routes",
+                                placement: "left",
+                            }'
+                            :tabindex='compact ? 0 : undefined'
+                            title='Open Routes Panel'
+                            :class='{ "mx-2": compact }'
+                            :size='32'
+                            stroke='1'
+                        />
+                        <span
+                            v-if='!compact'
+                            class='mx-2 user-select-none'
+                            style='font-size: 18px;'
+                        >Routes</span>
+                    </div>
+                    <div
+                        role='menuitem'
+                        :tabindex='compact ? undefined : 0'
+                        class='cursor-pointer col-12 d-flex align-items-center'
+                        :class='{
+                            "py-2 px-3 hover-dark": !compact,
+                            "py-1 px-2 hover-button": compact
+                        }'
                         @click='router.push("/menu/files")'
                         @keyup.enter='router.push("/menu/files")'
                     >
@@ -558,12 +586,33 @@
                 <div
                     v-else-if='["home", "home-menu"].includes(String(route.name))'
                 >
-                    <div class='d-flex justify-content-center'>
-                        <StatusDot
-                            class='mx-2 mt-2 mb-1'
-                            :status='mapStore.isOpen ? "success" : "fail"'
-                            :dark='true'
-                        />
+                    <div class='d-flex justify-content-center mb-2'>
+                        <div class='position-relative'>
+                            <img
+                                v-tooltip='"Return Home"'
+                                class='cursor-pointer'
+                                height='50'
+                                width='50'
+                                :src='brandStore.login && brandStore.login.logo ? brandStore.login.logo : "/CloudTAKLogo.svg"'
+                                @click='returnHome'
+                                @keyup.enter='returnHome'
+                            />
+                        </div>
+                        <div
+                            class='position-absolute'
+                            style='
+                                bottom: 20px;
+                                right: 10px;
+                            '
+                        >
+                            <div
+                                class='status'
+                                :class='{
+                                    "status-green": mapStore.isOpen,
+                                    "status-red": !mapStore.isOpen
+                                }'
+                            />
+                        </div>
                     </div>
                     <div class='d-flex justify-content-center mb-1'>
                         <div
@@ -587,6 +636,7 @@ import {
     IconUsers,
     IconVideo,
     IconPhoto,
+    IconRoute,
     IconMapPin,
     IconLogout,
     IconMessage,
@@ -599,13 +649,14 @@ import {
     IconFileImport,
     IconAffiliate,
 } from '@tabler/icons-vue';
-import StatusDot from '../util/StatusDot.vue';
 import { useMapStore } from '../../stores/map.ts';
+import { useBrandStore } from '../../stores/brand.ts';   
 import { useRouter, useRoute } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
 
 const mapStore = useMapStore();
+const brandStore = useBrandStore();
 const version = ref('');
 const username = ref<string>('Username')
 const isSystemAdmin = ref<boolean>(false)
@@ -622,8 +673,31 @@ onMounted(async () => {
     isAgencyAdmin.value = await mapStore.worker.profile.isAgencyAdmin();
 })
 
+function returnHome() {
+    router.push("/");
+    mapStore.returnHome();
+}
+
 function logout() {
     delete localStorage.token;
     router.push("/login");
 }
 </script>
+
+<style>
+.status {
+    height: 10px;
+    width: 10px;
+    margin: 0px;
+    padding: 0px;
+    border-radius: 50%;
+}
+
+.status-green {
+    background-color: #2fb344;
+}
+
+.status-red {
+    background-color: #d63939;
+}
+</style>

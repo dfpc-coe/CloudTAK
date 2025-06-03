@@ -120,10 +120,23 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
      * This is also called externally by the layer/:layer/cot API as CoTs
      * aren't rebroadcast to the submitter by the TAK Server
      */
-    async cots(conn: ConnectionConfig, cots: CoT[], ephemeral=false) {
+    async cots(
+        conn: ConnectionConfig,
+        cots: CoT[],
+        ephemeral=false
+    ) {
         try {
             if (this.config.wsClients.has(String(conn.id))) {
                 for (const cot of cots) {
+
+                    // While I am reluncant to override user-intent, client's don't necessarily
+                    // pass archived tags on the following types which lead to a poor experience
+                    // on reloads if not present
+                    // b-m-r Route COTs
+                    if (['b-m-r'].includes(cot.type())) {
+                        cot.archived(true);
+                    }
+
                     const feat = cot.to_geojson();
 
                     try {
