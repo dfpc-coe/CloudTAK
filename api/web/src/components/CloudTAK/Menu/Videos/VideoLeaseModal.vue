@@ -272,6 +272,19 @@
                     </template>
                 </template>
             </div>
+            <div class='modal-footer'>
+                <button
+                    v-if='protocols.rtsp && !expired(editLease.expiration)'
+                    class='btn btn-secondary'
+                    @click='wizard = 1'
+                >
+                    <IconWand
+                        :size='20'
+                        stroke='1'
+                    />
+                    <span class='mx-2'>UAS Tool Wizard</span>
+                </button>
+            </div>
         </template>
         <template v-else>
             <div

@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v8.43.1 - 2025-06-03
+
+- :bug: Fix location of UAS tool wizard button
+
 ### v8.43.0 - 2025-06-03
 
 - :rocket: Add GOTO Home Logo
