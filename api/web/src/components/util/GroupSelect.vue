@@ -136,7 +136,6 @@ async function fetch() {
     JSON.parse(JSON.stringify(list)).sort((a: Group, b: Group) => {
         return (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0);
     }).forEach((channel: Group) => {
-        console.error(channel);
         if (props.active && !channel.active) {
             return;
         }

@@ -122,11 +122,6 @@ export default class COT {
             // Atlas database has a COT update, resulting in a sync with the frontend
             this._remote.onmessage = async (ev) => {
                 if (ev.data.id === this.id) {
-
-                    if (ev.data.id === 'ANDROID-CloudTAK-nicholas.ingalls@state.co.us') {
-                        console.error('CHANNEL UPDATE');
-                    }
-
                     this._path = ev.data.path;
                     this.origin = ev.data.origin;
                     Object.assign(this._properties, ev.data.properties);

@@ -244,7 +244,7 @@ async function onFeatureAdd(ev: SortableEvent): Promise<void> {
             cot.path = p.name;
             cots.value.delete(cot);
         } else {
-            const ps = paths.value.filter((p) => { console.error(p.name, cot.path); return p.name === cot.path; });
+            const ps = paths.value.filter((p) => { return p.name === cot.path; });
             if (ps.length !== 1) return;
             ps[0].cots.delete(cot);
 
