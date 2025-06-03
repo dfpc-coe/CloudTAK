@@ -153,6 +153,10 @@ const router = VueRouter.createRouter({
                     name: 'home-menu-channels',
                     component: () => import('./components/CloudTAK/Menu/MenuChannels.vue')
                 },{
+                    path: 'routes',
+                    name: 'home-menu-routes',
+                    component: () => import('./components/CloudTAK/Menu/MenuRoutes.vue')
+                },{
                     path: 'chats',
                     name: 'home-menu-chats',
                     component: () => import('./components/CloudTAK/Menu/MenuChats.vue')

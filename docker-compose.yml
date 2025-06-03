@@ -5,8 +5,9 @@ services:
           context: ./api/
           dockerfile: Dockerfile
         restart: 'always'
-        links:
+        depends_on:
             - postgis
+            - media
             - store
         ports:
             - "5000:5000"
@@ -21,9 +22,9 @@ services:
             - AWS_S3_AccessKeyId=cloudtakminioadmin
             - AWS_S3_SecretAccessKey=cloudtakminioadmin
             - POSTGRES=postgres://docker:docker@postgis:5432/gis
-            - API_URL=localhost:5000
-            - ROOT_URL=localhost:5001
-            - PMTILES_URL=localhost:5002
+            - API_URL=http://localhost:5000
+            - ROOT_URL=http://localhost:5001
+            - PMTILES_URL=http://tiles:5002
 
     tiles:
         platform: linux/amd64
@@ -36,6 +37,26 @@ services:
         environment:
             - SigningSecret=coe-wildland-fire
             - MediaSecret=coe-wildland-fire-video
+            - ASSET_BUCKET=cloudtak
+            - AWS_S3_Endpoint=http://store:9000
+            - AWS_S3_AccessKeyId=cloudtakminioadmin
+            - AWS_S3_SecretAccessKey=cloudtakminioadmin
+
+    events:
+        platform: linux/amd64
+        build:
+          context: ./tasks/pmtiles/
+          dockerfile: Dockerfile.compose
+        restart: 'always'
+        depends_on:
+            - api
+            - store
+        ports:
+            - "5003:5003"
+        environment:
+            - CLOUDTAK_Mode=docker-compose
+            - API_URL=http://api:5000
+            - SigningSecret=coe-wildland-fire
             - ASSET_BUCKET=cloudtak
             - AWS_S3_Endpoint=http://store:9000
             - AWS_S3_AccessKeyId=cloudtakminioadmin

@@ -125,8 +125,6 @@ export default {
             const dt = event.dataTransfer
             const file = dt.files[0];
 
-            console.error(file);
-
             await this.upload(file);
         },
         manualUpload: async function(event) {

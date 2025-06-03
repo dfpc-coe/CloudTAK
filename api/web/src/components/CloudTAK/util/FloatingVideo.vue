@@ -292,7 +292,6 @@ async function requestLease(): Promise<void> {
         url.searchParams.append('url', video.value.config.url)
         active.value = await std(url);
 
-        console.error(active.value.leasable);
         if (active.value.metadata) {
             videoProtocols.value = active.value.metadata.protocols;
             loading.value = false;

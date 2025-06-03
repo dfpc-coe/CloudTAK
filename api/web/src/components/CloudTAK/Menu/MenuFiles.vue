@@ -80,7 +80,6 @@
                         <div class='col-auto ms-auto'>
                             <div class='d-flex btn-list'>
                                 <TablerDelete
-                                    v-tooltip='"Delete Asset"'
                                     displaytype='icon'
                                     @delete='deleteAsset(asset)'
                                 />

@@ -1,5 +1,6 @@
 import { std } from '../std.ts';
 import { bbox } from '@turf/bbox'
+import { length } from '@turf/length'
 import { isEqual } from '@react-hookz/deep-equal';
 import { WorkerMessageType } from'./events.ts'
 import type { Remote } from 'comlink';
@@ -121,11 +122,6 @@ export default class COT {
             // Atlas database has a COT update, resulting in a sync with the frontend
             this._remote.onmessage = async (ev) => {
                 if (ev.data.id === this.id) {
-
-                    if (ev.data.id === 'ANDROID-CloudTAK-nicholas.ingalls@state.co.us') {
-                        console.error('CHANNEL UPDATE');
-                    }
-
                     this._path = ev.data.path;
                     this.origin = ev.data.origin;
                     Object.assign(this._properties, ev.data.properties);
@@ -404,6 +400,18 @@ export default class COT {
         }
 
         return feat;
+    }
+
+    length(): number {
+        if (this._geometry.type === 'LineString') {
+            return length({
+                type: 'Feature',
+                properties: {},
+                geometry: this._geometry
+            });
+        } else {
+            return 0;
+        }
     }
 
     bounds(): GeoJSONBBox {
