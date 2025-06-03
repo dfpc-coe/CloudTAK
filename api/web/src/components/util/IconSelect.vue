@@ -76,43 +76,53 @@
                             />
                         </template>
                         <template #dropdown>
-                            <label class='w-100 subheader d-flex'>
-                                <span class='mx-2 d-flex justify-content-center align-items-center'>Iconsets</span>
-                                <IconSearch
-                                    :size='32'
-                                    stroke='1'
-                                    class='ms-auto cursor-pointer mx-2'
-                                    @click.stop.prevent='params.showFilter = !params.showFilter'
-                                />
-                            </label>
-                            <TablerEnum
-                                v-model='params.iconset'
-                                :options='setsName'
-                            />
-                            <TablerInput
-                                v-if='params.showFilter'
-                                v-model='params.filter'
-                                placeholder='Icon Search'
-                            />
-                            <TablerLoading
-                                v-if='loading.icons'
-                                desc='Loading Icons'
-                            />
-                            <div
-                                v-else
-                                class='row mx-2 my-2'
-                            >
-                                <div
-                                    v-for='icon of list.items'
-                                    :key='icon.id'
-                                    class='col-auto cursor-pointer'
-                                    @click='selected = icon'
-                                >
-                                    <img
-                                        v-tooltip='icon.name'
-                                        :src='iconurl(icon)'
-                                        style='width: 25px; height: 25px; margin-right: 5px;'
+                            <div class='card'>
+                                <div class='card-header d-flex align-items-center'>
+                                    <h3 class='card-title'>
+                                        Notifications
+                                    </h3>
+                                </div>
+
+                                <div class='card-body'>
+                                    <label class='w-100 subheader d-flex'>
+                                        <span class='mx-2 d-flex justify-content-center align-items-center'>Iconsets</span>
+                                        <IconSearch
+                                            :size='32'
+                                            stroke='1'
+                                            class='ms-auto cursor-pointer mx-2'
+                                            @click.stop.prevent='params.showFilter = !params.showFilter'
+                                        />
+                                    </label>
+                                    <TablerEnum
+                                        v-model='params.iconset'
+                                        :options='setsName'
+                                    />
+                                    <TablerInput
+                                        v-if='params.showFilter'
+                                        v-model='params.filter'
+                                        placeholder='Icon Search'
+                                    />
+                                    <TablerLoading
+                                        v-if='loading.icons'
+                                        desc='Loading Icons'
+                                    />
+                                    <div
+                                        v-else
+                                        class='row mx-2 my-2'
                                     >
+                                        <div
+                                            v-for='icon of list.items'
+                                            :key='icon.id'
+                                            class='col-auto cursor-pointer'
+                                            @click='selected = icon'
+                                        >
+                                            <img
+                                                v-tooltip='icon.name'
+                                                :src='iconurl(icon)'
+                                                style='width: 25px; height: 25px; margin-right: 5px;'
+                                            >
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </template>
