@@ -22,7 +22,7 @@
                 />
             </span>
             <div
-                class='align-self-center px-2'
+                class='align-self-center subheader'
                 :class='{ "required": required }'
                 v-text='label'
             />
@@ -39,11 +39,13 @@
             <div class='d-flex'>
                 <template v-if='selected.name'>
                     <div class='d-flex align-items-center'>
-                        <img
-                            :src='iconurl(selected)'
-                            style='width: 25px; height: auto; margin-right: 5px;'
-                        >
-                        <span
+                        <div>
+                            <img
+                                :src='iconurl(selected)'
+                                style='width: 25px; height: auto; margin-right: 5px;'
+                            >
+                        </div>
+                        <div
                             class='mt-2 mx-2'
                             v-text='selected.name'
                         />
@@ -68,7 +70,7 @@
 
                     <TablerDropdown>
                         <template #default>
-                            <IconSettings
+                            <IconPhotoSearch
                                 v-tooltip='"Select Icon"'
                                 :size='32'
                                 stroke='1'
@@ -76,39 +78,44 @@
                             />
                         </template>
                         <template #dropdown>
-                            <div class='card'>
+                            <div
+                                class='card'
+                                style='min-width: 300px;'
+                            >
                                 <div class='card-header d-flex align-items-center'>
                                     <h3 class='card-title'>
-                                        Notifications
+                                        Icons
                                     </h3>
-                                </div>
-
-                                <div class='card-body'>
-                                    <label class='w-100 subheader d-flex'>
-                                        <span class='mx-2 d-flex justify-content-center align-items-center'>Iconsets</span>
                                         <IconSearch
                                             :size='32'
                                             stroke='1'
                                             class='ms-auto cursor-pointer mx-2'
+                                            :color='params.showFilter ? "#83b7e8" : "#ffffff"'
                                             @click.stop.prevent='params.showFilter = !params.showFilter'
                                         />
-                                    </label>
-                                    <TablerEnum
-                                        v-model='params.iconset'
-                                        :options='setsName'
-                                    />
-                                    <TablerInput
-                                        v-if='params.showFilter'
-                                        v-model='params.filter'
-                                        placeholder='Icon Search'
-                                    />
+                                </div>
+
+                                <div class='card-body row g-2'>
+                                    <div class='col-12'>
+                                        <TablerEnum
+                                            v-model='params.iconset'
+                                            :options='setsName'
+                                        />
+                                    </div>
+                                    <div class='col-12'>
+                                        <TablerInput
+                                            v-if='params.showFilter'
+                                            v-model='params.filter'
+                                            placeholder='Icon Search'
+                                        />
+                                    </div>
                                     <TablerLoading
                                         v-if='loading.icons'
                                         desc='Loading Icons'
                                     />
                                     <div
                                         v-else
-                                        class='row mx-2 my-2'
+                                        class='row my-2'
                                     >
                                         <div
                                             v-for='icon of list.items'
@@ -139,7 +146,7 @@ import {
     IconInfoSquare,
     IconTrash,
     IconSearch,
-    IconSettings
+    IconPhotoSearch
 } from '@tabler/icons-vue';
 import {
     TablerHelp,
@@ -158,7 +165,7 @@ export default {
         IconInfoSquare,
         IconSearch,
         IconTrash,
-        IconSettings,
+        IconPhotoSearch,
         TablerEnum,
         TablerLoading
     },
@@ -272,7 +279,7 @@ export default {
         Iconlistsets: async function() {
             this.loading.iconsets = true;
             const url = stdurl('/api/iconset');
-            url.searchParams.append('limit', 20);
+            url.searchParams.append('limit', 50);
             this.sets = (await std(url)).items;
             this.params.iconset = this.sets[0].name;
             this.loading.iconsets = false;
@@ -280,6 +287,7 @@ export default {
         Iconlists: async function() {
             this.loading.icons = true;
             let url = stdurl(`/api/icon`);
+            url.searchParams.append('limit', 1000);
             if (this.params.iconset) {
                 const id = this.sets.filter((set) => {
                     return set.name === this.params.iconset;
