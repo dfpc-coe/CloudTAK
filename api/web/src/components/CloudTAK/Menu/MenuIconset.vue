@@ -2,7 +2,7 @@
     <MenuTemplate :name='iconset.name'>
         <template #buttons>
             <TablerIconButton
-                v-if='iconset.username || isSystemAdmin()'
+                v-if='iconset.username || isSystemAdmin'
                 title='Create Icon'
                 @click='editIconModal = {}'
             >
@@ -13,7 +13,7 @@
             </TablerIconButton>
 
             <TablerIconButton
-                v-if='iconset.username || isSystemAdmin()'
+                v-if='iconset.username || isSystemAdmin'
                 title='Settings'
                 @click='editIconsetModal = iconset'
             >
@@ -34,7 +34,7 @@
             </TablerIconButton>
 
             <TablerDelete
-                v-if='iconset.username || isSystemAdmin()'
+                v-if='iconset.username || isSystemAdmin'
                 displaytype='icon'
                 @delete='deleteIconset'
             />
