@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v8.44.0 - 2025-06-03
+
+- :bug: Fix Iconset Menu auth checks
+- :rocket: Slightly nicer Icon Select Dropdown
+
 ### v8.43.1 - 2025-06-03
 
 - :bug: Fix location of UAS tool wizard button
