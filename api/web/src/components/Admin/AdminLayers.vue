@@ -7,6 +7,16 @@
 
             <div class='ms-auto btn-list'>
                 <TablerIconButton
+                    title='Create Layer Template'
+                    @click='router.push("/admin/layer/new")'
+                >
+                    <IconPlus
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+
+                <TablerIconButton
                     title='Redeploy'
                     @click='redeploy'
                 >
@@ -168,6 +178,7 @@ import {
     TablerRefreshButton
 } from '@tak-ps/vue-tabler';
 import {
+    IconPlus,
     IconExchange,
     IconStackPop,
     IconStackPush,
