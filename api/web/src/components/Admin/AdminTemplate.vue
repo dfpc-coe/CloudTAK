@@ -20,16 +20,12 @@
             <div class='ms-auto btn-list'>
                 <TablerDelete
                     v-if='!loading && $route.params.template !== "new"'
-                    v-tooltip='"Delete Template"'
                     displaytype='icon'
                     @delete='fetchDelete'
                 />
-                <IconRefresh
-                    v-if='!loading && $route.params.template !== "new"'
-                    v-tooltip='"Refresh"'
-                    :size='32'
-                    stroke='1'
-                    class='cursor-pointer'
+                <TablerRefreshButton
+                    v-if='$route.params.template !== "new"'
+                    :loading='loading'
                     @click='fetch'
                 />
             </div>
@@ -101,12 +97,12 @@ import { std, stdurl } from '/src/std.ts';
 import LayerSelect from '../util/LayerSelect.vue';
 import {
     TablerToggle,
+    TablerRefreshButton,
     TablerInput,
     TablerDelete,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
-    IconRefresh,
     IconCircleArrowLeft,
 } from '@tabler/icons-vue'
 
@@ -116,8 +112,8 @@ export default {
         TablerInput,
         TablerToggle,
         TablerDelete,
-        IconRefresh,
         IconCircleArrowLeft,
+        TablerRefreshButton,
         LayerSelect,
         TablerLoading,
     },

@@ -13,11 +13,8 @@
                     class='cursor-pointer'
                     @click='$router.push("/admin/template/new")'
                 />
-                <IconRefresh
-                    v-tooltip='"Refresh"'
-                    :size='32'
-                    stroke='1'
-                    class='cursor-pointer'
+                <TablerRefreshButton
+                    :loading='loading'
                     @click='fetchList'
                 />
             </div>
@@ -80,7 +77,8 @@ import TableHeader from '../util/TableHeader.vue'
 import TableFooter from '../util/TableFooter.vue'
 import {
     TablerNone,
-    TablerLoading
+    TablerLoading,
+    TablerRefreshButton
 } from '@tak-ps/vue-tabler';
 import {
     IconPlus,
@@ -94,6 +92,7 @@ export default {
         IconPlus,
         IconRefresh,
         TablerLoading,
+        TablerRefreshButton,
         TableHeader,
         TableFooter,
     },
