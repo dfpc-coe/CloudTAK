@@ -614,21 +614,6 @@
         "query": false,
         "res": true
     },
-    "PATCH /template/:templateid": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "DELETE /template/:templateid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "POST /template": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
     "GET /ldap/channel": {
         "body": false,
         "query": true,

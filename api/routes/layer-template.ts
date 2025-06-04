@@ -36,7 +36,7 @@ export default async function router(schema: Schema, config: Config) {
                 sort: req.query.sort,
                 where: sql`
                     layers.name ~* ${req.query.filter}
-                    AND template = True
+                    AND template = true
                 `
             });
 
