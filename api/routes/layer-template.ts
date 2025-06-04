@@ -46,6 +46,32 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
+    await schema.post('/template', {
+        name: 'Create Template',
+        group: 'LayerTemplate',
+        description: 'Create a new Layer Template',
+        body: Type.Object({
+            id: Type.Integer({
+                description: 'Layer ID to create template from'
+            })
+        }),
+        res: LayerResponse
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req);
+
+            const layer = await config.models.Layer.augmented_from(req.params.templateid);
+
+            if (layer.template === false) {
+                throw new Err(400, null, 'Layer is not a Template Layer');
+            }
+
+            res.json(layer)
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
     await schema.get('/template/:templateid', {
         name: 'Get Template',
         group: 'LayerTemplate',

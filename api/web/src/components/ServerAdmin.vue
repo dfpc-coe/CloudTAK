@@ -197,26 +197,6 @@
                                                 role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
-                                                    "active": String($route.name).includes("admin-templates"),
-                                                    "cursor-pointer": !String($route.name).includes("admin-templates")
-                                                }'
-                                                @click='$router.push(`/admin/template`)'
-                                            >
-                                                <IconTemplate
-                                                    v-tooltip='nest ? "Layer Templates" : false'
-                                                    :size='32'
-                                                    stroke='1'
-                                                />
-                                                <span
-                                                    v-if='!nest'
-                                                    class='mx-3'
-                                                >Layer Templates</span>
-                                            </span>
-                                            <span
-                                                tabindex='0'
-                                                role='menuitem'
-                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
-                                                :class='{
                                                     "active": String($route.name).startsWith("admin-tasks"),
                                                     "cursor-pointer": !String($route.name).startsWith("admin-tasks")
                                                 }'
@@ -344,7 +324,6 @@ import {
 import {
     IconBrush,
     IconNetwork,
-    IconTemplate,
     IconVideo,
     IconUsers,
     IconSettings,
