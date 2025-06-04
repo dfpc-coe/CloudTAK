@@ -45,7 +45,7 @@ export class MachineConnConfig implements ConnectionConfig {
         const cert = new X509Certificate(this.auth.cert);
 
         const subject = cert.subject.split('\n').reverse().join(',');
-        
+
         return subject;
     }
 
