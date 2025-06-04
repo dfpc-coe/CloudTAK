@@ -94,16 +94,25 @@
         </div>
     </div>
 
-    <TablerModal v-if='infoModal' size='xl'>
+    <TablerModal
+        v-if='infoModal'
+        size='xl'
+    >
         <div class='modal-header'>
-            <IconInfoSquare size='24' stroke='1'/>
-            <span class='mx-2' v-text='infoModal.name'/>
-                <button                                       
-                  type='button'                  
-                  class='btn-close'            
-                  aria-label='Close'                                 
-                  @click='infoModal = undefined'                                            
-                />
+            <IconInfoSquare
+                size='24'
+                stroke='1'
+            />
+            <span
+                class='mx-2'
+                v-text='infoModal.name'
+            />
+            <button                                       
+                type='button'                  
+                class='btn-close'            
+                aria-label='Close'                                 
+                @click='infoModal = undefined'                                            
+            />
         </div>
         <div
             class='modal-body overflow-auto'

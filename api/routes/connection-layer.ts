@@ -132,7 +132,7 @@ export default async function router(schema: Schema, config: Config) {
                 total: list.total,
                 items: list.items.map((layer) => {
                     return {
-                        status: (config.StackName !== 'test' && req.query.alarms) ? alarms.get(layer.id) : 'unknown',
+                        status: (config.StackName !== 'test' && req.query.alarms) ? (alarms.get(layer.id) || 'unknown') : 'unknown',
                         ...layer
                     }
                 })
