@@ -173,7 +173,6 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
-    IconSettings,
     IconTemplate,
     IconPencil,
 } from '@tabler/icons-vue';

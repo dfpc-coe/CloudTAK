@@ -140,7 +140,7 @@ watch(props.modelValue, async function() {
     }
 });
 
-watch(paging, async () => {
+watch(paging.value, async () => {
     await listTasks();
 });
 
