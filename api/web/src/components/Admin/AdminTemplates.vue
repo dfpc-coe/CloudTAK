@@ -24,6 +24,10 @@
                 v-if='loading'
                 desc='Loading Layer Templates'
             />
+            <TablerAlert
+                v-else-if='error'
+                :err='error'
+            />
             <TablerNone
                 v-else-if='!list.items.length'
                 label='Layer Templates'
@@ -71,12 +75,14 @@
     </div>
 </template>
 
-<script>
+<script setup>
+import { ref, watch, onMounted } from 'vue';
 import { std, stdurl, stdclick } from '/src/std.ts';
 import TableHeader from '../util/TableHeader.vue'
 import TableFooter from '../util/TableFooter.vue'
 import {
     TablerNone,
+    TablerAlert,
     TablerLoading,
     TablerRefreshButton
 } from '@tak-ps/vue-tabler';
@@ -84,75 +90,56 @@ import {
     IconPlus,
 } from '@tabler/icons-vue'
 
-export default {
-    name: 'LayerTemplateAdmin',
-    components: {
-        TablerNone,
-        IconPlus,
-        TablerLoading,
-        TablerRefreshButton,
-        TableHeader,
-        TableFooter,
-    },
-    data: function() {
-        return {
-            err: false,
-            loading: true,
-            header: [],
-            paging: {
-                filter: '',
-                sort: 'name',
-                order: 'asc',
-                limit: 100,
-                page: 0
-            },
-            list: {
-                total: 0,
-                items: []
-            }
-        }
-    },
-    watch: {
-       paging: {
-            deep: true,
-            handler: async function() {
-                await this.fetchList();
-            }
-        }
-    },
-    mounted: async function() {
-        await this.listLayerTemplateSchema();
-        await this.fetchList();
-    },
-    methods: {
-        stdclick,
-        listLayerTemplateSchema: async function() {
-            const schema = await std('/api/schema?method=GET&url=/template');
-            this.header = ['id', 'name', 'username', 'updated'].map((h) => {
-                return { name: h, display: true };
-            });
+const error = ref(false);
+const loading = ref(true);
+const header = ref([]);
+const paging = ref({
+    filter: '',
+    sort: 'name',
+    order: 'asc',
+    limit: 100,
+    page: 0
+});
+const list = ref({
+    total: 0,
+    items: []
+});
 
-            this.header.push(...schema.query.properties.sort.enum.map((h) => {
-                return {
-                    name: h,
-                    display: false
-                }
-            }).filter((h) => {
-                for (const hknown of this.header) {
-                    if (hknown.name === h.name) return false;
-                }
-                return true;
-            }));
-        },
-        fetchList: async function() {
-            this.loading = true;
-            const url = stdurl('/api/template');
-            if (this.query && this.paging.filter) url.searchParams.append('filter', this.paging.filter);
-            url.searchParams.append('limit', this.paging.limit);
-            url.searchParams.append('page', this.paging.page);
-            this.list = await std(url);
-            this.loading = false;
+watch(paging.value, async () => {
+    await fetchList();
+});
+
+onMounted(async () => {
+    await listLayerTemplateSchema();
+    await fetchList();
+});
+
+async function listLayerTemplateSchema() {
+    const schema = await std('/api/schema?method=GET&url=/template');
+    header.value = ['id', 'name', 'username', 'updated'].map((h) => {
+        return { name: h, display: true };
+    });
+
+    header.value.push(...schema.query.properties.sort.enum.map((h) => {
+        return {
+            name: h,
+            display: false
         }
-    }
+    }).filter((h) => {
+        for (const hknown of header.value) {
+            if (hknown.name === h.name) return false;
+        }
+        return true;
+    }));
+}
+
+async function fetchList() {
+    loading.value = true;
+    const url = stdurl('/api/template');
+    if (paging.value.filter) url.searchParams.append('filter', paging.value.filter);
+    url.searchParams.append('limit', paging.value.limit);
+    url.searchParams.append('page', paging.value.page);
+    list.value = await std(url);
+    loading.value = false;
 }
 </script>
