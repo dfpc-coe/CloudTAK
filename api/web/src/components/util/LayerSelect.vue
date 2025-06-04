@@ -26,10 +26,12 @@
                     </div>
                 </template>
                 <template v-else>
-                    <TablerInput
-                        v-model='paging.filter'
-                        placeholder='Layer Filter...'
-                    />
+                    <div class='mb-2'>
+                        <TablerInput
+                            v-model='paging.filter'
+                            placeholder='Layer Filter...'
+                        />
+                    </div>
 
                     <div
                         v-if='loading.list'

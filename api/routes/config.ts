@@ -72,7 +72,7 @@ export default async function router(schema: Schema, config: Config) {
             'group::Brown': Type.Optional(Type.String()),
 
             'oidc::enabled': Type.Optional(Type.Boolean()),
-            'odic::enforced': Type.Optiona(Type.Boolean()),
+            'odic::enforced': Type.Optional(Type.Boolean()),
             'odic::name': Type.Optional(Type.String()),
             'oidc::discovery': Type.Optional(Type.String()),
             'oidc::client': Type.Optional(Type.String()),
