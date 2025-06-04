@@ -94,11 +94,34 @@ export default async function router(schema: Schema, config: Config) {
         res: TaskResponse
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req);
+            await Auth.as_user(config, req, { admin: true });
 
             const task = await config.models.Task.generate(req.body);
 
             res.json(task);
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.delete('/task/:taskid', {
+        name: 'Delete Task',
+        group: 'Task',
+        description: 'Create Registered Task',
+        params: Type.Object({
+            taskid: Type.Integer(),
+        }),
+        res: StandardResponse
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req, { admin: true });
+
+            await config.models.Task.delete(req.params.taskid);
+
+            res.json({
+                status: 200,
+                message: 'Registered Task Deleted'
+            });
         } catch (err) {
             Err.respond(err, res);
         }
@@ -169,7 +192,7 @@ export default async function router(schema: Schema, config: Config) {
         res: StandardResponse
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req);
+            await Auth.as_user(config, req, { admin: true });
 
             const { tasks } = await listTasks();
 
@@ -222,7 +245,7 @@ export default async function router(schema: Schema, config: Config) {
         res: TaskResponse
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req);
+            await Auth.as_user(config, req, { admin: true });
 
             const task = await config.models.Task.commit(req.params.task, req.body);
 

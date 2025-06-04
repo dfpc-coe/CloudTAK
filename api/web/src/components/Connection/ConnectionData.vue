@@ -9,7 +9,7 @@
                     :size='32'
                     stroke='1'
                     class='cursor-pointer'
-                    @click='$router.push(`/connection/${connection.id}/data/new`)'
+                    @click='router.push(`/connection/${props.connection.id}/data/new`)'
                 />
                 <IconRefresh
                     v-tooltip='"Refresh"'
@@ -25,7 +25,7 @@
             <TablerAlert
                 v-if='err'
                 title='ETL Server Error'
-                :err='err'
+                :err='error'
                 :compact='true'
             />
             <TablerLoading v-else-if='loading' />
@@ -49,12 +49,17 @@
                             v-for='data of list.items'
                             :key='data.id'
                             class='cursor-pointer'
-                            @click='$router.push(`/connection/${connection.id}/data/${data.id}`)'
+                            @click='router.push(`/connection/${props.connection.id}/data/${data.id}`)'
                         >
                             <td>
-                                <div class='d-flex'>
-                                    <span
-                                        class='mt-2'
+                                <div class='d-flex align-items-center'>
+                                    <IconDatabase
+                                        :size='32'
+                                        stroke='1'
+                                        class='me-2'
+                                    />
+                                    <div
+                                        class='user-select-none'
                                         v-text='data.name'
                                     />
                                     <div class='ms-auto'>
@@ -94,7 +99,9 @@
     </div>
 </template>
 
-<script>
+<script setup>
+import { ref, watch, onMounted } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import { std, stdurl } from '/src/std.ts';
 import TableFooter from '../util/TableFooter.vue';
 import {
@@ -105,69 +112,54 @@ import {
 import {
     IconAccessPoint,
     IconAccessPointOff,
+    IconDatabase,
     IconRefresh,
     IconPlus
 } from '@tabler/icons-vue';
 
-export default {
-    name: 'ConnectionSinks',
-    components: {
-        IconAccessPoint,
-        IconAccessPointOff,
-        IconRefresh,
-        IconPlus,
-        TablerNone,
-        TablerAlert,
-        TablerLoading,
-        TableFooter,
-    },
-    props: {
-        connection: {
-            type: Object,
-            required: true
-        }
-    },
-    data: function() {
-        return {
-            loading: true,
-            err: null,
-            paging: {
-                filter: '',
-                limit: 10,
-                page: 0
-            },
-            list: {
-                total: 0,
-                items: []
-            },
-        }
-    },
-    watch: {
-        paging: {
-            deep: true,
-            handler: async function() {
-                await this.listData();
-            },
-        }
-    },
-    mounted: async function() {
-        await this.listData();
-    },
-    methods: {
-        listData: async function() {
-            this.loading = true;
-            try {
-                const url = stdurl(`/api/connection/${this.$route.params.connectionid}/data`);
-                url.searchParams.append('limit', this.paging.limit);
-                url.searchParams.append('page', this.paging.page);
-                url.searchParams.append('filter', this.paging.filter);
-                url.searchParams.append('connection', this.$route.params.connectionid);
-                this.list = await std(url);
-            } catch (err) {
-                this.err = err;
-            }
-            this.loading = false;
-        }
+const route = useRoute();
+const router = useRouter();
+
+const props = defineProps({
+    connection: {
+        type: Object,
+        required: true
     }
+});
+
+const loading = ref(true);
+const error = ref();
+const paging = ref({
+    filter: '',
+    limit: 10,
+    page: 0
+})
+const list = ref({
+    total: 0,
+    items: []
+});
+
+watch(paging.value, async () => {
+    await listData();
+});
+
+onMounted(async () => {
+    await listData();
+});
+
+async function listData() {
+    loading.value = true;
+    try {
+        const url = stdurl(`/api/connection/${route.params.connectionid}/data`);
+        url.searchParams.append('limit', paging.value.limit);
+        url.searchParams.append('page', paging.value.page);
+        url.searchParams.append('filter', paging.value.filter);
+        url.searchParams.append('connection', route.params.connectionid);
+        list.value = await std(url);
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    }
+
+    loading.value = false;
 }
 </script>

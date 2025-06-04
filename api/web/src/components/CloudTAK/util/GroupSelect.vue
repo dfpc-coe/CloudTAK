@@ -1,5 +1,5 @@
 <template>
-    <div class='mx-2'>
+    <div>
         <div class='sticky-top py-2 bg-dark'>
             <TablerInput
                 v-model='filter'
