@@ -1,6 +1,6 @@
 <template>
-    <div class='mx-2'>
-        <div class='sticky-top py-2 bg-dark border-bottom'>
+    <div>
+        <div class='sticky-top py-2 border-bottom'>
             <TablerInput
                 v-model='filter'
                 icon='search'
@@ -50,7 +50,7 @@
                         class='cursor-pointer'
                     />
                     <span
-                        class='mx-2'
+                        class='mx-2 user-select-none'
                         v-text='group'
                     />
                 </div>
