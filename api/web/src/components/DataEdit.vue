@@ -37,7 +37,7 @@
                                             v-model='data.name'
                                             label='Data Name'
                                             description='The human readable name of the Data Layer'
-                                            :disabled='$route.params.dataid'
+                                            :disabled='route.params.dataid'
                                             :error='errors.name'
                                         />
                                     </div>
@@ -49,33 +49,16 @@
                                         />
                                     </div>
                                     <div class='col-md-12'>
-                                        <TablerInput
-                                            v-model='mission_groups'
-                                            label='Mission Sync Groups'
-                                            description='Choose which TAK Channels this Data Sync should be availiable in'
-                                            disabled
-                                        >
-                                            <IconSettings
-                                                v-if='!$route.params.dataid'
-                                                :size='32'
-                                                stroke='1'
-                                                class='cursor-pointer'
-                                                @click='modal = true'
-                                            />
-                                        </TablerInput>
-
-                                        <GroupSelectModal
-                                            v-if='modal'
+                                        <GroupSelect
                                             v-model='data.mission_groups'
-                                            :connection='$route.params.connectionid'
-                                            @close='modal = false'
+                                            :connection='route.params.connectionid'
                                         />
                                     </div>
                                     <div class='col-md-12'>
                                         <TablerEnum
                                             v-model='data.mission_role'
                                             label='Mission Default Role'
-                                            :disabled='$route.params.dataid || data.mission_diff'
+                                            :disabled='route.params.dataid || data.mission_diff'
                                             description='The Default role assigned to subscribers to the mission'
                                             :options='["MISSION_OWNER", "MISSION_SUBSCRIBER", "MISSION_READONLY_SUBSCRIBER"]'
                                         />
@@ -92,10 +75,10 @@
                                             v-model='data.mission_diff'
                                             label='Mission Layer Diff'
                                             description='
-                                            If Enabled only a single layer will be allowed to be associated with the data sync
-                                            and CoTs submitted will be diff against existing CoTs, with CoTs not in each new
-                                            FeatureSet being removed from the Mission Sync
-                                        '
+                                                If Enabled only a single layer will be allowed to be associated with the data sync
+                                                and CoTs submitted will be diff against existing CoTs, with CoTs not in each new
+                                                FeatureSet being removed from the Mission Sync
+                                            '
                                         />
                                     </div>
                                     <div class='col-md-12'>
@@ -108,7 +91,7 @@
                                         />
                                     </div>
                                     <div class='d-flex'>
-                                        <div v-if='$route.params.dataid'>
+                                        <div v-if='route.params.dataid'>
                                             <TablerDelete
                                                 label='Delete Data'
                                                 @delete='deleteData'
@@ -116,7 +99,7 @@
                                         </div>
                                         <div class='ms-auto'>
                                             <a
-                                                v-if='$route.params.dataid'
+                                                v-if='route.params.dataid'
                                                 class='cursor-pointer btn btn-primary'
                                                 @click='create'
                                             >Update Data</a>
@@ -139,7 +122,9 @@
     </div>
 </template>
 
-<script>
+<script setup>
+import { ref, watch, onMounted } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import { std, stdurl } from '/src/std.ts';
 import PageFooter from './PageFooter.vue';
 import {
@@ -150,110 +135,86 @@ import {
     TablerEnum,
     TablerLoading
 } from '@tak-ps/vue-tabler';
-import {
-    IconSettings,
-} from '@tabler/icons-vue'
-import GroupSelectModal from './util/GroupSelectModal.vue';
+import GroupSelect from './util/GroupSelect.vue';
 
-export default {
-    name: 'DataEdit',
-    components: {
-        IconSettings,
-        PageFooter,
-        GroupSelectModal,
-        TablerBreadCrumb,
-        TablerEnum,
-        TablerToggle,
-        TablerDelete,
-        TablerInput,
-        TablerLoading
-    },
-    data: function() {
-        return {
-            modal: false,
-            mission_groups: 'All Groups', // Updated by watcher
-            loading: {
-                data: true,
-            },
-            errors: {
-                name: '',
-                description: '',
-            },
-            data: {
-                name: '',
-                auto_transform: true,
-                mission_sync: true,
-                mission_groups: [],
-                mission_role: 'MISSION_READONLY_SUBSCRIBER',
-                mission_diff: true,
-                description: '',
-            }
-        }
-    },
-    watch: {
-        'data.mission_groups': {
-            deep: true,
-            handler: function() {
-                this.mission_groups = this.data.mission_groups.length === 0 ? "All Groups" : this.data.mission_groups.join(",");
-            }
-        },
-        'data.mission_diff': function() {
-            if (!this.data.id && this.data.mission_diff) {
-                this.data.mission_role = 'MISSION_READONLY_SUBSCRIBER';
-            }
-        }
-    },
-    mounted: async function() {
-        if (this.$route.params.dataid) {
-            await this.fetch();
+const route = useRoute();
+const router = useRouter();
+const loading = ref({
+    data: true,
+});
+
+const errors = ref({
+    name: '',
+    description: '',
+});
+
+const data = ref({
+    name: '',
+    auto_transform: true,
+    mission_sync: true,
+    mission_groups: [],
+    mission_role: 'MISSION_READONLY_SUBSCRIBER',
+    mission_diff: true,
+    description: '',
+});
+
+watch(data.value, () => {
+    if (!data.value.id && data.value.mission_diff) {
+        data.value.mission_role = 'MISSION_READONLY_SUBSCRIBER';
+    }
+});
+
+onMounted(async () => {
+    if (route.params.dataid) {
+        await fetch();
+    } else {
+        loading.value.data = false;
+    }
+});
+
+async function fetch() {
+    loading.value.data = true;
+    data.value = await std(`/api/connection/${route.params.connectionid}/data/${route.params.dataid}`);
+    loading.value.data = false;
+}
+
+async function deleteData() {
+    await std(`/api/connection/${route.params.connectionid}/data/${route.params.dataid}`, {
+        method: 'DELETE'
+    });
+
+    router.push(`/connection/${route.params.connectionid}/data`);
+}
+
+async function create() {
+    for (const field of ['name', 'description']) {
+        errors.value[field] = !data.value[field] ? 'Cannot be empty' : '';
+    }
+    for (const e in errors.value) if (errors.value[e]) return;
+
+    loading.value.data = true;
+
+    try {
+        let url, method;
+        const body = JSON.parse(JSON.stringify(data.value));
+
+        if (route.params.dataid) {
+            url = stdurl(`/api/connection/${route.params.connectionid}/data/${route.params.dataid}`);
+            method = 'PATCH'
         } else {
-            this.loading.data = false;
+            url = stdurl(`/api/connection/${route.params.connectionid}/data`);
+            method = 'POST'
+            body.connection = parseInt(route.params.connectionid);
         }
-    },
-    methods: {
-        fetch: async function() {
-            this.loading.data = true;
-            this.data = await std(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}`);
-            this.loading.data = false;
-        },
-        deleteData: async function() {
-            await std(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}`, {
-                method: 'DELETE'
-            });
 
-            this.$router.push(`/connection/${this.$route.params.connectionid}/data`);
-        },
-        create: async function() {
-            for (const field of ['name', 'description']) {
-                this.errors[field] = !this.data[field] ? 'Cannot be empty' : '';
-            }
-            for (const e in this.errors) if (this.errors[e]) return;
+        const create = await std(url, { method, body });
 
-            this.loading.data = true;
+        loading.value.data = false;
 
-            try {
-                let url, method;
-                const body = JSON.parse(JSON.stringify(this.data));
-
-                if (this.$route.params.dataid) {
-                    url = stdurl(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}`);
-                    method = 'PATCH'
-                } else {
-                    url = stdurl(`/api/connection/${this.$route.params.connectionid}/data`);
-                    method = 'POST'
-                    body.connection = parseInt(this.$route.params.connectionid);
-                }
-
-                const create = await std(url, { method, body });
-
-                this.loading.data = false;
-
-                this.$router.push(`/connection/${this.$route.params.connectionid}/data/${create.id}`);
-            } catch (err) {
-                this.loading.data = false;
-                throw err;
-            }
-        }
+        router.push(`/connection/${route.params.connectionid}/data/${create.id}`);
+    } catch (err) {
+        loading.value.data = false;
+        throw err;
     }
 }
 </script>

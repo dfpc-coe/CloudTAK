@@ -187,9 +187,6 @@ export default {
         await this.fetchTasks();
     },
     methods: {
-        external: function(repo) {
-            window.open(repo, '_blank');
-        },
         fetchTask: async function() {
             if (!this.current) {
                 this.versions = [];
