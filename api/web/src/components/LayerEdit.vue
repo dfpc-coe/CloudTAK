@@ -74,7 +74,7 @@
                                             :error='errors.description'
                                         />
                                     </div>
-                                    <template v-if='!$route.params.layerid'>
+                                    <template v-if='!route.params.layerid'>
                                         <div class='col-12'>
                                             <div
                                                 class='btn-group w-100'
@@ -124,32 +124,11 @@
                                             <LayerTemplateSelect v-model='template' />
                                         </template>
                                         <template v-else-if='type === "manual"'>
-                                            <div class='card mx-2'>
-                                                <div class='card-body row'>
-                                                    <div class='col-md-12'>
-                                                        <div class='d-flex' />
-                                                        <TablerInput
-                                                            v-model='layer.task'
-                                                            :error='errors.task'
-                                                            label='Schedule Task'
-                                                            placeholder='Schedule Task'
-                                                        >
-                                                            <div class='ms-auto btn-list'>
-                                                                <IconSettings
-                                                                    :size='16'
-                                                                    stroke='1'
-                                                                    class='cursor-pointer'
-                                                                    @click='taskmodal = true'
-                                                                />
-                                                            </div>
-                                                        </TablerInput>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                            <LayerTaskSelect v-model='layer.task' />
                                         </template>
                                     </template>
                                     <div class='col-lg-12 d-flex'>
-                                        <div v-if='$route.params.layerid'>
+                                        <div v-if='route.params.layerid'>
                                             <TablerDelete
                                                 label='Delete Layer'
                                                 @delete='deleteLayer'
@@ -157,7 +136,7 @@
                                         </div>
                                         <div class='ms-auto'>
                                             <a
-                                                v-if='$route.params.layerid'
+                                                v-if='route.params.layerid'
                                                 class='cursor-pointer btn btn-primary'
                                                 @click='create'
                                             >Update Layer</a>
@@ -177,20 +156,16 @@
         </div>
 
         <PageFooter />
-
-        <TaskModal
-            v-if='taskmodal'
-            :task='layer.task'
-            @close='taskmodal = false'
-            @task='taskmodal = false; layer.task = $event'
-        />
     </div>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { std, stdurl } from '/src/std.ts';
 import PageFooter from './PageFooter.vue';
 import LayerTemplateSelect from './util/LayerTemplateSelect.vue';
+import LayerTaskSelect from './util/LayerTaskSelect.vue';
 import {
     TablerBreadCrumb,
     TablerDelete,
@@ -202,119 +177,102 @@ import {
     IconTemplate,
     IconPencil,
 } from '@tabler/icons-vue';
-import TaskModal from './Layer/utils/TaskModal.vue';
 
-export default {
-    name: 'LayerEdit',
-    components: {
-        PageFooter,
-        LayerTemplateSelect,
-        TablerBreadCrumb,
-        TablerInput,
-        TablerDelete,
-        TablerLoading,
-        IconTemplate,
-        IconPencil,
-        IconSettings,
-        TaskModal,
-    },
-    data: function() {
-        return {
-            type: 'template',
-            loading: {
-                layer: true
-            },
-            errors: {
-                name: '',
-                task: '',
-                description: '',
-            },
-            taskmodal: false,
-            template: null,
-            layer: {
-                name: '',
-                description: '',
-                task: '',
-                enabled: true,
-                logging: false,
-            }
-        }
-    },
-    mounted: async function() {
-        if (this.$route.params.layerid) {
-            await this.fetch();
-        } else {
-            this.loading.layer = false;
-        }
-    },
-    methods: {
-        updateTask: function() {
-            this.layer.task = this.layer.task.replace(/-v[0-9]+\.[0-9]+\.[0-9]+$/, `-v${this.newTaskVersion}`);
-            this.newTaskVersion = null;
-        },
-        fetch: async function() {
-            this.loading.layer = true;
-            this.layer = await std(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}`);
-            this.loading.layer = false;
-        },
-        deleteLayer: async function() {
-            await std(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}`, {
-                method: 'DELETE'
-            });
+const route = useRoute();
+const router = useRouter();
 
-            this.$router.push(`/connection/${this.$route.params.connectionid}/layer`);
-        },
-        create: async function() {
-            let fields =  ['name', 'description']
+const type = ref('template');
+const loading = ref({
+    layer: true
+});
 
-            if (this.type === "manual") fields.push('task');
+const errors = ref({
+    name: '',
+    task: '',
+    description: '',
+})
 
-            for (const field of fields) {
-                this.errors[field] = !this.layer[field] ? 'Cannot be empty' : '';
-            }
-            for (const e in this.errors) if (this.errors[e]) return;
+const template = ref(null);
 
-            this.loading.layer = true;
+const layer = ref({
+    name: '',
+    description: '',
+    task: '',
+    enabled: true,
+    logging: false,
+})
 
-            let layer;
+onMounted(async () => {
+    if (route.params.layerid) {
+        await fetch();
+    } else {
+        loading.value.layer = false;
+    }
+});
 
-            try {
-                let url;
-                if (this.$route.params.layerid) {
-                    url = stdurl(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}`);
-                    layer = await std(url, {
-                        method: 'PATCH',
-                        body: {
-                            name: this.layer.name,
-                            description: this.layer.description,
-                            enabled: this.layer.enabled,
-                            logging: this.layer.logging,
-                        }
-                    });
-                } else {
-                    url = stdurl(`/api/connection/${this.$route.params.connectionid}/layer`);
+async function fetch() {
+    loading.value.layer = true;
+    layer.value = await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}`);
+    loading.value.layer = false;
+}
 
-                    layer = JSON.parse(JSON.stringify(this.layer));
+async function deleteLayer() {
+    await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}`, {
+        method: 'DELETE'
+    });
 
-                    let body = JSON.parse(JSON.stringify(this.layer));
-                    if (this.type === "template" && this.template) {
-                        // These should be overwritten
-                        delete body.task;
-                        body = { ...this.template, ...body };
-                    }
+    router.push(`/connection/${route.params.connectionid}/layer`);
+}
 
-                    layer = await std(url, { method: 'POST', body });
+async function create() {
+    let fields =  ['name', 'description']
+
+    if (type.value === "manual") fields.push('task');
+
+    for (const field of fields) {
+        errors.value[field] = !layer.value[field] ? 'Cannot be empty' : '';
+    }
+    for (const e in errors.value) if (errors.value[e]) return;
+
+    loading.value.layer = true;
+
+    let layer;
+
+    try {
+        let url;
+        if (route.params.layerid) {
+            url = stdurl(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}`);
+            layer = await std(url, {
+                method: 'PATCH',
+                body: {
+                    name: layer.value.name,
+                    description: layer.value.description,
+                    enabled: layer.value.enabled,
+                    logging: layer.value.logging,
                 }
+            });
+        } else {
+            url = stdurl(`/api/connection/${route.params.connectionid}/layer`);
 
+            layer = JSON.parse(JSON.stringify(layer.value));
 
-                this.loading.layer = false;
-
-                this.$router.push(`/connection/${this.$route.params.connectionid}/layer/${layer.id}`);
-            } catch (err) {
-                this.loading.layer = false;
-                throw err;
+            let body = JSON.parse(JSON.stringify(layer.value));
+            if (type.value === "template" && template.value) {
+                // These should be overwritten
+                delete body.task;
+                body = { ...template.value, ...body };
             }
+
+            layer = await std(url, { method: 'POST', body });
         }
+
+
+        loading.value.layer = false;
+
+        router.push(`/connection/${route.params.connectionid}/layer/${layer.id}`);
+    } catch (err) {
+        loading.value.layer = false;
+        throw err;
     }
 }
 </script>
