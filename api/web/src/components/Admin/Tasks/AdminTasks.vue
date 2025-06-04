@@ -6,25 +6,33 @@
             </h1>
 
             <div class='ms-auto btn-list'>
-                <IconPlus
-                    v-tooltip='"Register New Task"'
-                    :size='32'
-                    stroke='1'
-                    class='cursor-pointer'
-                    @click='edit = {
-                        "name": "",
-                        "prefix": "",
-                        "readme": "",
-                        "repo": ""
-                    }'
-                />
-                <IconRefresh
-                    v-tooltip='"Refresh"'
-                    :size='32'
-                    stroke='1'
-                    class='cursor-pointer'
-                    @click='fetchList'
-                />
+                <template v-if='!edit'>
+                    <IconPlus
+                        v-tooltip='"Register New Task"'
+                        :size='32'
+                        stroke='1'
+                        class='cursor-pointer'
+                        @click='edit = {
+                            "name": "",
+                            "prefix": "",
+                            "readme": "",
+                            "repo": ""
+                        }'
+                    />
+                    <IconRefresh
+                        v-tooltip='"Refresh"'
+                        :size='32'
+                        stroke='1'
+                        class='cursor-pointer'
+                        @click='fetchList'
+                    />
+                </template>
+                <template v-else-if='edit.id'>
+                    <TablerDelete
+                        displaytype='icon'
+                        @delete='deleteTask(edit)'
+                    />
+                </template>
             </div>
         </div>
         <div style='min-height: 20vh; margin-bottom: 61px'>
@@ -80,6 +88,10 @@
                     v-if='loading'
                     desc='Loading Tasks'
                 />
+                <TablerAlert
+                    v-else-if='error'
+                    :err='error'
+                />
                 <TablerNone
                     v-else-if='!list.items.length'
                     label='Tasks'
@@ -128,110 +140,107 @@
     </div>
 </template>
 
-<script>
-import { std, stdurl, stdclick } from '/src/std.ts';
+<script setup>
+import { ref, watch, onMounted } from 'vue'
+import { std, stdurl } from '/src/std.ts';
 import TableHeader from '../../util/TableHeader.vue'
 import TableFooter from '../../util/TableFooter.vue'
 import {
     TablerNone,
     TablerInput,
-    TablerLoading
+    TablerAlert,
+    TablerLoading,
+    TablerDelete
 } from '@tak-ps/vue-tabler';
 import {
     IconPlus,
     IconRefresh,
 } from '@tabler/icons-vue'
 
-export default {
-    name: 'RegisteredTasksAdmin',
-    components: {
-        TablerInput,
-        TablerNone,
-        IconPlus,
-        IconRefresh,
-        TablerLoading,
-        TableHeader,
-        TableFooter,
-    },
-    data: function() {
+const error = ref();
+const loading = ref(true);
+const header = ref([]);
+const edit = ref();
+const paging = ref({
+    filter: '',
+    sort: 'name',
+    order: 'asc',
+    limit: 100,
+    page: 0
+});
+const list = ref({
+    total: 0,
+    items: []
+});
+
+watch(paging.value, async () => {
+    await fetchList();
+});
+
+onMounted(async () => {
+    await listLayerSchema();
+    await fetchList();
+});
+
+async function listLayerSchema() {
+    const schema = await std('/api/schema?method=GET&url=/task');
+    header.value = ['name', 'prefix'].map((h) => {
+        return { name: h, display: true };
+    });
+
+    header.value.push(...schema.query.properties.sort.enum.map((h) => {
         return {
-            err: false,
-            loading: true,
-            header: [],
-            edit: false,
-            paging: {
-                filter: '',
-                sort: 'name',
-                order: 'asc',
-                limit: 100,
-                page: 0
-            },
-            list: {
-                total: 0,
-                items: []
-            }
+            name: h,
+            display: false
         }
-    },
-    watch: {
-       paging: {
-            deep: true,
-            handler: async function() {
-                await this.fetchList();
-            }
+    }).filter((h) => {
+        for (const hknown of header.value) {
+            if (hknown.name === h.name) return false;
         }
-    },
-    mounted: async function() {
-        await this.listLayerSchema();
-        await this.fetchList();
-    },
-    methods: {
-        stdclick,
-        listLayerSchema: async function() {
-            const schema = await std('/api/schema?method=GET&url=/task');
-            this.header = ['name', 'prefix'].map((h) => {
-                return { name: h, display: true };
-            });
+        return true;
+    }));
+}
 
-            this.header.push(...schema.query.properties.sort.enum.map((h) => {
-                return {
-                    name: h,
-                    display: false
-                }
-            }).filter((h) => {
-                for (const hknown of this.header) {
-                    if (hknown.name === h.name) return false;
-                }
-                return true;
-            }));
-        },
-        saveTask: async function() {
-            this.loading = true;
+async function saveTask() {
+    loading.value = true;
 
-            if (this.edit.id) {
-                await std(`/api/task/${this.edit.id}`, {
-                    method: 'PATCH',
-                    body: this.edit
-                });
-            } else {
-                await std('/api/task', {
-                    method: 'POST',
-                    body: this.edit
-                });
-            }
-
-            this.edit = false
-
-            await this.fetchList();
-        },
-        fetchList: async function() {
-            this.loading = true;
-            const url = stdurl('/api/task');
-            if (this.query && this.paging.filter) url.searchParams.append('filter', this.paging.filter);
-            url.searchParams.append('limit', this.paging.limit);
-            url.searchParams.append('page', this.paging.page);
-            this.list = await std(url);
-            this.loading = false;
-        }
+    if (edit.value.id) {
+        await std(`/api/task/${edit.value.id}`, {
+            method: 'PATCH',
+            body: edit.value
+        });
+    } else {
+        await std('/api/task', {
+            method: 'POST',
+            body: edit.value
+        });
     }
+
+    edit.value = false
+
+    await fetchList();
+}
+
+async function deleteTask(task) {
+    loading.value = true;
+    const url = stdurl(`/api/task/${task.id}`);
+    await std(url, {
+        method: 'DELETE'
+    });
+
+    edit.value = undefined;
+    await fetchList();
+
+    loading.value = false;
+}
+
+async function fetchList() {
+    loading.value = true;
+    const url = stdurl('/api/task');
+    if (paging.value.filter) url.searchParams.append('filter', paging.value.filter);
+    url.searchParams.append('limit', paging.value.limit);
+    url.searchParams.append('page', paging.value.page);
+    list.value = await std(url);
+    loading.value = false;
 }
 </script>
