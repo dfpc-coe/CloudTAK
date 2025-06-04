@@ -82,7 +82,6 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     IconPlus,
-    IconRefresh,
 } from '@tabler/icons-vue'
 
 export default {
@@ -90,7 +89,6 @@ export default {
     components: {
         TablerNone,
         IconPlus,
-        IconRefresh,
         TablerLoading,
         TablerRefreshButton,
         TableHeader,

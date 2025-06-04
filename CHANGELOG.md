@@ -12,6 +12,14 @@
 
 ### Pending Release
 
+### v8.45.0 - 2025-06-04
+
+- :rocket: Registered Task Definitions can now be deleted
+- :rocket: Remove GroupSelectModal as it is no longer used
+- :rocket: Use GroupSelect for Data Sync Creation
+- :rocket: Create LayerTaskSelect for ETL Task selection and don't use modal in new Layer Creation flow
+- :rocket: Migrate a few Admin/Layer components to Vue Setup as a pre-req to converting them to TS.
+
 ### v8.44.0 - 2025-06-03
 
 - :bug: Fix Iconset Menu auth checks
