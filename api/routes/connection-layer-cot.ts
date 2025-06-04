@@ -41,6 +41,7 @@ export default async function router(schema: Schema, config: Config) {
                 return await config.models.Layer.augmented_from(req.params.layerid);
             });
 
+            if (!layer.connection) throw new Err(400, null, 'Layer is not attached to a Connection');
             if (!layer.incoming) throw new Err(400, null, 'Incoming Layer Configuration has not been applied');
 
             const style = new Style(layer.incoming);
@@ -270,6 +271,8 @@ export default async function router(schema: Schema, config: Config) {
                 return await config.models.Layer.augmented_from(req.params.layerid);
             });
 
+            if (!layer.connection) throw new Err(400, null, 'Layer is not attached to a Connection');
+
             const pooledClient = await config.conns.get(layer.connection);
             if (!pooledClient) throw new Err(500, null, `Pooled Client for ${layer.connection} not found in config`);
 
@@ -315,6 +318,8 @@ export default async function router(schema: Schema, config: Config) {
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
                 return await config.models.Layer.augmented_from(req.params.layerid);
             });
+
+            if (!layer.connection) throw new Err(400, null, 'Layer is not attached to a connection');
 
             const pooledClient = await config.conns.get(layer.connection);
             if (!pooledClient) throw new Err(500, null, `Pooled Client for ${layer.connection} not found in config`);
