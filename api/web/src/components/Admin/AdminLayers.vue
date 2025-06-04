@@ -24,18 +24,25 @@
         </div>
         <div style='min-height: 20vh; margin-bottom: 61px'>
             <div class='row g-0 py-2'>
-                <div class='col-md-8 px-2'>
+                <div class='col-md-6 px-2'>
                     <TablerInput
                         v-model='paging.filter'
                         icon='search'
                         placeholder='Filter...'
                     />
                 </div>
-                <div class='col-md-4 px-2'>
+                <div class='col-md-3 px-2'>
                     <TablerEnum
                         v-model='paging.task'
-                        default='All Types'
+                        default='All Tasks'
                         :options='taskTypes'
+                    />
+                </div>
+                <div class='col-md-3 px-2'>
+                    <TablerEnum
+                        v-model='paging.template'
+                        default='All Types'
+                        :options='["All Types", "Connection", "Template"]'
                     />
                 </div>
             </div>
@@ -78,7 +85,7 @@
                                             <div class='mx-2 row'>
                                                 <div
                                                     class='subheader'
-                                                    v-text='layer.parent.name'
+                                                    v-text='layer.parent ? layer.parent.name : "Template Layer"'
                                                 />
                                                 <div v-text='layer[h.name]' />
                                             </div>
@@ -88,7 +95,15 @@
                                 <template v-else-if='h.display && h.name === "task"'>
                                     <td>
                                         <div class='d-flex align-items-center'>
-                                            <span v-text='layer.task' />
+                                            <div class='row'>
+                                                <span
+                                                    v-text='layer.task.replace(/\-v\d+\.\d+\.\d+$/, "")'
+                                                />
+                                                <span
+                                                    class='subheader'
+                                                    v-text='layer.task.match(/v\d+\.\d+\.\d+/)[0]'
+                                                />
+                                            </div>
                                             <div class='mx-2 ms-auto'>
                                                 <IconExchange
                                                     v-if='layer.incoming && layer.outgoing'
@@ -165,7 +180,8 @@ const loading = ref(true);
 const header = ref([]);
 const paging = ref({
     filter: '',
-    task: 'All Types',
+    task: 'All Tasks',
+    template: 'All Types',
     sort: 'name',
     order: 'asc',
     limit: 100,
@@ -178,7 +194,7 @@ const list = ref({
 });
 
 const taskTypes = computed(() => {
-    return ["All Types"].concat(list.value.tasks)
+    return ["All Tasks"].concat(list.value.tasks)
 });
 
 watch(paging.value, async () => {
@@ -230,8 +246,14 @@ async function fetchList() {
         url.searchParams.append('order', paging.value.order);
         url.searchParams.append('page', paging.value.page);
 
-        if (paging.value.task !== 'All Types') {
+        if (paging.value.task !== 'All Tasks') {
             url.searchParams.append('task', paging.value.task);
+        }
+
+        if (paging.value.template === 'Connection') {
+            url.searchParams.append('template', String(false));
+        } else if (paging.value.template === 'Template') {
+            url.searchParams.append('template', String(true));
         }
 
         list.value = await std(url);
