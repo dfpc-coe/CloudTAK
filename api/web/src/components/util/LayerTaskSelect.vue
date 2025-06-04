@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class='d-flex align-items-center'>
+        <div class='d-flex align-items-center user-select-none'>
             <label class='mx-1 mb-1'>Task Selection</label>
         </div>
         <div class='card'>
@@ -10,17 +10,27 @@
                     :inline='true'
                     desc='Loading Tasks'
                 />
+                <TablerLoading
+                    v-else-if='loading.task'
+                    :inline='true'
+                    desc='Loading Task'
+                />
                 <template v-else-if='selected.id'>
-                    <div class='col-12 d-flex align-items-center'>
+                    <div class='col-12 d-flex align-items-center user-select-none'>
                         <div v-text='selected.name' />
-                        <div class='ms-auto'>
+                        <div class='ms-auto btn-list'>
+                            <TablerEnum
+                                v-model='selected.version'
+                                :options='selected.versions'
+                            />
+
                             <IconTrash
                                 v-if='selected.id'
                                 v-tooltip='"Remove Tasks"'
                                 :size='32'
                                 stroke='1'
                                 class='cursor-pointer'
-                                @click='selected = {}'
+                                @click='selected.id = undefined'
                             />
                         </div>
                     </div>
@@ -45,27 +55,31 @@
                         label='Tasks'
                     />
                     <template
-                        v-for='layer in list.items'
+                        v-for='task in list.items'
                         v-else
                     >
                         <div
-                            class='hover-light px-2 py-2 cursor-pointer row rounded'
-                            @click='selected = layer'
+                            class='hover-light px-2 py-2 cursor-pointer rounded user-select-none d-flex align-items-center'
+                            @click='selected = select(task)'
                         >
-                            <div class='col-md-4'>
-                                <span v-text='layer.name' />
+                            <div v-text='task.name' />
+                            <div class='ms-auto'>
+                                <TablerIconButton
+                                    title='Task Info'
+                                    @click.prevent.stop='infoModal = task'
+                                >
+                                    <IconInfoSquare
+                                        :size='32'
+                                        stroke='1'
+                                    />
+                                </TablerIconButton>
                             </div>
-
-                            <div
-                                class='col-md-8'
-                                v-text='layer.description'
-                            />
                         </div>
                     </template>
                 </template>
             </div>
             <div
-                v-if='list.total > paging.limit && !selected.id'
+                v-if='!loading.main && !loading.task && list.total > paging.limit && !selected.id'
                 class='card-footer d-flex'
             >
                 <div class='ms-auto'>
@@ -79,6 +93,39 @@
             </div>
         </div>
     </div>
+
+    <TablerModal v-if='infoModal' size='xl'>
+        <div class='modal-header'>
+            <IconInfoSquare size='24' stroke='1'/>
+            <span class='mx-2' v-text='infoModal.name'/>
+                <button                                       
+                  type='button'                  
+                  class='btn-close'            
+                  aria-label='Close'                                 
+                  @click='infoModal = undefined'                                            
+                />
+        </div>
+        <div
+            class='modal-body overflow-auto'
+            style='max-height: 50vh'
+        >
+            <TablerLoading
+                v-if='!infoModal.readme_body'
+            />
+            <TablerMarkdown
+                v-else
+                :markdown='infoModal.readme_body'
+            />
+        </div>
+        <div class='modal-footer'>
+            <button
+                class='btn btn-primary'
+                @click='infoModal = undefined'
+            >
+                Close
+            </button>
+        </div>
+    </TablerModal>
 </template>
 
 <script setup>
@@ -86,9 +133,14 @@ import { ref, watch, onMounted } from 'vue';
 import { std, stdurl } from '/src/std.ts';
 import {
     IconTrash,
+    IconInfoSquare,
 } from '@tabler/icons-vue';
 import {
+    TablerModal,
+    TablerMarkdown,
+    TablerIconButton,
     TablerLoading,
+    TablerEnum,
     TablerInput,
     TablerPager,
     TablerNone,
@@ -108,11 +160,14 @@ const emit = defineEmits([
 
 const loading = ref({
     main: true,
+    modal: true,
     list: true,
 });
 
+const infoModal = ref();
+
 const selected = ref({
-    id: '',
+    id: undefined
 });
 
 const paging = ref({
@@ -126,13 +181,23 @@ const list = ref({
     items: []
 });
 
-watch(selected.value, () => {
+watch(selected, () => {
     if (selected.value.id) {
-        emit('update:modelValue', selected.value);
+        emit('update:modelValue', `${selected.value.prefix}-v${selected.value.version}`);
     } else {
-        emit('update:modelValue', {});
+        emit('update:modelValue', undefined);
     }
+}, {
+    deep: true
 });
+
+watch(infoModal, async function() {
+    if (!infoModal.value) return;
+
+    const readme = await std(`/api/task/${infoModal.value.id}/readme`);
+
+    infoModal.value.readme_body = readme.body;
+})
 
 watch(props.modelValue, async function() {
     if (props.modelValue && props.modelValue.id !== selected.value.id) {
@@ -155,6 +220,19 @@ onMounted(async () => {
 
 async function fetch() {
     selected.value = await std(`/api/template/${props.modelValue.id}`);
+}
+
+async function select(task) {
+    loading.value.task = true;
+
+    const detail = await std(`/api/task/raw/${task.prefix}`);
+    selected.value = {
+        versions: detail.versions,
+        version: detail.versions[0],
+        ...task
+    }
+
+    loading.value.task = false;
 }
 
 async function listTasks() {
