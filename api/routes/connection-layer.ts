@@ -175,9 +175,9 @@ export default async function router(schema: Schema, config: Config) {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             }, req.params.connectionid);
 
-            const layer = layerControl.generate({
-                connection: req.params.connectionid,
+            const layer = await layerControl.generate({
                 ...req.body,
+                connection: req.params.connectionid,
                 username: auth.auth instanceof AuthUser ? auth.auth.email : null
             }, {
                 alarms: req.query.alarms
