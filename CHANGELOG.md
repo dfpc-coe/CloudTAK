@@ -12,6 +12,14 @@
 
 ### Pending Release
 
+### v8.45.2 - 2025-06-05
+
+- :bug: Add scoped CSS For Status Style as it was breaking animated status elsewhere in the app
+
+### v8.45.1 - 2025-06-05
+
+- :bug: Fix bug which prevents new layer creation
+
 ### v8.45.0 - 2025-06-04
 
 - :rocket: Registered Task Definitions can now be deleted

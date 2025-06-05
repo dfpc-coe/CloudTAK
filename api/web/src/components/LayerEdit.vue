@@ -235,13 +235,13 @@ async function create() {
 
     loading.value.layer = true;
 
-    let layer;
+    let savedLayer;
 
     try {
         let url;
         if (route.params.layerid) {
             url = stdurl(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}`);
-            layer = await std(url, {
+            savedLayer = await std(url, {
                 method: 'PATCH',
                 body: {
                     name: layer.value.name,
@@ -253,7 +253,7 @@ async function create() {
         } else {
             url = stdurl(`/api/connection/${route.params.connectionid}/layer`);
 
-            layer = JSON.parse(JSON.stringify(layer.value));
+            savedLayer = JSON.parse(JSON.stringify(layer.value));
 
             let body = JSON.parse(JSON.stringify(layer.value));
             if (type.value === "template" && template.value) {
@@ -262,13 +262,12 @@ async function create() {
                 body = { ...template.value, ...body };
             }
 
-            layer = await std(url, { method: 'POST', body });
+            savedLayer = await std(url, { method: 'POST', body });
         }
-
 
         loading.value.layer = false;
 
-        router.push(`/connection/${route.params.connectionid}/layer/${layer.id}`);
+        router.push(`/connection/${route.params.connectionid}/layer/${savedLayer.id}`);
     } catch (err) {
         loading.value.layer = false;
         throw err;
