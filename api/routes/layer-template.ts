@@ -1,7 +1,7 @@
 import { Type } from '@sinclair/typebox'
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
-import Auth from '../lib/auth.js';
+import Auth, { AuthUserAccess } from '../lib/auth.js';
 import Config from '../lib/config.js';
 import { sql } from 'drizzle-orm';
 import { Layer } from '../lib/schema.js';
@@ -68,18 +68,16 @@ export default async function router(schema: Schema, config: Config) {
 
             const baseLayer = await config.models.Layer.from(req.body.id);
 
-            if (user.admin === false && baseLayer.template === false) {
+            if (user.access !== AuthUserAccess.ADMIN && baseLayer.template === false) {
                 throw new Err(400, null, 'Layer is not a Template Layer');
-            } else if (user.admin == false && !req.body.connection) {
+            } else if (user.access != AuthUserAccess.ADMIN && !req.body.connection) {
                 throw new Err(400, null, 'Must provide a Connection ID');
             }
-
-            delete baseLayer.connection;
 
             const layer = await layerControl.generate({
                 ...baseLayer,
                 username: user.email,
-                connection: req.body.connection,
+                connection: req.body.connection || null,
                 name: req.body.name,
                 description: req.body.description
             });
