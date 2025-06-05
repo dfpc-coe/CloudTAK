@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v8.45.1 - 2025-06-05
+
+- :bug: Fix bug which prevents new layer creation
+
 ### v8.45.0 - 2025-06-04
 
 - :rocket: Registered Task Definitions can now be deleted
