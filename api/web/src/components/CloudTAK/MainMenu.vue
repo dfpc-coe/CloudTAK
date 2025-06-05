@@ -684,7 +684,7 @@ function logout() {
 }
 </script>
 
-<style>
+<style scoped>
 .status {
     height: 10px;
     width: 10px;
