@@ -77,8 +77,9 @@ export default async function router(schema: Schema, config: Config) {
             delete baseLayer.connection;
 
             const layer = await layerControl.generate({
-                connection: req.body.connection,
                 ...baseLayer,
+                username: user.email,
+                connection: req.body.connection,
                 name: req.body.name,
                 description: req.body.description
             });
