@@ -5,6 +5,7 @@ import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import { sql } from 'drizzle-orm';
 import { Layer } from '../lib/schema.js';
+import LayerControl from '../lib/control/layer.js'
 import { LayerResponse } from '../lib/types.js';
 import * as Default from '../lib/limits.js';
 
@@ -53,18 +54,26 @@ export default async function router(schema: Schema, config: Config) {
         body: Type.Object({
             id: Type.Integer({
                 description: 'Layer ID to create template from'
-            })
+            }),
+            connection: Type.Optional(Type.Integer())
         }),
         res: LayerResponse
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req);
+            const user = await Auth.as_user(config, req);
 
-            const layer = await config.models.Layer.augmented_from(req.params.templateid);
+            const baseLayer = await config.models.Layer.from(req.body.id);
 
-            if (layer.template === false) {
+            if (user.admin === false && baseLayer.template === false) {
                 throw new Err(400, null, 'Layer is not a Template Layer');
+            } else if (user.admin == false && !req.body.connection) {
+                throw new Err(400, null, 'Must provide a Connection ID');
             }
+
+            const layer = await LayerControl.generate({
+                connection: req.body.connection,
+                ...baseLayer
+            });
 
             res.json(layer)
         } catch (err) {
