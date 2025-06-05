@@ -421,16 +421,73 @@
 
             <div
                 v-if='cot.properties.remarks !== undefined'
-                class='col-12 py-2 px-2'
+                class='col-12 py-2'
             >
-                <label class='subheader mx-2'>Remarks</label>
-                <CopyField
-                    :model-value='cot.properties.remarks'
-                    :rows='10'
-                    :edit='is_editable'
-                    :hover='is_editable'
-                    @update:model-value='updateProperty("remarks", $event)'
-                />
+                <div class='col-12'>
+                    <IconBlockquote
+                        :size='18'
+                        stroke='1'
+                        color='#6b7990'
+                        class='ms-2 me-1'
+                    />
+                    <label class='subheader user-select-none'>Remarks</label>
+                </div>
+                <div class='px-2'>
+                    <CopyField
+                        :model-value='cot.properties.remarks'
+                        :rows='10'
+                        :edit='is_editable'
+                        :hover='is_editable'
+                        @update:model-value='updateProperty("remarks", $event)'
+                    />
+                </div>
+            </div>
+
+            <div
+                v-if='cot.properties.geofence'
+                class='col-12 py-2'
+            >
+                <div class='col-12'>
+                    <IconFence
+                        :size='18'
+                        stroke='1'
+                        color='#6b7990'
+                        class='ms-2 me-1'
+                    />
+                    <label class='subheader user-select-none'>Geofence</label>
+                </div>
+
+                <div class='mx-2 bg-gray-500 row user-select-none'>
+                    <TablerToggle
+                        label='Elevation Monitored'
+                        :modelValue='cot.properties.geofence.elevationMonitored'
+                        :disabled='true'
+                    />
+
+                    <div
+                        v-if='cot.properties.geofence.trigger === "Both" || cot.properties.geofence.trigger === "Enter"'
+                        class='col-6 py-2'
+                    >
+                        <IconDoorEnter
+                            :size='32'
+                            stroke='1'
+                            class='mx-2'
+                        />
+                        <span>Alarm on Enter</span>
+                    </div>
+                    <div
+                        v-if='cot.properties.geofence.trigger === "Both" || cot.properties.geofence.trigger === "Enter"'
+                        class='col-6 py-2'
+                    >
+                        <IconDoorExit
+                            :size='32'
+                            stroke='1'
+                            class='mx-2'
+                        />
+
+                        <span>Alarm on Exit</span>
+                    </div>
+                </div>
             </div>
 
             <div
@@ -470,7 +527,7 @@
                 class='col-12 pb-2'
             >
                 <div class='d-flex mx-3'>
-                    <label class='subheader'>Times</label>
+                    <label class='subheader user-select-none'>Times</label>
                     <div class='ms-auto cursor-pointer text-blue subheader'>
                         <span
                             v-if='time === "relative"'
@@ -514,10 +571,18 @@
 
             <div
                 v-if='is_editable && !cot.is_self'
-                class='px-1 pb-2 col-12'
+                class='pb-2 col-12'
             >
-                <label class='mx-1 subheader'>COT Style</label>
-                <div class='mx-2 py-3'>
+                <div class='col-12'>
+                    <IconPaint
+                        :size='18'
+                        stroke='1'
+                        color='#6b7990'
+                        class='ms-2 me-1'
+                    />
+                    <label class='subheader user-select-none'>Style</label>
+                </div>
+                <div class='px-2 py-3'>
                     <div class='row g-2 rounded px-2 bg-gray-500 pb-2'>
                         <template v-if='cot.geometry.type === "Point"'>
                             <div class='col-12'>
@@ -530,7 +595,7 @@
                                 />
                             </div>
                             <div class='col-12'>
-                                <label class='subheader'>Point Colour</label>
+                                <label class='subheader user-select-none'>Point Colour</label>
                                 <TablerInput
                                     :model-value='cot.properties["marker-color"]'
                                     label=''
@@ -541,7 +606,7 @@
                                 />
                             </div>
                             <div class='col-12'>
-                                <label class='subheader'>Point Opacity</label>
+                                <label class='subheader user-select-none'>Point Opacity</label>
                                 <TablerRange
                                     :model-value='cot.properties["marker-opacity"]'
                                     label=''
@@ -555,7 +620,7 @@
                         </template>
                         <template v-else>
                             <div class='col-12'>
-                                <label class='subheader'>Line Colour</label>
+                                <label class='subheader user-select-none'>Line Colour</label>
                                 <TablerInput
                                     :model-value='cot.properties["stroke"]'
                                     label=''
@@ -565,7 +630,7 @@
                             </div>
 
                             <div class='col-12'>
-                                <label class='subheader'>Line Style</label>
+                                <label class='subheader user-select-none'>Line Style</label>
                                 <TablerEnum
                                     :model-value='cot.properties["stroke-style"]'
                                     label=''
@@ -575,7 +640,7 @@
                                 />
                             </div>
                             <div class='col-12'>
-                                <label class='subheader'>Line Thickness</label>
+                                <label class='subheader user-select-none'>Line Thickness</label>
                                 <TablerRange
                                     :model-value='cot.properties["stroke-width"]'
                                     label=''
@@ -587,7 +652,7 @@
                                 />
                             </div>
                             <div class='col-12'>
-                                <label class='subheader'>Line Opacity</label>
+                                <label class='subheader user-select-none'>Line Opacity</label>
                                 <TablerRange
                                     :model-value='cot.properties["stroke-opacity"]'
                                     label=''
@@ -601,7 +666,7 @@
                         </template>
                         <template v-if='cot.geometry.type === "Polygon"'>
                             <div class='col-12'>
-                                <label class='subheader'>Fill Colour</label>
+                                <label class='subheader user-select-none'>Fill Colour</label>
                                 <TablerInput
                                     :model-value='cot.properties["fill"]'
                                     label=''
@@ -610,7 +675,7 @@
                                 />
                             </div>
                             <div class='col-12 round'>
-                                <label class='subheader'>Fill Opacity</label>
+                                <label class='subheader user-select-none'>Fill Opacity</label>
                                 <TablerRange
                                     :model-value='cot.properties["fill-opacity"]'
                                     label=''
@@ -666,7 +731,7 @@
                             stroke='1'
                         />
                     </TablerIconbutton>
-                    <label class='subheader cursor-pointer'>Metadata</label>
+                    <label class='subheader user-select-none cursor-pointer'>Metadata</label>
                 </div>
                 <div
                     v-if='chevrons.has("metadata")'
@@ -738,6 +803,7 @@ import {
     TablerNone,
     TablerInput,
     TablerDelete,
+    TablerToggle,
     TablerEnum,
     TablerRange,
     TablerDropdown,
@@ -763,12 +829,16 @@ import PropertyElevation from './util/PropertyElevation.vue';
 import PropertyAttachments from './util/PropertyAttachments.vue';
 import {
     IconPencil,
+    IconFence,
     IconMovie,
     IconRoute,
     IconCone,
     IconStar,
+    IconDoorEnter,
+    IconDoorExit,
     IconStarFilled,
     IconMessage,
+    IconBlockquote,
     IconDotsVertical,
     IconChevronRight,
     IconChevronDown,
@@ -777,6 +847,7 @@ import {
     IconShare2,
     IconZoomPan,
     IconCode,
+    IconPaint,
     IconAffiliate,
     IconInfoCircle,
     IconPaperclip,
