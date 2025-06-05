@@ -66,7 +66,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req);
 
-            const baseLayer = await config.models.Layer.from(req.body.id);
+            const baseLayer = await config.models.Layer.augmented_from(req.body.id);
 
             if (user.access !== AuthUserAccess.ADMIN && baseLayer.template === false) {
                 throw new Err(400, null, 'Layer is not a Template Layer');
@@ -75,11 +75,36 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             const layer = await layerControl.generate({
-                ...baseLayer,
+                template: true,
                 username: user.email,
                 connection: req.body.connection || null,
                 name: req.body.name,
-                description: req.body.description
+                description: req.body.description,
+                enabled: true,
+                logging: baseLayer.logging,
+                task: baseLayer.task,
+                memory: baseLayer.memory,
+                timeout: baseLayer.timeout,
+                priority: baseLayer.priority
+            }, {
+                incoming: baseLayer.incoming ? {
+                    config: baseLayer.incoming.config,
+                    cron: baseLayer.incoming.cron,
+                    webhooks: baseLayer.incoming.webhooks,
+                    alarm_period: baseLayer.incoming.alarm_period,
+                    alarm_evals: baseLayer.incoming.alarm_evals,
+                    alarm_points: baseLayer.incoming.alarm_points,
+                    alarm_threshold: baseLayer.incoming.alarm_threshold,
+                    enabled_styles: baseLayer.incoming.enabled_styles,
+                    styles: baseLayer.incoming.styles,
+                    stale: baseLayer.incoming.stale,
+                    environment: {},
+                    ephemeral: {}
+                } : undefined,
+                outgoing: baseLayer.outgoing ? {
+                    environment: {},
+                    ephemeral: {}
+                } : undefined
             });
 
             res.json(layer)

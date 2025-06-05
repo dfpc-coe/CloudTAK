@@ -80,11 +80,16 @@
                         v-model:order='paging.order'
                         v-model:header='header'
                     />
-                    <tbody>
+                    <tbody
+                        role='menu'
+                    >
                         <tr
                             v-for='layer in list.items'
                             :key='layer.id'
                             class='cursor-pointer'
+                            role='menuitem'
+                            tabindex='0'
+                            @keyup.enter='stdclick(router, $event, `/connection/${layer.connection}/layer/${layer.id}`)'
                             @click='stdclick(router, $event, `/connection/${layer.connection}/layer/${layer.id}`)'
                         >
                             <template v-for='h in header'>
