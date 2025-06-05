@@ -25,6 +25,7 @@ import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: Config) {
     const alarm = new Alarm(config.StackName);
+    const layerControl = new LayerControl(config);
 
     await schema.post('/layer/redeploy', {
         name: 'Redeploy Layers',
@@ -174,10 +175,12 @@ export default async function router(schema: Schema, config: Config) {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             }, req.params.connectionid);
 
-            const layer = LayerControl.generate({
+            const layer = layerControl.generate({
                 connection: req.params.connectionid,
                 ...req.body,
                 username: auth.auth instanceof AuthUser ? auth.auth.email : null
+            }, {
+                alarms: req.query.alarms
             });
 
             res.json(layer);

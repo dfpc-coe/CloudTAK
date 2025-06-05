@@ -124,9 +124,9 @@ const list = ref({
     items: []
 });
 
-watch(selected.value, async () => {
-    emit('update:odelValue', selected.value.id);
-});
+watch(selected, async () => {
+    emit('update:modelValue', selected.value.id);
+}, { deep: true });
 
 watch(props.modelValue, async () => {
     await fetch();

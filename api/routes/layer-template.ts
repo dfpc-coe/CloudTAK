@@ -10,6 +10,8 @@ import { LayerResponse } from '../lib/types.js';
 import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: Config) {
+    const layerControl = new LayerControl(config);
+
     await schema.get('/template', {
         name: 'List Templates',
         group: 'LayerTemplate',
@@ -52,6 +54,8 @@ export default async function router(schema: Schema, config: Config) {
         group: 'LayerTemplate',
         description: 'Create a new Layer Template',
         body: Type.Object({
+            name: Default.NameField,
+            description: Default.DescriptionField,
             id: Type.Integer({
                 description: 'Layer ID to create template from'
             }),
@@ -70,9 +74,13 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'Must provide a Connection ID');
             }
 
-            const layer = await LayerControl.generate({
+            delete baseLayer.connection;
+
+            const layer = await layerControl.generate({
                 connection: req.body.connection,
-                ...baseLayer
+                ...baseLayer,
+                name: req.body.name,
+                description: req.body.description
             });
 
             res.json(layer)
