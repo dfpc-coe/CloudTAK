@@ -609,6 +609,11 @@
         "query": true,
         "res": true
     },
+    "POST /template": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
     "GET /template/:templateid": {
         "body": false,
         "query": false,
