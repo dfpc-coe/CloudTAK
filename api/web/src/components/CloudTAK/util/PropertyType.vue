@@ -3,7 +3,8 @@
         v-if='type'
         class='col-12'
     >
-        <label class='subheader mx-2'>Type</label>
+        <IconChartGridDots :size='18' stroke='1' color='#6b7990' class='ms-2 me-1'/>
+        <label class='subheader user-select-none'>Type</label>
         <div class='mx-2'>
             <div
                 v-if='!hover'
@@ -99,6 +100,9 @@ import { ref, watch, onMounted } from 'vue';
 import { std, stdurl } from '../../../std.ts';
 import type { COTType, COTTypeList } from '../../../types.ts';
 import FeatureIcon from './FeatureIcon.vue';
+import {
+    IconChartGridDots
+} from '@tabler/icons-vue';
 import {
     TablerEnum,
     TablerInput,

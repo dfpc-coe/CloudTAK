@@ -2,7 +2,8 @@
     <div class='col-12 row'>
         <div class='d-flex align-items-center'>
             <div>
-                <label class='subheader mx-2'>Author</label>
+                <IconUser :size='18' stroke='1' color='#6b7990' class='ms-2 me-1'/>
+                <label class='subheader user-select-none'>Author</label>
             </div>
             <div class='ms-auto'>
                 <span
@@ -29,6 +30,9 @@ import { useMapStore } from '../../../stores/map.ts';
 import type { Contact, FeaturePropertyCreator } from '../../../types.ts';
 import { useRouter } from 'vue-router';
 const mapStore = useMapStore();
+import {
+    IconUser
+} from '@tabler/icons-vue';
 
 const props = defineProps<{
     creator: FeaturePropertyCreator

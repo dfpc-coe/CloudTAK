@@ -1,6 +1,7 @@
 <template>
     <div class='col-12 d-flex align-items-center py2'>
-        <label class='subheader mx-2'>Attachments</label>
+        <IconPaperclip :size='18' stroke='1' color='#6b7990' class='ms-2 me-1'/>
+        <label class='subheader user-select-none'>Attachments</label>
 
         <div class='ms-auto me-2'>
             <IconFileUpload
@@ -90,8 +91,9 @@ import { useFloatStore } from '../../../stores/float.ts';
 import Upload from '../../util/Upload.vue';
 import {
     IconFile,
+    IconDownload,
+    IconPaperclip,
     IconFileUpload,
-    IconDownload
 } from '@tabler/icons-vue';
 
 import {
