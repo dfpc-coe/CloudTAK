@@ -479,6 +479,51 @@
         "query": true,
         "res": true
     },
+    "POST /import": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PUT /import/:import": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PUT /import": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /import/:import": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PATCH /import/:import": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /import/:import": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /import": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /import/:import/batch": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /import/:import/batch": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /iconset": {
         "body": false,
         "query": true,
@@ -544,51 +589,6 @@
         "query": true,
         "res": false
     },
-    "POST /import": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "PUT /import/:import": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "PUT /import": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /import/:import": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "PATCH /import/:import": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "DELETE /import/:import": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /import": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "POST /import/:import/batch": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /import/:import/batch": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "GET /layer": {
         "body": false,
         "query": true,
@@ -609,23 +609,13 @@
         "query": true,
         "res": true
     },
-    "GET /template/:templateid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "PATCH /template/:templateid": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "DELETE /template/:templateid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "POST /template": {
         "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /template/:templateid": {
+        "body": false,
         "query": false,
         "res": true
     },

@@ -1,14 +1,17 @@
 import { Type } from '@sinclair/typebox'
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
-import Auth from '../lib/auth.js';
+import Auth, { AuthUserAccess } from '../lib/auth.js';
 import Config from '../lib/config.js';
 import { sql } from 'drizzle-orm';
-import { StandardResponse, LayerTemplateResponse } from '../lib/types.js';
-import { LayerTemplate } from '../lib/schema.js';
+import { Layer } from '../lib/schema.js';
+import LayerControl from '../lib/control/layer.js'
+import { LayerResponse } from '../lib/types.js';
 import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: Config) {
+    const layerControl = new LayerControl(config);
+
     await schema.get('/template', {
         name: 'List Templates',
         group: 'LayerTemplate',
@@ -17,29 +20,94 @@ export default async function router(schema: Schema, config: Config) {
             limit: Default.Limit,
             page: Default.Page,
             order: Default.Order,
-            sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(LayerTemplate)})),
+            sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(Layer)})),
             filter: Default.Filter,
             data: Type.Optional(Type.Integer({ minimum: 1 })),
         }),
         res: Type.Object({
             total: Type.Integer(),
-            items: Type.Array(LayerTemplateResponse)
+            items: Type.Array(LayerResponse)
         })
     }, async (req, res) => {
         try {
             await Auth.as_user(config, req);
 
-            const list = await config.models.LayerTemplate.list({
+            const list = await config.models.Layer.augmented_list({
                 limit: req.query.limit,
                 page: req.query.page,
                 order: req.query.order,
                 sort: req.query.sort,
                 where: sql`
-                    name ~* ${req.query.filter}
+                    layers.name ~* ${req.query.filter}
+                    AND template = true
                 `
             });
 
             res.json(list)
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.post('/template', {
+        name: 'Create Template',
+        group: 'LayerTemplate',
+        description: 'Create a new Layer Template',
+        body: Type.Object({
+            name: Default.NameField,
+            description: Default.DescriptionField,
+            id: Type.Integer({
+                description: 'Layer ID to create template from'
+            }),
+            connection: Type.Optional(Type.Integer())
+        }),
+        res: LayerResponse
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            const baseLayer = await config.models.Layer.augmented_from(req.body.id);
+
+            if (user.access !== AuthUserAccess.ADMIN && baseLayer.template === false) {
+                throw new Err(400, null, 'Layer is not a Template Layer');
+            } else if (user.access != AuthUserAccess.ADMIN && !req.body.connection) {
+                throw new Err(400, null, 'Must provide a Connection ID');
+            }
+
+            const layer = await layerControl.generate({
+                template: true,
+                username: user.email,
+                connection: req.body.connection || null,
+                name: req.body.name,
+                description: req.body.description,
+                enabled: true,
+                logging: baseLayer.logging,
+                task: baseLayer.task,
+                memory: baseLayer.memory,
+                timeout: baseLayer.timeout,
+                priority: baseLayer.priority
+            }, {
+                incoming: baseLayer.incoming ? {
+                    config: baseLayer.incoming.config,
+                    cron: baseLayer.incoming.cron,
+                    webhooks: baseLayer.incoming.webhooks,
+                    alarm_period: baseLayer.incoming.alarm_period,
+                    alarm_evals: baseLayer.incoming.alarm_evals,
+                    alarm_points: baseLayer.incoming.alarm_points,
+                    alarm_threshold: baseLayer.incoming.alarm_threshold,
+                    enabled_styles: baseLayer.incoming.enabled_styles,
+                    styles: baseLayer.incoming.styles,
+                    stale: baseLayer.incoming.stale,
+                    environment: {},
+                    ephemeral: {}
+                } : undefined,
+                outgoing: baseLayer.outgoing ? {
+                    environment: {},
+                    ephemeral: {}
+                } : undefined
+            });
+
+            res.json(layer)
         } catch (err) {
             Err.respond(err, res);
         }
@@ -52,96 +120,20 @@ export default async function router(schema: Schema, config: Config) {
         params: Type.Object({
             templateid: Type.Integer()
         }),
-        res: LayerTemplateResponse
+        res: LayerResponse
     }, async (req, res) => {
         try {
             await Auth.as_user(config, req);
 
-            const template = await config.models.LayerTemplate.from(req.params.templateid);
+            const layer = await config.models.Layer.augmented_from(req.params.templateid);
 
-            res.json(template)
+            if (layer.template === false) {
+                throw new Err(400, null, 'Layer is not a Template Layer');
+            }
+
+            res.json(layer)
         } catch (err) {
             Err.respond(err, res);
-        }
-    });
-
-    await schema.patch('/template/:templateid', {
-        name: 'Update Template',
-        group: 'LayerTemplate',
-        description: 'Update a layer template',
-        params: Type.Object({
-            templateid: Type.Integer()
-        }),
-        body: Type.Object({
-            name: Default.NameField,
-            description: Default.DescriptionField,
-            datasync: Type.Optional(Type.Boolean({ default: true })),
-        }),
-        res: LayerTemplateResponse
-    }, async (req, res) => {
-        try {
-            await Auth.as_user(config, req, { admin: true });
-
-            const template = await config.models.LayerTemplate.commit(req.params.templateid, {
-                ...req.body,
-                updated: sql<string>`Now()`,
-            });
-
-            res.json(template)
-        } catch (err) {
-            Err.respond(err, res);
-        }
-    });
-
-    await schema.delete('/template/:templateid', {
-        name: 'Create Template',
-        group: 'LayerTemplate',
-        description: 'Create a layer template',
-        params: Type.Object({
-            templateid: Type.Integer()
-        }),
-        res: StandardResponse
-    }, async (req, res) => {
-        try {
-            await Auth.as_user(config, req, { admin: true });
-
-            await config.models.LayerTemplate.delete(req.params.templateid);
-
-            res.json({
-                status: 200,
-                message: 'Layer Template Deleted'
-            })
-        } catch (err) {
-             Err.respond(err, res);
-        }
-    });
-
-    await schema.post('/template', {
-        name: 'Create Template',
-        group: 'LayerTemplate',
-        description: 'Create a layer template',
-        body: Type.Object({
-            name: Default.NameField,
-            description: Default.DescriptionField,
-            datasync: Type.Optional(Type.Boolean({ default: true })),
-            layer: Type.Integer()
-        }),
-        res: LayerTemplateResponse
-    }, async (req, res) => {
-        try {
-            const user = await Auth.as_user(config, req, { admin: true });
-
-            const layer = await config.models.Layer.augmented_from(req.body.layer);
-
-            const template = await config.models.LayerTemplate.generate({
-                ...layer,
-                username: user.email,
-                ...req.body,
-            });
-
-            res.json(template)
-        } catch (err) {
-             Err.respond(err, res);
         }
     });
 }

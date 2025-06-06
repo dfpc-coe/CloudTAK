@@ -36,8 +36,6 @@ import {
 
 const brandStore = useBrandStore();
 
-console.error(brandStore);
-
 onMounted(async () => {
     await brandStore.init();
 })

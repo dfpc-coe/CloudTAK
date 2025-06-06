@@ -10,6 +10,7 @@ import Style, { StyleContainer } from '../lib/style.js';
 import Alarm from '../lib/aws/alarm.js';
 import Config from '../lib/config.js';
 import Schedule from '../lib/schedule.js';
+import LayerControl from '../lib/control/layer.js';
 import { Param } from '@openaddresses/batch-generic';
 import { sql, eq } from 'drizzle-orm';
 import type { InferInsertModel } from 'drizzle-orm';;
@@ -24,6 +25,7 @@ import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: Config) {
     const alarm = new Alarm(config.StackName);
+    const layerControl = new LayerControl(config);
 
     await schema.post('/layer/redeploy', {
         name: 'Redeploy Layers',
@@ -173,34 +175,15 @@ export default async function router(schema: Schema, config: Config) {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             }, req.params.connectionid);
 
-            const base = await config.models.Layer.generate({
-                connection: req.params.connectionid,
+            const layer = await layerControl.generate({
                 ...req.body,
+                connection: req.params.connectionid,
                 username: auth.auth instanceof AuthUser ? auth.auth.email : null
+            }, {
+                alarms: req.query.alarms
             });
 
-            const layer = await config.models.Layer.augmented_from(base.id);
-
-            try {
-                const stack = await Lambda.generate(config, layer);
-                await CloudFormation.create(config, layer.id, stack);
-            } catch (err) {
-                console.error(err);
-            }
-
-            let status = 'unknown';
-            if (config.StackName !== 'test' && req.query.alarms) {
-                try {
-                    status = await alarm.get(layer.id);
-                } catch (err) {
-                    console.error(err);
-                }
-            }
-
-            res.json({
-                status,
-                ...layer
-            });
+            res.json(layer);
         } catch (err) {
             Err.respond(err, res);
         }

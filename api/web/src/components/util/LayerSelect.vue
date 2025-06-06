@@ -26,10 +26,12 @@
                     </div>
                 </template>
                 <template v-else>
-                    <TablerInput
-                        v-model='paging.filter'
-                        placeholder='Layer Filter...'
-                    />
+                    <div class='mb-2'>
+                        <TablerInput
+                            v-model='paging.filter'
+                            placeholder='Layer Filter...'
+                        />
+                    </div>
 
                     <div
                         v-if='loading.list'
@@ -80,7 +82,8 @@
     </div>
 </template>
 
-<script>
+<script setup>
+import { ref, watch, onMounted } from 'vue';
 import { std, stdurl } from '/src/std.ts';
 import {
     IconTrash,
@@ -92,82 +95,65 @@ import {
     TablerNone,
 } from '@tak-ps/vue-tabler';
 
-export default {
-    name: 'LayerSelect',
-    components: {
-        IconTrash,
-        TablerInput,
-        TablerPager,
-        TablerNone,
-        TablerLoading
-    },
-    props: {
-        modelValue: Number,
-        disabled: {
-            type: Boolean,
-            default: false
-        }
-    },
-    emits: [
-        'update:modelValue'
-    ],
-    data: function() {
-        return {
-            loading: {
-                main: true,
-                list: true,
-            },
-            selected: {
-                id: '',
-                name: ''
-            },
-            paging: {
-                filter: '',
-                limit: 10,
-                page: 0
-            },
-            list: {
-                total: 0,
-                items: []
-            }
-        }
-    },
-    watch: {
-        selected: {
-            deep: true,
-            handler: function() {
-                this.$emit('update:modelValue', this.selected.id);
-            }
-        },
-        modelValue: function() {
-            if (this.modelValue) this.fetch();
-        },
-        paging: {
-            deep: true,
-            handler: async function() {
-                await this.listData();
-            },
-        }
-    },
-    mounted: async function() {
-        if (this.modelValue) await this.fetch();
-        await this.listData();
-        this.loading.main = false;
-    },
-    methods: {
-        fetch: async function() {
-            this.selected = await std(`/api/layer/${this.modelValue}`);
-        },
-        listData: async function() {
-            this.loading.list = true;
-            const url = stdurl('/api/layer');
-            url.searchParams.append('filter', this.paging.filter);
-            url.searchParams.append('limit', this.paging.limit);
-            url.searchParams.append('page', this.paging.page);
-            this.list = await std(url);
+const props = defineProps({
+    modelValue: Number,
+});
 
-            this.loading.list = false;
-        },
-    }
-};
+const emit = defineEmits([
+    'update:modelValue'
+]);
+
+const loading = ref({
+    main: true,
+    list: true,
+})
+
+const selected = ref({
+    id: '',
+    name: ''
+})
+
+const paging = ref({
+    filter: '',
+    limit: 10,
+    page: 0
+});
+
+const list = ref({
+    total: 0,
+    items: []
+});
+
+watch(selected, async () => {
+    emit('update:modelValue', selected.value.id);
+}, { deep: true });
+
+watch(props.modelValue, async () => {
+    await fetch();
+});
+
+watch(paging.value, async () => {
+    await listData();
+});
+
+onMounted(async () => {
+    if (props.modelValue) await fetch();
+    await listData();
+    loading.value.main = false;
+});
+
+async function fetch() {
+    selected.value = await std(`/api/layer/${props.modelValue}`);
+}
+
+async function listData() {
+    loading.value.list = true;
+    const url = stdurl('/api/layer');
+    url.searchParams.append('filter', paging.value.filter);
+    url.searchParams.append('limit', paging.value.limit);
+    url.searchParams.append('page', paging.value.page);
+    list.value = await std(url);
+
+    loading.value.list = false;
+}
 </script>

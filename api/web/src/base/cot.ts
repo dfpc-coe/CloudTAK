@@ -496,7 +496,6 @@ export default class COT {
                 } else {
                     properties["marker-color"] = '#ffffff';
                 }
-
             } else if (properties.icon) {
                 // Format of icon needs to change for spritesheet
                 if (!properties.icon.includes(':')) {
@@ -507,11 +506,12 @@ export default class COT {
                     properties.icon = properties.icon.replace(/.png$/, '');
                 }
 
-
                 if (!atlas.db.images.has(properties.icon)) {
                     console.warn(`No Icon for: ${properties.icon} fallback to ${properties.type}`);
                     properties.icon = `${properties.type}`;
                 }
+            } else if (properties.milsym && !isNaN(Number(properties.milsym.id))) {
+                properties.icon = `2525D:${properties.milsym.id}`;
             } else {
                 // TODO Only add icon if one actually exists in the spritejson
                 if (!['u-d-p'].includes(properties.type)) {

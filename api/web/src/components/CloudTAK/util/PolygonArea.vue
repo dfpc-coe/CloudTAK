@@ -1,6 +1,12 @@
 <template>
     <div class='col-12'>
-        <label class='subheader mx-2'>Polygon Area</label>
+        <IconPolygon
+            :size='18'
+            stroke='1'
+            color='#6b7990'
+            class='ms-2 me-1'
+        />
+        <label class='subheader user-select-none'>Polygon Area</label>
         <div class='mx-2'>
             <CopyField
                 v-model='inMode'
@@ -37,6 +43,9 @@ import { ref, computed } from 'vue';
 import { area } from '@turf/area';
 import CopyField from './CopyField.vue';
 import COT from '../../../base/cot.ts';
+import {
+    IconPolygon
+} from '@tabler/icons-vue';
 
 const props = defineProps({
     cot: {

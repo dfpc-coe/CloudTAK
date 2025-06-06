@@ -161,23 +161,6 @@ export const ProfileOverlayResponse = createSelectSchema(schemas.ProfileOverlay,
     styles: Type.Array(Type.Unknown())
 });
 
-export const LayerTemplateResponse = createSelectSchema(schemas.LayerTemplate, {
-    id: Type.Integer(),
-    stale: Type.Integer(),
-    enabled_styles: Type.Boolean(),
-    memory: Type.Integer(),
-    datasync: Type.Boolean(),
-    timeout: Type.Integer(),
-    logging: Type.Boolean(),
-    created: Type.String(),
-    updated: Type.String(),
-    alarm_period: Type.Integer(),
-    alarm_evals: Type.Integer(),
-    alarm_points: Type.Integer(),
-    alarm_threshold: Type.Integer(),
-    config: Type.Unknown(),
-});
-
 export const ProfileInterestResponse = createSelectSchema(schemas.ProfileInterest, {
     id: Type.Integer(),
 });

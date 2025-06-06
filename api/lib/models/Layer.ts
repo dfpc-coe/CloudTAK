@@ -46,6 +46,8 @@ export const AugmentedLayer = Type.Object({
     status: Type.Optional(Type.String()),
     created: Type.String(),
     updated: Type.String(),
+    template: Type.Boolean(),
+    connection: Type.Optional(Type.Integer()),
     username: Type.Union([Type.Null(), Type.String()]),
     uuid: Type.String(),
     name: Type.String(),
@@ -53,16 +55,15 @@ export const AugmentedLayer = Type.Object({
     enabled: Type.Boolean(),
     logging: Type.Boolean(),
     task: Type.String(),
-    connection: Type.Integer(),
     memory: Type.Integer(),
     timeout: Type.Integer(),
     priority: Type.Enum(Layer_Priority),
 
-    parent: Type.Object({
+    parent: Type.Optional(Type.Object({
         id: Type.Integer(),
         name: Type.String(),
         enabled: Type.Boolean()
-    }),
+    })),
 
     incoming: Type.Optional(AugmentedLayerIncoming),
     outgoing: Type.Optional(AugmentedLayerOutgoing)
@@ -149,6 +150,7 @@ export default class LayerModel extends Modeler<typeof Layer> {
                 enabled: Layer.enabled,
                 logging: Layer.logging,
                 task: Layer.task,
+                template: Layer.template,
                 connection: Layer.connection,
                 memory: Layer.memory,
                 timeout: Layer.timeout,
@@ -187,7 +189,7 @@ export default class LayerModel extends Modeler<typeof Layer> {
                 })
             })
             .from(Layer)
-            .innerJoin(Connection, eq(Layer.connection, Connection.id))
+            .leftJoin(Connection, eq(Layer.connection, Connection.id))
             .leftJoin(LayerIncoming, eq(LayerIncoming.layer, Layer.id))
             .leftJoin(LayerOutgoing, eq(LayerOutgoing.layer, Layer.id))
             .where(is(id, SQL)? id as SQL<unknown> : eq(this.requiredPrimaryKey(), id))
@@ -229,6 +231,7 @@ export default class LayerModel extends Modeler<typeof Layer> {
                 enabled: Layer.enabled,
                 logging: Layer.logging,
                 task: Layer.task,
+                template: Layer.template,
                 connection: Layer.connection,
                 memory: Layer.memory,
                 timeout: Layer.timeout,
@@ -267,7 +270,7 @@ export default class LayerModel extends Modeler<typeof Layer> {
                 })
             })
             .from(Layer)
-            .innerJoin(Connection, eq(Layer.connection, Connection.id))
+            .leftJoin(Connection, eq(Layer.connection, Connection.id))
             .leftJoin(LayerIncoming, eq(LayerIncoming.layer, Layer.id))
             .leftJoin(LayerOutgoing, eq(LayerOutgoing.layer, Layer.id))
             .where(query.where)

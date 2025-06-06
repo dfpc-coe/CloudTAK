@@ -210,15 +210,6 @@ export default async function router(schema: Schema, config: Config) {
 
             if (layers.total !== 0) throw new Err(400, null, 'Cannot delete a task with an active Layer');
 
-            const templates = await config.models.LayerTemplate.list({
-                limit: 1,
-                where: sql`
-                    task = ${task}::TEXT
-                `
-            });
-
-            if (templates.total !== 0) throw new Err(400, null, 'Cannot delete a task with an active Layer Template');
-
             await ECR.delete(req.params.task, req.params.version);
 
             res.json({
