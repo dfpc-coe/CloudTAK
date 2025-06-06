@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v9.1.0 - 2025-06-06
+
+- :rocket: Consistent Title bars for COT Properties
+
 ### v9.0.0 - 2025-06-06
 
 - :rocket: Remove Layer Template table in favour of reimplementation via existing Layer Table so they stay in sync
