@@ -115,7 +115,7 @@ export const VideoLease = pgTable('video_lease', {
 });
 
 export const ProfileFeature = pgTable('profile_features', {
-    id: text().primaryKey(),
+    id: text().notNull(),
     path: text().notNull().default('/'),
     username: text().notNull().references(() => Profile.username),
     properties: json().notNull().default({}),

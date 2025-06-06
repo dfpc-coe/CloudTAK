@@ -21,7 +21,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 import {
     IconBadges
 } from '@tabler/icons-vue';
@@ -29,9 +29,11 @@ import {
     TablerEnum
 } from '@tak-ps/vue-tabler';
 
+/*
 const emit = defineEmits([
     'update:modelValue'
 ]);
+*/
 
 const props = defineProps({
     label: {
