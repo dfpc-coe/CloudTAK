@@ -13,4 +13,4 @@
     Hope to release this update as soon as possible
 */
 
--- ALTER TABLE "profile_features" DROP CONSTRAINT "<constraint_name>";
+ALTER TABLE "profile_features" DROP CONSTRAINT "profile_features_pkey";
