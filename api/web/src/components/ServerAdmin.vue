@@ -44,6 +44,7 @@
                                                     "active": String($route.name).startsWith("admin-server"),
                                                     "cursor-pointer": !String($route.name).startsWith("admin-server")
                                                 }'
+                                                @keyup.enter='$router.push(`/admin/server`)'
                                                 @click='$router.push(`/admin/server`)'
                                             >
                                                 <IconServer
@@ -64,6 +65,7 @@
                                                     "active": String($route.name) === "admin-config",
                                                     "cursor-pointer": String($route.name) !== "admin-config"
                                                 }'
+                                                @keyup.enter='$router.push(`/admin/config`)'
                                                 @click='$router.push(`/admin/config`)'
                                             >
                                                 <IconSettings
@@ -92,6 +94,7 @@
                                                     "active": String($route.name).startsWith("admin-user"),
                                                     "cursor-pointer": !String($route.name).startsWith("admin-user")
                                                 }'
+                                                @keyup.enter='$router.push(`/admin/user`)'
                                                 @click='$router.push(`/admin/user`)'
                                             >
                                                 <IconUsers
@@ -112,6 +115,7 @@
                                                     "active": String($route.name).includes("admin-overlays"),
                                                     "cursor-pointer": !String($route.name).includes("admin-overlays")
                                                 }'
+                                                @keyup.enter='$router.push(`/admin/overlay`)'
                                                 @click='$router.push(`/admin/overlay`)'
                                             >
                                                 <IconMap
@@ -132,6 +136,7 @@
                                                     "active": String($route.name).startsWith("admin-palette"),
                                                     "cursor-pointer": !String($route.name).startsWith("admin-palette")
                                                 }'
+                                                @keyup.enter='$router.push(`/admin/palette`)'
                                                 @click='$router.push(`/admin/palette`)'
                                             >
                                                 <IconBrush
@@ -160,6 +165,7 @@
                                                     "active": String($route.name) === "admin-connection",
                                                     "cursor-pointer": String($route.name) !== "admin-connection"
                                                 }'
+                                                @keyup.enter='$router.push(`/admin/connection`)'
                                                 @click='$router.push(`/admin/connection`)'
                                             >
                                                 <IconNetwork
@@ -180,6 +186,7 @@
                                                     "active": String($route.name) === "admin-layer",
                                                     "cursor-pointer": String($route.name) !== "admin-layer"
                                                 }'
+                                                @keyup.enter='$router.push(`/admin/layer`)'
                                                 @click='$router.push(`/admin/layer`)'
                                             >
                                                 <IconBuildingBroadcastTower
@@ -197,29 +204,10 @@
                                                 role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
-                                                    "active": String($route.name).includes("admin-templates"),
-                                                    "cursor-pointer": !String($route.name).includes("admin-templates")
-                                                }'
-                                                @click='$router.push(`/admin/template`)'
-                                            >
-                                                <IconTemplate
-                                                    v-tooltip='nest ? "Layer Templates" : false'
-                                                    :size='32'
-                                                    stroke='1'
-                                                />
-                                                <span
-                                                    v-if='!nest'
-                                                    class='mx-3'
-                                                >Layer Templates</span>
-                                            </span>
-                                            <span
-                                                tabindex='0'
-                                                role='menuitem'
-                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
-                                                :class='{
                                                     "active": String($route.name).startsWith("admin-tasks"),
                                                     "cursor-pointer": !String($route.name).startsWith("admin-tasks")
                                                 }'
+                                                @keyup.enter='$router.push(`/admin/tasks`)'
                                                 @click='$router.push(`/admin/tasks`)'
                                             >
                                                 <IconBrandDocker
@@ -240,6 +228,7 @@
                                                     "active": String($route.name) === "admin-data",
                                                     "cursor-pointer": String($route.name) !== "admin-data"
                                                 }'
+                                                @keyup.enter='$router.push(`/admin/data`)'
                                                 @click='$router.push(`/admin/data`)'
                                             >
                                                 <IconDatabase
@@ -268,6 +257,7 @@
                                                     "active": String(route.name).includes("admin-video"),
                                                     "cursor-pointer": !String(route.name).includes("admin-video")
                                                 }'
+                                                @keyup.enter='router.push(`/admin/video`)'
                                                 @click='router.push(`/admin/video`)'
                                             >
                                                 <IconVideo
@@ -288,6 +278,7 @@
                                                     "active": String(route.name).includes("admin-export"),
                                                     "cursor-pointer": !String(route.name).includes("admin-export")
                                                 }'
+                                                @keyup.enter='router.push(`/admin/export`)'
                                                 @click='router.push(`/admin/export`)'
                                             >
                                                 <IconDatabaseExport
@@ -344,7 +335,6 @@ import {
 import {
     IconBrush,
     IconNetwork,
-    IconTemplate,
     IconVideo,
     IconUsers,
     IconSettings,

@@ -835,6 +835,12 @@ export interface paths {
                         "group::Teal"?: string;
                         "group::Dark Green"?: string;
                         "group::Brown"?: string;
+                        "oidc::enabled"?: boolean;
+                        "odic::enforced"?: boolean;
+                        "odic::name"?: string;
+                        "oidc::discovery"?: string;
+                        "oidc::client"?: string;
+                        "oidc::secret"?: string;
                         "provider::url"?: string;
                         "provider::secret"?: string;
                         "provider::client"?: string;
@@ -966,7 +972,7 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            /** @default 48.04,3.86 */
+                            /** @default -100,40 */
                             center: string;
                             /** @default 4 */
                             zoom: number;
@@ -1975,6 +1981,9 @@ export interface paths {
                                     };
                                 };
                                 remarks?: string;
+                                milsym?: {
+                                    id: string;
+                                };
                                 mission?: {
                                     type?: string;
                                     tool?: string;
@@ -2215,6 +2224,9 @@ export interface paths {
                                             };
                                         };
                                         remarks?: string;
+                                        milsym?: {
+                                            id: string;
+                                        };
                                         mission?: {
                                             type?: string;
                                             tool?: string;
@@ -2475,6 +2487,9 @@ export interface paths {
                                     };
                                 };
                                 remarks?: string;
+                                milsym?: {
+                                    id: string;
+                                };
                                 mission?: {
                                     type?: string;
                                     tool?: string;
@@ -2744,6 +2759,9 @@ export interface paths {
                                         };
                                     };
                                     remarks?: string;
+                                    milsym?: {
+                                        id: string;
+                                    };
                                     mission?: {
                                         type?: string;
                                         tool?: string;
@@ -3063,7 +3081,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort?: "id" | "uuid" | "created" | "updated" | "username" | "name" | "enabled" | "description" | "priority" | "connection" | "logging" | "task" | "memory" | "timeout" | "enableRLS";
+                    sort?: "id" | "uuid" | "created" | "updated" | "username" | "name" | "enabled" | "description" | "priority" | "template" | "connection" | "logging" | "task" | "memory" | "timeout" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description No Description */
@@ -3093,6 +3111,8 @@ export interface paths {
                                 status?: string;
                                 created: string;
                                 updated: string;
+                                template: boolean;
+                                connection?: number;
                                 username: null | string;
                                 uuid: string;
                                 name: string;
@@ -3100,11 +3120,10 @@ export interface paths {
                                 enabled: boolean;
                                 logging: boolean;
                                 task: string;
-                                connection: number;
                                 memory: number;
                                 timeout: number;
                                 priority: "high" | "low" | "off";
-                                parent: {
+                                parent?: {
                                     id: number;
                                     name: string;
                                     enabled: boolean;
@@ -3288,6 +3307,8 @@ export interface paths {
                             status?: string;
                             created: string;
                             updated: string;
+                            template: boolean;
+                            connection?: number;
                             username: null | string;
                             uuid: string;
                             name: string;
@@ -3295,11 +3316,10 @@ export interface paths {
                             enabled: boolean;
                             logging: boolean;
                             task: string;
-                            connection: number;
                             memory: number;
                             timeout: number;
                             priority: "high" | "low" | "off";
-                            parent: {
+                            parent?: {
                                 id: number;
                                 name: string;
                                 enabled: boolean;
@@ -4153,6 +4173,8 @@ export interface paths {
                             status?: string;
                             created: string;
                             updated: string;
+                            template: boolean;
+                            connection?: number;
                             username: null | string;
                             uuid: string;
                             name: string;
@@ -4160,11 +4182,10 @@ export interface paths {
                             enabled: boolean;
                             logging: boolean;
                             task: string;
-                            connection: number;
                             memory: number;
                             timeout: number;
                             priority: "high" | "low" | "off";
-                            parent: {
+                            parent?: {
                                 id: number;
                                 name: string;
                                 enabled: boolean;
@@ -4373,6 +4394,8 @@ export interface paths {
                             status?: string;
                             created: string;
                             updated: string;
+                            template: boolean;
+                            connection?: number;
                             username: null | string;
                             uuid: string;
                             name: string;
@@ -4380,11 +4403,10 @@ export interface paths {
                             enabled: boolean;
                             logging: boolean;
                             task: string;
-                            connection: number;
                             memory: number;
                             timeout: number;
                             priority: "high" | "low" | "off";
-                            parent: {
+                            parent?: {
                                 id: number;
                                 name: string;
                                 enabled: boolean;
@@ -6084,362 +6106,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/import": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Imports */
-        get: {
-            parameters: {
-                query: {
-                    /** @description Limit the number of responses returned */
-                    limit: number;
-                    /** @description Iterate through "pages" of items based on the "limit" query param */
-                    page: number;
-                    /** @description Filter results by a human readable name field */
-                    filter: string;
-                    /** @description Order in which results are returned based on the "sort" query param */
-                    order: "asc" | "desc";
-                    /** @description No Description */
-                    sort?: "id" | "created" | "updated" | "name" | "status" | "error" | "batch" | "result" | "username" | "mode" | "mode_id" | "config" | "enableRLS";
-                    /** @description No Description */
-                    mode?: "Unknown" | "Mission" | "Package";
-                    /** @description No Description */
-                    mode_id?: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            total: number;
-                            items: {
-                                id: string;
-                                created: string;
-                                updated: string;
-                                name: string;
-                                status: string;
-                                error: string | null;
-                                batch: string | null;
-                                result: unknown;
-                                username: string;
-                                mode: string;
-                                mode_id: string | null;
-                                config: unknown;
-                            }[];
-                        };
-                    };
-                };
-            };
-        };
-        /** Import up to 5 unknown assets into the imports manager at a time */
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            imports: {
-                                file: string;
-                                uid: string;
-                                ext: string;
-                            }[];
-                        };
-                    };
-                };
-            };
-        };
-        /** Import an unknown asset into the imports manager */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        /** @description Human readable name */
-                        name: string;
-                        mode?: "Unknown" | "Mission" | "Package";
-                        mode_id?: string;
-                        config?: unknown;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: string;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            status: string;
-                            error: string | null;
-                            batch: string | null;
-                            result: unknown;
-                            username: string;
-                            mode: string;
-                            mode_id: string | null;
-                            config: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/import/{:import}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Import */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: string;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            status: string;
-                            error: string | null;
-                            batch: string | null;
-                            result: unknown;
-                            username: string;
-                            mode: string;
-                            mode_id: string | null;
-                            config: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        /** Import an asset into a previously configured import container */
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: string;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            status: string;
-                            error: string | null;
-                            batch: string | null;
-                            result: unknown;
-                            username: string;
-                            mode: string;
-                            mode_id: string | null;
-                            config: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        post?: never;
-        /** Delete Import */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        /** Update Import */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        status?: string;
-                        error?: string;
-                        result?: unknown;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: string;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            status: string;
-                            error: string | null;
-                            batch: string | null;
-                            result: unknown;
-                            username: string;
-                            mode: string;
-                            mode_id: string | null;
-                            config: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        trace?: never;
-    };
-    "/import/{:import}/batch": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Import Batch Job Logs */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            logs: {
-                                message: string;
-                                timestamp: number;
-                            }[];
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        /** Attach a Batch Job to an instance */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: string;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            status: string;
-                            error: string | null;
-                            batch: string | null;
-                            result: unknown;
-                            username: string;
-                            mode: string;
-                            mode_id: string | null;
-                            config: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/iconset": {
         parameters: {
             query?: never;
@@ -7029,6 +6695,362 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Imports */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort?: "id" | "created" | "updated" | "name" | "status" | "error" | "batch" | "result" | "username" | "mode" | "mode_id" | "config" | "enableRLS";
+                    /** @description No Description */
+                    mode?: "Unknown" | "Mission" | "Package";
+                    /** @description No Description */
+                    mode_id?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: string;
+                                created: string;
+                                updated: string;
+                                name: string;
+                                status: string;
+                                error: string | null;
+                                batch: string | null;
+                                result: unknown;
+                                username: string;
+                                mode: string;
+                                mode_id: string | null;
+                                config: unknown;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        /** Import up to 5 unknown assets into the imports manager at a time */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            imports: {
+                                file: string;
+                                uid: string;
+                                ext: string;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        /** Import an unknown asset into the imports manager */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Human readable name */
+                        name: string;
+                        mode?: "Unknown" | "Mission" | "Package";
+                        mode_id?: string;
+                        config?: unknown;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            status: string;
+                            error: string | null;
+                            batch: string | null;
+                            result: unknown;
+                            username: string;
+                            mode: string;
+                            mode_id: string | null;
+                            config: unknown;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/import/{:import}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Import */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            status: string;
+                            error: string | null;
+                            batch: string | null;
+                            result: unknown;
+                            username: string;
+                            mode: string;
+                            mode_id: string | null;
+                            config: unknown;
+                        };
+                    };
+                };
+            };
+        };
+        /** Import an asset into a previously configured import container */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            status: string;
+                            error: string | null;
+                            batch: string | null;
+                            result: unknown;
+                            username: string;
+                            mode: string;
+                            mode_id: string | null;
+                            config: unknown;
+                        };
+                    };
+                };
+            };
+        };
+        post?: never;
+        /** Delete Import */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update Import */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        status?: string;
+                        error?: string;
+                        result?: unknown;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            status: string;
+                            error: string | null;
+                            batch: string | null;
+                            result: unknown;
+                            username: string;
+                            mode: string;
+                            mode_id: string | null;
+                            config: unknown;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/import/{:import}/batch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Import Batch Job Logs */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            logs: {
+                                message: string;
+                                timestamp: number;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Attach a Batch Job to an instance */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            status: string;
+                            error: string | null;
+                            batch: string | null;
+                            result: unknown;
+                            username: string;
+                            mode: string;
+                            mode_id: string | null;
+                            config: unknown;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/layer": {
         parameters: {
             query?: never;
@@ -7049,13 +7071,15 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort?: "id" | "uuid" | "created" | "updated" | "username" | "name" | "enabled" | "description" | "priority" | "connection" | "logging" | "task" | "memory" | "timeout" | "enableRLS";
+                    sort?: "id" | "uuid" | "created" | "updated" | "username" | "name" | "enabled" | "description" | "priority" | "template" | "connection" | "logging" | "task" | "memory" | "timeout" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description No Description */
                     task?: string;
                     /** @description No Description */
                     data?: number;
+                    /** @description No Description */
+                    template?: boolean;
                     /** @description No Description */
                     connection?: number;
                 };
@@ -7084,6 +7108,8 @@ export interface paths {
                                 status?: string;
                                 created: string;
                                 updated: string;
+                                template: boolean;
+                                connection?: number;
                                 username: null | string;
                                 uuid: string;
                                 name: string;
@@ -7091,11 +7117,10 @@ export interface paths {
                                 enabled: boolean;
                                 logging: boolean;
                                 task: string;
-                                connection: number;
                                 memory: number;
                                 timeout: number;
                                 priority: "high" | "low" | "off";
-                                parent: {
+                                parent?: {
                                     id: number;
                                     name: string;
                                     enabled: boolean;
@@ -7281,6 +7306,8 @@ export interface paths {
                             status?: string;
                             created: string;
                             updated: string;
+                            template: boolean;
+                            connection?: number;
                             username: null | string;
                             uuid: string;
                             name: string;
@@ -7288,11 +7315,10 @@ export interface paths {
                             enabled: boolean;
                             logging: boolean;
                             task: string;
-                            connection: number;
                             memory: number;
                             timeout: number;
                             priority: "high" | "low" | "off";
-                            parent: {
+                            parent?: {
                                 id: number;
                                 name: string;
                                 enabled: boolean;
@@ -7460,7 +7486,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort?: "id" | "created" | "updated" | "name" | "description" | "username" | "datasync" | "priority" | "enabled_styles" | "styles" | "logging" | "stale" | "task" | "cron" | "webhooks" | "config" | "memory" | "timeout" | "alarm_period" | "alarm_evals" | "alarm_points" | "alarm_threshold" | "enableRLS";
+                    sort?: "id" | "uuid" | "created" | "updated" | "username" | "name" | "enabled" | "description" | "priority" | "template" | "connection" | "logging" | "task" | "memory" | "timeout" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description No Description */
@@ -7482,27 +7508,158 @@ export interface paths {
                             total: number;
                             items: {
                                 id: number;
+                                status?: string;
                                 created: string;
                                 updated: string;
+                                template: boolean;
+                                connection?: number;
+                                username: null | string;
+                                uuid: string;
                                 name: string;
                                 description: string;
-                                username: string;
-                                datasync: boolean;
-                                priority: string;
-                                enabled_styles: boolean;
-                                styles: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                                enabled: boolean;
                                 logging: boolean;
-                                stale: number;
                                 task: string;
-                                cron: string | null;
-                                webhooks: boolean;
-                                config: unknown;
                                 memory: number;
                                 timeout: number;
-                                alarm_period: number;
-                                alarm_evals: number;
-                                alarm_points: number;
-                                alarm_threshold: number;
+                                priority: "high" | "low" | "off";
+                                parent?: {
+                                    id: number;
+                                    name: string;
+                                    enabled: boolean;
+                                };
+                                incoming?: {
+                                    layer: number;
+                                    created: string;
+                                    updated: string;
+                                    config: {
+                                        timezone?: {
+                                            timezone: string;
+                                        };
+                                    };
+                                    cron: string | null;
+                                    webhooks: boolean;
+                                    alarm_period: number;
+                                    alarm_evals: number;
+                                    alarm_points: number;
+                                    alarm_threshold: number;
+                                    enabled_styles: boolean;
+                                    styles: {
+                                        line?: {
+                                            stroke?: string;
+                                            "stroke-style"?: string;
+                                            "stroke-opacity"?: string;
+                                            "stroke-width"?: string;
+                                            id?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                        };
+                                        point?: {
+                                            "marker-color"?: string;
+                                            "marker-opacity"?: string;
+                                            id?: string;
+                                            type?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                            icon?: string;
+                                        };
+                                        polygon?: {
+                                            stroke?: string;
+                                            "stroke-style"?: string;
+                                            "stroke-opacity"?: string;
+                                            "stroke-width"?: string;
+                                            fill?: string;
+                                            "fill-opacity"?: string;
+                                            id?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                        };
+                                        id?: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                        queries?: {
+                                            query: string;
+                                            delete?: boolean;
+                                            styles?: {
+                                                id?: string;
+                                                remarks?: string;
+                                                callsign?: string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                                line?: {
+                                                    stroke?: string;
+                                                    "stroke-style"?: string;
+                                                    "stroke-opacity"?: string;
+                                                    "stroke-width"?: string;
+                                                    id?: string;
+                                                    remarks?: string;
+                                                    callsign?: string;
+                                                    links?: {
+                                                        remarks: string;
+                                                        url: string;
+                                                    }[];
+                                                };
+                                                point?: {
+                                                    "marker-color"?: string;
+                                                    "marker-opacity"?: string;
+                                                    id?: string;
+                                                    type?: string;
+                                                    remarks?: string;
+                                                    callsign?: string;
+                                                    links?: {
+                                                        remarks: string;
+                                                        url: string;
+                                                    }[];
+                                                    icon?: string;
+                                                };
+                                                polygon?: {
+                                                    stroke?: string;
+                                                    "stroke-style"?: string;
+                                                    "stroke-opacity"?: string;
+                                                    "stroke-width"?: string;
+                                                    fill?: string;
+                                                    "fill-opacity"?: string;
+                                                    id?: string;
+                                                    remarks?: string;
+                                                    callsign?: string;
+                                                    links?: {
+                                                        remarks: string;
+                                                        url: string;
+                                                    }[];
+                                                };
+                                            };
+                                        }[];
+                                    };
+                                    stale: number;
+                                    environment: unknown;
+                                    ephemeral: Record<string, never>;
+                                    data: number | null;
+                                };
+                                outgoing?: {
+                                    layer: number;
+                                    created: string;
+                                    updated: string;
+                                    environment: unknown;
+                                    ephemeral: Record<string, never>;
+                                };
                             }[];
                         };
                     };
@@ -7510,7 +7667,7 @@ export interface paths {
             };
         };
         put?: never;
-        /** Create a layer template */
+        /** Create a new Layer Template */
         post: {
             parameters: {
                 query?: never;
@@ -7525,9 +7682,9 @@ export interface paths {
                         name: string;
                         /** @description Human readable description */
                         description: string;
-                        /** @default true */
-                        datasync?: boolean;
-                        layer: number;
+                        /** @description Layer ID to create template from */
+                        id: number;
+                        connection?: number;
                     };
                 };
             };
@@ -7540,27 +7697,158 @@ export interface paths {
                     content: {
                         "application/json": {
                             id: number;
+                            status?: string;
                             created: string;
                             updated: string;
+                            template: boolean;
+                            connection?: number;
+                            username: null | string;
+                            uuid: string;
                             name: string;
                             description: string;
-                            username: string;
-                            datasync: boolean;
-                            priority: string;
-                            enabled_styles: boolean;
-                            styles: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                            enabled: boolean;
                             logging: boolean;
-                            stale: number;
                             task: string;
-                            cron: string | null;
-                            webhooks: boolean;
-                            config: unknown;
                             memory: number;
                             timeout: number;
-                            alarm_period: number;
-                            alarm_evals: number;
-                            alarm_points: number;
-                            alarm_threshold: number;
+                            priority: "high" | "low" | "off";
+                            parent?: {
+                                id: number;
+                                name: string;
+                                enabled: boolean;
+                            };
+                            incoming?: {
+                                layer: number;
+                                created: string;
+                                updated: string;
+                                config: {
+                                    timezone?: {
+                                        timezone: string;
+                                    };
+                                };
+                                cron: string | null;
+                                webhooks: boolean;
+                                alarm_period: number;
+                                alarm_evals: number;
+                                alarm_points: number;
+                                alarm_threshold: number;
+                                enabled_styles: boolean;
+                                styles: {
+                                    line?: {
+                                        stroke?: string;
+                                        "stroke-style"?: string;
+                                        "stroke-opacity"?: string;
+                                        "stroke-width"?: string;
+                                        id?: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                    };
+                                    point?: {
+                                        "marker-color"?: string;
+                                        "marker-opacity"?: string;
+                                        id?: string;
+                                        type?: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                        icon?: string;
+                                    };
+                                    polygon?: {
+                                        stroke?: string;
+                                        "stroke-style"?: string;
+                                        "stroke-opacity"?: string;
+                                        "stroke-width"?: string;
+                                        fill?: string;
+                                        "fill-opacity"?: string;
+                                        id?: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                    };
+                                    id?: string;
+                                    remarks?: string;
+                                    callsign?: string;
+                                    links?: {
+                                        remarks: string;
+                                        url: string;
+                                    }[];
+                                    queries?: {
+                                        query: string;
+                                        delete?: boolean;
+                                        styles?: {
+                                            id?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                            line?: {
+                                                stroke?: string;
+                                                "stroke-style"?: string;
+                                                "stroke-opacity"?: string;
+                                                "stroke-width"?: string;
+                                                id?: string;
+                                                remarks?: string;
+                                                callsign?: string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                            };
+                                            point?: {
+                                                "marker-color"?: string;
+                                                "marker-opacity"?: string;
+                                                id?: string;
+                                                type?: string;
+                                                remarks?: string;
+                                                callsign?: string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                                icon?: string;
+                                            };
+                                            polygon?: {
+                                                stroke?: string;
+                                                "stroke-style"?: string;
+                                                "stroke-opacity"?: string;
+                                                "stroke-width"?: string;
+                                                fill?: string;
+                                                "fill-opacity"?: string;
+                                                id?: string;
+                                                remarks?: string;
+                                                callsign?: string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                            };
+                                        };
+                                    }[];
+                                };
+                                stale: number;
+                                environment: unknown;
+                                ephemeral: Record<string, never>;
+                                data: number | null;
+                            };
+                            outgoing?: {
+                                layer: number;
+                                created: string;
+                                updated: string;
+                                environment: unknown;
+                                ephemeral: Record<string, never>;
+                            };
                         };
                     };
                 };
@@ -7597,27 +7885,158 @@ export interface paths {
                     content: {
                         "application/json": {
                             id: number;
+                            status?: string;
                             created: string;
                             updated: string;
+                            template: boolean;
+                            connection?: number;
+                            username: null | string;
+                            uuid: string;
                             name: string;
                             description: string;
-                            username: string;
-                            datasync: boolean;
-                            priority: string;
-                            enabled_styles: boolean;
-                            styles: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                            enabled: boolean;
                             logging: boolean;
-                            stale: number;
                             task: string;
-                            cron: string | null;
-                            webhooks: boolean;
-                            config: unknown;
                             memory: number;
                             timeout: number;
-                            alarm_period: number;
-                            alarm_evals: number;
-                            alarm_points: number;
-                            alarm_threshold: number;
+                            priority: "high" | "low" | "off";
+                            parent?: {
+                                id: number;
+                                name: string;
+                                enabled: boolean;
+                            };
+                            incoming?: {
+                                layer: number;
+                                created: string;
+                                updated: string;
+                                config: {
+                                    timezone?: {
+                                        timezone: string;
+                                    };
+                                };
+                                cron: string | null;
+                                webhooks: boolean;
+                                alarm_period: number;
+                                alarm_evals: number;
+                                alarm_points: number;
+                                alarm_threshold: number;
+                                enabled_styles: boolean;
+                                styles: {
+                                    line?: {
+                                        stroke?: string;
+                                        "stroke-style"?: string;
+                                        "stroke-opacity"?: string;
+                                        "stroke-width"?: string;
+                                        id?: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                    };
+                                    point?: {
+                                        "marker-color"?: string;
+                                        "marker-opacity"?: string;
+                                        id?: string;
+                                        type?: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                        icon?: string;
+                                    };
+                                    polygon?: {
+                                        stroke?: string;
+                                        "stroke-style"?: string;
+                                        "stroke-opacity"?: string;
+                                        "stroke-width"?: string;
+                                        fill?: string;
+                                        "fill-opacity"?: string;
+                                        id?: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                    };
+                                    id?: string;
+                                    remarks?: string;
+                                    callsign?: string;
+                                    links?: {
+                                        remarks: string;
+                                        url: string;
+                                    }[];
+                                    queries?: {
+                                        query: string;
+                                        delete?: boolean;
+                                        styles?: {
+                                            id?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                            line?: {
+                                                stroke?: string;
+                                                "stroke-style"?: string;
+                                                "stroke-opacity"?: string;
+                                                "stroke-width"?: string;
+                                                id?: string;
+                                                remarks?: string;
+                                                callsign?: string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                            };
+                                            point?: {
+                                                "marker-color"?: string;
+                                                "marker-opacity"?: string;
+                                                id?: string;
+                                                type?: string;
+                                                remarks?: string;
+                                                callsign?: string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                                icon?: string;
+                                            };
+                                            polygon?: {
+                                                stroke?: string;
+                                                "stroke-style"?: string;
+                                                "stroke-opacity"?: string;
+                                                "stroke-width"?: string;
+                                                fill?: string;
+                                                "fill-opacity"?: string;
+                                                id?: string;
+                                                remarks?: string;
+                                                callsign?: string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                            };
+                                        };
+                                    }[];
+                                };
+                                stale: number;
+                                environment: unknown;
+                                ephemeral: Record<string, never>;
+                                data: number | null;
+                            };
+                            outgoing?: {
+                                layer: number;
+                                created: string;
+                                updated: string;
+                                environment: unknown;
+                                ephemeral: Record<string, never>;
+                            };
                         };
                     };
                 };
@@ -7625,87 +8044,10 @@ export interface paths {
         };
         put?: never;
         post?: never;
-        /** Create a layer template */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
+        delete?: never;
         options?: never;
         head?: never;
-        /** Update a layer template */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        /** @description Human readable name */
-                        name: string;
-                        /** @description Human readable description */
-                        description: string;
-                        /** @default true */
-                        datasync?: boolean;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: number;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            description: string;
-                            username: string;
-                            datasync: boolean;
-                            priority: string;
-                            enabled_styles: boolean;
-                            styles: (string | number | boolean | null) | unknown[] | Record<string, never>;
-                            logging: boolean;
-                            stale: number;
-                            task: string;
-                            cron: string | null;
-                            webhooks: boolean;
-                            config: unknown;
-                            memory: number;
-                            timeout: number;
-                            alarm_period: number;
-                            alarm_evals: number;
-                            alarm_points: number;
-                            alarm_threshold: number;
-                        };
-                    };
-                };
-            };
-        };
+        patch?: never;
         trace?: never;
     };
     "/ldap/channel": {
@@ -8056,6 +8398,9 @@ export interface paths {
                                     };
                                 };
                                 remarks?: string;
+                                milsym?: {
+                                    id: string;
+                                };
                                 mission?: {
                                     type?: string;
                                     tool?: string;
@@ -8327,6 +8672,9 @@ export interface paths {
                                         };
                                     };
                                     remarks?: string;
+                                    milsym?: {
+                                        id: string;
+                                    };
                                     mission?: {
                                         type?: string;
                                         tool?: string;
@@ -9326,6 +9674,9 @@ export interface paths {
                                         };
                                     };
                                     remarks?: string;
+                                    milsym?: {
+                                        id: string;
+                                    };
                                     mission?: {
                                         type?: string;
                                         tool?: string;
@@ -11663,6 +12014,9 @@ export interface paths {
                                         };
                                     };
                                     remarks?: string;
+                                    milsym?: {
+                                        id: string;
+                                    };
                                     mission?: {
                                         type?: string;
                                         tool?: string;
@@ -11911,6 +12265,9 @@ export interface paths {
                                 };
                             };
                             remarks?: string;
+                            milsym?: {
+                                id: string;
+                            };
                             mission?: {
                                 type?: string;
                                 tool?: string;
@@ -12145,6 +12502,9 @@ export interface paths {
                                     };
                                 };
                                 remarks?: string;
+                                milsym?: {
+                                    id: string;
+                                };
                                 mission?: {
                                     type?: string;
                                     tool?: string;
@@ -12434,6 +12794,9 @@ export interface paths {
                                     };
                                 };
                                 remarks?: string;
+                                milsym?: {
+                                    id: string;
+                                };
                                 mission?: {
                                     type?: string;
                                     tool?: string;
@@ -13860,6 +14223,45 @@ export interface paths {
             };
         };
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/task/{:taskid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Create Registered Task */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
         options?: never;
         head?: never;
         patch?: never;

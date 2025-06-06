@@ -42,7 +42,6 @@ export default class Models {
     Layer: Layer;
     LayerIncoming: Modeler<typeof pgtypes.LayerIncoming>;
     LayerOutgoing: Modeler<typeof pgtypes.LayerOutgoing>;
-    LayerTemplate: Modeler<typeof pgtypes.LayerTemplate>;
     LayerAlert: Modeler<typeof pgtypes.LayerAlert>;
 
     constructor(pg: Pool<typeof pgtypes>) {
@@ -76,6 +75,5 @@ export default class Models {
         this.LayerOutgoing = new Modeler(pg, pgtypes.LayerOutgoing);
 
         this.LayerAlert = new Modeler(pg, pgtypes.LayerAlert);
-        this.LayerTemplate = new Modeler(pg, pgtypes.LayerTemplate);
     }
 }

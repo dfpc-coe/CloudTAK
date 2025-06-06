@@ -71,6 +71,14 @@ export default async function router(schema: Schema, config: Config) {
             'group::Dark Green': Type.Optional(Type.String()),
             'group::Brown': Type.Optional(Type.String()),
 
+            'oidc::enabled': Type.Optional(Type.Boolean()),
+            'odic::enforced': Type.Optional(Type.Boolean()),
+            'odic::name': Type.Optional(Type.String()),
+            'oidc::discovery': Type.Optional(Type.String()),
+            'oidc::client': Type.Optional(Type.String()),
+            'oidc::secret': Type.Optional(Type.String()),
+
+            // COTAK Specific Properties
             'provider::url': Type.Optional(Type.String()),
             'provider::secret': Type.Optional(Type.String()),
             'provider::client': Type.Optional(Type.String()),

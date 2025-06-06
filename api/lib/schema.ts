@@ -115,12 +115,16 @@ export const VideoLease = pgTable('video_lease', {
 });
 
 export const ProfileFeature = pgTable('profile_features', {
-    id: text().primaryKey(),
+    id: text().primaryKey().notNull(),
     path: text().notNull().default('/'),
     username: text().notNull().references(() => Profile.username),
     properties: json().notNull().default({}),
     geometry: geometry({ type: GeometryType.GeometryZ, srid: 4326 }).notNull()
-});
+}, (table) => {
+    return {
+        username_idx: index("profile_features_username_idx").on(table.username),
+    }
+})
 
 export const Basemap = pgTable('basemaps', {
     id: serial().primaryKey(),
@@ -253,7 +257,8 @@ export const Layer = pgTable('layers', {
     enabled: boolean().notNull().default(true),
     description: text().notNull().default(''),
     priority: text().$type<Layer_Priority>().notNull().default(Layer_Priority.OFF),
-    connection: integer().notNull().references(() => Connection.id),
+    template: boolean().notNull().default(false),
+    connection: integer().references(() => Connection.id),
     logging: boolean().notNull().default(true),
     task: text().notNull(),
     memory: integer().notNull().default(128),
@@ -292,37 +297,6 @@ export const LayerIncoming = pgTable('layers_incoming', {
     config: json().$type<Static<typeof Layer_Config>>().notNull().default({}),
     data: integer().references(() => Data.id)
 });
-
-export const LayerTemplate = pgTable('layers_template', {
-    id: serial().primaryKey(),
-    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    name: text().notNull(),
-    description: text().notNull().default(''),
-
-    username: text().notNull().references(() => Profile.username),
-
-    // Should the template be used when attached to a DataSync
-    datasync: boolean().notNull().default(false),
-
-    // Layer Specific Properties
-    priority: text().$type<Layer_Priority>().notNull().default(Layer_Priority.OFF),
-    enabled_styles: boolean().notNull().default(false),
-    styles: json().$type<Static<typeof StyleContainer>>().notNull().default({}),
-    logging: boolean().notNull().default(true),
-    stale: integer().notNull().default(20),
-    task: text().notNull(),
-    cron: text(),
-    webhooks: boolean().notNull().default(false),
-    config: json().$type<Static<typeof Layer_Config>>().notNull().default({}),
-    memory: integer().notNull().default(128),
-    timeout: integer().notNull().default(128),
-    alarm_period: integer().notNull().default(30),
-    alarm_evals: integer().notNull().default(5),
-    alarm_points: integer().notNull().default(4),
-    alarm_threshold: integer().notNull().default(0),
-});
-
 
 export const LayerAlert = pgTable('layer_alerts', {
     id: serial().primaryKey(),

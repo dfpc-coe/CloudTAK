@@ -7,6 +7,7 @@
 * - Source - MapLibre - Ref: https://maplibre.org/maplibre-style-spec/sources/
 */
 
+import ms from 'milsymbol';
 import { defineStore } from 'pinia'
 import DrawTool, { DrawToolMode } from './modules/draw.ts';
 import * as Comlink from 'comlink';
@@ -456,6 +457,16 @@ export const useMapStore = defineStore('cloudtak', {
             map.on('pitch', () => {
                 this.pitch = map.getPitch()
             })
+
+            map.on('styleimagemissing', async (e) => {
+                if (e.id.startsWith('2525D:')) {
+                    const sidc = e.id.replace('2525D:', '');
+                    const size = 24;
+                    const data = new ms.Symbol(sidc, { size }).asCanvas();
+
+                    map.addImage(e.id, await createImageBitmap(data));
+                }
+            });
 
             map.on('moveend', async () => {
                 if (this.draw.mode !== DrawToolMode.STATIC) {
