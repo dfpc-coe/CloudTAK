@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v9.0.0 - 2025-06-06
+
+- :rocket: Remove Layer Template table in favour of reimplementation via existing Layer Table so they stay in sync
+- :tada: Add preliminary support for 2525D MilSym Icons
+- :rocket: Show readonly Unit Status in CoT sidebar if present via MilSym tag
+- :rocket: Show readonly GeoFence information in shared Geofences
+
 ### v8.45.2 - 2025-06-05
 
 - :bug: Add scoped CSS For Status Style as it was breaking animated status elsewhere in the app
