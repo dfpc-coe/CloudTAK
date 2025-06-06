@@ -313,6 +313,7 @@
                     }'
                 >
                     <PropertyType
+                        :key='cot.properties.type'
                         v-if='cot.properties.type.startsWith("a-") || cot.properties.type === "u-d-p"'
                         :edit='is_editable'
                         :hover='is_editable'

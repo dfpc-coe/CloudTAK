@@ -1,6 +1,7 @@
 <template>
     <div class='px-1 pb-2 col-12'>
-        <label class='mx-1 subheader'>Sensor FOV</label>
+        <IconCone :size='18' stroke='1' color='#6b7990' class='ms-2 me-1'/>
+        <label class='subheader user-select-none'>Sensor FOV</label>
 
         <div class='mx-2 py-3'>
             <div class='row g-2 rounded px-2 bg-gray-500 pb-2'>
@@ -62,43 +63,40 @@
     </div>
 </template>
 
-<script>
-import { defineComponent } from 'vue'
+<script setup>
+import { ref, watch } from 'vue'
+import {
+    IconCone
+} from '@tabler/icons-vue';
 import {
     TablerRange,
     TablerInput
 } from '@tak-ps/vue-tabler';
 
-export default defineComponent({
-    name: 'CoTSensor',
-    components: {
-        TablerInput,
-        TablerRange
-    },
-    props: {
-        modelValue: {
-            type: Object,
-            required: true
-        }
-    },
-    emits: [
-        'update:modelValue'
-    ],
-    data: function() {
-        let sensor = JSON.parse(JSON.stringify(this.modelValue));
-        if (!sensor.fov) sensor.fov = 0;
-        if (!sensor.azimuth) sensor.azimuth = 0;
-        if (!sensor.range) sensor.range = 0;
+const props = defineProps({
+    modelValue: {
+        type: Object,
+        required: true
+    }
+});
 
-        return { sensor }
-    },
-    watch: {
-        sensor: {
-            deep: true,
-            handler: function() {
-                this.$emit('update:modelValue', this.sensor);
-            }
-        }
-    },
+const emit = defineEmits([
+    'update:modelValue'
+]);
+
+const sensor = ref(JSON.parse(JSON.stringify(props.modelValue)));
+if (!sensor.value.fov) sensor.value.fov = 0;
+if (!sensor.value.azimuth) sensor.value.azimuth = 0;
+if (!sensor.value.range) sensor.value.range = 0;
+
+watch(sensor.value, () => {
+    emit('update:modelValue', sensor.value);
 })
+
+watch(props.sensor, () => {
+    sensor.value = props.modelValue;
+    if (!sensor.value.fov) sensor.value.fov = 0;
+    if (!sensor.value.azimuth) sensor.value.azimuth = 0;
+    if (!sensor.value.range) sensor.value.range = 0;
+});
 </script>

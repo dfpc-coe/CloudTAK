@@ -1,6 +1,7 @@
 <template>
     <div class='col-12'>
-        <label class='subheader mx-2'>Distance</label>
+        <IconLine :size='18' stroke='1' color='#6b7990' class='ms-2 me-1'/>
+        <label class='subheader user-select-none'>Distance</label>
         <div class='mx-2'>
             <CopyField
                 v-model='config.distance'
@@ -48,6 +49,9 @@
 <script setup lang='ts'>
 import { ref, watch } from 'vue';
 import CopyField from './CopyField.vue';
+import {
+    IconLine
+} from '@tabler/icons-vue';
 
 const emit = defineEmits([
     'update:modelValue'

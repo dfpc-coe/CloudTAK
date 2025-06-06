@@ -8,38 +8,45 @@
             border-radius: 0px 6px 0px 0px;
         '
     >
-        <div class='mx-2 my-2'>
-            <TablerInput
-                v-model='config.name'
-                label='Name'
-                @submit='submitPoint'
-            />
-            <Coordinate
-                v-model='config.coordinates'
-                :edit='true'
-                :hover='true'
-                :modes='["dd"]'
-                @submit='submitPoint'
-            />
-
-            <PropertyBearing
-                v-model='config.bearing'
-                :edit='true'
-                :hover='true'
-            />
-
-            <PropertyDistance
-                v-model='config.range'
-                :edit='true'
-                :hover='true'
-            />
-
-            <button
-                class='btn btn-primary w-100 mt-3'
-                @click='submitPoint'
-            >
-                Save
-            </button>
+        <div class='mx-2 my-2 row g-2'>
+            <div class='col-12'>
+                <TablerInput
+                    v-model='config.name'
+                    label='Name'
+                    @submit='submitPoint'
+                />
+            </div>
+            <div class='col-12'>
+                <Coordinate
+                    v-model='config.coordinates'
+                    :edit='true'
+                    :hover='true'
+                    :modes='["dd"]'
+                    @submit='submitPoint'
+                />
+            </div>
+            <div class='col-12'>
+                <PropertyBearing
+                    v-model='config.bearing'
+                    :edit='true'
+                    :hover='true'
+                />
+            </div>
+            <div class='col-12'>
+                <PropertyDistance
+                    v-model='config.range'
+                    :edit='true'
+                    :hover='true'
+                />
+            </div>
+            <div class='col-12'>
+                <button
+                    class='btn btn-primary w-100 mt-3'
+                    @click='submitPoint'
+                >
+                    Save
+                </button>
+            </div>
         </div>
     </div>
 </template>
