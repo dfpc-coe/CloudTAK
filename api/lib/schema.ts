@@ -120,7 +120,11 @@ export const ProfileFeature = pgTable('profile_features', {
     username: text().notNull().references(() => Profile.username),
     properties: json().notNull().default({}),
     geometry: geometry({ type: GeometryType.GeometryZ, srid: 4326 }).notNull()
-});
+}, (table) => {
+    return {
+        username_idx: index("profile_features_username_idx").on(table.username),
+    }
+})
 
 export const Basemap = pgTable('basemaps', {
     id: serial().primaryKey(),
