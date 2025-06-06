@@ -1,0 +1,1 @@
+CREATE INDEX "profile_features_username_idx" ON "profile_features" USING btree ("username");
