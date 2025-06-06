@@ -476,7 +476,7 @@
                         <span>Alarm on Enter</span>
                     </div>
                     <div
-                        v-if='cot.properties.geofence.trigger === "Both" || cot.properties.geofence.trigger === "Enter"'
+                        v-if='cot.properties.geofence.trigger === "Both" || cot.properties.geofence.trigger === "Exit"'
                         class='col-6 py-2'
                     >
                         <IconDoorExit
@@ -567,6 +567,12 @@
                 :model-value='cot.properties.sensor'
                 class='my-2 mx-2'
                 @update:model-value='updateProperty("sensor", $event)'
+            />
+
+            <PropertyMilSym
+                v-if='cot.properties.milsym'
+                label='Unit Information'
+                :model-value='cot.properties.milsym.id'
             />
 
             <div
@@ -819,6 +825,7 @@ import Coordinate from './util/Coordinate.vue';
 import PropertyType from './util/PropertyType.vue';
 import PropertyBattery from './util/PropertyBattery.vue';
 import PropertyBearing from './util/PropertyBearing.vue';
+import PropertyMilSym from './util/PropertyMilSym.vue';
 import PropertySensor from './util/PropertySensor.vue';
 import PropertyPhone from './util/PropertyPhone.vue';
 import PropertyCreator from './util/PropertyCreator.vue';
