@@ -1981,6 +1981,9 @@ export interface paths {
                                     };
                                 };
                                 remarks?: string;
+                                milsym?: {
+                                    id: string;
+                                };
                                 mission?: {
                                     type?: string;
                                     tool?: string;
@@ -2221,6 +2224,9 @@ export interface paths {
                                             };
                                         };
                                         remarks?: string;
+                                        milsym?: {
+                                            id: string;
+                                        };
                                         mission?: {
                                             type?: string;
                                             tool?: string;
@@ -2481,6 +2487,9 @@ export interface paths {
                                     };
                                 };
                                 remarks?: string;
+                                milsym?: {
+                                    id: string;
+                                };
                                 mission?: {
                                     type?: string;
                                     tool?: string;
@@ -2750,6 +2759,9 @@ export interface paths {
                                         };
                                     };
                                     remarks?: string;
+                                    milsym?: {
+                                        id: string;
+                                    };
                                     mission?: {
                                         type?: string;
                                         tool?: string;
@@ -8386,6 +8398,9 @@ export interface paths {
                                     };
                                 };
                                 remarks?: string;
+                                milsym?: {
+                                    id: string;
+                                };
                                 mission?: {
                                     type?: string;
                                     tool?: string;
@@ -8657,6 +8672,9 @@ export interface paths {
                                         };
                                     };
                                     remarks?: string;
+                                    milsym?: {
+                                        id: string;
+                                    };
                                     mission?: {
                                         type?: string;
                                         tool?: string;
@@ -9656,6 +9674,9 @@ export interface paths {
                                         };
                                     };
                                     remarks?: string;
+                                    milsym?: {
+                                        id: string;
+                                    };
                                     mission?: {
                                         type?: string;
                                         tool?: string;
@@ -11993,6 +12014,9 @@ export interface paths {
                                         };
                                     };
                                     remarks?: string;
+                                    milsym?: {
+                                        id: string;
+                                    };
                                     mission?: {
                                         type?: string;
                                         tool?: string;
@@ -12241,6 +12265,9 @@ export interface paths {
                                 };
                             };
                             remarks?: string;
+                            milsym?: {
+                                id: string;
+                            };
                             mission?: {
                                 type?: string;
                                 tool?: string;
@@ -12475,6 +12502,9 @@ export interface paths {
                                     };
                                 };
                                 remarks?: string;
+                                milsym?: {
+                                    id: string;
+                                };
                                 mission?: {
                                     type?: string;
                                     tool?: string;
@@ -12764,6 +12794,9 @@ export interface paths {
                                     };
                                 };
                                 remarks?: string;
+                                milsym?: {
+                                    id: string;
+                                };
                                 mission?: {
                                     type?: string;
                                     tool?: string;
