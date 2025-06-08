@@ -65,13 +65,21 @@
             style='height: calc(100vh - 90px)'
         >
             <template v-if='mode === "default"'>
-                <div class='col-12 px-3 py-2'>
+                <div class='col-12 px-2 py-2'>
                     <Coordinate v-model='center' />
                 </div>
 
-                <div class='col-12 px-3 pb-2'>
-                    <label class='subheader'>Remarks</label>
-                    <div class='table-responsive rounded mx-2 py-2 px-2'>
+                <div class='col-12 px-2 pb-2'>
+                    <div class='col-12'>
+                        <IconBlockquote
+                            :size='18'
+                            stroke='1'
+                            color='#6b7990'
+                            class='ms-2 me-1'
+                        />
+                        <label class='subheader user-select-none'>Remarks</label>
+                    </div>
+                    <div class='table-responsive rounded mx-2'>
                         <table class='table card-table table-hover table-vcenter datatable'>
                             <thead>
                                 <tr>
@@ -115,7 +123,7 @@
 <script setup lang='ts'>
 import { ref, computed } from 'vue';
 import { useMapStore } from '../../stores/map.ts';
-//import Overlay from '../../base/overlay.ts';
+import Overlay from '../../base/overlay.ts';
 import type { LngLatLike, MapGeoJSONFeature } from 'maplibre-gl';
 import type { Feature } from 'geojson';
 import pointOnFeature from '@turf/point-on-feature';
@@ -126,6 +134,7 @@ import {
 import {
     IconX,
     IconZoomPan,
+    IconBlockquote,
     IconCode
 } from '@tabler/icons-vue';
 
@@ -137,7 +146,6 @@ const props = defineProps<{
 
 const mode = ref('default');
 
-/*
 const overlay = computed<Overlay | null>(() => {
     // @ts-expect-error Doesn't exist in typedef
     const source: number | undefined = Number(props.feat.source);
@@ -145,7 +153,6 @@ const overlay = computed<Overlay | null>(() => {
     const ov = mapStore.getOverlayById(source);
     return ov;
 })
-*/
 
 const center = computed(() => {
     return pointOnFeature(props.feat).geometry.coordinates;

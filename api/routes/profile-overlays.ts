@@ -74,10 +74,14 @@ export default async function router(schema: Schema, config: Config) {
                         return { ...item, opacity: Number(o.opacity) }
                     }));
                     total--;
-                } else if (item.mode === 'basemap') {
+                } else if (item.mode === 'basemap' || item.mode === 'overlay') {
                     try {
                         const basemap = await config.models.Basemap.from(item.mode_id);
-                        items.push({ ...item, opacity: Number(item.opacity), actions: TileJSON.actions(basemap.url) });
+                        items.push({
+                            ...item,
+                            opacity: Number(item.opacity),
+                            actions: TileJSON.actions(basemap.url)
+                        });
                     } catch (err) {
                         console.error('Could not find basemap', err);
                         await config.models.ProfileOverlay.delete(item.id);
@@ -122,7 +126,7 @@ export default async function router(schema: Schema, config: Config) {
             const overlay = await config.models.ProfileOverlay.from(req.params.overlay)
             if (overlay.username !== user.email) throw new Err(401, null, 'Cannot get another\'s overlay');
 
-            if (overlay.mode === 'basemap') {
+            if (overlay.mode === 'basemap' || overlay.mode === 'overlay') {
                 const basemap = await config.models.Basemap.from(overlay.mode_id);
 
                 res.json({
@@ -177,7 +181,7 @@ export default async function router(schema: Schema, config: Config) {
 
             overlay = await config.models.ProfileOverlay.commit(req.params.overlay, req.body)
 
-            if (overlay.mode === 'basemap') {
+            if (overlay.mode === 'basemap' || overlay.mode === 'overlay') {
                 const basemap = await config.models.Basemap.from(overlay.mode_id);
 
                 res.json({
@@ -254,7 +258,7 @@ export default async function router(schema: Schema, config: Config) {
                 });
             }
 
-            if (overlay.mode === 'basemap') {
+            if (overlay.mode === 'basemap' || overlay.mode === 'overlay') {
                 const basemap = await config.models.Basemap.from(overlay.mode_id);
 
                 res.json({
