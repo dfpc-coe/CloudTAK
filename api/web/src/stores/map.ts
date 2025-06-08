@@ -22,7 +22,7 @@ import mapgl from 'maplibre-gl'
 import type Atlas from '../workers/atlas.ts';
 import { CloudTAKTransferHandler } from '../base/handler.ts';
 
-import type { ProfileOverlay, Basemap, APIList, Feature, IconsetList, MapConfig } from '../types.ts';
+import type { ProfileOverlay, ProfileOverlayList, Basemap, APIList, Feature, IconsetList, MapConfig } from '../types.ts';
 import type { LngLat, LngLatLike, Point, MapMouseEvent, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl';
 
 export type TAKNotification = { type: string; name: string; body: string; url: string; created: string; }
@@ -574,9 +574,10 @@ export const useMapStore = defineStore('cloudtak', {
             url.searchParams.append('sort', 'pos');
             url.searchParams.append('order', 'asc');
             url.searchParams.append('limit', '100');
-            const items = ((await std(url)) as APIList<ProfileOverlay>).items;
+            const profileOverlays = await std(url) as ProfileOverlayList;
+            this.hasTerrain = profileOverlays.available.terrain;
 
-            const hasBasemap = items.some((o: ProfileOverlay) => {
+            const hasBasemap = profileOverlays.items.some((o: ProfileOverlay) => {
                 return o.mode === 'basemap'
             });
 
@@ -600,11 +601,7 @@ export const useMapStore = defineStore('cloudtak', {
                 }
             }
 
-            if ((await this.listTerrain()).total > 0) {
-                this.hasTerrain = true;
-            }
-
-            for (const item of items) {
+            for (const item of profileOverlays.items) {
                 this.overlays.push(await Overlay.create(
                     map,
                     item as ProfileOverlay,
