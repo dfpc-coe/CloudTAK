@@ -39,6 +39,9 @@ export default async function router(schema: Schema, config: Config) {
         res: Type.Object({
             total: Type.Integer(),
             removed: Type.Array(ProfileOverlayResponse),
+            available: Type.Object({
+                terrain: Type.Boolean()
+            }),
             items: Type.Array(AugmentedProfileOverlayResponse)
         })
 
@@ -47,6 +50,19 @@ export default async function router(schema: Schema, config: Config) {
             const user = await Auth.as_user(config, req);
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+
+            const available = {
+                terrain:
+                    (
+                        await config.models.Basemap.count({
+                            limit: 1,
+                            query: sql`
+                                USERNAME IS NULL
+                                AND type = 'raster-dem'
+                            `
+                        })
+                    ) > 0
+            }
 
             const overlays = await config.models.ProfileOverlay.list({
                 limit: req.query.limit,
@@ -105,7 +121,7 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
-            res.json({ removed, total, items });
+            res.json({ removed, total, items, available });
         } catch (err) {
              Err.respond(err, res);
         }

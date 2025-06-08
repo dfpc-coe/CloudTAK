@@ -13226,6 +13226,9 @@ export interface paths {
                                 mode_id: string | null;
                                 url: string;
                             }[];
+                            available: {
+                                terrain: boolean;
+                            };
                             items: {
                                 id: number;
                                 name: string;
