@@ -121,6 +121,7 @@ export type FeatureCollection = {
 };
 
 export type ProfileOverlay = paths["/profile/overlay/{:overlay}"]["get"]["responses"]["200"]["content"]["application/json"]
+export type ProfileOverlayList = paths["/profile/overlay"]["get"]["responses"]["200"]["content"]["application/json"]
 export type ProfileOverlay_Create = paths["/profile/overlay"]["post"]["requestBody"]["content"]["application/json"]
 export type ProfileOverlay_Update = paths["/profile/overlay/{:overlay}"]["patch"]["requestBody"]["content"]["application/json"]
 
