@@ -181,13 +181,13 @@ async function cutFeature() {
 
     await mapStore.worker.db.add({
         id,
-        type: 'feature',
+        type: 'Feature',
         path: '/',
         properties: {
             id,
             type: 'u-d-p',
             how: 'h-g-i-g-o',
-            color: '#00ff00',
+            color: '#00FF00',
             archived: true,
             time: new Date().toISOString(),
             start: new Date().toISOString(),
