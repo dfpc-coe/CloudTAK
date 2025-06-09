@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v9.2.0 - 2025-06-09
+
+- :tada: Support for "Cutting" features from an external GIS system into COT Markers
+
 ### v9.1.0 - 2025-06-06
 
 - :rocket: Consistent Title bars for COT Properties
