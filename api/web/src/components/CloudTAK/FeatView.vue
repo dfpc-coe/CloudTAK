@@ -179,6 +179,14 @@ async function cutFeature() {
     const rawFeature = await std(`/api/basemap/${overlay.value.mode_id}/feature/${props.feat.id}`) as Feature;
     const id = crypto.randomUUID();
 
+    if (
+        rawFeature.geometry.type !== "Point"
+        && rawFeature.geometry.type !== "LineString"
+        && rawFeature.geometry.type !== "Polygon"
+    ) {
+        throw new Error(`${rawFeature.geometry.type} geometry type is not currently supported`);
+    }
+
     await mapStore.worker.db.add({
         id,
         type: 'Feature',
@@ -192,6 +200,7 @@ async function cutFeature() {
             time: new Date().toISOString(),
             start: new Date().toISOString(),
             stale: new Date().toISOString(),
+            center: pointOnFeature(rawFeature).geometry.coordinates,
             callsign: 'New Feature'
         },
         geometry: rawFeature.geometry
