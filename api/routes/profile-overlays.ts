@@ -55,8 +55,7 @@ export default async function router(schema: Schema, config: Config) {
                 terrain:
                     (
                         await config.models.Basemap.count({
-                            limit: 1,
-                            query: sql`
+                            where: sql`
                                 USERNAME IS NULL
                                 AND type = 'raster-dem'
                             `

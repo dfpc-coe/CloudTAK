@@ -103,16 +103,24 @@ export default class TileJSON {
     ): Promise<Static<typeof GeoJSONFeature>> {
         const actions = TileJSON.actions(url)
 
-        if (actions.feature.includes(Basemap_FeatureAction.FETCH)) {
+        if (!actions.feature.includes(Basemap_FeatureAction.FETCH)) {
             throw new Err(400, null, 'Basemap does not support Feature.FETCH');
         }
 
-        if (url.match(/FeatureServer\/\d+/)) {
+        if (url.match(/FeatureServer\/\d+/) || url.match(/MapServer\/\d+/)) {
             const res = await fetch(url + `/query?objectIds=${id}&f=geojson`);
-            return await res.typed(GeoJSONFeature);
-         } else if (url.match(/MapServer\/\d+/)) {
-            const res = await fetch(url + `/query?objectIds=${id}&f=geojson`);
-            return await res.typed(GeoJSONFeature);
+
+            const fc = await res.typed(GeoJSONFeatureCollection);
+
+            if (fc.features.length === 0) {
+                throw new Err(404, null, `Could not find feature with ID: ${id}`);
+            } else if (fc.features.length > 1) {
+                throw new Err(404, null, `Server returned multiple features with ID: ${id}`);
+            }
+
+            const feat = fc.features[0];
+            feat.id = id;
+            return feat;
         } else {
             throw new Err(500, null, 'Could not determine strategy to fetch Basemap');
         }
