@@ -64,25 +64,25 @@ const config = ref({
 async function submitPoint() {
     const id = crypto.randomUUID();
 
-    await mapStore.worker.db.add({
+    await mapstore.worker.db.add({
         id,
-        type: 'Feature',
+        type: 'feature',
         path: '/',
         properties: {
             id,
-            type: toRaw(config.value.type),
+            type: toraw(config.value.type),
             how: 'h-g-i-g-o',
-            color: '#00FF00',
+            color: '#00ff00',
             archived: true,
-            time: new Date().toISOString(),
-            start: new Date().toISOString(),
-            stale: new Date().toISOString(),
-            center: toRaw(config.value.coordinates),
-            callsign: toRaw(config.value.name || 'New Feature'),
+            time: new date().toisostring(),
+            start: new date().toisostring(),
+            stale: new date().toisostring(),
+            center: toraw(config.value.coordinates),
+            callsign: toraw(config.value.name || 'new feature'),
         },
         geometry: {
-            type: 'Point',
-            coordinates: toRaw(config.value.coordinates)
+            type: 'point',
+            coordinates: toraw(config.value.coordinates)
         }
     }, {
         authored: true

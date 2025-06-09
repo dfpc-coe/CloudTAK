@@ -31,6 +31,17 @@
                         stroke='1'
                     />
                 </TablerIconButton>
+
+                <TablerIconButton
+                    v-if='overlay && ["basemap", "overlay"].includes(overlay.mode) && overlay.actions.feature.includes("fetch")'
+                    title='Cut to Marker'
+                    @click='cutFeature'
+                >
+                    <IconScissors
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
                 <div
                     class='ms-auto'
                     style='margin-right: 14px;'
@@ -121,8 +132,10 @@
 </template>
 
 <script setup lang='ts'>
+import { useRouter } from 'vue-router'
 import { ref, computed } from 'vue';
 import { useMapStore } from '../../stores/map.ts';
+import { std } from '../../std.ts';
 import Overlay from '../../base/overlay.ts';
 import type { LngLatLike, MapGeoJSONFeature } from 'maplibre-gl';
 import type { Feature } from 'geojson';
@@ -133,11 +146,13 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     IconX,
+    IconScissors,
     IconZoomPan,
     IconBlockquote,
     IconCode
 } from '@tabler/icons-vue';
 
+const router = useRouter();
 const mapStore = useMapStore();
 
 const props = defineProps<{
@@ -157,6 +172,35 @@ const overlay = computed<Overlay | null>(() => {
 const center = computed(() => {
     return pointOnFeature(props.feat).geometry.coordinates;
 });
+
+async function cutFeature() {
+    if (!overlay.value) throw new Error("Could not determine Overlay");
+
+    const rawFeature = await std(`/api/basemap/${overlay.value.mode_id}/feature/${props.feat.id}`) as Feature;
+    const id = crypto.randomUUID();
+
+    await mapStore.worker.db.add({
+        id,
+        type: 'feature',
+        path: '/',
+        properties: {
+            id,
+            type: 'u-d-p',
+            how: 'h-g-i-g-o',
+            color: '#00ff00',
+            archived: true,
+            time: new Date().toISOString(),
+            start: new Date().toISOString(),
+            stale: new Date().toISOString(),
+            callsign: 'New Feature'
+        },
+        geometry: rawFeature.geometry
+    }, {
+        authored: true
+    });
+
+    router.push(`/cot/${id}`);
+}
 
 function zoomTo() {
     mapStore.map.flyTo({

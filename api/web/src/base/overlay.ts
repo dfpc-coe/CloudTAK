@@ -33,6 +33,9 @@ export default class Overlay {
     visible: boolean;
     mode: string;
     mode_id: string | null;
+
+    actions: ProfileOverlay["actions"];
+
     url?: string;
     styles: Array<LayerSpecification>;
     token: string | null;
@@ -127,9 +130,13 @@ export default class Overlay {
         return ov;
     }
 
-    constructor(map: Map, overlay: ProfileOverlay, opts: {
-        internal?: boolean;
-    } = {}) {
+    constructor(
+        map: Map,
+        overlay: ProfileOverlay,
+        opts: {
+            internal?: boolean;
+        } = {}
+    ) {
         this._destroyed = false;
         this._internal = opts.internal || false;
         this._clickable = [];
@@ -140,6 +147,7 @@ export default class Overlay {
         this.username = overlay.username;
         this.created = overlay.created;
         this.updated = overlay.updated;
+        this.actions = overlay.actions || [];
         this.pos = overlay.pos;
         this.type = overlay.type;
         this.opacity = overlay.opacity;
