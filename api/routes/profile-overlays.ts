@@ -39,6 +39,9 @@ export default async function router(schema: Schema, config: Config) {
         res: Type.Object({
             total: Type.Integer(),
             removed: Type.Array(ProfileOverlayResponse),
+            available: Type.Object({
+                terrain: Type.Boolean()
+            }),
             items: Type.Array(AugmentedProfileOverlayResponse)
         })
 
@@ -47,6 +50,18 @@ export default async function router(schema: Schema, config: Config) {
             const user = await Auth.as_user(config, req);
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+
+            const available = {
+                terrain:
+                    (
+                        await config.models.Basemap.count({
+                            where: sql`
+                                USERNAME IS NULL
+                                AND type = 'raster-dem'
+                            `
+                        })
+                    ) > 0
+            }
 
             const overlays = await config.models.ProfileOverlay.list({
                 limit: req.query.limit,
@@ -74,10 +89,14 @@ export default async function router(schema: Schema, config: Config) {
                         return { ...item, opacity: Number(o.opacity) }
                     }));
                     total--;
-                } else if (item.mode === 'basemap') {
+                } else if (item.mode === 'basemap' || item.mode === 'overlay') {
                     try {
                         const basemap = await config.models.Basemap.from(item.mode_id);
-                        items.push({ ...item, opacity: Number(item.opacity), actions: TileJSON.actions(basemap.url) });
+                        items.push({
+                            ...item,
+                            opacity: Number(item.opacity),
+                            actions: TileJSON.actions(basemap.url)
+                        });
                     } catch (err) {
                         console.error('Could not find basemap', err);
                         await config.models.ProfileOverlay.delete(item.id);
@@ -101,7 +120,7 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
-            res.json({ removed, total, items });
+            res.json({ removed, total, items, available });
         } catch (err) {
              Err.respond(err, res);
         }
@@ -122,7 +141,7 @@ export default async function router(schema: Schema, config: Config) {
             const overlay = await config.models.ProfileOverlay.from(req.params.overlay)
             if (overlay.username !== user.email) throw new Err(401, null, 'Cannot get another\'s overlay');
 
-            if (overlay.mode === 'basemap') {
+            if (overlay.mode === 'basemap' || overlay.mode === 'overlay') {
                 const basemap = await config.models.Basemap.from(overlay.mode_id);
 
                 res.json({
@@ -177,7 +196,7 @@ export default async function router(schema: Schema, config: Config) {
 
             overlay = await config.models.ProfileOverlay.commit(req.params.overlay, req.body)
 
-            if (overlay.mode === 'basemap') {
+            if (overlay.mode === 'basemap' || overlay.mode === 'overlay') {
                 const basemap = await config.models.Basemap.from(overlay.mode_id);
 
                 res.json({
@@ -254,7 +273,7 @@ export default async function router(schema: Schema, config: Config) {
                 });
             }
 
-            if (overlay.mode === 'basemap') {
+            if (overlay.mode === 'basemap' || overlay.mode === 'overlay') {
                 const basemap = await config.models.Basemap.from(overlay.mode_id);
 
                 res.json({
