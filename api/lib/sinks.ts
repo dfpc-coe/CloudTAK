@@ -1,6 +1,6 @@
 import Config from './config.js';
 import { CoT } from '@tak-ps/node-tak';
-import Filter from './filter.js';
+//import Filter from './filter.js';
 import Queue from './aws/queue.js';
 import { sql } from 'drizzle-orm';
 import ConnectionConfig from './connection-config.js';
