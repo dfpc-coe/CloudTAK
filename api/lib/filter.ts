@@ -1,9 +1,7 @@
 import { Type, Static } from '@sinclair/typebox'
 import jsonata from 'jsonata';
 import type { Feature } from '@tak-ps/node-cot';
-import handlebars from 'handlebars';
 import Err from '@openaddresses/batch-error';
-import sanitizer from 'sanitize-html';
 
 export const FilterContainerQuery = Type.Object({
     query: Type.String()
