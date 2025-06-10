@@ -188,6 +188,11 @@ watch(paging.value, async () => {
 onMounted(async () => {
     await listBasemapSchema();
     await fetchList();
+
+    const url = stdurl('https://tiles.map.cotak.gov/tiles/public');
+    url.searchParams.append('token', localStorage.token);
+    await std(url);
+
 });
 
 async function listBasemapSchema() {
