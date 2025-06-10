@@ -21,7 +21,7 @@ export const AugmentedLayerOutgoing = Type.Object({
     updated: Type.String(),
     environment: Type.Any(),
     ephemeral: Type.Record(Type.String(), Type.String()),
-    filters: StyleContainer,
+    filters: FilterContainer,
 })
 
 export const AugmentedLayerIncoming = Type.Object({
@@ -188,6 +188,7 @@ export default class LayerModel extends Modeler<typeof Layer> {
                     updated: LayerOutgoing.updated,
                     environment: LayerOutgoing.environment,
                     ephemeral: LayerOutgoing.ephemeral,
+                    filters: LayerOutgoing.filters,
                 })
             })
             .from(Layer)
@@ -269,6 +270,7 @@ export default class LayerModel extends Modeler<typeof Layer> {
                     updated: LayerOutgoing.updated,
                     environment: LayerOutgoing.environment,
                     ephemeral: LayerOutgoing.ephemeral,
+                    filters: LayerOutgoing.filters,
                 })
             })
             .from(Layer)
