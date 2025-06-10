@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm';
 import { Static } from '@sinclair/typebox'
 import type { StyleContainer } from './style.js';
+import type { FilterContainer } from './filter.js';
 import type { PaletteFeatureStyle } from './palette.js';
 import { Polygon, Point } from 'geojson';
 import { geometry, GeometryType } from '@openaddresses/batch-generic';
@@ -271,6 +272,8 @@ export const LayerOutgoing = pgTable('layers_outgoing', {
     layer: integer().primaryKey().references(() => Layer.id),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+
+    filters: json().$type<Static<typeof FilterContainer>>().notNull().default({}),
 
     environment: json().notNull().default({}),
     ephemeral: json().$type<Record<string, string>>().notNull().default({}),
