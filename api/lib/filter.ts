@@ -1,5 +1,6 @@
 import { Type, Static } from '@sinclair/typebox'
 import jsonata from 'jsonata';
+import { CoT } from '@tak-ps/node-tak';
 import type { Feature } from '@tak-ps/node-cot';
 import Err from '@openaddresses/batch-error';
 
@@ -25,9 +26,11 @@ export default class Filter {
      */
     static async test(
         filters: Static<typeof FilterContainer>,
-        feature: Static<typeof Feature.InputFeature>
+        cot: CoT
     ): Promise<boolean> {
         if (!filters.queries) return false;
+
+        const feature = cot.to_geojson();
 
         try {
             for (const q of filters.queries) {
