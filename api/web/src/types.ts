@@ -150,6 +150,7 @@ export type ETLLayerAlertList = paths["/connection/{:connectionid}/layer/{:layer
 export type ETLLayerTask = paths["/connection/{:connectionid}/layer/{:layerid}/task"]["get"]["responses"]["200"]["content"]["application/json"]
 export type ETLLayerTaskCapabilities = paths["/connection/{:connectionid}/layer/{:layerid}/task/capabilities"]["get"]["responses"]["200"]["content"]["application/json"]
 export type ETLLayerIncoming = paths["/connection/{:connectionid}/layer/{:layerid}/incoming"]["post"]["responses"]["200"]["content"]["application/json"]
+export type ETLLayerOutgoing = paths["/connection/{:connectionid}/layer/{:layerid}/outgoing"]["post"]["responses"]["200"]["content"]["application/json"]
 
 export type ETLData = paths["/connection/{:connectionid}/data/{:dataid}"]["get"]["responses"]["200"]["content"]["application/json"]
 
