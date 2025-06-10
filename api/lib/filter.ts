@@ -1,7 +1,6 @@
 import { Type, Static } from '@sinclair/typebox'
 import jsonata from 'jsonata';
 import { CoT } from '@tak-ps/node-tak';
-import type { Feature } from '@tak-ps/node-cot';
 import Err from '@openaddresses/batch-error';
 
 export const FilterContainerQuery = Type.Object({
