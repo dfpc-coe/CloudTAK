@@ -55,4 +55,24 @@ export default class Filter {
             }
         }
     }
+
+    static validate(filters: Static<typeof FilterContainer>) {
+        try {
+            if (filters.queries) {
+                for (const q of filters.queries) {
+                    jsonata(q.query);
+                }
+            }
+
+            return true;
+        } catch (err) {
+            if (err instanceof Err) {
+                throw err;
+            } else if (err instanceof Error) {
+                throw new Err(400, err, err.message);
+            } else {
+                throw new Err(400, new Error(String(err)), String(err));
+            }
+        }
+    }
 }

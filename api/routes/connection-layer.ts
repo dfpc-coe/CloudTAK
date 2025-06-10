@@ -7,6 +7,7 @@ import Auth, { AuthResourceAccess, AuthUser } from '../lib/auth.js';
 import Lambda from '../lib/aws/lambda.js';
 import CloudFormation from '../lib/aws/cloudformation.js';
 import Style, { StyleContainer } from '../lib/style.js';
+import Filter, { FilterContainer } from '../lib/filter.js';
 import Alarm from '../lib/aws/alarm.js';
 import Config from '../lib/config.js';
 import Schedule from '../lib/schedule.js';
@@ -496,7 +497,9 @@ export default async function router(schema: Schema, config: Config) {
             connectionid: Type.Integer({ minimum: 1 }),
             layerid: Type.Integer({ minimum: 1 })
         }),
-        body: Type.Object({}),
+        body: Type.Object({
+            filters: Type.Optional(FilterContainer)
+        }),
         res: LayerOutgoingResponse
     }, async (req, res) => {
         try {
@@ -511,6 +514,10 @@ export default async function router(schema: Schema, config: Config) {
 
             if (layer.connection !== connection.id) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
+            }
+
+            if (req.body.filters) {
+                await Filter.validate(req.body.filters);
             }
 
             const incoming = await config.models.LayerOutgoing.generate({
@@ -547,6 +554,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         body: Type.Object({
             environment: Type.Optional(Type.Any()),
+            filters: Type.Optional(FilterContainer),
         }),
         res: LayerOutgoingResponse
     }, async (req, res) => {
@@ -575,6 +583,10 @@ export default async function router(schema: Schema, config: Config) {
             // Ephemeral storage stores cached password, if the env changes, the ephemeral storage should be cleared
             if (req.body.environment) {
                 updated.ephemeral = {};
+            }
+
+            if (req.body.filters) {
+                await Filter.validate(req.body.filters);
             }
 
             const outgoing = await config.models.LayerOutgoing.commit(layer.id, updated);
