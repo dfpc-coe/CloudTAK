@@ -72,8 +72,8 @@ export default async function router(schema: Schema, config: Config) {
             'group::Brown': Type.Optional(Type.String()),
 
             'oidc::enabled': Type.Optional(Type.Boolean()),
-            'odic::enforced': Type.Optional(Type.Boolean()),
-            'odic::name': Type.Optional(Type.String()),
+            'oidc::enforced': Type.Optional(Type.Boolean()),
+            'oidc::name': Type.Optional(Type.String()),
             'oidc::discovery': Type.Optional(Type.String()),
             'oidc::client': Type.Optional(Type.String()),
             'oidc::secret': Type.Optional(Type.String()),
@@ -142,6 +142,23 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             res.json(final);
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/config/tiles', {
+        name: 'Tile Config',
+        group: 'Config',
+        description: 'Return Tile Config',
+        res: Type.Object({
+            url: Type.String()
+        })
+    }, async (req, res) => {
+        try {
+            res.json({
+                url: config.PMTILES_URL
+            });
         } catch (err) {
             Err.respond(err, res);
         }

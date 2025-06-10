@@ -21,10 +21,9 @@ app.use(cors({
     origin: '*',
     allowedHeaders: [
         'Content-Type',
+        'Content-Length',
         'Authorization',
         'User-Agent',
-        'MissionAuthorization',
-        'Content-Length',
         'x-requested-with'
     ],
     credentials: true
