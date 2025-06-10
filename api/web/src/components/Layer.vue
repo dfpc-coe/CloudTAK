@@ -150,6 +150,7 @@
                                                     "active": route.name === "layer-deployment",
                                                     "cursor-pointer": route.name !== "layer-deployment"
                                                 }'
+                                                @keyup.enter='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/deployment`)'
                                                 @click='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/deployment`)'
                                             ><IconPlaneDeparture
                                                 :size='32'
@@ -166,6 +167,7 @@
                                                     class='btn-check'
                                                     autocomplete='off'
                                                     :checked='mode === "incoming"'
+                                                    @keyup.enter='mode = "incoming"'
                                                     @click='mode = "incoming"'
                                                 >
                                                 <label
@@ -184,6 +186,7 @@
                                                     class='btn-check'
                                                     autocomplete='off'
                                                     :checked='mode === "outgoing"'
+                                                    @keyup.enter='mode = "outgoing"'
                                                     @click='mode = "outgoing"'
                                                 >
                                                 <label
@@ -217,6 +220,7 @@
                                                             "active": route.name === "layer-incoming-config",
                                                             "cursor-pointer": route.name !== "layer-incoming-config"
                                                         }'
+                                                        @keyup.enter='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/incoming/config`)'
                                                         @click='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/incoming/config`)'
                                                     ><IconAdjustments
                                                         :size='32'
@@ -231,6 +235,7 @@
                                                             "active": route.name === "layer-incoming-environment",
                                                             "cursor-pointer": route.name !== "layer-incoming-environment"
                                                         }'
+                                                        @keyup.enter='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/incoming/environment`)'
                                                         @click='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/incoming/environment`)'
                                                     ><IconBeach
                                                         :size='32'
@@ -244,6 +249,7 @@
                                                             "active": route.name === "layer-incoming-schema",
                                                             "cursor-pointer": route.name !== "layer-incoming-schema"
                                                         }'
+                                                        @keyup.enter='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/incoming/schema`)'
                                                         @click='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/incoming/schema`)'
                                                     ><IconSchema
                                                         :size='32'
@@ -257,6 +263,7 @@
                                                             "active": route.name === "layer-incoming-styles",
                                                             "cursor-pointer": route.name !== "layer-incoming-styles"
                                                         }'
+                                                        @keyup.enter='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/incoming/styles`)'
                                                         @click='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/incoming/styles`)'
                                                     ><IconPaint
                                                         :size='32'
@@ -289,9 +296,25 @@
                                                         role='menuitem'
                                                         class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                         :class='{
+                                                            "active": route.name === "layer-outgoing-config",
+                                                            "cursor-pointer": route.name !== "layer-outgoing-config"
+                                                        }'
+                                                        @keyup.enter='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/outgoing/config`)'
+                                                        @click='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/outgoing/config`)'
+                                                    ><IconAdjustments
+                                                        :size='32'
+                                                        stroke='1'
+                                                    /><span class='mx-3'>Config</span></span>
+
+                                                    <span
+                                                        tabindex='0'
+                                                        role='menuitem'
+                                                        class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
+                                                        :class='{
                                                             "active": route.name === "layer-outgoing-environment",
                                                             "cursor-pointer": route.name !== "layer-outgoing-environment"
                                                         }'
+                                                        @keyup.enter='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/outgoing/environment`)'
                                                         @click='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/outgoing/environment`)'
                                                     ><IconBeach
                                                         :size='32'
