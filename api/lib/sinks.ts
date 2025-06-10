@@ -25,17 +25,20 @@ export default class Sinks {
                 AND layers_outgoing.layer IS NOT NULL
             `
         })) {
+            if (!layer.outgoing) continue;
             const arnPrefix = (await this.config.fetchArnPrefix()).split(':');
             const queue = `https://sqs.${arnPrefix[3]}.amazonaws.com/${arnPrefix[4]}/${this.config.StackName}-layer-${layer.id}-outgoing.fifo`;
 
-            const filtered = [];
+            const filtered: CoT[] = [];
+/*
             for (const cot of cots) {
-                if (await Filter.feat(layer.outgoing.filter, cot)) {
+                if (await Filter.test(layer.outgoing.filters, cot)) {
                     continue;
                 }
 
                 filtered.push(cot);
             }
+*/
 
             for (let i = 0; i < filtered.length; i+= 10) {
                 try {

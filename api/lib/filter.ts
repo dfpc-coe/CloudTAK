@@ -27,10 +27,10 @@ export default class Filter {
         filters: Static<typeof FilterContainer>,
         feature: Static<typeof Feature.InputFeature>
     ): Promise<boolean> {
-        if (!feature.queries) return false;
+        if (!filters.queries) return false;
 
         try {
-            for (const q of filter.queries) {
+            for (const q of filters.queries) {
                 try {
                     const expression = jsonata(q.query);
 
