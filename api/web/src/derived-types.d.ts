@@ -4108,7 +4108,13 @@ export interface paths {
             };
             requestBody: {
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": {
+                        filters?: {
+                            queries?: {
+                                query: string;
+                            }[];
+                        };
+                    };
                 };
             };
             responses: {
@@ -4172,6 +4178,11 @@ export interface paths {
                 content: {
                     "application/json": {
                         environment?: unknown;
+                        filters?: {
+                            queries?: {
+                                query: string;
+                            }[];
+                        };
                     };
                 };
             };
