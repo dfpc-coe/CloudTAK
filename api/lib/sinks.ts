@@ -1,6 +1,6 @@
 import Config from './config.js';
 import { CoT } from '@tak-ps/node-tak';
-//import Filter from './filter.js';
+import Filter from './filter.js';
 import Queue from './aws/queue.js';
 import { sql } from 'drizzle-orm';
 import ConnectionConfig from './connection-config.js';
@@ -30,7 +30,6 @@ export default class Sinks {
             const queue = `https://sqs.${arnPrefix[3]}.amazonaws.com/${arnPrefix[4]}/${this.config.StackName}-layer-${layer.id}-outgoing.fifo`;
 
             const filtered: CoT[] = [];
-/*
             for (const cot of cots) {
                 if (await Filter.test(layer.outgoing.filters, cot)) {
                     continue;
@@ -38,7 +37,6 @@ export default class Sinks {
 
                 filtered.push(cot);
             }
-*/
 
             for (let i = 0; i < filtered.length; i+= 10) {
                 try {
