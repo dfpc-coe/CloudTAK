@@ -126,7 +126,7 @@
     },
     "GET /connection/:connectionid/asset/:asset.:ext": {
         "body": false,
-        "query": false,
+        "query": true,
         "res": false
     },
     "GET /connection/:connectionid/channel": {
