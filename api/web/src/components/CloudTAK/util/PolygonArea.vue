@@ -21,6 +21,7 @@
                 }'
                 role='menuitem'
                 tabindex='0'
+                @keyup.enter='mode = "sqfeet"'
                 @click='mode = "sqfeet"'
             >Feet<sup>2</sup></span>
             <span
@@ -32,6 +33,7 @@
                 }'
                 role='menuitem'
                 tabindex='0'
+                @keyup.enter='mode = "sqmeter"'
                 @click='mode = "sqmeter"'
             >Meters<sup>2</sup></span>
         </div>

@@ -16,6 +16,7 @@
                 }'
                 role='menuitem'
                 tabindex='0'
+                @keyup.enter='mode = "m/s"'
                 @click='mode = "m/s"'
             >M/S</span>
             <span
@@ -27,6 +28,7 @@
                 }'
                 role='menuitem'
                 tabindex='0'
+                @keyup.enter='mode = "mi/h"'
                 @click='mode = "mi/h"'
             >MPH</span>
             <span
@@ -38,6 +40,7 @@
                 }'
                 role='menuitem'
                 tabindex='0'
+                @keyup.enter='mode = "km/h"'
                 @click='mode = "km/h"'
             >KM/H</span>
         </div>

@@ -16,6 +16,7 @@
                 }'
                 role='menuitem'
                 tabindex='0'
+                @keyup.enter='mode = "feet"'
                 @click='mode = "feet"'
             >Feet</span>
             <span
@@ -27,6 +28,7 @@
                 }'
                 role='menuitem'
                 tabindex='0'
+                @keyup.enter='mode = "meter"'
                 @click='mode = "meter"'
             >Meters</span>
         </div>
