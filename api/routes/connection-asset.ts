@@ -142,6 +142,7 @@ export default async function router(schema: Schema, config: Config) {
             ext: Type.String()
         }),
         query: Type.Object({
+            token: Type.Optional(Type.String()),
             download: Type.Boolean()
         })
     }, async (req, res) => {
