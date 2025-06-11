@@ -1,6 +1,6 @@
 {
-  "id": "515a338a-2c1c-46f1-b926-3e6bc0391b20",
-  "prevId": "37fd03ed-4b9d-4095-bd8a-b072cd7313b8",
+  "id": "61fb3d42-5f30-400a-9f05-01b731e2f6f5",
+  "prevId": "9b6227de-7e22-4390-87de-07bd24434728",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -1253,6 +1253,13 @@
           "notNull": true,
           "default": "Now()"
         },
+        "filters": {
+          "name": "filters",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::json"
+        },
         "environment": {
           "name": "environment",
           "type": "json",
@@ -1670,7 +1677,7 @@
         "id": {
           "name": "id",
           "type": "text",
-          "primaryKey": false,
+          "primaryKey": true,
           "notNull": true
         },
         "path": {
@@ -1700,7 +1707,23 @@
           "notNull": true
         }
       },
-      "indexes": {},
+      "indexes": {
+        "profile_features_username_idx": {
+          "name": "profile_features_username_idx",
+          "columns": [
+            {
+              "expression": "username",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "profile_features_username_profile_username_fk": {
           "name": "profile_features_username_profile_username_fk",

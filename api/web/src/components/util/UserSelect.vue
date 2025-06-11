@@ -40,29 +40,32 @@
                             </TablerIconButton>
                         </template>
                         <template #dropdown>
-                            <div class='mx-2'>
-                                <TablerInput
-                                    v-model='paging.filter'
-                                    placeholder='Filter...'
-                                />
-                                <div
-                                    v-for='user of list.items'
-                                    :key='user.username'
-                                    tabindex='0'
-                                    class='cursor-pointer my-1 hover-light px-2 py-1'
-                                    @keyup.enter='selected = user'
-                                    @click='selected = user'
-                                >
-                                    <div class='d-flex'>
-                                        <span style='width: 24px;'>
-                                            <IconUser
-                                                :size='24'
-                                                stroke='1'
+                            <div class='card'>
+                                <div class='card-body'>
+                                    <TablerInput
+                                        v-model='paging.filter'
+                                        icon='search'
+                                        placeholder='Filter...'
+                                    />
+                                    <div
+                                        v-for='user of list.items'
+                                        :key='user.username'
+                                        tabindex='0'
+                                        class='cursor-pointer my-1 hover-light px-2 py-1'
+                                        @keyup.enter='selected = user'
+                                        @click='selected = user'
+                                    >
+                                        <div class='d-flex'>
+                                            <span style='width: 24px;'>
+                                                <IconUser
+                                                    :size='24'
+                                                    stroke='1'
+                                                />
+                                            </span>
+                                            <span
+                                                v-text='user.username'
                                             />
-                                        </span>
-                                        <span
-                                            v-text='user.username'
-                                        />
+                                        </div>
                                     </div>
                                 </div>
                             </div>

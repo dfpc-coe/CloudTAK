@@ -205,6 +205,10 @@ const router = VueRouter.createRouter({
                 path: 'outgoing/environment',
                 name: 'layer-outgoing-environment',
                 component: () => import('./components/Layer/LayerEnvironment.vue')
+            },{
+                path: 'outgoing/config',
+                name: 'layer-outgoing-config',
+                component: () => import('./components/Layer/LayerOutgoingConfig.vue')
             }]
         },
 
