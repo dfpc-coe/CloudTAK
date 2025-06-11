@@ -27,7 +27,7 @@ cp branding/logo/icons.ts api/web/public/logos/icons.ts
 branding/generate_icons.sh
 
 # Replace the text
-sed -i.orig "s/Colorado - DFPC - CoE/TAK.NZ &bull; Team Awareness &bull; Te mōhio o te rōpū/g" api/web/src/App.vue
+sed -i.orig "s/Colorado - DFPC - CoE/TAK.NZ \&bull; Team Awareness \&bull; Te mōhio o te rōpū/g" api/web/src/App.vue
 
 # Replace build script
 cp branding/js/build.js bin/build.js
