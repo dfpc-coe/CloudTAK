@@ -15,6 +15,7 @@
                 }'
                 role='menuitem'
                 tabindex='0'
+                @keyup.enter='mode = "meter"'
                 @click='mode = "meter"'
             >Meters</span>
             <span
@@ -26,6 +27,7 @@
                 }'
                 role='menuitem'
                 tabindex='0'
+                @keyup.enter='mode = "kilometer"'
                 @click='mode = "kilometer"'
             >Kilometers</span>
             <span
@@ -37,6 +39,7 @@
                 }'
                 role='menuitem'
                 tabindex='0'
+                @keyup.enter='mode = "mile"'
                 @click='mode = "mile"'
             >Miles</span>
         </div>

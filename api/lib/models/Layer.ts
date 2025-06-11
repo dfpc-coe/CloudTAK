@@ -2,6 +2,7 @@ import Modeler, { GenericList, GenericCountInput, GenericIterInput, GenericListI
 import Err from '@openaddresses/batch-error';
 import { jsonBuildObject } from './utils.js';
 import { StyleContainer } from '../style.js';
+import { FilterContainer } from '../filter.js';
 import { Layer_Priority } from '../enums.js';
 import { Static, Type } from '@sinclair/typebox'
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
@@ -20,6 +21,7 @@ export const AugmentedLayerOutgoing = Type.Object({
     updated: Type.String(),
     environment: Type.Any(),
     ephemeral: Type.Record(Type.String(), Type.String()),
+    filters: FilterContainer,
 })
 
 export const AugmentedLayerIncoming = Type.Object({
@@ -186,6 +188,7 @@ export default class LayerModel extends Modeler<typeof Layer> {
                     updated: LayerOutgoing.updated,
                     environment: LayerOutgoing.environment,
                     ephemeral: LayerOutgoing.ephemeral,
+                    filters: LayerOutgoing.filters,
                 })
             })
             .from(Layer)
@@ -267,6 +270,7 @@ export default class LayerModel extends Modeler<typeof Layer> {
                     updated: LayerOutgoing.updated,
                     environment: LayerOutgoing.environment,
                     ephemeral: LayerOutgoing.ephemeral,
+                    filters: LayerOutgoing.filters,
                 })
             })
             .from(Layer)

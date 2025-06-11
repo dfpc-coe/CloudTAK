@@ -94,6 +94,11 @@
         "query": false,
         "res": true
     },
+    "GET /config/tiles": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /config/group": {
         "body": false,
         "query": false,
@@ -479,51 +484,6 @@
         "query": true,
         "res": true
     },
-    "POST /import": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "PUT /import/:import": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "PUT /import": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /import/:import": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "PATCH /import/:import": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "DELETE /import/:import": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /import": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "POST /import/:import/batch": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /import/:import/batch": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "GET /iconset": {
         "body": false,
         "query": true,
@@ -588,6 +548,51 @@
         "body": false,
         "query": true,
         "res": false
+    },
+    "POST /import": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PUT /import/:import": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PUT /import": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /import/:import": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PATCH /import/:import": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /import/:import": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /import": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /import/:import/batch": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /import/:import/batch": {
+        "body": false,
+        "query": false,
+        "res": true
     },
     "GET /layer": {
         "body": false,

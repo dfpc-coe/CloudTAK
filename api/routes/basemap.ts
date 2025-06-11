@@ -509,8 +509,14 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
             }
 
-            let url = config.API_URL + `/api/basemap/${basemap.id}/tiles/{z}/{x}/{y}`;
-            if (req.query.token) url = url + `?token=${req.query.token}`;
+            let url: string;
+            if (basemap.url.startsWith(config.PMTILES_URL)) {
+                url = basemap.url;
+                if (req.query.token) url = url + `?token=${req.query.token}`;
+            } else {
+                url = config.API_URL + `/api/basemap/${basemap.id}/tiles/{z}/{x}/{y}`;
+                if (req.query.token) url = url + `?token=${req.query.token}`;
+            }
 
             const json = TileJSON.json({
                 ...basemap,

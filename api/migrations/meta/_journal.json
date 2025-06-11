@@ -750,6 +750,13 @@
       "when": 1749064804962,
       "tag": "0106_needy_mindworm",
       "breakpoints": true
+    },
+    {
+      "idx": 107,
+      "version": "7",
+      "when": 1749584080332,
+      "tag": "0107_true_red_ghost",
+      "breakpoints": true
     }
   ]
 }

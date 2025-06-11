@@ -18,6 +18,7 @@
                 }'
                 role='menuitem'
                 tabindex='0'
+                @keyup.enter='changeMode("deg")'
                 @click='changeMode("deg")'
             >Deg</span>
             <span
@@ -29,6 +30,7 @@
                 }'
                 role='menuitem'
                 tabindex='0'
+                @keyup.enter='changeMode("rad")'
                 @click='changeMode("rad")'
             >Rads</span>
             <span
@@ -40,6 +42,7 @@
                 }'
                 role='menuitem'
                 tabindex='0'
+                @keyup.enter='changeMode("mil")'
                 @click='changeMode("mil")'
             >Mils</span>
         </div>

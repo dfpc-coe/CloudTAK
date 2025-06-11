@@ -1,5 +1,6 @@
 import Config from './config.js';
 import { CoT } from '@tak-ps/node-tak';
+import Filter from './filter.js';
 import Queue from './aws/queue.js';
 import { sql } from 'drizzle-orm';
 import ConnectionConfig from './connection-config.js';
@@ -24,13 +25,23 @@ export default class Sinks {
                 AND layers_outgoing.layer IS NOT NULL
             `
         })) {
+            if (!layer.outgoing) continue;
             const arnPrefix = (await this.config.fetchArnPrefix()).split(':');
             const queue = `https://sqs.${arnPrefix[3]}.amazonaws.com/${arnPrefix[4]}/${this.config.StackName}-layer-${layer.id}-outgoing.fifo`;
 
-            for (let i = 0; i < cots.length; i+= 10) {
+            const filtered: CoT[] = [];
+            for (const cot of cots) {
+                if (await Filter.test(layer.outgoing.filters, cot)) {
+                    continue;
+                }
+
+                filtered.push(cot);
+            }
+
+            for (let i = 0; i < filtered.length; i+= 10) {
                 try {
                     await this.queue.submit(
-                        cots.slice(i, i + 10).map((cot) => {
+                        filtered.slice(i, i + 10).map((cot) => {
                             return {
                                 Id: (Math.random() + 1).toString(36).substring(7),
                                 MessageGroupId: `${String(layer.id)}-${cot.uid()}`,

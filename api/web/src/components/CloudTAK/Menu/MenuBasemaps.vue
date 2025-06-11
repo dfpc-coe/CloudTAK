@@ -205,6 +205,7 @@ import {
     IconDotsVertical,
     IconCircleArrowLeft,
 } from '@tabler/icons-vue'
+import type { LayerSpecification } from 'maplibre-gl'
 import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();
 
@@ -253,16 +254,22 @@ async function setBasemap(basemap: Basemap) {
                 if (mapStore.overlays[i + 1]) {
                     await overlay.replace({
                         name: basemap.name,
+                        type: basemap.type,
                         url: `/api/basemap/${basemap.id}/tiles`,
-                        mode_id: String(basemap.id)
+                        mode: 'basemap',
+                        mode_id: String(basemap.id),
+                        styles: basemap.styles as Array<LayerSpecification>
                     }, {
                         before: mapStore.overlays[i + 1].styles[0].id
                     });
                 } else {
                     await overlay.replace({
                         name: basemap.name,
+                        type: basemap.type,
                         url: `/api/basemap/${basemap.id}/tiles`,
-                        mode_id: String(basemap.id)
+                        mode: 'basemap',
+                        mode_id: String(basemap.id),
+                        styles: basemap.styles as Array<LayerSpecification>
                     });
                 }
                 break;
@@ -277,7 +284,8 @@ async function setBasemap(basemap: Basemap) {
             type: basemap.type,
             url: `/api/basemap/${basemap.id}/tiles`,
             mode: 'basemap',
-            mode_id: String(basemap.id)
+            mode_id: String(basemap.id),
+            styles: basemap.styles
         }, { before }));
     }
 }

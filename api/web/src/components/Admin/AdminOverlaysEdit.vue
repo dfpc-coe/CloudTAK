@@ -44,9 +44,60 @@
                         />
                     </div>
                 </div>
+                <div
+                    class='px-2 py-2 round btn-group w-100'
+                    role='group'
+                >
+                    <input
+                        id='entry-manual'
+                        type='radio'
+                        class='btn-check'
+                        autocomplete='off'
+                        :checked='mode === "manual"'
+                        @click='mode = "manual"'
+                    >
+                    <label
+                        for='entry-manual'
+                        type='button'
+                        class='btn btn-sm'
+                    ><IconTerminal
+                        v-tooltip='"Manual Entry"'
+                        class='me-2'
+                        :size='32'
+                        stroke='1'
+                    />Manual Entry</label>
+
+                    <input
+                        id='entry-public'
+                        type='radio'
+                        class='btn-check'
+                        autocomplete='off'
+                        :checked='mode === "public"'
+                        @click='mode = "public"'
+                    >
+
+                    <label
+                        for='entry-public'
+                        type='button'
+                        class='btn btn-sm'
+                    ><IconList
+                        v-tooltip='"Public Tilesets"'
+                        class='me-2'
+                        :size='32'
+                        stroke='1'
+                    />Public Tilesets</label>
+                </div>
+
+                <template v-if='mode === "public"'>
+                    <PublicTilesSelect
+                        @select='publicTileSelect($event)'
+                    />
+                </template>
+
                 <div class='col-12'>
                     <TablerInput
                         v-model='overlay.url'
+                        :disabled='mode !== "manual"'
                         label='Data URL'
                     >
                         <TablerToggle
@@ -55,27 +106,32 @@
                         />
                     </TablerInput>
                 </div>
+
                 <div class='col-12 col-md-6'>
                     <TablerInput
                         v-model='overlay.minzoom'
+                        :disabled='mode !== "manual"'
                         label='MinZoom'
                     />
                 </div>
                 <div class='col-12 col-md-6'>
                     <TablerInput
                         v-model='overlay.maxzoom'
+                        :disabled='mode !== "manual"'
                         label='MaxZoom'
                     />
                 </div>
                 <div class='col-12 col-md-6'>
                     <TablerInput
                         v-model='overlay.bounds'
+                        :disabled='mode !== "manual"'
                         label='Bounds'
                     />
                 </div>
                 <div class='col-12 col-md-6'>
                     <TablerInput
                         v-model='overlay.center'
+                        :disabled='mode !== "manual"'
                         label='Center'
                     />
                 </div>
@@ -94,6 +150,7 @@
                         :options='formats'
                     />
                 </div>
+
                 <div class='col-12'>
                     <StyleContainer
                         v-model='overlay.styles'
@@ -125,7 +182,10 @@ import { useRoute, useRouter } from 'vue-router'
 import { std, stdurl } from '/src/std.ts';
 import StyleContainer from '../Styling/Style.vue';
 import UserSelect from '../util/UserSelect.vue';
+import PublicTilesSelect from '../util/PublicTilesSelect.vue';
 import {
+    IconTerminal,
+    IconList,
     IconCircleArrowLeft
 } from '@tabler/icons-vue';
 import {
@@ -142,6 +202,7 @@ const route = useRoute();
 const router = useRouter();
 
 const loading = ref(true);
+const mode = ref('manual');
 const overlay = ref({
     name: '',
     url: '',
@@ -182,6 +243,22 @@ async function deleteOverlay() {
     } catch (err) {
         loading.value = false;
         throw err;
+    }
+}
+
+function publicTileSelect(tilejson) {
+    if (tilejson) {
+        if (!overlay.value.name) {
+            overlay.value.name = tilejson.name.replace(/^public\//, "").replace(/\.pmtiles$/, "");
+        }
+
+        overlay.value.url = tilejson.tiles[0].replace(/\?.*$/, '');
+        overlay.value.minzoom = tilejson.minzoom;
+        overlay.value.maxzoom = tilejson.maxzoom;
+        overlay.value.bounds = tilejson.bounds.join(',');
+        overlay.value.center = tilejson.center.slice(0, 2).join(',');
+    } else {
+        overlay.value.url = '';
     }
 }
 

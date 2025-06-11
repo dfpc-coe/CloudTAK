@@ -254,10 +254,11 @@ export default class Overlay {
                 course: true,
                 labels: { size }
             });
-
         } else if (!this.styles.length) {
             this.styles = [];
         }
+
+        console.error('STYLES', this.styles);
 
         if (this.type === 'vector' && opts.clickable === undefined) {
             opts.clickable = this.styles.map((l) => {
@@ -361,18 +362,48 @@ export default class Overlay {
         mapStore.map.removeSource(String(this.id));
     }
 
-    async replace(body: {
-        name?: string;
-        url: string;
-        mode_id: string;
-    }, opts: {
-        before?: string;
-    } = {}): Promise<void> {
-        this.name = body.name || this.name;
-        this.url = body.url;
-        this.mode_id = body.mode_id;
-
+    async replace(
+        overlay: {
+            name?: string
+            username?: string
+            actions?: ProfileOverlay["actions"];
+            type?: string;
+            opacity?: number;
+            visible?: boolean;
+            mode?: string;
+            mode_id?: string;
+            url?: string;
+            token?: string;
+            styles?: Array<LayerSpecification>;
+        },
+        opts: {
+            before?: string;
+        } = {}
+    ): Promise<void> {
         this.remove();
+
+        if (overlay.name) this.name = overlay.name;
+        if (overlay.username) this.username = overlay.username;
+        if (overlay.actions) this.actions = overlay.actions || [];
+        if (overlay.type) this.type = overlay.type;
+        if (overlay.opacity) this.opacity = overlay.opacity;
+        if (overlay.visible) this.visible = overlay.visible;
+        if (overlay.mode) this.mode = overlay.mode;
+        if (overlay.mode_id) this.mode_id = overlay.mode_id || null;
+        if (overlay.url) this.url = overlay.url;
+        if (overlay.token) this.token = overlay.token;
+        if (overlay.styles) {
+            if (overlay.styles && overlay.styles.length) {
+                for (const layer of overlay.styles) {
+                    const l = layer as LayerSpecification;
+                    l.id = `${this.id}-${l.id}`;
+                    // @ts-expect-error Special case Background Layer type
+                    l.source = String(this.id);
+                }
+            }
+            this.styles = overlay.styles as Array<LayerSpecification>;
+        }
+
         this.init({
             clickable: this._clickable,
             before: opts.before
@@ -438,6 +469,7 @@ export default class Overlay {
             body: {
                 pos: this.pos,
                 name: this.name,
+                type: this.type,
                 opacity: this.opacity,
                 mode_id: this.mode_id,
                 url: this.url,

@@ -136,7 +136,7 @@ export default async function router(schema: Schema) {
         try {
             auth(req.query.token);
 
-            const file = new FileTiles(`public/${req.params.name}/${req.params.name}`);
+            const file = new FileTiles(`public/${req.params.name}`);
 
             await file.tile(res, req.params.z, req.params.x, req.params.y, req.params.ext);
         } catch (err) {
