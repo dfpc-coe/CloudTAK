@@ -254,10 +254,11 @@ export default class Overlay {
                 course: true,
                 labels: { size }
             });
-
         } else if (!this.styles.length) {
             this.styles = [];
         }
+
+        console.error('STYLES', this.styles);
 
         if (this.type === 'vector' && opts.clickable === undefined) {
             opts.clickable = this.styles.map((l) => {
@@ -460,6 +461,7 @@ export default class Overlay {
             body: {
                 pos: this.pos,
                 name: this.name,
+                type: this.type,
                 opacity: this.opacity,
                 mode_id: this.mode_id,
                 url: this.url,
