@@ -33,10 +33,7 @@
             <div class='row g-2'>
                 <div class='col-12 d-flex align-items-center'>
                     <label class='subheader'>Exclusion Filters</label>
-                    <div
-                        v-if='disabled'
-                        class='ms-auto'
-                    >
+                    <div class='ms-auto'>
                         <TablerIconButton
                             v-if='!disabled'
                             title='Add Filter'
@@ -51,15 +48,15 @@
                 </div>
                 <div class='col-12 border rounded'>
                     <TablerNone
-                        v-if='!outgoing.filters.filters || outgoing.filters.filters.length === 0'
+                        v-if='!outgoing.filters.queries || outgoing.filters.queries.length === 0'
                         label='Exclusion Filters'
                         :compact='true'
                         :create='false'
                     />
                     <template v-else>
                         <template
-                            :key='outgoing.filters.filters.length'
-                            v-for='(filter, filter_idx) of outgoing.filters.filters'
+                            :key='outgoing.filters.queries.length + "-" + filter_idx'
+                            v-for='(filter, filter_idx) of outgoing.filters.queries'
                         >
                             <div class='row mx-2 my-2'>
                                 <TablerInput
@@ -72,7 +69,7 @@
                                         title='Delete Filter'
                                         :size='24'
                                         displaytype='icon'
-                                        @delete='outgoing.filters.filters.splice(filter_idx, 1)'
+                                        @delete='outgoing.filters.queries.splice(filter_idx, 1)'
                                     />
                                 </TablerInput>
                             </div>
@@ -158,9 +155,9 @@ function reload() {
 }
 
 function addFilter() {
-    if (!outgoing.value.filters.filters) outgoing.value.filters.filters = [];
+    if (!outgoing.value.filters.queries) outgoing.value.filters.queries = [];
 
-    outgoing.value.filters.filters.push({
+    outgoing.value.filters.queries.push({
         query: ''
     })
 }
