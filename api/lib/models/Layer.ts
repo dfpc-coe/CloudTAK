@@ -110,6 +110,7 @@ export default class LayerModel extends Modeler<typeof Layer> {
         if (l.outgoing && l.outgoing.layer) {
             if (typeof l.outgoing.ephemeral === 'string') l.outgoing.ephemeral = JSON.parse(l.outgoing.ephemeral)
             if (typeof l.outgoing.environment === 'string') l.outgoing.environment = JSON.parse(l.outgoing.environment)
+            if (typeof l.outgoing.filters === 'string') l.outgoing.filters = JSON.parse(l.outgoing.filters)
         } else {
             delete l.outgoing;
         }
