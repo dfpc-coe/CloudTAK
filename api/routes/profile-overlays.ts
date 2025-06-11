@@ -171,6 +171,7 @@ export default async function router(schema: Schema, config: Config) {
         body: Type.Object({
             pos: Type.Optional(Type.Integer()),
             name: Type.Optional(Type.String()),
+            type: Type.Optional(Type.String()),
             opacity: Type.Optional(Type.Number()),
             visible: Type.Optional(Type.Boolean()),
             url: Type.Optional(Type.String()),
@@ -186,7 +187,7 @@ export default async function router(schema: Schema, config: Config) {
             if (overlay.username !== user.email) throw new Err(401, null, 'Cannot edit another\'s overlay');
 
             if (req.body.styles && req.body.styles.length) {
-                TileJSON.isValidStyle(overlay.type, req.body.styles);
+                TileJSON.isValidStyle(req.body.type || overlay.type, req.body.styles);
             }
 
             if (overlay.mode === 'profile' && req.body.url && req.body.url.startsWith('http')) {
