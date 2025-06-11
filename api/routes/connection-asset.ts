@@ -141,6 +141,9 @@ export default async function router(schema: Schema, config: Config) {
             asset: Type.String(),
             ext: Type.String()
         }),
+        query: Type.Object({
+            download: Type.Boolean()
+        })
     }, async (req, res) => {
         try {
             const { connection } = await Auth.is_connection(config, req, {
@@ -149,6 +152,10 @@ export default async function router(schema: Schema, config: Config) {
                     { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }
                 ]
             }, req.params.connectionid);
+
+            if (req.query.download) {
+                res.setHeader('Content-Disposition', `attachment; filename="${req.params.asset}.${req.params.ext}"`);
+            }
 
             const stream = await S3.get(`connection/${connection.id}/${req.params.asset}.${req.params.ext}`);
 
