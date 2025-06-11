@@ -31,6 +31,55 @@
             class='card-body'
         >
             <div class='row g-2'>
+                <div class='col-12 d-flex align-items-center'>
+                    <label class='subheader'>Exclusion Filters</label>
+                    <div
+                        v-if='disabled'
+                        class='ms-auto'
+                    >
+                        <TablerIconButton
+                            v-if='!disabled'
+                            title='Add Filter'
+                            @click='addFilter'
+                        >
+                            <IconPlus
+                                :size='24'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
+                    </div>
+                </div>
+                <div class='col-12 border rounded'>
+                    <TablerNone
+                        v-if='!outgoing.filters.filters || outgoing.filters.filters.length === 0'
+                        label='Exclusion Filters'
+                        :compact='true'
+                        :create='false'
+                    />
+                    <template v-else>
+                        <template
+                            :key='outgoing.filters.filters.length'
+                            v-for='(filter, filter_idx) of outgoing.filters.filters'
+                        >
+                            <div class='row mx-2 my-2'>
+                                <TablerInput
+                                    label='Filter'
+                                    :disabled='disabled'
+                                    v-model='filter.query'
+                                >
+                                    <TablerDelete
+                                        v-if='!disabled'
+                                        title='Delete Filter'
+                                        :size='24'
+                                        displaytype='icon'
+                                        @delete='outgoing.filters.filters.splice(filter_idx, 1)'
+                                    />
+                                </TablerInput>
+                            </div>
+                        </template>
+                    </template>
+                </div>
+
                 <div
                     v-if='!disabled'
                     class='col-12 pt-3 d-flex'
@@ -62,9 +111,13 @@ import { std } from '../../std.ts';
 import type { ETLLayerOutgoing } from '../../types.ts';
 import {
     TablerIconButton,
-    TablerLoading
+    TablerLoading,
+    TablerDelete,
+    TablerInput,
+    TablerNone
 } from '@tak-ps/vue-tabler';
 import {
+    IconPlus,
     IconPencil,
 } from '@tabler/icons-vue'
 
@@ -102,6 +155,14 @@ onMounted(() => {
 function reload() {
     outgoing.value = props.layer.outgoing;
     disabled.value = true;
+}
+
+function addFilter() {
+    if (!outgoing.value.filters.filters) outgoing.value.filters.filters = [];
+
+    outgoing.value.filters.filters.push({
+        query: ''
+    })
 }
 
 async function saveOutgoing() {
