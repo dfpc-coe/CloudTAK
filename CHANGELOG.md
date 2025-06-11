@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v9.3.0 - 2025-06-10
+
+- :tada: Add support for Public Tilesets
+- :rocket: Allow for changin between Vector and Raster basemaps
+
 ### v9.2.0 - 2025-06-09
 
 - :tada: Support for "Cutting" features from an external GIS system into COT Markers
