@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v9.4.0 - 2025-06-11
+
+- :tada: Introduces UI to add outgoing COT Filters - Closes: https://github.com/dfpc-coe/CloudTAK/issues/671
+- :rocket: Add ability to include a Content-Dispo on Connection Assets
+
 ### v9.3.0 - 2025-06-10
 
 - :tada: Add support for Public Tilesets
