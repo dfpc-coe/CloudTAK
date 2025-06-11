@@ -423,7 +423,7 @@ export const useMapStore = defineStore('cloudtak', {
                     layers: [{
                         id: 'background',
                         type: 'background',
-                        paint: { 'background-color': 'rgb(4,7,14)' }
+                        paint: { 'background-color': 'hsl(47, 26%, 88%)' }
                     }]
                 }
             };

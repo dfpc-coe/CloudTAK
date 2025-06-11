@@ -367,6 +367,14 @@ export default class Overlay {
             name?: string
             username?: string
             actions?: ProfileOverlay["actions"];
+            type?: string;
+            opacity?: number;
+            visible?: boolean;
+            mode?: string;
+            mode_id?: string;
+            url?: string;
+            token?: string;
+            styles?: Array<LayerSpecification>;
         },
         opts: {
             before?: string;
