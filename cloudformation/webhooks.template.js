@@ -57,7 +57,7 @@ export default cf.merge(
                                     'lambda:InvokeFunction'
                                 ],
                                 Resource: [
-                                    cf.join(['arn:', cf.partition, ':lambda:', cf.region, ':', cf.accountId, ':function:coe-etl-', cf.ref('Environment'), '-layer-*']),
+                                    cf.join(['arn:', cf.partition, ':lambda:', cf.region, ':', cf.accountId, ':function:tak-cloudtak-', cf.ref('Environment'), '-layer-*']),
                                     cf.getAtt('CloudTAKWebhooksHealthCheckFunction', 'Arn')
                                 ]
                             }]
