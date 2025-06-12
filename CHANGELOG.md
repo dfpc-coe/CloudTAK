@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v9.4.2 - 2025-06-12
+
+- :rocket: Include Sensor Type & Model in Sidebar
+
 ### v9.4.1 - 2025-06-11
 
 - :bug: Remove Debug call to COTAK resource
