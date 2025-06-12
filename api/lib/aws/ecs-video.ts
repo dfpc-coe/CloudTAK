@@ -30,7 +30,7 @@ export default class ECSVideo {
                 const req: ListTaskDefinitionsCommandInput = {
                     status: 'ACTIVE',
                     sort: 'DESC',
-                    familyPrefix: `coe-media-${this.config.StackName.replace(/^coe-etl-/, '')}-task`
+                    familyPrefix: `coe-media-${this.config.StackName.replace(/^tak-cloudtak-/, '')}-task`
                 };
 
                 if (res && res.nextToken) req.nextToken = res.nextToken;
@@ -54,12 +54,12 @@ export default class ECSVideo {
             const ecs = new AWSECS.ECSClient({ region: process.env.AWS_REGION });
 
             const descs = await ecs.send(new AWSECS.DescribeTasksCommand({
-                cluster: `coe-ecs-${this.config.StackName.replace(/^coe-etl-/, '')}`,
+                cluster: `coe-ecs-${this.config.StackName.replace(/^tak-cloudtak-/, '')}`,
                 tasks: [task]
             }));
 
             if (!descs.tasks || !descs.tasks.length) throw new Err(404, null, 'Could not find task with that ID');
-            if (!descs.tasks[0].taskDefinitionArn || !descs.tasks[0].taskDefinitionArn.includes(`:task-definition/coe-media-${this.config.StackName.replace(/^coe-etl-/, '')}`)) throw new Err(404, null, 'Could not find task with that ID');
+            if (!descs.tasks[0].taskDefinitionArn || !descs.tasks[0].taskDefinitionArn.includes(`:task-definition/coe-media-${this.config.StackName.replace(/^tak-cloudtak-/, '')}`)) throw new Err(404, null, 'Could not find task with that ID');
 
             return descs.tasks[0];
         } catch (err) {
@@ -81,7 +81,7 @@ export default class ECSVideo {
             const ecs = new AWSECS.ECSClient({ region: process.env.AWS_REGION });
 
             await ecs.send(new AWSECS.StopTaskCommand({
-                cluster: `coe-ecs-${this.config.StackName.replace(/^coe-etl-/, '')}`,
+                cluster: `coe-ecs-${this.config.StackName.replace(/^tak-cloudtak-/, '')}`,
                 task: task,
                 reason: 'User Requested Termination from CloudTAK'
             }));
@@ -101,8 +101,8 @@ export default class ECSVideo {
             let res;
             do {
                 const req: ListTasksCommandInput = {
-                    cluster: `coe-ecs-${this.config.StackName.replace(/^coe-etl-/, '')}`,
-                    family: `coe-media-${this.config.StackName.replace(/^coe-etl-/, '')}-task`
+                    cluster: `coe-ecs-${this.config.StackName.replace(/^tak-cloudtak-/, '')}`,
+                    family: `coe-media-${this.config.StackName.replace(/^tak-cloudtak-/, '')}-task`
                 };
 
                 if (res && res.nextToken) req.nextToken = res.nextToken;
@@ -113,7 +113,7 @@ export default class ECSVideo {
             if (!taskArns.length) return [];
 
             const descs = await ecs.send(new AWSECS.DescribeTasksCommand({
-                cluster: `coe-ecs-${this.config.StackName.replace(/^coe-etl-/, '')}`,
+                cluster: `coe-ecs-${this.config.StackName.replace(/^tak-cloudtak-/, '')}`,
                 tasks: taskArns
             }));
 
@@ -138,7 +138,7 @@ export default class ECSVideo {
             if (!this.config.MediaSecurityGroup) throw new Err(400, null, 'Media Security Group is not configured - Contact your administrator');
 
             const res = await ecs.send(new AWSECS.RunTaskCommand({
-                cluster: `coe-ecs-${this.config.StackName.replace(/^coe-etl-/, '')}`,
+                cluster: `coe-ecs-${this.config.StackName.replace(/^tak-cloudtak-/, '')}`,
                 count: 1,
                 enableECSManagedTags: true,
                 launchType: 'FARGATE',
@@ -150,7 +150,7 @@ export default class ECSVideo {
                     },
                 },
                 propagateTags: 'TASK_DEFINITION',
-                taskDefinition: `coe-media-${this.config.StackName.replace(/^coe-etl-/, '')}-task`,
+                taskDefinition: `coe-media-${this.config.StackName.replace(/^tak-cloudtak-/, '')}-task`,
             }));
 
             if (!res.tasks || !res.tasks.length) throw new Error('No Task reported');

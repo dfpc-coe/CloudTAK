@@ -168,7 +168,7 @@ export default {
                                 'sqs:DeleteMessage'
                             ],
                             Resource: [
-                                cf.join(['arn:', cf.partition, ':sqs:', cf.region, ':', cf.accountId, ':coe-etl-', cf.ref('Environment'), '-layer-*'])
+                                cf.join(['arn:', cf.partition, ':sqs:', cf.region, ':', cf.accountId, ':tak-cloudtak-', cf.ref('Environment'), '-layer-*'])
                             ]
                         },{
                             Effect: 'Allow',
@@ -245,10 +245,10 @@ export default {
                                 'apigateway:PUT'
                             ],
                             Resource: [
-                                cf.join(['arn:', cf.partition, ':apigateway:', cf.region, '::/apis/', cf.importValue(cf.join(['coe-etl-webhooks-', cf.ref('Environment'), '-api'])), '/routes']),
-                                cf.join(['arn:', cf.partition, ':apigateway:', cf.region, '::/apis/', cf.importValue(cf.join(['coe-etl-webhooks-', cf.ref('Environment'), '-api'])), '/routes/*']),
-                                cf.join(['arn:', cf.partition, ':apigateway:', cf.region, '::/apis/', cf.importValue(cf.join(['coe-etl-webhooks-', cf.ref('Environment'), '-api'])), '/integrations']),
-                                cf.join(['arn:', cf.partition, ':apigateway:', cf.region, '::/apis/', cf.importValue(cf.join(['coe-etl-webhooks-', cf.ref('Environment'), '-api'])), '/integrations/*'])
+                                cf.join(['arn:', cf.partition, ':apigateway:', cf.region, '::/apis/', cf.importValue(cf.join(['tak-cloudtak-webhooks-', cf.ref('Environment'), '-api'])), '/routes']),
+                                cf.join(['arn:', cf.partition, ':apigateway:', cf.region, '::/apis/', cf.importValue(cf.join(['tak-cloudtak-webhooks-', cf.ref('Environment'), '-api'])), '/routes/*']),
+                                cf.join(['arn:', cf.partition, ':apigateway:', cf.region, '::/apis/', cf.importValue(cf.join(['tak-cloudtak-webhooks-', cf.ref('Environment'), '-api'])), '/integrations']),
+                                cf.join(['arn:', cf.partition, ':apigateway:', cf.region, '::/apis/', cf.importValue(cf.join(['tak-cloudtak-webhooks-', cf.ref('Environment'), '-api'])), '/integrations/*'])
                             ]
                         },{
                             Effect: 'Allow',
@@ -257,7 +257,7 @@ export default {
                             ],
                             Resource: [
                                 cf.join(['arn:', cf.partition, ':iam::', cf.accountId, ':role/', cf.stackName]),
-                                cf.join(['arn:', cf.partition, ':iam::', cf.accountId, ':role/coe-etl-webhooks-', cf.ref('Environment')])
+                                cf.join(['arn:', cf.partition, ':iam::', cf.accountId, ':role/tak-cloudtak-webhooks-', cf.ref('Environment')])
                             ]
                         },{
                             Effect: 'Allow',
@@ -288,7 +288,7 @@ export default {
                                 'sqs:TagQueue'
                             ],
                             Resource: [
-                                cf.join(['arn:', cf.partition, ':sqs:', cf.region, ':', cf.accountId, ':coe-etl-', cf.ref('Environment'), '-layer-*'])
+                                cf.join(['arn:', cf.partition, ':sqs:', cf.region, ':', cf.accountId, ':tak-cloudtak-', cf.ref('Environment'), '-layer-*'])
                             ]
                         },{
                             Effect: 'Allow',
@@ -540,7 +540,7 @@ export default {
                                 'sqs:GetQueueAttributes'
                             ],
                             Resource: [
-                                cf.join(['arn:', cf.partition, ':sqs:', cf.region, ':', cf.accountId, ':coe-etl-', cf.ref('Environment'), '-layer-*'])
+                                cf.join(['arn:', cf.partition, ':sqs:', cf.region, ':', cf.accountId, ':tak-cloudtak-', cf.ref('Environment'), '-layer-*'])
                             ]
                         }]
                     }

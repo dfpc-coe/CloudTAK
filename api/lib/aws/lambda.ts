@@ -222,7 +222,7 @@ export default class Lambda {
                     Type: 'AWS::ApiGatewayV2::Route',
                     Properties: {
                         RouteKey: cf.join(['ANY /', cf.ref('UniqueID') ]),
-                        ApiId: cf.importValue(config.StackName.replace(/^coe-etl-/, 'coe-etl-webhooks-') + '-api'),
+                        ApiId: cf.importValue(config.StackName.replace(/^tak-cloudtak-/, 'tak-cloudtak-webhooks-') + '-api'),
                         Target: cf.join(['integrations/', cf.ref('WebHookResourceIntegration')])
                     }
                 };
@@ -231,7 +231,7 @@ export default class Lambda {
                     Type: 'AWS::ApiGatewayV2::Route',
                     Properties: {
                         RouteKey: cf.join(['ANY /', cf.ref('UniqueID'), '/{proxy+}']),
-                        ApiId: cf.importValue(config.StackName.replace(/^coe-etl-/, 'coe-etl-webhooks-') + '-api'),
+                        ApiId: cf.importValue(config.StackName.replace(/^tak-cloudtak-/, 'tak-cloudtak-webhooks-') + '-api'),
                         Target: cf.join(['integrations/', cf.ref('WebHookResourceIntegration')])
                     }
                 };
@@ -239,10 +239,10 @@ export default class Lambda {
                 stack.Resources.WebHookResourceIntegration = {
                     Type: 'AWS::ApiGatewayV2::Integration',
                     Properties: {
-                        ApiId: cf.importValue(config.StackName.replace(/^coe-etl-/, 'coe-etl-webhooks-') + '-api'),
+                        ApiId: cf.importValue(config.StackName.replace(/^tak-cloudtak-/, 'tak-cloudtak-webhooks-') + '-api'),
                         IntegrationType: 'AWS_PROXY',
                         IntegrationUri: cf.getAtt('ETLFunction', 'Arn'),
-                        CredentialsArn: cf.importValue(config.StackName.replace(/^coe-etl-/, 'coe-etl-webhooks-') + '-role'),
+                        CredentialsArn: cf.importValue(config.StackName.replace(/^tak-cloudtak-/, 'tak-cloudtak-webhooks-') + '-role'),
                         PayloadFormatVersion: '2.0'
                     }
                 }
