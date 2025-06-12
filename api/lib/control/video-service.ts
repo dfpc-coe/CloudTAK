@@ -433,6 +433,7 @@ export default class VideoServiceControl {
         name: string;
         ephemeral: boolean;
         expiration: string | null;
+        source_id: string | null | undefined;
         source_type?: VideoLease_SourceType;
         source_model?: string;
         path: string;
@@ -460,6 +461,7 @@ export default class VideoServiceControl {
             path: opts.path,
             recording: opts.recording,
             publish: opts.publish,
+            source_id: opts.source_id,
             source_type: opts.source_type,
             source_model: opts.source_model,
             username: opts.username,
@@ -572,6 +574,7 @@ export default class VideoServiceControl {
             expiration?: string | null,
             recording?: boolean,
             publish?: boolean,
+            source_id: string | null | undefined;
             source_type?: VideoLease_SourceType,
             source_model?: string,
         },
