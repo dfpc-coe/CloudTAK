@@ -92,6 +92,7 @@ export const VideoLease = pgTable('video_lease', {
     username: text().references(() => Profile.username),
     connection: integer().references(() => Connection.id),
 
+    source_id: text(),
     source_type: text().$type<VideoLease_SourceType>().notNull().default(VideoLease_SourceType.UNKNOWN),
     source_model: text().notNull().default(''),
 

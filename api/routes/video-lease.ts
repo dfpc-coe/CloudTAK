@@ -97,6 +97,7 @@ export default async function router(schema: Schema, config: Config) {
                 username: Type.Union([Type.Null(), Type.String()]),
                 active: Type.Boolean(),
                 watchers: Type.Integer(),
+                source_id: Type.Optional(Type.Union([Type.Null(), Type.String()])),
                 source_type: Type.Enum(VideoLease_SourceType),
                 source_model: Type.String(),
                 protocols: Protocols
@@ -135,6 +136,7 @@ export default async function router(schema: Schema, config: Config) {
                     username: lease.username,
                     active: path.ready,
                     watchers: path.readers.length,
+                    source_id: lease.source_id,
                     source_type: lease.source_type,
                     source_model: lease.source_model || ''
                 };
@@ -334,6 +336,7 @@ export default async function router(schema: Schema, config: Config) {
                 default: false,
                 description: 'Increase stream security by enforcing a seperate read and write username/password'
             }),
+            source_id: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             source_type: Type.Optional(Type.Enum(VideoLease_SourceType)),
             source_model: Type.Optional(Type.String()),
             channel: Type.Optional(Type.Union([Type.String(), Type.Null()])),
@@ -358,6 +361,7 @@ export default async function router(schema: Schema, config: Config) {
                 ephemeral: req.body.ephemeral,
                 channel: req.body.channel,
                 expiration: req.body.permanent ? null : moment().add(req.body.duration, 'seconds').toISOString(),
+                source_id: req.body.source_id,
                 source_type: req.body.source_type,
                 source_model: req.body.source_model,
                 recording: req.body.recording,
@@ -391,6 +395,7 @@ export default async function router(schema: Schema, config: Config) {
                 default: 60 * 60,
                 description: 'Duration in Seconds'
             }),
+            source_id: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             source_type: Type.Optional(Type.Enum(VideoLease_SourceType)),
             source_model: Type.Optional(Type.String()),
             channel: Type.Optional(Type.Union([Type.String(), Type.Null()])),
@@ -427,6 +432,7 @@ export default async function router(schema: Schema, config: Config) {
                 recording: req.body.recording,
                 publish: req.body.publish,
                 expiration: req.body.permanent ? null : moment().add(req.body.duration, 'seconds').toISOString(),
+                source_id: req.body.source_id,
                 source_type: req.body.source_type,
                 source_model: req.body.source_model,
             }, {
