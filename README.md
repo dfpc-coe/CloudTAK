@@ -204,4 +204,6 @@ in the bucket and their purpose
 | `data/{data sync id}/{file.ext}`  | CloudTAK managed Data Sync file contents |
 | `import/{UUID}/{file.ext}`        | User Imports |
 | `profile/{email}/{file.ext}`      | User Files |
+| `public/{name}.pmtiles`           | Public Tile Pyramids |
+
 
