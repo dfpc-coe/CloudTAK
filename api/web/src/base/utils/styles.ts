@@ -202,7 +202,7 @@ export default function styles(id: string, opts: {
             filter: groupFilter,
             paint: {
                 'circle-color': ['get', 'marker-color'],
-                'cirlce-opacity': ["number", ["get", "marker-opacity"], 1],
+                'circle-opacity': ["number", ["get", "marker-opacity"], 1],
                 'circle-stroke-color': '#ffffff',
                 'circle-stroke-width': [
                     'interpolate',
