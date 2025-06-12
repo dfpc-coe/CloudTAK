@@ -97,7 +97,7 @@ export default async function router(schema: Schema, config: Config) {
                 username: Type.Union([Type.Null(), Type.String()]),
                 active: Type.Boolean(),
                 watchers: Type.Integer(),
-                source_id: Type.Union([Type.Null(), Type.String()]),
+                source_id: Type.Optional(Type.Union([Type.Null(), Type.String()])),
                 source_type: Type.Enum(VideoLease_SourceType),
                 source_model: Type.String(),
                 protocols: Protocols
