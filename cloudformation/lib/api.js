@@ -23,7 +23,7 @@ export default {
                     Value: true
                 },{
                     Key: 'connection_logs.s3.bucket',
-                    Value: cf.importValue(cf.join(['coe-elb-logs-', cf.ref('Environment'), '-bucket']))
+                    Value: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-bucket']))
                 },{
                     Key: 'connection_logs.s3.prefix',
                     Value: cf.stackName
@@ -32,14 +32,14 @@ export default {
                     Value: true
                 },{
                     Key: 'access_logs.s3.bucket',
-                    Value: cf.importValue(cf.join(['coe-elb-logs-', cf.ref('Environment'), '-bucket']))
+                    Value: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-bucket']))
                 },{
                     Key: 'access_logs.s3.prefix',
                     Value: cf.stackName
                 }],
                 Subnets:  [
-                    cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-subnet-public-a'])),
-                    cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-subnet-public-b']))
+                    cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-public-a'])),
+                    cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-public-b']))
                 ]
             }
         },
@@ -63,7 +63,7 @@ export default {
                     FromPort: 80,
                     ToPort: 80
                 }],
-                VpcId: cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-vpc']))
+                VpcId: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-vpc']))
             }
         },
         HttpsListener: {
@@ -107,7 +107,7 @@ export default {
                 Port: 5000,
                 Protocol: 'HTTP',
                 TargetType: 'ip',
-                VpcId: cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-vpc'])),
+                VpcId: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-vpc'])),
                 Matcher: {
                     HttpCode: '200,202,302,304'
                 }
@@ -442,9 +442,9 @@ export default {
                         { Name: 'StackName', Value: cf.stackName },
                         { Name: 'ASSET_BUCKET', Value: cf.ref('AssetBucket') },
                         { Name: 'API_URL', Value: cf.ref('HostedURL') },
-                        { Name: 'VpcId', Value: cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-vpc'])) },
-                        { Name: 'SubnetPublicA', Value: cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-subnet-public-a'])) },
-                        { Name: 'SubnetPublicB', Value: cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-subnet-public-b'])) },
+                        { Name: 'VpcId', Value: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-vpc'])) },
+                        { Name: 'SubnetPublicA', Value: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-public-a'])) },
+                        { Name: 'SubnetPublicB', Value: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-public-b'])) },
                         { Name: 'MediaSecurityGroup', Value: cf.ref('MediaSecurityGroup') }
                     ],
                     RestartPolicy: {
@@ -480,8 +480,8 @@ export default {
                         AssignPublicIp: 'ENABLED',
                         SecurityGroups: [cf.ref('ServiceSecurityGroup')],
                         Subnets:  [
-                            cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-subnet-public-a'])),
-                            cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-subnet-public-b']))
+                            cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-public-a'])),
+                            cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-public-b']))
                         ]
                     }
                 },
@@ -501,7 +501,7 @@ export default {
                 }],
                 GroupName: cf.join('-', [cf.stackName, 'ec2-sg']),
                 GroupDescription: 'Allow access to docker port 5000',
-                VpcId: cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-vpc'])),
+                VpcId: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-vpc'])),
                 SecurityGroupIngress: [{
                     Description: 'ELB Traffic',
                     IpProtocol: 'tcp',

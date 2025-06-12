@@ -42,7 +42,7 @@ export default {
                     FromPort: 1935,
                     ToPort: 1935
                 }],
-                VpcId: cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-vpc']))
+                VpcId: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-vpc']))
             }
         }
     }
