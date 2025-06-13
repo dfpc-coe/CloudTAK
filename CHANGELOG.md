@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v10.0.0 - 2025-06-12
+
+- :rocket: Migrate to VPC 2.0
+- This will require significant devops work to migrate without downtime - contact nicholas.ingalls@state.co.us to discuss steps
+
 ### v9.4.2 - 2025-06-12
 
 - :rocket: Include Sensor Type & Model in Sidebar
