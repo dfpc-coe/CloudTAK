@@ -134,7 +134,7 @@ export default class Lambda {
                     EvaluationPeriods: 5,
                     Statistic: 'Maximum',
                     Period: 60,
-                    AlarmActions: [cf.ref('HighUrgencyAlarmTopic')],
+                    AlarmActions: [],
                     Dimensions: [{
                         Name: 'QueueName',
                         Value: cf.getAtt('OutgoingDeadQueue', 'QueueName')
@@ -153,7 +153,7 @@ export default class Lambda {
                     EvaluationPeriods: 5,
                     Statistic: 'Maximum',
                     Period: 60,
-                    AlarmActions: [cf.ref('HighUrgencyAlarmTopic')],
+                    AlarmActions: [ ],
                     Dimensions: [{
                         Name: 'QueueName',
                         Value: cf.getAtt('OutgoingQueue', 'QueueName')
@@ -251,11 +251,19 @@ export default class Lambda {
             if (layer.priority !== 'off') {
                 stack.Resources.LambdaAlarm.Properties.AlarmActions.push(
                     cf.join(['arn:', cf.partition, ':sns:', cf.region, `:`, cf.accountId, `:${config.StackName}-${layer.priority}-urgency`])
-                )
+                );
+
+                stack.Resources.OutgoingDeadQueueBacklogAlarm.Properties.AlarmActions.push(
+                    cf.join(['arn:', cf.partition, ':sns:', cf.region, `:`, cf.accountId, `:${config.StackName}-${layer.priority}-urgency`])
+                );
+
+                stack.Resources.OutgoingQueueBacklogAlarm.Properties.AlarmActions.push(
+                    cf.join(['arn:', cf.partition, ':sns:', cf.region, `:`, cf.accountId, `:${config.StackName}-${layer.priority}-urgency`])
+                );
 
                 stack.Resources.LambdaNoInvocationAlarm.Properties.AlarmActions.push(
                     cf.join(['arn:', cf.partition, ':sns:', cf.region, `:`, cf.accountId, `:${config.StackName}-${layer.priority}-urgency`])
-                )
+                );
             }
 
             if (layer.incoming.cron && Schedule.is_aws(layer.incoming.cron)) {
