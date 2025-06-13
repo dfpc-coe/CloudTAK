@@ -61,13 +61,18 @@ export default class EventsPool {
 
             this.jobs.set(layerid, setInterval(async () => {
                 console.log(`Invoking Layer ${layerid}: ${this.stackName}-layer-${layerid}`);
-                await lambda.send(new AWSLambda.InvokeCommand({
-                    FunctionName: `${this.stackName}-layer-${layerid}`,
-                    InvocationType: 'Event',
-                    Payload: Buffer.from(JSON.stringify({
-                        type: 'default'
-                    }))
-                }));
+
+                try {
+                    await lambda.send(new AWSLambda.InvokeCommand({
+                        FunctionName: `${this.stackName}-layer-${layerid}`,
+                        InvocationType: 'Event',
+                        Payload: Buffer.from(JSON.stringify({
+                            type: 'default'
+                        }))
+                    }));
+                } catch (err) {
+                    console.error(err);
+                }
             }, parsed.freq * 1000));
         } catch (err) {
             console.error(`CloudTAK EventPool: Add Error on Layer ${layerid}`, err);
