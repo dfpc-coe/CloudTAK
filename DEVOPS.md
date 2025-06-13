@@ -33,10 +33,10 @@ Restarting CloudTAK can be done by following these steps:
 > CloudTAK Production for the COTAK Environment would have a cluster named `coe-ecs-prod`
 
 6. Clicking on the Cluster will bring you to the Service Page. Services are "applications" that can contain one or more "Tasks" (A single emulated "server")
-   For CloudTAK, click on the service named: `coe-etl-<environment>-Service`
+   For CloudTAK, click on the service named: `tak-cloudtak-<environment>-Service`
    
 > [!TIP]
-> CloudTAK Production for the COTAK Environment would have a cluster named `coe-etl-prod-Service`
+> CloudTAK Production for the COTAK Environment would have a cluster named `tak-cloudtak-prod-Service`
 
 7. Clicking on the Cluster will bring you to the Service Health Page. This page will list stats about CPU & Memory usage
    as well as information about the last deployment to the service and the health of specific ports on the Server. CloudTAK

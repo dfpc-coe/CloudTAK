@@ -122,7 +122,7 @@ export default function styles(id: string, opts: {
                 ['has', 'group']
             ],
             paint: {
-                'icon-opacity': 1,
+                'icon-opacity': ["number", ["get", "marker-opacity"], 1],
                 'icon-halo-color': '#ffffff',
                 'icon-halo-width': 4
             },
@@ -161,7 +161,7 @@ export default function styles(id: string, opts: {
                 ['has', 'icon']
             ],
             paint: {
-                'icon-opacity': ['get', 'icon-opacity'],
+                'icon-opacity': ["number", ["get", "marker-opacity"], 1],
                 'icon-halo-color': '#ffffff',
                 'icon-halo-width': 4
             },

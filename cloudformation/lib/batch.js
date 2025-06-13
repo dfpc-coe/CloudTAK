@@ -116,8 +116,8 @@ export default {
                     MaxvCpus: 128,
                     SecurityGroupIds: [cf.ref('BatchSecurityGroup')],
                     Subnets: [
-                        cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-subnet-private-a'])),
-                        cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-subnet-private-b']))
+                        cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-private-a'])),
+                        cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-private-b']))
                     ]
                 }
             }
@@ -146,7 +146,7 @@ export default {
                     Key: 'Name',
                     Value: cf.join('-', [cf.stackName, 'vpc'])
                 }],
-                VpcId: cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-vpc'])),
+                VpcId: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-vpc'])),
                 GroupName: cf.join([cf.stackName, '-batch']),
                 GroupDescription: cf.join([cf.stackName, ' Batch Security Group'])
             }
