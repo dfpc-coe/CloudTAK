@@ -44,7 +44,7 @@
         "milsymbol": "^3.0.2",
         "moment": "^2.29.3",
         "p12-pem": "^1.0.5",
-        "phone": "^3.1.42",
+        "phone": "3.1.59",
         "pinia": "^3.0.0",
         "sortablejs": "^1.15.2",
         "terra-draw": "^1.7.0",
