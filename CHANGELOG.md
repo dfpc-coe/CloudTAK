@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v10.0.1 - 2025-06-13
+
+- :bug: Need to investigate root casue further but somehow a CloudFormation `ref` worked on CloudFormation template update despite being null but not on a fresh deployment
+
 ### v10.0.0 - 2025-06-12
 
 - :rocket: Migrate to VPC 2.0
