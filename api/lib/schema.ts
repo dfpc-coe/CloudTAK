@@ -222,6 +222,7 @@ export const Icon = pgTable('icons', {
 
 export const Connection = pgTable('connections', {
     id: serial().primaryKey(),
+    readonly: boolean().notNull().default(false),
     agency: integer(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
