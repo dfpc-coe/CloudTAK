@@ -163,6 +163,7 @@ export const ProfileOverlayResponse = createSelectSchema(schemas.ProfileOverlay,
 
 export const ProfileInterestResponse = createSelectSchema(schemas.ProfileInterest, {
     id: Type.Integer(),
+    bounds: Feature.Geometry
 });
 
 export const ProfileFeature = Type.Composite([ Feature.Feature, Type.Object({
