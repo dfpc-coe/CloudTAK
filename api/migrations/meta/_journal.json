@@ -764,6 +764,13 @@
       "when": 1749763453855,
       "tag": "0108_living_warbound",
       "breakpoints": true
+    },
+    {
+      "idx": 109,
+      "version": "7",
+      "when": 1750099477205,
+      "tag": "0109_graceful_shotgun",
+      "breakpoints": true
     }
   ]
 }
