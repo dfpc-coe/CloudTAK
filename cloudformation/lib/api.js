@@ -2,6 +2,21 @@ import cf from '@openaddresses/cloudfriend';
 
 export default {
     Resources: {
+        ELBDNS: {
+            Type: 'AWS::Route53::RecordSet',
+            Properties: {
+                HostedZoneName: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name'])),
+                Type : 'A',
+                TTL: 300,
+                Name: cf.join(['map.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
+                Comment: cf.join(' ', [ cf.stackName, 'UI/API DNS Entry']),
+                AliasTarget: {
+                    DNSName: cf.getAtt('ELB', 'DNSName'),
+                    EvaluateTargetHealth: true,
+                    HostedZoneId: cf.getAtt('ELB', 'CanonicalHostedZoneId')
+                }
+            }
+        },
         Logs: {
             Type: 'AWS::Logs::LogGroup',
             Properties: {
