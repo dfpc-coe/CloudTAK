@@ -9,7 +9,7 @@ export default {
                 Type : 'A',
                 TTL: 300,
                 Name: cf.join(['map.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
-                Comment: cf.join(' ', [ cf.stackName, 'UI/API DNS Entry']),
+                Comment: cf.join(' ', [cf.stackName, 'UI/API DNS Entry']),
                 AliasTarget: {
                     DNSName: cf.getAtt('ELB', 'DNSName'),
                     EvaluateTargetHealth: true,
