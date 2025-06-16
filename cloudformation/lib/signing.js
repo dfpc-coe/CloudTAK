@@ -4,6 +4,7 @@ export default {
     Resources: {
         MediaSecret: {
             Type: 'AWS::SecretsManager::Secret',
+            DeletionPolicy: 'Retain',
             Properties: {
                 Description: cf.join([cf.stackName, ' Media Secret']),
                 GenerateSecretString: {
@@ -16,6 +17,7 @@ export default {
         },
         SigningSecret: {
             Type: 'AWS::SecretsManager::Secret',
+            DeletionPolicy: 'Retain',
             Properties: {
                 Description: cf.join([cf.stackName, ' Signing Secret']),
                 GenerateSecretString: {
