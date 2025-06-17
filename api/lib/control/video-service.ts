@@ -439,6 +439,7 @@ export default class VideoServiceControl {
         path: string;
         username?: string;
         connection?: number;
+        layer?: number;
         recording: boolean;
         publish: boolean;
         secure: boolean;
@@ -465,6 +466,8 @@ export default class VideoServiceControl {
             source_type: opts.source_type,
             source_model: opts.source_model,
             username: opts.username,
+            connection: opts.connection,
+            layer: opts.layer,
             channel: opts.channel,
             proxy: opts.proxy
         });
