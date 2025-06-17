@@ -7,7 +7,7 @@ export default {
             Properties: {
                 HostedZoneId: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-id'])),
                 Type : 'A',
-                Name: cf.join([cf.ref('SubdomainPrefix'), '.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
+                Name: cf.join(['tiles.', cf.ref('SubdomainPrefix'), '.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
                 Comment: cf.join(' ', [cf.stackName, 'PMTiles API DNS Entry']),
                 AliasTarget: {
                     DNSName: cf.getAtt('PMTilesApiDomain', 'RegionalDomainName'),
