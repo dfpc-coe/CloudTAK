@@ -11,7 +11,7 @@ export default {
                 Comment: cf.join(' ', [cf.stackName, 'PMTiles API DNS Entry']),
                 AliasTarget: {
                     DNSName: cf.getAtt('PMTilesApiDomain', 'RegionalDomainName'),
-                    HostedZoneId: cf.ref('PMTilesApiDomain', 'RegionalHostedZoneId')
+                    HostedZoneId: cf.getAtt('PMTilesApiDomain', 'RegionalHostedZoneId')
                 }
             }
         },
