@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v10.2.1 - 2025-06-17
+
+- :rocket: Update Web Types
+
 ### v10.2.0 - 2025-06-17
 
 - :bug: Fix a bug where CloudFormation Parameters in Layers weren't updating properly
