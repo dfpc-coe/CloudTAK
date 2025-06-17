@@ -7,6 +7,7 @@ import jwt from 'jsonwebtoken';
 import Schedule from '../schedule.js';
 import process from 'node:process';
 import { Static } from '@sinclair/typebox'
+import { StackFrame } from './cloudformation.js';
 import { Capabilities } from '@tak-ps/etl'
 
 /**
@@ -52,7 +53,7 @@ export default class Lambda {
     static generate(
         config: Config,
         layer: Static<typeof AugmentedLayer>
-    ): object {
+    ): Static<typeof StackFrame> {
         const StackName = `${config.StackName}-layer-${layer.id}`;
 
         const stack: any = {

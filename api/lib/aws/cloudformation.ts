@@ -2,6 +2,21 @@ import Config from '../config.js';
 import AWSCloudFormation from '@aws-sdk/client-cloudformation';
 import AWSCWL from '@aws-sdk/client-cloudwatch-logs';
 import process from 'node:process';
+import { Type } from '@sinclair/typebox';
+import type { Static } from '@sinclair/typebox';
+
+export const StackFrame = Type.Object({
+    Description: Type.String(),
+    Parameters: Type.Record(Type.String(), Type.Object({
+        Default: Type.String(),
+        Description: Type.Optional(Type.String()),
+        Type: Type.String()
+    })),
+    Resources: Type.Record(Type.String(), Type.Object({
+        Type: Type.String(),
+        Properties: Type.Optional(Type.Record(Type.String(), Type.Any()))
+    })),
+});
 
 /**
  * @class
@@ -23,7 +38,11 @@ export default class CloudFormation {
         return res.Stacks[0];
     }
 
-    static async create(config: Config, layerid: number, stack: object): Promise<void> {
+    static async create(
+        config: Config,
+        layerid: number,
+        stack: Static<typeof StackFrame>
+    ): Promise<void> {
         const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_REGION });
         const cwl = new AWSCWL.CloudWatchLogsClient({ region: process.env.AWS_REGION });
 
@@ -40,17 +59,33 @@ export default class CloudFormation {
         await cf.send(new AWSCloudFormation.CreateStackCommand({
             StackName: this.stdname(config, layerid),
             TemplateBody: JSON.stringify(stack),
-            Tags: (await this.self(config)).Tags
+            Tags: (await this.self(config)).Tags,
+            Parameters: Object.keys(stack.Parameters).map(key => {
+                return {
+                    ParameterKey: key,
+                    ParameterValue: stack.Parameters[key].Default
+                };
+            })
         }));
     }
 
-    static async update(config: Config, layerid: number, stack: object): Promise<void> {
+    static async update(
+        config: Config,
+        layerid: number,
+        stack: Static<typeof StackFrame>
+    ): Promise<void> {
         const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_REGION });
 
         await cf.send(new AWSCloudFormation.UpdateStackCommand({
             StackName: this.stdname(config, layerid),
             TemplateBody: JSON.stringify(stack),
             Tags: (await this.self(config)).Tags,
+            Parameters: Object.keys(stack.Parameters).map(key => {
+                return {
+                    ParameterKey: key,
+                    ParameterValue: stack.Parameters[key].Default
+                };
+            })
         }));
     }
 
