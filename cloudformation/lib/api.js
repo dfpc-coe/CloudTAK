@@ -5,7 +5,7 @@ export default {
         SubdomainPrefix: {
             Description: 'Prefix of domain: ie "map" of map.example.com',
             Type: 'String'
-        },
+        }
     },
     Resources: {
         ELBDNS: {
@@ -582,7 +582,7 @@ export default {
             Export: {
                 Name: cf.join([cf.stackName, '-hosted'])
             },
-            Value: cf.join(['https://', cf.ref('SubdomainPrefix'), '.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
+            Value: cf.join(['https://', cf.ref('SubdomainPrefix'), '.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))])
         },
         ETLRole: {
             Description: 'ETL Lambda Role',
