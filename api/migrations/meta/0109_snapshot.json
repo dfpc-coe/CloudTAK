@@ -1,6 +1,6 @@
 {
-  "id": "37fd03ed-4b9d-4095-bd8a-b072cd7313b8",
-  "prevId": "d85e9a05-a700-4827-b2e6-2a1963ff12b0",
+  "id": "314f3878-3338-4056-add2-08538da0b9e9",
+  "prevId": "557da532-1d03-4a13-81a8-a0c1923a5b0e",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -168,6 +168,13 @@
           "type": "serial",
           "primaryKey": true,
           "notNull": true
+        },
+        "readonly": {
+          "name": "readonly",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
         },
         "agency": {
           "name": "agency",
@@ -1253,6 +1260,13 @@
           "notNull": true,
           "default": "Now()"
         },
+        "filters": {
+          "name": "filters",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::json"
+        },
         "environment": {
           "name": "environment",
           "type": "json",
@@ -1700,7 +1714,23 @@
           "notNull": true
         }
       },
-      "indexes": {},
+      "indexes": {
+        "profile_features_username_idx": {
+          "name": "profile_features_username_idx",
+          "columns": [
+            {
+              "expression": "username",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "profile_features_username_profile_username_fk": {
           "name": "profile_features_username_profile_username_fk",
@@ -1813,7 +1843,7 @@
           "name": "bounds",
           "type": "GEOMETRY(POLYGON, 4326)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "created": {
           "name": "created",
@@ -2321,6 +2351,12 @@
         "connection": {
           "name": "connection",
           "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "source_id": {
+          "name": "source_id",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },

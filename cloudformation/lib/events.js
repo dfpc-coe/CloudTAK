@@ -14,7 +14,7 @@ export default {
                 PackageType: 'Image',
                 Environment: {
                     Variables: {
-                        TAK_ETL_API: cf.join(['https://', cf.ref('HostedURL')]),
+                        TAK_ETL_API: cf.join(['https://', cf.ref('SubdomainPrefix'), '.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
                         StackName: cf.stackName,
                         SigningSecret: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/secret:SecretString::AWSCURRENT}}')
                     }

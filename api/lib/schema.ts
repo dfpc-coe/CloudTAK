@@ -222,6 +222,7 @@ export const Icon = pgTable('icons', {
 
 export const Connection = pgTable('connections', {
     id: serial().primaryKey(),
+    readonly: boolean().notNull().default(false),
     agency: integer(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
@@ -368,7 +369,7 @@ export const ProfileInterest = pgTable('profile_interests', {
     id: serial().primaryKey(),
     name: text().notNull(),
     username: text().notNull().references(() => Profile.username),
-    bounds: geometry({ type: GeometryType.Polygon, srid: 4326 }).$type<Polygon>(),
+    bounds: geometry({ type: GeometryType.Polygon, srid: 4326 }).$type<Polygon>().notNull(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
 });
