@@ -2,6 +2,20 @@ import cf from '@openaddresses/cloudfriend';
 
 export default {
     Resources: {
+        PMTilesDNS: {
+            Type: 'AWS::Route53::RecordSet',
+            Properties: {
+                HostedZoneId: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-id'])),
+                Type : 'A',
+                Name: cf.join(['tiles.', cf.ref('SubdomainPrefix'), '.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
+                Comment: cf.join(' ', [cf.stackName, 'PMTiles API DNS Entry']),
+                AliasTarget: {
+                    DNSName: cf.getAtt('PMTilesApiDomain', 'RegionalDomainName'),
+                    EvaluateTargetHealth: true,
+                    HostedZoneId: cf.getAtt('PMTilesApiDomain', 'RegionalHostedZoneId')
+                }
+            }
+        },
         PMTilesLambda: {
             Type: 'AWS::Lambda::Function',
             DependsOn: ['SigningSecret'],
@@ -15,7 +29,7 @@ export default {
                     Variables: {
                         StackName: cf.stackName,
                         ASSET_BUCKET: cf.ref('AssetBucket'),
-                        APIROOT: cf.join(['https://tiles.', cf.ref('HostedURL')]),
+                        APIROOT: cf.join(['https://tiles.', cf.ref('SubdomainPrefix'), '.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
                         SigningSecret: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/secret:SecretString::AWSCURRENT}}')
                     }
                 },
@@ -97,7 +111,7 @@ export default {
         PMTilesApiDomain: {
             Type: 'AWS::ApiGateway::DomainName',
             Properties: {
-                DomainName: cf.join(['tiles.', cf.ref('HostedURL')]),
+                DomainName: cf.join(['tiles.', cf.ref('SubdomainPrefix'), '.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
                 RegionalCertificateArn: cf.join(['arn:', cf.partition, ':acm:', cf.region, ':', cf.accountId, ':certificate/', cf.ref('SSLCertificateIdentifier')]),
                 EndpointConfiguration: {
                     Types: ['REGIONAL']
@@ -195,7 +209,7 @@ export default {
     Outputs: {
         PMTilesAPI: {
             Description: 'PMTiles API',
-            Value: cf.join(['https://tiles.', cf.ref('HostedURL')]),
+            Value: cf.join(['https://tiles.', cf.ref('SubdomainPrefix'), '.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
             Export: {
                 Name: cf.join([cf.stackName, '-pmtiles-api'])
             }

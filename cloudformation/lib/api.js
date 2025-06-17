@@ -1,7 +1,27 @@
 import cf from '@openaddresses/cloudfriend';
 
 export default {
+    Parameters: {
+        SubdomainPrefix: {
+            Description: 'Prefix of domain: ie "map" of map.example.com',
+            Type: 'String'
+        }
+    },
     Resources: {
+        ELBDNS: {
+            Type: 'AWS::Route53::RecordSet',
+            Properties: {
+                HostedZoneId: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-id'])),
+                Type : 'A',
+                Name: cf.join([cf.ref('SubdomainPrefix'), '.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
+                Comment: cf.join(' ', [cf.stackName, 'UI/API DNS Entry']),
+                AliasTarget: {
+                    DNSName: cf.getAtt('ELB', 'DNSName'),
+                    EvaluateTargetHealth: true,
+                    HostedZoneId: cf.getAtt('ELB', 'CanonicalHostedZoneID')
+                }
+            }
+        },
         Logs: {
             Type: 'AWS::Logs::LogGroup',
             Properties: {
@@ -441,7 +461,7 @@ export default {
                         { Name: 'CLOUDTAK_Mode', Value: 'AWS' },
                         { Name: 'StackName', Value: cf.stackName },
                         { Name: 'ASSET_BUCKET', Value: cf.ref('AssetBucket') },
-                        { Name: 'API_URL', Value: cf.ref('HostedURL') },
+                        { Name: 'API_URL', Value: cf.join([cf.ref('SubdomainPrefix'), '.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]) },
                         { Name: 'VpcId', Value: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-vpc'])) },
                         { Name: 'SubnetPublicA', Value: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-public-a'])) },
                         { Name: 'SubnetPublicB', Value: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-public-b'])) },
@@ -562,7 +582,7 @@ export default {
             Export: {
                 Name: cf.join([cf.stackName, '-hosted'])
             },
-            Value: cf.join(['https://', cf.ref('HostedURL')])
+            Value: cf.join(['https://', cf.ref('SubdomainPrefix'), '.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))])
         },
         ETLRole: {
             Description: 'ETL Lambda Role',
