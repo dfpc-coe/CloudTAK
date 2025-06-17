@@ -172,6 +172,7 @@ export default async function router(schema: Schema, config: Config) {
                 path: randomUUID(),
                 secure: req.body.secure,
                 connection: req.params.connectionid,
+                layer: layer ? layer.id : undefined,
                 proxy: req.body.proxy
             })
 
