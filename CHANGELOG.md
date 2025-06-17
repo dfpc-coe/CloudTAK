@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v10.1.0 - 2025-06-17
+
+- :tada: Include Route53 Domain in CloudFormation Template -- Note you will have to delete Route53 Domains before deploying this version so they are controlled by IaC
+
 ### v10.0.1 - 2025-06-13
 
 - :bug: Need to investigate root casue further but somehow a CloudFormation `ref` worked on CloudFormation template update despite being null but not on a fresh deployment
@@ -85,7 +89,7 @@
 - :rocket: Add GOTO Home Logo
 - :rocket: Continue to iterate on merging of data and events codebase
 - :rocket: Automatically add archived tags to routes
-- :bug: Fix double tooltip 
+- :bug: Fix double tooltip
 - :bug: Remove a bunch of console.error calls
 - :bug: Fix time calc for breadcrumb loading
 
