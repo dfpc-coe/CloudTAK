@@ -33,7 +33,7 @@ export default cf.merge(
                     Comment: cf.join(' ', [cf.stackName, 'UI/API DNS Entry']),
                     AliasTarget: {
                         DNSName: cf.getAtt('CloudTAKWebhooksApiDomain', 'RegionalDomainName'),
-                        HostedZoneId: cf.ref('CloudTAKWebhooksApiDomain', 'RegionalHostedZoneId')
+                        HostedZoneId: cf.getAtt('CloudTAKWebhooksApiDomain', 'RegionalHostedZoneId')
                     }
                 }
             },
