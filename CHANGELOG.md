@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v10.2.0 - 2025-06-17
+
+- :bug: Fix a bug where CloudFormation Parameters in Layers weren't updating properly
+- :bug: Fix a bug where Connection Video Leases didn't get their connection
+- :rocket: Automatically infer a `VideoLease.layer` where possible
+
 ### v10.1.0 - 2025-06-17
 
 - :tada: Include Route53 Domain in CloudFormation Template -- Note you will have to delete Route53 Domains before deploying this version so they are controlled by IaC
