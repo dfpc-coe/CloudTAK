@@ -1,22 +1,28 @@
 <template>
-    <div
-        class='position-absolute end-0 text-white bg-dark'
-        style='
-        top: 56px;
-        z-index: 1;
-        width: 400px;
-        border-radius: 0px 6px 0px 0px;
-    '
-    >
-        <div class='mx-2 my-2'>
-            <TablerInput
-                v-model='config.name'
-                label='Name'
-                @submit='submitPoint'
-            />
+    <TablerModal size='md'>
+        <div class='modal-status bg-blue' />
+        <button
+            type='button'
+            class='btn-close'
+            aria-label='Close'
+            @click='emit("close")'
+        />
+        <div class='modal-header text-white'>
+            <div class='modal-title'>Coordinate Entry</div>
+        </div>
+        <div class='modal-body text-white'>
+            <div class='mx-2 my-2'>
+                <TablerInput
+                    v-model='config.name'
+                    label='Name'
+                    @submit='submitPoint'
+                />
+            </div>
+
             <Coordinate
                 v-model='config.coordinates'
                 :edit='true'
+                :hover='true'
                 :modes='["dd"]'
                 @submit='submitPoint'
             />
@@ -34,7 +40,7 @@
                 Save
             </button>
         </div>
-    </div>
+    </TablerModal>
 </template>
 
 <script setup lang='ts'>
@@ -43,6 +49,7 @@ import Coordinate from './util/Coordinate.vue';
 import CoordinateType from './util/CoordinateType.vue';
 import {
     TablerInput,
+    TablerModal,
 } from '@tak-ps/vue-tabler';
 import type { LngLatLike } from 'maplibre-gl'
 import { useMapStore } from '../../stores/map.ts';
