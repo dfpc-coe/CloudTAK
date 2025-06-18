@@ -29,7 +29,7 @@
                     <div class='modal-header px-0 mx-2 align-center'>
                         <div class='modal-title' />
                         <div class='modal-title'>
-                            Sidebar
+                            Main Menu
                         </div>
                         <div />
                     </div>
