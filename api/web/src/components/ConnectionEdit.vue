@@ -23,7 +23,7 @@
                             <div class='card'>
                                 <div class='card-header'>
                                     <h3
-                                        v-if='$route.params.connectionid'
+                                        v-if='route.params.connectionid'
                                         class='card-title'
                                     >
                                         Connection <span v-text='connection.id' />
@@ -36,7 +36,7 @@
                                     </h3>
 
                                     <div
-                                        v-if='$route.params.connectionid'
+                                        v-if='route.params.connectionid'
                                         class='ms-auto d-flex btn-list'
                                     >
                                         <span class='px-2'>Enabled</span>
@@ -61,6 +61,52 @@
                                                 '
                                             />
                                         </div>
+
+                                        <div class='col-md-12'>
+                                            '
+                                            <div
+                                                class='px-2 py-2 round btn-group w-100'
+                                                role='group'
+                                            >
+                                                <input
+                                                    id='connection-readonly-false'
+                                                    type='radio'
+                                                    class='btn-check'
+                                                    autocomplete='off'
+                                                    :disabled='route.params.connectionid'
+                                                    :checked='!connection.readonly'
+                                                    @click='connection.readonly = false'
+                                                >
+                                                <label
+                                                    for='connection-readonly-false'
+                                                    type='button'
+                                                    class='btn btn-sm'
+                                                ><IconCloud
+                                                    v-tooltip='"Cloud Integration"'
+                                                    :size='32'
+                                                    stroke='1'
+                                                /><span class='mx-2'>Cloud Integration</span></label>
+
+                                                <input
+                                                    id='connection-readonly-true'
+                                                    type='radio'
+                                                    class='btn-check'
+                                                    autocomplete='off'
+                                                    :disabled='route.params.connectionid'
+                                                    :checked='connection.readonly'
+                                                    @click='connection.readonly = true'
+                                                >
+                                                <label
+                                                    for='connection-readonly-true'
+                                                    type='button'
+                                                    class='btn btn-sm'
+                                                ><IconDrone
+                                                    v-tooltip='"External Integration"'
+                                                    :size='32'
+                                                    stroke='1'
+                                                /><span class='mx-2'>External Integration</span></label>
+                                            </div>
+                                        </div>
                                         <div class='col-md-12'>
                                             <TablerInput
                                                 v-model='connection.description'
@@ -81,7 +127,7 @@
                                     </div>
                                 </div>
 
-                                <template v-if='isNextReady || $route.params.connectionid'>
+                                <template v-if='isNextReady || route.params.connectionid'>
                                     <div class='card-header'>
                                         <h3 class='card-title'>
                                             Connection Authentication
@@ -110,7 +156,7 @@
                                                     </div>
                                                 </div>
                                             </template>
-                                            <template v-else-if='!$route.params.connectionid || regen'>
+                                            <template v-else-if='!route.params.connectionid || regen'>
                                                 <div class='col-12 pb-2'>
                                                     <div
                                                         class='btn-group w-100'
@@ -230,14 +276,14 @@
                                             <div class='col-md-12 mt-3'>
                                                 <div class='d-flex'>
                                                     <TablerDelete
-                                                        v-if='$route.params.connectionid'
+                                                        v-if='route.params.connectionid'
                                                         label='Delete Connection'
                                                         @delete='del'
                                                     />
 
                                                     <div class='ms-auto'>
                                                         <button
-                                                            :disabled='!$route.params.connectionid && !isReady'
+                                                            :disabled='!route.params.connectionid && !isReady'
                                                             class='cursor-pointer btn btn-primary'
                                                             @click='create'
                                                         >
@@ -260,7 +306,9 @@
     </div>
 </template>
 
-<script>
+<script setup>
+import { ref, computed, onMounted } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import { std } from '/src/std.ts';
 import PageFooter from './PageFooter.vue';
 import AgencySelect from './Connection/AgencySelect.vue';
@@ -270,6 +318,8 @@ import CertificateRaw from './Connection/CertificateRaw.vue';
 import CertificateMachineUser from './Connection/CertificateMachineUser.vue';
 import {
     IconLock,
+    IconCloud,
+    IconDrone,
     IconCheck,
     IconTrash,
 } from '@tabler/icons-vue';
@@ -281,119 +331,107 @@ import {
     TablerInput
 } from '@tak-ps/vue-tabler';
 
-export default {
-    name: 'ConnectionNew',
-    components: {
-        IconLock,
-        IconCheck,
-        IconTrash,
-        AgencySelect,
-        TablerDelete,
-        TablerBreadCrumb,
-        TablerIconButton,
-        CertificateP12,
-        CertificateRaw,
-        CertificateLogin,
-        CertificateMachineUser,
-        TablerInput,
-        TablerLoading,
-        PageFooter,
-    },
-    data: function() {
-        return {
-            loading: true,
-            regen: false,
-            type: 'creation',
-            modal: {
-                upload: false,
-            },
-            errors: {
-                name: '',
-                description: '',
-            },
-            connection: {
-                name: '',
-                agency: undefined,
-                description: '',
-                enabled: true,
-                integrationId: undefined,
-                auth: { cert: '', key: '' }
-            }
-        }
-    },
-    computed: {
-        isNextReady: function() {
-            return this.connection.name.trim().length > 0
-                && this.connection.description.trim().length > 0
-                && this.connection.agency !== undefined
-        },
-        isReady: function() {
-            return this.connection.auth.cert.trim().length && this.connection.auth.key.trim().length
-        }
-    },
-    mounted: async function() {
-        if (this.$route.params.connectionid) {
-            await this.fetch();
-        } else {
-            this.loading = false;
-        }
-    },
-    methods: {
-        fetch: async function() {
-            this.loading = true;
-            this.connection = await std(`/api/connection/${this.$route.params.connectionid}`);
-            this.connection.auth = { cert: '', key: '' }
-            this.loading = false;
-        },
-        creation: function(integration) {
-            this.connection.integrationId = integration.integrationId;
-            this.connection.auth.cert = integration.certs.cert;
-            this.connection.auth.key = integration.certs.key;
-        },
-        marti: function(certs) {
-            this.connection.integrationId = null;
-            this.connection.auth.cert = certs.cert;
-            this.connection.auth.key = certs.key;
-        },
-        p12upload: function(certs) {
-            this.modal.upload = false;
-            this.connection.integrationId = null;
-            this.connection.auth.cert = certs.cert;
-            this.connection.auth.key = certs.key;
-        },
-        create: async function() {
-            for (const field of ['name', 'description']) {
-                if (!this.connection[field]) this.errors[field] = 'Cannot be empty';
-                else this.errors[field] = '';
-            }
+const router = useRouter();
+const route = useRoute();
 
-            for (const e in this.errors) {
-                if (this.errors[e]) return;
-            }
+const loading = ref(true);
+const regen = ref(false);
+const type = ref('creation');
+const modal = ref({
+    upload: false,
+})
 
-            if (this.$route.params.connectionid) {
-                const connection = JSON.parse(JSON.stringify(this.connection));
-                if (!this.regen) delete connection.auth;
+const errors = ref({
+    name: '',
+    description: '',
+});
 
-                const create = await std(`/api/connection/${this.$route.params.connectionid}`, {
-                    method: 'PATCH',
-                    body: connection
-                });
-                this.$router.push(`/connection/${create.id}`);
-            } else {
-                const create = await std('/api/connection', {
-                    method: 'POST',
-                    body: this.connection
-                });
-                this.$router.push(`/connection/${create.id}`);
-            }
-        },
-        del: async function() {
-            await std(`/api/connection/${this.$route.params.connectionid}`, {
-                method: 'DELETE'
-            });
-            this.$router.push('/connection');
-        }
+const connection = ref({
+    name: '',
+    agency: undefined,
+    readonly: false,
+    description: '',
+    enabled: true,
+    integrationId: undefined,
+    auth: { cert: '', key: '' }
+});
+
+const isNextReady = computed(() => {
+    return connection.value.name.trim().length > 0
+        && connection.value.description.trim().length > 0
+        && connection.value.agency !== undefined
+});
+
+const isReady = computed(() => {
+    return connection.value.auth.cert.trim().length && connection.value.auth.key.trim().length
+});
+
+onMounted(async () => {
+    if (route.params.connectionid) {
+        await fetch();
+    } else {
+        loading.value = false;
     }
+});
+
+async function fetch() {
+    loading.value = true;
+    connection.value = await std(`/api/connection/${route.params.connectionid}`);
+    connection.value.auth = { cert: '', key: '' }
+    loading.value = false;
+}
+
+function creation(integration) {
+    connection.value.integrationId = integration.integrationId;
+    connection.value.auth.cert = integration.certs.cert;
+    connection.value.auth.key = integration.certs.key;
+}
+
+function marti(certs) {
+    connection.value.integrationId = null;
+    connection.value.auth.cert = certs.cert;
+    connection.value.auth.key = certs.key;
+}
+
+async function p12upload(certs) {
+    modal.value.upload = false;
+    connection.value.integrationId = null;
+    connection.value.auth.cert = certs.cert;
+    connection.value.auth.key = certs.key;
+}
+
+async function create() {
+    for (const field of ['name', 'description']) {
+        if (!connection.value[field]) errors.value[field] = 'Cannot be empty';
+        else errors.value[field] = '';
+    }
+
+    for (const e in errors.value) {
+        if (errors.value[e]) return;
+    }
+
+    if (route.params.connectionid) {
+        const connection = JSON.parse(JSON.stringify(connection.value));
+        if (!regen.value) delete connection.auth;
+
+        const create = await std(`/api/connection/${route.params.connectionid}`, {
+            method: 'PATCH',
+            body: connection
+        });
+        router.push(`/connection/${create.id}`);
+    } else {
+        const create = await std('/api/connection', {
+            method: 'POST',
+            body: connection.value
+        });
+        router.push(`/connection/${create.id}`);
+    }
+}
+
+async function del() {
+    await std(`/api/connection/${route.params.connectionid}`, {
+        method: 'DELETE'
+    });
+    router.push('/connection');
 }
 </script>
