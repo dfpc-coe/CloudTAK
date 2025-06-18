@@ -270,9 +270,9 @@
                 v-if='searchBoxShown'
                 style='
                     z-index: 1;
-                    top: 50px;
-                    left: 50px;
-                    width: 200px;
+                    top: 40px;
+                    left: 40px;
+                    width: 300px;
                 '
                 @close='searchBoxShown = false'
             />

@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v10.2.2 - 2025-06-18
+
+- :rocket: Reduce logging for known WebSocket Errors
+
 ### v10.2.1 - 2025-06-17
 
 - :rocket: Update Web Types
