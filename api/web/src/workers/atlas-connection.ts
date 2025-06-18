@@ -73,6 +73,35 @@ export default class AtlasConnection {
                 throw new Error(err.properties.message);
             } else if (body.type === 'cot') {
                 await this.atlas.db.add(body.data as Feature);
+
+                if ([
+                    'b-a',
+                    'b-a-o-tbl',
+                    'b-a-o-pan',
+                    'b-a-o-opn'
+                ].includes(body.data.properties.type)) {
+                    this.atlas.postMessage({
+                        type: WorkerMessageType.Notification,
+                        body: {
+                            type: 'Alert',
+                            name: `${body.data.properties.callsign} Created`,
+                            body: '',
+                            url: `/cot/${body.data.id}`
+                        }
+                    });
+                } else if ([
+                    'b-r-f-h-c'
+                ].includes(body.data.properties.type)) {
+                    this.atlas.postMessage({
+                        type: WorkerMessageType.Notification,
+                        body: {
+                            type: 'Medical',
+                            name: `${body.data.properties.callsign} CASEVAC`,
+                            body: '',
+                            url: `/cot/${body.data.id}`
+                        }
+                    });
+                }
             } else if (body.type === 'task') {
                 const task = body.data as Feature;
 
