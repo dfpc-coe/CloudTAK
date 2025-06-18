@@ -332,7 +332,9 @@
                             style='min-width: 300px;'
                         >
                             <div class='card-body'>
-                                <div class='card-title'>Drawing Tools</div>
+                                <div class='card-title'>
+                                    Drawing Tools
+                                </div>
                             </div>
                             <div class='card-body'>
                                 <div

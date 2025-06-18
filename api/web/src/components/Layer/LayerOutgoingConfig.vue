@@ -55,14 +55,14 @@
                     />
                     <template v-else>
                         <template
-                            :key='outgoing.filters.queries.length + "-" + filter_idx'
                             v-for='(filter, filter_idx) of outgoing.filters.queries'
+                            :key='outgoing.filters.queries.length + "-" + filter_idx'
                         >
                             <div class='row mx-2 my-2'>
                                 <TablerInput
+                                    v-model='filter.query'
                                     label='Filter'
                                     :disabled='disabled'
-                                    v-model='filter.query'
                                 >
                                     <TablerDelete
                                         v-if='!disabled'

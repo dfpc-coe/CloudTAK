@@ -313,8 +313,8 @@
                     }'
                 >
                     <PropertyType
-                        :key='cot.properties.type'
                         v-if='cot.properties.type.startsWith("a-") || cot.properties.type === "u-d-p"'
+                        :key='cot.properties.type'
                         :edit='is_editable'
                         :hover='is_editable'
                         :model-value='cot.properties.type'
@@ -461,7 +461,7 @@
                 <div class='mx-2 bg-gray-500 row user-select-none'>
                     <TablerToggle
                         label='Elevation Monitored'
-                        :modelValue='cot.properties.geofence.elevationMonitored'
+                        :model-value='cot.properties.geofence.elevationMonitored'
                         :disabled='true'
                     />
 
