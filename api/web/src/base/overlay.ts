@@ -258,7 +258,7 @@ export default class Overlay {
             this.styles = [];
         }
 
-        if (this.type === 'vector' && opts.clickable === undefined) {
+        if (this.type === 'vector' && this. mode !== 'basemap' && opts.clickable === undefined) {
             opts.clickable = this.styles.map((l) => {
                 return { id: l.id, type: 'feat' };
             });
