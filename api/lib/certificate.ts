@@ -1,7 +1,7 @@
 import { spawnSync } from "child_process";
 import { tmpdir } from "node:os";
 import { randomBytes } from "node:crypto";
-import { writeFile, unlink } from "node:fs/promises";
+import { readFile, writeFile, unlink } from "node:fs/promises";
 import { join } from "node:path";
 
 /**
@@ -13,10 +13,10 @@ import { join } from "node:path";
  * @returns Buffer containing the PKCS#12 data.
  */
 export async function generateP12(
-    keyPem: string,
-    certPem: string,
+    key: string,
+    cert: string,
     password: string = ''
-): Buffer {
+): Promise<Buffer> {
     const tmp = tmpdir();
     const rand = randomBytes(8).toString("hex");
     const keyPath = join(tmp, `key-${rand}.pem`);
@@ -24,8 +24,8 @@ export async function generateP12(
     const p12Path = join(tmp, `out-${rand}.p12`);
 
     try {
-        await writeFile(keyPath, keyPem, { encoding: "utf8" });
-        await writeFile(certPath, certPem, { encoding: "utf8" });
+        await writeFile(keyPath, key, { encoding: "utf8" });
+        await writeFile(certPath, cert, { encoding: "utf8" });
 
         const args = [
             "pkcs12",
@@ -49,13 +49,14 @@ export async function generateP12(
             throw new Error("OpenSSL command failed");
         }
 
-        const p12Buf = Buffer.from(require("fs").readFileSync(p12Path));
-        return p12Buf;
+        return Buffer.from(await readFile(p12Path));
     } finally {
-        [keyPath, certPath, p12Path].forEach((f) => {
+        for (const path of [keyPath, certPath, p12Path]) {
             try {
-                await unlink(f);
-            } catch {}
-        });
+                await unlink(path);
+            } catch (err) {
+                console.error(err);
+            }
+        }
     }
 }

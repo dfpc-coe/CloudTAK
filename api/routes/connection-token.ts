@@ -30,11 +30,11 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            await Auth.is_connection(config, req, {
+            const { connection } = await Auth.is_connection(config, req, {
                 resources: []
             }, req.params.connectionid);
 
-            if (connection.readonly) throw new Error(400, null, 'Connection is Read-Only mode');
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             const list = await config.models.ConnectionToken.list({
                 limit: req.query.limit,
@@ -66,11 +66,11 @@ export default async function router(schema: Schema, config: Config) {
         res: CreateConnectionTokenResponse
     }, async (req, res) => {
         try {
-            await Auth.is_connection(config, req, {
+            const { connection } = await Auth.is_connection(config, req, {
                 resources: []
             }, req.params.connectionid);
 
-            if (connection.readonly) throw new Error(400, null, 'Connection is Read-Only mode');
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             const token = await config.models.ConnectionToken.generate({
                 name: req.body.name,
@@ -98,11 +98,11 @@ export default async function router(schema: Schema, config: Config) {
         res: StandardResponse
     }, async (req, res) => {
         try {
-            await Auth.is_connection(config, req, {
+            const { connection } = await Auth.is_connection(config, req, {
                 resources: []
             }, req.params.connectionid);
 
-            if (connection.readonly) throw new Error(400, null, 'Connection is Read-Only mode');
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             const token = await config.models.ConnectionToken.from(sql`id = ${req.params.id}::INT`);
             if (token.connection !== req.params.connectionid) throw new Err(400, null, `Token does not belong to Connection ${req.params.connectionid}`);
@@ -129,11 +129,11 @@ export default async function router(schema: Schema, config: Config) {
         res: StandardResponse
     }, async (req, res) => {
         try {
-            await Auth.is_connection(config, req, {
+            const { connection } = await Auth.is_connection(config, req, {
                 resources: []
             }, req.params.connectionid);
 
-            if (connection.readonly) throw new Error(400, null, 'Connection is Read-Only mode');
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             const token = await config.models.ConnectionToken.from(sql`id = ${req.params.id}::INT`);
             if (token.connection !== req.params.connectionid) throw new Err(400, null, `Token does not belong to Connection ${req.params.connectionid}`);

@@ -44,15 +44,10 @@
                                                 stroke='1'
                                             />
                                         </TablerIconButton>
-                                        <TablerIconButton
-                                            title='Refresh'
+                                        <TablerRefreshButton
+                                            :loading='!connection'
                                             @click='fetch'
-                                        >
-                                            <IconRefresh
-                                                :size='32'
-                                                stroke='1'
-                                            />
-                                        </TablerIconButton>
+                                        />
                                         <TablerIconButton
                                             title='Edit'
                                             @click='router.push(`/connection/${connection.id}/edit`)'
@@ -107,6 +102,18 @@
                                                     v-text='connection.certificate.subject'
                                                 />
                                             </div>
+                                        </div>
+                                        <div class='col-12 d-flex align-items-center justify-content-center pt-3'>
+                                            <button
+                                                class='btn btn-primary'
+                                                @click='downloadCertificate'
+                                            >
+                                                <IconDownload
+                                                    :size='24'
+                                                    stroke='1'
+                                                />
+                                                <span class='mx-2'>Download Certificate</span>
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -244,7 +251,7 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import type { ETLConnection } from '../types.ts';
-import { std } from '../std.ts';
+import { std, stdurl } from '../std.ts';
 import PageFooter from './PageFooter.vue';
 import ConnectionStatus from './Connection/StatusDot.vue';
 import timeDiff from '../timediff.ts';
@@ -252,14 +259,15 @@ import {
     IconFiles,
     IconRobot,
     IconVideo,
-    IconRefresh,
     IconDatabase,
+    IconDownload,
     IconAffiliate,
     IconPlugConnected,
     IconBuildingBroadcastTower,
     IconSettings
 } from '@tabler/icons-vue'
 import {
+    TablerRefreshButton,
     TablerIconButton,
     TablerBreadCrumb,
     TablerMarkdown,
@@ -275,13 +283,21 @@ const connection = ref<ETLConnection | undefined>();
 onMounted(async () => {
     await fetch();
 
-    if (connection.value.readonly) {
+    if (connection.value && connection.value.readonly) {
         router.push(`/connection/${connection.value.id}/groups`);
     }
 });
 
 async function fetch() {
+    connection.value = undefined;
     connection.value = await std(`/api/connection/${route.params.connectionid}`) as ETLConnection;
+} 
+
+function downloadCertificate() {
+    const url = stdurl(`/api/connection/${route.params.connectionid}/auth`);
+    url.searchParams.set('download', 'true');
+    url.searchParams.set('token', localStorage.token);
+    window.open(url, '_blank'); 
 }
 
 async function refresh() {

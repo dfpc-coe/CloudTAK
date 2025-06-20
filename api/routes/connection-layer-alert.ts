@@ -44,7 +44,7 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
-            if (connection.readonly) throw new Error(400, null, 'Connection is Read-Only mode');
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
                 return await config.models.Layer.augmented_from(req.params.layerid);
@@ -95,7 +95,7 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
-            if (connection.readonly) throw new Error(400, null, 'Connection is Read-Only mode');
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
                 return await config.models.Layer.augmented_from(req.params.layerid);
@@ -142,7 +142,7 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
-            if (connection.readonly) throw new Error(400, null, 'Connection is Read-Only mode');
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
                 return await config.models.Layer.augmented_from(req.params.layerid);
@@ -182,7 +182,7 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
-            if (connection.readonly) throw new Error(400, null, 'Connection is Read-Only mode');
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
                 return await config.models.Layer.augmented_from(req.params.layerid);

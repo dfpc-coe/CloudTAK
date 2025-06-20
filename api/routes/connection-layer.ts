@@ -99,11 +99,11 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            await Auth.is_connection(config, req, {
+            const { connection } = await Auth.is_connection(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             }, req.params.connectionid);
 
-            if (connection.readonly) throw new Error(400, null, 'Connection is Read-Only mode');
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             const list = await config.models.Layer.augmented_list({
                 limit: req.query.limit,
@@ -174,16 +174,16 @@ export default async function router(schema: Schema, config: Config) {
         res: LayerResponse
     }, async (req, res) => {
         try {
-            const auth = await Auth.is_connection(config, req, {
+            const { connection, auth } = await Auth.is_connection(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             }, req.params.connectionid);
 
-            if (connection.readonly) throw new Error(400, null, 'Connection is Read-Only mode');
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             const layer = await layerControl.generate({
                 ...req.body,
                 connection: req.params.connectionid,
-                username: auth.auth instanceof AuthUser ? auth.auth.email : null
+                username: auth instanceof AuthUser ? auth.email : null
             }, {
                 alarms: req.query.alarms
             });
@@ -225,7 +225,7 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
-            if (connection.readonly) throw new Error(400, null, 'Connection is Read-Only mode');
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             let layer = await config.models.Layer.augmented_from(req.params.layerid);
 
@@ -330,7 +330,7 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
-            if (connection.readonly) throw new Error(400, null, 'Connection is Read-Only mode');
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             const layer = await config.models.Layer.augmented_from(req.params.layerid);
 
@@ -460,7 +460,7 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
-            if (connection.readonly) throw new Error(400, null, 'Connection is Read-Only mode');
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             let layer = await config.models.Layer.augmented_from(req.params.layerid);
 
@@ -520,7 +520,7 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
-            if (connection.readonly) throw new Error(400, null, 'Connection is Read-Only mode');
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             let layer = await config.models.Layer.augmented_from(req.params.layerid);
 
@@ -578,7 +578,7 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
-            if (connection.readonly) throw new Error(400, null, 'Connection is Read-Only mode');
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             const layer = await config.models.Layer.augmented_from(req.params.layerid);
 
@@ -635,7 +635,7 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
-            if (connection.readonly) throw new Error(400, null, 'Connection is Read-Only mode');
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             let layer = await config.models.Layer.augmented_from(req.params.layerid);
 
@@ -708,7 +708,7 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
-            if (connection.readonly) throw new Error(400, null, 'Connection is Read-Only mode');
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             let layer = await config.models.Layer.augmented_from(req.params.layerid);
 
@@ -804,7 +804,7 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
-            if (connection.readonly) throw new Error(400, null, 'Connection is Read-Only mode');
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
                 return await config.models.Layer.augmented_from(req.params.layerid);
@@ -849,7 +849,7 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
-            if (connection.readonly) throw new Error(400, null, 'Connection is Read-Only mode');
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             const layer = await config.models.Layer.augmented_from(req.params.layerid);
 
@@ -897,7 +897,7 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
-            if (connection.readonly) throw new Error(400, null, 'Connection is Read-Only mode');
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             const layer = await config.models.Layer.augmented_from(req.params.layerid);
 
