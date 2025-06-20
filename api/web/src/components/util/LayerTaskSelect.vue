@@ -17,7 +17,17 @@
                 />
                 <template v-else-if='selected.id'>
                     <div class='col-12 d-flex align-items-center user-select-none'>
-                        <div v-text='selected.name' />
+                        <img
+                            v-if='selected.logo'
+                            :src='selected.logo'
+                            alt='Logo Preview'
+                            style='height: 50px;'
+                            class='img-thumbnail'
+                        >
+                        <div
+                            class='mx-2'
+                            v-text='selected.name'
+                        />
                         <div class='ms-auto btn-list'>
                             <TablerEnum
                                 v-model='selected.version'
@@ -54,28 +64,52 @@
                         :compact='true'
                         label='Tasks'
                     />
-                    <template
-                        v-for='task in list.items'
+                    <div
                         v-else
+                        class='row row-cards'
                     >
-                        <div
-                            class='hover-light px-2 py-2 cursor-pointer rounded user-select-none d-flex align-items-center'
-                            @click='selected = select(task)'
+                        <template
+                            v-for='task in list.items'
                         >
-                            <div v-text='task.name' />
-                            <div class='ms-auto'>
-                                <TablerIconButton
-                                    title='Task Info'
-                                    @click.prevent.stop='infoModal = task'
+                            <div class='col-sm-6 col-lg-3'>
+                                <div
+                                    class='card card-link cursor-pointer hover-light'
+                                    @click='selected = select(task)'
                                 >
-                                    <IconInfoSquare
-                                        :size='32'
-                                        stroke='1'
-                                    />
-                                </TablerIconButton>
+                                    <div class='card-header d-flex align-items-center user-select-none'>
+                                        <div v-text='task.name' />
+                                        <div class='ms-auto'>
+                                            <TablerIconButton
+                                                title='Task Info'
+                                                @click.prevent.stop='infoModal = task'
+                                            >
+                                                <IconInfoSquare
+                                                    :size='32'
+                                                    stroke='1'
+                                                />
+                                            </TablerIconButton>
+                                        </div>
+                                    </div>
+                                    <div class='card-body d-flex align-items-center justify-content-center user-select-none'>
+                                        <div style='width: 128px; height: 128px;'>
+                                            <img
+                                                v-if='task.logo'
+                                                :src='task.logo'
+                                                alt='Logo Preview'
+                                                class='img-thumbnail'
+                                            >
+                                            <IconBroadcast
+                                                v-else
+                                                size='128'
+                                                stroke='1'
+                                                class='text-muted'
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </template>
+                        </template>
+                    </div>
                 </template>
             </div>
             <div
@@ -142,6 +176,7 @@ import { ref, watch, onMounted } from 'vue';
 import { std, stdurl } from '/src/std.ts';
 import {
     IconTrash,
+    IconBroadcast,
     IconInfoSquare,
 } from '@tabler/icons-vue';
 import {
