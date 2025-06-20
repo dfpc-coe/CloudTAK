@@ -17,7 +17,9 @@
                 <div class='row row-deck row-cards'>
                     <div class='col-lg-12'>
                         <template v-if='loading'>
-                            <TablerLoading />
+                            <TablerLoading
+                                class='text-white' 
+                            />
                         </template>
                         <template v-else>
                             <div class='card'>
@@ -36,7 +38,7 @@
                                     </h3>
 
                                     <div
-                                        v-if='route.params.connectionid'
+                                        v-if='route.params.connectionid && connection.readonly !== true'
                                         class='ms-auto d-flex btn-list'
                                     >
                                         <span class='px-2'>Enabled</span>
