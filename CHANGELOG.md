@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v10.3.0 - 2025-06-20
+
+- :rocket: Notification support for CASEVACs
+- :rocket: Notification support for Alerts
+- :tada: ReadOnly connections to support external integrations
+
 ### v10.2.2 - 2025-06-18
 
 - :rocket: Reduce logging for known WebSocket Errors
