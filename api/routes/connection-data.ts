@@ -84,6 +84,8 @@ export default async function router(schema: Schema, config: Config) {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             }, req.params.connectionid);
 
+            if (connection.readonly) throw new Error(400, null, 'Connection is Read-Only mode');
+
             const list = await config.models.Data.list({
                 limit: req.query.limit,
                 page: req.query.page,
@@ -127,6 +129,8 @@ export default async function router(schema: Schema, config: Config) {
             const auth = await Auth.is_connection(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             }, req.params.connectionid);
+
+            if (connection.readonly) throw new Error(400, null, 'Connection is Read-Only mode');
 
             if (req.body.mission_diff && req.body.mission_role !== MissionSubscriberRole.MISSION_READONLY_SUBSCRIBER) {
                 throw new Err(400, null, 'MissionDiff can only be used when role is: MISSION_READONLY_SUBSCRIBER')
@@ -188,6 +192,8 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
+            if (connection.readonly) throw new Error(400, null, 'Connection is Read-Only mode');
+
             if (req.body.mission_diff && await config.models.Layer.augmented_count({
                 where: sql`layers_incoming.data = ${req.params.dataid}`
             }) > 1) {
@@ -241,6 +247,8 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
+            if (connection.readonly) throw new Error(400, null, 'Connection is Read-Only mode');
+
             const data = await config.models.Data.from(req.params.dataid);
             if (data.connection !== connection.id) throw new Err(400, null, 'Data Sync does not belong to given Connection');
 
@@ -277,6 +285,8 @@ export default async function router(schema: Schema, config: Config) {
             const { connection } = await Auth.is_connection(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             }, req.params.connectionid);
+
+            if (connection.readonly) throw new Error(400, null, 'Connection is Read-Only mode');
 
             const data = await config.models.Data.from(req.params.dataid);
             if (data.connection !== connection.id) throw new Err(400, null, 'Data Sync does not belong to given Connection');
