@@ -191,7 +191,7 @@ import {
 } from '@tak-ps/vue-tabler';
 
 const props = defineProps({
-    modelValue: Object,
+    modelValue: String,
     disabled: {
         type: Boolean,
         default: false
@@ -244,8 +244,8 @@ watch(infoModal, async function() {
 })
 
 watch(props.modelValue, async function() {
-    if (props.modelValue && props.modelValue.id !== selected.value.id) {
-        await fetch();
+    if (props.modelValue) {
+        select.value  = await select(props.modelValue.split('-v')[0], props.modelValue.split('-v')[1])
     }
 });
 
@@ -255,24 +255,20 @@ watch(paging.value, async () => {
 
 onMounted(async () => {
     if (props.modelValue) {
-        await fetch();
+        await select(props.modelValue.split('-v')[0], props.modelValue.split('-v')[1])
     }
 
     await listTasks();
     loading.value.main = false;
 });
 
-async function fetch() {
-    selected.value = await std(`/api/template/${props.modelValue.id}`);
-}
-
-async function select(task) {
+async function select(task, version) {
     loading.value.task = true;
 
     const detail = await std(`/api/task/raw/${task.prefix}`);
     selected.value = {
         versions: detail.versions,
-        version: detail.versions[0],
+        version: version || detail.versions[0],
         ...task
     }
 
