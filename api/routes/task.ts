@@ -88,6 +88,7 @@ export default async function router(schema: Schema, config: Config) {
         body: Type.Object({
             name: Type.String(),
             prefix: Type.String(),
+            logo: Type.Optional(Type.String()),
             repo: Type.Optional(Type.String()),
             readme: Type.Optional(Type.String()),
         }),
@@ -231,6 +232,7 @@ export default async function router(schema: Schema, config: Config) {
         body: Type.Object({
             name: Type.Optional(Type.String()),
             repo: Type.Optional(Type.String()),
+            logo: Type.Optional(Type.String()),
             readme: Type.Optional(Type.String()),
         }),
         res: TaskResponse
