@@ -50,10 +50,9 @@ export async function generateP12(
 
         return Buffer.from(await readFile(p12Path));
     } finally {
-        console.error(keyPath, certPath, p12Path);
         for (const path of [ keyPath, certPath, p12Path ]) {
             try {
-                //await unlink(path);
+                await unlink(path);
             } catch (err) {
                 console.error(err);
             }
