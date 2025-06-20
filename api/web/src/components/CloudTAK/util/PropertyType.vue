@@ -3,7 +3,12 @@
         v-if='type'
         class='col-12'
     >
-        <IconChartGridDots :size='18' stroke='1' color='#6b7990' class='ms-2 me-1'/>
+        <IconChartGridDots
+            :size='18'
+            stroke='1'
+            color='#6b7990'
+            class='ms-2 me-1'
+        />
         <label class='subheader user-select-none'>Type</label>
         <div class='mx-2'>
             <div

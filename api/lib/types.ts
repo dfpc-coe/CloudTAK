@@ -289,6 +289,7 @@ export const ConnectionResponse = Type.Object({
     }),
     created: Type.String(),
     updated: Type.String(),
+    readonly: Type.Boolean(),
     username: Type.Union([Type.Null(), Type.String()]),
     name: Type.String(),
     description: Type.String(),

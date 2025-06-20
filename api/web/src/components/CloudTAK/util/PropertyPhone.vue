@@ -1,6 +1,11 @@
 <template>
     <div class='col-12'>
-        <IconPhone :size='18' stroke='1' color='#6b7990' class='ms-2 me-1'/>
+        <IconPhone
+            :size='18'
+            stroke='1'
+            color='#6b7990'
+            class='ms-2 me-1'
+        />
         <label class='subheader user-select-none'>Phone</label>
         <div class='mx-2'>
             <CopyField

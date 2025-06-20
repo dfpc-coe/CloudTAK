@@ -589,9 +589,7 @@
                     <div class='d-flex justify-content-center mb-2'>
                         <TablerDropdown>
                             <template #default>
-                                <IconGridDots
-
-                                />
+                                <IconGridDots />
                             </template>
                             <template #dropdown>
                                 <div class='card'>

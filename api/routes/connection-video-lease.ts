@@ -82,6 +82,8 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+
             if (layer && layer.connection !== connection.id) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
             }
@@ -150,6 +152,8 @@ export default async function router(schema: Schema, config: Config) {
                     { access: AuthResourceAccess.LAYER, id: undefined }
                 ]
             }, req.params.connectionid);
+
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             if (layer && layer.connection !== connection.id) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
@@ -231,6 +235,8 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+
             if (layer && layer.connection !== connection.id) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
             }
@@ -296,6 +302,8 @@ export default async function router(schema: Schema, config: Config) {
                     { access: AuthResourceAccess.LAYER, id: undefined }
                 ]
             }, req.params.connectionid);
+
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             if (layer && layer.connection !== connection.id) {
                 throw new Err(400, null, 'Layer does not belong to this connection');

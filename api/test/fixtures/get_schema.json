@@ -419,6 +419,11 @@
         "query": false,
         "res": true
     },
+    "GET /connection/:connectionid/auth": {
+        "body": false,
+        "query": true,
+        "res": false
+    },
     "POST /connection/:connectionid/refresh": {
         "body": false,
         "query": false,
