@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v10.4.0 - 2025-06-20
+
+- :rocket: Provide UI for uploading a Server Logo
+
 ### v10.3.0 - 2025-06-20
 
 - :rocket: Notification support for CASEVACs
