@@ -52,8 +52,8 @@
                             />
 
                             <UploadLogo
-                                label='Login Logo'
                                 v-model='config["login::logo"]'
+                                label='Login Logo'
                                 :disabled='!edit'
                             />
                         </div>

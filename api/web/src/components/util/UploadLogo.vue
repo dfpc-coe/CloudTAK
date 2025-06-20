@@ -1,17 +1,25 @@
 <template>
-    <div class="mb-3">
+    <div class='mb-3'>
         <TablerInput
+            id='logoUpload'
             :label='props.label || "Upload PNG Logo"'
-            id="logoUpload"
-            type="file"
-            accept="image/png"
+            type='file'
+            accept='image/png'
             :disabled='props.disabled'
             :error='error'
-            @change="onFileChange"
+            @change='onFileChange'
         />
     </div>
-    <div v-if="base64Data" class="mt-3 row d-flex align-items-center justify-content-center">
-        <img :src="base64Data" alt="Logo Preview" class="img-thumbnail" style="max-width: 200px;" />
+    <div
+        v-if='base64Data'
+        class='mt-3 row d-flex align-items-center justify-content-center'
+    >
+        <img
+            :src='base64Data'
+            alt='Logo Preview'
+            class='img-thumbnail'
+            style='max-width: 200px;'
+        >
     </div>
 </template>
 
@@ -37,9 +45,16 @@ watch(base64Data, () => {
     emit('update:modelValue', base64Data.value);
 })
 
-function onFileChange(event) {
+function onFileChange(event: Event) {
+    const target = event.target as HTMLInputElement;
+
     error.value = '';
-    const file = event.target.files[0];
+
+    if (!target.files || target.files.length === 0) {
+        throw new Error('Could not read file from input');
+    }
+
+    const file = target.files[0];
     if (!file) return;
 
     if (file.type !== 'image/png') {
@@ -50,7 +65,7 @@ function onFileChange(event) {
 
     const reader = new FileReader();
     reader.onload = (e) => {
-        base64Data.value = e.target.result;
+        base64Data.value = (e.target && e.target.result) ? String(e.target.result) : undefined;
     };
     reader.onerror = () => {
         error.value = 'Failed to read file.';
