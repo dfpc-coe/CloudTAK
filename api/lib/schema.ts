@@ -183,6 +183,7 @@ export const Task = pgTable('tasks', {
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     name: text().notNull(),
+    logo: text(),
     repo: text(),
     readme: text()
 }, (t) => ({
