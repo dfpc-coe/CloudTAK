@@ -24,18 +24,16 @@ export async function generateP12(
     const p12Path = join(tmp, `out-${rand}.p12`);
 
     try {
-        await writeFile(keyPath, key, { encoding: "utf8" });
-        await writeFile(certPath, cert, { encoding: "utf8" });
+        await writeFile(keyPath, key, { encoding: 'utf8' });
+        await writeFile(certPath, cert, { encoding: 'utf8' });
 
         const args = [
-            "pkcs12",
-            "-export",
-            "-inkey",
-            keyPath,
-            "-in",
-            certPath,
-            "-out",
-            p12Path,
+            'pkcs12',
+            '-legacy',
+            '-export',
+            '-out', p12Path,
+            '-inkey', keyPath,
+            '-in', certPath,
         ];
 
         if (password) {
@@ -45,15 +43,17 @@ export async function generateP12(
         }
 
         const res = spawnSync("openssl", args, { stdio: "inherit" });
-        if (res.status !== 0) {
+
+        if (res.error) {
             throw new Error("OpenSSL command failed");
         }
 
         return Buffer.from(await readFile(p12Path));
     } finally {
-        for (const path of [keyPath, certPath, p12Path]) {
+        console.error(keyPath, certPath, p12Path);
+        for (const path of [ keyPath, certPath, p12Path ]) {
             try {
-                await unlink(path);
+                //await unlink(path);
             } catch (err) {
                 console.error(err);
             }
