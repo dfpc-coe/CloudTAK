@@ -27,7 +27,7 @@ export default async function router(schema: Schema, config: Config) {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             }, req.params.connectionid);
 
-            if (connection.readonly) throw new Error(400, null, 'Connection is Read-Only mode');
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             const list = await assetList(config, `connection/${String(connection.id)}/`);
 
@@ -58,7 +58,7 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
-            if (connection.readonly) throw new Error(400, null, 'Connection is Read-Only mode');
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             if (!req.headers['content-type']) throw new Err(400, null, 'Missing Content-Type Header');
 
@@ -118,7 +118,7 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
-            if (connection.readonly) throw new Error(400, null, 'Connection is Read-Only mode');
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             const file = `${req.params.asset}.${req.params.ext}`;
 
@@ -160,7 +160,7 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
-            if (connection.readonly) throw new Error(400, null, 'Connection is Read-Only mode');
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             if (req.query.download) {
                 res.setHeader('Content-Disposition', `attachment; filename="${req.params.asset}.${req.params.ext}"`);

@@ -10,7 +10,7 @@ import { Connection } from '../lib/schema.js';
 import { MachineConnConfig } from '../lib/connection-config.js';
 import Schema from '@openaddresses/batch-schema';
 import * as Default from '../lib/limits.js';
-import { generatep12 } from '../lib/certificate.js';
+import { generateP12 } from '../lib/certificate.js';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/connection', {
@@ -168,7 +168,7 @@ export default async function router(schema: Schema, config: Config) {
         res: ConnectionResponse
     }, async (req, res) => {
         try {
-            let { connection } = await Auth.is_connection(config, req, {
+            const { connection } = await Auth.is_connection(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             }, req.params.connectionid);
 
@@ -236,11 +236,11 @@ export default async function router(schema: Schema, config: Config) {
     await schema.get('/connection/:connectionid/auth', {
         name: 'Get Connection Auth',
         group: 'Connection',
-        description: [
-            'Connections that are marked as ReadOnly are used for external integrations and are able to download the X509 Certificate',
-        ],
+        description: 'Connections that are marked as ReadOnly are used for external integrations and are able to download the X509 Certificate',
         params: Type.Object({
             connectionid: Type.Integer({ minimum: 1 }),
+        }),
+        query: Type.Object({
             token: Type.Optional(Type.String()),
             download: Type.Boolean()
         }),
@@ -255,15 +255,18 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'Connection is not ReadOnly and cannot return auth');
             }
 
-            const buff = geneartep12(connection.auth.key, connection.auth.cert);
+            const buff = await generateP12(
+                connection.auth.key,
+                connection.auth.cert
+            );
 
             if (req.query.download) {
-                res.setHeader('Content-Disposition', `attachment; filename="${req.params.asset}.${req.params.ext}"`);
+                res.setHeader('Content-Disposition', `attachment; filename="connection-auth-${connection.id}.p12"`);
             }
 
             res.setHeader('Content-Type', 'application/x-pkcs12');
-            res.write();
-            res.end(buff);
+            res.write(buff);
+            res.end();
         } catch (err) {
             Err.respond(err, res);
         }
@@ -285,8 +288,8 @@ export default async function router(schema: Schema, config: Config) {
 
             if (!connection.enabled) throw new Err(400, null, 'Connection is not currently enabled');
 
-            if (config.conns.has(conn.id)) {
-                await config.conns.delete(conn.id);
+            if (config.conns.has(connection.id)) {
+                await config.conns.delete(connection.id);
                 await config.conns.add(new MachineConnConfig(config, connection));
             } else {
                 await config.conns.add(new MachineConnConfig(config, connection));
