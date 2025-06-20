@@ -260,12 +260,14 @@ export default async function router(schema: Schema, config: Config) {
         res: Feature.Feature
     }, async (req, res) => {
         try {
-            await Auth.is_connection(config, req, {
+            const { connection } = await Auth.is_connection(config, req, {
                 resources: [
                     { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
                     { access: AuthResourceAccess.LAYER, id: req.params.layerid }
                 ]
             }, req.params.connectionid);
+
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
                 return await config.models.Layer.augmented_from(req.params.layerid);
@@ -308,12 +310,14 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            await Auth.is_connection(config, req, {
+            const { connection } = await Auth.is_connection(config, req, {
                 resources: [
                     { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
                     { access: AuthResourceAccess.LAYER, id: req.params.layerid }
                 ]
             }, req.params.connectionid);
+
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
                 return await config.models.Layer.augmented_from(req.params.layerid);

@@ -1,6 +1,11 @@
 <template>
     <div class='px-1 pb-2 col-12'>
-        <IconCone :size='18' stroke='1' color='#6b7990' class='ms-2 me-1'/>
+        <IconCone
+            :size='18'
+            stroke='1'
+            color='#6b7990'
+            class='ms-2 me-1'
+        />
         <label class='subheader user-select-none'>Sensor</label>
 
         <div class='mx-2 py-3'>
@@ -8,11 +13,11 @@
                 <div class='col-6'>
                     <label class='subheader user-select-none'>Type</label>
 
-                    <div v-text='sensor.type || "Unknown"'/>
+                    <div v-text='sensor.type || "Unknown"' />
                 </div>
                 <div class='col-6'>
                     <label class='subheader user-select-none'>Model</label>
-                    <div v-text='sensor.model || "Unknown"'/>
+                    <div v-text='sensor.model || "Unknown"' />
                 </div>
 
                 <TablerRange

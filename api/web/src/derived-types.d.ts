@@ -5472,6 +5472,7 @@ export interface paths {
                                 };
                                 created: string;
                                 updated: string;
+                                readonly: boolean;
                                 username: null | string;
                                 name: string;
                                 description: string;
@@ -5498,8 +5499,10 @@ export interface paths {
                         name: string;
                         /** @description Human readable description */
                         description: string;
+                        /** @default false */
+                        readonly: boolean;
                         /** @default true */
-                        enabled?: boolean;
+                        enabled: boolean;
                         agency?: null | number;
                         integrationId?: number;
                         auth: {
@@ -5527,6 +5530,7 @@ export interface paths {
                             };
                             created: string;
                             updated: string;
+                            readonly: boolean;
                             username: null | string;
                             name: string;
                             description: string;
@@ -5576,6 +5580,7 @@ export interface paths {
                             };
                             created: string;
                             updated: string;
+                            readonly: boolean;
                             username: null | string;
                             name: string;
                             description: string;
@@ -5655,6 +5660,7 @@ export interface paths {
                             };
                             created: string;
                             updated: string;
+                            readonly: boolean;
                             username: null | string;
                             name: string;
                             description: string;
@@ -5664,6 +5670,45 @@ export interface paths {
                 };
             };
         };
+        trace?: never;
+    };
+    "/connection/{:connectionid}/auth": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Connections that are marked as ReadOnly are used for external integrations and are able to download the X509 Certificate */
+        get: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    token?: string;
+                    /** @description No Description */
+                    download: boolean;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/connection/{:connectionid}/refresh": {
@@ -5702,6 +5747,7 @@ export interface paths {
                             };
                             created: string;
                             updated: string;
+                            readonly: boolean;
                             username: null | string;
                             name: string;
                             description: string;
@@ -13742,6 +13788,109 @@ export interface paths {
         };
         trace?: never;
     };
+    "/server/injector": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Injector List */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                uid: string;
+                                toInject: string;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create COT Injector */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        uid: string;
+                        toInject: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                uid: string;
+                                toInject: string;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        /** Delete COT Injector */
+        delete: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    uid: string;
+                    /** @description No Description */
+                    toInject: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/search/reverse/{:longitude}/{:latitude}": {
         parameters: {
             query?: never;
@@ -13966,109 +14115,6 @@ export interface paths {
         put?: never;
         post?: never;
         delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/server/injector": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Injector List */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            total: number;
-                            items: {
-                                uid: string;
-                                toInject: string;
-                            }[];
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        /** Create COT Injector */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        uid: string;
-                        toInject: string;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            total: number;
-                            items: {
-                                uid: string;
-                                toInject: string;
-                            }[];
-                        };
-                    };
-                };
-            };
-        };
-        /** Delete COT Injector */
-        delete: {
-            parameters: {
-                query: {
-                    /** @description No Description */
-                    uid: string;
-                    /** @description No Description */
-                    toInject: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
         options?: never;
         head?: never;
         patch?: never;

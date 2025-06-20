@@ -57,13 +57,23 @@
             >
                 <div class='d-flex align-items-center'>
                     <div class='me-2'>
+                        <IconAlertTriangle
+                            v-if='n.type === "Alert"'
+                            :size='32'
+                            stroke='1'
+                        />
+                        <IconHeartbeat
+                            v-else-if='n.type === "Medical"'
+                            :size='32'
+                            stroke='1'
+                        />
                         <IconMessage
-                            v-if='n.type === "Chat"'
+                            v-else-if='n.type === "Chat"'
                             :size='32'
                             stroke='1'
                         />
                         <IconUser
-                            v-if='n.type === "Contact"'
+                            v-else-if='n.type === "Contact"'
                             :size='32'
                             stroke='1'
                         />
@@ -115,6 +125,8 @@ import {
     IconTrash,
     IconSearch,
     IconMessage,
+    IconAlertTriangle,
+    IconHeartbeat,
     IconAmbulance,
     IconCircleDot,
 } from '@tabler/icons-vue';
