@@ -35,6 +35,7 @@
                                         <AgencyBadge :connection='connection' />
 
                                         <TablerIconButton
+                                            v-if='!connection.readonly'
                                             title='Cycle Connection'
                                             @click='refresh'
                                         >
@@ -110,10 +111,10 @@
                                     </div>
                                 </div>
                                 <div class='card-footer d-flex'>
-                                    <div> 
+                                    <div>
                                         Last updated <span v-text='timeDiff(connection.updated)' />
                                     </div>
-                                    <div class='ms-auto'> 
+                                    <div class='ms-auto'>
                                         Inital Creation
                                         <span v-text='connection.username' />
                                     </div>
@@ -137,7 +138,8 @@
                                             role='menu'
                                             class='list-group list-group-transparent'
                                         >
-                                            <span 
+                                            <span
+                                                v-if='!connection.readonly'
                                                 tabindex='0'
                                                 role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
@@ -164,6 +166,7 @@
                                                 stroke='1'
                                             /><span class='mx-3'>Channels</span></span>
                                             <span
+                                                v-if='!connection.readonly'
                                                 tabindex='0'
                                                 role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
@@ -177,6 +180,7 @@
                                                 stroke='1'
                                             /><span class='mx-3'>Files</span></span>
                                             <span
+                                                v-if='!connection.readonly'
                                                 tabindex='0'
                                                 role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
@@ -190,6 +194,7 @@
                                                 stroke='1'
                                             /><span class='mx-3'>Data Syncs</span></span>
                                             <span
+                                                v-if='!connection.readonly'
                                                 tabindex='0'
                                                 role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
@@ -203,6 +208,7 @@
                                                 stroke='1'
                                             /><span class='mx-3'>Videos</span></span>
                                             <span
+                                                v-if='!connection.readonly'
                                                 tabindex='0'
                                                 role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
@@ -268,6 +274,10 @@ const connection = ref<ETLConnection | undefined>();
 
 onMounted(async () => {
     await fetch();
+
+    if (connection.value.readonly) {
+        router.push(`/connection/${connection.value.id}/groups`);
+    }
 });
 
 async function fetch() {
