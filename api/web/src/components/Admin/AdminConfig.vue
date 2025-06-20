@@ -50,11 +50,11 @@
                                 :error='(config["login::forgot"] && config["login::forgot"].startsWith("http")) ? "" : "Invalid URL"'
                                 label='TAK Server Password Reset Link'
                             />
-                            <TablerInput
+
+                            <UploadLogo
                                 v-model='config["login::logo"]'
+                                label='Login Logo'
                                 :disabled='!edit'
-                                :error='(config["login::logo"] && config["login::logo"].startsWith("data:image/png;base64,")) ? "" : "Must start with: data:image/png;base64,"'
-                                label='Base64 Encoded Login Logo'
                             />
                         </div>
                     </div>
@@ -262,6 +262,7 @@ import {
     TablerToggle,
     TablerInput
 } from '@tak-ps/vue-tabler';
+import UploadLogo from '../util/UploadLogo.vue';
 import {
     IconPencil,
     IconChevronRight,
@@ -277,6 +278,7 @@ export default {
         IconChevronDown,
         TablerLoading,
         TablerIconButton,
+        UploadLogo,
         TablerToggle,
         TablerInput,
     },
