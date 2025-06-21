@@ -24,6 +24,12 @@
                             style='height: 50px;'
                             class='img-thumbnail'
                         >
+                        <IconBroadcast
+                            v-else
+                            size='50'
+                            stroke='1'
+                            class='text-muted'
+                        />
                         <div
                             class='mx-2'
                             v-text='selected.name'
