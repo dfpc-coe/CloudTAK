@@ -40,14 +40,17 @@
                                 :options='selected.versions'
                             />
 
-                            <IconTrash
+
+                            <TablerIconButton
                                 v-if='selected.id'
-                                v-tooltip='"Remove Tasks"'
-                                :size='32'
-                                stroke='1'
-                                class='cursor-pointer'
+                                title='Remove Task'
                                 @click='selected.id = undefined'
-                            />
+                            >
+                                <IconTrash
+                                    :size='32'
+                                    stroke='1'
+                                />
+                            </TablerIconButton>
                         </div>
                     </div>
                 </template>
@@ -83,6 +86,12 @@
                                     @click='selected = select(task)'
                                 >
                                     <div class='card-header d-flex align-items-center user-select-none'>
+                                        <IconStar
+                                            v-if='task.favorite'
+                                            size='24'
+                                            stroke='1'
+                                            class='me-2'
+                                        />
                                         <div v-text='task.name' />
                                         <div class='ms-auto'>
                                             <TablerIconButton
@@ -181,6 +190,7 @@
 import { ref, watch, onMounted } from 'vue';
 import { std, stdurl } from '/src/std.ts';
 import {
+    IconStar,
     IconTrash,
     IconBroadcast,
     IconInfoSquare,
@@ -223,6 +233,8 @@ const selected = ref({
 const paging = ref({
     filter: '',
     limit: 12,
+    sort: 'favorite',
+    order: 'desc',
     page: 0
 });
 
@@ -286,6 +298,8 @@ async function listTasks() {
     const url = stdurl('/api/task');
     url.searchParams.append('filter', paging.value.filter);
     url.searchParams.append('limit', paging.value.limit);
+    url.searchParams.append('order', paging.value.order);
+    url.searchParams.append('sort', paging.value.sort);
     url.searchParams.append('page', paging.value.page);
     list.value = await std(url);
 

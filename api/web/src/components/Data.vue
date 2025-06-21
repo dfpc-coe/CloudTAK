@@ -119,8 +119,7 @@
                                     Last updated <span v-text='timeDiff(data.updated)' />
                                 </div>
                                 <div class='ms-auto'> 
-                                    Inital Creation
-                                    <span v-text='data.username' />
+                                    <InitialAutor :email='data.username || "Unknown"' />
                                 </div>
                             </div>
                         </div>
@@ -215,6 +214,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { std } from '../std.ts';
 import PageFooter from './PageFooter.vue';
 import timeDiff from '../timediff.ts';
+import InitialAutor from './util/InitialAutor.vue';
 import {
     TablerLoading,
     TablerIconButton,

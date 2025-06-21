@@ -103,7 +103,10 @@
                                                 />
                                             </div>
                                         </div>
-                                        <div class='col-12 d-flex align-items-center justify-content-center pt-3'>
+                                        <div
+                                            v-if='connection.readonly'
+                                            class='col-12 d-flex align-items-center justify-content-center pt-3'
+                                        >
                                             <button
                                                 class='btn btn-primary'
                                                 @click='downloadCertificate'
@@ -122,8 +125,9 @@
                                         Last updated <span v-text='timeDiff(connection.updated)' />
                                     </div>
                                     <div class='ms-auto'>
-                                        Inital Creation
-                                        <span v-text='connection.username' />
+                                        <InitialAuthor
+                                            :email='connection.username || "Unknown"'
+                                        />
                                     </div>
                                 </div>
                             </template>
@@ -251,6 +255,7 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import type { ETLConnection } from '../types.ts';
+import InitialAuthor from './util/InitialAuthor.vue';
 import { std, stdurl } from '../std.ts';
 import PageFooter from './PageFooter.vue';
 import ConnectionStatus from './Connection/StatusDot.vue';

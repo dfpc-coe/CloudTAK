@@ -7,23 +7,23 @@
 
             <div class='ms-auto btn-list'>
                 <template v-if='!edit'>
-                    <IconPlus
-                        v-tooltip='"Register New Task"'
-                        :size='32'
-                        stroke='1'
-                        class='cursor-pointer'
+                    <TablerIconButton
+                        title='Register New Task'
                         @click='edit = {
                             "name": "",
                             "prefix": "",
                             "readme": "",
                             "repo": ""
                         }'
-                    />
-                    <IconRefresh
-                        v-tooltip='"Refresh"'
-                        :size='32'
-                        stroke='1'
-                        class='cursor-pointer'
+                    >
+                        <IconPlus
+                            :size='32'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
+                    <TablerRefreshButton
+                        title='Refresh'
+                        :loading='loading'
                         @click='fetchList'
                     />
                 </template>
@@ -54,6 +54,12 @@
                                 v-model='edit.prefix'
                                 :disabled='edit.id'
                                 label='Container Prefix'
+                            />
+                        </div>
+                        <div class='col-12'>
+                            <TablerToggle
+                                v-model='edit.favorite'
+                                label='Favorited'
                             />
                         </div>
 
@@ -134,6 +140,17 @@
                                                 >
                                                 <span v-else>No Logo</span>
                                             </template>
+                                            <template v-else-if='h.name === "name"'>
+                                                <div class='d-flex align-items-center'>
+                                                    <IconStar
+                                                        v-if='layer.favorite'
+                                                    />
+                                                    <span
+                                                        class='ms-2'
+                                                        v-text='layer[h.name]'
+                                                    />
+                                                </div>
+                                            </template>
                                             <template v-else>
                                                 <span v-text='layer[h.name]' />
                                             </template>
@@ -169,12 +186,15 @@ import {
     TablerNone,
     TablerInput,
     TablerAlert,
+    TablerToggle,
     TablerLoading,
+    TablerIconButton,
+    TablerRefreshButton,
     TablerDelete
 } from '@tak-ps/vue-tabler';
 import {
+    IconStar,
     IconPlus,
-    IconRefresh,
 } from '@tabler/icons-vue'
 
 const error = ref();

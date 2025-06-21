@@ -67,8 +67,9 @@
                                     Last updated <span v-text='timeDiff(layer.updated)' />
                                 </div>
                                 <div class='ms-auto'> 
-                                    Inital Creation
-                                    <span v-text='layer.username' />
+                                    <InitialAuthor
+                                        :email='layer.username || "Unknown"'
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -362,6 +363,7 @@ import { std, stdurl } from '../std.ts';
 import { useRoute, useRouter } from 'vue-router';
 import PageFooter from './PageFooter.vue';
 import LayerStatus from './Layer/utils/StatusDot.vue';
+import InitialAuthor from './util/InitialAuthor.vue';
 import timeDiff from '../timediff.ts';
 import {
     TablerNone,
