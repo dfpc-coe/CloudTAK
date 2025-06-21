@@ -222,7 +222,7 @@ const selected = ref({
 
 const paging = ref({
     filter: '',
-    limit: 10,
+    limit: 12,
     page: 0
 });
 
