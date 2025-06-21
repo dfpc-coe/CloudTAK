@@ -180,6 +180,7 @@ export const Import = pgTable('imports', {
 export const Task = pgTable('tasks', {
     id: serial().primaryKey(),
     prefix: text().notNull(),
+    favorite: boolean().notNull().default(false),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     name: text().notNull(),
