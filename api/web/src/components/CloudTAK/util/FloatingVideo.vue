@@ -318,6 +318,7 @@ async function requestLease(): Promise<void> {
             nextTick(() => {
                 player.value = videojs(id, {
                     fill: true,
+                    preload: 'metadata'
                 });
             });
         }
