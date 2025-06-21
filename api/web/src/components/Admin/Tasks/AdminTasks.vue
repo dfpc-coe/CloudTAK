@@ -7,23 +7,23 @@
 
             <div class='ms-auto btn-list'>
                 <template v-if='!edit'>
-                    <IconPlus
-                        v-tooltip='"Register New Task"'
-                        :size='32'
-                        stroke='1'
-                        class='cursor-pointer'
+                    <TablerIconButton
+                        title='Register New Task'
                         @click='edit = {
                             "name": "",
                             "prefix": "",
                             "readme": "",
                             "repo": ""
                         }'
-                    />
-                    <IconRefresh
-                        v-tooltip='"Refresh"'
-                        :size='32'
-                        stroke='1'
-                        class='cursor-pointer'
+                    >
+                        <IconPlus
+                            :size='32'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
+                    <TablerRefreshButton
+                        title='Refresh'
+                        :loading='loading'
                         @click='fetchList'
                     />
                 </template>
@@ -42,18 +42,31 @@
                     desc='Saving Tasks'
                 />
                 <template v-else>
-                    <div class='row g-2 col-12 py-2 px-2'>
-                        <TablerInput
-                            v-model='edit.name'
-                            label='Task Name'
-                        />
+                    <div class='row g-2 py-2 px-2'>
+                        <div class='col-md-6 col-12'>
+                            <TablerInput
+                                v-model='edit.name'
+                                label='Task Name'
+                            />
+                        </div>
+                        <div class='col-md-6 col-12'>
+                            <TablerInput
+                                v-model='edit.prefix'
+                                :disabled='edit.id'
+                                label='Container Prefix'
+                            />
+                        </div>
+                        <div class='col-12'>
+                            <TablerToggle
+                                v-model='edit.favorite'
+                                label='Favorited'
+                            />
+                        </div>
 
-                        <TablerInput
-                            v-model='edit.prefix'
-                            :disabled='edit.id'
-                            label='Container Prefix'
+                        <UploadLogo
+                            v-model='edit.logo'
+                            label='Task Logo'
                         />
-
                         <TablerInput
                             v-model='edit.repo'
                             label='Task Code Repository URL'
@@ -117,7 +130,30 @@
                                 <template v-for='h in header'>
                                     <template v-if='h.display'>
                                         <td>
-                                            <span v-text='layer[h.name]' />
+                                            <template v-if='h.name === "logo"'>
+                                                <img
+                                                    v-if='layer[h.name]'
+                                                    :src='layer[h.name]'
+                                                    alt='Logo Preview'
+                                                    class='img-thumbnail'
+                                                    style='height: 50px;'
+                                                >
+                                                <span v-else>No Logo</span>
+                                            </template>
+                                            <template v-else-if='h.name === "name"'>
+                                                <div class='d-flex align-items-center'>
+                                                    <IconStar
+                                                        v-if='layer.favorite'
+                                                    />
+                                                    <span
+                                                        class='ms-2'
+                                                        v-text='layer[h.name]'
+                                                    />
+                                                </div>
+                                            </template>
+                                            <template v-else>
+                                                <span v-text='layer[h.name]' />
+                                            </template>
                                         </td>
                                     </template>
                                 </template>
@@ -145,16 +181,20 @@ import { ref, watch, onMounted } from 'vue'
 import { std, stdurl } from '/src/std.ts';
 import TableHeader from '../../util/TableHeader.vue'
 import TableFooter from '../../util/TableFooter.vue'
+import UploadLogo from '../../util/UploadLogo.vue';
 import {
     TablerNone,
     TablerInput,
     TablerAlert,
+    TablerToggle,
     TablerLoading,
+    TablerIconButton,
+    TablerRefreshButton,
     TablerDelete
 } from '@tak-ps/vue-tabler';
 import {
+    IconStar,
     IconPlus,
-    IconRefresh,
 } from '@tabler/icons-vue'
 
 const error = ref();
@@ -184,7 +224,7 @@ onMounted(async () => {
 
 async function listLayerSchema() {
     const schema = await std('/api/schema?method=GET&url=/task');
-    header.value = ['name', 'prefix'].map((h) => {
+    header.value = ['logo', 'name', 'prefix'].map((h) => {
         return { name: h, display: true };
     });
 
