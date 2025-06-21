@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v10.5.0 - 2025-06-21
+
+- :rocket: Allow adding a logo to an ETL Task
+- :rocket: Allow adding a favorite to an ETL Task
+- :rocket: Redesign Task Selection UI to be more visual
+- :rocket: Make Initial Author in Admin Footers look a little nicer
+
 ### v10.4.0 - 2025-06-20
 
 - :rocket: Provide UI for uploading a Server Logo
