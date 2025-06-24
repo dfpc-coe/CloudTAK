@@ -90,6 +90,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         res: Type.Object({
             total: Type.Integer(),
+            tasks: Type.Array(Type.String()),
             status: Type.Object({
                 healthy: Type.Integer(),
                 alarm: Type.Integer(),
@@ -134,6 +135,7 @@ export default async function router(schema: Schema, config: Config) {
 
             res.json({
                 status,
+                tasks: await config.models.Layer.tasks(),
                 total: list.total,
                 items: list.items.map((layer) => {
                     return {

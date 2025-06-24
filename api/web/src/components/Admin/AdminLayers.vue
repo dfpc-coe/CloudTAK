@@ -89,8 +89,8 @@
                             class='cursor-pointer'
                             role='menuitem'
                             tabindex='0'
-                            @keyup.enter='stdclick(router, $event, `/connection/${layer.connection}/layer/${layer.id}`)'
-                            @click='stdclick(router, $event, `/connection/${layer.connection}/layer/${layer.id}`)'
+                            @keyup.enter='layer.connection ? stdclick(router, $event, `/connection/${layer.connection}/layer/${layer.id}`) : stdclick(router, $event, `/admin/layer/${layer.id}`)'
+                            @click='layer.connection ? stdclick(router, $event, `/connection/${layer.connection}/layer/${layer.id}`) : stdclick(router, $event, `/admin/layer/${layer.id}`)'
                         >
                             <template v-for='h in header'>
                                 <template v-if='h.display && h.name === "name"'>
@@ -124,19 +124,19 @@
                                                     v-if='layer.incoming && layer.outgoing'
                                                     title='Outgoing/Incoming'
                                                     size='32'
-                                                    :stroke='1'
+                                                    stroke='1'
                                                 />
                                                 <IconStackPop
                                                     v-else-if='layer.outgoing'
                                                     title='Outgoing'
                                                     size='32'
-                                                    :stroke='1'
+                                                    stroke='1'
                                                 />
                                                 <IconStackPush
                                                     v-else-if='layer.incoming'
                                                     title='Incoming'
                                                     size='32'
-                                                    :stroke='1'
+                                                    stroke='1'
                                                 />
                                             </div>
                                         </div>
@@ -166,10 +166,11 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router';
 import { std, stdurl, stdclick } from '../../std.ts';
+import type { ETLLayerList, ETLLayer } from '../../types.ts';
 import TableHeader from '../util/TableHeader.vue'
 import TableFooter from '../util/TableFooter.vue'
 import Status from '../Layer/utils/StatusDot.vue';
@@ -191,9 +192,12 @@ import {
 } from '@tabler/icons-vue'
 
 const router = useRouter();
-const error = ref(false);
+const error = ref<Error | undefined>();
 const loading = ref(true);
-const header = ref([]);
+
+type Header = { name: keyof ETLLayer, display: boolean };
+const header = ref<Array<Header>>([]);
+
 const paging = ref({
     filter: '',
     task: 'All Tasks',
@@ -203,7 +207,8 @@ const paging = ref({
     limit: 100,
     page: 0
 });
-const list = ref({
+
+const list = ref<ETLLayerList>({
     total: 0,
     tasks: [],
     items: []
@@ -224,24 +229,29 @@ onMounted(async () => {
 
 async function redeploy() {
     loading.value = true;
+
     await std(`/api/layer/redeploy`, {
         method: 'POST'
     });
+
     loading.value = false;
 }
 
 async function listLayerSchema() {
     const schema = await std('/api/schema?method=GET&url=/layer');
-    header.value = ['id', 'name', 'task'].map((h) => {
+
+    const defaults: Array<keyof ETLLayer> = ['id', 'name', 'task'];
+    header.value = defaults.map((h) => {
         return { name: h, display: true };
     });
-
+    
+    // @ts-expect-error Worth trying to type at some point maybe but not now
     header.value.push(...schema.query.properties.sort.enum.map((h) => {
         return {
             name: h,
             display: false
         }
-    }).filter((h) => {
+    }).filter((h: Header) => {
         for (const hknown of header.value) {
             if (hknown.name === h.name) return false;
         }
@@ -257,10 +267,10 @@ async function fetchList() {
         const url = stdurl('/api/layer');
         url.searchParams.append('alarms', 'true');
         url.searchParams.append('filter', paging.value.filter);
-        url.searchParams.append('limit', paging.value.limit);
+        url.searchParams.append('limit', String(paging.value.limit));
+        url.searchParams.append('page', String(paging.value.page));
         url.searchParams.append('sort', paging.value.sort);
         url.searchParams.append('order', paging.value.order);
-        url.searchParams.append('page', paging.value.page);
 
         if (paging.value.task !== 'All Tasks') {
             url.searchParams.append('task', paging.value.task);
@@ -272,7 +282,7 @@ async function fetchList() {
             url.searchParams.append('template', String(true));
         }
 
-        list.value = await std(url);
+        list.value = await std(url) as ETLLayerList;
         loading.value = false;
     } catch (err) {
         loading.value = false;
