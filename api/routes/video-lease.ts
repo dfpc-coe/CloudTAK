@@ -268,7 +268,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'VideoLease',
         description: 'Get a single Video Lease',
         params: Type.Object({
-            lease: Type.String()
+            lease: Type.Integer()
         }),
         res: Type.Object({
             lease: VideoLeaseResponse,
@@ -386,7 +386,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'VideoLease',
         description: 'Update a video Lease',
         params: Type.Object({
-            lease: Type.String()
+            lease: Type.Integer()
         }),
         body: Type.Object({
             name: Type.Optional(Type.String()),
@@ -454,7 +454,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'VideoLease',
         description: 'Delete a video Lease',
         params: Type.Object({
-            lease: Type.String()
+            lease: Type.Integer()
         }),
         res: StandardResponse
     }, async (req, res) => {

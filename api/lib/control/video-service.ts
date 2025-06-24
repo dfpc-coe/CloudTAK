@@ -534,7 +534,7 @@ export default class VideoServiceControl {
     }
 
     async from(
-        leaseid: string,
+        leaseid: number,
         opts: {
             connection?: number
             username?: string
@@ -568,7 +568,7 @@ export default class VideoServiceControl {
     }
 
     async commit(
-        leaseid: string,
+        leaseid: number,
         body: {
             name?: string,
             channel?: string | null,
@@ -710,7 +710,7 @@ export default class VideoServiceControl {
     }
 
     async delete(
-        leaseid: string,
+        leaseid: number,
         opts: {
             username?: string;
             connection?: number;
