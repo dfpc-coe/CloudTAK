@@ -9,43 +9,45 @@ import App from './App.vue'
 
 // Template layers are hosted under the `admin/` prefix and
 // Connection layers under the `connection/` prefix
-const LayerFragment = {
-    component: () => import('./components/Layer.vue'),
-    children: [{
-        path: '',
-        name: 'layer-default',
-        redirect: () => {
-            return { name: 'layer-deployment' };
-        }
-    },{
-        path: 'deployment',
-        name: 'layer-deployment',
-        component: () => import('./components/Layer/LayerDeployment.vue')
-    },{
-        path: 'incoming/config',
-        name: 'layer-incoming-config',
-        component: () => import('./components/Layer/LayerIncomingConfig.vue')
-    },{
-        path: 'incoming/environment',
-        name: 'layer-incoming-environment',
-        component: () => import('./components/Layer/LayerEnvironment.vue')
-    },{
-        path: 'incoming/schema',
-        name: 'layer-incoming-schema',
-        component: () => import('./components/Layer/LayerIncomingSchema.vue')
-    },{
-        path: 'incoming/styles',
-        name: 'layer-incoming-styles',
-        component: () => import('./components/Layer/LayerIncomingStyles.vue')
-    },{
-        path: 'outgoing/environment',
-        name: 'layer-outgoing-environment',
-        component: () => import('./components/Layer/LayerEnvironment.vue')
-    },{
-        path: 'outgoing/config',
-        name: 'layer-outgoing-config',
-        component: () => import('./components/Layer/LayerOutgoingConfig.vue')
-    }]
+const LayerFragment = (prefix: string) => {
+    return {
+        component: () => import('./components/Layer.vue'),
+        children: [{
+            path: '',
+            name: `${prefix}-default`,
+            redirect: () => {
+                return { name: `${prefix}-deployment` };
+            }
+        },{
+            path: 'deployment',
+            name: `${prefix}-deployment`,
+            component: () => import('./components/Layer/LayerDeployment.vue')
+        },{
+            path: 'incoming/config',
+            name: `${prefix}-incoming-config`,
+            component: () => import('./components/Layer/LayerIncomingConfig.vue')
+        },{
+            path: 'incoming/environment',
+            name: `${prefix}-incoming-environment`,
+            component: () => import('./components/Layer/LayerEnvironment.vue')
+        },{
+            path: 'incoming/schema',
+            name: `${prefix}-incoming-schema`,
+            component: () => import('./components/Layer/LayerIncomingSchema.vue')
+        },{
+            path: 'incoming/styles',
+            name: `${prefix}-incoming-styles`,
+            component: () => import('./components/Layer/LayerIncomingStyles.vue')
+        },{
+            path: 'outgoing/environment',
+            name: `${prefix}-outgoing-environment`,
+            component: () => import('./components/Layer/LayerEnvironment.vue')
+        },{
+            path: 'outgoing/config',
+            name: `${prefix}-outgoing-config`,
+            component: () => import('./components/Layer/LayerOutgoingConfig.vue')
+        }]
+    }
 }
 
 const router = VueRouter.createRouter({
@@ -215,7 +217,7 @@ const router = VueRouter.createRouter({
         {
             path: '/connection/:connectionid/layer/:layerid',
             name: 'layer',
-            ...LayerFragment,
+            ...LayerFragment('layer'),
         },
 
 
@@ -321,7 +323,7 @@ const router = VueRouter.createRouter({
             },{
                 path: 'layer/:layerid',
                 name: 'admin-layer',
-                ...LayerFragment,
+            ...LayerFragment('layer-template'),
             },{
                 path: 'video',
                 name: 'admin-videos',
