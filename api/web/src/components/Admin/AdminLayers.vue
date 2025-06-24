@@ -116,7 +116,7 @@
                                                 />
                                                 <span
                                                     class='subheader'
-                                                    v-text='layer.task.match(/v\d+\.\d+\.\d+/)[0]'
+                                                    v-text='layer.task.replace(/.*-(?=v\d+\.\d+\.\d+)/, "")'
                                                 />
                                             </div>
                                             <div class='mx-2 ms-auto'>
@@ -210,6 +210,11 @@ const paging = ref({
 
 const list = ref<ETLLayerList>({
     total: 0,
+    status: {
+        healthy: 0,
+        alarm: 0,
+        unknown: 0
+    },
     tasks: [],
     items: []
 });
