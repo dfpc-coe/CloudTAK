@@ -593,11 +593,11 @@ export default class VideoServiceControl {
         // Performs Permission Check
         await this.from(leaseid, opts);
 
-        const lease = await this.config.models.VideoLease.commit(leaseid, body);
-
         if (body.secure !== undefined) {
             await this.updateSecure(lease, body.secure, body.secure_rotate);
         }
+
+        const lease = await this.config.models.VideoLease.commit(leaseid, body);
 
         try {
             await this.path(lease.path);
