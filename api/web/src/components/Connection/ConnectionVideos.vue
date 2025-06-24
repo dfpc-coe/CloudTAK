@@ -79,7 +79,6 @@ import {
     TablerDelete,
     TablerLoading,
     TablerRefreshButton,
-    TablerIconButton,
     TablerNone,
 } from '@tak-ps/vue-tabler';
 
