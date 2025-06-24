@@ -20,7 +20,7 @@ export const AugmentedLayerOutgoing = Type.Object({
     created: Type.String(),
     updated: Type.String(),
     environment: Type.Any(),
-    ephemeral: Type.Record(Type.String(), Type.String()),
+    ephemeral: Type.Record(Type.String(), Type.Any()),
     filters: FilterContainer,
 })
 
@@ -39,7 +39,7 @@ export const AugmentedLayerIncoming = Type.Object({
     styles: StyleContainer,
     stale: Type.Integer(),
     environment: Type.Any(),
-    ephemeral: Type.Record(Type.String(), Type.String()),
+    ephemeral: Type.Record(Type.String(), Type.Any()),
     data: Type.Union([Type.Integer(), Type.Null()])
 })
 
@@ -49,7 +49,7 @@ export const AugmentedLayer = Type.Object({
     created: Type.String(),
     updated: Type.String(),
     template: Type.Boolean(),
-    connection: Type.Optional(Type.Integer()),
+    connection: Type.Union([Type.Null(), Type.Integer()]),
     username: Type.Union([Type.Null(), Type.String()]),
     uuid: Type.String(),
     name: Type.String(),

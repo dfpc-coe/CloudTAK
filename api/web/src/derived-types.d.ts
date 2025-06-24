@@ -3144,6 +3144,7 @@ export interface paths {
                     content: {
                         "application/json": {
                             total: number;
+                            tasks: string[];
                             status: {
                                 healthy: number;
                                 alarm: number;
@@ -3155,7 +3156,7 @@ export interface paths {
                                 created: string;
                                 updated: string;
                                 template: boolean;
-                                connection?: number;
+                                connection: null | number;
                                 username: null | string;
                                 uuid: string;
                                 name: string;
@@ -3356,7 +3357,7 @@ export interface paths {
                             created: string;
                             updated: string;
                             template: boolean;
-                            connection?: number;
+                            connection: null | number;
                             username: null | string;
                             uuid: string;
                             name: string;
@@ -4248,7 +4249,7 @@ export interface paths {
                             created: string;
                             updated: string;
                             template: boolean;
-                            connection?: number;
+                            connection: null | number;
                             username: null | string;
                             uuid: string;
                             name: string;
@@ -4474,7 +4475,7 @@ export interface paths {
                             created: string;
                             updated: string;
                             template: boolean;
-                            connection?: number;
+                            connection: null | number;
                             username: null | string;
                             uuid: string;
                             name: string;
@@ -7249,7 +7250,7 @@ export interface paths {
                                 created: string;
                                 updated: string;
                                 template: boolean;
-                                connection?: number;
+                                connection: null | number;
                                 username: null | string;
                                 uuid: string;
                                 name: string;
@@ -7452,7 +7453,7 @@ export interface paths {
                             created: string;
                             updated: string;
                             template: boolean;
-                            connection?: number;
+                            connection: null | number;
                             username: null | string;
                             uuid: string;
                             name: string;
@@ -7662,7 +7663,7 @@ export interface paths {
                                 created: string;
                                 updated: string;
                                 template: boolean;
-                                connection?: number;
+                                connection: null | number;
                                 username: null | string;
                                 uuid: string;
                                 name: string;
@@ -7856,7 +7857,7 @@ export interface paths {
                             created: string;
                             updated: string;
                             template: boolean;
-                            connection?: number;
+                            connection: null | number;
                             username: null | string;
                             uuid: string;
                             name: string;
@@ -8049,7 +8050,7 @@ export interface paths {
                             created: string;
                             updated: string;
                             template: boolean;
-                            connection?: number;
+                            connection: null | number;
                             username: null | string;
                             uuid: string;
                             name: string;
@@ -13788,109 +13789,6 @@ export interface paths {
         };
         trace?: never;
     };
-    "/server/injector": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Injector List */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            total: number;
-                            items: {
-                                uid: string;
-                                toInject: string;
-                            }[];
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        /** Create COT Injector */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        uid: string;
-                        toInject: string;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            total: number;
-                            items: {
-                                uid: string;
-                                toInject: string;
-                            }[];
-                        };
-                    };
-                };
-            };
-        };
-        /** Delete COT Injector */
-        delete: {
-            parameters: {
-                query: {
-                    /** @description No Description */
-                    uid: string;
-                    /** @description No Description */
-                    toInject: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/search/reverse/{:longitude}/{:latitude}": {
         parameters: {
             query?: never;
@@ -14115,6 +14013,109 @@ export interface paths {
         put?: never;
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/server/injector": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Injector List */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                uid: string;
+                                toInject: string;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create COT Injector */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        uid: string;
+                        toInject: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                uid: string;
+                                toInject: string;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        /** Delete COT Injector */
+        delete: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    uid: string;
+                    /** @description No Description */
+                    toInject: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
         options?: never;
         head?: never;
         patch?: never;
@@ -14364,7 +14365,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort?: "id" | "prefix" | "created" | "updated" | "name" | "repo" | "readme" | "enableRLS";
+                    sort?: "id" | "prefix" | "favorite" | "created" | "updated" | "name" | "logo" | "repo" | "readme" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                 };
@@ -14385,9 +14386,11 @@ export interface paths {
                             items: {
                                 id: number;
                                 prefix: string;
+                                favorite: boolean;
                                 created: string;
                                 updated: string;
                                 name: string;
+                                logo: string | null;
                                 repo: string | null;
                                 readme: string | null;
                             }[];
@@ -14410,6 +14413,12 @@ export interface paths {
                     "application/json": {
                         name: string;
                         prefix: string;
+                        /**
+                         * @description Displayed first in the Task List
+                         * @default false
+                         */
+                        favorite: boolean;
+                        logo?: string;
                         repo?: string;
                         readme?: string;
                     };
@@ -14425,9 +14434,11 @@ export interface paths {
                         "application/json": {
                             id: number;
                             prefix: string;
+                            favorite: boolean;
                             created: string;
                             updated: string;
                             name: string;
+                            logo: string | null;
                             repo: string | null;
                             readme: string | null;
                         };
@@ -14623,7 +14634,10 @@ export interface paths {
                     "application/json": {
                         name?: string;
                         repo?: string;
+                        logo?: string;
                         readme?: string;
+                        /** @description Displayed first in the Task List */
+                        favorite?: boolean;
                     };
                 };
             };
@@ -14637,9 +14651,11 @@ export interface paths {
                         "application/json": {
                             id: number;
                             prefix: string;
+                            favorite: boolean;
                             created: string;
                             updated: string;
                             name: string;
+                            logo: string | null;
                             repo: string | null;
                             readme: string | null;
                         };
