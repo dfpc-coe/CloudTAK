@@ -418,7 +418,7 @@ async function create() {
 
         const create = await std(`/api/connection/${route.params.connectionid}`, {
             method: 'PATCH',
-            body: connection
+            body: connection.value
         });
         router.push(`/connection/${create.id}`);
     } else {
