@@ -590,11 +590,12 @@ export default class VideoServiceControl {
         const video = await this.settings();
         if (!video.configured) throw new Err(400, null, 'Media Integration is not configured');
 
-        // Performs Permission Check
-        await this.from(leaseid, opts);
-
         if (body.secure !== undefined) {
+            // Performs Permission Check
+            const lease = await this.from(leaseid, opts);
             await this.updateSecure(lease, body.secure, body.secure_rotate);
+        } else {
+            await this.from(leaseid, opts);
         }
 
         const lease = await this.config.models.VideoLease.commit(leaseid, body);
