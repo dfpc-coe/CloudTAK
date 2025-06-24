@@ -82,6 +82,8 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+
             if (layer && layer.connection !== connection.id) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
             }
@@ -132,6 +134,7 @@ export default async function router(schema: Schema, config: Config) {
                 default: false,
                 description: 'Increase stream security by enforcing a seperate read and write username/password'
             }),
+            source_id: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             source_type: Type.Optional(Type.Enum(VideoLease_SourceType)),
             source_model: Type.Optional(Type.String()),
             channel: Type.Optional(Type.Union([Type.String(), Type.Null()])),
@@ -150,6 +153,8 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+
             if (layer && layer.connection !== connection.id) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
             }
@@ -163,6 +168,7 @@ export default async function router(schema: Schema, config: Config) {
                 channel: req.body.channel,
                 expiration: req.body.permanent ? null : moment().add(req.body.duration, 'seconds').toISOString(),
                 ephemeral: false,
+                source_id: req.body.source_id,
                 source_type: req.body.source_type,
                 source_model: req.body.source_model,
                 recording: req.body.recording,
@@ -170,6 +176,7 @@ export default async function router(schema: Schema, config: Config) {
                 path: randomUUID(),
                 secure: req.body.secure,
                 connection: req.params.connectionid,
+                layer: layer ? layer.id : undefined,
                 proxy: req.body.proxy
             })
 
@@ -196,6 +203,7 @@ export default async function router(schema: Schema, config: Config) {
                 minimum: 0,
                 description: 'Duration in Seconds'
             })),
+            source_id: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             source_type: Type.Optional(Type.Enum(VideoLease_SourceType)),
             source_model: Type.Optional(Type.String()),
             channel: Type.Optional(Type.Union([Type.String(), Type.Null()])),
@@ -226,6 +234,8 @@ export default async function router(schema: Schema, config: Config) {
                     { access: AuthResourceAccess.LAYER, id: undefined }
                 ]
             }, req.params.connectionid);
+
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             if (layer && layer.connection !== connection.id) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
@@ -258,6 +268,7 @@ export default async function router(schema: Schema, config: Config) {
                 expiration,
                 recording: req.body.recording,
                 publish: req.body.publish,
+                source_id: req.body.source_id,
                 source_type: req.body.source_type,
                 source_model: req.body.source_model,
             }, {
@@ -291,6 +302,8 @@ export default async function router(schema: Schema, config: Config) {
                     { access: AuthResourceAccess.LAYER, id: undefined }
                 ]
             }, req.params.connectionid);
+
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             if (layer && layer.connection !== connection.id) {
                 throw new Err(400, null, 'Layer does not belong to this connection');

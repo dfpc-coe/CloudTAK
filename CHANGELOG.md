@@ -12,6 +12,54 @@
 
 ### Pending Release
 
+### v10.5.0 - 2025-06-21
+
+- :rocket: Allow adding a logo to an ETL Task
+- :rocket: Allow adding a favorite to an ETL Task
+- :rocket: Redesign Task Selection UI to be more visual
+- :rocket: Make Initial Author in Admin Footers look a little nicer
+
+### v10.4.0 - 2025-06-20
+
+- :rocket: Provide UI for uploading a Server Logo
+
+### v10.3.0 - 2025-06-20
+
+- :rocket: Notification support for CASEVACs
+- :rocket: Notification support for Alerts
+- :tada: ReadOnly connections to support external integrations
+
+### v10.2.2 - 2025-06-18
+
+- :rocket: Reduce logging for known WebSocket Errors
+
+### v10.2.1 - 2025-06-17
+
+- :rocket: Update Web Types
+
+### v10.2.0 - 2025-06-17
+
+- :bug: Fix a bug where CloudFormation Parameters in Layers weren't updating properly
+- :bug: Fix a bug where Connection Video Leases didn't get their connection
+- :rocket: Automatically infer a `VideoLease.layer` where possible
+
+### v10.1.0 - 2025-06-17
+
+- :tada: Include Route53 Domain in CloudFormation Template -- Note you will have to delete Route53 Domains before deploying this version so they are controlled by IaC
+
+### v10.0.1 - 2025-06-13
+
+- :bug: Need to investigate root casue further but somehow a CloudFormation `ref` worked on CloudFormation template update despite being null but not on a fresh deployment
+
+### v10.0.0 - 2025-06-12
+
+- :rocket: Migrate to VPC 2.0
+- This will require significant devops work to migrate without downtime - contact nicholas.ingalls@state.co.us to discuss steps
+
+### v9.4.2 - 2025-06-12
+
+- :rocket: Include Sensor Type & Model in Sidebar
+
 ### v9.4.1 - 2025-06-11
 
 - :bug: Remove Debug call to COTAK resource
@@ -72,7 +120,7 @@
 - :rocket: Add GOTO Home Logo
 - :rocket: Continue to iterate on merging of data and events codebase
 - :rocket: Automatically add archived tags to routes
-- :bug: Fix double tooltip 
+- :bug: Fix double tooltip
 - :bug: Remove a bunch of console.error calls
 - :bug: Fix time calc for breadcrumb loading
 

@@ -7,6 +7,7 @@ import jwt from 'jsonwebtoken';
 import Schedule from '../schedule.js';
 import process from 'node:process';
 import { Static } from '@sinclair/typebox'
+import { StackFrame } from './cloudformation.js';
 import { Capabilities } from '@tak-ps/etl'
 
 /**
@@ -52,7 +53,7 @@ export default class Lambda {
     static generate(
         config: Config,
         layer: Static<typeof AugmentedLayer>
-    ): object {
+    ): Static<typeof StackFrame> {
         const StackName = `${config.StackName}-layer-${layer.id}`;
 
         const stack: any = {
@@ -134,7 +135,7 @@ export default class Lambda {
                     EvaluationPeriods: 5,
                     Statistic: 'Maximum',
                     Period: 60,
-                    AlarmActions: [cf.ref('HighUrgencyAlarmTopic')],
+                    AlarmActions: [],
                     Dimensions: [{
                         Name: 'QueueName',
                         Value: cf.getAtt('OutgoingDeadQueue', 'QueueName')
@@ -153,7 +154,7 @@ export default class Lambda {
                     EvaluationPeriods: 5,
                     Statistic: 'Maximum',
                     Period: 60,
-                    AlarmActions: [cf.ref('HighUrgencyAlarmTopic')],
+                    AlarmActions: [ ],
                     Dimensions: [{
                         Name: 'QueueName',
                         Value: cf.getAtt('OutgoingQueue', 'QueueName')
@@ -222,7 +223,7 @@ export default class Lambda {
                     Type: 'AWS::ApiGatewayV2::Route',
                     Properties: {
                         RouteKey: cf.join(['ANY /', cf.ref('UniqueID') ]),
-                        ApiId: cf.importValue(config.StackName.replace(/^coe-etl-/, 'coe-etl-webhooks-') + '-api'),
+                        ApiId: cf.importValue(config.StackName.replace(/^tak-cloudtak-/, 'tak-cloudtak-webhooks-') + '-api'),
                         Target: cf.join(['integrations/', cf.ref('WebHookResourceIntegration')])
                     }
                 };
@@ -231,7 +232,7 @@ export default class Lambda {
                     Type: 'AWS::ApiGatewayV2::Route',
                     Properties: {
                         RouteKey: cf.join(['ANY /', cf.ref('UniqueID'), '/{proxy+}']),
-                        ApiId: cf.importValue(config.StackName.replace(/^coe-etl-/, 'coe-etl-webhooks-') + '-api'),
+                        ApiId: cf.importValue(config.StackName.replace(/^tak-cloudtak-/, 'tak-cloudtak-webhooks-') + '-api'),
                         Target: cf.join(['integrations/', cf.ref('WebHookResourceIntegration')])
                     }
                 };
@@ -239,23 +240,39 @@ export default class Lambda {
                 stack.Resources.WebHookResourceIntegration = {
                     Type: 'AWS::ApiGatewayV2::Integration',
                     Properties: {
-                        ApiId: cf.importValue(config.StackName.replace(/^coe-etl-/, 'coe-etl-webhooks-') + '-api'),
+                        ApiId: cf.importValue(config.StackName.replace(/^tak-cloudtak-/, 'tak-cloudtak-webhooks-') + '-api'),
                         IntegrationType: 'AWS_PROXY',
                         IntegrationUri: cf.getAtt('ETLFunction', 'Arn'),
-                        CredentialsArn: cf.importValue(config.StackName.replace(/^coe-etl-/, 'coe-etl-webhooks-') + '-role'),
+                        CredentialsArn: cf.importValue(config.StackName.replace(/^tak-cloudtak-/, 'tak-cloudtak-webhooks-') + '-role'),
                         PayloadFormatVersion: '2.0'
                     }
                 }
             }
 
             if (layer.priority !== 'off') {
-                stack.Resources.LambdaAlarm.Properties.AlarmActions.push(
-                    cf.join(['arn:', cf.partition, ':sns:', cf.region, `:`, cf.accountId, `:${config.StackName}-${layer.priority}-urgency`])
-                )
+                if (stack.Resources.LambdaAlarm) {
+                    stack.Resources.LambdaAlarm.Properties.AlarmActions.push(
+                        cf.join(['arn:', cf.partition, ':sns:', cf.region, `:`, cf.accountId, `:${config.StackName}-${layer.priority}-urgency`])
+                    );
+                }
 
-                stack.Resources.LambdaNoInvocationAlarm.Properties.AlarmActions.push(
-                    cf.join(['arn:', cf.partition, ':sns:', cf.region, `:`, cf.accountId, `:${config.StackName}-${layer.priority}-urgency`])
-                )
+                if (stack.Resources.OutgoingQueueBacklogAlarm) {
+                    stack.Resources.OutgoingDeadQueueBacklogAlarm.Properties.AlarmActions.push(
+                        cf.join(['arn:', cf.partition, ':sns:', cf.region, `:`, cf.accountId, `:${config.StackName}-${layer.priority}-urgency`])
+                    );
+                }
+    
+                if (stack.Resources.OutgoingQueueBacklogAlarm) {
+                    stack.Resources.OutgoingQueueBacklogAlarm.Properties.AlarmActions.push(
+                        cf.join(['arn:', cf.partition, ':sns:', cf.region, `:`, cf.accountId, `:${config.StackName}-${layer.priority}-urgency`])
+                    );
+                }
+
+                if (stack.Resources.LambdaNoInvocationAlarm) {
+                    stack.Resources.LambdaNoInvocationAlarm.Properties.AlarmActions.push(
+                        cf.join(['arn:', cf.partition, ':sns:', cf.region, `:`, cf.accountId, `:${config.StackName}-${layer.priority}-urgency`])
+                    );
+                }
             }
 
             if (layer.incoming.cron && Schedule.is_aws(layer.incoming.cron)) {

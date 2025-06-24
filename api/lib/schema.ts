@@ -91,7 +91,9 @@ export const VideoLease = pgTable('video_lease', {
 
     username: text().references(() => Profile.username),
     connection: integer().references(() => Connection.id),
+    layer: integer().references(() => Layer.id),
 
+    source_id: text(),
     source_type: text().$type<VideoLease_SourceType>().notNull().default(VideoLease_SourceType.UNKNOWN),
     source_model: text().notNull().default(''),
 
@@ -178,9 +180,11 @@ export const Import = pgTable('imports', {
 export const Task = pgTable('tasks', {
     id: serial().primaryKey(),
     prefix: text().notNull(),
+    favorite: boolean().notNull().default(false),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     name: text().notNull(),
+    logo: text(),
     repo: text(),
     readme: text()
 }, (t) => ({
@@ -221,6 +225,7 @@ export const Icon = pgTable('icons', {
 
 export const Connection = pgTable('connections', {
     id: serial().primaryKey(),
+    readonly: boolean().notNull().default(false),
     agency: integer(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
@@ -367,7 +372,7 @@ export const ProfileInterest = pgTable('profile_interests', {
     id: serial().primaryKey(),
     name: text().notNull(),
     username: text().notNull().references(() => Profile.username),
-    bounds: geometry({ type: GeometryType.Polygon, srid: 4326 }).$type<Polygon>(),
+    bounds: geometry({ type: GeometryType.Polygon, srid: 4326 }).$type<Polygon>().notNull(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
 });

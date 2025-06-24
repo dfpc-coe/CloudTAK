@@ -61,7 +61,6 @@ export const useMapStore = defineStore('cloudtak', {
         selected: Map<string, COT>;
         select: {
             mode?: string;
-            e?: MapMouseEvent;
             feats: MapGeoJSONFeature[];
             x: number;
             y: number;
@@ -494,11 +493,14 @@ export const useMapStore = defineStore('cloudtak', {
                 // Since a single "feature" may exist in multiple layers (text, polygon, line) etc
                 // dedupe them based on the ID
                 const dedupe: Map<string, MapGeoJSONFeature> = new Map();
-                map.queryRenderedFeatures(e.point).filter((feat) => {
-                    return clickMap.has(feat.layer.id);
-                }).forEach((feat) => {
-                    dedupe.set(String(feat.id), feat);
-                })
+                map.queryRenderedFeatures(e.point)
+                    .filter((feat) => {
+                        return clickMap.has(feat.layer.id);
+                    })
+                    .forEach((feat) => {
+                        dedupe.set(String(feat.id), feat);
+                    })
+
                 const features = Array.from(dedupe.values());
 
                 if (!features.length) return;
@@ -533,7 +535,6 @@ export const useMapStore = defineStore('cloudtak', {
                         this.select.y = e.point.y;
                     }
 
-                    this.select.e = e;
                     this.select.feats = features;
                 }
             });

@@ -29,7 +29,7 @@
                     <div class='modal-header px-0 mx-2 align-center'>
                         <div class='modal-title' />
                         <div class='modal-title'>
-                            Sidebar
+                            Main Menu
                         </div>
                         <div />
                     </div>
@@ -587,6 +587,20 @@
                     v-else-if='["home", "home-menu"].includes(String(route.name))'
                 >
                     <div class='d-flex justify-content-center mb-2'>
+                        <TablerDropdown>
+                            <template #default>
+                                <IconGridDots />
+                            </template>
+                            <template #dropdown>
+                                <div class='card'>
+                                    <div class='card-body'>
+                                        MAP
+                                    </div>
+                                </div>
+                            </template>
+                        </TablerDropdown>
+                    </div>
+                    <div class='d-flex justify-content-center mb-2'>
                         <div class='position-relative'>
                             <img
                                 v-tooltip='"Return Home"'
@@ -642,6 +656,7 @@ import {
     IconMessage,
     IconNetwork,
     IconPackages,
+    IconGridDots,
     IconSettings,
     IconAmbulance,
     IconServerCog,
@@ -649,8 +664,11 @@ import {
     IconFileImport,
     IconAffiliate,
 } from '@tabler/icons-vue';
+import {
+    TablerDropdown
+} from '@tak-ps/vue-tabler';
 import { useMapStore } from '../../stores/map.ts';
-import { useBrandStore } from '../../stores/brand.ts';   
+import { useBrandStore } from '../../stores/brand.ts';
 import { useRouter, useRoute } from 'vue-router';
 const route = useRoute();
 const router = useRouter();

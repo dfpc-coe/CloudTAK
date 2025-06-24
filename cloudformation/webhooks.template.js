@@ -8,14 +8,15 @@ export default cf.merge(
                 Description: 'GitSha that is currently being deployed',
                 Type: 'String'
             },
+            SubdomainPrefix: {
+                Type: 'String',
+                Description: 'Prefix of domain: ie "webhooks" of webhooks.example.com',
+                Default: 'webhooks'
+            },
             Environment: {
                 Description: 'VPC/ECS Stack to deploy into',
                 Type: 'String',
                 Default: 'prod'
-            },
-            HostedURL: {
-                Description: 'URL of domain/subdomain at which the API is hosted ie: "webhooks.example.com"',
-                Type: 'String'
             },
             SSLCertificateIdentifier: {
                 Description: 'ACM SSL Certificate for top level wildcard: *.example.com and second level *.map.example.com',
@@ -23,10 +24,24 @@ export default cf.merge(
             }
         },
         Resources: {
+            CloudTAKWebhooksDNS: {
+                Type: 'AWS::Route53::RecordSet',
+                Properties: {
+                    HostedZoneId: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-id'])),
+                    Type : 'A',
+                    Name: cf.join([cf.ref('SubdomainPrefix'), '.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
+                    Comment: cf.join(' ', [cf.stackName, 'UI/API DNS Entry']),
+                    AliasTarget: {
+                        DNSName: cf.getAtt('CloudTAKWebhooksApiDomain', 'RegionalDomainName'),
+                        EvaluateTargetHealth: true,
+                        HostedZoneId: cf.getAtt('CloudTAKWebhooksApiDomain', 'RegionalHostedZoneId')
+                    }
+                }
+            },
             CloudTAKWebhooksApiDomain: {
                 Type: 'AWS::ApiGateway::DomainName',
                 Properties: {
-                    DomainName: cf.ref('HostedURL'),
+                    DomainName: cf.join([cf.ref('SubdomainPrefix'), '.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
                     RegionalCertificateArn: cf.join(['arn:', cf.partition, ':acm:', cf.region, ':', cf.accountId, ':certificate/', cf.ref('SSLCertificateIdentifier')]),
                     EndpointConfiguration: {
                         Types: ['REGIONAL']
@@ -57,7 +72,7 @@ export default cf.merge(
                                     'lambda:InvokeFunction'
                                 ],
                                 Resource: [
-                                    cf.join(['arn:', cf.partition, ':lambda:', cf.region, ':', cf.accountId, ':function:coe-etl-', cf.ref('Environment'), '-layer-*']),
+                                    cf.join(['arn:', cf.partition, ':lambda:', cf.region, ':', cf.accountId, ':function:tak-cloudtak-', cf.ref('Environment'), '-layer-*']),
                                     cf.getAtt('CloudTAKWebhooksHealthCheckFunction', 'Arn')
                                 ]
                             }]
@@ -151,7 +166,7 @@ export default cf.merge(
                 Export: {
                     Name: cf.stackName
                 },
-                Value: cf.join(['https://', cf.ref('HostedURL')])
+                Value: cf.join(['https://', cf.ref('SubdomainPrefix'), '.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))])
             },
             RoleArn: {
                 Description: 'Invocation Role ARN',

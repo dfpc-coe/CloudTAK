@@ -258,9 +258,7 @@ export default class Overlay {
             this.styles = [];
         }
 
-        console.error('STYLES', this.styles);
-
-        if (this.type === 'vector' && opts.clickable === undefined) {
+        if (this.type === 'vector' && this. mode !== 'basemap' && opts.clickable === undefined) {
             opts.clickable = this.styles.map((l) => {
                 return { id: l.id, type: 'feat' };
             });
@@ -359,7 +357,10 @@ export default class Overlay {
             mapStore.map.removeLayer(String(l.id));
         }
 
-        mapStore.map.removeSource(String(this.id));
+        if (mapStore.map.getStyle().sources[String([this.id])]) {
+            // Don't crash the map if it already  removed
+            mapStore.map.removeSource(String(this.id));
+        }
     }
 
     async replace(

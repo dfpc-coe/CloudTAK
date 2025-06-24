@@ -1,5 +1,5 @@
 if [[ -z $1 ]]; then
-    Stack="prod"
+    Stack="cotak-prod"
 else
     Stack=$1
 fi

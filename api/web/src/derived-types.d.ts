@@ -338,7 +338,7 @@ export interface paths {
                                 username: string | null;
                                 minzoom: number;
                                 maxzoom: number;
-                                collection: (null | string) | null;
+                                collection?: null | string;
                                 format: string;
                                 scheme: string;
                                 styles: unknown[];
@@ -443,7 +443,7 @@ export interface paths {
                             username: string | null;
                             minzoom: number;
                             maxzoom: number;
-                            collection: (null | string) | null;
+                            collection?: null | string;
                             format: string;
                             scheme: string;
                             styles: unknown[];
@@ -505,7 +505,7 @@ export interface paths {
                             username: string | null;
                             minzoom: number;
                             maxzoom: number;
-                            collection: (null | string) | null;
+                            collection?: null | string;
                             format: string;
                             scheme: string;
                             styles: unknown[];
@@ -599,7 +599,7 @@ export interface paths {
                             username: string | null;
                             minzoom: number;
                             maxzoom: number;
-                            collection: (null | string) | null;
+                            collection?: null | string;
                             format: string;
                             scheme: string;
                             styles: unknown[];
@@ -1113,7 +1113,12 @@ export interface paths {
         /** Get single raw asset */
         get: {
             parameters: {
-                query?: never;
+                query: {
+                    /** @description No Description */
+                    token?: string;
+                    /** @description No Description */
+                    download: boolean;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -5085,19 +5090,21 @@ export interface paths {
                                 updated: string;
                                 username: string | null;
                                 connection: number | null;
+                                layer: number | null;
+                                source_id: string | null;
                                 source_type: string;
                                 source_model: string;
                                 publish: boolean;
                                 recording: boolean;
                                 ephemeral: boolean;
-                                channel: (null | string) | null;
-                                expiration: (null | string) | null;
+                                channel: null | string;
+                                expiration: null | string;
                                 path: string;
                                 stream_user: string | null;
                                 stream_pass: string | null;
                                 read_user: string | null;
                                 read_pass: string | null;
-                                proxy: (null | string) | null;
+                                proxy: null | string;
                             }[];
                         };
                     };
@@ -5143,6 +5150,7 @@ export interface paths {
                          * @default false
                          */
                         secure: boolean;
+                        source_id?: null | string;
                         source_type?: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
                         source_model?: string;
                         channel?: string | null;
@@ -5165,19 +5173,21 @@ export interface paths {
                                 updated: string;
                                 username: string | null;
                                 connection: number | null;
+                                layer: number | null;
+                                source_id: string | null;
                                 source_type: string;
                                 source_model: string;
                                 publish: boolean;
                                 recording: boolean;
                                 ephemeral: boolean;
-                                channel: (null | string) | null;
-                                expiration: (null | string) | null;
+                                channel: null | string;
+                                expiration: null | string;
                                 path: string;
                                 stream_user: string | null;
                                 stream_pass: string | null;
                                 read_user: string | null;
                                 read_pass: string | null;
-                                proxy: (null | string) | null;
+                                proxy: null | string;
                             };
                             protocols: {
                                 rtmp?: {
@@ -5243,19 +5253,21 @@ export interface paths {
                                 updated: string;
                                 username: string | null;
                                 connection: number | null;
+                                layer: number | null;
+                                source_id: string | null;
                                 source_type: string;
                                 source_model: string;
                                 publish: boolean;
                                 recording: boolean;
                                 ephemeral: boolean;
-                                channel: (null | string) | null;
-                                expiration: (null | string) | null;
+                                channel: null | string;
+                                expiration: null | string;
                                 path: string;
                                 stream_user: string | null;
                                 stream_pass: string | null;
                                 read_user: string | null;
                                 read_pass: string | null;
-                                proxy: (null | string) | null;
+                                proxy: null | string;
                             };
                             protocols: {
                                 rtmp?: {
@@ -5326,6 +5338,7 @@ export interface paths {
                         name?: string;
                         /** @description Duration in Seconds */
                         duration?: number;
+                        source_id?: null | string;
                         source_type?: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
                         source_model?: string;
                         channel?: string | null;
@@ -5359,19 +5372,21 @@ export interface paths {
                                 updated: string;
                                 username: string | null;
                                 connection: number | null;
+                                layer: number | null;
+                                source_id: string | null;
                                 source_type: string;
                                 source_model: string;
                                 publish: boolean;
                                 recording: boolean;
                                 ephemeral: boolean;
-                                channel: (null | string) | null;
-                                expiration: (null | string) | null;
+                                channel: null | string;
+                                expiration: null | string;
                                 path: string;
                                 stream_user: string | null;
                                 stream_pass: string | null;
                                 read_user: string | null;
                                 read_pass: string | null;
-                                proxy: (null | string) | null;
+                                proxy: null | string;
                             };
                             protocols: {
                                 rtmp?: {
@@ -5420,7 +5435,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort?: "id" | "agency" | "created" | "updated" | "username" | "name" | "description" | "enabled" | "auth" | "enableRLS";
+                    sort?: "id" | "readonly" | "agency" | "created" | "updated" | "username" | "name" | "description" | "enabled" | "auth" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                 };
@@ -5457,6 +5472,7 @@ export interface paths {
                                 };
                                 created: string;
                                 updated: string;
+                                readonly: boolean;
                                 username: null | string;
                                 name: string;
                                 description: string;
@@ -5483,8 +5499,10 @@ export interface paths {
                         name: string;
                         /** @description Human readable description */
                         description: string;
+                        /** @default false */
+                        readonly: boolean;
                         /** @default true */
-                        enabled?: boolean;
+                        enabled: boolean;
                         agency?: null | number;
                         integrationId?: number;
                         auth: {
@@ -5512,6 +5530,7 @@ export interface paths {
                             };
                             created: string;
                             updated: string;
+                            readonly: boolean;
                             username: null | string;
                             name: string;
                             description: string;
@@ -5561,6 +5580,7 @@ export interface paths {
                             };
                             created: string;
                             updated: string;
+                            readonly: boolean;
                             username: null | string;
                             name: string;
                             description: string;
@@ -5640,6 +5660,7 @@ export interface paths {
                             };
                             created: string;
                             updated: string;
+                            readonly: boolean;
                             username: null | string;
                             name: string;
                             description: string;
@@ -5649,6 +5670,45 @@ export interface paths {
                 };
             };
         };
+        trace?: never;
+    };
+    "/connection/{:connectionid}/auth": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Connections that are marked as ReadOnly are used for external integrations and are able to download the X509 Certificate */
+        get: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    token?: string;
+                    /** @description No Description */
+                    download: boolean;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/connection/{:connectionid}/refresh": {
@@ -5687,6 +5747,7 @@ export interface paths {
                             };
                             created: string;
                             updated: string;
+                            readonly: boolean;
                             username: null | string;
                             name: string;
                             description: string;
@@ -6180,6 +6241,362 @@ export interface paths {
                 };
             };
         };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Imports */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort?: "id" | "created" | "updated" | "name" | "status" | "error" | "batch" | "result" | "username" | "mode" | "mode_id" | "config" | "enableRLS";
+                    /** @description No Description */
+                    mode?: "Unknown" | "Mission" | "Package";
+                    /** @description No Description */
+                    mode_id?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: string;
+                                created: string;
+                                updated: string;
+                                name: string;
+                                status: string;
+                                error: string | null;
+                                batch: string | null;
+                                result: unknown;
+                                username: string;
+                                mode: string;
+                                mode_id: string | null;
+                                config: unknown;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        /** Import up to 5 unknown assets into the imports manager at a time */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            imports: {
+                                file: string;
+                                uid: string;
+                                ext: string;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        /** Import an unknown asset into the imports manager */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Human readable name */
+                        name: string;
+                        mode?: "Unknown" | "Mission" | "Package";
+                        mode_id?: string;
+                        config?: unknown;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            status: string;
+                            error: string | null;
+                            batch: string | null;
+                            result: unknown;
+                            username: string;
+                            mode: string;
+                            mode_id: string | null;
+                            config: unknown;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/import/{:import}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Import */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            status: string;
+                            error: string | null;
+                            batch: string | null;
+                            result: unknown;
+                            username: string;
+                            mode: string;
+                            mode_id: string | null;
+                            config: unknown;
+                        };
+                    };
+                };
+            };
+        };
+        /** Import an asset into a previously configured import container */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            status: string;
+                            error: string | null;
+                            batch: string | null;
+                            result: unknown;
+                            username: string;
+                            mode: string;
+                            mode_id: string | null;
+                            config: unknown;
+                        };
+                    };
+                };
+            };
+        };
+        post?: never;
+        /** Delete Import */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update Import */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        status?: string;
+                        error?: string;
+                        result?: unknown;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            status: string;
+                            error: string | null;
+                            batch: string | null;
+                            result: unknown;
+                            username: string;
+                            mode: string;
+                            mode_id: string | null;
+                            config: unknown;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/import/{:import}/batch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Import Batch Job Logs */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            logs: {
+                                message: string;
+                                timestamp: number;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Attach a Batch Job to an instance */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            status: string;
+                            error: string | null;
+                            batch: string | null;
+                            result: unknown;
+                            username: string;
+                            mode: string;
+                            mode_id: string | null;
+                            config: unknown;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -6768,362 +7185,6 @@ export interface paths {
         };
         put?: never;
         post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/import": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Imports */
-        get: {
-            parameters: {
-                query: {
-                    /** @description Limit the number of responses returned */
-                    limit: number;
-                    /** @description Iterate through "pages" of items based on the "limit" query param */
-                    page: number;
-                    /** @description Filter results by a human readable name field */
-                    filter: string;
-                    /** @description Order in which results are returned based on the "sort" query param */
-                    order: "asc" | "desc";
-                    /** @description No Description */
-                    sort?: "id" | "created" | "updated" | "name" | "status" | "error" | "batch" | "result" | "username" | "mode" | "mode_id" | "config" | "enableRLS";
-                    /** @description No Description */
-                    mode?: "Unknown" | "Mission" | "Package";
-                    /** @description No Description */
-                    mode_id?: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            total: number;
-                            items: {
-                                id: string;
-                                created: string;
-                                updated: string;
-                                name: string;
-                                status: string;
-                                error: string | null;
-                                batch: string | null;
-                                result: unknown;
-                                username: string;
-                                mode: string;
-                                mode_id: string | null;
-                                config: unknown;
-                            }[];
-                        };
-                    };
-                };
-            };
-        };
-        /** Import up to 5 unknown assets into the imports manager at a time */
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            imports: {
-                                file: string;
-                                uid: string;
-                                ext: string;
-                            }[];
-                        };
-                    };
-                };
-            };
-        };
-        /** Import an unknown asset into the imports manager */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        /** @description Human readable name */
-                        name: string;
-                        mode?: "Unknown" | "Mission" | "Package";
-                        mode_id?: string;
-                        config?: unknown;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: string;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            status: string;
-                            error: string | null;
-                            batch: string | null;
-                            result: unknown;
-                            username: string;
-                            mode: string;
-                            mode_id: string | null;
-                            config: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/import/{:import}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Import */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: string;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            status: string;
-                            error: string | null;
-                            batch: string | null;
-                            result: unknown;
-                            username: string;
-                            mode: string;
-                            mode_id: string | null;
-                            config: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        /** Import an asset into a previously configured import container */
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: string;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            status: string;
-                            error: string | null;
-                            batch: string | null;
-                            result: unknown;
-                            username: string;
-                            mode: string;
-                            mode_id: string | null;
-                            config: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        post?: never;
-        /** Delete Import */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        /** Update Import */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        status?: string;
-                        error?: string;
-                        result?: unknown;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: string;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            status: string;
-                            error: string | null;
-                            batch: string | null;
-                            result: unknown;
-                            username: string;
-                            mode: string;
-                            mode_id: string | null;
-                            config: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        trace?: never;
-    };
-    "/import/{:import}/batch": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Import Batch Job Logs */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            logs: {
-                                message: string;
-                                timestamp: number;
-                            }[];
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        /** Attach a Batch Job to an instance */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: string;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            status: string;
-                            error: string | null;
-                            batch: string | null;
-                            result: unknown;
-                            username: string;
-                            mode: string;
-                            mode_id: string | null;
-                            config: unknown;
-                        };
-                    };
-                };
-            };
-        };
         delete?: never;
         options?: never;
         head?: never;
@@ -11396,6 +11457,7 @@ export interface paths {
                                     created: string;
                                     updated: string;
                                     name: string;
+                                    /** Format: uuid */
                                     palette: string;
                                     type: string;
                                     style: (string | number | boolean | null) | unknown[] | Record<string, never>;
@@ -11439,6 +11501,7 @@ export interface paths {
                                 created: string;
                                 updated: string;
                                 name: string;
+                                /** Format: uuid */
                                 palette: string;
                                 type: string;
                                 style: (string | number | boolean | null) | unknown[] | Record<string, never>;
@@ -11487,6 +11550,7 @@ export interface paths {
                                 created: string;
                                 updated: string;
                                 name: string;
+                                /** Format: uuid */
                                 palette: string;
                                 type: string;
                                 style: (string | number | boolean | null) | unknown[] | Record<string, never>;
@@ -11556,6 +11620,7 @@ export interface paths {
                                 created: string;
                                 updated: string;
                                 name: string;
+                                /** Format: uuid */
                                 palette: string;
                                 type: string;
                                 style: (string | number | boolean | null) | unknown[] | Record<string, never>;
@@ -11608,6 +11673,7 @@ export interface paths {
                                 created: string;
                                 updated: string;
                                 name: string;
+                                /** Format: uuid */
                                 palette: string;
                                 type: string;
                                 style: (string | number | boolean | null) | unknown[] | Record<string, never>;
@@ -11657,6 +11723,7 @@ export interface paths {
                             created: string;
                             updated: string;
                             name: string;
+                            /** Format: uuid */
                             palette: string;
                             type: string;
                             style: (string | number | boolean | null) | unknown[] | Record<string, never>;
@@ -11699,6 +11766,7 @@ export interface paths {
                             created: string;
                             updated: string;
                             name: string;
+                            /** Format: uuid */
                             palette: string;
                             type: string;
                             style: (string | number | boolean | null) | unknown[] | Record<string, never>;
@@ -11774,6 +11842,7 @@ export interface paths {
                             created: string;
                             updated: string;
                             name: string;
+                            /** Format: uuid */
                             palette: string;
                             type: string;
                             style: (string | number | boolean | null) | unknown[] | Record<string, never>;
@@ -13145,7 +13214,19 @@ export interface paths {
                                 id: number;
                                 name: string;
                                 username: string;
-                                bounds: unknown | null;
+                                bounds: {
+                                    /** @constant */
+                                    type: "Point";
+                                    coordinates: number[];
+                                } | {
+                                    /** @constant */
+                                    type: "LineString";
+                                    coordinates: number[][];
+                                } | {
+                                    /** @constant */
+                                    type: "Polygon";
+                                    coordinates: number[][][];
+                                };
                                 created: string;
                                 updated: string;
                             }[];
@@ -13184,7 +13265,19 @@ export interface paths {
                             id: number;
                             name: string;
                             username: string;
-                            bounds: unknown | null;
+                            bounds: {
+                                /** @constant */
+                                type: "Point";
+                                coordinates: number[];
+                            } | {
+                                /** @constant */
+                                type: "LineString";
+                                coordinates: number[][];
+                            } | {
+                                /** @constant */
+                                type: "Polygon";
+                                coordinates: number[][][];
+                            };
                             created: string;
                             updated: string;
                         };
@@ -13265,7 +13358,19 @@ export interface paths {
                             id: number;
                             name: string;
                             username: string;
-                            bounds: unknown | null;
+                            bounds: {
+                                /** @constant */
+                                type: "Point";
+                                coordinates: number[];
+                            } | {
+                                /** @constant */
+                                type: "LineString";
+                                coordinates: number[][];
+                            } | {
+                                /** @constant */
+                                type: "Polygon";
+                                coordinates: number[][][];
+                            };
                             created: string;
                             updated: string;
                         };
@@ -13508,6 +13613,7 @@ export interface paths {
                     "application/json": {
                         pos?: number;
                         name?: string;
+                        type?: string;
                         opacity?: number;
                         visible?: boolean;
                         url?: string;
@@ -13680,6 +13786,109 @@ export interface paths {
                 };
             };
         };
+        trace?: never;
+    };
+    "/server/injector": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Injector List */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                uid: string;
+                                toInject: string;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create COT Injector */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        uid: string;
+                        toInject: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                uid: string;
+                                toInject: string;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        /** Delete COT Injector */
+        delete: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    uid: string;
+                    /** @description No Description */
+                    toInject: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/search/reverse/{:longitude}/{:latitude}": {
@@ -13906,109 +14115,6 @@ export interface paths {
         put?: never;
         post?: never;
         delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/server/injector": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Injector List */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            total: number;
-                            items: {
-                                uid: string;
-                                toInject: string;
-                            }[];
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        /** Create COT Injector */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        uid: string;
-                        toInject: string;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            total: number;
-                            items: {
-                                uid: string;
-                                toInject: string;
-                            }[];
-                        };
-                    };
-                };
-            };
-        };
-        /** Delete COT Injector */
-        delete: {
-            parameters: {
-                query: {
-                    /** @description No Description */
-                    uid: string;
-                    /** @description No Description */
-                    toInject: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
         options?: never;
         head?: never;
         patch?: never;
@@ -15117,6 +15223,7 @@ export interface paths {
                                 username: null | string;
                                 active: boolean;
                                 watchers: number;
+                                source_id?: null | string;
                                 source_type: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
                                 source_model: string;
                                 protocols: {
@@ -15204,19 +15311,21 @@ export interface paths {
                                 updated: string;
                                 username: string | null;
                                 connection: number | null;
+                                layer: number | null;
+                                source_id: string | null;
                                 source_type: string;
                                 source_model: string;
                                 publish: boolean;
                                 recording: boolean;
                                 ephemeral: boolean;
-                                channel: (null | string) | null;
-                                expiration: (null | string) | null;
+                                channel: null | string;
+                                expiration: null | string;
                                 path: string;
                                 stream_user: string | null;
                                 stream_pass: string | null;
                                 read_user: string | null;
                                 read_pass: string | null;
-                                proxy: (null | string) | null;
+                                proxy: null | string;
                             }[];
                         };
                     };
@@ -15267,6 +15376,7 @@ export interface paths {
                          * @default false
                          */
                         secure: boolean;
+                        source_id?: null | string;
                         source_type?: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
                         source_model?: string;
                         channel?: string | null;
@@ -15289,19 +15399,21 @@ export interface paths {
                                 updated: string;
                                 username: string | null;
                                 connection: number | null;
+                                layer: number | null;
+                                source_id: string | null;
                                 source_type: string;
                                 source_model: string;
                                 publish: boolean;
                                 recording: boolean;
                                 ephemeral: boolean;
-                                channel: (null | string) | null;
-                                expiration: (null | string) | null;
+                                channel: null | string;
+                                expiration: null | string;
                                 path: string;
                                 stream_user: string | null;
                                 stream_pass: string | null;
                                 read_user: string | null;
                                 read_pass: string | null;
-                                proxy: (null | string) | null;
+                                proxy: null | string;
                             };
                             protocols: {
                                 rtmp?: {
@@ -15367,19 +15479,21 @@ export interface paths {
                                 updated: string;
                                 username: string | null;
                                 connection: number | null;
+                                layer: number | null;
+                                source_id: string | null;
                                 source_type: string;
                                 source_model: string;
                                 publish: boolean;
                                 recording: boolean;
                                 ephemeral: boolean;
-                                channel: (null | string) | null;
-                                expiration: (null | string) | null;
+                                channel: null | string;
+                                expiration: null | string;
                                 path: string;
                                 stream_user: string | null;
                                 stream_pass: string | null;
                                 read_user: string | null;
                                 read_pass: string | null;
-                                proxy: (null | string) | null;
+                                proxy: null | string;
                             };
                             config?: {
                                 name: string;
@@ -15480,6 +15594,7 @@ export interface paths {
                          * @default 3600
                          */
                         duration: number;
+                        source_id?: null | string;
                         source_type?: "unknown" | "fixed" | "vehicle" | "screenshare" | "personal" | "rotor" | "fixedwing" | "uas-rotor" | "uas-fixedwing";
                         source_model?: string;
                         channel?: string | null;
@@ -15511,19 +15626,21 @@ export interface paths {
                                 updated: string;
                                 username: string | null;
                                 connection: number | null;
+                                layer: number | null;
+                                source_id: string | null;
                                 source_type: string;
                                 source_model: string;
                                 publish: boolean;
                                 recording: boolean;
                                 ephemeral: boolean;
-                                channel: (null | string) | null;
-                                expiration: (null | string) | null;
+                                channel: null | string;
+                                expiration: null | string;
                                 path: string;
                                 stream_user: string | null;
                                 stream_pass: string | null;
                                 read_user: string | null;
                                 read_pass: string | null;
-                                proxy: (null | string) | null;
+                                proxy: null | string;
                             };
                             protocols: {
                                 rtmp?: {

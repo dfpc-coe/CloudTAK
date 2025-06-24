@@ -227,7 +227,10 @@ export default async function server(config: Config): Promise<ServerManager> {
                 throw new Error('Unauthorized');
             }
         } catch (err) {
-            console.error('Error: WebSocket: ', err);
+            if (err instanceof Error && !err.message.includes('jwt expired')) {
+                console.error('Error: WebSocket: ', err);
+            }
+
             ws.send(JSON.stringify({
                 type: 'Error',
                 properties: {

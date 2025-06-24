@@ -1,6 +1,11 @@
 <template>
     <div class='col-12 d-flex align-items-center py2'>
-        <IconPaperclip :size='18' stroke='1' color='#6b7990' class='ms-2 me-1'/>
+        <IconPaperclip
+            :size='18'
+            stroke='1'
+            color='#6b7990'
+            class='ms-2 me-1'
+        />
         <label class='subheader user-select-none'>Attachments</label>
 
         <div class='ms-auto me-2'>
