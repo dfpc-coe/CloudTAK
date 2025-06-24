@@ -413,12 +413,12 @@ async function create() {
     }
 
     if (route.params.connectionid) {
-        const connection = JSON.parse(JSON.stringify(connection.value));
-        if (!regen.value) delete connection.auth;
+        const body = JSON.parse(JSON.stringify(connection.value));
+        if (!regen.value) delete body.auth;
 
         const create = await std(`/api/connection/${route.params.connectionid}`, {
             method: 'PATCH',
-            body: connection.value
+            body: body
         });
         router.push(`/connection/${create.id}`);
     } else {
