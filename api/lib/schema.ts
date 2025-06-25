@@ -281,7 +281,7 @@ export const LayerOutgoing = pgTable('layers_outgoing', {
     filters: json().$type<Static<typeof FilterContainer>>().notNull().default({}),
 
     environment: json().notNull().default({}),
-    ephemeral: json().$type<Record<string, string>>().notNull().default({}),
+    ephemeral: json().$type<Record<string, any>>().notNull().default({}),
 });
 
 export const LayerIncoming = pgTable('layers_incoming', {
@@ -301,7 +301,7 @@ export const LayerIncoming = pgTable('layers_incoming', {
     styles: json().$type<Static<typeof StyleContainer>>().notNull().default({}),
     stale: integer().notNull().default(20),
     environment: json().notNull().default({}),
-    ephemeral: json().$type<Record<string, string>>().notNull().default({}),
+    ephemeral: json().$type<Record<string, any>>().notNull().default({}),
     config: json().$type<Static<typeof Layer_Config>>().notNull().default({}),
     data: integer().references(() => Data.id)
 });

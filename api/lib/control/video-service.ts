@@ -534,7 +534,7 @@ export default class VideoServiceControl {
     }
 
     async from(
-        leaseid: string,
+        leaseid: number,
         opts: {
             connection?: number
             username?: string
@@ -568,7 +568,7 @@ export default class VideoServiceControl {
     }
 
     async commit(
-        leaseid: string,
+        leaseid: number,
         body: {
             name?: string,
             channel?: string | null,
@@ -590,14 +590,15 @@ export default class VideoServiceControl {
         const video = await this.settings();
         if (!video.configured) throw new Err(400, null, 'Media Integration is not configured');
 
-        // Performs Permission Check
-        await this.from(leaseid, opts);
+        if (body.secure !== undefined) {
+            // Performs Permission Check
+            const lease = await this.from(leaseid, opts);
+            await this.updateSecure(lease, body.secure, body.secure_rotate);
+        } else {
+            await this.from(leaseid, opts);
+        }
 
         const lease = await this.config.models.VideoLease.commit(leaseid, body);
-
-        if (body.secure !== undefined) {
-            await this.updateSecure(lease, body.secure, body.secure_rotate);
-        }
 
         try {
             await this.path(lease.path);
@@ -710,7 +711,7 @@ export default class VideoServiceControl {
     }
 
     async delete(
-        leaseid: string,
+        leaseid: number,
         opts: {
             username?: string;
             connection?: number;

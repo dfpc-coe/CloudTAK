@@ -22,13 +22,13 @@
                 <div class='col-12'>
                     <TablerInput
                         v-model='template.name'
-                        label='Layer Name'
+                        label='Name'
                     />
                 </div>
                 <div class='col-12'>
                     <TablerInput
                         v-model='template.description'
-                        label='Layer Name'
+                        label='Description'
                         :rows='3'
                     />
                 </div>
