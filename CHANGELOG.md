@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v10.6.0 - 2025-06-24
+
+- :rocket: Start to sketch out Admin Layers UI
+- :bug: Fix returned lease on password rotate
+- :rocket: Migrate Admin Layers List to TS
+
 ### v10.5.0 - 2025-06-21
 
 - :rocket: Allow adding a logo to an ETL Task
