@@ -183,8 +183,8 @@
                                                 role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
-                                                    "active": String($route.name) === "admin-layer",
-                                                    "cursor-pointer": String($route.name) !== "admin-layer"
+                                                    "active": String($route.name) === "admin-layers",
+                                                    "cursor-pointer": String($route.name) !== "admin-layers"
                                                 }'
                                                 @keyup.enter='$router.push(`/admin/layer`)'
                                                 @click='$router.push(`/admin/layer`)'
