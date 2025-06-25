@@ -19,6 +19,14 @@
         </div>
 
         <div style='min-height: 20vh; margin-bottom: 60px'>
+            <div class='col-12 px-2 py-2'>
+                <TablerInput
+                    icon='search'
+                    placeholder='Filter'
+                    v-model='paging.filter'
+                />
+            </div>
+
             <TablerLoading v-if='loading' />
             <TablerAlert
                 v-else-if='error'
@@ -74,6 +82,7 @@ import { std, stdurl } from '../../std.ts';
 import type { ETLConnectionVideoLeaseList } from '../../types.ts';
 import TableFooter from '../util/TableFooter.vue';
 import {
+    TablerInput,
     TablerEpoch,
     TablerAlert,
     TablerDelete,
