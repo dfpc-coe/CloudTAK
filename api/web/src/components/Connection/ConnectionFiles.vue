@@ -15,15 +15,11 @@
                         stroke='1'
                     />
                 </TablerIconButton>
-                <TablerIconButton
+                <TablerRefreshButton
                     title='Refresh'
+                    :loading='loading'
                     @click='fetchList'
-                >
-                    <IconRefresh
-                        :size='32'
-                        stroke='1'
-                    />
-                </TablerIconButton>
+                />
             </div>
         </div>
 
@@ -117,12 +113,12 @@ import type { ETLConnectionAssetList } from '../../types.ts';
 import {
     IconPlus,
     IconFile,
-    IconRefresh,
     IconDownload,
 } from '@tabler/icons-vue'
 import Upload from '../util/Upload.vue';
 import {
     TablerIconButton,
+    TablerRefreshButton,
     TablerAlert,
     TablerNone,
     TablerDelete,
