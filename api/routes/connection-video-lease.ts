@@ -82,7 +82,11 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
             }
 
-            for await (const lease of config.models.VideoLease.iter()) {
+            for await (const lease of config.models.VideoLease.iter({
+                where: sql`
+                    connection = ${req.params.connectionid}
+                `
+            })) {
                 await videoControl.delete(lease.id, {
                     connection: req.params.connectionid,
                     admin: profile ? profile.system_admin : false
