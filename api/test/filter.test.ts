@@ -1,14 +1,14 @@
 import test from 'tape';
 import assert from 'node:assert';
 import Filter from '../lib/filter.js';
-import { CoT } from '@tak-ps/node-tak';
+import { CoTParser } from '@tak-ps/node-cot';
 
 test('Filter: Basic Point', async () => {
     const filter = await Filter.test({
         queries: [{
             query: 'properties.callsign = "TEST"'
         }]
-    }, CoT.from_geojson({
+    }, CoTParser.from_geojson({
         type: 'Feature',
         properties: {},
         geometry: {
@@ -25,7 +25,7 @@ test('Filter: Callsign Match', async () => {
         queries: [{
             query: 'properties.callsign = "TEST"'
         }]
-    }, CoT.from_geojson({
+    }, CoTParser.from_geojson({
         type: 'Feature',
         properties: {
             callsign: 'TEST'
