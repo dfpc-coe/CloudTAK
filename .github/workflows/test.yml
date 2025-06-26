@@ -81,6 +81,9 @@ jobs:
       - name: Docker Test & Coverage
         run: docker run --network cloudtak_default -v ./coverage/:/home/etl/api/coverage -e "POSTGRES=postgres://docker:docker@postgis:5432/gis" cloudtak-api:latest npm run coverage
 
+      - name: Docker Folder Permissions
+        run: docker run --network cloudtak_default -v ./coverage/:/home/etl/api/coverage -e "POSTGRES=postgres://docker:docker@postgis:5432/gis" cloudtak-api:latest chmod -R 777 /home/etl/api/coverage
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
