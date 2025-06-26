@@ -1,5 +1,6 @@
 import test from 'tape';
 import Flight from './flight.js';
+import type { IncomingMessage, ServerResponse } from 'node:http'
 
 const flight = new Flight();
 
@@ -11,7 +12,7 @@ flight.connection();
 
 test('GET: api/connection/1/channel', async (t) => {
     try {
-        flight.tak.mockMarti.push(async (request, response) => {
+        flight.tak.mockMarti.push(async (request: IncomingMessage, response: ServerResponse) => {
             if (!request.method || !request.url) {
                 return false;
             } else if (request.method === 'GET' && request.url === '/Marti/api/groups/all?useCache=true') {
@@ -68,7 +69,7 @@ test('GET: api/connection/1/channel', async (t) => {
 
 test('GET: api/connection/1/channel - Failure', async (t) => {
     try {
-        flight.tak.mockMarti.push(async (request, response) => {
+        flight.tak.mockMarti.push(async (request: IncomingMessage, response: ServerResponse) => {
             if (!request.method || !request.url) {
                 return false;
             } else if (request.method === 'GET' && request.url === '/Marti/api/groups/all?useCache=true') {
