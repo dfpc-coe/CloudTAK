@@ -49,7 +49,7 @@ test('POST: api/connection/1/layer', async (t) => {
         Sinon.stub(CloudFormationClient.prototype, 'send').callsFake((command) => {
             if (command instanceof DescribeStacksCommand) {
                 t.deepEquals(command.input, {
-
+                    StackName: 'test'
                 });
                 return Promise.resolve({});
             } else {
@@ -79,6 +79,55 @@ test('POST: api/connection/1/layer', async (t) => {
                 description: 'This is a test layer',
                 task: 'etl-test-v1.0.0'
             }
+        }, true);
+
+        t.ok(res.body.uuid, 'has uuid');
+        res.body.uuid = '123'
+
+        t.ok(res.body.created, 'has created');
+        res.body.created = '2025-06-26'
+
+        t.ok(res.body.created, 'has updated');
+        res.body.updated = '2025-06-26'
+
+        t.deepEquals(res.body, {
+             status: 'unknown',
+             id: 1,
+             uuid: '123',
+             priority: 'off',
+             created: '2025-06-26',
+             updated: '2025-06-26',
+             username: 'admin@example.com',
+             name: 'Test Layer',
+             description: 'This is a test layer',
+             enabled: true,
+             logging: true,
+             task: 'etl-test-v1.0.0',
+             template: false,
+             connection: 1,
+             memory: 128,
+             timeout: 120,
+             parent: {
+                 id: 1,
+                 name: 'Test Connection',
+                 enabled: true
+             }
+        });
+    } catch (err) {
+        t.error(err, 'no error');
+    }
+
+    Sinon.restore();
+    t.end();
+});
+
+test('GET: api/connection/1/layer/1', async (t) => {
+    try {
+        const res = await flight.fetch('/api/connection/1/layer/1', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin
+            },
         }, true);
 
         t.ok(res.body.uuid, 'has uuid');

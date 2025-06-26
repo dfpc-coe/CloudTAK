@@ -48,13 +48,12 @@ export default class Flight {
     schema?: object;
     routes: Record<string, RegExp>;
     token: Record<string, string>;
-    tak: MockTAKServer;
+    _tak?: MockTAKServer;
 
     constructor() {
         this.base = 'http://localhost:5001';
         this.token = {};
         this.routes = {};
-        this.tak = new MockTAKServer();
     }
 
     /**
@@ -90,10 +89,15 @@ export default class Flight {
                 }
             }
 
-            this.tak = new MockTAKServer();
+            this._tak = new MockTAKServer();
 
             t.end();
         });
+    }
+
+    get tak() {
+        if (!this._tak) throw new Error('Flight Test Runner not initialized - call flight.init() first');
+        return this._tak;
     }
 
     /**
