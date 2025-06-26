@@ -1,5 +1,5 @@
 import Config from './config.js';
-import { CoT } from '@tak-ps/node-tak';
+import CoT, { CoTParser } from '@tak-ps/node-cot';
 import Filter from './filter.js';
 import Queue from './aws/queue.js';
 import { sql } from 'drizzle-orm';
@@ -46,8 +46,8 @@ export default class Sinks {
                                 Id: (Math.random() + 1).toString(36).substring(7),
                                 MessageGroupId: `${String(layer.id)}-${cot.uid()}`,
                                 MessageBody: JSON.stringify({
-                                    xml: cot.to_xml(),
-                                    geojson: cot.to_geojson()
+                                    xml: CoTParser.to_xml(cot),
+                                    geojson: CoTParser.to_geojson(cot)
                                 })
                             } as SQS.SendMessageBatchRequestEntry;
                         }), queue);
