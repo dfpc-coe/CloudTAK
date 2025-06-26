@@ -18,7 +18,7 @@
         "@react-hookz/deep-equal": "^3.0.3",
         "@tabler/core": "1.0.0",
         "@tabler/icons-vue": "^3.0.0",
-        "@tak-ps/node-cot": "^13.2.0",
+        "@tak-ps/node-cot": "^13.3.0",
         "@tak-ps/vue-tabler": "^3.66.5",
         "@turf/area": "^7.2.0",
         "@turf/bbox": "^7.1.0",
