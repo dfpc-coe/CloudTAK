@@ -1,5 +1,5 @@
 import { Type, Static } from '@sinclair/typebox'
-import { CoT } from '@tak-ps/node-tak';
+import { CoTParser } from '@tak-ps/node-cot';
 import tokml from 'tokml';
 import { coordEach } from '@turf/meta';
 import { GenerateUpsert } from '@openaddresses/batch-generic';
@@ -188,7 +188,7 @@ export default async function router(schema: Schema, config: Config) {
                 const sockets = config.wsClients.get(user.email) || []
                 for (const socket of sockets) {
                     if (!socket.client) continue;
-                    config.conns.cots(socket.client.config, [CoT.from_geojson(feat)])
+                    config.conns.cots(socket.client.config, [CoTParser.from_geojson(feat)])
                 }
             }
 

@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import { Type } from '@sinclair/typebox'
 import S3 from '../lib/aws/s3.js';
-import CoT, { FileShare, DataPackage } from '@tak-ps/node-cot';
+import { CoTParser, FileShare, DataPackage } from '@tak-ps/node-cot';
 import { StandardResponse } from '../lib/types.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
@@ -151,7 +151,7 @@ export default async function router(schema: Schema, config: Config) {
                     }
                 }
 
-                await pkg.addCoT(CoT.from_geojson(feat))
+                await pkg.addCoT(CoTParser.from_geojson(feat))
             }
 
             for (const basemapid of req.body.basemaps) {

@@ -1,6 +1,6 @@
 import { Static } from '@sinclair/typebox'
 import { randomUUID } from 'node:crypto';
-import CoT, { DirectChat }  from '@tak-ps/node-cot';
+import { DirectChat, CoTParser }  from '@tak-ps/node-cot';
 import type { Feature }  from '@tak-ps/node-cot';
 import { WebSocket } from 'ws';
 import { ConnectionClient } from './connection-pool.js';
@@ -24,7 +24,7 @@ export class ConnectionWebSocket {
                         const chat = new DirectChat(msg.data);
                         client.tak.write([chat]);
 
-                        const feat = chat.to_geojson();
+                        const feat = CoTParser.to_geojson(chat);
                         await client.config.config.models.ProfileChat.generate({
                             username: String(client.config.id),
                             chatroom: msg.data.chatroom,
@@ -36,7 +36,7 @@ export class ConnectionWebSocket {
                     } else {
                         const feat = msg.data as Static<typeof Feature.Feature>;
 
-                        const cot = CoT.from_geojson(feat);
+                        const cot = CoTParser.from_geojson(feat);
 
                         client.tak.write([cot]);
                     }
