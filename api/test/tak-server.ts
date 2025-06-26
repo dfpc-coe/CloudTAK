@@ -20,6 +20,9 @@ export default class MockTAKServer {
 
     sockets: Set<tls.TLSSocket>
 
+    defaultMartiResponses: boolean;
+    defaultWebtakResponses: boolean;
+
     mockMarti: Array<(request: IncomingMessage, response: ServerResponse) => Promise<boolean>>;
     mockWebtak: Array<(request: IncomingMessage, response: ServerResponse) => Promise<boolean>>;
 
@@ -33,6 +36,9 @@ export default class MockTAKServer {
         if (!opts) opts = {};
         if (opts.defaultMartiResponses === undefined) opts.defaultMartiResponses = true;
         if (opts.defaultWebtakResponses === undefined) opts.defaultWebtakResponses = true;
+
+        this.defaultMartiResponses = opts.defaultMartiResponses;
+        this.defaultWebtakResponses = opts.defaultWebtakResponses;
 
         this.keys = {
             cert: '/tmp/cloudtak-test-server.cert',
@@ -120,7 +126,7 @@ export default class MockTAKServer {
     }
 
     mockWebtakDefaultResponses(): void {
-         this.mockWebtak.push(async (request, response) => {
+         this.mockWebtak = [(async (request, response) => {
             if (!request.method || !request.url) {
                 return false;
             } else if (request.method === 'POST' && request.url.startsWith('/oauth/token')) {
@@ -145,7 +151,7 @@ export default class MockTAKServer {
                 const signedCertArr = String(fs.readFileSync(`/tmp/${csr}.pem`))
                     .split('\n')
                     .filter((line) => { return line.length });
-                
+
                 const signedCert = signedCertArr.slice(1, signedCertArr.length - 1)
                     .join('\n')
 
@@ -156,11 +162,11 @@ export default class MockTAKServer {
             } else {
                 return false;
             }
-        });
+        })];
     }
 
     mockMartiDefaultResponses(): void {
-         this.mockMarti.push(async (request, response) => {
+         this.mockMarti = [(async (request, response) => {
             if (!request.method || !request.url) {
                 return false;
             } else if (request.method === 'GET' && request.url === '/files/api/config') {
@@ -176,7 +182,21 @@ export default class MockTAKServer {
             } else {
                 return false;
             }
-        });
+        })];
+    }
+
+    reset(): void {
+        if (this.defaultMartiResponses) {
+            this.mockMartiDefaultResponses();
+        } else {
+            this.mockMarti = [];
+        }
+
+        if (this.defaultWebtakResponses) {
+            this.mockWebtakDefaultResponses();
+        } else {
+            this.mockWebtak = []
+        }
     }
 
     async close(): Promise<void> {
