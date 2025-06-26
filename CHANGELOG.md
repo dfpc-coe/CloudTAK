@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v10.9.0 - 2025-06-26
+
+- :rocket: Allow Main CloudTAK Menu to be resizable
+
 ### v10.8.0 - 2025-06-26
 
 - :arrow_up: Update node-cot@13
