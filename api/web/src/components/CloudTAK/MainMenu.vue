@@ -1,17 +1,33 @@
 <template>
     <div
-        class='position-absolute end-0 bottom-0 text-white'
+        ref='container'
+        class='position-absolute end-0 bottom-0 start-0'
+        :class='{
+            "start-0 end-0 top-0 bottom-0": resizing
+        }'
+    />
+    <div
+        class='position-absolute end-0 bottom-0 text-white d-flex'
         role='menubar'
         :class='{
-            "bg-dark": !compact
+            "bg-dark": !compact,
         }'
         style='z-index: 1; top: 56px;'
         :style='`
-            width: ${compact ? "60px" : "400px"};
+            width: ${compact ? "60px" : `${menuWidth}px`};
+            min-width: ${compact ? "60px" : `400px`};
             ${compact ? "background-color: rgb(0, 0, 0, 0.5)" : ""}
         `'
     >
-        <div class='position-relative h-100 container px-0'>
+        <div
+            v-if='!compact'
+            ref='resize'
+            class='resize hover-dark cursor-drag'
+        />
+        <div
+            ref='menu'
+            class='position-relative w-100 h-100 px-0'
+        >
             <template
                 v-if='!["home", "home-menu"].includes(String(route.name))'
             >
@@ -641,7 +657,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted } from 'vue';
+import { ref, watch, useTemplateRef, onMounted } from 'vue';
 import {
     IconBug,
     IconMap,
@@ -675,13 +691,71 @@ const router = useRouter();
 
 const mapStore = useMapStore();
 const brandStore = useBrandStore();
+
+const resizing = ref(false);
+
+const menu = useTemplateRef('menu');
+const resize = useTemplateRef('resize');
+const container = useTemplateRef('container');
+
 const version = ref('');
 const username = ref<string>('Username')
+const menuWidth = ref<number>(400);
 const isSystemAdmin = ref<boolean>(false)
 const isAgencyAdmin = ref<boolean>(false)
 
 defineProps({
     compact: Boolean,
+})
+
+watch(resize, () => {
+    if (resize.value && container.value && menu.value) {
+        resizing.value = false;
+
+        let beginWidth = menuWidth.value;
+        let beginX = resize.value.getBoundingClientRect().x;
+        let deltaX = 0;
+
+        console.error('INIT', beginX, deltaX);
+
+        resize.value.addEventListener("mousedown", () => {
+            if (!resize.value) return;
+            beginWidth = menuWidth.value;
+            beginX = resize.value.getBoundingClientRect().x;
+            deltaX = 0;
+            resizing.value = true;
+        });
+
+        menu.value.addEventListener("mousemove", (e) => {
+            deltaX = beginX - e.x;
+
+            if (resizing.value) {
+                menuWidth.value = beginWidth + deltaX;
+                e.preventDefault();
+            }
+        });
+
+        container.value.addEventListener("mousemove", (e) => {
+            deltaX = beginX - e.x;
+
+            if (resizing.value) {
+                menuWidth.value = beginWidth + deltaX;
+                e.preventDefault();
+            }
+        });
+
+        resize.value.addEventListener("mouseup", () => {
+            resizing.value = false;
+        });
+
+        menu.value.addEventListener("mouseup", () => {
+            resizing.value = false;
+        });
+
+        container.value.addEventListener("mouseup", () => {
+            resizing.value = false;
+        });
+    }
 })
 
 onMounted(async () => {
@@ -718,4 +792,28 @@ function logout() {
 .status-red {
     background-color: #d63939;
 }
+
+.resize {
+   height: 100%;
+   width: 14px;
+   cursor: col-resize;
+   flex-shrink: 0;
+   position: relative;
+   z-index: 10;
+   user-select: none;
+}
+.resize::before {
+   content: "";
+   position: absolute;
+   top: 50%;
+   left: 50%;
+   transform: translate(-50%, -50%);
+   width: 3px;
+   height: 15px;
+   border-inline: 1px solid #fff;
+}
+.right {
+   flex-grow: 1;
+}
+
 </style>
