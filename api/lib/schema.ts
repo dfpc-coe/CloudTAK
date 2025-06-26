@@ -267,8 +267,8 @@ export const Layer = pgTable('layers', {
     connection: integer().references(() => Connection.id),
     logging: boolean().notNull().default(true),
     task: text().notNull(),
-    memory: integer().notNull().default(128),
-    timeout: integer().notNull().default(128),
+    memory: integer().notNull().default(256),
+    timeout: integer().notNull().default(120),
 }, (t) => ({
     unq: unique().on(t.connection, t.name)
 }));
