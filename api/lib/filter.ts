@@ -1,6 +1,6 @@
 import { Type, Static } from '@sinclair/typebox'
 import jsonata from 'jsonata';
-import { CoT } from '@tak-ps/node-tak';
+import CoT, { CoTParser } from '@tak-ps/node-cot';
 import Err from '@openaddresses/batch-error';
 
 export const FilterContainerQuery = Type.Object({
@@ -29,7 +29,7 @@ export default class Filter {
     ): Promise<boolean> {
         if (!filters.queries) return false;
 
-        const feature = cot.to_geojson();
+        const feature = CoTParser.to_geojson(cot);
 
         try {
             for (const q of filters.queries) {
