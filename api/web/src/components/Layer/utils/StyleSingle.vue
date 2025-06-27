@@ -350,9 +350,9 @@
             <div class='col-md-12 hover-light rounded px-2 py-2'>
                 <div class='col-12 d-flex align-items-center'>
                     <label class='user-select-none subheader'><IconPaint
-                            :size='20'
-                            stroke='1'
-                        /> Line Color
+                        :size='20'
+                        stroke='1'
+                    /> Line Color
                     </label>
                     <div class='ms-auto'>
                         <TablerToggle
