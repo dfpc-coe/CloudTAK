@@ -2,7 +2,7 @@
     <div class='row g-2'>
         <div class='col-md-12 hover-light rounded px-2 py-2'>
             <div class='col-12 d-flex align-items-center'>
-                <label><IconLicense
+                <label class='user-select-none subheader'><IconLicense
                     :size='20'
                     stroke='1'
                 /> Global ID</label>
@@ -25,8 +25,8 @@
         </div>
 
         <div class='col-md-12 hover-light rounded px-2 py-2'>
-            <div class='col-12 d-flex align-items-center'>
-                <label><IconBlockquote
+            <div class='col-12 d-flex align-items-center'> 
+                <label class='user-select-none subheader'><IconBlockquote
                     :size='20'
                     stroke='1'
                 /> Global Callsign</label>
@@ -50,7 +50,7 @@
 
         <div class='col-md-12 hover-light rounded px-2 py-2'>
             <div class='col-12 d-flex align-items-center'>
-                <label><IconBlockquote
+                <label class='user-select-none subheader'><IconBlockquote
                     :size='20'
                     stroke='1'
                 /> Global Remarks</label>
@@ -73,7 +73,7 @@
 
         <div class='col-md-12 hover-light rounded px-2 py-2'>
             <div class='col-12 d-flex align-items-center'>
-                <label><IconLink
+                <label class='user-select-none subheader'><IconLink
                     :size='20'
                     stroke='1'
                 /> Global Links</label>
@@ -154,7 +154,7 @@
 
         <div class='col-md-12 hover-light rounded px-2 py-2'>
             <div class='col-12 d-flex align-items-center'>
-                <label><IconLicense
+                <label class='user-select-none subheader'><IconLicense
                     :size='20'
                     stroke='1'
                 /> ID Override</label>
@@ -178,7 +178,7 @@
 
         <div class='col-md-12 hover-light rounded px-2 py-2'>
             <div class='col-12 d-flex align-items-center'>
-                <label><IconBlockquote
+                <label class='user-select-none subheader'><IconBlockquote
                     :size='20'
                     stroke='1'
                 /> Callsign Override</label>
@@ -202,7 +202,7 @@
 
         <div class='col-md-12 hover-light rounded px-2 py-2'>
             <div class='col-12 d-flex align-items-center'>
-                <label><IconBlockquote
+                <label class='user-select-none subheader'><IconBlockquote
                     :size='20'
                     stroke='1'
                 /> Remarks Override</label>
@@ -226,7 +226,7 @@
 
         <div class='col-md-12 hover-light rounded px-2 py-2'>
             <div class='col-12 d-flex align-items-center'>
-                <label><IconLink
+                <label class='user-select-none subheader'><IconLink
                     :size='20'
                     stroke='1'
                 /> Links Override</label>
@@ -251,7 +251,7 @@
         <template v-if='mode === "point"'>
             <div class='col-md-12 hover-light rounded px-2 py-2'>
                 <div class='col-12 d-flex align-items-center'>
-                    <label><IconCategory
+                    <label class='user-select-none subheader'><IconCategory
                         :size='20'
                         stroke='1'
                     /> Point Type</label>
@@ -274,7 +274,7 @@
             </div>
             <div class='col-md-12 hover-light rounded px-2 py-2'>
                 <div class='col-12 d-flex align-items-center'>
-                    <label><IconPhoto
+                    <label class='user-select-none subheader'><IconPhoto
                         :size='20'
                         stroke='1'
                     /> Point Icon</label>
@@ -295,7 +295,7 @@
             </div>
             <div class='col-md-12 hover-light rounded px-2 py-2'>
                 <div class='col-12 d-flex align-items-center'>
-                    <label><IconPaint
+                    <label class='user-select-none subheader'><IconPaint
                         :size='20'
                         stroke='1'
                     /> Point Color</label>
@@ -316,7 +316,7 @@
             </div>
             <div class='col-md-12 hover-light rounded px-2 py-2'>
                 <div class='col-12 d-flex align-items-center'>
-                    <label>
+                    <label class='user-select-none subheader'>
                         <IconGhost
                             :size='20'
                             stroke='1'
@@ -349,12 +349,11 @@
         <template v-else-if='mode !== "point"'>
             <div class='col-md-12 hover-light rounded px-2 py-2'>
                 <div class='col-12 d-flex align-items-center'>
-                    <div>
-                        <IconPaint
+                    <label class='user-select-none subheader'><IconPaint
                             :size='20'
                             stroke='1'
                         /> Line Color
-                    </div>
+                    </label>
                     <div class='ms-auto'>
                         <TablerToggle
                             v-model='filters[mode].enabled.stroke'
@@ -373,7 +372,7 @@
 
             <div class='col-md-12 hover-light rounded px-2 py-2'>
                 <div class='col-12 d-flex align-items-center'>
-                    <label><IconBorderStyle2
+                    <label class='user-select-none subheader'><IconBorderStyle2
                         :size='20'
                         stroke='1'
                     /> Line Style</label>
@@ -394,7 +393,7 @@
             </div>
             <div class='col-md-12 hover-light rounded px-2 py-2'>
                 <div class='col-12 d-flex align-items-center'>
-                    <label><IconRuler2
+                    <label class='user-select-none subheader'><IconRuler2
                         :size='20'
                         stroke='1'
                     /> Line Width</label>
@@ -417,7 +416,7 @@
             </div>
             <div class='col-md-12 hover-light rounded px-2 py-2'>
                 <div class='col-12 d-flex align-items-center'>
-                    <label>
+                    <label class='user-select-none subheader'>
                         <IconGhost
                             :size='20'
                             stroke='1'
@@ -450,7 +449,7 @@
         <template v-if='mode === "polygon"'>
             <div class='col-md-12 hover-light rounded px-2 py-2'>
                 <div class='col-12 d-flex align-items-center'>
-                    <label><IconPaint
+                    <label class='user-select-none subheader'><IconPaint
                         :size='20'
                         stroke='1'
                     /> Fill Color</label>
@@ -471,7 +470,7 @@
             </div>
             <div class='col-md-12 hover-light rounded px-2 py-2'>
                 <div class='col-12 d-flex align-items-center'>
-                    <label>
+                    <label class='user-select-none subheader'>
                         <IconGhost
                             :size='20'
                             stroke='1'
