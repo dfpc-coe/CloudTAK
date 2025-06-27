@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v10.10.0 - 2025-06-27
+
+- :rocket: Explicitly set `archived: true` on CoTs added to Mission Sync
+- :arrow_up: Update batch-generic to throw 4xx errors for unqiue constraint violations
+- :rocket: Minor labelling improvements to style editor
+
 ### v10.9.0 - 2025-06-26
 
 - :rocket: Allow Main CloudTAK Menu to be resizable
