@@ -26,9 +26,9 @@
         <div style='min-height: 20vh; margin-bottom: 60px'>
             <div class='col-12 px-2 py-2'>
                 <TablerInput
+                    v-model='paging.filter'
                     icon='search'
                     placeholder='Filter'
-                    v-model='paging.filter'
                 />
             </div>
 
