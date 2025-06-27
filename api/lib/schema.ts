@@ -49,7 +49,7 @@ export const Profile = pgTable('profile', {
     name: text().default('Unknown'),
     username: text().primaryKey(),
     last_login: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    auth: json().$type<ConnectionAuth>().notNull(),
+    auth: json().$type<Static<typeof ConnectionAuth>>().notNull(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     phone: text().notNull().default(''),
@@ -233,7 +233,7 @@ export const Connection = pgTable('connections', {
     name: text().notNull(),
     description: text().notNull().default(''),
     enabled: boolean().notNull().default(true),
-    auth: json().$type<ConnectionAuth>().notNull()
+    auth: json().$type<Static<typeof ConnectionAuth>>().notNull()
 });
 
 export const Data = pgTable('data', {
