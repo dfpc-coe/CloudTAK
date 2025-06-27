@@ -100,6 +100,11 @@ export default async function router(schema: Schema, config: Config) {
                     throw new Err(202, null, 'Recieved but Data Mission Sync Disabled');
                 }
 
+                // Mission Sync Features are always archived
+                for (const cot of cots.values()) {
+                    cot.archived(true);
+                }
+
                 if (data.mission_diff) {
                     if (!Array.isArray(req.body.uids)) {
                         throw new Err(400, null, 'uids Array must be present when submitting to DataSync with MissionDiff');
