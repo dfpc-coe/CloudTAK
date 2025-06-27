@@ -1,12 +1,14 @@
+import { Static, Type } from '@sinclair/typebox';
 import type { Connection } from './schema.js';
 import { X509Certificate } from 'crypto';
 import { InferSelectModel, sql } from 'drizzle-orm';
 import Config from './config.js';
 
-export type ConnectionAuth = {
-    cert: string;
-    key: string;
-}
+export const ConnectionAuth = Type.Object({
+    ca: Type.Optional(Type.Array(Type.String())),
+    cert: Type.String(),
+    key: Type.String()
+});
 
 export type MissionSub = {
     name: string;
@@ -17,7 +19,7 @@ export default interface ConnectionConfig {
     id: string | number;
     name: string;
     enabled: boolean;
-    auth: ConnectionAuth;
+    auth: Static<typeof ConnectionAuth>;
     config: Config;
 
     subscription: (name: string) => Promise<null | MissionSub>;
@@ -30,7 +32,7 @@ export class MachineConnConfig implements ConnectionConfig {
     id: number;
     name: string;
     enabled: boolean;
-    auth: ConnectionAuth;
+    auth: Static<typeof ConnectionAuth>;
     config: Config;
 
     constructor(config: Config, connection: InferSelectModel<typeof Connection>) {
@@ -86,13 +88,13 @@ export class ProfileConnConfig implements ConnectionConfig {
     id: string;
     name: string;
     enabled: boolean;
-    auth: ConnectionAuth;
+    auth: Static<typeof ConnectionAuth>;
     config: Config;
 
     constructor(
         config: Config,
         email: string,
-        auth: ConnectionAuth
+        auth: Static<typeof ConnectionAuth>
     ) {
         this.config = config;
         this.id = email;

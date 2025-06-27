@@ -190,7 +190,10 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
 
     async add(connConfig: ConnectionConfig, ephemeral=false): Promise<ConnectionClient> {
         if (!connConfig.auth || !connConfig.auth.cert || !connConfig.auth.key) throw new Err(400, null, 'Connection must have auth.cert & auth.key');
-        const tak = await TAK.connect(new URL(this.config.server.url), connConfig.auth, {
+        const tak = await TAK.connect(new URL(this.config.server.url), {
+            key: connConfig.auth.key,
+            cert: connConfig.auth.cert,
+        },{
             id: connConfig.id
         });
 

@@ -4,6 +4,7 @@ import Err from '@openaddresses/batch-error';
 import { GenericMartiResponse } from '../lib/types.js';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
+import { ConnectionAuth } from '../lib/connection-config.js';
 import { Contact } from '@tak-ps/node-tak/lib/api/contacts'
 import { Group } from '@tak-ps/node-tak/lib/api/groups'
 import { TAKList } from '@tak-ps/node-tak/lib/api/types';
@@ -114,10 +115,7 @@ export default async function router(schema: Schema, config: Config) {
             username: Type.String(),
             password: Type.String()
         }),
-        res: Type.Object({
-            key: Type.String(),
-            cert: Type.String()
-        })
+        res: ConnectionAuth
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req);
