@@ -7,7 +7,7 @@ import Auth, { AuthResourceAccess } from '../lib/auth.js';
 import Style from '../lib/style.js';
 import Config from '../lib/config.js';
 import { HistoryOptions } from '@tak-ps/node-tak/lib/api/query';
-import CoT, { Feature } from '@tak-ps/node-cot';
+import { CoTParser, Feature } from '@tak-ps/node-cot';
 import { MissionLayerType } from '@tak-ps/node-tak/lib/api/mission-layer';
 import { StandardLayerResponse, LayerError } from '../lib/types.js';
 import { TAKAPI, APIAuthCertificate, } from '@tak-ps/node-tak';
@@ -84,7 +84,7 @@ export default async function router(schema: Schema, config: Config) {
             let cots = [];
             for (const feat of req.body.features) {
                 try {
-                    cots.push(CoT.from_geojson(feat))
+                    cots.push(CoTParser.from_geojson(feat))
                 } catch (err) {
                     errors.push({
                         error: err instanceof Error ? err.message : String(err),
@@ -98,6 +98,11 @@ export default async function router(schema: Schema, config: Config) {
             if (layer.incoming.data && data) {
                 if (!data.mission_sync) {
                     throw new Err(202, null, 'Recieved but Data Mission Sync Disabled');
+                }
+
+                // Mission Sync Features are always archived
+                for (const cot of cots.values()) {
+                    cot.archived(true);
                 }
 
                 if (data.mission_diff) {
@@ -205,9 +210,9 @@ export default async function router(schema: Schema, config: Config) {
                     cots = cots.filter((cot) => {
                         const exist = existMap.get(cot.uid());
                         if (exist && data.mission_diff) {
-                            const b = CoT.from_geojson(exist);
+                            const b = CoTParser.from_geojson(exist);
                             // TODO: Check for path change
-                            if (!cot.isDiff(b)) return false;
+                            if (!CoTParser.isDiff(cot, b)) return false;
                         }
 
                         return true;

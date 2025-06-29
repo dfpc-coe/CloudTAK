@@ -24,6 +24,14 @@
         </div>
 
         <div style='min-height: 20vh; margin-bottom: 60px'>
+            <div class='col-12 px-2 py-2'>
+                <TablerInput
+                    v-model='paging.filter'
+                    icon='search'
+                    placeholder='Filter'
+                />
+            </div>
+
             <TablerAlert
                 v-if='err'
                 title='ETL Server Error'
@@ -122,6 +130,7 @@ import {
 import {
     TablerNone,
     TablerAlert,
+    TablerInput,
     TablerLoading,
     TablerIconButton,
     TablerRefreshButton,
@@ -134,7 +143,7 @@ const router = useRouter();
 const loading = ref(true);
 const error = ref();
 
-const paging = ref( {
+const paging = ref({
     filter: '',
     limit: 10,
     page: 0

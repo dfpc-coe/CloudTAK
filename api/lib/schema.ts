@@ -49,7 +49,7 @@ export const Profile = pgTable('profile', {
     name: text().default('Unknown'),
     username: text().primaryKey(),
     last_login: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    auth: json().$type<ConnectionAuth>().notNull(),
+    auth: json().$type<Static<typeof ConnectionAuth>>().notNull(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     phone: text().notNull().default(''),
@@ -233,7 +233,7 @@ export const Connection = pgTable('connections', {
     name: text().notNull(),
     description: text().notNull().default(''),
     enabled: boolean().notNull().default(true),
-    auth: json().$type<ConnectionAuth>().notNull()
+    auth: json().$type<Static<typeof ConnectionAuth>>().notNull()
 });
 
 export const Data = pgTable('data', {
@@ -267,8 +267,8 @@ export const Layer = pgTable('layers', {
     connection: integer().references(() => Connection.id),
     logging: boolean().notNull().default(true),
     task: text().notNull(),
-    memory: integer().notNull().default(128),
-    timeout: integer().notNull().default(128),
+    memory: integer().notNull().default(256),
+    timeout: integer().notNull().default(120),
 }, (t) => ({
     unq: unique().on(t.connection, t.name)
 }));
@@ -281,7 +281,7 @@ export const LayerOutgoing = pgTable('layers_outgoing', {
     filters: json().$type<Static<typeof FilterContainer>>().notNull().default({}),
 
     environment: json().notNull().default({}),
-    ephemeral: json().$type<Record<string, string>>().notNull().default({}),
+    ephemeral: json().$type<Record<string, any>>().notNull().default({}),
 });
 
 export const LayerIncoming = pgTable('layers_incoming', {
@@ -301,7 +301,7 @@ export const LayerIncoming = pgTable('layers_incoming', {
     styles: json().$type<Static<typeof StyleContainer>>().notNull().default({}),
     stale: integer().notNull().default(20),
     environment: json().notNull().default({}),
-    ephemeral: json().$type<Record<string, string>>().notNull().default({}),
+    ephemeral: json().$type<Record<string, any>>().notNull().default({}),
     config: json().$type<Static<typeof Layer_Config>>().notNull().default({}),
     data: integer().references(() => Data.id)
 });

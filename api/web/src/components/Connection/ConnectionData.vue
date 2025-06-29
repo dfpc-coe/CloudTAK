@@ -22,6 +22,14 @@
         </div>
 
         <div style='min-height: 20vh; margin-bottom: 60px'>
+            <div class='col-12 px-2 py-2'>
+                <TablerInput
+                    v-model='paging.filter'
+                    icon='search'
+                    placeholder='Filter'
+                />
+            </div>
+
             <TablerAlert
                 v-if='err'
                 title='ETL Server Error'
@@ -32,7 +40,7 @@
             <TablerNone
                 v-else-if='!list.items.length'
                 :create='false'
-                label='Data'
+                label='Data Syncs'
             />
             <div
                 v-else
@@ -105,8 +113,9 @@ import { useRouter, useRoute } from 'vue-router';
 import { std, stdurl } from '/src/std.ts';
 import TableFooter from '../util/TableFooter.vue';
 import {
-    TablerAlert,
     TablerNone,
+    TablerAlert,
+    TablerInput,
     TablerLoading
 } from '@tak-ps/vue-tabler'
 import {

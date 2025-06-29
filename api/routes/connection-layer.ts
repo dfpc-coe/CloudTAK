@@ -90,6 +90,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         res: Type.Object({
             total: Type.Integer(),
+            tasks: Type.Array(Type.String()),
             status: Type.Object({
                 healthy: Type.Integer(),
                 alarm: Type.Integer(),
@@ -134,6 +135,7 @@ export default async function router(schema: Schema, config: Config) {
 
             res.json({
                 status,
+                tasks: await config.models.Layer.tasks(),
                 total: list.total,
                 items: list.items.map((layer) => {
                     return {
@@ -162,14 +164,26 @@ export default async function router(schema: Schema, config: Config) {
         }),
         body: Type.Object({
             name: Default.NameField,
+            task: Type.String(),
             priority: Type.Optional(Type.Enum(Layer_Priority)),
             description: Default.DescriptionField,
-            webhooks: Type.Optional(Type.Boolean()),
             enabled: Type.Optional(Type.Boolean()),
-            task: Type.String(),
-            logging: Type.Boolean(),
-            memory: Type.Optional(Type.Integer()),
-            timeout: Type.Optional(Type.Integer()),
+            logging: Type.Boolean({
+                default: true,
+                description: 'Enable Logging for this Layer'
+            }),
+            memory: Type.Integer({
+                default: 128,
+                description: 'Memory in MB for this Layer',
+                minimum: 128,
+                maximum: 10240
+            }),
+            timeout: Type.Integer({
+                default: 120,
+                description: 'Timeout in seconds for this Layer',
+                minimum: 1,
+                maximum: 900
+            }),
         }),
         res: LayerResponse
     }, async (req, res) => {
@@ -692,8 +706,16 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.Optional(Default.NameField),
             priority: Type.Optional(Type.Enum(Layer_Priority)),
             description: Type.Optional(Default.DescriptionField),
-            memory: Type.Optional(Type.Integer()),
-            timeout: Type.Optional(Type.Integer()),
+            memory: Type.Optional(Type.Integer({
+                description: 'Memory in MB for this Layer',
+                minimum: 128,
+                maximum: 10240
+            })),
+            timeout: Type.Optional(Type.Integer({
+                description: 'Timeout in seconds for this Layer',
+                minimum: 1,
+                maximum: 900
+            })),
             enabled: Type.Optional(Type.Boolean()),
             task: Type.Optional(Type.String()),
             logging: Type.Optional(Type.Boolean()),

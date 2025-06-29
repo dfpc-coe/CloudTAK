@@ -15,19 +15,23 @@
                         stroke='1'
                     />
                 </TablerIconButton>
-                <TablerIconButton
+                <TablerRefreshButton
                     title='Refresh'
+                    :loading='loading'
                     @click='fetch'
-                >
-                    <IconRefresh
-                        :size='32'
-                        stroke='1'
-                    />
-                </TablerIconButton>
+                />
             </div>
         </div>
 
         <div style='min-height: 20vh; margin-bottom: 60px'>
+            <div class='col-12 px-2 py-2'>
+                <TablerInput
+                    v-model='paging.filter'
+                    icon='search'
+                    placeholder='Filter'
+                />
+            </div>
+
             <TablerLoading v-if='loading' />
             <TablerNone
                 v-else-if='!list.items.length'
@@ -89,12 +93,13 @@ import TokenModal from './TokenModal.vue';
 import TableFooter from '../util/TableFooter.vue';
 import {
     IconPlus,
-    IconRefresh,
 } from '@tabler/icons-vue';
 import {
+    TablerInput,
     TablerEpoch,
     TablerLoading,
     TablerIconButton,
+    TablerRefreshButton,
     TablerNone,
 } from '@tak-ps/vue-tabler';
 

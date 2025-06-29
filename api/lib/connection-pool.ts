@@ -6,7 +6,8 @@ import { randomUUID } from 'node:crypto';
 import Modeler from '@openaddresses/batch-generic';
 import { Connection } from './schema.js';
 import sleep from './sleep.js';
-import TAK, { TAKAPI, APIAuthCertificate, CoT } from '@tak-ps/node-tak';
+import TAK, { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
+import CoT, { CoTParser } from '@tak-ps/node-cot';
 import type ConnectionConfig from './connection-config.js';
 import { MachineConnConfig } from './connection-config.js';
 
@@ -137,7 +138,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                         cot.archived(true);
                     }
 
-                    const feat = cot.to_geojson();
+                    const feat = CoTParser.to_geojson(cot);
 
                     try {
                         if (ephemeral && feat.properties && feat.properties.chat) {
@@ -189,7 +190,10 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
 
     async add(connConfig: ConnectionConfig, ephemeral=false): Promise<ConnectionClient> {
         if (!connConfig.auth || !connConfig.auth.cert || !connConfig.auth.key) throw new Err(400, null, 'Connection must have auth.cert & auth.key');
-        const tak = await TAK.connect(new URL(this.config.server.url), connConfig.auth, {
+        const tak = await TAK.connect(new URL(this.config.server.url), {
+            key: connConfig.auth.key,
+            cert: connConfig.auth.cert,
+        },{
             id: connConfig.id
         });
 

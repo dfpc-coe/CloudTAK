@@ -12,6 +12,31 @@
 
 ### Pending Release
 
+### v10.10.0 - 2025-06-27
+
+- :rocket: Explicitly set `archived: true` on CoTs added to Mission Sync
+- :arrow_up: Update batch-generic to throw 4xx errors for unqiue constraint violations
+- :rocket: Minor labelling improvements to style editor
+
+### v10.9.0 - 2025-06-26
+
+- :rocket: Allow Main CloudTAK Menu to be resizable
+
+### v10.8.0 - 2025-06-26
+
+- :arrow_up: Update node-cot@13
+
+### v10.7.0 - 2025-06-24
+
+- :bug: Ensure Connection Video Lease deletions are limited to scope of the connection
+- :rocket: Add search box for items in all Connection Panes
+
+### v10.6.0 - 2025-06-24
+
+- :rocket: Start to sketch out Admin Layers UI
+- :bug: Fix returned lease on password rotate
+- :rocket: Migrate Admin Layers List to TS
+
 ### v10.5.0 - 2025-06-21
 
 - :rocket: Allow adding a logo to an ETL Task

@@ -61,13 +61,54 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
+    await schema.delete('/connection/:connectionid/video/lease', {
+        name: 'Delete Leases',
+        group: 'ConnectionVideoLease',
+        description: 'Delete all video leases for a given connection',
+        params: Type.Object({
+            connectionid: Type.Integer({ minimum: 1 }),
+        }),
+        res: StandardResponse
+    }, async (req, res) => {
+        try {
+            const { profile, connection, layer } = await Auth.is_connection(config, req, {
+                resources: [
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                    { access: AuthResourceAccess.LAYER, id: undefined }
+                ]
+            }, req.params.connectionid);
+
+            if (layer && layer.connection !== connection.id) {
+                throw new Err(400, null, 'Layer does not belong to this connection');
+            }
+
+            for await (const lease of config.models.VideoLease.iter({
+                where: sql`
+                    connection = ${req.params.connectionid}
+                `
+            })) {
+                await videoControl.delete(lease.id, {
+                    connection: req.params.connectionid,
+                    admin: profile ? profile.system_admin : false
+                });
+            }
+
+            res.json({
+                status: 200,
+                message: 'Video Leases Deleted'
+            });
+        } catch (err) {
+             Err.respond(err, res);
+        }
+    });
+
     await schema.get('/connection/:connectionid/video/lease/:lease', {
         name: 'Get Lease',
         group: 'ConnectionVideoLease',
         description: 'Get a single Video Lease',
         params: Type.Object({
             connectionid: Type.Integer({ minimum: 1 }),
-            lease: Type.String()
+            lease: Type.Integer()
         }),
         res: Type.Object({
             lease: VideoLeaseResponse,
@@ -195,7 +236,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Update a video Lease',
         params: Type.Object({
             connectionid: Type.Integer({ minimum: 1 }),
-            lease: Type.String()
+            lease: Type.Integer()
         }),
         body: Type.Object({
             name: Type.Optional(Type.String()),
@@ -291,7 +332,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Delete a video Lease',
         params: Type.Object({
             connectionid: Type.Integer({ minimum: 1 }),
-            lease: Type.String()
+            lease: Type.Integer()
         }),
         res: StandardResponse
     }, async (req, res) => {
