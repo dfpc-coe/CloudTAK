@@ -1,0 +1,1 @@
+ALTER TABLE "layers" ADD COLUMN "config" json DEFAULT '{}'::json NOT NULL;

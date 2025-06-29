@@ -1,0 +1,107 @@
+services:
+    api:
+        platform: linux/amd64
+        build:
+          context: ./api/
+          dockerfile: Dockerfile
+        restart: 'always'
+        depends_on:
+            - postgis
+            - media
+            - store
+        ports:
+            - "5000:5000"
+            - "5001:5001"
+        environment:
+            - CLOUDTAK_Mode=docker-compose
+            - CLOUDTAK_Config_media_url=http://media
+            - SigningSecret=coe-wildland-fire
+            - MediaSecret=coe-wildland-fire-video
+            - ASSET_BUCKET=cloudtak
+            - AWS_S3_Endpoint=http://store:9000
+            - AWS_S3_AccessKeyId=cloudtakminioadmin
+            - AWS_S3_SecretAccessKey=cloudtakminioadmin
+            - POSTGRES=postgres://docker:docker@postgis:5432/gis
+            - API_URL=http://localhost:5000
+            - ROOT_URL=http://localhost:5001
+            - PMTILES_URL=http://tiles:5002
+
+    tiles:
+        platform: linux/amd64
+        build:
+          context: ./tasks/pmtiles/
+          dockerfile: Dockerfile.compose
+        restart: 'always'
+        ports:
+            - "5002:5002"
+        environment:
+            - SigningSecret=coe-wildland-fire
+            - MediaSecret=coe-wildland-fire-video
+            - ASSET_BUCKET=cloudtak
+            - AWS_S3_Endpoint=http://store:9000
+            - AWS_S3_AccessKeyId=cloudtakminioadmin
+            - AWS_S3_SecretAccessKey=cloudtakminioadmin
+
+    events:
+        platform: linux/amd64
+        build:
+          context: ./tasks/pmtiles/
+          dockerfile: Dockerfile.compose
+        restart: 'always'
+        depends_on:
+            - api
+            - store
+        ports:
+            - "5003:5003"
+        environment:
+            - CLOUDTAK_Mode=docker-compose
+            - API_URL=http://api:5000
+            - SigningSecret=coe-wildland-fire
+            - ASSET_BUCKET=cloudtak
+            - AWS_S3_Endpoint=http://store:9000
+            - AWS_S3_AccessKeyId=cloudtakminioadmin
+            - AWS_S3_SecretAccessKey=cloudtakminioadmin
+
+    media:
+        image: ghcr.io/dfpc-coe/media-infra:v3.3.4
+        restart: 'always'
+        environment:
+            - FORCE_NEW_CONFIG=false
+            - CLOUDTAK_URL=http://api:5000/api
+            - SigningSecret=coe-wildland-fire
+            - MediaSecret=coe-wildland-fire-video
+        ports:
+            - 9997:9997
+            - 8554:8554
+            - 1935:1935
+            - 8888:8888
+            - 8890:8890
+        volumes:
+            - .docker-media:/opt/mediamtx
+
+    postgis:
+        platform: linux/amd64
+        image: postgis/postgis:17-3.4-alpine
+        restart: 'always'
+        ports:
+            - 5433:5432
+        environment:
+            - POSTGRES_DB=gis
+            - POSTGRES_USER=docker
+            - POSTGRES_PASSWORD=docker
+
+    store:
+        platform: linux/amd64
+        image: minio/minio:RELEASE.2024-08-17T01-24-54Z
+        entrypoint: sh
+        command: -c 'mkdir -p /data/cloudtak && /usr/bin/minio server /data --console-address ":9001"'
+        restart: 'always'
+        volumes:
+            - .docker-store:/data
+        ports:
+            - 9000:9000
+            - 9001:9001
+        environment:
+            - MINIO_ROOT_USER=cloudtakminioadmin
+            - MINIO_ROOT_PASSWORD=cloudtakminioadmin
+            - MINIO_DEFAULT_BUCKETS=cloudtak
