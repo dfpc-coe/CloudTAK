@@ -1,0 +1,45 @@
+{
+    "name": "events",
+    "version": "0.0.0",
+    "type": "module",
+    "private": true,
+    "engines": {
+        "node": ">= 22"
+    },
+    "scripts": {
+        "check": "tsc --noEmit --watch",
+        "lint": "eslint src",
+        "build": "tsup --target es2022 --format esm src/index.ts"
+    },
+    "dependencies": {
+        "@aws-sdk/client-batch": "^3.213.0",
+        "@aws-sdk/client-s3": "^3.787.0",
+        "@aws-sdk/lib-storage": "^3.787.0",
+        "@openaddresses/batch-schema": "^10.15.1",
+        "@tak-ps/node-cot": "^12.0.0",
+        "@tmcw/togeojson": "^7.1.0",
+        "@xmldom/xmldom": "^0.9.8",
+        "array-includes-with-glob": "^5.0.9",
+        "express": "^5.1.0",
+        "geojson-precision": "^1.0.0",
+        "glob": "^11.0.1",
+        "jsonwebtoken": "^9.0.2",
+        "node-stream-zip": "^1.15.0",
+        "sharp": "^0.34.1",
+        "spritesmith": "^3.5.1",
+        "tiny-async-pool": "^2.1.0",
+        "undici": "^7.8.0",
+        "vinyl": "^3.0.0",
+        "xml2js": "^0.6.2"
+    },
+    "devDependencies": {
+        "@types/aws-lambda": "^8.10.108",
+        "@types/jsonwebtoken": "^9.0.5",
+        "@types/node": "^22.0.0",
+        "eslint": "^9.0.0",
+        "globals": "^16.0.0",
+        "tsup": "^8.0.0",
+        "typescript": "^5.0.0",
+        "typescript-eslint": "^8.0.0"
+    }
+}

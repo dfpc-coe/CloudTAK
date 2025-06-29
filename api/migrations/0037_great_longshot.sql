@@ -1,0 +1,1 @@
+ALTER TABLE "layers" ALTER COLUMN "connection" SET NOT NULL;

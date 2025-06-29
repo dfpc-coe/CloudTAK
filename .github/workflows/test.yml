@@ -1,0 +1,95 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+
+jobs:
+  data:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{github.event.pull_request.head.sha || github.sha}}
+
+      - name: Docker Data Task Build
+        run: docker buildx build ./tasks/data -t cloudtak-data
+
+      - name: Docker Data Task Lint
+        run: docker run cloudtak-data:latest npm run lint
+
+      - name: Docker Data Task Test
+        run: docker run cloudtak-data:latest npm run test
+
+  pmtiles:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{github.event.pull_request.head.sha || github.sha}}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org/
+
+      - name: Install
+        working-directory: ./tasks/pmtiles/
+        run: npm install
+
+      - name: Lint
+        working-directory: ./tasks/pmtiles/
+        run: npm run lint
+
+      - name: Check
+        working-directory: ./tasks/pmtiles/
+        run: npm run check
+
+      - name: Check
+        working-directory: ./tasks/pmtiles/
+        run: npm run build
+
+  test:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{github.event.pull_request.head.sha || github.sha}}
+
+      - name: Docker Compose Build
+        run: docker compose up --build -d postgis
+
+      - name: Docker API Build
+        run: docker compose build api
+
+      - name: Docker API Lint
+        run: docker run cloudtak-api:latest sh -c "npm install --include=dev && npm run lint"
+
+      - name: Docker Test & Coverage
+        run: docker run --network cloudtak_default -v ./coverage/:/home/etl/api/coverage -e "POSTGRES=postgres://docker:docker@postgis:5432/gis" cloudtak-api:latest npm run coverage
+
+      - name: Docker Folder Permissions
+        run: docker run --network cloudtak_default -v ./coverage/:/home/etl/api/coverage -e "POSTGRES=postgres://docker:docker@postgis:5432/gis" cloudtak-api:latest chmod -R 777 /home/etl/api/coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        env:
+          CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
+        with:
+          files: ./coverage/lcov.info
+
+      - name: Docker Cleanup
+        run: docker compose kill

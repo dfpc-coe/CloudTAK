@@ -1,0 +1,1 @@
+ALTER TABLE "basemaps" ADD COLUMN "style" text DEFAULT 'zxy' NOT NULL;

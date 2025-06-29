@@ -1,0 +1,28 @@
+if [[ -z $1 ]]; then
+    Stack="cotak-prod"
+else
+    Stack=$1
+fi
+
+set -euo pipefail
+
+echo "Loading $Stack"
+
+
+cd ..
+
+if [[ $Stack == *"staging"* ]]; then
+    POSTGRES=$(deploy info ${Stack} --profile coestaging --region us-east-1 | jq .Outputs.DB)
+else
+    POSTGRES=$(deploy info ${Stack} | jq .Outputs.DB)
+fi
+
+cd $(pwd)/api
+
+ssh "${Stack}-bastion" -t "pg_dump -d ${POSTGRES} > ${Stack}-latest.dump; exit"
+scp "${Stack}-bastion:~/${Stack}-latest.dump" .
+ssh "${Stack}-bastion" -t "rm ${Stack}-latest.dump; exit"
+
+npm run loaddb "${Stack}-latest.dump"
+
+npm run dev -- --env ${Stack}

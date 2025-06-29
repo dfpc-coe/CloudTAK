@@ -1,0 +1,1 @@
+ALTER TABLE "layers" ALTER COLUMN "cron" SET NOT NULL;
