@@ -111,16 +111,10 @@
             </template>
             <template v-else>
                 <video
-                    :id='id'
-                    class='video-js vjs-default-skin'
-                    :controls='true'
-                    :autoplay='true'
-                >
-                    <source
-                        type='application/x-mpegURL'
-                        :src='videoProtocols.hls.url'
-                    >
-                </video>
+                    ref='videoTag'
+                    class='w-100 h-100'
+                    controls
+                />
             </template>
         </div>
     </div>
@@ -132,11 +126,9 @@ import { std, stdurl } from '../../../../src/std.ts';
 import StatusDot from './../../util/StatusDot.vue';
 import VideoLeaseSourceType from './VideoLeaseSourceType.vue';
 import type { VideoLeaseResponse } from '../../../types.ts';
-import type Player from 'video.js/dist/types/player.d.ts';
-import videojs from 'video.js';
+import Hls from 'hls.js'
 import { useFloatStore } from '../../../stores/float.ts';
 import type { VideoPane } from '../../../stores/float.ts';
-import 'video.js/dist/video-js.css';
 import {
     IconX,
     IconUsersGroup,
@@ -151,7 +143,6 @@ import {
 } from '@tak-ps/vue-tabler';
 
 const floatStore = useFloatStore();
-const id = `video-${(Math.random() + 1).toString(36).substring(7)}`;
 
 const props = defineProps({
     title: {
@@ -164,6 +155,7 @@ const props = defineProps({
     }
 });
 
+const videoTag = useTemplateRef<HTMLVideoElement>('videoTag');
 const container = useTemplateRef<HTMLElement>('container');
 const dragHandle = useTemplateRef<HTMLElement>('drag-handle');
 
@@ -171,7 +163,8 @@ const emit = defineEmits(['close']);
 
 const loading = ref(true);
 const error = ref<Error | undefined>();
-const player = ref<Player | undefined>()
+
+const player = ref<Hls | undefined>()
 
 const video = ref(floatStore.panes.get(props.uid) as VideoPane);
 const videoLease = ref<VideoLeaseResponse["lease"] | undefined>();
@@ -195,7 +188,7 @@ onUnmounted(async () => {
     }
 
     if (player.value) {
-        player.value.dispose();
+        player.value.destroy();
     }
 
     await deleteLease();
@@ -285,7 +278,15 @@ async function deleteLease(): Promise<void> {
 }
 
 async function requestLease(): Promise<void> {
-    if (!video.value) throw new Error('Video URL could not be loaded');
+    if (!video.value) {
+        error.value = new Error('Video URL could not be loaded');
+        return;
+    } else if (!Hls.isSupported()) {
+        error.value = new Error('HLS.js is not supported in this browser.');
+        return;
+    } else {
+        error.value = undefined;
+    }
 
     try {
         const url = stdurl('/api/video/active');
@@ -316,10 +317,41 @@ async function requestLease(): Promise<void> {
 
         if (!error.value && videoProtocols.value && videoProtocols.value.hls) {
             nextTick(() => {
-                player.value = videojs(id, {
-                    fill: true,
-                    preload: 'metadata'
+                const url = new URL(videoProtocols.value!.hls!.url);
+
+                player.value = new Hls({
+                    xhrSetup: (xhr: XMLHttpRequest) => {
+                        if (url.username && url.password) {
+                            xhr.setRequestHeader('Authorization', 'Basic ' + btoa(`${url.username}:${url.password}`));
+                        }
+                    }
                 });
+
+                player.value.attachMedia(videoTag.value!);
+                player.value.loadSource(url.toString());
+                player.value.on(Hls.Events.MANIFEST_PARSED, () => {
+                    videoTag.value!.play();
+                });
+
+                player.value.on(Hls.Events.ERROR, (event, data) => {
+                    console.log("Hls.Events.ERROR", data);
+                    if (data.fatal) {
+                        error.value = data.error;
+
+                        switch (data.type) {
+                            case Hls.ErrorTypes.NETWORK_ERROR:
+                                console.log("Fatal network error encountered");
+                                break;
+                            case Hls.ErrorTypes.MEDIA_ERROR:
+                                console.log("Fatal media error encountered");
+                                break;
+                        }
+
+                        if (player.value) {
+                            player.value.destroy();
+                        }
+                    }
+                })
             });
         }
     } catch (err) {
