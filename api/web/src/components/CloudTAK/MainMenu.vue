@@ -716,8 +716,6 @@ watch(resize, () => {
         let beginX = resize.value.getBoundingClientRect().x;
         let deltaX = 0;
 
-        console.error('INIT', beginX, deltaX);
-
         resize.value.addEventListener("mousedown", () => {
             if (!resize.value) return;
             beginWidth = menuWidth.value;
