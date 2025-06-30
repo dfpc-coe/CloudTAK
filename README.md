@@ -1,82 +1,240 @@
-# CloudTAK - CDK Implementation
+# CloudTAK Infrastructure
 
-A production-ready AWS CDK implementation of [CloudTAK](https://github.com/dfpc-coe/CloudTAK) with enterprise infrastructure patterns.
+<p align=center>Modern AWS CDK v2 infrastructure for CloudTAK web interface and ETL services
 
-## 🏗️ Architecture
+## Overview
 
-This repository extends the upstream CloudTAK project with:
+CloudTAK provides a web-based interface for Team Awareness Kit (TAK) data with ETL (Extract, Transform, Load) capabilities for processing and visualizing situational awareness information. This repository deploys the CloudTAK infrastructure layer with containerized services, auto-scaling, and enterprise-grade security features.
 
-- **AWS CDK Infrastructure** - Modern infrastructure-as-code
-- **Enterprise Patterns** - Consistent with BaseInfra/AuthInfra/TakInfra
-- **Resource Name Flexibility** - Configurable naming for any AWS environment
-- **Production Ready** - Aurora Serverless, proper monitoring, security
+It is specifically targeted at the deployment of [TAK.NZ](https://tak.nz) via a CI/CD pipeline with automated upstream synchronization from the [dfpc-coe/CloudTAK](https://github.com/dfpc-coe/CloudTAK) repository.
 
-## 🚀 Quick Start
+### Architecture Layers
+
+This CloudTAK infrastructure requires the base infrastructure layer. Layers can be deployed in multiple independent environments:
+
+```
+        PRODUCTION ENVIRONMENT                DEVELOPMENT ENVIRONMENT
+        Domain: tak.nz                        Domain: dev.tak.nz
+
+┌─────────────────────────────────┐    ┌─────────────────────────────────┐
+│         CloudTAK                │    │         CloudTAK                │
+│    CloudFormation Stack         │    │    CloudFormation Stack         │
+│      (This Repository)          │    │      (This Repository)          │
+└─────────────────────────────────┘    └─────────────────────────────────┘
+                │                                        │
+                ▼                                        ▼
+┌─────────────────────────────────┐    ┌─────────────────────────────────┐
+│        BaseInfra                │    │        BaseInfra                │
+│    CloudFormation Stack         │    │    CloudFormation Stack         │
+└─────────────────────────────────┘    └─────────────────────────────────┘
+```
+
+| Layer | Repository | Description |
+|-------|------------|-------------|
+| **BaseInfra** | [`base-infra`](https://github.com/TAK-NZ/base-infra)  | Foundation: VPC, ECS, S3, KMS, ACM |
+| **CloudTAK** | `CloudTAK` (this repo) | Web interface and ETL services |
+
+**Deployment Order**: BaseInfra must be deployed first, followed by CloudTAK. CloudTAK imports outputs from BaseInfra via CloudFormation exports.
+
+## Quick Start
 
 ### Prerequisites
-- AWS CLI configured
-- CDK CLI installed: `npm install -g aws-cdk`
-- BaseInfra stack deployed (VPC, ECS, KMS, etc.)
+- [AWS Account](https://signin.aws.amazon.com/signup) with configured credentials
+- Base infrastructure stack (`TAK-<n>-BaseInfra`) must be deployed first
+- Public Route 53 hosted zone (e.g., `tak.nz`)
+- [Node.js](https://nodejs.org/) 18+ and npm installed
+- [Docker](https://docker.com/) installed and running
 
-### Deploy
-```bash
-# Deploy to dev-test
-./scripts/deploy.sh --environment dev-test --stack-name DevTest
-
-# Deploy to production  
-./scripts/deploy.sh --environment prod --stack-name Prod
-```
-
-## 📁 Repository Structure
-
-```
-├── api/              # CloudTAK API (synced from upstream)
-├── tasks/            # ETL tasks (synced from upstream)
-├── cdk/              # AWS CDK infrastructure
-├── branding/         # TAK.NZ customizations
-├── scripts/          # Deployment and sync scripts
-└── docker-compose.yml # Local development
-```
-
-## 🔄 Upstream Sync
-
-Stay current with upstream CloudTAK features:
+### Installation & Deployment
 
 ```bash
+# 1. Install dependencies
+cd cdk && npm install
+
+# 2. Bootstrap CDK (first time only)
+npx cdk bootstrap --profile your-aws-profile
+
+# 3. Deploy development environment
+npm run deploy:dev
+
+# 4. Deploy production environment  
+npm run deploy:prod
+```
+
+## Infrastructure Resources
+
+### Compute & Services
+- **ECS Service** - CloudTAK web application with auto-scaling
+- **ECS Tasks** - ETL processing tasks (data, events, pmtiles)
+- **Application Load Balancer** - HTTP/HTTPS traffic distribution
+- **Target Groups** - Health check and traffic routing
+
+### Storage & Integration
+- **ECR Repository** - Container image storage (imported from BaseInfra)
+- **S3 Buckets** - Asset and configuration storage (imported from BaseInfra)
+- **External Database** - Connects to external TAK databases
+
+### Security & DNS
+- **Security Groups** - Fine-grained network access controls
+- **Route 53 Records** - CloudTAK endpoint DNS management
+- **KMS Encryption** - Data encryption at rest and in transit
+- **ACM Certificates** - SSL certificate management
+
+## Upstream Synchronization
+
+CloudTAK automatically synchronizes with the upstream [dfpc-coe/CloudTAK](https://github.com/dfpc-coe/CloudTAK) repository:
+
+### Automated Sync Process
+1. **Weekly Schedule**: Automatic sync every Monday at 2AM UTC
+2. **Merge Upstream**: Fetch and merge latest changes
+3. **Apply Branding**: Apply TAK.NZ customizations
+4. **Create PR**: Generate pull request for review
+5. **Build & Deploy**: Automated build and deployment after merge
+
+### Manual Sync
+```bash
+# Trigger manual upstream sync
 ./scripts/sync-upstream.sh
+
+# Apply branding after sync
+./scripts/apply-branding.sh
 ```
 
-This syncs only `api/` and `tasks/` folders while preserving your infrastructure and customizations.
+## Available Environments
 
-## 🏢 Enterprise Features
+| Environment | Stack Name | Description | Domain | CloudTAK Cost* | Complete Stack Cost** |
+|-------------|------------|-------------|--------|----------------|----------------------|
+| `dev-test` | `TAK-DevTest-CloudTAK` | Cost-optimized development | `cloudtak.dev.tak.nz` | ~$45 | ~$175 |
+| `prod` | `TAK-Prod-CloudTAK` | High-availability production | `cloudtak.tak.nz` | ~$180 | ~$568 |
 
-### Infrastructure Patterns
-- **Consistent naming** with other TAK infrastructure stacks
-- **Environment-specific configuration** (dev-test vs prod)
-- **Proper secret management** with AWS Secrets Manager
-- **Aurora Serverless v2** for cost-effective dev environments
-- **Comprehensive monitoring** and logging
+*CloudTAK Infrastructure only, **Complete deployment (BaseInfra + CloudTAK)  
+Estimated AWS costs for ap-southeast-2, excluding data transfer and usage
 
-### Resource Name Compatibility
-Automatically patches hardcoded resource names for CDK compatibility:
-- ECR repository names
-- ECS cluster references
-- VPC import patterns
+## Development Workflow
 
-## 🤝 Contributing
+### NPM Scripts
+```bash
+# Development and Testing
+npm run dev                    # Build and test
+npm run test                   # Run tests
+npm run lint                   # Run linting
 
-This repository demonstrates how to:
-1. Extend upstream projects with enterprise infrastructure
-2. Maintain sync with upstream while preserving customizations
-3. Implement consistent CDK patterns across multiple stacks
+# Environment-Specific Deployment
+npm run deploy:dev            # Deploy to dev-test
+npm run deploy:prod           # Deploy to production
+npm run synth:dev             # Preview dev infrastructure
+npm run synth:prod            # Preview prod infrastructure
 
-## 📋 Related Projects
+# Infrastructure Management
+npm run cdk:diff:dev          # Show what would change in dev
+npm run cdk:diff:prod         # Show what would change in prod
+npm run cdk:bootstrap         # Bootstrap CDK in account
+```
 
-- [BaseInfra](https://github.com/TAK-NZ/BaseInfra) - Foundation infrastructure
-- [AuthInfra](https://github.com/TAK-NZ/AuthInfra) - Authentication services  
-- [TakInfra](https://github.com/TAK-NZ/TakInfra) - TAK Server infrastructure
-- [CloudTAK Upstream](https://github.com/dfpc-coe/CloudTAK) - Original project
+### Local Development
+```bash
+# Run locally with Docker Compose
+docker-compose up
 
-## 📄 License
+# Build specific services
+docker-compose build api
+docker-compose build tasks/data
 
-Same as upstream CloudTAK project.
+# Run ETL tasks
+docker-compose run tasks/events
+```
+
+### Configuration System
+
+The project uses **AWS CDK context-based configuration** for consistent deployments:
+
+- **All settings** stored in [`cdk.json`](cdk/cdk.json) under `context` section
+- **Version controlled** - consistent deployments across team members
+- **Runtime overrides** - use `--context` flag for one-off changes
+- **Environment-specific** - separate configs for dev-test and production
+
+#### Configuration Override Examples
+```bash
+# Override CloudTAK hostname for deployment
+npm run deploy:dev -- --context hostname=map
+
+# Deploy with different resource allocation
+npm run deploy:prod -- --context taskCpu=4096 --context taskMemory=8192
+
+# Custom stack name
+npm run deploy:dev -- --context stackName=Demo
+```
+
+## Docker Image Strategy
+
+CloudTAK uses a **hybrid Docker image strategy**:
+
+- **CI/CD Mode**: Pre-built images from ECR for fast deployments (~8 minutes)
+- **Development Mode**: Local Docker builds for flexible development (~15 minutes)
+- **Automatic Fallback**: Seamlessly switches between modes based on context
+
+### Image Types
+1. **CloudTAK API**: Web interface and API services
+2. **ETL Tasks**: Data processing containers (data, events, pmtiles)
+
+### Upstream Integration
+- **Automatic Sync**: Weekly sync with upstream repository
+- **Branding Application**: TAK.NZ customizations applied after sync
+- **Version Tagging**: Git SHA and version-based image tags
+
+## 📚 Documentation
+
+- **[🚀 Deployment Guide](docs/DEPLOYMENT_GUIDE.md)** - Comprehensive deployment instructions and configuration options
+- **[🏗️ Architecture Guide](docs/ARCHITECTURE.md)** - Technical architecture and design decisions  
+- **[⚙️ Configuration Guide](docs/PARAMETERS.md)** - Complete configuration management reference
+- **[🐳 Docker Image Strategy](docs/DOCKER_IMAGE_STRATEGY.md)** - Hybrid image strategy for fast CI/CD and flexible development
+- **[⚙️ AWS GitHub Setup](docs/AWS_GITHUB_SETUP.md)** - CI/CD pipeline configuration
+
+## Security Features
+
+### Enterprise-Grade Security
+- **🔑 KMS Encryption** - All data encrypted with customer-managed keys
+- **🛡️ Network Security** - Private subnets with controlled internet access
+- **🔒 IAM Policies** - Least-privilege access patterns throughout
+- **🔐 Container Security** - Non-root containers with minimal privileges
+- **📋 Automated Updates** - Weekly upstream sync with security patches
+
+## CI/CD Pipeline
+
+### GitHub Actions Workflows
+- **Demo Pipeline**: Push to main → Sync → Build → Deploy → Test → Revert
+- **Production Pipeline**: Version tag → Sync → Build → Deploy (with approval)
+- **Weekly Sync**: Automated upstream synchronization with PR creation
+
+### Deployment Environments
+- **Demo Environment**: Automated testing with production configuration
+- **Production Environment**: Manual approval required for deployment
+
+## Getting Help
+
+### Common Issues
+- **Base Infrastructure** - Ensure base infrastructure stack is deployed first
+- **Route53 Hosted Zone** - Ensure your domain's hosted zone exists before deployment
+- **AWS Permissions** - CDK requires broad permissions for CloudFormation operations
+- **Docker Issues** - Ensure Docker is running for local development
+- **Upstream Conflicts** - Use manual conflict resolution for complex merge conflicts
+
+### Support Resources
+- **AWS CDK Documentation** - https://docs.aws.amazon.com/cdk/
+- **CloudTAK Upstream** - https://github.com/dfpc-coe/CloudTAK
+- **TAK.NZ Project** - https://github.com/TAK-NZ/
+- **Issue Tracking** - Use GitHub Issues for bug reports and feature requests
+
+## Contributing
+
+### Development Process
+1. **Fork Repository** - Create your own fork for development
+2. **Create Branch** - Use feature branches for development
+3. **Test Changes** - Run tests and validate deployment
+4. **Submit PR** - Create pull request with detailed description
+5. **Review Process** - Code review and automated testing
+
+### Upstream Contributions
+- **Bug Fixes** - Submit to upstream dfpc-coe/CloudTAK repository
+- **TAK.NZ Specific** - Keep customizations in this repository
+- **Documentation** - Improve documentation for better maintainability

@@ -1,0 +1,62 @@
+name: Weekly Upstream Sync
+
+on:
+  schedule:
+    - cron: '0 2 * * 1'  # Monday 2AM UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync-upstream:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Sync with Upstream
+        run: |
+          git remote add upstream https://github.com/dfpc-coe/CloudTAK.git || true
+          git fetch upstream
+          
+          # Create sync branch
+          SYNC_BRANCH="sync/upstream-$(date +%Y%m%d)"
+          git checkout -b "$SYNC_BRANCH"
+          
+          # Merge upstream changes
+          if git merge upstream/main --no-edit; then
+            echo "✅ Upstream merge successful"
+            
+            # Apply branding if script exists
+            if [ -f "scripts/apply-branding.sh" ]; then
+              ./scripts/apply-branding.sh
+              git add -A
+              git commit -m "Apply TAK.NZ branding after upstream sync" || true
+            fi
+            
+            # Push sync branch
+            git push origin "$SYNC_BRANCH"
+            
+            # Create pull request
+            gh pr create \
+              --title "Weekly upstream sync - $(date +%Y-%m-%d)" \
+              --body "Automated sync with upstream CloudTAK repository. Please review changes before merging." \
+              --head "$SYNC_BRANCH" \
+              --base main
+          else
+            echo "❌ Merge conflicts detected. Manual intervention required."
+            git merge --abort
+            exit 1
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

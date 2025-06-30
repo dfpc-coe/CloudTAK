@@ -1,0 +1,50 @@
+name: Test CDK code
+
+on:
+  workflow_call:
+  push:
+    branches: [main]
+    paths:
+      - 'cdk/**'
+      - 'package*.json'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'cdk/**'
+      - 'package*.json'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'cdk/package-lock.json'
+
+      - name: Install dependencies
+        run: |
+          cd cdk
+          npm ci
+
+      - name: Run linting
+        run: |
+          cd cdk
+          npm run lint
+
+      - name: Run tests
+        run: |
+          cd cdk
+          npm test
+
+      - name: Test CDK synthesis
+        run: |
+          cd cdk
+          npm run build
+          npx cdk synth --context envType=dev-test --context stackName=Test
+          npx cdk synth --context envType=prod --context stackName=Test

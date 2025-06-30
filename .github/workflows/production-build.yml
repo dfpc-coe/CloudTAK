@@ -1,0 +1,102 @@
+name: Build and Push Docker Images - Production
+
+on:
+  push:
+    tags: ['v*']
+  workflow_call:
+    outputs:
+      cloudtak-tag:
+        description: 'CloudTAK API image tag'
+        value: ${{ jobs.build-images.outputs.cloudtak-tag }}
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-images:
+    runs-on: ubuntu-latest
+    environment: production
+    outputs:
+      cloudtak-tag: ${{ steps.tags.outputs.cloudtak-tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Sync with Upstream
+        run: |
+          git remote add upstream https://github.com/dfpc-coe/CloudTAK.git || true
+          git fetch upstream
+          git merge upstream/main --no-edit
+          
+      - name: Apply Branding
+        run: |
+          if [ -f "scripts/apply-branding.sh" ]; then
+            ./scripts/apply-branding.sh
+          fi
+        
+      - name: Setup CDK Environment
+        uses: ./.github/actions/setup-cdk
+        with:
+          aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+          role-session-name: GitHubActions-DockerBuild
+      
+      - name: Get ECR Repository and Build Tags
+        id: tags
+        run: |
+          ECR_REPO_ARN=$(aws cloudformation describe-stacks \
+            --stack-name TAK-${{ vars.STACK_NAME }}-BaseInfra \
+            --query 'Stacks[0].Outputs[?OutputKey==`EcrRepoArnOutput`].OutputValue' \
+            --output text)
+          
+          if [[ -z "$ECR_REPO_ARN" ]]; then
+            echo "ERROR: ECR repository ARN not found in BaseInfra stack outputs"
+            exit 1
+          fi
+          
+          ECR_REPO_NAME=$(echo $ECR_REPO_ARN | cut -d'/' -f2)
+          ECR_REPO_URI="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${ECR_REPO_NAME}"
+          
+          VERSION=${GITHUB_REF#refs/tags/v}
+          GITSHA=$(git rev-parse --short HEAD)
+          CLOUDTAK_TAG="cloudtak-${VERSION}-${GITSHA}"
+          
+          echo "ecr-repo-uri=$ECR_REPO_URI" >> $GITHUB_OUTPUT
+          echo "cloudtak-tag=$CLOUDTAK_TAG" >> $GITHUB_OUTPUT
+          echo "Using ECR repository: $ECR_REPO_URI"
+          echo "Building CloudTAK image with tag: $CLOUDTAK_TAG"
+      
+      - name: Login to Amazon ECR
+        run: |
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | \
+            docker login --username AWS --password-stdin \
+            ${{ steps.tags.outputs.ecr-repo-uri }}
+      
+      - name: Build and Push CloudTAK Images
+        run: |
+          export GITSHA=$(git rev-parse --short HEAD)
+          export AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}
+          export AWS_REGION=${{ secrets.AWS_REGION }}
+          export Environment=prod
+          
+          # Build API image
+          docker compose build api
+          docker tag cloudtak-api:latest "${{ steps.tags.outputs.ecr-repo-uri }}:${{ steps.tags.outputs.cloudtak-tag }}"
+          docker push "${{ steps.tags.outputs.ecr-repo-uri }}:${{ steps.tags.outputs.cloudtak-tag }}"
+          
+          # Build task images
+          for task_dir in tasks/*/; do
+            if [ -d "$task_dir" ]; then
+              task=$(basename "$task_dir")
+              docker buildx build "./tasks/$task/" -t "cloudtak-$task"
+              docker tag "cloudtak-$task:latest" "${{ steps.tags.outputs.ecr-repo-uri }}:$task-${{ steps.tags.outputs.cloudtak-tag }}"
+              docker push "${{ steps.tags.outputs.ecr-repo-uri }}:$task-${{ steps.tags.outputs.cloudtak-tag }}"
+            fi
+          done
+      
+      - name: Output Image Information
+        run: |
+          echo "✅ Successfully built and pushed CloudTAK images:"
+          echo "📦 CloudTAK API: ${{ steps.tags.outputs.cloudtak-tag }}"
