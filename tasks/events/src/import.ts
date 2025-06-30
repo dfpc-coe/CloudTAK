@@ -8,7 +8,7 @@ import StreamZip, { StreamZipAsync } from 'node-stream-zip'
 import { pipeline } from 'node:stream/promises';
 import jwt from 'jsonwebtoken';
 import API from './api.js';
-import { DataPackage } from '@tak-ps/node-cot';
+import { CoTParser, DataPackage } from '@tak-ps/node-cot';
 import xml2js from 'xml2js';
 import { Event } from './index.js';
 
@@ -56,7 +56,7 @@ export default async function(md: Event) {
 
             const cots = await pkg.cots();
             for (const cot of cots) {
-                const feat = cot.to_geojson();
+                const feat = CoTParser.to_geojson(cot);
 
                 if (feat.properties.attachments) {
                     const attachments = await pkg.attachments();

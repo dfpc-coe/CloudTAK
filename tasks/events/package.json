@@ -7,7 +7,7 @@
         "node": ">= 22"
     },
     "scripts": {
-        "check": "tsc --noEmit --watch",
+        "check": "tsc --noEmit",
         "lint": "eslint src",
         "build": "tsup --target es2022 --format esm src/index.ts"
     },
