@@ -1,5 +1,5 @@
 <template>
-    <div class='container px-0'>
+    <div class='w-100 px-0'>
         <div
             class='sticky-top col-12 bg-dark'
             :style='`z-index: ${zindex};`'

@@ -86,6 +86,20 @@ export default class Subscription {
         mapStore.worker.db.subscriptionDelete(this.meta.guid);
     }
 
+    async updateFeature(cot: COT): Promise<void> {
+        this.cots.set(String(cot.id), cot);
+
+        const feat = cot.as_feature({
+            clone: true
+        });
+
+        feat.properties.dest = [{
+            mission: this.meta.name
+        }];
+
+        await this._atlas.conn.sendCOT(feat);
+    }
+
     async deleteFeature(uid: string): Promise<void> {
         if (this._remote) return;
 

@@ -125,7 +125,10 @@
                     '
                 >
                     <template v-if='!mapStore.mission'>
-                        <div class='d-flex align-items-center user-select-none'>
+                        <div
+                            @click='router.push("/menu/missions")'
+                            class='hover-button d-flex align-items-center user-select-none cursor-pointer'
+                        >
                             <IconMap
                                 :size='32'
                                 stroke='1'

@@ -162,6 +162,11 @@ export const useMapStore = defineStore('cloudtak', {
                 await this.worker.db.subscriptionDelete(overlay.mode_id);
             }
         },
+        makeActiveMission: async function(mission?: Subscription): void {
+            this.mission = mission;
+
+            await this.worker.db.makeActiveMission(mission ? mission.meta.guid : undefined);
+        },
         getOverlayById(id: number): Overlay | null {
             for (const overlay of this.overlays) {
                 if (overlay.id === id) return overlay as Overlay

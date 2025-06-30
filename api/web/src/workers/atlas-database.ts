@@ -26,6 +26,9 @@ export default class AtlasDatabase {
 
     cots: Map<string, COT>;
 
+    // Stores Active Mission if present
+    mission?: Subscription;
+
     hidden: Set<string>;
 
     // Store ImageIDs currently loaded in MapLibre
@@ -58,6 +61,14 @@ export default class AtlasDatabase {
         this.subscriptions = new Map();
         this.subscriptionPending = new Map(); // UID, Mission Guid
 
+    }
+
+    async makeActiveMission(guid? : string): Promise<void> {
+        if (guid) {
+            this.mission = await this.subscriptionGet(guid);
+        } else {
+            this.mission = undefined;
+        }
     }
 
     async hide(id: string): Promise<void> {
@@ -467,7 +478,7 @@ export default class AtlasDatabase {
      * @param opts - Optional Options
      * @param opts.skipSave - Don't save the COT to the Profile Feature Database
      * @param opts.skipBroadcast - Don't broadcast the COT on the internal message bus to the UI
-     * @param opts.authored - If the COT is new, append creator information
+     * @param opts.authored - If the COT is new, append creator information & potentially add it to a mission
      * @param opts.mission_guid - Explicitly use Mission Store
      */
     async add(
@@ -486,7 +497,11 @@ export default class AtlasDatabase {
             feat.properties.creator = await this.atlas.profile.creator();
         }
 
-        const mission_guid = opts.mission_guid || this.subscriptionPending.get(feat.id);
+        const mission_guid =
+            // The feature was explicitly assigned to a given GUID
+            opts.mission_guid
+            // The feature was notified by the server that it is for a given GUID
+            || this.subscriptionPending.get(feat.id);
 
         if (mission_guid)  {
             const sub = this.subscriptions.get(mission_guid);
@@ -521,7 +536,20 @@ export default class AtlasDatabase {
 
             let exists = this.cots.get(feat.id);
 
-            if (exists) {
+            if (this.mission && !exists && opts.authored) {
+                const sub = this.subscriptions.get(this.mission.meta.guid);
+
+                if (!sub) {
+                    throw new Error(`Cannot add ${feat.id} to mission ${mission_guid} as it is not loaded`)
+                }
+
+                exists = new COT(this.atlas, feat, {
+                    mode: OriginMode.MISSION,
+                    mode_id: this.mission.meta.guid
+                }, opts);
+
+                sub.updateFeature(exists);
+            } else if (exists) {
                 exists.update({
                     path: feat.path,
                     properties: feat.properties,
