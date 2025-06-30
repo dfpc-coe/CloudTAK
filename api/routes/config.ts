@@ -37,21 +37,32 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Config',
         description: 'Update Config Key/Values',
         body: Type.Object({
-            'agol::enabled': Type.Optional(Type.Boolean()),
-            'agol::token': Type.Optional(Type.String()),
+            'agol::enabled': Type.Optional(Type.Boolean({
+                description: 'Enable ArcGIS Online Integration'
+            })),
+            'agol::token': Type.Optional(Type.String({
+                description: 'ArcGIS Online API Token'
+            })),
 
-            'media::url': Type.Optional(Type.String()),
+            'media::url': Type.Optional(Type.String({
+                description: 'Base URL for Media Service'
+            })),
 
-            'map::center': Type.Optional(Type.String()),
+            'map::center': Type.Optional(Type.String({
+                description: 'Map Center Coordinates (lng,lat)',
+            })),
             'map::pitch': Type.Optional(Type.Integer({
+                description: 'Default Map Pitch Angle',
                 minimum: 0,
                 maximum: 90
             })),
             'map::bearing': Type.Optional(Type.String({
+                description: 'Default Map Bearing',
                 minimum: 0,
                 maximum: 360
             })),
             'map::zoom': Type.Optional(Type.Integer({
+                description: 'Default Map Zoom Level',
                 minimum: 0,
                 maximum: 20
             })),
@@ -83,9 +94,15 @@ export default async function router(schema: Schema, config: Config) {
             'provider::secret': Type.Optional(Type.String()),
             'provider::client': Type.Optional(Type.String()),
 
-            'login::signup': Type.Optional(Type.String()),
-            'login::forgot': Type.Optional(Type.String()),
-            'login::logo': Type.Optional(Type.String()),
+            'login::signup': Type.Optional(Type.String({
+                description: 'URL for Signup Page'
+            })),
+            'login::forgot': Type.Optional(Type.String({
+                description: 'URL for Forgot Password Page'
+            })),
+            'login::logo': Type.Optional(Type.String({
+                description: 'Base64 encoded PNG for logo'
+            })),
         }),
         res: Type.Any()
     }, async (req, res) => {
