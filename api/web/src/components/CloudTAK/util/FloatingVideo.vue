@@ -113,6 +113,7 @@
                 <video
                     ref='videoTag'
                     class='w-100 h-100'
+                    autoplay
                     controls
                 />
             </template>
