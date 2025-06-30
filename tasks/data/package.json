@@ -33,7 +33,7 @@
     "devDependencies": {
         "eslint": "^9.0.0",
         "eslint-plugin-n": "^17.10.2",
-        "sinon": "^20.0.0",
+        "sinon": "^21.0.0",
         "tape": "^5.8.1"
     }
 }
