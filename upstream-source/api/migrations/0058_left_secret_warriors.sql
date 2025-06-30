@@ -1,1 +1,0 @@
-ALTER TABLE "layers" ADD COLUMN "ephemeral" json DEFAULT '{}'::json NOT NULL;

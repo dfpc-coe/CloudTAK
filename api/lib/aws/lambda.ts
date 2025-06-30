@@ -93,7 +93,7 @@ export default class Lambda {
                         },
                         Role: cf.importValue(config.StackName + '-etl-role'),
                         Code: {
-                            ImageUri: cf.join([cf.accountId, '.dkr.ecr.', cf.region, `.amazonaws.com/coe-ecr-etl-tasks:`, cf.ref('Task')])
+                            ImageUri: cf.join([cf.accountId, '.dkr.ecr.', cf.region, `.amazonaws.com/coe-ecr-etl:`, cf.ref('Task')])
                         }
                     }
                 }

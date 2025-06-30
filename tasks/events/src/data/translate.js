@@ -4,7 +4,7 @@ import cp from 'node:child_process';
 export default class GDALTranslate {
     static register() {
         return {
-            inputs: ['.pdf', '.tif']
+            inputs: ['.pdf', '.tif', '.tiff']
         };
     }
 

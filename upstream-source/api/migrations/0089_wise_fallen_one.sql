@@ -1,1 +1,0 @@
-ALTER TABLE "layers_incoming" DROP COLUMN "schema";

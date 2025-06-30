@@ -1,1 +1,0 @@
-ALTER TABLE "profile" ADD COLUMN "display_zoom" text DEFAULT 'conditional' NOT NULL;

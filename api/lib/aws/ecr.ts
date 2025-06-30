@@ -14,7 +14,7 @@ export default class ECR {
 
             let res;
             do {
-                const req: ListImagesCommandInput = { repositoryName: 'coe-ecr-etl-tasks' };
+                const req: ListImagesCommandInput = { repositoryName: 'coe-ecr-etl' };
                 if (res && res.nextToken) req.nextToken = res.nextToken;
                 res = await ecr.send(new AWSECR.ListImagesCommand(req));
                 imageIds.push(...(res.imageIds || []));
@@ -31,7 +31,7 @@ export default class ECR {
 
         try {
             await ecr.send(new AWSECR.BatchDeleteImageCommand({
-                repositoryName: 'coe-ecr-etl-tasks',
+                repositoryName: 'coe-ecr-etl',
                 imageIds: [{ imageTag: `${task}-v${version}` }]
             }));
         } catch (err) {
