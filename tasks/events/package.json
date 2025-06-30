@@ -28,6 +28,7 @@
         "sharp": "^0.34.1",
         "spritesmith": "^3.5.1",
         "tiny-async-pool": "^2.1.0",
+        "tsup": "^8.5.0",
         "undici": "^7.8.0",
         "vinyl": "^3.0.0",
         "xml2js": "^0.6.2"
