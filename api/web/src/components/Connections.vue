@@ -11,7 +11,7 @@
                                 <div class='btn-list'>
                                     <a
                                         class='cursor-pointer btn btn-primary'
-                                        @click='$router.push("/connection/new")'
+                                        @click='router.push("/connection/new")'
                                     >
                                         New Connection
                                     </a>
@@ -55,7 +55,7 @@
                         <TablerNone
                             v-if='!list.items.length'
                             label='Connections'
-                            @create='$router.push("/connection/new")'
+                            @create='router.push("/connection/new")'
                         />
                         <template v-else>
                             <div
@@ -69,7 +69,7 @@
 
                                         <a
                                             class='card-title cursor-pointer mx-2'
-                                            @click='$router.push(`/connection/${connection.id}`)'
+                                            @click='router.push(`/connection/${connection.id}`)'
                                             v-text='connection.name'
                                         />
 
@@ -80,7 +80,7 @@
                                                 :size='32'
                                                 stroke='1'
                                                 class='cursor-pointer'
-                                                @click='$router.push(`/connection/${connection.id}/edit`)'
+                                                @click='router.push(`/connection/${connection.id}/edit`)'
                                             />
                                         </div>
                                     </div>
@@ -116,6 +116,7 @@
 
 <script setup lang='ts'>
 import { ref, onMounted, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import type { ETLConnectionList } from '../types.ts'
 import { std, stdurl } from '../std.ts';
 import PageFooter from './PageFooter.vue';
@@ -133,6 +134,8 @@ import {
     IconSettings,
     IconSearch
 } from '@tabler/icons-vue'
+
+const router = useRouter();
 
 const loading = ref(true);
 const paging = ref({
