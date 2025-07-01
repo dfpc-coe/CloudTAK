@@ -286,6 +286,29 @@ export default class TileJSON {
         if (!opts) opts = {};
         if (!opts.headers) opts.headers = {};
 
+        // Check if tile is within bounds (handle antimeridian crossing)
+        if (config.bounds && config.bounds.length === 4) {
+            const tileBbox = tileToBBOX([x, y, z]);
+            const [minLon, minLat, maxLon, maxLat] = config.bounds;
+            const [tileMinLon, tileMinLat, tileMaxLon, tileMaxLat] = tileBbox;
+
+            // Check latitude bounds (simple case)
+            if (tileMaxLat < minLat || tileMinLat > maxLat) {
+                res.status(404).send('Tile outside bounds');
+                return;
+            }
+
+            // Check longitude bounds (handle antimeridian crossing)
+            const lonInBox = minLon <= maxLon
+                ? tileMinLon <= maxLon && tileMaxLon >= minLon
+                : tileMinLon <= maxLon || tileMaxLon >= minLon;
+
+            if (!lonInBox) {
+                res.status(404).send('Tile outside bounds');
+                return;
+            }
+        }
+
         if (config.url.endsWith("/ImageServer")) {
             try {
                 const url = this.esriRasterTileURL(config.url, z, x, y)
