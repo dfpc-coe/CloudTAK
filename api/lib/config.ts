@@ -8,7 +8,7 @@ import ConnectionPool from './connection-pool.js';
 import { ConnectionWebSocket } from './connection-web.js';
 import Cacher from './cacher.js';
 import type { Server } from './schema.js';
-import { type InferSelectModel } from 'drizzle-orm';
+import { type InferSelectModel, sql } from 'drizzle-orm';
 import Models from './models.js';
 import process from 'node:process';
 import * as pgtypes from './schema.js';
@@ -176,6 +176,59 @@ export default class Config {
         if (process.env.SubnetPublicA) config.SubnetPublicA = process.env.SubnetPublicA;
         if (process.env.SubnetPublicB) config.SubnetPublicB = process.env.SubnetPublicB;
         if (process.env.MediaSecurityGroup) config.MediaSecurityGroup = process.env.MediaSecurityGroup;
+
+        // Handle server configuration via environment variables
+        const serverEnvUpdates: Partial<InferSelectModel<typeof Server>> = {};
+        let hasServerUpdates = false;
+
+        if (process.env.CLOUDTAK_Server_name) {
+            serverEnvUpdates.name = process.env.CLOUDTAK_Server_name;
+            hasServerUpdates = true;
+        }
+        if (process.env.CLOUDTAK_Server_url) {
+            serverEnvUpdates.url = process.env.CLOUDTAK_Server_url;
+            hasServerUpdates = true;
+        }
+        if (process.env.CLOUDTAK_Server_api) {
+            serverEnvUpdates.api = process.env.CLOUDTAK_Server_api;
+            hasServerUpdates = true;
+        }
+        if (process.env.CLOUDTAK_Server_webtak) {
+            serverEnvUpdates.webtak = process.env.CLOUDTAK_Server_webtak;
+            hasServerUpdates = true;
+        }
+        // Support both P12 file + password OR separate cert + key
+        if (process.env.CLOUDTAK_Server_auth_p12 && process.env.CLOUDTAK_Server_auth_password) {
+            try {
+                // Import p12-pem library for P12 extraction
+                const { convertToPem } = await import('p12-pem/lib/lib/p12.js');
+                const p12Buffer = Buffer.from(process.env.CLOUDTAK_Server_auth_p12, 'base64');
+                const certs = convertToPem(p12Buffer, process.env.CLOUDTAK_Server_auth_password);
+                
+                serverEnvUpdates.auth = {
+                    cert: certs.pemCertificate,
+                    key: certs.pemKey
+                };
+                hasServerUpdates = true;
+                console.error('ok - Extracted certificate and key from P12 file');
+            } catch (err) {
+                console.error(`Error extracting P12 file: ${err instanceof Error ? err.message : String(err)}`);
+            }
+        } else if (process.env.CLOUDTAK_Server_auth_cert && process.env.CLOUDTAK_Server_auth_key) {
+            serverEnvUpdates.auth = {
+                cert: process.env.CLOUDTAK_Server_auth_cert,
+                key: process.env.CLOUDTAK_Server_auth_key
+            };
+            hasServerUpdates = true;
+        }
+
+        if (hasServerUpdates) {
+            console.error('ok - Updating server configuration from environment variables');
+            config.server = await config.models.Server.commit(config.server.id, {
+                ...serverEnvUpdates,
+                updated: sql`Now()`
+            });
+        }
 
         for (const envkey in process.env) {
             if (!envkey.startsWith('CLOUDTAK')) continue;
