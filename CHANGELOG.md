@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v10.12.0 - 2025-06-30
+
+- :rocket: Attempt to determine delimiter type in CSV Import
+
 ### v10.11.0 - 2025-06-30
 
 - :rocket: Include OpenAPI Prefix & Security Document
