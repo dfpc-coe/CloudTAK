@@ -59,8 +59,8 @@
                         v-for='pkg in filteredList'
                         :key='pkg.Hash'
                         :flex='false'
-                        @click='$router.push(`/menu/packages/${pkg.UID}`)'
-                        @keyup.enter='$router.push(`/menu/packages/${pkg.UID}`)'
+                        @click='router.push(`/menu/packages/${pkg.UID}`)'
+                        @keyup.enter='router.push(`/menu/packages/${pkg.UID}`)'
                     >
                         <div
                             class='col-12'
@@ -83,6 +83,7 @@
 <script setup lang='ts'>
 import type { PackageList } from '../../../../src/types.ts';
 import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import MenuItem from '../util/MenuItem.vue';
 import { std, stdurl } from '../../../../src/std.ts';
@@ -104,6 +105,8 @@ import Upload from '../../util/Upload.vue';
 import { useMapStore } from '../../../../src/stores/map.ts';
 
 const mapStore = useMapStore();
+
+const router = useRouter();
 
 const error = ref<Error | undefined>();
 const loading = ref(true);

@@ -24,10 +24,10 @@
                             role='menuitem'
                             class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                             :class='{
-                                "active": String($route.name) === "admin-server-connection",
-                                "cursor-pointer": String($route.name) !== "admin-server-connection"
+                                "active": String(route.name) === "admin-server-connection",
+                                "cursor-pointer": String(route.name) !== "admin-server-connection"
                             }'
-                            @click='$router.push(`/admin/server/connection`)'
+                            @click='router.push(`/admin/server/connection`)'
                         >
                             <IconServer
                                 :size='32'
@@ -42,10 +42,10 @@
                             role='menuitem'
                             class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                             :class='{
-                                "active": String($route.name) === "admin-server-injector",
-                                "cursor-pointer": String($route.name) !== "admin-server-injector"
+                                "active": String(route.name) === "admin-server-injector",
+                                "cursor-pointer": String(route.name) !== "admin-server-injector"
                             }'
-                            @click='$router.push(`/admin/server/injector`)'
+                            @click='router.push(`/admin/server/injector`)'
                         >
                             <IconVaccine
                                 :size='32'
@@ -60,10 +60,10 @@
                             role='menuitem'
                             class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                             :class='{
-                                "active": String($route.name) === "admin-server-repeater",
-                                "cursor-pointer": String($route.name) !== "admin-server-repeater"
+                                "active": String(route.name) === "admin-server-repeater",
+                                "cursor-pointer": String(route.name) !== "admin-server-repeater"
                             }'
-                            @click='$router.push(`/admin/server/repeater`)'
+                            @click='router.push(`/admin/server/repeater`)'
                         >
                             <IconBuildingLighthouse
                                 :size='32'
@@ -90,6 +90,7 @@
 </template>
 
 <script setup lang='ts'>
+import { useRoute, useRouter } from 'vue-router'
 import {
     TablerLoading,
 } from '@tak-ps/vue-tabler'
@@ -99,4 +100,6 @@ import {
     IconServer,
 } from '@tabler/icons-vue'
 
+const route = useRoute()
+const router = useRouter()
 </script>
