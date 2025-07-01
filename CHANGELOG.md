@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v10.14.0 - 2025-07-01
+
+- :rocket: Return 404 on tiles outside of TileJSON bounds
+
 ### v10.13.0 - 2025-07-01
 
 - :rocket: Migrate to Vue Page for Docs & update OpenAPI Defs
