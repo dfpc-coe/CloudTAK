@@ -3,7 +3,7 @@
         <div class='card-header'>
             <TablerIconButton
                 title='Back'
-                @click='$router.push("/admin/user")'
+                @click='router.push("/admin/user")'
             >
                 <IconCircleArrowLeft
                     :size='32'
@@ -209,9 +209,10 @@ import {
 } from '@tabler/icons-vue'
 
 import { ref } from 'vue';
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
+const router = useRouter()
 
 async function fetchUser(): Promise<User> {
     const url = stdurl(`/api/user/${route.params.user}`);
