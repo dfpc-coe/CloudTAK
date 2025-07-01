@@ -136,7 +136,7 @@ import Loading from './components/Loading.vue';
 import {
     TablerError
 } from '@tak-ps/vue-tabler';
-import { std, stdurl } from './std.ts';
+import { std } from './std.ts';
 
 export default defineComponent({
     name: 'TakPSETL',
