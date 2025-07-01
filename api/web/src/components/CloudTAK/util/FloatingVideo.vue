@@ -113,7 +113,6 @@
                 <video
                     ref='videoTag'
                     class='w-100 h-100'
-                    autoplay
                     controls
                 />
             </template>
@@ -278,6 +277,62 @@ async function deleteLease(): Promise<void> {
     }
 }
 
+async function createPlayer(): Promise<void> {
+    try {
+        const url = new URL(videoProtocols.value!.hls!.url);
+
+        player.value = new Hls({
+            enableWorker: false,
+            debug: true,
+            xhrSetup: (xhr: XMLHttpRequest) => {
+                if (url.username && url.password) {
+                    xhr.setRequestHeader('Authorization', 'Basic ' + btoa(`${url.username}:${url.password}`));
+                }
+            }
+        });
+
+        player.value.attachMedia(videoTag.value!);
+
+        player.value.on(Hls.Events.MEDIA_ATTACHED, async () => {
+            player.value.loadSource(url.toString());
+        });
+
+        player.value.on(Hls.Events.MANIFEST_PARSED, async () => {
+            try {
+                await videoTag.value.play();
+            } catch (err) {
+                console.error("Error playing video:", err);
+                error.value = new Error('Failed to play video');
+            }
+        });
+
+        player.value.on(Hls.Events.ERROR, (event, data) => {
+            console.log("Hls.Events.ERROR", data);
+
+            if (data.fatal) {
+                error.value = data.error;
+
+                switch (data.type) {
+                    case Hls.ErrorTypes.NETWORK_ERROR:
+                        console.log("Fatal network error encountered", data);
+                        if (player.value) player.value.destroy();
+                        break;
+                    case Hls.ErrorTypes.MEDIA_ERROR:
+                        console.log("Fatal media error encountered", data);
+                        player.value.recoverMediaError();
+                        break;
+                    default:
+                        if (player.value) player.value.destroy();
+                        break;
+                }
+
+            }
+        })
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    }
+}
+
 async function requestLease(): Promise<void> {
     if (!video.value) {
         error.value = new Error('Video URL could not be loaded');
@@ -318,41 +373,7 @@ async function requestLease(): Promise<void> {
 
         if (!error.value && videoProtocols.value && videoProtocols.value.hls) {
             nextTick(() => {
-                const url = new URL(videoProtocols.value!.hls!.url);
-
-                player.value = new Hls({
-                    xhrSetup: (xhr: XMLHttpRequest) => {
-                        if (url.username && url.password) {
-                            xhr.setRequestHeader('Authorization', 'Basic ' + btoa(`${url.username}:${url.password}`));
-                        }
-                    }
-                });
-
-                player.value.attachMedia(videoTag.value!);
-                player.value.loadSource(url.toString());
-                player.value.on(Hls.Events.MANIFEST_PARSED, () => {
-                    videoTag.value!.play();
-                });
-
-                player.value.on(Hls.Events.ERROR, (event, data) => {
-                    console.log("Hls.Events.ERROR", data);
-                    if (data.fatal) {
-                        error.value = data.error;
-
-                        switch (data.type) {
-                            case Hls.ErrorTypes.NETWORK_ERROR:
-                                console.log("Fatal network error encountered");
-                                break;
-                            case Hls.ErrorTypes.MEDIA_ERROR:
-                                console.log("Fatal media error encountered");
-                                break;
-                        }
-
-                        if (player.value) {
-                            player.value.destroy();
-                        }
-                    }
-                })
+                createPlayer();
             });
         }
     } catch (err) {
