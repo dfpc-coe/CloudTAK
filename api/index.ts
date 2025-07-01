@@ -98,6 +98,9 @@ export default async function server(config: Config): Promise<ServerManager> {
                     }
                 }
             },
+            security: [{
+                bearerAuth: []
+            }],
         }
     });
 
