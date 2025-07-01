@@ -283,9 +283,13 @@ export default {
         },
         importCSV: function(csv) {
             this.upload.shown = false;
+            
+            // Auto-detect delimiter: prefer comma, fallback to tab for backward compatibility
+            const firstLine = csv.split('\n')[0];
+            const delimiter = firstLine.includes(',') ? ',' : '\t';
 
             for (const line of csv.split('\n')) {
-                const row = line.split('\t');
+                const row = line.split(delimiter);
                 const obj = {};
                 for (let i = 0; i < this.upload.headers.length; i++) {
                     obj[this.upload.headers[i]] = row[i]
