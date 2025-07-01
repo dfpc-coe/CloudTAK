@@ -14,7 +14,7 @@
                 <div class='empty-action'>
                     <a
                         class='cursor-pointer btn btn-primary'
-                        @click='$router.push(&apos;/&apos;)'
+                        @click='router.push("/")'
                     >
                         Home
                     </a>
@@ -23,3 +23,9 @@
         </div>
     </div>
 </template>
+
+<script setup lang="ts">
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+</script>

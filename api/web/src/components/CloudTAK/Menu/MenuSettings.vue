@@ -1,8 +1,8 @@
 <template>
     <MenuTemplate name='Settings'>
         <MenuItem
-            @click='$router.push("/menu/settings/callsign")'
-            @keyup.enter='$router.push("/menu/settings/callsign")'
+            @click='router.push("/menu/settings/callsign")'
+            @keyup.enter='router.push("/menu/settings/callsign")'
         >
             <IconUserCog
                 :size='32'
@@ -14,8 +14,8 @@
             >Callsign &amp; Device Preferences</span>
         </MenuItem>
         <MenuItem
-            @click='$router.push("/menu/settings/display")'
-            @keyup.enter='$router.push("/menu/settings/display")'
+            @click='router.push("/menu/settings/display")'
+            @keyup.enter='router.push("/menu/settings/display")'
         >
             <IconAdjustments
                 :size='32'
@@ -27,8 +27,8 @@
             >Display Preferences</span>
         </MenuItem>
         <MenuItem
-            @click='$router.push("/menu/settings/tokens")'
-            @keyup.enter='$router.push("/menu/settings/tokens")'
+            @click='router.push("/menu/settings/tokens")'
+            @keyup.enter='router.push("/menu/settings/tokens")'
         >
             <IconRobot
                 :size='32'
@@ -43,6 +43,7 @@
 </template>
 
 <script setup lang='ts'>
+import { useRouter } from 'vue-router';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import MenuItem from '../util/MenuItem.vue'
 import {
@@ -50,4 +51,6 @@ import {
     IconUserCog,
     IconAdjustments,
 } from '@tabler/icons-vue';
+
+const router = useRouter();
 </script>

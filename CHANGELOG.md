@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v10.13.0 - 2025-07-01
+
+- :rocket: Migrate to Vue Page for Docs & update OpenAPI Defs
+
 ### v10.12.0 - 2025-06-30
 
 - :rocket: Attempt to determine delimiter type in CSV Import
