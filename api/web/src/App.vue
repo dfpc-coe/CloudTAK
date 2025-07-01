@@ -32,7 +32,7 @@
                 >
                     <div class='btn-list'>
                         <a
-                            :href='docsURL'
+                            @click='externalDocs'
                             class='btn btn-dark'
                             target='_blank'
                             rel='noreferrer'
@@ -136,7 +136,7 @@ import Loading from './components/Loading.vue';
 import {
     TablerError
 } from '@tak-ps/vue-tabler';
-import { std } from './std.ts';
+import { std, stdurl } from './std.ts';
 
 export default defineComponent({
     name: 'TakPSETL',
@@ -166,9 +166,6 @@ export default defineComponent({
         }
     },
     computed: {
-        docsURL: function(): string {
-            return '/docs'
-        },
         navShown: function() {
             if (!this.$route || !this.$route.name) {
                 return false;
@@ -235,6 +232,9 @@ export default defineComponent({
             this.user = null;
             delete localStorage.token;
             this.$router.push("/login");
+        },
+        externalDocs: function() {
+            window.location = '/docs';
         },
         routeLogin: function() {
             this.$router.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
