@@ -49,8 +49,8 @@
                             class='cursor-pointer'
                             role='menuitem'
                             tabindex='0'
-                            @keyup.enter='$router.push(`/admin/user/${user.username}`)'
-                            @click='$router.push(`/admin/user/${user.username}`)'
+                            @keyup.enter='router.push(`/admin/user/${user.username}`)'
+                            @click='router.push(`/admin/user/${user.username}`)'
                         >
                             <template v-for='h in header'>
                                 <template v-if='h.display'>
@@ -101,6 +101,7 @@
 
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { std, stdurl } from '../../std.ts';
 import timeDiff from '../../timediff.ts';
 import type { User, UserList } from '../../types.ts';
@@ -115,6 +116,7 @@ import {
     TablerRefreshButton
 } from '@tak-ps/vue-tabler';
 
+const router = useRouter();
 const error = ref<Error | undefined>(undefined);
 const loading = ref(true);
 
