@@ -81,24 +81,24 @@ export default async function server(config: Config): Promise<ServerManager> {
     const app = express();
 
     const schema = new Schema(express.Router(), {
+        prefix: '/api',
         logging: true,
         limit: 50,
-        servers: [{
-            url: '/api',
-            description: 'API Server'
-        }],
-        components: {
-            securitySchemes: {
-                bearerAuth: {
-                    type: 'http',
-                    scheme: 'bearer',
-                    bearerFormat: 'JWT'
+        openapi: {
+            info: {
+                title: 'CloudTAK API',
+                version: pkg.version,
+            },
+            components: {
+                securitySchemes: {
+                    bearerAuth: {
+                        type: 'http',
+                        scheme: 'bearer',
+                        bearerFormat: 'JWT'
+                    }
                 }
-            }
-        },
-        security: [{
-            bearerAuth: []
-        }]
+            },
+        }
     });
 
     app.disable('x-powered-by');
