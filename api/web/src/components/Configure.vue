@@ -136,7 +136,9 @@
     </div>
 </template>
 
-<script lang='ts'>
+<script setup lang='ts'>
+import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { std } from '../std.ts';
 import type { Server, Server_Update } from '../types.ts';
 import CertificateP12 from './Connection/CertificateP12.vue';
@@ -149,117 +151,103 @@ import {
     IconTrash
 } from '@tabler/icons-vue';
 
-export default {
-    name: 'InitialConfigure',
-    components: {
-        IconCheck,
-        IconTrash,
-        CertificateP12,
-        TablerInput,
-        TablerLoading
-    },
-    data: function(): {
-        loading: boolean;
-        errors: Record<string, string>;
-        body: Server_Update;
-    } {
-        return {
-            loading: false,
-            errors: {
-                name: '',
-                username: '',
-                password: '',
-                url: '',
-                api: '',
-                webtak: ''
-            },
-            body: {
-                name: '',
-                url: '',
-                api: '',
-                webtak: '',
-                username: '',
-                password: '',
-                auth: {
-                    key: '',
-                    cert: ''
-                }
-            }
+const router = useRouter();
+
+const loading = ref(false);
+
+const errors = ref<Record<string, string>>({
+    name: '',
+    username: '',
+    password: '',
+    url: '',
+    api: '',
+    webtak: ''
+})
+
+const body = ref<Server_Update>({
+    name: '',
+    url: '',
+    api: '',
+    webtak: '',
+    username: '',
+    password: '',
+    auth: {
+        key: '',
+        cert: ''
+    }
+})
+
+onMounted(async () => {
+    let server;
+    try {
+        server = await std('/api/server') as Server;
+    } catch (err) {
+        console.error(err);
+    }
+
+    if (!server || server.status === 'configured') {
+        delete localStorage.token;
+        window.location.href = '/login';
+    }
+});
+
+async function updateServer() {
+    if (!body.value.name || body.value.name.trim().length < 8) {
+        errors.value.name = 'Name should be > 8 characters';
+    } else {
+        errors.value.name = '';
+    }
+
+    if (!body.value.username || body.value.username.trim().length === 0) {
+        errors.value.username = 'Username cannot be empty';
+    } else {
+        errors.value.username = '';
+    }
+
+    if (!body.value.password || body.value.password.trim().length === 0) {
+        errors.value.password = 'Password cannot be empty';
+    } else {
+        errors.value.password = '';
+    }
+
+    try {
+        const url = new URL(body.value.url)
+        if (url.protocol !== 'ssl:') {
+            errors.value.url = 'Protocol should be ssl://'
+        } else {
+            errors.value.url = '';
         }
-    },
-    mounted: async function() {
-        let server;
-        try {
-            server = await std('/api/server') as Server;
-        } catch (err) {
-            console.error(err);
+    } catch (err) {
+        errors.value.url = err instanceof Error ? err.message : String(err);
+    }
+
+    try {
+        const url = new URL(body.value.api)
+        if (url.protocol !== 'https:') {
+            errors.value.api = 'Protocol should be https://'
+        } else {
+            errors.value.api = '';
         }
+    } catch (err) {
+        errors.value.url = err instanceof Error ? err.message : String(err);
+    }
 
-        if (!server || server.status === 'configured') {
-            delete localStorage.token;
-            window.location.href = '/login';
-        }
-    },
-    methods: {
-        updateServer: async function() {
-            if (!this.body.name || this.body.name.trim().length < 8) {
-                this.errors.name = 'Name should be > 8 characters';
-            } else {
-                this.errors.name = '';
-            }
+    for (const e in errors.value) {
+        if (errors.value[e]) return;
+    }
 
-            if (!this.body.username || this.body.username.trim().length === 0) {
-                this.errors.username = 'Username cannot be empty';
-            } else {
-                this.errors.username = '';
-            }
+    loading.value = true;
 
-            if (!this.body.password || this.body.password.trim().length === 0) {
-                this.errors.password = 'Password cannot be empty';
-            } else {
-                this.errors.password = '';
-            }
+    try {
+        await std('/api/server', {
+            method: 'PATCH',
+            body: body.value
+        })
 
-            try {
-                const url = new URL(this.body.url)
-                if (url.protocol !== 'ssl:') {
-                    this.errors.url = 'Protocol should be ssl://'
-                } else {
-                    this.errors.url = '';
-                }
-            } catch (err) {
-                this.errors.url = err instanceof Error ? err.message : String(err);
-            }
-
-            try {
-                const url = new URL(this.body.api)
-                if (url.protocol !== 'https:') {
-                    this.errors.api = 'Protocol should be https://'
-                } else {
-                    this.errors.api = '';
-                }
-            } catch (err) {
-                this.errors.url = err instanceof Error ? err.message : String(err);
-            }
-
-            for (const e in this.errors) {
-                if (this.errors[e]) return;
-            }
-
-            this.loading = true;
-
-            try {
-                await std('/api/server', {
-                    method: 'PATCH',
-                    body: this.body
-                })
-
-                this.$router.push('/login');
-            } catch (err) {
-                this.loading = false;
-                throw err;
-            }
-        }
+        router.push('/login');
+    } catch (err) {
+        loading.value = false;
+        throw err;
     }
 }
 </script>

@@ -85,7 +85,7 @@
                                 <Contact
                                     v-if='contact.team === team'
                                     :contact='contact'
-                                    @chat='$router.push(`/menu/chats/new?callsign=${$event.callsign}&uid=${$event.uid}`)'
+                                    @chat='router.push(`/menu/chats/new?callsign=${$event.callsign}&uid=${$event.uid}`)'
                                 />
                             </div>
                         </template>
@@ -145,6 +145,7 @@
 
 <script setup lang='ts'>
 import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
+import { useRouter } from 'vue-router';
 import type { Ref } from 'vue';
 import { std } from '../../../std.ts';
 import type { ContactList, ConfigGroups } from '../../../types.ts';
@@ -169,6 +170,7 @@ import EmptyInfo from '../util/EmptyInfo.vue';
 import type { WorkerMessage } from '../../../base/events.ts';
 import { WorkerMessageType } from '../../../base/events.ts';
 
+const router = useRouter();
 const error = ref<Error | undefined>();
 const loading = ref(true);
 const refresh = ref(false);

@@ -5,7 +5,7 @@
                 :size='32'
                 stroke='1'
                 class='cursor-pointer'
-                @click='$router.push("/admin/video")'
+                @click='router.push("/admin/video")'
             />
             <h1 class='mx-2 card-title d-flex align-items-center'>
                 <template v-if='!loading && video && video.status'>
