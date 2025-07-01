@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v10.11.0 - 2025-06-30
+
+- :rocket: Include OpenAPI Prefix & Security Document
+
 ### v10.10.0 - 2025-06-27
 
 - :rocket: Explicitly set `archived: true` on CoTs added to Mission Sync
