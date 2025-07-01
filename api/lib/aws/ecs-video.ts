@@ -7,6 +7,8 @@ import Config from '../config.js';
 import Err from '@openaddresses/batch-error';
 import process from 'node:process';
 
+const ECS_CLUSTER_PREFIX = process.env.ECS_CLUSTER_PREFIX || 'coe-ecs';
+
 /**
  * @class
  */
@@ -54,7 +56,7 @@ export default class ECSVideo {
             const ecs = new AWSECS.ECSClient({ region: process.env.AWS_REGION });
 
             const descs = await ecs.send(new AWSECS.DescribeTasksCommand({
-                cluster: `coe-ecs-${this.config.StackName.replace(/^tak-cloudtak-/, '')}`,
+                cluster: `${ECS_CLUSTER_PREFIX}-${this.config.StackName.replace(/^tak-cloudtak-/, '')}`,
                 tasks: [task]
             }));
 
@@ -81,7 +83,7 @@ export default class ECSVideo {
             const ecs = new AWSECS.ECSClient({ region: process.env.AWS_REGION });
 
             await ecs.send(new AWSECS.StopTaskCommand({
-                cluster: `coe-ecs-${this.config.StackName.replace(/^tak-cloudtak-/, '')}`,
+                cluster: `${ECS_CLUSTER_PREFIX}-${this.config.StackName.replace(/^tak-cloudtak-/, '')}`,
                 task: task,
                 reason: 'User Requested Termination from CloudTAK'
             }));
@@ -101,7 +103,7 @@ export default class ECSVideo {
             let res;
             do {
                 const req: ListTasksCommandInput = {
-                    cluster: `coe-ecs-${this.config.StackName.replace(/^tak-cloudtak-/, '')}`,
+                    cluster: `${ECS_CLUSTER_PREFIX}-${this.config.StackName.replace(/^tak-cloudtak-/, '')}`,
                     family: `coe-media-${this.config.StackName.replace(/^tak-cloudtak-/, '')}-task`
                 };
 
@@ -113,7 +115,7 @@ export default class ECSVideo {
             if (!taskArns.length) return [];
 
             const descs = await ecs.send(new AWSECS.DescribeTasksCommand({
-                cluster: `coe-ecs-${this.config.StackName.replace(/^tak-cloudtak-/, '')}`,
+                cluster: `${ECS_CLUSTER_PREFIX}-${this.config.StackName.replace(/^tak-cloudtak-/, '')}`,
                 tasks: taskArns
             }));
 
@@ -138,7 +140,7 @@ export default class ECSVideo {
             if (!this.config.MediaSecurityGroup) throw new Err(400, null, 'Media Security Group is not configured - Contact your administrator');
 
             const res = await ecs.send(new AWSECS.RunTaskCommand({
-                cluster: `coe-ecs-${this.config.StackName.replace(/^tak-cloudtak-/, '')}`,
+                cluster: `${ECS_CLUSTER_PREFIX}-${this.config.StackName.replace(/^tak-cloudtak-/, '')}`,
                 count: 1,
                 enableECSManagedTags: true,
                 launchType: 'FARGATE',
