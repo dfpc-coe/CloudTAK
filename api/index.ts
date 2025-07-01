@@ -2,7 +2,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 import cors from 'cors';
 import express from 'express';
-import SwaggerUI from 'swagger-ui-express';
 import Bulldozer from './lib/initialization.js';
 import history, {Context} from 'connect-history-api-fallback';
 import Schema from '@openaddresses/batch-schema';
@@ -153,7 +152,6 @@ export default async function server(config: Config): Promise<ServerManager> {
 
 
     app.use('/fonts', express.static('fonts/'));
-    app.use('/docs', SwaggerUI.serve, SwaggerUI.setup(schema.docs.base));
 
     app.use(history({
         rewrites: [{
