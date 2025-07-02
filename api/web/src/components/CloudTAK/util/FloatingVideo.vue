@@ -282,8 +282,10 @@ async function createPlayer(): Promise<void> {
         const url = new URL(videoProtocols.value!.hls!.url);
 
         player.value = new Hls({
-            enableWorker: false,
+            enableWorker: true,
             debug: true,
+            maxBufferSize: 3000000,
+            maxMaxBufferLength: 120,
             xhrSetup: (xhr: XMLHttpRequest) => {
                 if (url.username && url.password) {
                     xhr.setRequestHeader('Authorization', 'Basic ' + btoa(`${url.username}:${url.password}`));
@@ -299,10 +301,10 @@ async function createPlayer(): Promise<void> {
 
         player.value.on(Hls.Events.MANIFEST_PARSED, async () => {
             try {
-                if (videoTag.value) await videoTag.value.play();
+                //if (videoTag.value) await videoTag.value.play();
             } catch (err) {
                 console.error("Error playing video:", err);
-                error.value = new Error('Failed to play video');
+                //error.value = new Error('Failed to play video');
             }
         });
 
@@ -310,17 +312,19 @@ async function createPlayer(): Promise<void> {
             console.log("Hls.Events.ERROR", data);
 
             if (data.fatal) {
-                error.value = data.error;
-
                 switch (data.type) {
                     case Hls.ErrorTypes.NETWORK_ERROR:
                         console.log("Fatal network error encountered", data);
                         if (player.value) player.value.destroy();
+                        error.value = data.error;
                         break;
                     case Hls.ErrorTypes.MEDIA_ERROR:
                         console.log("Fatal media error encountered", data);
                         if (player.value) {
                             player.value.recoverMediaError();
+                        } else {
+                            if (player.value) player.value.destroy();
+                            error.value = data.error;
                         }
                         break;
                     default:
