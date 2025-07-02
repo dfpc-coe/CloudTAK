@@ -22,11 +22,7 @@ export function registerOutputs(props: OutputsProps): void {
     exportName: `${stack.stackName}-ServiceURL`
   });
 
-  new cdk.CfnOutput(stack, 'LoadBalancerDNS', {
-    value: loadBalancer.loadBalancerDnsName,
-    description: 'Application Load Balancer DNS Name',
-    exportName: `${stack.stackName}-LoadBalancerDNS`
-  });
+
 
   new cdk.CfnOutput(stack, 'DatabaseEndpoint', {
     value: database.clusterEndpoint.hostname,

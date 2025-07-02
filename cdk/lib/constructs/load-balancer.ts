@@ -27,7 +27,8 @@ export class LoadBalancer extends Construct {
       internetFacing: true,
       loadBalancerName: `TAK-${envConfig.stackName}-CloudTAK`,
       securityGroup: albSecurityGroup,
-      vpcSubnets: { subnetType: ec2.SubnetType.PUBLIC }
+      vpcSubnets: { subnetType: ec2.SubnetType.PUBLIC },
+      ipAddressType: elbv2.IpAddressType.DUAL_STACK
     });
 
     this.httpsListener = this.alb.addListener('HTTPSListener', {

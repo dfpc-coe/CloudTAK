@@ -11,7 +11,6 @@ export interface SecretsProps {
 
 export class Secrets extends Construct {
   public readonly signingSecret: secretsmanager.Secret;
-  public readonly mediaSecret: secretsmanager.Secret;
 
   constructor(scope: Construct, id: string, props: SecretsProps) {
     super(scope, id);
@@ -20,23 +19,10 @@ export class Secrets extends Construct {
 
     this.signingSecret = new secretsmanager.Secret(this, 'SigningSecret', {
       description: `${envConfig.stackName} Signing Secret`,
-      secretName: `${cdk.Stack.of(this).stackName}/api/secret`,
+      secretName: `TAK-${envConfig.stackName}-CloudTAK/API/Signing-Secret`,
       generateSecretString: {
         excludePunctuation: true,
         passwordLength: 32
-      },
-      encryptionKey: kmsKey,
-      removalPolicy: envConfig.general.removalPolicy === 'retain' 
-        ? cdk.RemovalPolicy.RETAIN 
-        : cdk.RemovalPolicy.DESTROY
-    });
-
-    this.mediaSecret = new secretsmanager.Secret(this, 'MediaSecret', {
-      description: `${envConfig.stackName} Media Secret`,
-      secretName: `${cdk.Stack.of(this).stackName}/api/media`,
-      generateSecretString: {
-        excludePunctuation: true,
-        passwordLength: 16
       },
       encryptionKey: kmsKey,
       removalPolicy: envConfig.general.removalPolicy === 'retain' 

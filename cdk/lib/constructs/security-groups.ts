@@ -11,7 +11,6 @@ export class SecurityGroups extends Construct {
   public readonly database: ec2.SecurityGroup;
   public readonly ecs: ec2.SecurityGroup;
   public readonly alb: ec2.SecurityGroup;
-  public readonly media: ec2.SecurityGroup;
 
   constructor(scope: Construct, id: string, props: SecurityGroupsProps) {
     super(scope, id);
@@ -43,16 +42,6 @@ export class SecurityGroups extends Construct {
 
     this.database.addIngressRule(this.ecs, ec2.Port.tcp(5432), 'ECS to Database');
 
-    this.media = new ec2.SecurityGroup(this, 'MediaSecurityGroup', {
-      vpc: vpc,
-      description: `TAK-${envConfig.stackName}-CloudTAK Media Security Group`,
-      allowAllOutbound: true
-    });
 
-    this.media.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(8554), 'RTSP Protocol');
-    this.media.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(8889), 'WebRTC Protocol');
-    this.media.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(8890), 'SRT Protocol');
-    this.media.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(8888), 'HLS Protocol');
-    this.media.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(1935), 'RTMP Protocol');
   }
 }

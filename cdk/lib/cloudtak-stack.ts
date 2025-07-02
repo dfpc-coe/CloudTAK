@@ -91,7 +91,7 @@ export class CloudTakStack extends cdk.Stack {
       }]
     });
 
-    // Create application secrets (signing secret for API, media secret for streaming)
+    // Create application secrets (signing secret for API)
     const secrets = new Secrets(this, 'Secrets', {
       envConfig,
       kmsKey
@@ -139,7 +139,7 @@ export class CloudTakStack extends cdk.Stack {
       databaseHostname: database.hostname,
       assetBucketName: s3Resources.assetBucket.bucketName,
       signingSecret: secrets.signingSecret,
-      mediaSecurityGroupId: securityGroups.media.securityGroupId
+
     });
 
     // Create AWS Batch resources for ETL processing

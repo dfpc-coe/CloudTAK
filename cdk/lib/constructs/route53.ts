@@ -11,6 +11,7 @@ export interface Route53Props {
 
 export class Route53 extends Construct {
   public readonly aRecord: route53.ARecord;
+  public readonly aaaaRecord: route53.AaaaRecord;
   public readonly serviceUrl: string;
 
   constructor(scope: Construct, id: string, props: Route53Props) {
@@ -20,6 +21,15 @@ export class Route53 extends Construct {
 
     // A Record
     this.aRecord = new route53.ARecord(this, 'ARecord', {
+      zone: hostedZone,
+      recordName: hostname,
+      target: route53.RecordTarget.fromAlias(
+        new route53targets.LoadBalancerTarget(loadBalancer)
+      )
+    });
+
+    // AAAA Record for IPv6
+    this.aaaaRecord = new route53.AaaaRecord(this, 'AAAARecord', {
       zone: hostedZone,
       recordName: hostname,
       target: route53.RecordTarget.fromAlias(

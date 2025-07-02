@@ -31,7 +31,6 @@ export interface EcsServiceProps {
   databaseHostname: string;
   assetBucketName: string;
   signingSecret: secretsmanager.ISecret;
-  mediaSecurityGroupId: string;
 }
 
 export class EcsService extends Construct {
@@ -52,8 +51,7 @@ export class EcsService extends Construct {
       databaseSecret,
       databaseHostname,
       assetBucketName,
-      signingSecret,
-      mediaSecurityGroupId
+      signingSecret
     } = props;
 
     // Create CloudWatch log group for container logs
@@ -88,7 +86,7 @@ export class EcsService extends Construct {
         'API_URL': `https://${envConfig.cloudtak.hostname}`,
         'ECR_TASKS_REPOSITORY_NAME': ecrRepository.repositoryName,
         'ECS_CLUSTER_PREFIX': `TAK-${envConfig.stackName}-BaseInfra`,
-        'MediaSecurityGroup': mediaSecurityGroupId
+
       },
       // Secrets from AWS Secrets Manager
       secrets: {

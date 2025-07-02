@@ -49,11 +49,6 @@ export interface SecretsConfig {
      * Signing secret for API authentication
      */
     signingSecret: secretsmanager.ISecret;
-
-    /**
-     * Media secret for streaming
-     */
-    mediaSecret: secretsmanager.ISecret;
   };
 }
 

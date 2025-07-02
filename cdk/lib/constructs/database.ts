@@ -13,7 +13,6 @@ import {
   RemovalPolicy
 } from 'aws-cdk-lib';
 import type { ContextEnvironmentConfig } from '../stack-config';
-import type { InfrastructureConfig } from '../construct-configs';
 import { DATABASE_CONSTANTS } from '../utils/constants';
 
 /**
@@ -26,19 +25,19 @@ export interface DatabaseProps {
   environment: 'prod' | 'dev-test';
 
   /**
-   * Full stack name (e.g., 'TAK-Demo-CloudTAK')
-   */
-  stackName: string;
-
-  /**
    * Context-based environment configuration (direct from cdk.json)
    */
-  contextConfig: ContextEnvironmentConfig;
+  envConfig: ContextEnvironmentConfig;
 
   /**
-   * Infrastructure configuration (VPC, KMS, security groups)
+   * VPC for deployment
    */
-  infrastructure: InfrastructureConfig;
+  vpc: ec2.IVpc;
+
+  /**
+   * KMS key for encryption
+   */
+  kmsKey: kms.IKey;
 
   /**
    * Security groups for database access
@@ -74,22 +73,22 @@ export class Database extends Construct {
     super(scope, id);
 
     // Validate required database configuration
-    if (!props.contextConfig.database) {
+    if (!props.envConfig.database) {
       throw new Error('Database configuration is required when using Database construct');
     }
-    const dbConfig = props.contextConfig.database;
+    const dbConfig = props.envConfig.database;
 
     // Derive environment-specific values from context (matches reference pattern)
     const isHighAvailability = props.environment === 'prod';
-    const removalPolicy = props.contextConfig.general?.removalPolicy === 'RETAIN' ? 
+    const removalPolicy = props.envConfig.general?.removalPolicy === 'RETAIN' ? 
       RemovalPolicy.RETAIN : RemovalPolicy.DESTROY;
     const enableMonitoring = dbConfig.monitoringInterval > 0;
 
     // Create the master secret
     this.masterSecret = new secretsmanager.Secret(this, 'DBMasterSecret', {
       description: `${id}: PostgreSQL Master Password`,
-      secretName: `${props.stackName}/Database/Master-Password`,
-      encryptionKey: props.infrastructure.kmsKey,
+      secretName: `TAK-${props.envConfig.stackName}-CloudTAK/Database/Master-Password`,
+      encryptionKey: props.kmsKey,
       generateSecretString: {
         secretStringTemplate: JSON.stringify({ username: DATABASE_CONSTANTS.USERNAME }),
         generateStringKey: 'password',
@@ -110,7 +109,7 @@ export class Database extends Construct {
     // Create subnet group
     const subnetGroup = new rds.SubnetGroup(this, 'DBSubnetGroup', {
       description: `${id} database subnet group`,
-      vpc: props.infrastructure.vpc,
+      vpc: props.vpc,
       vpcSubnets: {
         subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS
       }
@@ -156,20 +155,20 @@ export class Database extends Construct {
           ) : [],
         parameterGroup,
         subnetGroup,
-        vpc: props.infrastructure.vpc,
+        vpc: props.vpc,
         vpcSubnets: {
           subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS
         },
         securityGroups: props.securityGroups,
         storageEncrypted: true,
-        storageEncryptionKey: props.infrastructure.kmsKey,
+        storageEncryptionKey: props.kmsKey,
         backup: {
-          retention: Duration.days(props.contextConfig.database.backupRetentionDays)
+          retention: Duration.days(props.envConfig.database.backupRetentionDays)
         },
-        deletionProtection: props.contextConfig.database.deleteProtection,
+        deletionProtection: props.envConfig.database.deleteProtection,
         removalPolicy: removalPolicy,
         cloudwatchLogsExports: ['postgresql'],
-        cloudwatchLogsRetention: props.contextConfig.general.enableDetailedLogging ? 
+        cloudwatchLogsRetention: props.envConfig.general.enableDetailedLogging ? 
           logs.RetentionDays.ONE_MONTH : 
           logs.RetentionDays.ONE_WEEK,
         monitoringRole: enableMonitoring ? monitoringRole : undefined,
@@ -197,32 +196,32 @@ export class Database extends Construct {
             rds.PerformanceInsightRetention.MONTHS_6 : 
             undefined
         }),
-        readers: props.contextConfig.database.instanceCount > 1 ? 
-          Array.from({ length: props.contextConfig.database.instanceCount - 1 }, (_, i) => 
+        readers: props.envConfig.database.instanceCount > 1 ? 
+          Array.from({ length: props.envConfig.database.instanceCount - 1 }, (_, i) => 
             rds.ClusterInstance.provisioned(`reader${i + 1}`, {
               instanceType,
-              enablePerformanceInsights: props.contextConfig.database.enablePerformanceInsights,
-              performanceInsightRetention: props.contextConfig.database.enablePerformanceInsights ? 
+              enablePerformanceInsights: props.envConfig.database.enablePerformanceInsights,
+              performanceInsightRetention: props.envConfig.database.enablePerformanceInsights ? 
                 rds.PerformanceInsightRetention.MONTHS_6 : 
                 undefined
             })
           ) : [],
         parameterGroup,
         subnetGroup,
-        vpc: props.infrastructure.vpc,
+        vpc: props.vpc,
         vpcSubnets: {
           subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS
         },
         securityGroups: props.securityGroups,
         storageEncrypted: true,
-        storageEncryptionKey: props.infrastructure.kmsKey,
+        storageEncryptionKey: props.kmsKey,
         backup: {
-          retention: Duration.days(props.contextConfig.database.backupRetentionDays)
+          retention: Duration.days(props.envConfig.database.backupRetentionDays)
         },
-        deletionProtection: props.contextConfig.database.deleteProtection,
+        deletionProtection: props.envConfig.database.deleteProtection,
         removalPolicy: removalPolicy,
         cloudwatchLogsExports: ['postgresql'],
-        cloudwatchLogsRetention: props.contextConfig.general.enableDetailedLogging ? 
+        cloudwatchLogsRetention: props.envConfig.general.enableDetailedLogging ? 
           logs.RetentionDays.ONE_MONTH : 
           logs.RetentionDays.ONE_WEEK,
         monitoringRole: enableMonitoring ? monitoringRole : undefined,
