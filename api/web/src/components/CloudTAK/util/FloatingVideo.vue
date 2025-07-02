@@ -323,7 +323,6 @@ async function createPlayer(): Promise<void> {
                         if (player.value) {
                             player.value.recoverMediaError();
                         } else {
-                            if (player.value) player.value.destroy();
                             error.value = data.error;
                         }
                         break;
