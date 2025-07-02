@@ -294,12 +294,12 @@ async function createPlayer(): Promise<void> {
         player.value.attachMedia(videoTag.value!);
 
         player.value.on(Hls.Events.MEDIA_ATTACHED, async () => {
-            player.value.loadSource(url.toString());
+            if (player.value) player.value.loadSource(url.toString());
         });
 
         player.value.on(Hls.Events.MANIFEST_PARSED, async () => {
             try {
-                await videoTag.value.play();
+                if (videoTag.value) await videoTag.value.play();
             } catch (err) {
                 console.error("Error playing video:", err);
                 error.value = new Error('Failed to play video');
@@ -319,7 +319,9 @@ async function createPlayer(): Promise<void> {
                         break;
                     case Hls.ErrorTypes.MEDIA_ERROR:
                         console.log("Fatal media error encountered", data);
-                        player.value.recoverMediaError();
+                        if (player.value) {
+                            player.value.recoverMediaError();
+                        }
                         break;
                     default:
                         if (player.value) player.value.destroy();

@@ -346,11 +346,17 @@ function reload() {
 }
 
 async function invoke() {
-    loading.value.full = true;
-    await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/task/invoke`, {
-        method: 'POST'
-    });
-    loading.value.full = false;
+    loading.value.init = true;
+    try {
+        await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/task/invoke`, {
+            method: 'POST'
+        });
+
+        loading.value.init = false;
+    } catch (err) {
+        loading.value.init = false;
+        throw err;
+    }
 }
 
 
