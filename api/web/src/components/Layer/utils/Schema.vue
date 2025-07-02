@@ -29,6 +29,18 @@
                     :description='schema.properties[key].description'
                 />
             </template>
+            <template v-else-if='schema.properties[key].type === "number" || schema.properties[key].type === "integer"'>
+                <TablerInput
+                    v-model='data[key]'
+                    type='number'
+                    :label='key'
+                    :step='schema.properties[key].type === "integer" ? 1 : "any"'
+                    :disabled='disabled'
+                    :default='schema.properties[key].default'
+                    :required='schema.required.includes(key)'
+                    :description='schema.properties[key].description'
+                />
+            </template>
             <template v-else-if='schema.properties[key].type === "boolean"'>
                 <TablerToggle
                     v-model='data[key]'
@@ -271,6 +283,10 @@ export default {
                     this.data[key] = this.schema.properties[key].default || false;
                 } else if (!this.data[key] && this.schema.properties[key].type === 'string') {
                     this.data[key] = this.schema.properties[key].default || '';
+                } else if (!this.data[key] && this.schema.properties[key].type === 'integer') {
+                    this.data[key] = this.schema.properties[key].default;
+                } else if (!this.data[key] && this.schema.properties[key].type === 'number') {
+                    this.data[key] = this.schema.properties[key].default;
                 }
             }
         }
@@ -283,7 +299,7 @@ export default {
         },
         importCSV: function(csv) {
             this.upload.shown = false;
-            
+
             // Auto-detect delimiter: prefer comma, fallback to tab for backward compatibility
             const firstLine = csv.split('\n')[0];
             const delimiter = firstLine.includes(',') ? ',' : '\t';
