@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v10.15.0 - 2025-07-02
+
+- :rocket: Move Layer Invoke button to incoming config where it applied
+- :rocket: Allow downloading a Layer Config file
+
 ### v10.14.0 - 2025-07-01
 
 - :rocket: Return 404 on tiles outside of TileJSON bounds
