@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v10.16.0 - 2025-07-02
+
+- :rocket: Add Layer Schema support for `number` and `integer`
+- :rocket: Add default application support for `number` and `integer`
+
 ### v10.15.0 - 2025-07-02
 
 - :rocket: Move Layer Invoke button to incoming config where it applied
