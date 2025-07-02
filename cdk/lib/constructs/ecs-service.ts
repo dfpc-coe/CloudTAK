@@ -33,6 +33,7 @@ export interface EcsServiceProps {
   databaseHostname: string;
   assetBucketName: string;
   signingSecret: secretsmanager.ISecret;
+  serviceUrl: string;
 }
 
 export class EcsService extends Construct {
@@ -54,14 +55,15 @@ export class EcsService extends Construct {
       databaseSecret,
       databaseHostname,
       assetBucketName,
-      signingSecret
+      signingSecret,
+      serviceUrl
     } = props;
 
     // Create CloudWatch log group for container logs
     const logGroup = new logs.LogGroup(this, 'LogGroup', {
       logGroupName: `/aws/ecs/TAK-${envConfig.stackName}-CloudTAK`,
       retention: logs.RetentionDays.ONE_WEEK,
-      removalPolicy: envConfig.general.removalPolicy === 'retain' 
+      removalPolicy: envConfig.general.removalPolicy === 'RETAIN' 
         ? cdk.RemovalPolicy.RETAIN 
         : cdk.RemovalPolicy.DESTROY
     });
@@ -69,8 +71,8 @@ export class EcsService extends Construct {
     // Create Fargate task definition
     this.taskDefinition = new ecs.FargateTaskDefinition(this, 'TaskDefinition', {
       family: `TAK-${envConfig.stackName}-CloudTAK`,
-      cpu: envConfig.ecs.cpu,
-      memoryLimitMiB: envConfig.ecs.memoryMiB
+      cpu: envConfig.ecs.taskCpu,
+      memoryLimitMiB: envConfig.ecs.taskMemory
     });
 
     // Determine container image source
@@ -88,13 +90,11 @@ export class EcsService extends Construct {
       // Environment variables for application configuration
       environment: {
         'AWS_REGION': cdk.Stack.of(this).region,
-        'CLOUDTAK_Mode': 'AWS',
-        'StackName': `TAK-${envConfig.stackName}-CloudTAK`,
+        'CLOUDTAK_MODE': 'AWS',
+        'STACK_NAME': `TAK-${envConfig.stackName}-CloudTAK`,
         'ASSET_BUCKET': assetBucketName,
-        'API_URL': `https://${envConfig.cloudtak.hostname}`,
-        'ECR_TASKS_REPOSITORY_NAME': ecrRepository.repositoryName,
-        'ECS_CLUSTER_PREFIX': `TAK-${envConfig.stackName}-BaseInfra`,
-
+        'API_URL': serviceUrl,
+        'ECS_CLUSTER_PREFIX': `TAK-${envConfig.stackName}-BaseInfra`
       },
       // Secrets from AWS Secrets Manager
       secrets: {

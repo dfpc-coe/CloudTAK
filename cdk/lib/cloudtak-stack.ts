@@ -33,6 +33,8 @@ import { LambdaFunctions } from './constructs/lambda-functions';
 import { registerOutputs } from './outputs';
 import { createBaseImportValue, BASE_EXPORT_NAMES } from './cloudformation-imports';
 import { ContextEnvironmentConfig } from './stack-config';
+import { TagHelper } from './utils/tag-helper';
+import { ConfigValidator } from './utils/config-validator';
 
 export interface CloudTakStackProps extends cdk.StackProps {
   environment: 'prod' | 'dev-test';
@@ -46,7 +48,17 @@ export class CloudTakStack extends cdk.Stack {
       description: 'TAK CloudTAK Application Layer - API and ETL Services',
     });
 
+    // Validate configuration early
+    ConfigValidator.validateEnvironmentConfig(props.envConfig, props.environment);
+
     const { environment, envConfig } = props;
+
+    // Apply comprehensive tagging
+    const standardTags = TagHelper.createStandardTags(
+      envConfig.stackName,
+      this.region
+    );
+    TagHelper.applyStandardTags(this, standardTags);
 
     // Import base infrastructure resources from BaseInfra stack
     const vpc = ec2.Vpc.fromVpcAttributes(this, 'VPC', {
@@ -95,7 +107,24 @@ export class CloudTakStack extends cdk.Stack {
       // Create Docker image asset for local deployments
       dockerImageAsset = new ecrAssets.DockerImageAsset(this, 'CloudTAKDockerAsset', {
         directory: '../..',
-        file: 'api/Dockerfile'
+        file: 'api/Dockerfile',
+        buildArgs: {
+          NODE_ENV: environment === 'prod' ? 'production' : 'development'
+        },
+        exclude: [
+          'node_modules/**',
+          'cdk.out/**',
+          '.cdk.staging/**',
+          '**/*.log',
+          '**/*.tmp',
+          '.git/**',
+          '.vscode/**',
+          '.idea/**',
+          'test/**',
+          'docs/**',
+          '**/.DS_Store',
+          '**/Thumbs.db'
+        ]
       });
       ecrRepository = dockerImageAsset.repository;
     }
@@ -135,6 +164,13 @@ export class CloudTakStack extends cdk.Stack {
       certificate
     });
 
+    // Create Route53 DNS record for the service
+    const route53Records = new Route53(this, 'Route53', {
+      hostedZone,
+      hostname: envConfig.cloudtak.hostname,
+      loadBalancer: loadBalancer.alb
+    });
+
     // Create ECS Fargate service for the CloudTAK API
     const ecsService = new EcsService(this, 'EcsService', {
       environment,
@@ -148,7 +184,8 @@ export class CloudTakStack extends cdk.Stack {
       databaseSecret: database.masterSecret,
       databaseHostname: database.hostname,
       assetBucketName: s3Resources.assetBucket.bucketName,
-      signingSecret: secrets.signingSecret
+      signingSecret: secrets.signingSecret,
+      serviceUrl: route53Records.serviceUrl
     });
 
     // Create AWS Batch resources for ETL processing
@@ -157,7 +194,7 @@ export class CloudTakStack extends cdk.Stack {
       vpc,
       ecrRepository,
       assetBucketArn: s3Resources.assetBucket.bucketArn,
-      serviceUrl: `https://${envConfig.cloudtak.hostname}.${hostedZone.zoneName}`
+      serviceUrl: route53Records.serviceUrl
     });
 
     // Create Lambda functions for event processing
@@ -165,25 +202,22 @@ export class CloudTakStack extends cdk.Stack {
       envConfig,
       ecrRepository,
       assetBucketArn: s3Resources.assetBucket.bucketArn,
-      serviceUrl: `https://${envConfig.cloudtak.hostname}.${hostedZone.zoneName}`,
+      serviceUrl: route53Records.serviceUrl,
       signingSecret: secrets.signingSecret
     });
 
-    // Create Route53 DNS record for the service
-    const route53 = new Route53(this, 'Route53', {
-      hostedZone,
-      hostname: envConfig.cloudtak.hostname,
-      loadBalancer: loadBalancer.alb
-    });
+    // Ensure ECS service waits for Route53 records
+    ecsService.service.node.addDependency(route53Records.aRecord);
+    ecsService.service.node.addDependency(route53Records.aaaaRecord);
 
     // Register CloudFormation outputs
     registerOutputs({
       stack: this,
-      serviceUrl: route53.serviceUrl,
+      serviceUrl: route53Records.serviceUrl,
       loadBalancer: loadBalancer.alb,
       database: database.cluster,
       assetBucket: s3Resources.assetBucket,
-      ecrRepository: dockerImageAsset ? dockerImageAsset.repository : ecrRepository
+      ecrRepository: dockerImageAsset ? dockerImageAsset.repository : undefined
     });
   }
 }

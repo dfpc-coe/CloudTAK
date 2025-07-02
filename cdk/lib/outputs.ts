@@ -36,7 +36,7 @@ export function registerOutputs(props: OutputsProps): void {
     exportName: `${stack.stackName}-AssetBucket`
   });
 
-  if (ecrRepository) {
+  if (ecrRepository && 'repositoryUri' in ecrRepository) {
     new cdk.CfnOutput(stack, 'ECRRepository', {
       value: ecrRepository.repositoryUri,
       description: 'ECR Repository URI',

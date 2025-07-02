@@ -8,10 +8,10 @@ import { ContextEnvironmentConfig } from '../stack-config';
 
 export interface LambdaFunctionsProps {
   envConfig: ContextEnvironmentConfig;
-  ecrRepository: ecr.Repository;
+  ecrRepository: ecr.IRepository;
   assetBucketArn: string;
   serviceUrl: string;
-  signingSecret: secretsmanager.Secret;
+  signingSecret: secretsmanager.ISecret;
 }
 
 export class LambdaFunctions extends Construct {

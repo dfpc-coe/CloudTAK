@@ -9,14 +9,15 @@ import { ContextEnvironmentConfig } from '../stack-config';
 export interface BatchProps {
   envConfig: ContextEnvironmentConfig;
   vpc: ec2.IVpc;
-  ecrRepository: ecr.Repository;
+  ecrRepository: ecr.IRepository;
   assetBucketArn: string;
   serviceUrl: string;
 }
 
 export class Batch extends Construct {
-  public readonly jobDefinition: batch.EcsJobDefinition;
-  public readonly jobQueue: batch.JobQueue;
+  public readonly jobDefinition: batch.CfnJobDefinition;
+  public readonly jobQueue: batch.CfnJobQueue;
+  public readonly computeEnvironment: batch.CfnComputeEnvironment;
 
   constructor(scope: Construct, id: string, props: BatchProps) {
     super(scope, id);
@@ -72,41 +73,60 @@ export class Batch extends Construct {
       ]
     });
 
-    const computeEnvironment = new batch.FargateComputeEnvironment(this, 'ComputeEnvironment', {
+    // Get private subnets for Fargate
+    const privateSubnets = vpc.selectSubnets({ subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS });
+
+    this.computeEnvironment = new batch.CfnComputeEnvironment(this, 'ComputeEnvironment', {
       computeEnvironmentName: `etl-${envConfig.stackName}`,
-      vpc: vpc,
-      vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
-      securityGroups: [batchSecurityGroup],
-      maxvCpus: 128,
-      serviceRole: batchServiceRole
+      type: 'MANAGED',
+      state: 'ENABLED',
+      serviceRole: batchServiceRole.roleArn,
+      computeResources: {
+        type: 'FARGATE',
+        maxvCpus: 128,
+        subnets: privateSubnets.subnetIds,
+        securityGroupIds: [batchSecurityGroup.securityGroupId]
+      }
     });
 
-    this.jobDefinition = new batch.EcsJobDefinition(this, 'JobDefinition', {
+    this.jobDefinition = new batch.CfnJobDefinition(this, 'JobDefinition', {
       jobDefinitionName: `${envConfig.stackName}-data-job`,
-      platformCapabilities: [batch.PlatformCapabilities.FARGATE],
-      retryAttempts: 1,
-      container: new batch.EcsFargateContainerDefinition(this, 'Container', {
-        image: batch.ContainerImage.fromEcrRepository(ecrRepository, 'data-latest'),
-        cpu: 1,
-        memoryLimitMiB: 2048,
-        jobRole: batchJobRole,
-        executionRole: batchExecRole,
+      type: 'container',
+      platformCapabilities: ['FARGATE'],
+      retryStrategy: { attempts: 1 },
+      containerProperties: {
+        image: `${ecrRepository.repositoryUri}:data-latest`,
+        vcpus: 1,
+        memory: 2048,
+        jobRoleArn: batchJobRole.roleArn,
+        executionRoleArn: batchExecRole.roleArn,
         readonlyRootFilesystem: false,
-        environment: {
-          'StackName': cdk.Stack.of(this).stackName,
-          'TAK_ETL_URL': serviceUrl,
-          'TAK_ETL_BUCKET': assetBucketArn.split(':')[5]
-        }
-      })
+        networkConfiguration: {
+          assignPublicIp: 'DISABLED'
+        },
+        fargatePlatformConfiguration: {
+          platformVersion: 'LATEST'
+        },
+        environment: [
+          { name: 'StackName', value: cdk.Stack.of(this).stackName },
+          { name: 'TAK_ETL_URL', value: serviceUrl },
+          { name: 'TAK_ETL_BUCKET', value: assetBucketArn.split(':')[5] }
+        ]
+      }
     });
 
-    this.jobQueue = new batch.JobQueue(this, 'JobQueue', {
+    this.jobQueue = new batch.CfnJobQueue(this, 'JobQueue', {
       jobQueueName: `${envConfig.stackName}-queue`,
+      state: 'ENABLED',
       priority: 1,
-      computeEnvironments: [{
-        computeEnvironment: computeEnvironment,
-        order: 1
+      computeEnvironmentOrder: [{
+        order: 1,
+        computeEnvironment: this.computeEnvironment.ref
       }]
     });
+
+    // Add dependencies
+    this.jobDefinition.addDependency(this.computeEnvironment);
+    this.jobQueue.addDependency(this.computeEnvironment);
   }
 }
