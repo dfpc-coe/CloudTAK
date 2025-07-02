@@ -16,6 +16,7 @@ import * as ecs from 'aws-cdk-lib/aws-ecs';
 import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import * as logs from 'aws-cdk-lib/aws-logs';
 import * as ecr from 'aws-cdk-lib/aws-ecr';
+import * as ecrAssets from 'aws-cdk-lib/aws-ecr-assets';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import { ContextEnvironmentConfig } from '../stack-config';
 
@@ -26,7 +27,8 @@ export interface EcsServiceProps {
   ecsCluster: ecs.ICluster;
   ecsSecurityGroup: ec2.SecurityGroup;
   albTargetGroup: elbv2.ApplicationTargetGroup;
-  ecrRepository: ecr.Repository;
+  ecrRepository: ecr.IRepository;
+  dockerImageAsset?: ecrAssets.DockerImageAsset;
   databaseSecret: secretsmanager.ISecret;
   databaseHostname: string;
   assetBucketName: string;
@@ -48,6 +50,7 @@ export class EcsService extends Construct {
       ecsSecurityGroup,
       albTargetGroup,
       ecrRepository,
+      dockerImageAsset,
       databaseSecret,
       databaseHostname,
       assetBucketName,
@@ -70,9 +73,14 @@ export class EcsService extends Construct {
       memoryLimitMiB: envConfig.ecs.memoryMiB
     });
 
+    // Determine container image source
+    const containerImage = dockerImageAsset 
+      ? ecs.ContainerImage.fromDockerImageAsset(dockerImageAsset)
+      : ecs.ContainerImage.fromEcrRepository(ecrRepository, 'latest');
+
     // Add container to task definition
     const container = this.taskDefinition.addContainer('api', {
-      image: ecs.ContainerImage.fromEcrRepository(ecrRepository, 'latest'),
+      image: containerImage,
       logging: ecs.LogDrivers.awsLogs({
         streamPrefix: 'cloudtak-api',
         logGroup: logGroup

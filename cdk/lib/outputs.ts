@@ -10,7 +10,7 @@ export interface OutputsProps {
   loadBalancer: elbv2.ApplicationLoadBalancer;
   database: rds.DatabaseCluster;
   assetBucket: s3.Bucket;
-  ecrRepository: ecr.Repository;
+  ecrRepository?: ecr.IRepository;
 }
 
 export function registerOutputs(props: OutputsProps): void {
@@ -36,9 +36,11 @@ export function registerOutputs(props: OutputsProps): void {
     exportName: `${stack.stackName}-AssetBucket`
   });
 
-  new cdk.CfnOutput(stack, 'ECRRepository', {
-    value: ecrRepository.repositoryUri,
-    description: 'ECR Repository URI',
-    exportName: `${stack.stackName}-ECRRepository`
-  });
+  if (ecrRepository) {
+    new cdk.CfnOutput(stack, 'ECRRepository', {
+      value: ecrRepository.repositoryUri,
+      description: 'ECR Repository URI',
+      exportName: `${stack.stackName}-ECRRepository`
+    });
+  }
 }

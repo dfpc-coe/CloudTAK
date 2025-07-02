@@ -19,6 +19,7 @@ import * as kms from 'aws-cdk-lib/aws-kms';
 import * as route53 from 'aws-cdk-lib/aws-route53';
 import * as acm from 'aws-cdk-lib/aws-certificatemanager';
 import * as ecr from 'aws-cdk-lib/aws-ecr';
+import * as ecrAssets from 'aws-cdk-lib/aws-ecr-assets';
 
 import { Database } from './constructs/database';
 import { SecurityGroups } from './constructs/security-groups';
@@ -32,7 +33,6 @@ import { LambdaFunctions } from './constructs/lambda-functions';
 import { registerOutputs } from './outputs';
 import { createBaseImportValue, BASE_EXPORT_NAMES } from './cloudformation-imports';
 import { ContextEnvironmentConfig } from './stack-config';
-import { DEFAULT_ECR_REPOSITORY } from './utils/constants';
 
 export interface CloudTakStackProps extends cdk.StackProps {
   environment: 'prod' | 'dev-test';
@@ -80,16 +80,25 @@ export class CloudTakStack extends cdk.Stack {
       cdk.Fn.importValue(createBaseImportValue(envConfig.stackName, BASE_EXPORT_NAMES.CERTIFICATE_ARN))
     );
 
-    // Create ECR repository with expected name for compatibility with upstream CloudTAK
-    const ecrRepository = new ecr.Repository(this, 'ECRRepository', {
-      repositoryName: DEFAULT_ECR_REPOSITORY,
-      imageTagMutability: ecr.TagMutability.MUTABLE,
-      imageScanOnPush: true,
-      lifecycleRules: [{
-        maxImageCount: 10,
-        tagStatus: ecr.TagStatus.UNTAGGED
-      }]
-    });
+    // Determine container image strategy (local build vs pre-built images)
+    const usePreBuiltImages = this.node.tryGetContext('usePreBuiltImages') ?? false;
+    
+    let ecrRepository: ecr.IRepository;
+    let dockerImageAsset: ecrAssets.DockerImageAsset | undefined;
+    
+    if (usePreBuiltImages) {
+      // Use BaseInfra ECR repository for CI/CD deployments
+      ecrRepository = ecr.Repository.fromRepositoryArn(this, 'ImportedECRRepository',
+        cdk.Fn.importValue(createBaseImportValue(envConfig.stackName, BASE_EXPORT_NAMES.ECR_REPO))
+      );
+    } else {
+      // Create Docker image asset for local deployments
+      dockerImageAsset = new ecrAssets.DockerImageAsset(this, 'CloudTAKDockerAsset', {
+        directory: '../..',
+        file: 'api/Dockerfile'
+      });
+      ecrRepository = dockerImageAsset.repository;
+    }
 
     // Create application secrets (signing secret for API)
     const secrets = new Secrets(this, 'Secrets', {
@@ -135,11 +144,11 @@ export class CloudTakStack extends cdk.Stack {
       ecsSecurityGroup: securityGroups.ecs,
       albTargetGroup: loadBalancer.targetGroup,
       ecrRepository,
+      dockerImageAsset,
       databaseSecret: database.masterSecret,
       databaseHostname: database.hostname,
       assetBucketName: s3Resources.assetBucket.bucketName,
-      signingSecret: secrets.signingSecret,
-
+      signingSecret: secrets.signingSecret
     });
 
     // Create AWS Batch resources for ETL processing
@@ -174,7 +183,7 @@ export class CloudTakStack extends cdk.Stack {
       loadBalancer: loadBalancer.alb,
       database: database.cluster,
       assetBucket: s3Resources.assetBucket,
-      ecrRepository
+      ecrRepository: dockerImageAsset ? dockerImageAsset.repository : ecrRepository
     });
   }
 }
