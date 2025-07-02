@@ -120,7 +120,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class='card-footer d-flex'>
+                                <div class='card-footer d-flex align-items-center'>
                                     <div>
                                         Last updated <span v-text='timeDiff(connection.updated)' />
                                     </div>

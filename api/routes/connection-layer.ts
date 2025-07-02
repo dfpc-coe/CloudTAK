@@ -816,10 +816,18 @@ export default async function router(schema: Schema, config: Config) {
             connectionid: Type.Integer({ minimum: 1 }),
             layerid: Type.Integer({ minimum: 1 }),
         }),
+        query: Type.Object({
+            token: Type.Optional(Type.String()),
+            download: Type.Boolean({
+                default: false,
+                description: 'Download Layer as JSON file'
+            })
+        }),
         res: LayerResponse
     }, async (req, res) => {
         try {
             const { connection } = await Auth.is_connection(config, req, {
+                token: true,
                 resources: [
                     { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
                     { access: AuthResourceAccess.LAYER, id: req.params.layerid }
@@ -845,10 +853,19 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
-            res.json({
-                status,
-                ...layer
-            });
+            const hydrated = { status, ...layer };
+
+            if (req.query.download) {
+                res.setHeader('Content-Disposition', `attachment; filename="connection-${connection.id}-layer-${layer.id}.json"`);
+                res.setHeader('Content-Type', 'application/json');
+                res.write(JSON.stringify(hydrated, null, 4));
+                res.end();
+            } else {
+                res.json({
+                    status,
+                    ...layer
+                });
+            }
         } catch (err) {
             Err.respond(err, res);
         }
