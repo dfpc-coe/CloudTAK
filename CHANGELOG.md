@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v10.17.0 - 2025-07-03
+
+- :rocket: Allow ECR repositories to be configured via Env Vars
+
 ### v10.16.0 - 2025-07-02
 
 - :rocket: Add Layer Schema support for `number` and `integer`

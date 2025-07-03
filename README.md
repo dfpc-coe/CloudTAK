@@ -67,6 +67,21 @@ For example:
 - `media::url` would map to: `CLOUDTAK_Config_media_url`
 - `group::Brown` would map to: `CLOUDTAK_Config_group_Brown`
 
+## AWS Custom Resource name configuration
+
+If using the provided CloudFormation templates, these values will be populated for you and you
+shoudl ignore this section. All defaults in CloudTAK assume you are deploying via the provided
+CloudFormation templates.
+
+The following values can be overridden through the use environment variables.
+
+| Variable Name                 | Description |
+| ----------------------------- | ----------- |
+| `ECR_TASKS_REPOSITORY_NAME`   | ECR Repository for ETL Tasks |
+| `ECS_CLUSTER_PREFIX`          | ECS Cluster Prefix |
+|
+
+
 ## AWS Deployment
 
 ### 1. Pre-Reqs
