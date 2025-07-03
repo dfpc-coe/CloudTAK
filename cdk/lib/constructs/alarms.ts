@@ -20,17 +20,17 @@ export class Alarms extends Construct {
     const { envConfig, eventLambda } = props;
 
     this.highUrgencyTopic = new sns.Topic(this, 'HighUrgencyAlarmTopic', {
-      displayName: `TAK-${envConfig.stackName}-high-urgency`,
-      topicName: `TAK-${envConfig.stackName}-high-urgency`
+      displayName: `TAK-${envConfig.stackName}-CloudTAK-high-urgency`,
+      topicName: `TAK-${envConfig.stackName}-CloudTAK-high-urgency`
     });
 
     this.lowUrgencyTopic = new sns.Topic(this, 'LowUrgencyAlarmTopic', {
-      displayName: `TAK-${envConfig.stackName}-low-urgency`,
-      topicName: `TAK-${envConfig.stackName}-low-urgency`
+      displayName: `TAK-${envConfig.stackName}-CloudTAK-low-urgency`,
+      topicName: `TAK-${envConfig.stackName}-CloudTAK-low-urgency`
     });
 
     new cloudwatch.Alarm(this, 'EventAlarm', {
-      alarmName: `TAK-${envConfig.stackName}-EventLambda`,
+      alarmName: `TAK-${envConfig.stackName}-CloudTAK-EventLambda`,
       metric: eventLambda.metricErrors({
         period: cdk.Duration.minutes(1),
         statistic: 'Maximum'

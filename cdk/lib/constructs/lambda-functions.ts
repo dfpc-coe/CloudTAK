@@ -35,7 +35,7 @@ export class LambdaFunctions extends Construct {
     const { envConfig, ecrRepository, eventsImageAsset, tilesImageAsset, assetBucketArn, serviceUrl, signingSecret, kmsKey, hostedZone, certificate } = props;
 
     const eventLambdaRole = new iam.Role(this, 'EventLambdaRole', {
-      roleName: `${envConfig.stackName}-events`,
+      roleName: `TAK-${envConfig.stackName}-CloudTAK-events`,
       assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
       inlinePolicies: {
         'hook-queue': new iam.PolicyDocument({
@@ -58,7 +58,7 @@ export class LambdaFunctions extends Construct {
     const eventsTag = cloudtakImageTag ? `events-${cloudtakImageTag}` : 'events-latest';
     
     this.eventLambda = new lambda.Function(this, 'EventLambda', {
-      functionName: `TAK-${envConfig.stackName}-events`,
+      functionName: `TAK-${envConfig.stackName}-CloudTAK-events`,
       runtime: lambda.Runtime.FROM_IMAGE,
       code: eventsImageAsset 
         ? lambda.Code.fromEcrImage(eventsImageAsset.repository, {
@@ -85,7 +85,7 @@ export class LambdaFunctions extends Construct {
     
     // Create ETL Function Role for dynamic Lambda functions (matches CloudFormation export)
     const etlFunctionRole = new iam.Role(this, 'ETLFunctionRole', {
-      roleName: `TAK-${envConfig.stackName}`,
+      roleName: `TAK-${envConfig.stackName}-CloudTAK-etl`,
       assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
       inlinePolicies: {
         'etl-policy': new iam.PolicyDocument({
@@ -113,13 +113,13 @@ export class LambdaFunctions extends Construct {
     // Export ETL Role ARN for use by dynamic Lambda functions
     new cdk.CfnOutput(this, 'ETLRoleOutput', {
       value: etlFunctionRole.roleArn,
-      exportName: `TAK-${envConfig.stackName}-etl-role`,
+      exportName: `TAK-${envConfig.stackName}-CloudTAK-etl-role`,
       description: 'ETL Lambda Role'
     });
     
     // Create PMTiles Lambda Role
     const tilesLambdaRole = new iam.Role(this, 'PMTilesLambdaRole', {
-      roleName: `TAK-${envConfig.stackName}-pmtiles`,
+      roleName: `TAK-${envConfig.stackName}-CloudTAK-pmtiles`,
       assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
       inlinePolicies: {
         'pmtiles': new iam.PolicyDocument({
@@ -143,7 +143,7 @@ export class LambdaFunctions extends Construct {
     const tilesHostname = `tiles.${serviceUrl.replace('https://', '').replace('http://', '')}`;
     
     this.tilesLambda = new lambda.Function(this, 'PMTilesLambda', {
-      functionName: `TAK-${envConfig.stackName}-pmtiles`,
+      functionName: `TAK-${envConfig.stackName}-CloudTAK-pmtiles`,
       runtime: lambda.Runtime.FROM_IMAGE,
       code: tilesImageAsset 
         ? lambda.Code.fromEcrImage(tilesImageAsset.repository, {
@@ -170,7 +170,7 @@ export class LambdaFunctions extends Construct {
     
     // Create API Gateway for PMTiles
     this.tilesApi = new apigateway.RestApi(this, 'PMTilesAPI', {
-      restApiName: `TAK-${envConfig.stackName}-pmtiles`,
+      restApiName: `TAK-${envConfig.stackName}-CloudTAK-pmtiles`,
       description: 'PMTiles API Gateway',
       endpointConfiguration: {
         types: [apigateway.EndpointType.REGIONAL]

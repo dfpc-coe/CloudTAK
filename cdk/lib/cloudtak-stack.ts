@@ -202,6 +202,26 @@ export class CloudTakStack extends cdk.Stack {
       autoDeleteObjects: envConfig.general.removalPolicy !== 'RETAIN'
     });
     
+    // Grant ALB service account permission to write access logs
+    logsBucket.addToResourcePolicy(new cdk.aws_iam.PolicyStatement({
+      effect: cdk.aws_iam.Effect.ALLOW,
+      principals: [new cdk.aws_iam.ServicePrincipal('elasticloadbalancing.amazonaws.com')],
+      actions: ['s3:PutObject'],
+      resources: [`${logsBucket.bucketArn}/*`],
+      conditions: {
+        StringEquals: {
+          's3:x-amz-acl': 'bucket-owner-full-control'
+        }
+      }
+    }));
+    
+    logsBucket.addToResourcePolicy(new cdk.aws_iam.PolicyStatement({
+      effect: cdk.aws_iam.Effect.ALLOW,
+      principals: [new cdk.aws_iam.ServicePrincipal('elasticloadbalancing.amazonaws.com')],
+      actions: ['s3:GetBucketAcl'],
+      resources: [logsBucket.bucketArn]
+    }));
+    
     // Create Application Load Balancer with HTTPS
     const loadBalancer = new LoadBalancer(this, 'LoadBalancer', {
       envConfig,

@@ -31,6 +31,7 @@ export class Batch extends Construct {
     });
 
     const batchServiceRole = new iam.Role(this, 'BatchServiceRole', {
+      roleName: `TAK-${envConfig.stackName}-CloudTAK-batch-service`,
       assumedBy: new iam.ServicePrincipal('batch.amazonaws.com'),
       managedPolicies: [
         iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSBatchServiceRole')
@@ -39,6 +40,7 @@ export class Batch extends Construct {
     });
 
     const batchJobRole = new iam.Role(this, 'BatchJobRole', {
+      roleName: `TAK-${envConfig.stackName}-CloudTAK-batch-job`,
       assumedBy: new iam.CompositePrincipal(
         new iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
         new iam.ServicePrincipal('lambda.amazonaws.com')
@@ -67,6 +69,7 @@ export class Batch extends Construct {
     });
 
     const batchExecRole = new iam.Role(this, 'BatchExecRole', {
+      roleName: `TAK-${envConfig.stackName}-CloudTAK-batch-exec`,
       assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
       managedPolicies: [
         iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AmazonECSTaskExecutionRolePolicy')
@@ -77,7 +80,7 @@ export class Batch extends Construct {
     const privateSubnets = vpc.selectSubnets({ subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS });
 
     this.computeEnvironment = new batch.CfnComputeEnvironment(this, 'ComputeEnvironment', {
-      computeEnvironmentName: `etl-TAK-${envConfig.stackName}`,
+      computeEnvironmentName: `TAK-${envConfig.stackName}-CloudTAK-compute-env`,
       type: 'MANAGED',
       state: 'ENABLED',
       serviceRole: batchServiceRole.roleArn,
@@ -94,7 +97,7 @@ export class Batch extends Construct {
     const dataTag = cloudtakImageTag ? `data-${cloudtakImageTag}` : 'data-latest';
     
     this.jobDefinition = new batch.CfnJobDefinition(this, 'JobDefinition', {
-      jobDefinitionName: `TAK-${envConfig.stackName}-data-job`,
+      jobDefinitionName: `TAK-${envConfig.stackName}-CloudTAK-data-job`,
       type: 'container',
       platformCapabilities: ['FARGATE'],
       retryStrategy: { attempts: 1 },
@@ -119,7 +122,7 @@ export class Batch extends Construct {
     });
 
     this.jobQueue = new batch.CfnJobQueue(this, 'JobQueue', {
-      jobQueueName: `TAK-${envConfig.stackName}-queue`,
+      jobQueueName: `TAK-${envConfig.stackName}-CloudTAK-queue`,
       state: 'ENABLED',
       priority: 1,
       computeEnvironmentOrder: [{

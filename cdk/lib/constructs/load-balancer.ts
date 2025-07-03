@@ -26,7 +26,7 @@ export class LoadBalancer extends Construct {
     this.alb = new elbv2.ApplicationLoadBalancer(this, 'ALB', {
       vpc: vpc,
       internetFacing: true,
-      loadBalancerName: `TAK-${envConfig.stackName}-CloudTAK`,
+      loadBalancerName: `tak-${envConfig.stackName.toLowerCase()}-cloudtak`,
       securityGroup: albSecurityGroup,
       vpcSubnets: { subnetType: ec2.SubnetType.PUBLIC },
       ipAddressType: elbv2.IpAddressType.DUAL_STACK
