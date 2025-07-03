@@ -283,6 +283,7 @@ async function createPlayer(): Promise<void> {
 
         player.value = new Hls({
             enableWorker: true,
+            lowLatencyMode: false,
             debug: true,
             maxBufferSize: 3000000,
             maxMaxBufferLength: 300,
