@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v10.18.0 - 2025-07-03
+
+- :rocket: Support `emergency` section on CoT type
+- :bug: Attempt to fix HLS issue in chrome - Ref: https://github.com/video-dev/hls.js/issues/737
+
 ### v10.17.0 - 2025-07-03
 
 - :rocket: Allow ECR repositories to be configured via Env Vars
