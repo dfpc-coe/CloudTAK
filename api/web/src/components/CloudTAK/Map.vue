@@ -256,16 +256,6 @@
                 </div>
             </div>
 
-            <CoordInput
-                v-if='pointInput'
-                @close='pointInput = false'
-            />
-
-            <RangeInput
-                v-if='rangeInput'
-                @close='rangeInput = false'
-            />
-
             <SearchBox
                 v-if='searchBoxShown'
                 style='
@@ -348,8 +338,6 @@
             <SideMenu
                 v-if='
                     mapStore.isLoaded
-                        && !pointInput
-                        && !rangeInput
                         && (
                             (noMenuShown && !mobileDetected)
                             || (!noMenuShown)
@@ -424,8 +412,6 @@ import WarnChannels from './util/WarnChannels.vue';
 import Notifications from './Notifications.vue';
 import SearchBox from './util/SearchBox.vue';
 import WarnConfiguration from './util/WarnConfiguration.vue';
-import CoordInput from './CoordInput.vue';
-import RangeInput from './RangeInput.vue';
 import DrawTools from './DrawTools.vue';
 import type { MapGeoJSONFeature, LngLatLike } from 'maplibre-gl';
 import type { Feature } from '../../types.ts';
@@ -481,8 +467,6 @@ const warnChannels = ref<boolean>(false)
 const warnConfiguration = ref<boolean>(false);
 
 const searchBoxShown = ref(false);
-const pointInput = ref<boolean>(false);
-const rangeInput = ref<boolean>(false);
 const feat = ref()        // Show the Feat Viewer sidebar
 
 const upload = ref({
@@ -529,8 +513,6 @@ const mapRef = useTemplateRef<HTMLElement>('map');
 
 const noMenuShown = computed<boolean>(() => {
     return !feat.value
-        && !pointInput.value
-        && !rangeInput.value
         && (!route.name || !String(route.name).startsWith('home-menu'))
 });
 
@@ -621,8 +603,6 @@ function selectFeat(selectedFeat: MapGeoJSONFeature) {
 function closeAllMenu() {
     feat.value = false;
     router.push("/");
-    pointInput.value = false;
-    rangeInput.value = false;
 }
 
 function closeRadial() {

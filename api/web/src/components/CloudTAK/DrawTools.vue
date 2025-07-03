@@ -4,7 +4,6 @@
             <TablerIconButton
                 title='Geometry Editing'
                 class='mx-2 cursor-pointer hover-button'
-                @click='closeAllMenu'
             >
                 <IconPencil
                     :size='40'
@@ -25,7 +24,7 @@
                 <div class='card-body'>
                     <div
                         class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
-                        @click='pointInput = true'
+                        @click='modal = ModalInputType.POINT'
                     >
                         <IconCursorText
                             :size='25'
@@ -35,7 +34,7 @@
                     </div>
                     <div
                         class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
-                        @click='rangeInput = true'
+                        @click='modal = ModalInputType.RANGE'
                     >
                         <IconCompass
                             :size='25'
@@ -105,6 +104,16 @@
                     </div>
                     <div
                         class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
+                        @click='modal = ModalInputType.LOST_PERSON_BEHAVIOR'
+                    >
+                        <IconWalk
+                            :size='25'
+                            stroke='1'
+                        />
+                        <span class='ps-2'>Lost Person Behavior</span>
+                    </div>
+                    <div
+                        class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
                         @click='mapStore.draw.start(DrawToolMode.FREEHAND)'
                     >
                         <IconLasso
@@ -117,11 +126,32 @@
             </div>
         </template>
     </TablerDropdown>
+
+    <CoordInput
+        v-if='modal === ModalInputType.POINT'
+        @close='modal = ModalInputType.NONE'
+    />
+
+    <LostPersonBehaviorInput
+        v-if='modal === ModalInputType.LOST_PERSON_BEHAVIOR'
+        @close='modal = ModalInputType.NONE'
+    />
+
+    <RangeInput
+        v-if='modal === ModalInputType.RANGE'
+        @close='modal = ModalInputType.NONE'
+    />
+
 </template>
 
 <script setup lang='ts'>
-import { useRouter } from 'vue-router';
+import { ref } from 'vue';
+import { DrawToolMode } from '../../stores/modules/draw.ts';
+import CoordInput from './CoordInput.vue';
+import LostPersonBehaviorInput from './LostPersonBehaviorInput.vue';
+import RangeInput from './RangeInput.vue';
 import {
+    IconWalk,
     IconLasso,
     IconCone,
     IconCircle,
@@ -139,7 +169,14 @@ import {
     TablerDropdown,
 } from '@tak-ps/vue-tabler';
 
-const mapStore = useMapStore();
+enum ModalInputType {
+    NONE = 'none',
+    RANGE = 'range',
+    POINT = 'point',
+    LOST_PERSON_BEHAVIOR = 'lost_person_behavior',
+}
 
-const router = useRouter();
+const modal = ref<ModalInputType>(ModalInputType.NONE);
+
+const mapStore = useMapStore();
 </script>
