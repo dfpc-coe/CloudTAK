@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div id='swagger'/>
+        <div id='swagger' />
     </div>
 </template>
 
