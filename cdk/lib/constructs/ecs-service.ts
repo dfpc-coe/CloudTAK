@@ -19,6 +19,7 @@ import * as ecr from 'aws-cdk-lib/aws-ecr';
 import * as ecrAssets from 'aws-cdk-lib/aws-ecr-assets';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import { ContextEnvironmentConfig } from '../stack-config';
+import { createTakImportValue, TAK_EXPORT_NAMES } from '../cloudformation-imports';
 
 export interface EcsServiceProps {
   environment: 'prod' | 'dev-test';
@@ -75,6 +76,13 @@ export class EcsService extends Construct {
       memoryLimitMiB: envConfig.ecs.taskMemory
     });
 
+    // Import TAK admin certificate secret for base64 encoded certificate
+    const takAdminCertSecret = secretsmanager.Secret.fromSecretCompleteArn(
+      this, 
+      'TakAdminCertSecret',
+      cdk.Fn.importValue(createTakImportValue(envConfig.stackName, TAK_EXPORT_NAMES.TAK_ADMIN_CERT_SECRET_ARN))
+    );
+
     // Determine container image source
     const containerImage = dockerImageAsset 
       ? ecs.ContainerImage.fromDockerImageAsset(dockerImageAsset)
@@ -94,12 +102,19 @@ export class EcsService extends Construct {
         'STACK_NAME': `TAK-${envConfig.stackName}-CloudTAK`,
         'ASSET_BUCKET': assetBucketName,
         'API_URL': serviceUrl,
-        'ECS_CLUSTER_PREFIX': `TAK-${envConfig.stackName}-BaseInfra`
+        'ECS_CLUSTER_PREFIX': `TAK-${envConfig.stackName}-BaseInfra`,
+        // CloudTAK Server configuration
+        'CLOUDTAK_Server_name': `TAK.NZ ${environment === 'prod' ? 'Production' : 'Development'} Server`,
+        'CLOUDTAK_Server_url': `ssl://${cdk.Fn.importValue(createTakImportValue(envConfig.stackName, TAK_EXPORT_NAMES.TAK_SERVICE_NAME))}:8089`,
+        'CLOUDTAK_Server_api': `https://${cdk.Fn.importValue(createTakImportValue(envConfig.stackName, TAK_EXPORT_NAMES.TAK_SERVICE_NAME))}:8443`,
+        'CLOUDTAK_Server_webtak': `https://${cdk.Fn.importValue(createTakImportValue(envConfig.stackName, TAK_EXPORT_NAMES.TAK_SERVICE_NAME))}:8446`,
+        'CLOUDTAK_Server_auth_password': 'atakatak'
       },
       // Secrets from AWS Secrets Manager
       secrets: {
         'POSTGRES': ecs.Secret.fromSecretsManager(databaseSecret),
-        'SigningSecret': ecs.Secret.fromSecretsManager(signingSecret)
+        'SigningSecret': ecs.Secret.fromSecretsManager(signingSecret),
+        'CLOUDTAK_Server_auth_p12': ecs.Secret.fromSecretsManager(takAdminCertSecret)
       }
     });
 

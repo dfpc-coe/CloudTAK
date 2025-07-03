@@ -18,11 +18,11 @@
   },
   "context": {
     "dev-test": {
-      "stackName": "DevTest",
+      "stackName": "Dev",
       "database": {
         "instanceClass": "db.serverless",
         "instanceCount": 1,
-        "engineVersion": "15.4",
+        "engineVersion": "17.4",
         "allocatedStorage": 20,
         "maxAllocatedStorage": 100,
         "enablePerformanceInsights": false,
@@ -35,7 +35,7 @@
         "taskMemory": 4096,
         "desiredCount": 1,
         "enableDetailedLogging": true,
-        "enableEcsExec": false
+        "enableEcsExec": true
       },
       "cloudtak": {
         "hostname": "map",
@@ -43,7 +43,7 @@
         "ecrRepositoryName": "coe-ecr-etl"
       },
       "ecr": {
-        "imageRetentionCount": 10,
+        "imageRetentionCount": 5,
         "scanOnPush": false
       },
       "general": {
@@ -60,7 +60,7 @@
       "database": {
         "instanceClass": "db.t4g.large",
         "instanceCount": 2,
-        "engineVersion": "15.4",
+        "engineVersion": "17.4",
         "allocatedStorage": 100,
         "maxAllocatedStorage": 1000,
         "enablePerformanceInsights": true,

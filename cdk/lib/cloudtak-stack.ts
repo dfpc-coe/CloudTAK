@@ -97,35 +97,71 @@ export class CloudTakStack extends cdk.Stack {
     
     let ecrRepository: ecr.IRepository;
     let dockerImageAsset: ecrAssets.DockerImageAsset | undefined;
+    let eventsImageAsset: ecrAssets.DockerImageAsset | undefined;
+    let tilesImageAsset: ecrAssets.DockerImageAsset | undefined;
     
     if (usePreBuiltImages) {
       // Use BaseInfra ECR repository for CI/CD deployments
-      ecrRepository = ecr.Repository.fromRepositoryArn(this, 'ImportedECRRepository',
-        cdk.Fn.importValue(createBaseImportValue(envConfig.stackName, BASE_EXPORT_NAMES.ECR_REPO))
-      );
+      ecrRepository = ecr.Repository.fromRepositoryAttributes(this, 'ImportedECRRepository', {
+        repositoryArn: cdk.Fn.importValue(createBaseImportValue(envConfig.stackName, BASE_EXPORT_NAMES.ECR_REPO)),
+        repositoryName: envConfig.cloudtak.ecrRepositoryName
+      });
     } else {
-      // Create Docker image asset for local deployments
+      // Create Docker image assets for local deployments
       dockerImageAsset = new ecrAssets.DockerImageAsset(this, 'CloudTAKDockerAsset', {
-        directory: '../..',
-        file: 'api/Dockerfile',
+        directory: '../api',
+        file: 'Dockerfile',
         buildArgs: {
           NODE_ENV: environment === 'prod' ? 'production' : 'development'
         },
         exclude: [
           'node_modules/**',
-          'cdk.out/**',
-          '.cdk.staging/**',
+          '**/.git/**',
+          '**/.vscode/**',
+          '**/.idea/**',
           '**/*.log',
           '**/*.tmp',
-          '.git/**',
-          '.vscode/**',
-          '.idea/**',
-          'test/**',
-          'docs/**',
           '**/.DS_Store',
           '**/Thumbs.db'
         ]
       });
+      
+      eventsImageAsset = new ecrAssets.DockerImageAsset(this, 'EventsDockerAsset', {
+        directory: '../tasks/events',
+        file: 'Dockerfile',
+        buildArgs: {
+          NODE_ENV: environment === 'prod' ? 'production' : 'development'
+        },
+        exclude: [
+          'node_modules/**',
+          '**/.git/**',
+          '**/.vscode/**',
+          '**/.idea/**',
+          '**/*.log',
+          '**/*.tmp',
+          '**/.DS_Store',
+          '**/Thumbs.db'
+        ]
+      });
+      
+      tilesImageAsset = new ecrAssets.DockerImageAsset(this, 'TilesDockerAsset', {
+        directory: '../tasks/pmtiles',
+        file: 'Dockerfile',
+        buildArgs: {
+          NODE_ENV: environment === 'prod' ? 'production' : 'development'
+        },
+        exclude: [
+          'node_modules/**',
+          '**/.git/**',
+          '**/.vscode/**',
+          '**/.idea/**',
+          '**/*.log',
+          '**/*.tmp',
+          '**/.DS_Store',
+          '**/Thumbs.db'
+        ]
+      });
+      
       ecrRepository = dockerImageAsset.repository;
     }
 
@@ -201,6 +237,7 @@ export class CloudTakStack extends cdk.Stack {
     const lambdaFunctions = new LambdaFunctions(this, 'LambdaFunctions', {
       envConfig,
       ecrRepository,
+      eventsImageAsset,
       assetBucketArn: s3Resources.assetBucket.bucketArn,
       serviceUrl: route53Records.serviceUrl,
       signingSecret: secrets.signingSecret

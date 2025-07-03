@@ -1,45 +1,61 @@
 /**
- * Context override utilities for CloudTAK
+ * Dynamic context override utilities
+ * Simplified flat parameter system for command-line context overrides
  */
 
 import * as cdk from 'aws-cdk-lib';
 import { ContextEnvironmentConfig } from '../stack-config';
 
-/**
- * Apply context overrides for non-prefixed parameters
- * This supports direct overrides that work for any environment:
- * --context hostname=custom-hostname
- * --context enableEcsExec=true
- */
 export function applyContextOverrides(
-  app: cdk.App,
-  envConfig: ContextEnvironmentConfig
+  app: cdk.App, 
+  baseConfig: ContextEnvironmentConfig
 ): ContextEnvironmentConfig {
-  const overrides: Partial<ContextEnvironmentConfig> = {};
-
-  // CloudTAK specific overrides
-  const hostname = app.node.tryGetContext('hostname');
-  if (hostname) {
-    overrides.cloudtak = { ...envConfig.cloudtak, hostname };
-  }
-
-  // ECS overrides
-  const enableEcsExec = app.node.tryGetContext('enableEcsExec');
-  if (enableEcsExec !== undefined) {
-    overrides.ecs = { ...envConfig.ecs, enableEcsExec: enableEcsExec === 'true' };
-  }
-
-  // Database overrides
-  const enablePerformanceInsights = app.node.tryGetContext('enablePerformanceInsights');
-  if (enablePerformanceInsights !== undefined) {
-    overrides.database = { 
-      ...envConfig.database, 
-      enablePerformanceInsights: enablePerformanceInsights === 'true' 
-    };
-  }
+  const topLevelOverrides = {
+    stackName: app.node.tryGetContext('stackName'),
+  };
 
   return {
-    ...envConfig,
-    ...overrides
+    ...baseConfig,
+    ...Object.fromEntries(Object.entries(topLevelOverrides).filter(([_, v]) => v !== undefined)),
+    database: {
+      ...baseConfig.database,
+      instanceClass: app.node.tryGetContext('instanceClass') ?? baseConfig.database.instanceClass,
+      instanceCount: app.node.tryGetContext('instanceCount') ?? baseConfig.database.instanceCount,
+      allocatedStorage: app.node.tryGetContext('allocatedStorage') ?? baseConfig.database.allocatedStorage,
+      maxAllocatedStorage: app.node.tryGetContext('maxAllocatedStorage') ?? baseConfig.database.maxAllocatedStorage,
+      enablePerformanceInsights: app.node.tryGetContext('enablePerformanceInsights') ?? baseConfig.database.enablePerformanceInsights,
+      monitoringInterval: app.node.tryGetContext('monitoringInterval') ?? baseConfig.database.monitoringInterval,
+      backupRetentionDays: app.node.tryGetContext('backupRetentionDays') ?? baseConfig.database.backupRetentionDays,
+      deleteProtection: app.node.tryGetContext('deleteProtection') ?? baseConfig.database.deleteProtection,
+    },
+    ecs: {
+      ...baseConfig.ecs,
+      taskCpu: app.node.tryGetContext('taskCpu') ?? baseConfig.ecs.taskCpu,
+      taskMemory: app.node.tryGetContext('taskMemory') ?? baseConfig.ecs.taskMemory,
+      desiredCount: app.node.tryGetContext('desiredCount') ?? baseConfig.ecs.desiredCount,
+      enableDetailedLogging: app.node.tryGetContext('enableDetailedLogging') ?? baseConfig.ecs.enableDetailedLogging,
+      enableEcsExec: app.node.tryGetContext('enableEcsExec') ?? baseConfig.ecs.enableEcsExec,
+    },
+    cloudtak: {
+      ...baseConfig.cloudtak,
+      hostname: app.node.tryGetContext('hostname') ?? baseConfig.cloudtak.hostname,
+      databaseName: app.node.tryGetContext('databaseName') ?? baseConfig.cloudtak.databaseName,
+      ecrRepositoryName: app.node.tryGetContext('ecrRepositoryName') ?? baseConfig.cloudtak.ecrRepositoryName,
+    },
+    ecr: {
+      ...baseConfig.ecr,
+      imageRetentionCount: app.node.tryGetContext('imageRetentionCount') ?? baseConfig.ecr.imageRetentionCount,
+      scanOnPush: app.node.tryGetContext('scanOnPush') ?? baseConfig.ecr.scanOnPush,
+    },
+    general: {
+      ...baseConfig.general,
+      removalPolicy: app.node.tryGetContext('removalPolicy') || baseConfig.general.removalPolicy,
+      enableDetailedLogging: app.node.tryGetContext('enableDetailedLogging') ?? baseConfig.general.enableDetailedLogging,
+      enableContainerInsights: app.node.tryGetContext('enableContainerInsights') ?? baseConfig.general.enableContainerInsights,
+    },
+    s3: {
+      ...baseConfig.s3,
+      enableVersioning: app.node.tryGetContext('enableVersioning') ?? baseConfig.s3.enableVersioning,
+    },
   };
 }

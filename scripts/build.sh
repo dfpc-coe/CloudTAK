@@ -2,16 +2,16 @@
 
 set -e
 
-# Get git SHA
-GITSHA=$(git rev-parse HEAD)
+# Get git SHA (short version to match GitHub workflows)
+GITSHA=$(git rev-parse --short HEAD)
 export GITSHA
 
-# Set defaults
-export API_URL="${API_URL:-https://example.com}"
-export Environment="${Environment:-prod}"
+# Create CloudTAK tag to match GitHub workflows
+CLOUDTAK_TAG="cloudtak-${GITSHA}"
+export CLOUDTAK_TAG
 
 # Validate required environment variables
-for env in GITSHA AWS_REGION AWS_ACCOUNT_ID Environment API_URL; do
+for env in GITSHA AWS_REGION AWS_ACCOUNT_ID; do
     if [ -z "${!env}" ]; then
         echo "Error: $env environment variable must be set"
         exit 1
@@ -33,8 +33,8 @@ ecr_login() {
 build_api() {
     echo "Building CloudTAK API..."
     docker compose build api
-    docker tag cloudtak-api:latest "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/coe-ecr-etl:$GITSHA"
-    docker push "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/coe-ecr-etl:$GITSHA"
+    docker tag cloudtak-api:latest "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/coe-ecr-etl:$CLOUDTAK_TAG"
+    docker push "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/coe-ecr-etl:$CLOUDTAK_TAG"
 }
 
 # Build and push task container
@@ -42,8 +42,8 @@ build_task() {
     local task="$1"
     echo "Building CloudTAK task: $task"
     docker buildx build "./tasks/$task/" -t "cloudtak-$task"
-    docker tag "cloudtak-$task:latest" "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/coe-ecr-etl:$task-$GITSHA"
-    docker push "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/coe-ecr-etl:$task-$GITSHA"
+    docker tag "cloudtak-$task:latest" "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/coe-ecr-etl:$task-$CLOUDTAK_TAG"
+    docker push "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/coe-ecr-etl:$task-$CLOUDTAK_TAG"
 }
 
 # Main execution
