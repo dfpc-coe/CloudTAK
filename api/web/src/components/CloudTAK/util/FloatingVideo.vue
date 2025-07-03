@@ -285,7 +285,7 @@ async function createPlayer(): Promise<void> {
             enableWorker: true,
             debug: true,
             maxBufferSize: 3000000,
-            maxMaxBufferLength: 120,
+            maxMaxBufferLength: 300,
             xhrSetup: (xhr: XMLHttpRequest) => {
                 if (url.username && url.password) {
                     xhr.setRequestHeader('Authorization', 'Basic ' + btoa(`${url.username}:${url.password}`));
