@@ -28,5 +28,7 @@ export class S3Resources extends Construct {
         : cdk.RemovalPolicy.DESTROY,
       autoDeleteObjects: envConfig.general.removalPolicy === 'destroy'
     });
+    
+
   }
 }

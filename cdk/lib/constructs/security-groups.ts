@@ -53,6 +53,8 @@ export class SecurityGroups extends Construct {
     this.ecs.addEgressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(443), 'HTTPS outbound');
     this.ecs.addEgressRule(ec2.Peer.anyIpv4(), ec2.Port.udp(53), 'DNS');
     this.ecs.addEgressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(53), 'DNS TCP');
+    // VPC endpoints for AWS services
+    this.ecs.addEgressRule(ec2.Peer.ipv4(vpc.vpcCidrBlock), ec2.Port.tcp(443), 'VPC Endpoints');
 
 
   }

@@ -42,8 +42,23 @@ export class LambdaFunctions extends Construct {
           statements: [
             new iam.PolicyStatement({
               effect: iam.Effect.ALLOW,
-              actions: ['s3:*'],
+              actions: ['s3:GetObject', 's3:PutObject', 's3:DeleteObject', 's3:ListBucket', 's3:GetBucketLocation'],
               resources: [assetBucketArn, `${assetBucketArn}/*`]
+            }),
+            new iam.PolicyStatement({
+              effect: iam.Effect.ALLOW,
+              actions: ['sqs:SendMessage', 'sqs:ReceiveMessage', 'sqs:DeleteMessage', 'sqs:GetQueueAttributes'],
+              resources: [`arn:${cdk.Stack.of(this).partition}:sqs:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:tak-cloudtak-*`]
+            }),
+            new iam.PolicyStatement({
+              effect: iam.Effect.ALLOW,
+              actions: ['kms:Decrypt', 'kms:GenerateDataKey'],
+              resources: ['*'],
+              conditions: {
+                StringEquals: {
+                  'kms:ViaService': [`s3.${cdk.Stack.of(this).region}.amazonaws.com`, `secretsmanager.${cdk.Stack.of(this).region}.amazonaws.com`]
+                }
+              }
             })
           ]
         })
@@ -100,6 +115,26 @@ export class LambdaFunctions extends Construct {
                 'sqs:GetQueueAttributes'
               ],
               resources: [`arn:${cdk.Stack.of(this).partition}:sqs:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:tak-cloudtak-${envConfig.stackName}-layer-*`]
+            }),
+            new iam.PolicyStatement({
+              effect: iam.Effect.ALLOW,
+              actions: ['s3:GetObject', 's3:PutObject', 's3:DeleteObject', 's3:ListBucket', 's3:GetBucketLocation'],
+              resources: [assetBucketArn, `${assetBucketArn}/*`]
+            }),
+            new iam.PolicyStatement({
+              effect: iam.Effect.ALLOW,
+              actions: ['secretsmanager:GetSecretValue', 'secretsmanager:DescribeSecret'],
+              resources: [`arn:${cdk.Stack.of(this).partition}:secretsmanager:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:secret:TAK-${envConfig.stackName}-*`]
+            }),
+            new iam.PolicyStatement({
+              effect: iam.Effect.ALLOW,
+              actions: ['kms:Decrypt', 'kms:GenerateDataKey'],
+              resources: ['*'],
+              conditions: {
+                StringEquals: {
+                  'kms:ViaService': [`s3.${cdk.Stack.of(this).region}.amazonaws.com`, `secretsmanager.${cdk.Stack.of(this).region}.amazonaws.com`]
+                }
+              }
             })
           ]
         })
@@ -126,8 +161,18 @@ export class LambdaFunctions extends Construct {
           statements: [
             new iam.PolicyStatement({
               effect: iam.Effect.ALLOW,
-              actions: ['s3:List*', 's3:Get*', 's3:Head*', 's3:Describe*'],
+              actions: ['s3:GetObject', 's3:ListBucket', 's3:GetBucketLocation', 's3:HeadObject'],
               resources: [assetBucketArn, `${assetBucketArn}/*`]
+            }),
+            new iam.PolicyStatement({
+              effect: iam.Effect.ALLOW,
+              actions: ['kms:Decrypt'],
+              resources: ['*'],
+              conditions: {
+                StringEquals: {
+                  'kms:ViaService': [`s3.${cdk.Stack.of(this).region}.amazonaws.com`]
+                }
+              }
             })
           ]
         })
@@ -183,7 +228,9 @@ export class LambdaFunctions extends Construct {
         allowOrigins: apigateway.Cors.ALL_ORIGINS,
         allowMethods: apigateway.Cors.ALL_METHODS,
         allowHeaders: ['Content-Type', 'X-Amz-Date', 'Authorization', 'X-Api-Key', 'X-Amz-Security-Token', 'X-Amz-User-Agent']
-      }
+      },
+      cloudWatchRole: true,
+      cloudWatchRoleRemovalPolicy: cdk.RemovalPolicy.DESTROY
     });
     
     // Add proxy resource for all paths
@@ -191,6 +238,12 @@ export class LambdaFunctions extends Construct {
     proxyResource.addMethod('GET', new apigateway.LambdaIntegration(this.tilesLambda, {
       proxy: true
     }));
+    
+    // Grant API Gateway permission to invoke Lambda
+    this.tilesLambda.addPermission('APIGatewayInvoke', {
+      principal: new iam.ServicePrincipal('apigateway.amazonaws.com'),
+      sourceArn: `${this.tilesApi.arnForExecuteApi()}/*/*`
+    });
     
     // Create Route53 records for tiles subdomain
     new route53.ARecord(this, 'PMTilesDNS', {

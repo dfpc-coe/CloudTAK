@@ -89,19 +89,14 @@ export class EcsService extends Construct {
             // S3 bucket access
             new cdk.aws_iam.PolicyStatement({
               effect: cdk.aws_iam.Effect.ALLOW,
-              actions: ['s3:*'],
+              actions: ['s3:GetObject', 's3:PutObject', 's3:DeleteObject', 's3:ListBucket', 's3:GetBucketLocation'],
               resources: [`arn:${cdk.Stack.of(this).partition}:s3:::${assetBucketName}`, `arn:${cdk.Stack.of(this).partition}:s3:::${assetBucketName}/*`]
             }),
-            // ECR permissions
-            new cdk.aws_iam.PolicyStatement({
-              effect: cdk.aws_iam.Effect.ALLOW,
-              actions: ['ecr:Describe*', 'ecr:Get*', 'ecr:BatchDeleteImage', 'ecr:List*'],
-              resources: [ecrRepository.repositoryArn]
-            }),
+
             // SQS permissions for layer queues
             new cdk.aws_iam.PolicyStatement({
               effect: cdk.aws_iam.Effect.ALLOW,
-              actions: ['sqs:*'],
+              actions: ['sqs:SendMessage', 'sqs:ReceiveMessage', 'sqs:DeleteMessage', 'sqs:GetQueueAttributes', 'sqs:GetQueueUrl'],
               resources: [`arn:${cdk.Stack.of(this).partition}:sqs:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:tak-cloudtak-${environment}-layer-*`]
             }),
             // Secrets Manager access
@@ -110,26 +105,16 @@ export class EcsService extends Construct {
               actions: ['secretsmanager:Describe*', 'secretsmanager:Get*', 'secretsmanager:List*'],
               resources: [`arn:${cdk.Stack.of(this).partition}:secretsmanager:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:secret:TAK-${envConfig.stackName}-*`]
             }),
-            // ECS permissions for media server
+
+            // Lambda permissions for layer invocation
             new cdk.aws_iam.PolicyStatement({
               effect: cdk.aws_iam.Effect.ALLOW,
-              actions: ['ecs:Describe*', 'ecs:Get*', 'ecs:List*', 'ecs:RunTask', 'ecs:StopTask'],
-              resources: [
-                `arn:${cdk.Stack.of(this).partition}:ecs:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:container-instance/${ecsCluster.clusterName}/*`,
-                `arn:${cdk.Stack.of(this).partition}:ecs:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:cluster/${ecsCluster.clusterName}`,
-                `arn:${cdk.Stack.of(this).partition}:ecs:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:task/${ecsCluster.clusterName}/*`,
-                `arn:${cdk.Stack.of(this).partition}:ecs:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:task-definition/coe-media-${environment}:*`
-              ]
-            }),
-            // Lambda and CloudFormation permissions for dynamic layer management
-            new cdk.aws_iam.PolicyStatement({
-              effect: cdk.aws_iam.Effect.ALLOW,
-              actions: ['lambda:*'],
+              actions: ['lambda:InvokeFunction'],
               resources: [`arn:${cdk.Stack.of(this).partition}:lambda:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:function:TAK-${envConfig.stackName}-layer-*`]
             }),
             new cdk.aws_iam.PolicyStatement({
               effect: cdk.aws_iam.Effect.ALLOW,
-              actions: ['cloudformation:*'],
+              actions: ['cloudformation:DescribeStacks'],
               resources: [`arn:${cdk.Stack.of(this).partition}:cloudformation:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:stack/TAK-${envConfig.stackName}-layer-*`]
             }),
             // Batch job permissions
@@ -138,17 +123,22 @@ export class EcsService extends Construct {
               actions: ['batch:SubmitJob', 'batch:ListJobs', 'batch:DescribeJobs', 'batch:CancelJob'],
               resources: ['*']
             }),
-            // CloudWatch permissions
+
+
+            // KMS permissions for decryption
             new cdk.aws_iam.PolicyStatement({
               effect: cdk.aws_iam.Effect.ALLOW,
-              actions: ['cloudwatch:*'],
-              resources: ['*']
-            }),
-            // EventBridge permissions
-            new cdk.aws_iam.PolicyStatement({
-              effect: cdk.aws_iam.Effect.ALLOW,
-              actions: ['events:*'],
-              resources: [`arn:${cdk.Stack.of(this).partition}:events:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:rule/TAK-${envConfig.stackName}-*`]
+              actions: ['kms:Decrypt', 'kms:GenerateDataKey'],
+              resources: ['*'],
+              conditions: {
+                StringEquals: {
+                  'kms:ViaService': [
+                    `s3.${cdk.Stack.of(this).region}.amazonaws.com`,
+                    `secretsmanager.${cdk.Stack.of(this).region}.amazonaws.com`,
+                    `sqs.${cdk.Stack.of(this).region}.amazonaws.com`
+                  ]
+                }
+              }
             })
           ]
         })
@@ -168,6 +158,29 @@ export class EcsService extends Construct {
               effect: cdk.aws_iam.Effect.ALLOW,
               actions: ['logs:CreateLogGroup', 'logs:CreateLogStream', 'logs:PutLogEvents', 'logs:DescribeLogStreams'],
               resources: [`arn:${cdk.Stack.of(this).partition}:logs:*:*:*`]
+            }),
+            new cdk.aws_iam.PolicyStatement({
+              effect: cdk.aws_iam.Effect.ALLOW,
+              actions: ['ecr:GetAuthorizationToken'],
+              resources: ['*']
+            }),
+            new cdk.aws_iam.PolicyStatement({
+              effect: cdk.aws_iam.Effect.ALLOW,
+              actions: ['ecr:BatchCheckLayerAvailability', 'ecr:GetDownloadUrlForLayer', 'ecr:BatchGetImage'],
+              resources: [ecrRepository.repositoryArn]
+            }),
+            new cdk.aws_iam.PolicyStatement({
+              effect: cdk.aws_iam.Effect.ALLOW,
+              actions: ['kms:Decrypt', 'kms:GenerateDataKey'],
+              resources: ['*'],
+              conditions: {
+                StringEquals: {
+                  'kms:ViaService': [
+                    `secretsmanager.${cdk.Stack.of(this).region}.amazonaws.com`,
+                    `ecr.${cdk.Stack.of(this).region}.amazonaws.com`
+                  ]
+                }
+              }
             })
           ]
         })
@@ -190,6 +203,11 @@ export class EcsService extends Construct {
       'TakAdminCertSecret',
       cdk.Fn.importValue(createTakImportValue(envConfig.stackName, TAK_EXPORT_NAMES.TAK_ADMIN_CERT_SECRET_ARN))
     );
+    
+    // Grant access to secrets
+    databaseSecret.grantRead(executionRole);
+    signingSecret.grantRead(executionRole);
+    takAdminCertSecret.grantRead(executionRole);
 
     // Determine container image source
     const containerImage = dockerImageAsset 

@@ -64,6 +64,7 @@ export class CloudTakStack extends cdk.Stack {
     // Import base infrastructure resources from BaseInfra stack
     const vpc = ec2.Vpc.fromVpcAttributes(this, 'VPC', {
       vpcId: cdk.Fn.importValue(createBaseImportValue(envConfig.stackName, BASE_EXPORT_NAMES.VPC_ID)),
+      vpcCidrBlock: cdk.Fn.importValue(createBaseImportValue(envConfig.stackName, BASE_EXPORT_NAMES.VPC_CIDR_IPV4)),
       availabilityZones: this.availabilityZones.slice(0, 2),
       publicSubnetIds: [
         cdk.Fn.importValue(createBaseImportValue(envConfig.stackName, BASE_EXPORT_NAMES.SUBNET_PUBLIC_A)),
@@ -83,6 +84,27 @@ export class CloudTakStack extends cdk.Stack {
     const kmsKey = kms.Key.fromKeyArn(this, 'KMSKey', 
       cdk.Fn.importValue(createBaseImportValue(envConfig.stackName, BASE_EXPORT_NAMES.KMS_KEY))
     );
+    
+    // Add key policy for cross-service access (if key allows policy modifications)
+    try {
+      (kmsKey as kms.Key).addToResourcePolicy(new cdk.aws_iam.PolicyStatement({
+        effect: cdk.aws_iam.Effect.ALLOW,
+        principals: [
+          new cdk.aws_iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
+          new cdk.aws_iam.ServicePrincipal('lambda.amazonaws.com'),
+          new cdk.aws_iam.ServicePrincipal('batch.amazonaws.com')
+        ],
+        actions: ['kms:Decrypt', 'kms:GenerateDataKey'],
+        resources: ['*'],
+        conditions: {
+          StringEquals: {
+            'aws:SourceAccount': this.account
+          }
+        }
+      }));
+    } catch (e) {
+      // Key policy modification not supported for imported keys
+    }
 
     const hostedZone = route53.HostedZone.fromHostedZoneAttributes(this, 'HostedZone', {
       hostedZoneId: cdk.Fn.importValue(createBaseImportValue(envConfig.stackName, BASE_EXPORT_NAMES.HOSTED_ZONE_ID)),
@@ -203,21 +225,29 @@ export class CloudTakStack extends cdk.Stack {
     });
     
     // Grant ALB service account permission to write access logs
+    const elbServiceAccountMap: { [key: string]: string } = {
+      'us-east-1': '127311923021', 'us-east-2': '033677994240', 'us-west-1': '027434742980', 'us-west-2': '797873946194',
+      'ca-central-1': '985666609251', 'eu-central-1': '054676820928', 'eu-west-1': '156460612806', 'eu-west-2': '652711504416',
+      'eu-west-3': '009996457667', 'eu-north-1': '897822967062', 'eu-south-1': '635631232127', 'ap-east-1': '754344448648',
+      'ap-northeast-1': '582318560864', 'ap-northeast-2': '600734575887', 'ap-northeast-3': '383597477331', 'ap-southeast-1': '114774131450',
+      'ap-southeast-2': '783225319266', 'ap-southeast-3': '589379963580', 'ap-south-1': '718504428378', 'me-south-1': '076674570225',
+      'sa-east-1': '507241528517', 'af-south-1': '098369216593', 'us-gov-west-1': '048591011584', 'us-gov-east-1': '190560391635'
+    };
+    
+    const elbPrincipal = elbServiceAccountMap[this.region] 
+      ? new cdk.aws_iam.AccountPrincipal(elbServiceAccountMap[this.region])
+      : new cdk.aws_iam.ServicePrincipal('elasticloadbalancing.amazonaws.com');
+    
     logsBucket.addToResourcePolicy(new cdk.aws_iam.PolicyStatement({
       effect: cdk.aws_iam.Effect.ALLOW,
-      principals: [new cdk.aws_iam.ServicePrincipal('elasticloadbalancing.amazonaws.com')],
+      principals: [elbPrincipal],
       actions: ['s3:PutObject'],
-      resources: [`${logsBucket.bucketArn}/*`],
-      conditions: {
-        StringEquals: {
-          's3:x-amz-acl': 'bucket-owner-full-control'
-        }
-      }
+      resources: [`${logsBucket.bucketArn}/*`]
     }));
     
     logsBucket.addToResourcePolicy(new cdk.aws_iam.PolicyStatement({
       effect: cdk.aws_iam.Effect.ALLOW,
-      principals: [new cdk.aws_iam.ServicePrincipal('elasticloadbalancing.amazonaws.com')],
+      principals: [elbPrincipal],
       actions: ['s3:GetBucketAcl'],
       resources: [logsBucket.bucketArn]
     }));

@@ -103,7 +103,7 @@ export class Database extends Construct {
       managedPolicies: [
         iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AmazonRDSEnhancedMonitoringRole')
       ],
-      path: '/'
+      path: '/service-role/'
     });
 
     // Create subnet group

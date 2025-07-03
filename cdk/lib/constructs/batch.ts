@@ -48,20 +48,31 @@ export class Batch extends Construct {
       inlinePolicies: {
         'etl-policy': new iam.PolicyDocument({
           statements: [
+
             new iam.PolicyStatement({
               effect: iam.Effect.ALLOW,
-              actions: ['batch:DescribeJobs'],
-              resources: ['*']
-            }),
-            new iam.PolicyStatement({
-              effect: iam.Effect.ALLOW,
-              actions: ['s3:*'],
+              actions: ['s3:GetObject', 's3:PutObject', 's3:DeleteObject', 's3:ListBucket', 's3:GetBucketLocation'],
               resources: [assetBucketArn, `${assetBucketArn}/*`]
             }),
             new iam.PolicyStatement({
               effect: iam.Effect.ALLOW,
-              actions: ['ecs:DescribeContainerInstances'],
+              actions: ['ecr:GetAuthorizationToken', 'ecr:BatchCheckLayerAvailability', 'ecr:GetDownloadUrlForLayer', 'ecr:BatchGetImage'],
               resources: ['*']
+            }),
+            new iam.PolicyStatement({
+              effect: iam.Effect.ALLOW,
+              actions: ['logs:CreateLogGroup', 'logs:CreateLogStream', 'logs:PutLogEvents'],
+              resources: [`arn:${cdk.Stack.of(this).partition}:logs:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:log-group:/aws/batch/*`]
+            }),
+            new iam.PolicyStatement({
+              effect: iam.Effect.ALLOW,
+              actions: ['kms:Decrypt', 'kms:GenerateDataKey'],
+              resources: ['*'],
+              conditions: {
+                StringEquals: {
+                  'kms:ViaService': [`s3.${cdk.Stack.of(this).region}.amazonaws.com`]
+                }
+              }
             })
           ]
         })
@@ -73,7 +84,9 @@ export class Batch extends Construct {
       assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
       managedPolicies: [
         iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AmazonECSTaskExecutionRolePolicy')
-      ]
+      ],
+
+      path: '/service-role/'
     });
 
     // Get private subnets for Fargate
