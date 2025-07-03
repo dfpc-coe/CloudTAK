@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v10.19.0 - 2025-07-03
+
+- :rocket: Migrate DrawTools to it's own component to clean up Map.vue
+- :tada: Introduce initial Lost Person Input for generating range rings
+- :rocket: Optimize style by not rendering polygon interiors if fill-opacity = 0
+- :rocket: Optimuze label placement by rendering Polygon labels with fill-opacity = 0 as line labels
+
 ### v10.18.0 - 2025-07-03
 
 - :rocket: Support `emergency` section on CoT type
