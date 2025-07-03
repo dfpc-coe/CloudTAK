@@ -32,10 +32,10 @@
                 >
                     <div class='btn-list'>
                         <a
-                            @click='externalDocs'
                             class='btn btn-dark'
                             target='_blank'
                             rel='noreferrer'
+                            @click='externalDocs'
                         >
                             <IconCode
                                 size='32'
