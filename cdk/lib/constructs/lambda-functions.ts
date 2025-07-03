@@ -5,24 +5,34 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import * as ecr from 'aws-cdk-lib/aws-ecr';
 import * as ecrAssets from 'aws-cdk-lib/aws-ecr-assets';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
+import * as apigateway from 'aws-cdk-lib/aws-apigateway';
+import * as route53 from 'aws-cdk-lib/aws-route53';
+import * as route53targets from 'aws-cdk-lib/aws-route53-targets';
 import { ContextEnvironmentConfig } from '../stack-config';
 
 export interface LambdaFunctionsProps {
   envConfig: ContextEnvironmentConfig;
   ecrRepository: ecr.IRepository;
   eventsImageAsset?: ecrAssets.DockerImageAsset;
+  tilesImageAsset?: ecrAssets.DockerImageAsset;
   assetBucketArn: string;
   serviceUrl: string;
   signingSecret: secretsmanager.ISecret;
+  kmsKey: cdk.aws_kms.IKey;
+  hostedZone: cdk.aws_route53.IHostedZone;
+  certificate: cdk.aws_certificatemanager.ICertificate;
 }
 
 export class LambdaFunctions extends Construct {
   public readonly eventLambda: lambda.Function;
+  public readonly tilesLambda: lambda.Function;
+  public readonly tilesApi: apigateway.RestApi;
+  public readonly etlFunctionRole: iam.Role;
 
   constructor(scope: Construct, id: string, props: LambdaFunctionsProps) {
     super(scope, id);
 
-    const { envConfig, ecrRepository, eventsImageAsset, assetBucketArn, serviceUrl, signingSecret } = props;
+    const { envConfig, ecrRepository, eventsImageAsset, tilesImageAsset, assetBucketArn, serviceUrl, signingSecret, kmsKey, hostedZone, certificate } = props;
 
     const eventLambdaRole = new iam.Role(this, 'EventLambdaRole', {
       roleName: `${envConfig.stackName}-events`,
@@ -33,10 +43,7 @@ export class LambdaFunctions extends Construct {
             new iam.PolicyStatement({
               effect: iam.Effect.ALLOW,
               actions: ['s3:*'],
-              resources: [
-                `arn:${cdk.Stack.of(this).partition}:s3:::${envConfig.stackName}-${cdk.Stack.of(this).account}-${cdk.Stack.of(this).region}`,
-                `arn:${cdk.Stack.of(this).partition}:s3:::${envConfig.stackName}-${cdk.Stack.of(this).account}-${cdk.Stack.of(this).region}/*`
-              ]
+              resources: [assetBucketArn, `${assetBucketArn}/*`]
             })
           ]
         })
@@ -51,7 +58,7 @@ export class LambdaFunctions extends Construct {
     const eventsTag = cloudtakImageTag ? `events-${cloudtakImageTag}` : 'events-latest';
     
     this.eventLambda = new lambda.Function(this, 'EventLambda', {
-      functionName: `${envConfig.stackName}-events`,
+      functionName: `TAK-${envConfig.stackName}-events`,
       runtime: lambda.Runtime.FROM_IMAGE,
       code: eventsImageAsset 
         ? lambda.Code.fromEcrImage(eventsImageAsset.repository, {
@@ -68,9 +75,133 @@ export class LambdaFunctions extends Construct {
       reservedConcurrentExecutions: 20,
       environment: {
         'TAK_ETL_API': serviceUrl,
+        'StackName': cdk.Stack.of(this).stackName
+      },
+      environmentEncryption: props.kmsKey
+    });
+    
+    // Grant access to signing secret
+    signingSecret.grantRead(this.eventLambda);
+    
+    // Create ETL Function Role for dynamic Lambda functions (matches CloudFormation export)
+    const etlFunctionRole = new iam.Role(this, 'ETLFunctionRole', {
+      roleName: `TAK-${envConfig.stackName}`,
+      assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
+      inlinePolicies: {
+        'etl-policy': new iam.PolicyDocument({
+          statements: [
+            new iam.PolicyStatement({
+              effect: iam.Effect.ALLOW,
+              actions: [
+                'sqs:SendMessage',
+                'sqs:ChangeMessageVisibility', 
+                'sqs:DeleteMessage',
+                'sqs:GetQueueUrl',
+                'sqs:GetQueueAttributes'
+              ],
+              resources: [`arn:${cdk.Stack.of(this).partition}:sqs:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:tak-cloudtak-${envConfig.stackName}-layer-*`]
+            })
+          ]
+        })
+      },
+      managedPolicies: [
+        iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaSQSQueueExecutionRole'),
+        iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole')
+      ]
+    });
+    
+    // Export ETL Role ARN for use by dynamic Lambda functions
+    new cdk.CfnOutput(this, 'ETLRoleOutput', {
+      value: etlFunctionRole.roleArn,
+      exportName: `TAK-${envConfig.stackName}-etl-role`,
+      description: 'ETL Lambda Role'
+    });
+    
+    // Create PMTiles Lambda Role
+    const tilesLambdaRole = new iam.Role(this, 'PMTilesLambdaRole', {
+      roleName: `TAK-${envConfig.stackName}-pmtiles`,
+      assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
+      inlinePolicies: {
+        'pmtiles': new iam.PolicyDocument({
+          statements: [
+            new iam.PolicyStatement({
+              effect: iam.Effect.ALLOW,
+              actions: ['s3:List*', 's3:Get*', 's3:Head*', 's3:Describe*'],
+              resources: [assetBucketArn, `${assetBucketArn}/*`]
+            })
+          ]
+        })
+      },
+      managedPolicies: [
+        iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole')
+      ]
+    });
+    
+    // Create PMTiles Lambda
+    const tilesTag = cloudtakImageTag ? `pmtiles-${cloudtakImageTag}` : 'pmtiles-latest';
+    const assetBucketName = assetBucketArn.split(':')[5];
+    const tilesHostname = `tiles.${envConfig.cloudtak.hostname}`;
+    
+    this.tilesLambda = new lambda.Function(this, 'PMTilesLambda', {
+      functionName: `TAK-${envConfig.stackName}-pmtiles`,
+      runtime: lambda.Runtime.FROM_IMAGE,
+      code: tilesImageAsset 
+        ? lambda.Code.fromEcrImage(tilesImageAsset.repository, {
+            tagOrDigest: tilesImageAsset.assetHash
+          })
+        : lambda.Code.fromEcrImage(ecrRepository, {
+            tagOrDigest: tilesTag
+          }),
+      handler: lambda.Handler.FROM_IMAGE,
+      role: tilesLambdaRole,
+      memorySize: 256,
+      timeout: cdk.Duration.seconds(15),
+      description: 'Return Mapbox Vector Tiles from a PMTiles Store',
+      environment: {
         'StackName': cdk.Stack.of(this).stackName,
-        'SigningSecret': signingSecret.secretValue.unsafeUnwrap()
+        'ASSET_BUCKET': assetBucketName,
+        'APIROOT': `https://${tilesHostname}`
+      },
+      environmentEncryption: kmsKey
+    });
+    
+    // Grant access to signing secret
+    signingSecret.grantRead(this.tilesLambda);
+    
+    // Create API Gateway for PMTiles
+    this.tilesApi = new apigateway.RestApi(this, 'PMTilesAPI', {
+      restApiName: `TAK-${envConfig.stackName}-pmtiles`,
+      description: 'PMTiles API Gateway',
+      endpointConfiguration: {
+        types: [apigateway.EndpointType.REGIONAL]
+      },
+      domainName: {
+        domainName: tilesHostname,
+        certificate: certificate
+      },
+      defaultCorsPreflightOptions: {
+        allowOrigins: apigateway.Cors.ALL_ORIGINS,
+        allowMethods: apigateway.Cors.ALL_METHODS,
+        allowHeaders: ['Content-Type', 'X-Amz-Date', 'Authorization', 'X-Api-Key', 'X-Amz-Security-Token', 'X-Amz-User-Agent']
       }
     });
+    
+    // Add proxy resource for all paths
+    const proxyResource = this.tilesApi.root.addResource('{proxy+}');
+    proxyResource.addMethod('GET', new apigateway.LambdaIntegration(this.tilesLambda, {
+      proxy: true
+    }));
+    
+    // Create Route53 record for tiles subdomain
+    new route53.ARecord(this, 'PMTilesDNS', {
+      zone: hostedZone,
+      recordName: `tiles.${envConfig.cloudtak.hostname}`,
+      target: route53.RecordTarget.fromAlias(
+        new route53targets.ApiGateway(this.tilesApi)
+      ),
+      comment: `${cdk.Stack.of(this).stackName} PMTiles API DNS Entry`
+    });
+    
+    this.etlFunctionRole = etlFunctionRole;
   }
 }

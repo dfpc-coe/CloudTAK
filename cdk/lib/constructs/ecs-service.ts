@@ -69,11 +69,119 @@ export class EcsService extends Construct {
         : cdk.RemovalPolicy.DESTROY
     });
 
+    // Create task role with comprehensive permissions
+    const taskRole = new cdk.aws_iam.Role(this, 'TaskRole', {
+      assumedBy: new cdk.aws_iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
+      inlinePolicies: {
+        'api-policy': new cdk.aws_iam.PolicyDocument({
+          statements: [
+            // ECS Exec permissions
+            new cdk.aws_iam.PolicyStatement({
+              effect: cdk.aws_iam.Effect.ALLOW,
+              actions: [
+                'ssmmessages:CreateControlChannel',
+                'ssmmessages:CreateDataChannel', 
+                'ssmmessages:OpenControlChannel',
+                'ssmmessages:OpenDataChannel'
+              ],
+              resources: ['*']
+            }),
+            // S3 bucket access
+            new cdk.aws_iam.PolicyStatement({
+              effect: cdk.aws_iam.Effect.ALLOW,
+              actions: ['s3:*'],
+              resources: [`arn:${cdk.Stack.of(this).partition}:s3:::${assetBucketName}`, `arn:${cdk.Stack.of(this).partition}:s3:::${assetBucketName}/*`]
+            }),
+            // ECR permissions
+            new cdk.aws_iam.PolicyStatement({
+              effect: cdk.aws_iam.Effect.ALLOW,
+              actions: ['ecr:Describe*', 'ecr:Get*', 'ecr:BatchDeleteImage', 'ecr:List*'],
+              resources: [ecrRepository.repositoryArn]
+            }),
+            // SQS permissions for layer queues
+            new cdk.aws_iam.PolicyStatement({
+              effect: cdk.aws_iam.Effect.ALLOW,
+              actions: ['sqs:*'],
+              resources: [`arn:${cdk.Stack.of(this).partition}:sqs:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:tak-cloudtak-${environment}-layer-*`]
+            }),
+            // Secrets Manager access
+            new cdk.aws_iam.PolicyStatement({
+              effect: cdk.aws_iam.Effect.ALLOW,
+              actions: ['secretsmanager:Describe*', 'secretsmanager:Get*', 'secretsmanager:List*'],
+              resources: [`arn:${cdk.Stack.of(this).partition}:secretsmanager:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:secret:TAK-${envConfig.stackName}-*`]
+            }),
+            // ECS permissions for media server
+            new cdk.aws_iam.PolicyStatement({
+              effect: cdk.aws_iam.Effect.ALLOW,
+              actions: ['ecs:Describe*', 'ecs:Get*', 'ecs:List*', 'ecs:RunTask', 'ecs:StopTask'],
+              resources: [
+                `arn:${cdk.Stack.of(this).partition}:ecs:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:container-instance/${ecsCluster.clusterName}/*`,
+                `arn:${cdk.Stack.of(this).partition}:ecs:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:cluster/${ecsCluster.clusterName}`,
+                `arn:${cdk.Stack.of(this).partition}:ecs:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:task/${ecsCluster.clusterName}/*`,
+                `arn:${cdk.Stack.of(this).partition}:ecs:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:task-definition/coe-media-${environment}:*`
+              ]
+            }),
+            // Lambda and CloudFormation permissions for dynamic layer management
+            new cdk.aws_iam.PolicyStatement({
+              effect: cdk.aws_iam.Effect.ALLOW,
+              actions: ['lambda:*'],
+              resources: [`arn:${cdk.Stack.of(this).partition}:lambda:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:function:TAK-${envConfig.stackName}-layer-*`]
+            }),
+            new cdk.aws_iam.PolicyStatement({
+              effect: cdk.aws_iam.Effect.ALLOW,
+              actions: ['cloudformation:*'],
+              resources: [`arn:${cdk.Stack.of(this).partition}:cloudformation:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:stack/TAK-${envConfig.stackName}-layer-*`]
+            }),
+            // Batch job permissions
+            new cdk.aws_iam.PolicyStatement({
+              effect: cdk.aws_iam.Effect.ALLOW,
+              actions: ['batch:SubmitJob', 'batch:ListJobs', 'batch:DescribeJobs', 'batch:CancelJob'],
+              resources: ['*']
+            }),
+            // CloudWatch permissions
+            new cdk.aws_iam.PolicyStatement({
+              effect: cdk.aws_iam.Effect.ALLOW,
+              actions: ['cloudwatch:*'],
+              resources: ['*']
+            }),
+            // EventBridge permissions
+            new cdk.aws_iam.PolicyStatement({
+              effect: cdk.aws_iam.Effect.ALLOW,
+              actions: ['events:*'],
+              resources: [`arn:${cdk.Stack.of(this).partition}:events:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:rule/TAK-${envConfig.stackName}-*`]
+            })
+          ]
+        })
+      }
+    });
+    
+    // Create execution role
+    const executionRole = new cdk.aws_iam.Role(this, 'ExecRole', {
+      assumedBy: new cdk.aws_iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
+      managedPolicies: [
+        cdk.aws_iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AmazonECSTaskExecutionRolePolicy')
+      ],
+      inlinePolicies: {
+        'api-logging': new cdk.aws_iam.PolicyDocument({
+          statements: [
+            new cdk.aws_iam.PolicyStatement({
+              effect: cdk.aws_iam.Effect.ALLOW,
+              actions: ['logs:CreateLogGroup', 'logs:CreateLogStream', 'logs:PutLogEvents', 'logs:DescribeLogStreams'],
+              resources: [`arn:${cdk.Stack.of(this).partition}:logs:*:*:*`]
+            })
+          ]
+        })
+      },
+      path: '/service-role/'
+    });
+
     // Create Fargate task definition
     this.taskDefinition = new ecs.FargateTaskDefinition(this, 'TaskDefinition', {
       family: `TAK-${envConfig.stackName}-CloudTAK`,
       cpu: envConfig.ecs.taskCpu,
-      memoryLimitMiB: envConfig.ecs.taskMemory
+      memoryLimitMiB: envConfig.ecs.taskMemory,
+      taskRole,
+      executionRole
     });
 
     // Import TAK admin certificate secret for base64 encoded certificate
@@ -130,9 +238,9 @@ export class EcsService extends Construct {
       taskDefinition: this.taskDefinition,
       serviceName: `TAK-${envConfig.stackName}-CloudTAK`,
       desiredCount: envConfig.ecs.desiredCount,
-      assignPublicIp: true, // Required for ECR image pulls
+      assignPublicIp: false,
       enableExecuteCommand: envConfig.ecs.enableEcsExec,
-      vpcSubnets: { subnetType: ec2.SubnetType.PUBLIC },
+      vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
       securityGroups: [ecsSecurityGroup]
     });
 

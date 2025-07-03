@@ -10,6 +10,7 @@ export interface LoadBalancerProps {
   vpc: ec2.IVpc;
   albSecurityGroup: ec2.SecurityGroup;
   certificate: acm.ICertificate;
+  logsBucket: cdk.aws_s3.IBucket;
 }
 
 export class LoadBalancer extends Construct {
@@ -20,7 +21,7 @@ export class LoadBalancer extends Construct {
   constructor(scope: Construct, id: string, props: LoadBalancerProps) {
     super(scope, id);
 
-    const { envConfig, vpc, albSecurityGroup, certificate } = props;
+    const { envConfig, vpc, albSecurityGroup, certificate, logsBucket } = props;
 
     this.alb = new elbv2.ApplicationLoadBalancer(this, 'ALB', {
       vpc: vpc,
@@ -30,6 +31,15 @@ export class LoadBalancer extends Construct {
       vpcSubnets: { subnetType: ec2.SubnetType.PUBLIC },
       ipAddressType: elbv2.IpAddressType.DUAL_STACK
     });
+    
+    // Enable access logging to S3 bucket (matches CloudFormation)
+    this.alb.setAttribute('idle_timeout.timeout_seconds', '4000');
+    this.alb.setAttribute('access_logs.s3.enabled', 'true');
+    this.alb.setAttribute('access_logs.s3.bucket', logsBucket.bucketName);
+    this.alb.setAttribute('access_logs.s3.prefix', `TAK-${envConfig.stackName}-CloudTAK`);
+    this.alb.setAttribute('connection_logs.s3.enabled', 'true');
+    this.alb.setAttribute('connection_logs.s3.bucket', logsBucket.bucketName);
+    this.alb.setAttribute('connection_logs.s3.prefix', `TAK-${envConfig.stackName}-CloudTAK`);
 
     this.httpsListener = this.alb.addListener('HTTPSListener', {
       port: 443,

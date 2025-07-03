@@ -30,6 +30,7 @@ import { S3Resources } from './constructs/s3-resources';
 import { Batch } from './constructs/batch';
 import { Secrets } from './constructs/secrets';
 import { LambdaFunctions } from './constructs/lambda-functions';
+import { Alarms } from './constructs/alarms';
 import { registerOutputs } from './outputs';
 import { createBaseImportValue, BASE_EXPORT_NAMES } from './cloudformation-imports';
 import { ContextEnvironmentConfig } from './stack-config';
@@ -45,7 +46,7 @@ export class CloudTakStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: CloudTakStackProps) {
     super(scope, id, {
       ...props,
-      description: 'TAK CloudTAK Application Layer - API and ETL Services',
+      description: 'TAK CloudTAK Application Layer - Web Client and ETL Services',
     });
 
     // Validate configuration early
@@ -192,12 +193,22 @@ export class CloudTakStack extends cdk.Stack {
       kmsKey
     });
 
+    // Create access logs bucket for ALB
+    const logsBucket = new cdk.aws_s3.Bucket(this, 'AccessLogsBucket', {
+      bucketName: `tak-${envConfig.stackName.toLowerCase()}-cloudtak-${this.region}-access-logs`,
+      removalPolicy: envConfig.general.removalPolicy === 'RETAIN' 
+        ? cdk.RemovalPolicy.RETAIN 
+        : cdk.RemovalPolicy.DESTROY,
+      autoDeleteObjects: envConfig.general.removalPolicy !== 'RETAIN'
+    });
+    
     // Create Application Load Balancer with HTTPS
     const loadBalancer = new LoadBalancer(this, 'LoadBalancer', {
       envConfig,
       vpc,
       albSecurityGroup: securityGroups.alb,
-      certificate
+      certificate,
+      logsBucket
     });
 
     // Create Route53 DNS record for the service
@@ -238,9 +249,19 @@ export class CloudTakStack extends cdk.Stack {
       envConfig,
       ecrRepository,
       eventsImageAsset,
+      tilesImageAsset,
       assetBucketArn: s3Resources.assetBucket.bucketArn,
       serviceUrl: route53Records.serviceUrl,
-      signingSecret: secrets.signingSecret
+      signingSecret: secrets.signingSecret,
+      kmsKey,
+      hostedZone,
+      certificate
+    });
+
+    // Create monitoring and alarms
+    const alarms = new Alarms(this, 'Alarms', {
+      envConfig,
+      eventLambda: lambdaFunctions.eventLambda
     });
 
     // Ensure ECS service waits for Route53 records

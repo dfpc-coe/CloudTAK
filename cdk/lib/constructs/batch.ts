@@ -77,7 +77,7 @@ export class Batch extends Construct {
     const privateSubnets = vpc.selectSubnets({ subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS });
 
     this.computeEnvironment = new batch.CfnComputeEnvironment(this, 'ComputeEnvironment', {
-      computeEnvironmentName: `etl-${envConfig.stackName}`,
+      computeEnvironmentName: `etl-TAK-${envConfig.stackName}`,
       type: 'MANAGED',
       state: 'ENABLED',
       serviceRole: batchServiceRole.roleArn,
@@ -89,24 +89,27 @@ export class Batch extends Construct {
       }
     });
 
+    // Get image tag from context for CI/CD deployments
+    const cloudtakImageTag = cdk.Stack.of(this).node.tryGetContext('cloudtakImageTag');
+    const dataTag = cloudtakImageTag ? `data-${cloudtakImageTag}` : 'data-latest';
+    
     this.jobDefinition = new batch.CfnJobDefinition(this, 'JobDefinition', {
-      jobDefinitionName: `${envConfig.stackName}-data-job`,
+      jobDefinitionName: `TAK-${envConfig.stackName}-data-job`,
       type: 'container',
       platformCapabilities: ['FARGATE'],
       retryStrategy: { attempts: 1 },
       containerProperties: {
-        image: `${ecrRepository.repositoryUri}:data-latest`,
-        vcpus: 1,
-        memory: 2048,
+        image: `${ecrRepository.repositoryUri}:${dataTag}`,
         jobRoleArn: batchJobRole.roleArn,
         executionRoleArn: batchExecRole.roleArn,
         readonlyRootFilesystem: false,
-        networkConfiguration: {
-          assignPublicIp: 'DISABLED'
-        },
         fargatePlatformConfiguration: {
           platformVersion: 'LATEST'
         },
+        resourceRequirements: [
+          { type: 'VCPU', value: '1' },
+          { type: 'MEMORY', value: '2048' }
+        ],
         environment: [
           { name: 'StackName', value: cdk.Stack.of(this).stackName },
           { name: 'TAK_ETL_URL', value: serviceUrl },
@@ -116,7 +119,7 @@ export class Batch extends Construct {
     });
 
     this.jobQueue = new batch.CfnJobQueue(this, 'JobQueue', {
-      jobQueueName: `${envConfig.stackName}-queue`,
+      jobQueueName: `TAK-${envConfig.stackName}-queue`,
       state: 'ENABLED',
       priority: 1,
       computeEnvironmentOrder: [{
