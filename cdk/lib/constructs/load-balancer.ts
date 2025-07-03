@@ -44,11 +44,7 @@ export class LoadBalancer extends Construct {
     this.httpsListener = this.alb.addListener('HTTPSListener', {
       port: 443,
       protocol: elbv2.ApplicationProtocol.HTTPS,
-      certificates: [certificate],
-      defaultAction: elbv2.ListenerAction.fixedResponse(404, {
-        contentType: 'text/plain',
-        messageBody: 'Not Found'
-      })
+      certificates: [certificate]
     });
 
     this.alb.addListener('HTTPListener', {
@@ -76,8 +72,8 @@ export class LoadBalancer extends Construct {
       }
     });
 
-    this.httpsListener.addTargetGroups('DefaultTargets', {
-      targetGroups: [this.targetGroup]
+    this.httpsListener.addAction('DefaultAction', {
+      action: elbv2.ListenerAction.forward([this.targetGroup])
     });
   }
 }

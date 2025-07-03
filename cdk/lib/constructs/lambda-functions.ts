@@ -140,7 +140,7 @@ export class LambdaFunctions extends Construct {
     // Create PMTiles Lambda
     const tilesTag = cloudtakImageTag ? `pmtiles-${cloudtakImageTag}` : 'pmtiles-latest';
     const assetBucketName = assetBucketArn.split(':')[5];
-    const tilesHostname = `tiles.${envConfig.cloudtak.hostname}`;
+    const tilesHostname = `tiles.${serviceUrl.replace('https://', '').replace('http://', '')}`;
     
     this.tilesLambda = new lambda.Function(this, 'PMTilesLambda', {
       functionName: `TAK-${envConfig.stackName}-pmtiles`,
@@ -192,7 +192,7 @@ export class LambdaFunctions extends Construct {
       proxy: true
     }));
     
-    // Create Route53 record for tiles subdomain
+    // Create Route53 records for tiles subdomain
     new route53.ARecord(this, 'PMTilesDNS', {
       zone: hostedZone,
       recordName: `tiles.${envConfig.cloudtak.hostname}`,
@@ -200,6 +200,15 @@ export class LambdaFunctions extends Construct {
         new route53targets.ApiGateway(this.tilesApi)
       ),
       comment: `${cdk.Stack.of(this).stackName} PMTiles API DNS Entry`
+    });
+    
+    new route53.AaaaRecord(this, 'PMTilesDNSIPv6', {
+      zone: hostedZone,
+      recordName: `tiles.${envConfig.cloudtak.hostname}`,
+      target: route53.RecordTarget.fromAlias(
+        new route53targets.ApiGateway(this.tilesApi)
+      ),
+      comment: `${cdk.Stack.of(this).stackName} PMTiles API IPv6 DNS Entry`
     });
     
     this.etlFunctionRole = etlFunctionRole;

@@ -241,7 +241,9 @@ export class EcsService extends Construct {
       assignPublicIp: false,
       enableExecuteCommand: envConfig.ecs.enableEcsExec,
       vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
-      securityGroups: [ecsSecurityGroup]
+      securityGroups: [ecsSecurityGroup],
+      minHealthyPercent: environment === 'prod' ? 100 : 50,
+      maxHealthyPercent: 200
     });
 
     // Attach service to ALB target group for load balancing
