@@ -262,7 +262,11 @@ export class EcsService extends Construct {
         'CLOUDTAK_Server_api': `https://${cdk.Fn.importValue(createTakImportValue(envConfig.stackName, TAK_EXPORT_NAMES.TAK_SERVICE_NAME))}:8443`,
         'CLOUDTAK_Server_webtak': `https://${cdk.Fn.importValue(createTakImportValue(envConfig.stackName, TAK_EXPORT_NAMES.TAK_SERVICE_NAME))}:8446`,
         'CLOUDTAK_Server_auth_password': 'atakatak',
-        'POSTGRES': `postgresql://\${\{resolve:secretsmanager:TAK-${envConfig.stackName}-CloudTAK/Database/Master-Password:SecretString:username:AWSCURRENT\}\}:\${\{resolve:secretsmanager:TAK-${envConfig.stackName}-CloudTAK/Database/Master-Password:SecretString:password:AWSCURRENT\}\}@${databaseHostname}:5432/tak_ps_etl?sslmode=require`
+        'POSTGRES': cdk.Fn.sub('postgresql://${username}:${password}@${endpoint}:5432/tak_ps_etl?sslmode=require', {
+          'username': '{{resolve:secretsmanager:TAK-' + envConfig.stackName + '-CloudTAK/Database/Master-Password:SecretString:username:AWSCURRENT}}',
+          'password': '{{resolve:secretsmanager:TAK-' + envConfig.stackName + '-CloudTAK/Database/Master-Password:SecretString:password:AWSCURRENT}}',
+          'endpoint': databaseHostname
+        })
       },
       secrets: {
         'SigningSecret': ecs.Secret.fromSecretsManager(signingSecret),
