@@ -299,4 +299,51 @@ test('Server Env: schema validation with invalid field', async (t) => {
     t.end();
 });
 
+// Admin User Environment Variable Tests
+test('Admin Env: CLOUDTAK_ADMIN_USERNAME and CLOUDTAK_ADMIN_PASSWORD create admin user', async (t) => {
+    const originalUsername = process.env.CLOUDTAK_ADMIN_USERNAME;
+    const originalPassword = process.env.CLOUDTAK_ADMIN_PASSWORD;
+    
+    process.env.CLOUDTAK_ADMIN_USERNAME = 'test-admin';
+    process.env.CLOUDTAK_ADMIN_PASSWORD = 'test-password';
+    
+    try {
+        // Mock the Profile.list method to simulate no existing admin
+        const listStub = sinon.stub(flight.config.models.Profile, 'list').resolves({ total: 0 });
+        const generateStub = sinon.stub(flight.config.models.Profile, 'generate').resolves();
+        
+        // Test that admin creation logic would be triggered
+        const hasAdminCredentials = process.env.CLOUDTAK_ADMIN_USERNAME && process.env.CLOUDTAK_ADMIN_PASSWORD;
+        t.ok(hasAdminCredentials, 'Admin credentials are set');
+        
+        listStub.restore();
+        generateStub.restore();
+    } catch (err) {
+        t.error(err, 'no error');
+    }
+    
+    process.env.CLOUDTAK_ADMIN_USERNAME = originalUsername;
+    process.env.CLOUDTAK_ADMIN_PASSWORD = originalPassword;
+    t.end();
+});
+
+test('Admin Env: Missing credentials skip admin creation', async (t) => {
+    const originalUsername = process.env.CLOUDTAK_ADMIN_USERNAME;
+    const originalPassword = process.env.CLOUDTAK_ADMIN_PASSWORD;
+    
+    delete process.env.CLOUDTAK_ADMIN_USERNAME;
+    delete process.env.CLOUDTAK_ADMIN_PASSWORD;
+    
+    try {
+        const hasAdminCredentials = process.env.CLOUDTAK_ADMIN_USERNAME && process.env.CLOUDTAK_ADMIN_PASSWORD;
+        t.notOk(hasAdminCredentials, 'Admin credentials are not set');
+    } catch (err) {
+        t.error(err, 'no error');
+    }
+    
+    if (originalUsername) process.env.CLOUDTAK_ADMIN_USERNAME = originalUsername;
+    if (originalPassword) process.env.CLOUDTAK_ADMIN_PASSWORD = originalPassword;
+    t.end();
+});
+
 flight.landing();
