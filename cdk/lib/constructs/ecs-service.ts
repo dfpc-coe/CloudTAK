@@ -32,6 +32,7 @@ export interface EcsServiceProps {
   dockerImageAsset?: ecrAssets.DockerImageAsset;
   databaseSecret: secretsmanager.ISecret;
   databaseHostname: string;
+  connectionStringSecret: secretsmanager.ISecret;
   assetBucketName: string;
   signingSecret: secretsmanager.ISecret;
   serviceUrl: string;
@@ -55,6 +56,7 @@ export class EcsService extends Construct {
       dockerImageAsset,
       databaseSecret,
       databaseHostname,
+      connectionStringSecret,
       assetBucketName,
       signingSecret,
       serviceUrl
@@ -164,6 +166,12 @@ export class EcsService extends Construct {
                   ]
                 }
               }
+            }),
+            // ECR permissions
+            new cdk.aws_iam.PolicyStatement({
+              effect: cdk.aws_iam.Effect.ALLOW,
+              actions: ['ecr:ListImages', 'ecr:DescribeImages'],
+              resources: [ecrRepository.repositoryArn]
             })
           ]
         })
@@ -233,6 +241,7 @@ export class EcsService extends Construct {
     databaseSecret.grantRead(executionRole);
     signingSecret.grantRead(executionRole);
     takAdminCertSecret.grantRead(executionRole);
+    connectionStringSecret.grantRead(executionRole);
 
     // Determine container image source
     const containerImage = dockerImageAsset 
@@ -261,16 +270,12 @@ export class EcsService extends Construct {
         'CLOUDTAK_Server_url': `ssl://${cdk.Fn.importValue(createTakImportValue(envConfig.stackName, TAK_EXPORT_NAMES.TAK_SERVICE_NAME))}:8089`,
         'CLOUDTAK_Server_api': `https://${cdk.Fn.importValue(createTakImportValue(envConfig.stackName, TAK_EXPORT_NAMES.TAK_SERVICE_NAME))}:8443`,
         'CLOUDTAK_Server_webtak': `https://${cdk.Fn.importValue(createTakImportValue(envConfig.stackName, TAK_EXPORT_NAMES.TAK_SERVICE_NAME))}:8446`,
-        'CLOUDTAK_Server_auth_password': 'atakatak',
-        'POSTGRES': cdk.Fn.sub('postgresql://${username}:${password}@${endpoint}:5432/tak_ps_etl?sslmode=require', {
-          'username': '{{resolve:secretsmanager:TAK-' + envConfig.stackName + '-CloudTAK/Database/Master-Password:SecretString:username:AWSCURRENT}}',
-          'password': '{{resolve:secretsmanager:TAK-' + envConfig.stackName + '-CloudTAK/Database/Master-Password:SecretString:password:AWSCURRENT}}',
-          'endpoint': databaseHostname
-        })
+        'CLOUDTAK_Server_auth_password': 'atakatak'
       },
       secrets: {
         'SigningSecret': ecs.Secret.fromSecretsManager(signingSecret),
-        'CLOUDTAK_Server_auth_p12': ecs.Secret.fromSecretsManager(takAdminCertSecret)
+        'CLOUDTAK_Server_auth_p12': ecs.Secret.fromSecretsManager(takAdminCertSecret),
+        'POSTGRES': ecs.Secret.fromSecretsManager(connectionStringSecret)
       }
     });
 

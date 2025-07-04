@@ -209,11 +209,31 @@ export class CloudTakStack extends cdk.Stack {
       securityGroups: [securityGroups.database]
     });
 
-    // Create S3 resources for asset storage
+    // Create S3 resources for asset storage (without Lambda trigger initially)
     const s3Resources = new S3Resources(this, 'S3Resources', {
       envConfig,
       kmsKey
     });
+
+    // Create Lambda functions for event processing
+    const lambdaFunctions = new LambdaFunctions(this, 'LambdaFunctions', {
+      envConfig,
+      ecrRepository,
+      eventsImageAsset,
+      tilesImageAsset,
+      assetBucketArn: s3Resources.assetBucket.bucketArn,
+      serviceUrl: route53Records.serviceUrl,
+      signingSecret: secrets.signingSecret,
+      kmsKey,
+      hostedZone,
+      certificate
+    });
+
+    // Add S3 notification after Lambda is created
+    s3Resources.assetBucket.addEventNotification(
+      cdk.aws_s3.EventType.OBJECT_CREATED,
+      new cdk.aws_s3_notifications.LambdaDestination(lambdaFunctions.eventLambda)
+    );
 
     // Create access logs bucket for ALB
     const logsBucket = new cdk.aws_s3.Bucket(this, 'AccessLogsBucket', {
@@ -280,6 +300,7 @@ export class CloudTakStack extends cdk.Stack {
       dockerImageAsset,
       databaseSecret: database.masterSecret,
       databaseHostname: database.cluster.clusterEndpoint.hostname,
+      connectionStringSecret: database.connectionStringSecret,
       assetBucketName: s3Resources.assetBucket.bucketName,
       signingSecret: secrets.signingSecret,
       serviceUrl: route53Records.serviceUrl
@@ -292,20 +313,6 @@ export class CloudTakStack extends cdk.Stack {
       ecrRepository,
       assetBucketArn: s3Resources.assetBucket.bucketArn,
       serviceUrl: route53Records.serviceUrl
-    });
-
-    // Create Lambda functions for event processing
-    const lambdaFunctions = new LambdaFunctions(this, 'LambdaFunctions', {
-      envConfig,
-      ecrRepository,
-      eventsImageAsset,
-      tilesImageAsset,
-      assetBucketArn: s3Resources.assetBucket.bucketArn,
-      serviceUrl: route53Records.serviceUrl,
-      signingSecret: secrets.signingSecret,
-      kmsKey,
-      hostedZone,
-      certificate
     });
 
     // Create monitoring and alarms

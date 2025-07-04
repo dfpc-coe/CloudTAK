@@ -10,7 +10,9 @@ import {
   aws_kms as kms,
   aws_logs as logs,
   Duration,
-  RemovalPolicy
+  RemovalPolicy,
+  SecretValue,
+  Fn
 } from 'aws-cdk-lib';
 import type { ContextEnvironmentConfig } from '../stack-config';
 import { DATABASE_CONSTANTS } from '../utils/constants';
@@ -68,6 +70,11 @@ export class Database extends Construct {
    * The database reader endpoint hostname (for read replicas)
    */
   public readonly readerEndpoint: string;
+
+  /**
+   * The connection string secret
+   */
+  public readonly connectionStringSecret: secretsmanager.Secret;
 
   constructor(scope: Construct, id: string, props: DatabaseProps) {
     super(scope, id);
@@ -232,5 +239,19 @@ export class Database extends Construct {
     // Store the hostname and reader endpoint
     this.hostname = this.cluster.clusterEndpoint.hostname;
     this.readerEndpoint = this.cluster.clusterReadEndpoint.hostname;
+
+    // Create connection string secret
+    this.connectionStringSecret = new secretsmanager.Secret(this, 'ConnectionStringSecret', {
+      description: `${id}: PostgreSQL Connection String`,
+      secretName: `TAK-${props.envConfig.stackName}-CloudTAK/Database/Connection-String`,
+      encryptionKey: props.kmsKey,
+      secretStringValue: SecretValue.unsafePlainText(
+        Fn.sub('postgresql://${username}:${password}@${endpoint}:5432/tak_ps_etl?sslmode=require', {
+          username: '{{resolve:secretsmanager:TAK-' + props.envConfig.stackName + '-CloudTAK/Database/Master-Password:SecretString:username:AWSCURRENT}}',
+          password: '{{resolve:secretsmanager:TAK-' + props.envConfig.stackName + '-CloudTAK/Database/Master-Password:SecretString:password:AWSCURRENT}}',
+          endpoint: this.hostname
+        })
+      )
+    });
   }
 }

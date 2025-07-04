@@ -37,6 +37,6 @@ export class Route53 extends Construct {
       )
     });
 
-    this.serviceUrl = `https://${hostname}.${hostedZone.zoneName}`;
+    this.serviceUrl = `${hostname}.${hostedZone.zoneName}`;
   }
 }
