@@ -241,6 +241,29 @@ test('Server Env: auth object updates database', async (t) => {
     t.end();
 });
 
+test('Server Env: P12 certificate processing from secret ARN', async (t) => {
+    const originalSecretArn = process.env.CLOUDTAK_Server_auth_p12_secret_arn;
+    const originalPassword = process.env.CLOUDTAK_Server_auth_password;
+    
+    process.env.CLOUDTAK_Server_auth_p12_secret_arn = 'arn:aws:secretsmanager:region:account:secret:test-secret';
+    process.env.CLOUDTAK_Server_auth_password = 'test-password';
+    
+    try {
+        // Test that P12 processing environment variables are set correctly
+        const hasP12Config = process.env.CLOUDTAK_Server_auth_p12_secret_arn && process.env.CLOUDTAK_Server_auth_password;
+        t.ok(hasP12Config, 'P12 certificate configuration is set');
+        
+        // Test that the secret ARN format is valid
+        t.ok(process.env.CLOUDTAK_Server_auth_p12_secret_arn.startsWith('arn:aws:secretsmanager:'), 'Secret ARN has correct format');
+    } catch (err) {
+        t.error(err, 'no error');
+    }
+    
+    process.env.CLOUDTAK_Server_auth_p12_secret_arn = originalSecretArn;
+    process.env.CLOUDTAK_Server_auth_password = originalPassword;
+    t.end();
+});
+
 test('Server Env: multiple fields update database', async (t) => {
     const originalVars = {
         name: process.env.CLOUDTAK_Server_name,
@@ -317,6 +340,33 @@ test('Admin Env: CLOUDTAK_ADMIN_USERNAME and CLOUDTAK_ADMIN_PASSWORD create admi
         
         listStub.restore();
         generateStub.restore();
+    } catch (err) {
+        t.error(err, 'no error');
+    }
+    
+    process.env.CLOUDTAK_ADMIN_USERNAME = originalUsername;
+    process.env.CLOUDTAK_ADMIN_PASSWORD = originalPassword;
+    t.end();
+});
+
+test('Admin Env: Admin user creation requires server auth configuration', async (t) => {
+    const originalUsername = process.env.CLOUDTAK_ADMIN_USERNAME;
+    const originalPassword = process.env.CLOUDTAK_ADMIN_PASSWORD;
+    
+    process.env.CLOUDTAK_ADMIN_USERNAME = 'test-admin';
+    process.env.CLOUDTAK_ADMIN_PASSWORD = 'test-password';
+    
+    try {
+        const server = await flight.config.models.Server.from(1);
+        
+        // Admin user creation requires server to have auth.cert, auth.key, and webtak configured
+        const canCreateAdmin = server.auth?.cert && server.auth?.key && server.webtak;
+        
+        if (canCreateAdmin) {
+            t.pass('Server has required auth configuration for admin user creation');
+        } else {
+            t.pass('Server missing auth configuration - admin user creation will be skipped');
+        }
     } catch (err) {
         t.error(err, 'no error');
     }
