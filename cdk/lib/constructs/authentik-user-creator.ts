@@ -123,6 +123,18 @@ exports.handler = async (event) => {
       actions: ['secretsmanager:GetSecretValue'],
       resources: [`arn:${cdk.Stack.of(this).partition}:secretsmanager:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:secret:TAK-${stackName}-AuthInfra/Authentik/Admin-API-Token-*`]
     }));
+    
+    // Grant KMS permissions for decrypting secrets
+    createUserLambda.addToRolePolicy(new cdk.aws_iam.PolicyStatement({
+      effect: cdk.aws_iam.Effect.ALLOW,
+      actions: ['kms:Decrypt'],
+      resources: ['*'],
+      conditions: {
+        StringEquals: {
+          'kms:ViaService': `secretsmanager.${cdk.Stack.of(this).region}.amazonaws.com`
+        }
+      }
+    }));
 
     // Create custom resource
     new cr.AwsCustomResource(this, 'CustomResource', {

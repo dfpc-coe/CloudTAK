@@ -253,7 +253,7 @@ export class EcsService extends Construct {
     // Grant access to secrets
     databaseSecret.grantRead(executionRole);
     signingSecret.grantRead(executionRole);
-    takAdminCertSecret.grantRead(executionRole);
+    takAdminCertSecret.grantRead(taskRole); // Task role for application access
     connectionStringSecret.grantRead(executionRole);
     adminPasswordSecret.grantRead(executionRole);
 
@@ -261,7 +261,7 @@ export class EcsService extends Construct {
     new AuthentikUserCreator(this, 'AuthentikUserCreator', {
       stackName: envConfig.stackName,
       adminPasswordSecret,
-      authentikUrl: `https://auth.${serviceUrl}`
+      authentikUrl: cdk.Fn.importValue(`TAK-${envConfig.stackName}-AuthInfra-AuthentikUrl`)
     });
 
     // Determine container image source
@@ -292,13 +292,13 @@ export class EcsService extends Construct {
         'CLOUDTAK_Server_api': `https://${cdk.Fn.importValue(createTakImportValue(envConfig.stackName, TAK_EXPORT_NAMES.TAK_SERVICE_NAME))}:8443`,
         'CLOUDTAK_Server_webtak': `https://${cdk.Fn.importValue(createTakImportValue(envConfig.stackName, TAK_EXPORT_NAMES.TAK_SERVICE_NAME))}:8446`,
         'CLOUDTAK_Server_auth_password': 'atakatak',
+        'CLOUDTAK_Server_auth_p12_secret_arn': cdk.Fn.importValue(createTakImportValue(envConfig.stackName, TAK_EXPORT_NAMES.TAK_ADMIN_CERT_SECRET_ARN)),
         // PR #717 - Configurable ECR and ECS names
         'ECR_TASKS_REPOSITORY_NAME': envConfig.cloudtak.ecrRepositoryName,
         'ECS_CLUSTER_PREFIX': `TAK-${envConfig.stackName}-BaseInfra`
       },
       secrets: {
         'SigningSecret': ecs.Secret.fromSecretsManager(signingSecret),
-        'CLOUDTAK_Server_auth_p12': ecs.Secret.fromSecretsManager(takAdminCertSecret),
         'POSTGRES': ecs.Secret.fromSecretsManager(connectionStringSecret),
         'CLOUDTAK_ADMIN_USERNAME': ecs.Secret.fromSecretsManager(adminPasswordSecret, 'username'),
         'CLOUDTAK_ADMIN_PASSWORD': ecs.Secret.fromSecretsManager(adminPasswordSecret, 'password')
