@@ -237,11 +237,24 @@ export class EcsService extends Construct {
       cdk.Fn.importValue(createTakImportValue(envConfig.stackName, TAK_EXPORT_NAMES.TAK_ADMIN_CERT_SECRET_ARN))
     );
     
+    // Create admin password secret
+    const adminPasswordSecret = new secretsmanager.Secret(this, 'AdminPasswordSecret', {
+      description: 'CloudTAK Admin Username and Password',
+      secretName: `TAK-${envConfig.stackName}-CloudTAK/API/Admin-Password`,
+      generateSecretString: {
+        secretStringTemplate: JSON.stringify({ username: 'admin' }),
+        generateStringKey: 'password',
+        excludePunctuation: true,
+        passwordLength: 16
+      }
+    });
+    
     // Grant access to secrets
     databaseSecret.grantRead(executionRole);
     signingSecret.grantRead(executionRole);
     takAdminCertSecret.grantRead(executionRole);
     connectionStringSecret.grantRead(executionRole);
+    adminPasswordSecret.grantRead(executionRole);
 
     // Determine container image source
     const containerImage = dockerImageAsset 
@@ -275,7 +288,9 @@ export class EcsService extends Construct {
       secrets: {
         'SigningSecret': ecs.Secret.fromSecretsManager(signingSecret),
         'CLOUDTAK_Server_auth_p12': ecs.Secret.fromSecretsManager(takAdminCertSecret),
-        'POSTGRES': ecs.Secret.fromSecretsManager(connectionStringSecret)
+        'POSTGRES': ecs.Secret.fromSecretsManager(connectionStringSecret),
+        'CLOUDTAK_ADMIN_USERNAME': ecs.Secret.fromSecretsManager(adminPasswordSecret, 'username'),
+        'CLOUDTAK_ADMIN_PASSWORD': ecs.Secret.fromSecretsManager(adminPasswordSecret, 'password')
       }
     });
 
