@@ -215,26 +215,6 @@ export class CloudTakStack extends cdk.Stack {
       kmsKey
     });
 
-    // Create Lambda functions for event processing
-    const lambdaFunctions = new LambdaFunctions(this, 'LambdaFunctions', {
-      envConfig,
-      ecrRepository,
-      eventsImageAsset,
-      tilesImageAsset,
-      assetBucketArn: s3Resources.assetBucket.bucketArn,
-      serviceUrl: route53Records.serviceUrl,
-      signingSecret: secrets.signingSecret,
-      kmsKey,
-      hostedZone,
-      certificate
-    });
-
-    // Add S3 notification after Lambda is created
-    s3Resources.assetBucket.addEventNotification(
-      cdk.aws_s3.EventType.OBJECT_CREATED,
-      new cdk.aws_s3_notifications.LambdaDestination(lambdaFunctions.eventLambda)
-    );
-
     // Create access logs bucket for ALB
     const logsBucket = new cdk.aws_s3.Bucket(this, 'AccessLogsBucket', {
       bucketName: `tak-${envConfig.stackName.toLowerCase()}-cloudtak-${this.region}-access-logs`,
@@ -287,6 +267,26 @@ export class CloudTakStack extends cdk.Stack {
       hostname: envConfig.cloudtak.hostname,
       loadBalancer: loadBalancer.alb
     });
+
+    // Create Lambda functions for event processing
+    const lambdaFunctions = new LambdaFunctions(this, 'LambdaFunctions', {
+      envConfig,
+      ecrRepository,
+      eventsImageAsset,
+      tilesImageAsset,
+      assetBucketArn: s3Resources.assetBucket.bucketArn,
+      serviceUrl: route53Records.serviceUrl,
+      signingSecret: secrets.signingSecret,
+      kmsKey,
+      hostedZone,
+      certificate
+    });
+
+    // Add S3 notification after Lambda is created
+    s3Resources.assetBucket.addEventNotification(
+      cdk.aws_s3.EventType.OBJECT_CREATED,
+      new cdk.aws_s3_notifications.LambdaDestination(lambdaFunctions.eventLambda)
+    );
 
     // Create ECS Fargate service for the CloudTAK API
     const ecsService = new EcsService(this, 'EcsService', {
