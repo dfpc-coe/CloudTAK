@@ -19,7 +19,7 @@ import * as ecr from 'aws-cdk-lib/aws-ecr';
 import * as ecrAssets from 'aws-cdk-lib/aws-ecr-assets';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import { ContextEnvironmentConfig } from '../stack-config';
-import { createTakImportValue, TAK_EXPORT_NAMES, createBaseImportValue, BASE_EXPORT_NAMES } from '../cloudformation-imports';
+import { createTakImportValue, TAK_EXPORT_NAMES } from '../cloudformation-imports';
 
 export interface EcsServiceProps {
   environment: 'prod' | 'dev-test';
@@ -124,31 +124,6 @@ export class EcsService extends Construct {
               resources: ['*']
             }),
 
-            // ECS permissions for media server
-            new cdk.aws_iam.PolicyStatement({
-              effect: cdk.aws_iam.Effect.ALLOW,
-              actions: ['ecs:Describe*', 'ecs:Get*', 'ecs:List*', 'ecs:RunTask', 'ecs:StopTask'],
-              resources: [
-                `arn:${cdk.Stack.of(this).partition}:ecs:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:container-instance/TAK-${envConfig.stackName}-BaseInfra/*`,
-                `arn:${cdk.Stack.of(this).partition}:ecs:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:cluster/TAK-${envConfig.stackName}-BaseInfra`,
-                `arn:${cdk.Stack.of(this).partition}:ecs:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:task/TAK-${envConfig.stackName}-BaseInfra/*`,
-                `arn:${cdk.Stack.of(this).partition}:ecs:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:task-definition/TAK-${envConfig.stackName}-media:*`,
-                `arn:${cdk.Stack.of(this).partition}:ecs:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:task-definition/TAK-${envConfig.stackName}-media`
-              ]
-            }),
-            new cdk.aws_iam.PolicyStatement({
-              effect: cdk.aws_iam.Effect.ALLOW,
-              actions: ['iam:PassRole'],
-              resources: [
-                `arn:${cdk.Stack.of(this).partition}:iam::${cdk.Stack.of(this).account}:role/TAK-${envConfig.stackName}-media-*`,
-                `arn:${cdk.Stack.of(this).partition}:iam::${cdk.Stack.of(this).account}:role/service-role/TAK-${envConfig.stackName}-media-*`
-              ]
-            }),
-            new cdk.aws_iam.PolicyStatement({
-              effect: cdk.aws_iam.Effect.ALLOW,
-              actions: ['ec2:DescribeNetworkInterfaces', 'ecs:ListTaskDefinitions'],
-              resources: ['*']
-            }),
 
             // KMS permissions for decryption
             new cdk.aws_iam.PolicyStatement({
@@ -246,24 +221,22 @@ export class EcsService extends Construct {
         streamPrefix: 'cloudtak-api',
         logGroup: logGroup
       }),
-      // Environment variables for application configuration (matching old CloudFormation)
+      // Environment variables for application configuration
       environment: {
         'AWS_REGION': cdk.Stack.of(this).region,
-        'CLOUDTAK_Mode': 'AWS',
-        'StackName': `TAK-${envConfig.stackName}-CloudTAK`,
+        'CLOUDTAK_MODE': 'AWS',
+        'STACK_NAME': `TAK-${envConfig.stackName}-CloudTAK`,
         'ASSET_BUCKET': assetBucketName,
         'API_URL': serviceUrl,
-        'VpcId': cdk.Fn.importValue(createBaseImportValue(envConfig.stackName, BASE_EXPORT_NAMES.VPC_ID)),
-        'SubnetPublicA': cdk.Fn.importValue(createBaseImportValue(envConfig.stackName, BASE_EXPORT_NAMES.SUBNET_PUBLIC_A)),
-        'SubnetPublicB': cdk.Fn.importValue(createBaseImportValue(envConfig.stackName, BASE_EXPORT_NAMES.SUBNET_PUBLIC_B)),
+        'ECS_CLUSTER_PREFIX': `TAK-${envConfig.stackName}-BaseInfra`,
         // CloudTAK Server configuration
         'CLOUDTAK_Server_name': `TAK.NZ ${environment === 'prod' ? 'Production' : 'Development'} Server`,
         'CLOUDTAK_Server_url': `ssl://${cdk.Fn.importValue(createTakImportValue(envConfig.stackName, TAK_EXPORT_NAMES.TAK_SERVICE_NAME))}:8089`,
         'CLOUDTAK_Server_api': `https://${cdk.Fn.importValue(createTakImportValue(envConfig.stackName, TAK_EXPORT_NAMES.TAK_SERVICE_NAME))}:8443`,
         'CLOUDTAK_Server_webtak': `https://${cdk.Fn.importValue(createTakImportValue(envConfig.stackName, TAK_EXPORT_NAMES.TAK_SERVICE_NAME))}:8446`,
-        'CLOUDTAK_Server_auth_password': 'atakatak',
-        'POSTGRES': `postgresql://\${\{resolve:secretsmanager:TAK-${envConfig.stackName}-CloudTAK/Database/Master-Password:SecretString:username:AWSCURRENT\}\}:\${\{resolve:secretsmanager:TAK-${envConfig.stackName}-CloudTAK/Database/Master-Password:SecretString:password:AWSCURRENT\}\}@${databaseHostname}:5432/tak_ps_etl?sslmode=require`
+        'CLOUDTAK_Server_auth_password': 'atakatak'
       },
+      // Secrets from AWS Secrets Manager
       secrets: {
         'SigningSecret': ecs.Secret.fromSecretsManager(signingSecret),
         'CLOUDTAK_Server_auth_p12': ecs.Secret.fromSecretsManager(takAdminCertSecret)

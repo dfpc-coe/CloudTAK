@@ -279,7 +279,7 @@ export class CloudTakStack extends cdk.Stack {
       ecrRepository,
       dockerImageAsset,
       databaseSecret: database.masterSecret,
-      databaseHostname: database.hostname,
+      databaseHostname: database.cluster.clusterEndpoint.hostname,
       assetBucketName: s3Resources.assetBucket.bucketName,
       signingSecret: secrets.signingSecret,
       serviceUrl: route53Records.serviceUrl

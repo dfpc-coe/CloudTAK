@@ -18,14 +18,28 @@ export class Secrets extends Construct {
     const { envConfig, kmsKey } = props;
 
     this.signingSecret = new secretsmanager.Secret(this, 'SigningSecret', {
-      description: `${envConfig.stackName} Signing Secret`,
-      secretName: `TAK-${envConfig.stackName}-CloudTAK/API/Signing-Secret`,
+      description: `TAK-${envConfig.stackName}-CloudTAK Signing Secret`,
+      secretName: `TAK-${envConfig.stackName}-CloudTAK/api/secret`,
       generateSecretString: {
         excludePunctuation: true,
         passwordLength: 32
       },
       encryptionKey: kmsKey,
-      removalPolicy: envConfig.general.removalPolicy === 'retain' 
+      removalPolicy: envConfig.general.removalPolicy === 'RETAIN' 
+        ? cdk.RemovalPolicy.RETAIN 
+        : cdk.RemovalPolicy.DESTROY
+    });
+
+    // Create media secret to match old CloudFormation pattern
+    new secretsmanager.Secret(this, 'MediaSecret', {
+      description: `TAK-${envConfig.stackName}-CloudTAK Media Secret`,
+      secretName: `TAK-${envConfig.stackName}-CloudTAK/api/media`,
+      generateSecretString: {
+        excludePunctuation: true,
+        passwordLength: 16
+      },
+      encryptionKey: kmsKey,
+      removalPolicy: envConfig.general.removalPolicy === 'RETAIN' 
         ? cdk.RemovalPolicy.RETAIN 
         : cdk.RemovalPolicy.DESTROY
     });
