@@ -1,7 +1,6 @@
 import test from 'tape';
 import Flight from './flight.js';
 import sinon from 'sinon';
-import Config from '../lib/config.js';
 
 const flight = new Flight();
 
@@ -292,7 +291,7 @@ test('Server Env: schema validation with invalid field', async (t) => {
         });
         
         t.fail('Should have thrown error for invalid field');
-    } catch (err) {
+    } catch {
         t.pass('Correctly rejected invalid field');
     }
     
