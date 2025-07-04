@@ -230,6 +230,35 @@ export default class Config {
             });
         }
 
+        // Create admin user if credentials provided and server is configured with auth
+        if (process.env.CLOUDTAK_ADMIN_USERNAME && process.env.CLOUDTAK_ADMIN_PASSWORD && 
+            config.server.auth.cert && config.server.auth.key && config.server.webtak) {
+            try {
+                // Check if admin user already exists
+                const existingAdmin = await config.models.Profile.list({
+                    filter: 'system_admin',
+                    limit: 1
+                });
+                
+                if (existingAdmin.total === 0) {
+                    console.error('ok - Creating admin user from environment variables');
+                    const { TAKAPI, APIAuthPassword } = await import('@tak-ps/node-tak');
+                    
+                    const auth = new APIAuthPassword(process.env.CLOUDTAK_ADMIN_USERNAME, process.env.CLOUDTAK_ADMIN_PASSWORD);
+                    const api = await TAKAPI.init(new URL(config.server.webtak), auth);
+                    const certs = await api.Credentials.generate();
+                    
+                    await config.models.Profile.generate({
+                        auth: certs,
+                        username: process.env.CLOUDTAK_ADMIN_USERNAME,
+                        system_admin: true
+                    });
+                }
+            } catch (err) {
+                console.error(`Error creating admin user: ${err instanceof Error ? err.message : String(err)}`);
+            }
+        }
+
         for (const envkey in process.env) {
             if (!envkey.startsWith('CLOUDTAK')) continue;
 
