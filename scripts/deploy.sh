@@ -31,10 +31,7 @@ while [[ $# -gt 0 ]]; do
             SYNC_UPSTREAM=true
             shift
             ;;
-        --skip-build)
-            SKIP_BUILD=true
-            shift
-            ;;
+
         --help)
             echo "Usage: $0 [OPTIONS]"
             echo ""
@@ -43,8 +40,8 @@ while [[ $# -gt 0 ]]; do
             echo "  --stack-name     Stack name component [default: DevTest]"
             echo "  --region         AWS region [default: ap-southeast-2]"
 
-            echo "  --sync-upstream  Sync with upstream before building"
-            echo "  --skip-build     Skip container image building"
+            echo "  --sync-upstream  Sync with upstream before deployment"
+
             echo "  --help           Show this help message"
             exit 0
             ;;
@@ -81,6 +78,12 @@ if ! aws sts get-caller-identity &> /dev/null; then
     exit 1
 fi
 
+if ! command -v jq &> /dev/null; then
+    echo "❌ jq is required but not installed"
+    echo "   Install with: apt-get install jq (Ubuntu) or brew install jq (macOS)"
+    exit 1
+fi
+
 echo "✅ Prerequisites validated"
 
 # Sync with upstream (if requested)
@@ -88,37 +91,12 @@ if [ "$SYNC_UPSTREAM" = "true" ]; then
     echo ""
     echo "🔄 Step 1: Syncing with upstream..."
     cd "$PROJECT_ROOT"
-    ./scripts/sync-upstream.sh
-fi
-
-# Apply resource name patches
-if [ -f "$PROJECT_ROOT/scripts/patch-resource-names.sh" ]; then
-    echo ""
-    echo "🔧 Step 1: Applying resource name patches..."
-    cd "$PROJECT_ROOT"
-    export ECR_TASKS_REPOSITORY_NAME="coe-ecr-etl"
-    export ECS_CLUSTER_PREFIX="TAK-$STACK_NAME-BaseInfra"
-    ./scripts/patch-resource-names.sh
-fi
-
-# Build container images (unless skipped)
-if [ "$SKIP_BUILD" != "true" ]; then
-    echo ""
-    echo "🐳 Step 2: Building container images..."
-    cd "$PROJECT_ROOT"
-    export GITSHA=$(git rev-parse --short HEAD)
-    export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-    export AWS_REGION
-    export Environment="$ENVIRONMENT"
-    
-    ./scripts/build.sh
-else
-    echo "⏭️  Skipping image build"
+    ./scripts/sync-upstream.sh --current-branch
 fi
 
 # Deploy CDK infrastructure
 echo ""
-echo "🏗️  Step 3: Deploying CDK infrastructure..."
+echo "🏗️  Step 2: Deploying CDK infrastructure..."
 
 cd "$PROJECT_ROOT/cdk"
 
@@ -141,7 +119,7 @@ cdk deploy \
 
 # Post-deployment validation
 echo ""
-echo "✅ Step 4: Post-deployment validation..."
+echo "✅ Step 3: Post-deployment validation..."
 
 if [ -f "cdk-outputs.json" ]; then
     echo "📋 Deployment outputs:"
