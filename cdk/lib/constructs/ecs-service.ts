@@ -291,7 +291,10 @@ export class EcsService extends Construct {
         'CLOUDTAK_Server_url': `ssl://${cdk.Fn.importValue(createTakImportValue(envConfig.stackName, TAK_EXPORT_NAMES.TAK_SERVICE_NAME))}:8089`,
         'CLOUDTAK_Server_api': `https://${cdk.Fn.importValue(createTakImportValue(envConfig.stackName, TAK_EXPORT_NAMES.TAK_SERVICE_NAME))}:8443`,
         'CLOUDTAK_Server_webtak': `https://${cdk.Fn.importValue(createTakImportValue(envConfig.stackName, TAK_EXPORT_NAMES.TAK_SERVICE_NAME))}:8446`,
-        'CLOUDTAK_Server_auth_password': 'atakatak'
+        'CLOUDTAK_Server_auth_password': 'atakatak',
+        // PR #717 - Configurable ECR and ECS names
+        'ECR_TASKS_REPOSITORY_NAME': envConfig.cloudtak.ecrRepositoryName,
+        'ECS_CLUSTER_PREFIX': `TAK-${envConfig.stackName}-BaseInfra`
       },
       secrets: {
         'SigningSecret': ecs.Secret.fromSecretsManager(signingSecret),
