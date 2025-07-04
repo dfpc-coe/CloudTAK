@@ -20,6 +20,7 @@ import * as ecrAssets from 'aws-cdk-lib/aws-ecr-assets';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import { ContextEnvironmentConfig } from '../stack-config';
 import { createTakImportValue, TAK_EXPORT_NAMES, createBaseImportValue, BASE_EXPORT_NAMES } from '../cloudformation-imports';
+import { AuthentikUserCreator } from './authentik-user-creator';
 
 export interface EcsServiceProps {
   environment: 'prod' | 'dev-test';
@@ -255,6 +256,13 @@ export class EcsService extends Construct {
     takAdminCertSecret.grantRead(executionRole);
     connectionStringSecret.grantRead(executionRole);
     adminPasswordSecret.grantRead(executionRole);
+
+    // Create Authentik user during deployment
+    new AuthentikUserCreator(this, 'AuthentikUserCreator', {
+      stackName: envConfig.stackName,
+      adminPasswordSecret,
+      authentikUrl: `https://auth.${serviceUrl}`
+    });
 
     // Determine container image source
     const containerImage = dockerImageAsset 

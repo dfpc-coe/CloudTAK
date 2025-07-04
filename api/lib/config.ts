@@ -8,7 +8,7 @@ import ConnectionPool from './connection-pool.js';
 import { ConnectionWebSocket } from './connection-web.js';
 import Cacher from './cacher.js';
 import type { Server } from './schema.js';
-import { type InferSelectModel } from 'drizzle-orm';
+import { type InferSelectModel, sql } from 'drizzle-orm';
 import Models from './models.js';
 import process from 'node:process';
 import * as pgtypes from './schema.js';
@@ -146,10 +146,68 @@ export default class Config {
         } catch (err) {
             console.log(`ok - no server config found: ${err instanceof Error ? err.message : String(err)}`);
 
-            server = await models.Server.generate({
-                name: 'Default Server',
-                url: 'ssl://localhost:8089',
-                api: 'https://localhost:8443'
+            // Create server with environment variables if available
+            const serverData: any = {
+                name: process.env.CLOUDTAK_Server_name || 'Default Server',
+                url: process.env.CLOUDTAK_Server_url || 'ssl://localhost:8089',
+                api: process.env.CLOUDTAK_Server_api || 'https://localhost:8443'
+            };
+            
+            if (process.env.CLOUDTAK_Server_webtak) {
+                serverData.webtak = process.env.CLOUDTAK_Server_webtak;
+            }
+            
+            // Handle auth certificates
+            if (process.env.CLOUDTAK_Server_auth_p12 && process.env.CLOUDTAK_Server_auth_password) {
+                try {
+                    const { convertToPem } = await import('p12-pem/lib/lib/p12.js');
+                    const p12Buffer = Buffer.from(process.env.CLOUDTAK_Server_auth_p12, 'base64');
+                    const certs = convertToPem(p12Buffer, process.env.CLOUDTAK_Server_auth_password);
+                    
+                    serverData.auth = {
+                        cert: certs.pemCertificate,
+                        key: certs.pemKey
+                    };
+                    console.error('ok - Extracted certificate and key from P12 file');
+                } catch (err) {
+                    console.error(`Error extracting P12 file: ${err instanceof Error ? err.message : String(err)}`);
+                }
+            } else if (process.env.CLOUDTAK_Server_auth_cert && process.env.CLOUDTAK_Server_auth_key) {
+                serverData.auth = {
+                    cert: process.env.CLOUDTAK_Server_auth_cert,
+                    key: process.env.CLOUDTAK_Server_auth_key
+                };
+            }
+            
+            server = await models.Server.generate(serverData);
+        }
+        
+        // Update existing server with environment variables
+        const serverEnvUpdates: Partial<InferSelectModel<typeof Server>> = {};
+        let hasServerUpdates = false;
+
+        if (process.env.CLOUDTAK_Server_name && server.name !== process.env.CLOUDTAK_Server_name) {
+            serverEnvUpdates.name = process.env.CLOUDTAK_Server_name;
+            hasServerUpdates = true;
+        }
+        if (process.env.CLOUDTAK_Server_url && server.url !== process.env.CLOUDTAK_Server_url) {
+            serverEnvUpdates.url = process.env.CLOUDTAK_Server_url;
+            hasServerUpdates = true;
+        }
+        if (process.env.CLOUDTAK_Server_api && server.api !== process.env.CLOUDTAK_Server_api) {
+            serverEnvUpdates.api = process.env.CLOUDTAK_Server_api;
+            hasServerUpdates = true;
+        }
+        if (process.env.CLOUDTAK_Server_webtak && server.webtak !== process.env.CLOUDTAK_Server_webtak) {
+            serverEnvUpdates.webtak = process.env.CLOUDTAK_Server_webtak;
+            hasServerUpdates = true;
+        }
+        
+        if (hasServerUpdates) {
+            console.error('ok - Updating existing server configuration from environment variables');
+            server = await models.Server.commit(server.id, {
+                ...serverEnvUpdates,
+                updated: sql`Now()`
             });
         }
 
@@ -176,6 +234,35 @@ export default class Config {
         if (process.env.SubnetPublicA) config.SubnetPublicA = process.env.SubnetPublicA;
         if (process.env.SubnetPublicB) config.SubnetPublicB = process.env.SubnetPublicB;
         if (process.env.MediaSecurityGroup) config.MediaSecurityGroup = process.env.MediaSecurityGroup;
+
+        // Create admin user if credentials provided and server is configured with auth
+        if (process.env.CLOUDTAK_ADMIN_USERNAME && process.env.CLOUDTAK_ADMIN_PASSWORD && 
+            config.server.auth.cert && config.server.auth.key && config.server.webtak) {
+            try {
+                // Check if admin user already exists
+                const existingAdmin = await config.models.Profile.list({
+                    filter: 'system_admin',
+                    limit: 1
+                });
+                
+                if (existingAdmin.total === 0) {
+                    console.error('ok - Creating admin user from environment variables');
+                    const { TAKAPI, APIAuthPassword } = await import('@tak-ps/node-tak');
+                    
+                    const auth = new APIAuthPassword(process.env.CLOUDTAK_ADMIN_USERNAME, process.env.CLOUDTAK_ADMIN_PASSWORD);
+                    const api = await TAKAPI.init(new URL(config.server.webtak), auth);
+                    const certs = await api.Credentials.generate();
+                    
+                    await config.models.Profile.generate({
+                        auth: certs,
+                        username: process.env.CLOUDTAK_ADMIN_USERNAME,
+                        system_admin: true
+                    });
+                }
+            } catch (err) {
+                console.error(`Error creating admin user: ${err instanceof Error ? err.message : String(err)}`);
+            }
+        }
 
         for (const envkey in process.env) {
             if (!envkey.startsWith('CLOUDTAK')) continue;

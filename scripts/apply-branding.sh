@@ -12,6 +12,10 @@ if [ -f "branding/logo/tak-nz-logo.svg" ] && [ -d "api/web/public" ]; then
     else
         echo "⚠️  rsvg-convert not available, skipping logo conversion"
     fi
+    
+    # Update CloudTAKLogo.svg with TAK.NZ logo
+    cp branding/logo/tak-nz-logo.svg api/web/public/CloudTAKLogo.svg
+    echo "✅ Updated CloudTAKLogo.svg"
 fi
 
 if [ -f "branding/logo/favicon.ico" ] && [ -d "api/web/public" ]; then

@@ -89,7 +89,7 @@ export class LambdaFunctions extends Construct {
       description: 'Respond to events on the S3 Asset Bucket & Stack SQS Queue',
       reservedConcurrentExecutions: 20,
       environment: {
-        'TAK_ETL_API': serviceUrl,
+        'TAK_ETL_API': serviceUrl.startsWith('http') ? serviceUrl : `https://${serviceUrl}`,
         'StackName': cdk.Stack.of(this).stackName
       },
       environmentEncryption: props.kmsKey

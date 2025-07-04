@@ -19,7 +19,7 @@
                 </div>
                 <div class='col mx-2'>
                     <div class='page-pretitle'>
-                        Colorado - DFPC - CoE
+                        TAK.NZ &bull; Team Awareness &bull; Te mōhio o te rōpū
                     </div>
                     <h2 class='page-title'>
                         CloudTAK

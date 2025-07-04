@@ -321,7 +321,9 @@ export class CloudTakStack extends cdk.Stack {
       eventLambda: lambdaFunctions.eventLambda
     });
 
-    // Ensure ECS service waits for Route53 records
+    // Ensure ECS service waits for database and Route53 records
+    ecsService.service.node.addDependency(database.cluster);
+    ecsService.service.node.addDependency(database.connectionStringSecret);
     ecsService.service.node.addDependency(route53Records.aRecord);
     ecsService.service.node.addDependency(route53Records.aaaaRecord);
 
