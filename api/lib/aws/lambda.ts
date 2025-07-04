@@ -10,6 +10,8 @@ import { Static } from '@sinclair/typebox'
 import { StackFrame } from './cloudformation.js';
 import { Capabilities } from '@tak-ps/etl'
 
+const ECR_TASKS_REPOSITORY = process.env.ECR_TASKS_REPOSITORY_NAME || 'coe-ecr-etl-tasks';
+
 /**
  * @class
  */
@@ -93,7 +95,7 @@ export default class Lambda {
                         },
                         Role: cf.importValue(config.StackName + '-etl-role'),
                         Code: {
-                            ImageUri: cf.join([cf.accountId, '.dkr.ecr.', cf.region, `.amazonaws.com/coe-ecr-etl:`, cf.ref('Task')])
+                            ImageUri: cf.join([cf.accountId, '.dkr.ecr.', cf.region, `.amazonaws.com/${ECR_TASKS_REPOSITORY}:`, cf.ref('Task')])
                         }
                     }
                 }

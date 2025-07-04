@@ -5,6 +5,8 @@ import {
     ECRClient
 } from '@aws-sdk/client-ecr';
 
+const ECR_TASKS_REPOSITORY = process.env.ECR_TASKS_REPOSITORY_NAME || 'coe-ecr-etl-tasks';
+
 const flight = new Flight();
 
 flight.init();
@@ -15,7 +17,7 @@ test('GET: api/task - empty', async (t) => {
     try {
         Sinon.stub(ECRClient.prototype, 'send').callsFake((command) => {
             t.deepEquals(command.input, {
-                repositoryName: 'coe-ecr-etl'
+                repositoryName: ECR_TASKS_REPOSITORY
             });
             return Promise.resolve({ imageIds: [] });
         });
@@ -43,7 +45,7 @@ test('GET: api/task - empty', async (t) => {
     try {
         Sinon.stub(ECRClient.prototype, 'send').callsFake((command) => {
             t.deepEquals(command.input, {
-                repositoryName: 'coe-ecr-etl'
+                repositoryName: ECR_TASKS_REPOSITORY
             });
 
             return Promise.resolve({

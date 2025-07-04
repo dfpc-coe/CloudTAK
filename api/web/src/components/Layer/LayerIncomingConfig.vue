@@ -6,6 +6,17 @@
             </h3>
             <div class='ms-auto btn-list'>
                 <TablerIconButton
+                    v-if='disabled && cronEnabled'
+                    title='Manual Run'
+                    @click='invoke'
+                >
+                    <IconPlayerPlay
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+
+                <TablerIconButton
                     v-if='disabled'
                     title='Edit Layer Config'
                     @click='disabled = false'
@@ -35,7 +46,7 @@
                     v-if='props.capabilities ? props.capabilities.incoming.invocation.includes("schedule") : true'
                     class='col-md-12'
                 >
-                    <div class='d-flex'>
+                    <div class='d-flex align-items-center'>
                         <IconCalendarClock
                             :size='20'
                             stroke='1'
@@ -112,7 +123,7 @@
                     v-if='props.capabilities ? props.capabilities.incoming.invocation.includes("webhook") : true'
                     class='col-md-12'
                 >
-                    <div class='d-flex'>
+                    <div class='d-flex align-items-center'>
                         <IconWebhook
                             :size='20'
                             stroke='1'
@@ -279,6 +290,7 @@ import {
     IconSquareChevronRight,
     IconCalendarClock,
     IconChevronDown,
+    IconPlayerPlay,
     IconWebhook,
     IconPencil,
     IconSettings,
@@ -332,6 +344,21 @@ function reload() {
     cronEnabled.value = !!incoming.value.cron
     disabled.value = true;
 }
+
+async function invoke() {
+    loading.value.init = true;
+    try {
+        await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/task/invoke`, {
+            method: 'POST'
+        });
+
+        loading.value.init = false;
+    } catch (err) {
+        loading.value.init = false;
+        throw err;
+    }
+}
+
 
 function cronstr(cron?: string) {
     if (!cron) return;

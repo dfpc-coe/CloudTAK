@@ -2,6 +2,8 @@ import AWSECR, { ImageIdentifier, ListImagesCommandInput } from '@aws-sdk/client
 import Err from '@openaddresses/batch-error';
 import process from 'node:process';
 
+const ECR_TASKS_REPOSITORY = process.env.ECR_TASKS_REPOSITORY_NAME || 'coe-ecr-etl-tasks';
+
 /**
  * @class
  */
@@ -14,7 +16,7 @@ export default class ECR {
 
             let res;
             do {
-                const req: ListImagesCommandInput = { repositoryName: 'coe-ecr-etl' };
+                const req: ListImagesCommandInput = { repositoryName: ECR_TASKS_REPOSITORY };
                 if (res && res.nextToken) req.nextToken = res.nextToken;
                 res = await ecr.send(new AWSECR.ListImagesCommand(req));
                 imageIds.push(...(res.imageIds || []));
@@ -31,7 +33,7 @@ export default class ECR {
 
         try {
             await ecr.send(new AWSECR.BatchDeleteImageCommand({
-                repositoryName: 'coe-ecr-etl',
+                repositoryName: ECR_TASKS_REPOSITORY,
                 imageIds: [{ imageTag: `${task}-v${version}` }]
             }));
         } catch (err) {
