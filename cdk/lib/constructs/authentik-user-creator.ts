@@ -10,13 +10,14 @@ export interface AuthentikUserCreatorProps {
   stackName: string;
   adminPasswordSecret: secretsmanager.ISecret;
   authentikUrl: string;
+  takAdminEmail: string;
 }
 
 export class AuthentikUserCreator extends Construct {
   constructor(scope: Construct, id: string, props: AuthentikUserCreatorProps) {
     super(scope, id);
 
-    const { stackName, adminPasswordSecret, authentikUrl } = props;
+    const { stackName, adminPasswordSecret, authentikUrl, takAdminEmail } = props;
 
     const createUserLambda = new lambda.Function(this, 'Function', {
       functionName: `${cdk.Stack.of(this).stackName}-AuthentikUserCreator`,
@@ -25,6 +26,8 @@ export class AuthentikUserCreator extends Construct {
       timeout: cdk.Duration.minutes(5),
       code: lambda.Code.fromInline(`
 const { SecretsManagerClient, GetSecretValueCommand } = require('@aws-sdk/client-secrets-manager');
+
+const DEFAULT_ADMIN_DISPLAY_NAME = 'CloudTAK Default Admin';
 
 const log = (level, message, data = {}) => {
   const logEntry = {
@@ -105,11 +108,11 @@ exports.handler = async (event, context) => {
       return;
     }
     
-    const { AuthStackName, AdminSecretName, AuthentikUrl } = event.ResourceProperties;
-    log('debug', 'Configuration loaded', { AuthStackName, AdminSecretName, AuthentikUrl });
+    const { AuthStackName, AdminSecretName, AuthentikUrl, AdminEmail } = event.ResourceProperties;
+    log('debug', 'Configuration loaded', { AuthStackName, AdminSecretName, AuthentikUrl, AdminEmail });
     
-    if (!AuthStackName || !AdminSecretName || !AuthentikUrl) {
-      throw new Error('Missing required properties: AuthStackName, AdminSecretName, or AuthentikUrl');
+    if (!AuthStackName || !AdminSecretName || !AuthentikUrl || !AdminEmail) {
+      throw new Error('Missing required properties: AuthStackName, AdminSecretName, AuthentikUrl, or AdminEmail');
     }
     
     const secrets = new SecretsManagerClient({ region: process.env.AWS_REGION });
@@ -155,58 +158,117 @@ exports.handler = async (event, context) => {
       return response.json();
     });
     
+    let user;
+    
     if (existingUsers.results?.length > 0) {
-      log('info', 'User already exists, skipping creation', { username: creds.username, userId: existingUsers.results[0].pk });
-      await sendResponse(event, context, 'SUCCESS', { 
-        message: 'User already exists',
-        username: creds.username 
-      }, 'authentik-user-' + creds.username);
-      return;
+      // Update existing user password using set_password endpoint
+      const existingUser = existingUsers.results[0];
+      const setPasswordUrl = AuthentikUrl + '/api/v3/core/users/' + existingUser.pk + '/set_password/';
+      
+      log('info', 'User already exists, updating password', { username: creds.username, userId: existingUser.pk });
+      log('debug', 'Making HTTP request', { url: setPasswordUrl, method: 'POST', hasAuth: true });
+      
+      await retry(async () => {
+        const response = await fetch(setPasswordUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ' + apiToken,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ password: creds.password })
+        });
+        
+        log('debug', 'HTTP response received', { 
+          statusCode: response.status, 
+          contentLength: response.headers.get('content-length') || 'unknown',
+          url: setPasswordUrl
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          log('error', 'Set password request failed', { statusCode: response.status, error: errorText });
+          throw new Error(\`Set password failed: \${response.status} \${errorText}\`);
+        }
+      });
+      
+      user = existingUser;
+      log('info', 'Authentik user password updated successfully', { username: user.username, userId: user.pk });
+    } else {
+      // Create new user without password
+      const createUrl = AuthentikUrl + '/api/v3/core/users/';
+      const userData = {
+        username: creds.username,
+        name: DEFAULT_ADMIN_DISPLAY_NAME,
+        email: AdminEmail,
+        is_active: true,
+        is_staff: true,
+        is_superuser: false
+      };
+      
+      log('info', 'Creating new Authentik user', { username: creds.username, email: userData.email });
+      log('debug', 'Making HTTP request', { url: createUrl, method: 'POST', hasAuth: true });
+      
+      user = await retry(async () => {
+        const response = await fetch(createUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ' + apiToken,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(userData)
+        });
+        
+        log('debug', 'HTTP response received', { 
+          statusCode: response.status, 
+          contentLength: response.headers.get('content-length') || 'unknown',
+          url: createUrl
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          log('error', 'Create user request failed', { statusCode: response.status, error: errorText });
+          throw new Error(\`Create user failed: \${response.status} \${errorText}\`);
+        }
+        
+        return response.json();
+      });
+      
+      log('info', 'Authentik user created successfully', { username: user.username, userId: user.pk });
+      
+      // Set password for newly created user
+      const setPasswordUrl = AuthentikUrl + '/api/v3/core/users/' + user.pk + '/set_password/';
+      
+      log('info', 'Setting password for new user', { username: creds.username, userId: user.pk });
+      log('debug', 'Making HTTP request', { url: setPasswordUrl, method: 'POST', hasAuth: true });
+      
+      await retry(async () => {
+        const response = await fetch(setPasswordUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ' + apiToken,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ password: creds.password })
+        });
+        
+        log('debug', 'HTTP response received', { 
+          statusCode: response.status, 
+          contentLength: response.headers.get('content-length') || 'unknown',
+          url: setPasswordUrl
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          log('error', 'Set password request failed', { statusCode: response.status, error: errorText });
+          throw new Error(\`Set password failed: \${response.status} \${errorText}\`);
+        }
+      });
+      
+      log('info', 'Password set successfully for new user', { username: user.username, userId: user.pk });
     }
     
-    // Create user
-    const createUrl = AuthentikUrl + '/api/v3/core/users/';
-    const userData = {
-      username: creds.username,
-      name: creds.username,
-      email: creds.username + '@tak.nz',
-      is_active: true,
-      is_staff: true,
-      is_superuser: true,
-      password: creds.password
-    };
-    
-    log('info', 'Creating new Authentik user', { username: creds.username, email: userData.email });
-    log('debug', 'Making HTTP request', { url: createUrl, method: 'POST', hasAuth: true });
-    
-    const user = await retry(async () => {
-      const response = await fetch(createUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Bearer ' + apiToken,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(userData)
-      });
-      
-      log('debug', 'HTTP response received', { 
-        statusCode: response.status, 
-        contentLength: response.headers.get('content-length') || 'unknown',
-        url: createUrl
-      });
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        log('error', 'Create user request failed', { statusCode: response.status, error: errorText });
-        throw new Error(\`Create user failed: \${response.status} \${errorText}\`);
-      }
-      
-      return response.json();
-    });
-    
-    log('info', 'Authentik user created successfully', { username: user.username, userId: user.pk });
     await sendResponse(event, context, 'SUCCESS', { 
-      message: 'User created successfully',
+      message: existingUsers.results?.length > 0 ? 'User password updated successfully' : 'User created and password set successfully',
       username: user.username,
       userId: user.pk
     }, 'authentik-user-' + user.username);
@@ -263,6 +325,7 @@ exports.handler = async (event, context) => {
         AuthStackName: `TAK-${stackName}-AuthInfra`,
         AdminSecretName: adminPasswordSecret.secretName,
         AuthentikUrl: authentikUrl,
+        AdminEmail: takAdminEmail,
         // Force update on every deployment to ensure user creation is attempted
         Timestamp: Date.now().toString()
       }

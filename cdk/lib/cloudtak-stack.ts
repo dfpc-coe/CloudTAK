@@ -31,6 +31,7 @@ import { Batch } from './constructs/batch';
 import { Secrets } from './constructs/secrets';
 import { LambdaFunctions } from './constructs/lambda-functions';
 import { Alarms } from './constructs/alarms';
+import { AuthentikUserCreator } from './constructs/authentik-user-creator';
 import { registerOutputs } from './outputs';
 import { createBaseImportValue, BASE_EXPORT_NAMES } from './cloudformation-imports';
 import { ContextEnvironmentConfig } from './stack-config';
@@ -125,10 +126,9 @@ export class CloudTakStack extends cdk.Stack {
     
     if (usePreBuiltImages) {
       // Use BaseInfra ECR repository for CI/CD deployments
-      ecrRepository = ecr.Repository.fromRepositoryAttributes(this, 'ImportedECRRepository', {
-        repositoryArn: cdk.Fn.importValue(createBaseImportValue(envConfig.stackName, BASE_EXPORT_NAMES.ECR_REPO)),
-        repositoryName: envConfig.cloudtak.ecrRepositoryName
-      });
+      ecrRepository = ecr.Repository.fromRepositoryArn(this, 'ImportedECRRepository',
+        cdk.Fn.importValue(createBaseImportValue(envConfig.stackName, BASE_EXPORT_NAMES.ECR_REPO))
+      );
     } else {
       // Create Docker image assets for local deployments
       dockerImageAsset = new ecrAssets.DockerImageAsset(this, 'CloudTAKDockerAsset', {
@@ -303,6 +303,7 @@ export class CloudTakStack extends cdk.Stack {
       connectionStringSecret: database.connectionStringSecret,
       assetBucketName: s3Resources.assetBucket.bucketName,
       signingSecret: secrets.signingSecret,
+      adminPasswordSecret: secrets.adminPasswordSecret,
       serviceUrl: route53Records.serviceUrl
     });
 
@@ -319,6 +320,16 @@ export class CloudTakStack extends cdk.Stack {
     const alarms = new Alarms(this, 'Alarms', {
       envConfig,
       eventLambda: lambdaFunctions.eventLambda
+    });
+
+    // Create Authentik user for CloudTAK admin
+    const authentikUrl = cdk.Fn.importValue(`TAK-${envConfig.stackName}-AuthInfra-AuthentikUrl`);
+    
+    new AuthentikUserCreator(this, 'AuthentikUserCreator', {
+      stackName: envConfig.stackName,
+      adminPasswordSecret: secrets.adminPasswordSecret,
+      authentikUrl: authentikUrl,
+      takAdminEmail: envConfig.cloudtak.takAdminEmail
     });
 
     // Ensure ECS service waits for database and Route53 records

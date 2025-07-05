@@ -29,8 +29,8 @@ export interface ContextEnvironmentConfig {
   };
   cloudtak: {
     hostname: string;
-    databaseName: string;
-    ecrRepositoryName: string;
+    takAdminEmail: string;
+    apiGatewayEndpointType?: string;
   };
   ecr: {
     imageRetentionCount: number;

@@ -39,8 +39,6 @@ export function applyContextOverrides(
     cloudtak: {
       ...baseConfig.cloudtak,
       hostname: app.node.tryGetContext('hostname') ?? baseConfig.cloudtak.hostname,
-      databaseName: app.node.tryGetContext('databaseName') ?? baseConfig.cloudtak.databaseName,
-      ecrRepositoryName: app.node.tryGetContext('ecrRepositoryName') ?? baseConfig.cloudtak.ecrRepositoryName,
     },
     ecr: {
       ...baseConfig.ecr,

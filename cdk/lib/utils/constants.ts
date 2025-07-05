@@ -12,6 +12,7 @@ export const DATABASE_CONSTANTS = {
 };
 
 export const CLOUDTAK_CONSTANTS = {
-  DEFAULT_ADMIN_USERNAME: 'ckadmin'
+  DEFAULT_ADMIN_USERNAME: 'ckadmin',
+  DEFAULT_ADMIN_DISPLAY_NAME: 'CloudTAK Default Admin'
 };
 

@@ -18,9 +18,10 @@ import * as logs from 'aws-cdk-lib/aws-logs';
 import * as ecr from 'aws-cdk-lib/aws-ecr';
 import * as ecrAssets from 'aws-cdk-lib/aws-ecr-assets';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
+import * as s3 from 'aws-cdk-lib/aws-s3';
 import { ContextEnvironmentConfig } from '../stack-config';
 import { createTakImportValue, TAK_EXPORT_NAMES, createBaseImportValue, BASE_EXPORT_NAMES } from '../cloudformation-imports';
-import { AuthentikUserCreator } from './authentik-user-creator';
+
 import { CLOUDTAK_CONSTANTS } from '../utils/constants';
 
 export interface EcsServiceProps {
@@ -37,6 +38,7 @@ export interface EcsServiceProps {
   connectionStringSecret: secretsmanager.ISecret;
   assetBucketName: string;
   signingSecret: secretsmanager.ISecret;
+  adminPasswordSecret: secretsmanager.ISecret;
   serviceUrl: string;
 }
 
@@ -61,6 +63,7 @@ export class EcsService extends Construct {
       connectionStringSecret,
       assetBucketName,
       signingSecret,
+      adminPasswordSecret,
       serviceUrl
     } = props;
 
@@ -173,10 +176,7 @@ export class EcsService extends Construct {
             new cdk.aws_iam.PolicyStatement({
               effect: cdk.aws_iam.Effect.ALLOW,
               actions: ['ecr:ListImages', 'ecr:DescribeImages'],
-              resources: [
-                ecrRepository.repositoryArn,
-                `arn:${cdk.Stack.of(this).partition}:ecr:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:repository/${envConfig.cloudtak.ecrRepositoryName}`
-              ]
+              resources: [ecrRepository.repositoryArn]
             })
           ]
         })
@@ -215,7 +215,8 @@ export class EcsService extends Construct {
                 StringEquals: {
                   'kms:ViaService': [
                     `secretsmanager.${cdk.Stack.of(this).region}.amazonaws.com`,
-                    `ecr.${cdk.Stack.of(this).region}.amazonaws.com`
+                    `ecr.${cdk.Stack.of(this).region}.amazonaws.com`,
+                    `s3.${cdk.Stack.of(this).region}.amazonaws.com`
                   ]
                 }
               }
@@ -242,18 +243,19 @@ export class EcsService extends Construct {
       cdk.Fn.importValue(createTakImportValue(envConfig.stackName, TAK_EXPORT_NAMES.TAK_ADMIN_CERT_SECRET_ARN))
     );
     
-    // Create admin password secret
-    const adminPasswordSecret = new secretsmanager.Secret(this, 'AdminPasswordSecret', {
-      description: 'CloudTAK Admin Username and Password',
-      secretName: `TAK-${envConfig.stackName}-CloudTAK/API/Admin-Password`,
-      generateSecretString: {
-        secretStringTemplate: JSON.stringify({ username: CLOUDTAK_CONSTANTS.DEFAULT_ADMIN_USERNAME }),
-        generateStringKey: 'password',
-        excludePunctuation: true,
-        passwordLength: 32
-      }
-    });
+
     
+    // Import S3 config bucket from BaseInfra
+    const configBucket = s3.Bucket.fromBucketArn(
+      this,
+      'ConfigBucket',
+      cdk.Fn.importValue(createBaseImportValue(envConfig.stackName, BASE_EXPORT_NAMES.S3_BUCKET))
+    );
+
+    // Grant S3 access for environment files
+    configBucket.grantRead(executionRole);
+    configBucket.grantRead(taskRole);
+
     // Grant access to secrets
     databaseSecret.grantRead(executionRole);
     signingSecret.grantRead(executionRole);
@@ -261,15 +263,7 @@ export class EcsService extends Construct {
     connectionStringSecret.grantRead(executionRole);
     adminPasswordSecret.grantRead(executionRole);
 
-    // Create Authentik user during deployment
-    // Import Authentik URL from AuthInfra stack
-    const authentikUrl = cdk.Fn.importValue(`TAK-${envConfig.stackName}-AuthInfra-AuthentikUrl`);
-    
-    new AuthentikUserCreator(this, 'AuthentikUserCreator', {
-      stackName: envConfig.stackName,
-      adminPasswordSecret,
-      authentikUrl: authentikUrl
-    });
+
 
     // Determine container image source
     const containerImage = dockerImageAsset 
@@ -301,7 +295,7 @@ export class EcsService extends Construct {
         'CLOUDTAK_Server_auth_password': 'atakatak',
         'CLOUDTAK_Server_auth_p12_secret_arn': cdk.Fn.importValue(createTakImportValue(envConfig.stackName, TAK_EXPORT_NAMES.TAK_ADMIN_CERT_SECRET_ARN)),
         // PR #717 - Configurable ECR and ECS names
-        'ECR_TASKS_REPOSITORY_NAME': envConfig.cloudtak.ecrRepositoryName,
+        'ECR_TASKS_REPOSITORY_NAME': ecrRepository.repositoryName,
         'ECS_CLUSTER_PREFIX': `TAK-${envConfig.stackName}-BaseInfra`
       },
       secrets: {
@@ -309,7 +303,10 @@ export class EcsService extends Construct {
         'POSTGRES': ecs.Secret.fromSecretsManager(connectionStringSecret),
         'CLOUDTAK_ADMIN_USERNAME': ecs.Secret.fromSecretsManager(adminPasswordSecret, 'username'),
         'CLOUDTAK_ADMIN_PASSWORD': ecs.Secret.fromSecretsManager(adminPasswordSecret, 'password')
-      }
+      },
+      environmentFiles: [
+        ecs.EnvironmentFile.fromBucket(configBucket, 'cloudtak-config.env')
+      ]
     });
 
     // Expose port 5000 for the API

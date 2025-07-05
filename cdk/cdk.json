@@ -39,8 +39,8 @@
       },
       "cloudtak": {
         "hostname": "map",
-        "databaseName": "tak_ps_etl",
-        "ecrRepositoryName": "tak-demo-baseinfra"
+        "takAdminEmail": "admin@tak.nz",
+        "apiGatewayEndpointType": "EDGE"
       },
       "ecr": {
         "imageRetentionCount": 5,
@@ -77,8 +77,8 @@
       },
       "cloudtak": {
         "hostname": "map",
-        "databaseName": "tak_ps_etl",
-        "ecrRepositoryName": "tak-demo-baseinfra"
+        "takAdminEmail": "admin@tak.nz",
+        "apiGatewayEndpointType": "EDGE"
       },
       "ecr": {
         "imageRetentionCount": 20,

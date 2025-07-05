@@ -214,11 +214,15 @@ export class LambdaFunctions extends Construct {
     signingSecret.grantRead(this.tilesLambda);
     
     // Create API Gateway for PMTiles
+    const endpointType = envConfig.cloudtak.apiGatewayEndpointType === 'EDGE' 
+      ? apigateway.EndpointType.EDGE 
+      : apigateway.EndpointType.REGIONAL;
+    
     this.tilesApi = new apigateway.RestApi(this, 'PMTilesAPI', {
       restApiName: `TAK-${envConfig.stackName}-CloudTAK-pmtiles`,
       description: 'PMTiles API Gateway',
       endpointConfiguration: {
-        types: [apigateway.EndpointType.REGIONAL]
+        types: [endpointType]
       },
       domainName: {
         domainName: tilesHostname,
