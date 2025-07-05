@@ -11,7 +11,7 @@ export const DATABASE_CONSTANTS = {
   PORT: 5432
 };
 
-export const ECR_CONSTANTS = {
-  DEFAULT_REPOSITORY_NAME: 'coe-ecr-etl',
-  DEFAULT_RETENTION_COUNT: 10
+export const CLOUDTAK_CONSTANTS = {
+  DEFAULT_ADMIN_USERNAME: 'ckadmin'
 };
+

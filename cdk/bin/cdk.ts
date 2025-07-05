@@ -13,7 +13,11 @@ const envName = app.node.tryGetContext('envType') || 'dev-test';
 // Get the environment configuration from context
 // CDK automatically handles context overrides via --context flag
 const envConfig = app.node.tryGetContext(envName);
-const defaults = app.node.tryGetContext('cloudtak-defaults');
+const defaults = {
+  project: app.node.tryGetContext('tak-project') || app.node.tryGetContext('tak-defaults')?.project,
+  component: app.node.tryGetContext('tak-component') || app.node.tryGetContext('tak-defaults')?.component,
+  region: app.node.tryGetContext('tak-region') || app.node.tryGetContext('tak-defaults')?.region
+};
 
 if (!envConfig) {
   throw new Error(`

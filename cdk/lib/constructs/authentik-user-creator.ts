@@ -3,6 +3,8 @@ import { Construct } from 'constructs';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as cr from 'aws-cdk-lib/custom-resources';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
+import * as logs from 'aws-cdk-lib/aws-logs';
+import { CLOUDTAK_CONSTANTS } from '../utils/constants';
 
 export interface AuthentikUserCreatorProps {
   stackName: string;
@@ -17,11 +19,66 @@ export class AuthentikUserCreator extends Construct {
     const { stackName, adminPasswordSecret, authentikUrl } = props;
 
     const createUserLambda = new lambda.Function(this, 'Function', {
+      functionName: `${cdk.Stack.of(this).stackName}-AuthentikUserCreator`,
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'index.handler',
       timeout: cdk.Duration.minutes(5),
       code: lambda.Code.fromInline(`
 const { SecretsManagerClient, GetSecretValueCommand } = require('@aws-sdk/client-secrets-manager');
+
+const log = (level, message, data = {}) => {
+  const logEntry = {
+    timestamp: new Date().toISOString(),
+    level: level.toUpperCase(),
+    message,
+    ...data
+  };
+  console.log(JSON.stringify(logEntry));
+};
+
+const sendResponse = async (event, context, responseStatus, responseData = {}, physicalResourceId) => {
+  const responseBody = JSON.stringify({
+    Status: responseStatus,
+    Reason: responseStatus === 'FAILED' ? responseData.Error : 'OK',
+    PhysicalResourceId: physicalResourceId || context.logStreamName,
+    StackId: event.StackId,
+    RequestId: event.RequestId,
+    LogicalResourceId: event.LogicalResourceId,
+    Data: responseData
+  });
+  
+  log('debug', 'Sending CloudFormation response', { responseStatus, physicalResourceId });
+  
+  const https = require('https');
+  const url = require('url');
+  const parsedUrl = url.parse(event.ResponseURL);
+  
+  const options = {
+    hostname: parsedUrl.hostname,
+    port: 443,
+    path: parsedUrl.path,
+    method: 'PUT',
+    headers: {
+      'content-type': '',
+      'content-length': responseBody.length
+    }
+  };
+  
+  return new Promise((resolve, reject) => {
+    const request = https.request(options, (response) => {
+      log('debug', 'CloudFormation response sent', { statusCode: response.statusCode });
+      resolve();
+    });
+    
+    request.on('error', (error) => {
+      log('error', 'Error sending CloudFormation response', { error: error.message });
+      reject(error);
+    });
+    
+    request.write(responseBody);
+    request.end();
+  });
+};
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -32,86 +89,144 @@ const retry = async (fn, maxRetries = 3, baseDelay = 1000) => {
     } catch (error) {
       if (i === maxRetries - 1) throw error;
       const delay = baseDelay * Math.pow(2, i);
-      console.log(\`Attempt \${i + 1} failed, retrying in \${delay}ms: \${error.message}\`);
+      log('warn', 'Retry attempt failed', { attempt: i + 1, maxRetries, retryDelay: delay, error: error.message });
       await sleep(delay);
     }
   }
 };
 
-exports.handler = async (event) => {
-  console.log('Event:', JSON.stringify(event, null, 2));
-  
-  if (event.RequestType === 'Delete') {
-    return { PhysicalResourceId: 'authentik-user' };
-  }
+exports.handler = async (event, context) => {
+  log('info', 'Authentik user creator started', { requestType: event.RequestType });
   
   try {
+    if (event.RequestType === 'Delete') {
+      log('info', 'Delete request received, no action needed');
+      await sendResponse(event, context, 'SUCCESS', {}, 'authentik-user-deletion');
+      return;
+    }
+    
+    const { AuthStackName, AdminSecretName, AuthentikUrl } = event.ResourceProperties;
+    log('debug', 'Configuration loaded', { AuthStackName, AdminSecretName, AuthentikUrl });
+    
+    if (!AuthStackName || !AdminSecretName || !AuthentikUrl) {
+      throw new Error('Missing required properties: AuthStackName, AdminSecretName, or AuthentikUrl');
+    }
+    
     const secrets = new SecretsManagerClient({ region: process.env.AWS_REGION });
+    const apiTokenSecretId = AuthStackName + '/Authentik/Admin-API-Token';
+    
+    log('debug', 'Fetching secrets from AWS Secrets Manager', { apiTokenSecretId, AdminSecretName });
     
     const [apiTokenResponse, adminCredsResponse] = await Promise.all([
-      retry(() => secrets.send(new GetSecretValueCommand({
-        SecretId: event.ResourceProperties.AuthStackName + '/Authentik/Admin-API-Token'
-      }))),
-      retry(() => secrets.send(new GetSecretValueCommand({
-        SecretId: event.ResourceProperties.AdminSecretName
-      })))
+      retry(() => secrets.send(new GetSecretValueCommand({ SecretId: apiTokenSecretId }))),
+      retry(() => secrets.send(new GetSecretValueCommand({ SecretId: AdminSecretName })))
     ]);
     
     const creds = JSON.parse(adminCredsResponse.SecretString);
     const apiToken = apiTokenResponse.SecretString;
     
+    log('info', 'Secrets retrieved successfully', { username: creds.username, apiTokenLength: apiToken?.length || 0 });
+    
     // Check if user exists
+    const checkUrl = AuthentikUrl + '/api/v3/core/users/?username=' + encodeURIComponent(creds.username);
+    
+    log('debug', 'Making HTTP request', { url: checkUrl, method: 'GET', hasAuth: true });
+    
     const existingUsers = await retry(async () => {
-      const response = await fetch(event.ResourceProperties.AuthentikUrl + '/api/v3/core/users/?username=' + creds.username, {
+      const response = await fetch(checkUrl, {
         headers: {
           'Authorization': 'Bearer ' + apiToken,
           'Content-Type': 'application/json'
         }
       });
-      if (!response.ok) throw new Error(\`Check user failed: \${response.status} \${await response.text()}\`);
-      return response.json();
-    });
-    
-    if (existingUsers.results?.length > 0) {
-      console.log('User already exists');
-      return { PhysicalResourceId: 'authentik-user-' + creds.username };
-    }
-    
-    // Create user
-    const user = await retry(async () => {
-      const response = await fetch(event.ResourceProperties.AuthentikUrl + '/api/v3/core/users/', {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Bearer ' + apiToken,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          username: creds.username,
-          name: creds.username,
-          email: creds.username + '@tak.nz',
-          is_active: true,
-          is_staff: true,
-          is_superuser: true,
-          password: creds.password
-        })
+      
+      log('debug', 'HTTP response received', { 
+        statusCode: response.status, 
+        contentLength: response.headers.get('content-length') || 'unknown',
+        url: checkUrl
       });
       
       if (!response.ok) {
-        const error = await response.text();
-        throw new Error(\`Create user failed: \${response.status} \${error}\`);
+        const errorText = await response.text();
+        log('error', 'Check user request failed', { statusCode: response.status, error: errorText });
+        throw new Error(\`Check user failed: \${response.status} \${errorText}\`);
       }
       
       return response.json();
     });
     
-    console.log('Created Authentik user:', user.username);
-    return { PhysicalResourceId: 'authentik-user-' + user.username };
+    if (existingUsers.results?.length > 0) {
+      log('info', 'User already exists, skipping creation', { username: creds.username, userId: existingUsers.results[0].pk });
+      await sendResponse(event, context, 'SUCCESS', { 
+        message: 'User already exists',
+        username: creds.username 
+      }, 'authentik-user-' + creds.username);
+      return;
+    }
+    
+    // Create user
+    const createUrl = AuthentikUrl + '/api/v3/core/users/';
+    const userData = {
+      username: creds.username,
+      name: creds.username,
+      email: creds.username + '@tak.nz',
+      is_active: true,
+      is_staff: true,
+      is_superuser: true,
+      password: creds.password
+    };
+    
+    log('info', 'Creating new Authentik user', { username: creds.username, email: userData.email });
+    log('debug', 'Making HTTP request', { url: createUrl, method: 'POST', hasAuth: true });
+    
+    const user = await retry(async () => {
+      const response = await fetch(createUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + apiToken,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(userData)
+      });
+      
+      log('debug', 'HTTP response received', { 
+        statusCode: response.status, 
+        contentLength: response.headers.get('content-length') || 'unknown',
+        url: createUrl
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        log('error', 'Create user request failed', { statusCode: response.status, error: errorText });
+        throw new Error(\`Create user failed: \${response.status} \${errorText}\`);
+      }
+      
+      return response.json();
+    });
+    
+    log('info', 'Authentik user created successfully', { username: user.username, userId: user.pk });
+    await sendResponse(event, context, 'SUCCESS', { 
+      message: 'User created successfully',
+      username: user.username,
+      userId: user.pk
+    }, 'authentik-user-' + user.username);
     
   } catch (error) {
-    const errorMsg = \`Failed to create Authentik user after retries: \${error.message}. Check: 1) AuthInfra stack deployed, 2) Authentik API token exists, 3) Authentik URL accessible: \${event.ResourceProperties?.AuthentikUrl}\`;
-    console.error(errorMsg);
-    throw new Error(errorMsg);
+    log('error', 'Failed to create Authentik user', { 
+      error: error.message,
+      stack: error.stack,
+      resourceProperties: event.ResourceProperties
+    });
+    
+    const errorData = {
+      Error: error.message,
+      Details: 'Check CloudWatch logs for full error details'
+    };
+    
+    await sendResponse(event, context, 'FAILED', errorData);
   }
+  
+  log('info', 'Authentik user creator completed');
 };
       `)
     });
@@ -136,31 +251,21 @@ exports.handler = async (event) => {
       }
     }));
 
+    // Create custom resource provider
+    const provider = new cr.Provider(this, 'Provider', {
+      onEventHandler: createUserLambda
+    });
+
     // Create custom resource
-    new cr.AwsCustomResource(this, 'CustomResource', {
-      onCreate: {
-        service: 'Lambda',
-        action: 'invoke',
-        parameters: {
-          FunctionName: createUserLambda.functionName,
-          Payload: JSON.stringify({
-            ResourceProperties: {
-              AuthStackName: `TAK-${stackName}-AuthInfra`,
-              AdminSecretName: adminPasswordSecret.secretName,
-              AuthentikUrl: authentikUrl
-            },
-            RequestType: 'Create'
-          })
-        },
-        physicalResourceId: cr.PhysicalResourceId.of('authentik-user-creation')
-      },
-      policy: cr.AwsCustomResourcePolicy.fromStatements([
-        new cdk.aws_iam.PolicyStatement({
-          effect: cdk.aws_iam.Effect.ALLOW,
-          actions: ['lambda:InvokeFunction'],
-          resources: [createUserLambda.functionArn]
-        })
-      ])
+    new cdk.CustomResource(this, 'CustomResource', {
+      serviceToken: provider.serviceToken,
+      properties: {
+        AuthStackName: `TAK-${stackName}-AuthInfra`,
+        AdminSecretName: adminPasswordSecret.secretName,
+        AuthentikUrl: authentikUrl,
+        // Force update on every deployment to ensure user creation is attempted
+        Timestamp: Date.now().toString()
+      }
     });
   }
 }

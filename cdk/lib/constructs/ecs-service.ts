@@ -21,6 +21,7 @@ import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import { ContextEnvironmentConfig } from '../stack-config';
 import { createTakImportValue, TAK_EXPORT_NAMES, createBaseImportValue, BASE_EXPORT_NAMES } from '../cloudformation-imports';
 import { AuthentikUserCreator } from './authentik-user-creator';
+import { CLOUDTAK_CONSTANTS } from '../utils/constants';
 
 export interface EcsServiceProps {
   environment: 'prod' | 'dev-test';
@@ -246,10 +247,10 @@ export class EcsService extends Construct {
       description: 'CloudTAK Admin Username and Password',
       secretName: `TAK-${envConfig.stackName}-CloudTAK/API/Admin-Password`,
       generateSecretString: {
-        secretStringTemplate: JSON.stringify({ username: 'admin' }),
+        secretStringTemplate: JSON.stringify({ username: CLOUDTAK_CONSTANTS.DEFAULT_ADMIN_USERNAME }),
         generateStringKey: 'password',
         excludePunctuation: true,
-        passwordLength: 16
+        passwordLength: 32
       }
     });
     
@@ -261,10 +262,13 @@ export class EcsService extends Construct {
     adminPasswordSecret.grantRead(executionRole);
 
     // Create Authentik user during deployment
+    // Import Authentik URL from AuthInfra stack
+    const authentikUrl = cdk.Fn.importValue(`TAK-${envConfig.stackName}-AuthInfra-AuthentikUrl`);
+    
     new AuthentikUserCreator(this, 'AuthentikUserCreator', {
       stackName: envConfig.stackName,
       adminPasswordSecret,
-      authentikUrl: cdk.Fn.importValue(`TAK-${envConfig.stackName}-AuthInfra-AuthentikUrl`)
+      authentikUrl: authentikUrl
     });
 
     // Determine container image source

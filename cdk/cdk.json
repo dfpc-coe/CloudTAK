@@ -93,7 +93,7 @@
         "enableVersioning": true
       }
     },
-    "cloudtak-defaults": {
+    "tak-defaults": {
       "project": "TAK.NZ",
       "component": "CloudTAK",
       "region": "ap-southeast-2"
