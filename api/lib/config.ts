@@ -146,39 +146,84 @@ export default class Config {
         } catch (err) {
             console.log(`ok - no server config found: ${err instanceof Error ? err.message : String(err)}`);
 
-            server = await models.Server.generate({
-                name: 'Default Server',
-                url: 'ssl://localhost:8089',
-                api: 'https://localhost:8443'
-            });
+            // Create server with environment variables if available
+            const serverData: Record<string, unknown> = {
+                name: process.env.CLOUDTAK_Server_name || 'Default Server',
+                url: process.env.CLOUDTAK_Server_url || 'ssl://localhost:8089',
+                api: process.env.CLOUDTAK_Server_api || 'https://localhost:8443'
+            };
+            
+            if (process.env.CLOUDTAK_Server_webtak) {
+                serverData.webtak = process.env.CLOUDTAK_Server_webtak;
+            }
+            
+            // Handle auth certificates
+            if (process.env.CLOUDTAK_Server_auth_p12_secret_arn && process.env.CLOUDTAK_Server_auth_password) {
+                try {
+                    const secrets = new SecretsManager.SecretsManagerClient({ region: process.env.AWS_REGION });
+                    const secretValue = await secrets.send(new SecretsManager.GetSecretValueCommand({
+                        SecretId: process.env.CLOUDTAK_Server_auth_p12_secret_arn
+                    }));
+                    
+                    if (secretValue.SecretBinary) {
+                        const pem = (await import('pem')).default;
+                        const p12Buffer = Buffer.from(secretValue.SecretBinary);
+                        
+                        const certs = await new Promise<{ pemCertificate: string; pemKey: string }>((resolve, reject) => {
+                            pem.readPkcs12(p12Buffer, { p12Password: process.env.CLOUDTAK_Server_auth_password }, (err: Error | null, result: { cert: string; key: string }) => {
+                                if (err) {
+                                    reject(err);
+                                } else {
+                                    resolve({ pemCertificate: result.cert, pemKey: result.key });
+                                }
+                            });
+                        });
+                        
+                        serverData.auth = {
+                            cert: certs.pemCertificate,
+                            key: certs.pemKey
+                        };
+                        console.error('ok - Extracted certificate and key from P12 binary secret');
+                    }
+                } catch (err) {
+                    console.error(`Error extracting P12 from binary secret: ${err instanceof Error ? err.message : String(err)}`);
+                }
+            } else if (process.env.CLOUDTAK_Server_auth_cert && process.env.CLOUDTAK_Server_auth_key) {
+                serverData.auth = {
+                    cert: process.env.CLOUDTAK_Server_auth_cert,
+                    key: process.env.CLOUDTAK_Server_auth_key
+                };
+            }
+            
+            server = await models.Server.generate(serverData);
         }
-
-        const config = new Config({
-            silent: (args.silent || false),
-            noevents: (args.noevents || false),
-            nosinks: (args.nosinks || false),
-            nocache: (args.nocache || false),
-            StackName: process.env.StackName,
-            wsClients: new Map(),
-            server, SigningSecret, MediaSecret, API_URL, DynamoDB, Bucket, pg, models, PMTILES_URL
-        });
-
-        if (!config.silent) {
-            console.error('ok - set env AWS_REGION: us-east-1');
-            console.log(`ok - PMTiles: ${config.PMTILES_URL}`);
-            console.error(`ok - StackName: ${config.StackName}`);
+        
+        // Update server with environment variables
+        console.error(`ok - Initial server state: auth.cert=${!!server.auth?.cert}, auth.key=${!!server.auth?.key}, webtak=${!!server.webtak}`);
+        console.error(`ok - Environment variables: CLOUDTAK_Server_name=${process.env.CLOUDTAK_Server_name}, CLOUDTAK_Server_url=${process.env.CLOUDTAK_Server_url}, CLOUDTAK_Server_api=${process.env.CLOUDTAK_Server_api}, CLOUDTAK_Server_webtak=${process.env.CLOUDTAK_Server_webtak}`);
+        console.error(`ok - Auth env vars: CLOUDTAK_Server_auth_cert=${!!process.env.CLOUDTAK_Server_auth_cert}, CLOUDTAK_Server_auth_key=${!!process.env.CLOUDTAK_Server_auth_key}, CLOUDTAK_Server_auth_p12=${!!process.env.CLOUDTAK_Server_auth_p12}`);
+        console.error(`ok - Admin env vars: CLOUDTAK_ADMIN_USERNAME=${!!process.env.CLOUDTAK_ADMIN_USERNAME}, CLOUDTAK_ADMIN_PASSWORD=${!!process.env.CLOUDTAK_ADMIN_PASSWORD}`);
+        
+        // Debug all CLOUDTAK environment variables
+        const cloudtakEnvs = Object.keys(process.env).filter(key => key.startsWith('CLOUDTAK_')).sort();
+        console.error(`ok - All CLOUDTAK env vars: ${cloudtakEnvs.join(', ')}`);
+        
+        if (process.env.CLOUDTAK_Server_auth_p12) {
+            console.error(`ok - P12 content length: ${process.env.CLOUDTAK_Server_auth_p12.length}`);
+            console.error(`ok - P12 starts with: ${process.env.CLOUDTAK_Server_auth_p12.substring(0, 50)}...`);
+        } else {
+            console.error('ok - CLOUDTAK_Server_auth_p12 is undefined/empty');
         }
-
-        const external = await External.init(config);
-        config.external = external;
-
-        if (process.env.VpcId) config.VpcId = process.env.VpcId;
-        if (process.env.SubnetPublicA) config.SubnetPublicA = process.env.SubnetPublicA;
-        if (process.env.SubnetPublicB) config.SubnetPublicB = process.env.SubnetPublicB;
-        if (process.env.MediaSecurityGroup) config.MediaSecurityGroup = process.env.MediaSecurityGroup;
-
-        // Handle server configuration via environment variables
-        const serverEnvUpdates: Partial<InferSelectModel<typeof Server>> = {};
+        
+        if (process.env.CLOUDTAK_Server_auth_cert) {
+            console.error(`ok - Direct cert length: ${process.env.CLOUDTAK_Server_auth_cert.length}`);
+        }
+        
+        if (process.env.CLOUDTAK_Server_auth_key) {
+            console.error(`ok - Direct key length: ${process.env.CLOUDTAK_Server_auth_key.length}`);
+        }
+        
+        const serverEnvUpdates: Record<string, unknown> = {};
         let hasServerUpdates = false;
 
         if (process.env.CLOUDTAK_Server_name) {
@@ -197,65 +242,116 @@ export default class Config {
             serverEnvUpdates.webtak = process.env.CLOUDTAK_Server_webtak;
             hasServerUpdates = true;
         }
-        // Support both P12 file + password OR separate cert + key
-        if (process.env.CLOUDTAK_Server_auth_p12 && process.env.CLOUDTAK_Server_auth_password) {
+        
+        // Handle auth certificates for existing server
+        console.error('ok - Updating server configuration from environment variables');
+        
+        if (process.env.CLOUDTAK_Server_auth_p12_secret_arn && process.env.CLOUDTAK_Server_auth_password) {
+            console.error('ok - Processing P12 certificate from binary secret');
             try {
-                // Import p12-pem library for P12 extraction
-                const { convertToPem } = await import('p12-pem/lib/lib/p12.js');
-                const p12Buffer = Buffer.from(process.env.CLOUDTAK_Server_auth_p12, 'base64');
-                const certs = convertToPem(p12Buffer, process.env.CLOUDTAK_Server_auth_password);
+                const secrets = new SecretsManager.SecretsManagerClient({ region: process.env.AWS_REGION });
+                const secretValue = await secrets.send(new SecretsManager.GetSecretValueCommand({
+                    SecretId: process.env.CLOUDTAK_Server_auth_p12_secret_arn
+                }));
                 
-                serverEnvUpdates.auth = {
-                    cert: certs.pemCertificate,
-                    key: certs.pemKey
-                };
-                hasServerUpdates = true;
-                console.error('ok - Extracted certificate and key from P12 file');
+                if (secretValue.SecretBinary) {
+                    const pem = (await import('pem')).default;
+                    const p12Buffer = Buffer.from(secretValue.SecretBinary);
+                    
+                    const certs = await new Promise<{ pemCertificate: string; pemKey: string }>((resolve, reject) => {
+                        pem.readPkcs12(p12Buffer, { p12Password: process.env.CLOUDTAK_Server_auth_password }, (err: Error | null, result: { cert: string; key: string }) => {
+                            if (err) {
+                                reject(err);
+                            } else {
+                                resolve({ pemCertificate: result.cert, pemKey: result.key });
+                            }
+                        });
+                    });
+                    
+                    if (certs.pemCertificate && certs.pemKey) {
+                        serverEnvUpdates.auth = {
+                            ...(server.auth || {}),
+                            cert: certs.pemCertificate,
+                            key: certs.pemKey
+                        };
+                        hasServerUpdates = true;
+                        console.error('ok - Successfully extracted certificate and key from P12 binary secret');
+                    } else {
+                        console.error('ok - P12 conversion failed: missing certificate or key');
+                    }
+                } else {
+                    console.error('ok - No SecretBinary found in secret');
+                }
             } catch (err) {
-                console.error(`Error extracting P12 file: ${err instanceof Error ? err.message : String(err)}`);
+                console.error(`ok - Error processing P12 binary secret: ${err instanceof Error ? err.message : String(err)}`);
             }
         } else if (process.env.CLOUDTAK_Server_auth_cert && process.env.CLOUDTAK_Server_auth_key) {
+            console.error('ok - Using direct certificate and key from environment variables');
             serverEnvUpdates.auth = {
+                ...(server.auth || {}),
                 cert: process.env.CLOUDTAK_Server_auth_cert,
                 key: process.env.CLOUDTAK_Server_auth_key
             };
             hasServerUpdates = true;
+            console.error(`ok - Direct auth configured: cert=${process.env.CLOUDTAK_Server_auth_cert.length} chars, key=${process.env.CLOUDTAK_Server_auth_key.length} chars`);
+        } else {
+            console.error('ok - No certificate environment variables found - server will run without client certificates');
         }
-
+        
         if (hasServerUpdates) {
-            console.error('ok - Updating server configuration from environment variables');
-            config.server = await config.models.Server.commit(config.server.id, {
+            console.error(`ok - Updates to apply: ${JSON.stringify(Object.keys(serverEnvUpdates))}`);
+            server = await models.Server.commit(server.id, {
                 ...serverEnvUpdates,
                 updated: sql`Now()`
             });
+            console.error(`ok - Server updated: auth.cert=${!!server.auth?.cert}, auth.key=${!!server.auth?.key}, webtak=${!!server.webtak}`);
+        } else {
+            console.error('ok - No server updates needed from environment variables');
         }
 
-        // Create admin user if credentials provided and server is configured with auth
-        if (process.env.CLOUDTAK_ADMIN_USERNAME && process.env.CLOUDTAK_ADMIN_PASSWORD && 
-            config.server.auth.cert && config.server.auth.key && config.server.webtak) {
+        console.error(`ok - Final server state before Config creation: auth.cert=${!!server.auth?.cert}, auth.key=${!!server.auth?.key}, webtak=${!!server.webtak}`);
+        
+        const config = new Config({
+            silent: (args.silent || false),
+            noevents: (args.noevents || false),
+            nosinks: (args.nosinks || false),
+            nocache: (args.nocache || false),
+            StackName: process.env.StackName,
+            wsClients: new Map(),
+            server, SigningSecret, MediaSecret, API_URL, DynamoDB, Bucket, pg, models, PMTILES_URL
+        });
+        
+        console.error(`ok - Config created with server: auth.cert=${!!config.server.auth?.cert}, auth.key=${!!config.server.auth?.key}, webtak=${!!config.server.webtak}`);
+
+        if (!config.silent) {
+            console.error(`ok - set env AWS_REGION: ${process.env.AWS_REGION}`);
+            console.log(`ok - PMTiles: ${config.PMTILES_URL}`);
+            console.error(`ok - StackName: ${config.StackName}`);
+        }
+
+        const external = await External.init(config);
+        config.external = external;
+
+        if (process.env.VpcId) config.VpcId = process.env.VpcId;
+        if (process.env.SubnetPublicA) config.SubnetPublicA = process.env.SubnetPublicA;
+        if (process.env.SubnetPublicB) config.SubnetPublicB = process.env.SubnetPublicB;
+        if (process.env.MediaSecurityGroup) config.MediaSecurityGroup = process.env.MediaSecurityGroup;
+
+        // Ensure admin user has admin permissions if credentials provided
+        if (process.env.CLOUDTAK_ADMIN_USERNAME && process.env.CLOUDTAK_ADMIN_PASSWORD) {
             try {
-                // Check if admin user already exists
-                const existingAdmin = await config.models.Profile.list({
-                    filter: 'system_admin',
-                    limit: 1
-                });
+                console.error('ok - Ensuring admin user has admin permissions');
                 
-                if (existingAdmin.total === 0) {
-                    console.error('ok - Creating admin user from environment variables');
-                    const { TAKAPI, APIAuthPassword } = await import('@tak-ps/node-tak');
-                    
-                    const auth = new APIAuthPassword(process.env.CLOUDTAK_ADMIN_USERNAME, process.env.CLOUDTAK_ADMIN_PASSWORD);
-                    const api = await TAKAPI.init(new URL(config.server.webtak), auth);
-                    const certs = await api.Credentials.generate();
-                    
-                    await config.models.Profile.generate({
-                        auth: certs,
-                        username: process.env.CLOUDTAK_ADMIN_USERNAME,
-                        system_admin: true
-                    });
-                }
+                // Create admin user directly in database with admin permissions
+                await config.models.Profile.generate({
+                    username: process.env.CLOUDTAK_ADMIN_USERNAME,
+                    auth: { password: process.env.CLOUDTAK_ADMIN_PASSWORD },
+                    system_admin: true
+                }, { upsert: GenerateUpsert.UPDATE });
+                
+                console.error('ok - Admin user ensured with admin permissions');
             } catch (err) {
-                console.error(`Error creating admin user: ${err instanceof Error ? err.message : String(err)}`);
+                console.error(`Error ensuring admin user: ${err instanceof Error ? err.message : String(err)}`);
             }
         }
 
