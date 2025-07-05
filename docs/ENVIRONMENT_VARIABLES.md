@@ -2,16 +2,9 @@
 
 CloudTAK supports configuration through environment variables that override database settings when present at startup. This document lists all available configuration environment variables.
 
-## Format
+## Server Configuration Variables
 
-Environment variables follow the pattern:
-- Prefix: `CLOUDTAK_Config_`
-- Replace `::` with `_` in the config key
-- All characters after `CLOUDTAK_Config_` are case SENSITIVE
-
-**Example:** `media::url` becomes `CLOUDTAK_Config_media_url`
-
-## Available Environment Variables
+These variables configure the TAK server connection and are processed during application startup to solve the first-boot configuration problem.
 
 ### TAK Server Configuration
 
@@ -20,11 +13,41 @@ Environment variables follow the pattern:
 | `CLOUDTAK_Server_name` | string | TAK Server name/description |
 | `CLOUDTAK_Server_url` | string | TAK Server connection URL (e.g., "ssl://tak.example.com:8089") |
 | `CLOUDTAK_Server_api` | string | TAK Server API URL (e.g., "https://tak.example.com:8443") |
-| `CLOUDTAK_Server_webtak` | string | TAK Server WebTAK URL (e.g., "https://tak.example.com:8443") |
+| `CLOUDTAK_Server_webtak` | string | TAK Server WebTAK URL (e.g., "https://tak.example.com:8446") |
+
+### TAK Server Authentication
+
+CloudTAK supports multiple authentication methods for connecting to TAK servers:
+
+#### Option 1: P12/PKCS12 Certificate (Recommended for AWS)
+| Environment Variable | Type | Description |
+|---------------------|------|-------------|
+| `CLOUDTAK_Server_auth_p12_secret_arn` | string | AWS Secrets Manager ARN containing P12 certificate |
+| `CLOUDTAK_Server_auth_password` | string | Password for P12/PKCS12 file |
+
+#### Option 2: Direct Certificate and Key
+| Environment Variable | Type | Description |
+|---------------------|------|-------------|
 | `CLOUDTAK_Server_auth_cert` | string | TAK Server client certificate (PEM format) |
 | `CLOUDTAK_Server_auth_key` | string | TAK Server client private key (PEM format) |
-| `CLOUDTAK_Server_auth_p12` | string | TAK Server P12/PKCS12 file (base64 encoded) |
-| `CLOUDTAK_Server_auth_password` | string | Password for P12/PKCS12 file |
+
+### Admin User Configuration
+
+| Environment Variable | Type | Description |
+|---------------------|------|-------------|
+| `CLOUDTAK_ADMIN_USERNAME` | string | Admin username for CloudTAK system |
+| `CLOUDTAK_ADMIN_PASSWORD` | string | Admin password for CloudTAK system |
+
+## Application Configuration Variables
+
+These variables follow the pattern `CLOUDTAK_Config_` and override database settings.
+
+### Format Rules
+- Prefix: `CLOUDTAK_Config_`
+- Replace `::` with `_` in the config key
+- All characters after `CLOUDTAK_Config_` are case SENSITIVE
+
+**Example:** `media::url` becomes `CLOUDTAK_Config_media_url`
 
 ### ArcGIS Online Configuration
 
@@ -96,41 +119,46 @@ Environment variables follow the pattern:
 
 ## Usage Examples
 
-### TAK Server Configuration
+### TAK Server Configuration with P12 Certificate (AWS)
 ```bash
 # Configure TAK Server connection
 export CLOUDTAK_Server_name="Production TAK Server"
 export CLOUDTAK_Server_url="ssl://tak.example.com:8089"
 export CLOUDTAK_Server_api="https://tak.example.com:8443"
-export CLOUDTAK_Server_webtak="https://tak.example.com:8443"
+export CLOUDTAK_Server_webtak="https://tak.example.com:8446"
 
-# Option 1: Use P12 file (recommended for automation)
-export CLOUDTAK_Server_auth_p12="$(base64 -w 0 /path/to/client.p12)"
+# Use P12 certificate from AWS Secrets Manager
+export CLOUDTAK_Server_auth_p12_secret_arn="arn:aws:secretsmanager:region:account:secret:tak-cert"
 export CLOUDTAK_Server_auth_password="atakatak"
 
-# Option 2: Use separate certificate and key files
+# Admin user configuration
+export CLOUDTAK_ADMIN_USERNAME="admin"
+export CLOUDTAK_ADMIN_PASSWORD="secure-password"
+```
+
+### TAK Server Configuration with Direct Certificates
+```bash
+# Configure TAK Server connection
+export CLOUDTAK_Server_name="Development TAK Server"
+export CLOUDTAK_Server_url="ssl://tak-dev.example.com:8089"
+export CLOUDTAK_Server_api="https://tak-dev.example.com:8443"
+export CLOUDTAK_Server_webtak="https://tak-dev.example.com:8446"
+
+# Use direct certificate and key
 export CLOUDTAK_Server_auth_cert="-----BEGIN CERTIFICATE-----\nMIIC...\n-----END CERTIFICATE-----"
 export CLOUDTAK_Server_auth_key="-----BEGIN PRIVATE KEY-----\nMIIE...\n-----END PRIVATE KEY-----"
 ```
 
-### Basic Configuration
+### Application Configuration
 ```bash
 # Set map center to New Zealand coordinates
 export CLOUDTAK_Config_map_center="-41.2865,174.7762"
-
-# Set initial zoom level
 export CLOUDTAK_Config_map_zoom=6
-```
 
-### ArcGIS Online Integration
-```bash
 # Enable ArcGIS Online
 export CLOUDTAK_Config_agol_enabled=true
 export CLOUDTAK_Config_agol_token="your_agol_token_here"
-```
 
-### Group Configuration
-```bash
 # Configure emergency response groups
 export CLOUDTAK_Config_group_Red="Emergency Response Team"
 export CLOUDTAK_Config_group_Blue="Police Units"
@@ -159,7 +187,14 @@ services:
       - CLOUDTAK_Server_name=Production TAK Server
       - CLOUDTAK_Server_url=ssl://tak.example.com:8089
       - CLOUDTAK_Server_api=https://tak.example.com:8443
-      - CLOUDTAK_Server_webtak=https://tak.example.com:8443
+      - CLOUDTAK_Server_webtak=https://tak.example.com:8446
+      - CLOUDTAK_Server_auth_cert=-----BEGIN CERTIFICATE-----...
+      - CLOUDTAK_Server_auth_key=-----BEGIN PRIVATE KEY-----...
+      
+      # Admin Configuration
+      - CLOUDTAK_ADMIN_USERNAME=admin
+      - CLOUDTAK_ADMIN_PASSWORD=secure-password
+      
       # Application Configuration
       - CLOUDTAK_Config_map_center=-41.2865,174.7762
       - CLOUDTAK_Config_map_zoom=6
@@ -168,13 +203,29 @@ services:
       - CLOUDTAK_Config_group_Red=Emergency Response
 ```
 
+## Configuration Processing
+
+### Server Configuration
+1. **First Boot**: If no server configuration exists in the database, CloudTAK creates initial server configuration using environment variables
+2. **Runtime Updates**: Server configuration environment variables override database values when present at startup
+3. **Certificate Handling**: Supports both P12/PKCS12 files (via AWS Secrets Manager) and direct PEM certificates
+4. **Admin User Creation**: Automatically creates admin user with system admin permissions when credentials are provided
+
+### Application Configuration
+1. **Database Override**: `CLOUDTAK_Config_*` variables override corresponding database settings
+2. **Startup Processing**: All matching environment variables are processed and stored in the database during startup
+3. **Case Sensitivity**: Configuration keys after `CLOUDTAK_Config_` are case-sensitive
+4. **Key Transformation**: `::` in database keys becomes `_` in environment variable names
+
 ## Important Notes
 
-- Environment variables present at launch will **OVERRIDE** any values stored in the database
 - **Server configuration** environment variables solve the first-boot configuration problem by allowing automated TAK server setup without requiring API authentication
+- Environment variables present at launch will **OVERRIDE** any values stored in the database
 - All characters after `CLOUDTAK_Config_` are case sensitive
 - Boolean values should be set as `true` or `false`
 - Integer values should be provided as numbers without quotes
 - String values can be provided with or without quotes
 - Empty string values will be treated as valid configuration
 - For certificate/key values, use proper PEM format with escaped newlines (`\n`) in environment variables
+- P12 certificates from AWS Secrets Manager are automatically converted to PEM format
+- Admin users created via environment variables receive full system administrator privileges
