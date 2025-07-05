@@ -172,7 +172,10 @@ export class EcsService extends Construct {
             new cdk.aws_iam.PolicyStatement({
               effect: cdk.aws_iam.Effect.ALLOW,
               actions: ['ecr:ListImages', 'ecr:DescribeImages'],
-              resources: [ecrRepository.repositoryArn]
+              resources: [
+                ecrRepository.repositoryArn,
+                `arn:${cdk.Stack.of(this).partition}:ecr:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:repository/${envConfig.cloudtak.ecrRepositoryName}`
+              ]
             })
           ]
         })
