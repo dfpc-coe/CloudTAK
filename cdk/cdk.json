@@ -40,7 +40,7 @@
       "cloudtak": {
         "hostname": "map",
         "databaseName": "tak_ps_etl",
-        "ecrRepositoryName": "coe-ecr-etl"
+        "ecrRepositoryName": "tak-demo-baseinfra"
       },
       "ecr": {
         "imageRetentionCount": 5,
@@ -78,7 +78,7 @@
       "cloudtak": {
         "hostname": "map",
         "databaseName": "tak_ps_etl",
-        "ecrRepositoryName": "coe-ecr-etl"
+        "ecrRepositoryName": "tak-demo-baseinfra"
       },
       "ecr": {
         "imageRetentionCount": 20,

@@ -9,7 +9,7 @@
             >
                 <img
                     alt='Agency Logo'
-                    :src='brandStore.login && brandStore.login.logo ? brandStore.login.logo : "/CloduTAKLogo.svg"'
+                    :src='brandStore.login && brandStore.login.logo ? brandStore.login.logo : "/CloudTAKLogo.svg"'
                     style='height: 150px;'
                 >
             </div>

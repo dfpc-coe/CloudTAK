@@ -337,26 +337,21 @@ export default class Config {
         if (process.env.SubnetPublicB) config.SubnetPublicB = process.env.SubnetPublicB;
         if (process.env.MediaSecurityGroup) config.MediaSecurityGroup = process.env.MediaSecurityGroup;
 
-        // Create admin user if credentials provided and server is configured with auth
-        if (process.env.CLOUDTAK_ADMIN_USERNAME && process.env.CLOUDTAK_ADMIN_PASSWORD && 
-            config.server.auth.cert && config.server.auth.key && config.server.webtak) {
+        // Ensure admin user has admin permissions if credentials provided
+        if (process.env.CLOUDTAK_ADMIN_USERNAME && process.env.CLOUDTAK_ADMIN_PASSWORD) {
             try {
-                console.error('ok - Creating admin user from environment variables');
-                const { TAKAPI, APIAuthPassword } = await import('@tak-ps/node-tak');
+                console.error('ok - Ensuring admin user has admin permissions');
                 
-                const auth = new APIAuthPassword(process.env.CLOUDTAK_ADMIN_USERNAME, process.env.CLOUDTAK_ADMIN_PASSWORD);
-                const api = await TAKAPI.init(new URL(config.server.webtak), auth);
-                const certs = await api.Credentials.generate();
-                
+                // Create admin user directly in database with admin permissions
                 await config.models.Profile.generate({
-                    auth: certs,
                     username: process.env.CLOUDTAK_ADMIN_USERNAME,
+                    auth: { password: process.env.CLOUDTAK_ADMIN_PASSWORD },
                     system_admin: true
-                });
+                }, { upsert: GenerateUpsert.UPDATE });
                 
-                console.error('ok - Admin user created successfully');
+                console.error('ok - Admin user ensured with admin permissions');
             } catch (err) {
-                console.error(`Error creating admin user: ${err instanceof Error ? err.message : String(err)}`);
+                console.error(`Error ensuring admin user: ${err instanceof Error ? err.message : String(err)}`);
             }
         }
 
