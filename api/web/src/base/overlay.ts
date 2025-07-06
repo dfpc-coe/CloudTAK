@@ -206,7 +206,8 @@ export default class Overlay {
 
             mapStore.map.addSource(String(this.id), {
                 type: 'raster',
-                url: String(url)
+                url: String(url),
+                tileSize: 256
             });
         } else if (this.type === 'vector' && this.url) {
             const url = stdurl(this.url);
