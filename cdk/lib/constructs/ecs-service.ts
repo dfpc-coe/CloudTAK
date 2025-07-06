@@ -268,7 +268,11 @@ export class EcsService extends Construct {
     // Determine container image source
     const containerImage = dockerImageAsset 
       ? ecs.ContainerImage.fromDockerImageAsset(dockerImageAsset)
-      : ecs.ContainerImage.fromEcrRepository(ecrRepository, 'latest');
+      : (() => {
+          const cloudtakImageTag = cdk.Stack.of(this).node.tryGetContext('cloudtakImageTag');
+          const apiTag = cloudtakImageTag || 'latest';
+          return ecs.ContainerImage.fromEcrRepository(ecrRepository, apiTag);
+        })();
 
     // Add container to task definition
     const container = this.taskDefinition.addContainer('api', {

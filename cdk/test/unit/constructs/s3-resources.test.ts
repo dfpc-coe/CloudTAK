@@ -1,5 +1,6 @@
 import { App, Stack } from 'aws-cdk-lib';
 import { Template } from 'aws-cdk-lib/assertions';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
 import { S3Resources } from '../../../lib/constructs/s3-resources';
 import { CDKTestHelper } from '../../__helpers__/cdk-test-utils';
 import { MOCK_CONFIGS } from '../../__fixtures__/mock-configs';
@@ -65,6 +66,50 @@ describe('S3Resources Construct', () => {
       VersioningConfiguration: {
         Status: 'Enabled'
       }
+    });
+  });
+
+  it('creates S3 bucket with RETAIN removal policy', () => {
+    const app = new App();
+    const stack = new Stack(app, 'TestStack3', {
+      env: { account: '123456789012', region: 'us-east-1' }
+    });
+    const kmsKey = CDKTestHelper.createMockInfrastructure(stack).kmsKey;
+    const retainConfig = { ...MOCK_CONFIGS.PROD };
+    retainConfig.general.removalPolicy = 'retain';
+
+    new S3Resources(stack, 'TestS3Resources', {
+      envConfig: retainConfig,
+      kmsKey
+    });
+
+    const template = Template.fromStack(stack);
+    template.hasResource('AWS::S3::Bucket', {
+      DeletionPolicy: 'Retain'
+    });
+  });
+
+  it('creates S3 bucket with event notification when Lambda provided', () => {
+    const app = new App();
+    const stack = new Stack(app, 'TestStack4', {
+      env: { account: '123456789012', region: 'us-east-1' }
+    });
+    const kmsKey = CDKTestHelper.createMockInfrastructure(stack).kmsKey;
+    const mockLambda = lambda.Function.fromFunctionArn(
+      stack, 'MockLambda',
+      'arn:aws:lambda:us-east-1:123456789012:function:test-function'
+    );
+
+    const s3Resources = new S3Resources(stack, 'TestS3Resources', {
+      envConfig: MOCK_CONFIGS.DEV_TEST,
+      kmsKey,
+      eventLambda: mockLambda
+    });
+
+    expect(s3Resources.assetBucket).toBeDefined();
+    const template = Template.fromStack(stack);
+    template.hasResourceProperties('AWS::S3::Bucket', {
+      BucketName: 'tak-devtest-cloudtak-us-east-1-assets'
     });
   });
 });

@@ -4,12 +4,14 @@ import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as batch from 'aws-cdk-lib/aws-batch';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as ecr from 'aws-cdk-lib/aws-ecr';
+import * as ecrAssets from 'aws-cdk-lib/aws-ecr-assets';
 import { ContextEnvironmentConfig } from '../stack-config';
 
 export interface BatchProps {
   envConfig: ContextEnvironmentConfig;
   vpc: ec2.IVpc;
   ecrRepository: ecr.IRepository;
+  dataImageAsset?: ecrAssets.DockerImageAsset;
   assetBucketArn: string;
   serviceUrl: string;
 }
@@ -22,7 +24,7 @@ export class Batch extends Construct {
   constructor(scope: Construct, id: string, props: BatchProps) {
     super(scope, id);
 
-    const { envConfig, vpc, ecrRepository, assetBucketArn, serviceUrl } = props;
+    const { envConfig, vpc, ecrRepository, dataImageAsset, assetBucketArn, serviceUrl } = props;
 
     const batchSecurityGroup = new ec2.SecurityGroup(this, 'BatchSecurityGroup', {
       vpc: vpc,
@@ -105,9 +107,14 @@ export class Batch extends Construct {
       }
     });
 
-    // Get image tag from context for CI/CD deployments
-    const cloudtakImageTag = cdk.Stack.of(this).node.tryGetContext('cloudtakImageTag');
-    const dataTag = cloudtakImageTag ? `data-${cloudtakImageTag}` : 'data-latest';
+    // Determine container image source
+    const containerImage = dataImageAsset 
+      ? `${dataImageAsset.repository.repositoryUri}:${dataImageAsset.imageTag}`
+      : (() => {
+          const cloudtakImageTag = cdk.Stack.of(this).node.tryGetContext('cloudtakImageTag');
+          const dataTag = cloudtakImageTag ? `data-${cloudtakImageTag}` : 'data-latest';
+          return `${ecrRepository.repositoryUri}:${dataTag}`;
+        })();
     
     this.jobDefinition = new batch.CfnJobDefinition(this, 'JobDefinition', {
       jobDefinitionName: `TAK-${envConfig.stackName}-CloudTAK-data-job`,
@@ -115,7 +122,7 @@ export class Batch extends Construct {
       platformCapabilities: ['FARGATE'],
       retryStrategy: { attempts: 1 },
       containerProperties: {
-        image: `${ecrRepository.repositoryUri}:${dataTag}`,
+        image: containerImage,
         jobRoleArn: batchJobRole.roleArn,
         executionRoleArn: batchExecRole.roleArn,
         readonlyRootFilesystem: false,
