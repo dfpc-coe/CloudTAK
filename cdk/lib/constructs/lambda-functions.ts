@@ -163,6 +163,16 @@ export class LambdaFunctions extends Construct {
               effect: iam.Effect.ALLOW,
               actions: ['s3:List*', 's3:Get*', 's3:Head*', 's3:Describe*'],
               resources: [assetBucketArn, `${assetBucketArn}/*`]
+            }),
+            new iam.PolicyStatement({
+              effect: iam.Effect.ALLOW,
+              actions: ['kms:Decrypt', 'kms:GenerateDataKey'],
+              resources: ['*'],
+              conditions: {
+                StringEquals: {
+                  'kms:ViaService': [`s3.${cdk.Stack.of(this).region}.amazonaws.com`, `secretsmanager.${cdk.Stack.of(this).region}.amazonaws.com`]
+                }
+              }
             })
           ]
         })
@@ -174,8 +184,9 @@ export class LambdaFunctions extends Construct {
     
     // Create PMTiles Lambda
     const tilesTag = cloudtakImageTag ? `pmtiles-${cloudtakImageTag}` : 'pmtiles-latest';
-    const assetBucketName = assetBucketArn.split(':')[5];
-    const tilesHostname = `tiles.${serviceUrl.replace('https://', '').replace('http://', '')}`;
+    const assetBucketName = assetBucketArn.split(':').pop() || assetBucketArn;
+    const baseHostname = serviceUrl.replace('https://', '').replace('http://', '');
+    const tilesHostname = `tiles.${baseHostname}`;
     
     this.tilesLambda = new lambda.Function(this, 'PMTilesLambda', {
       functionName: `TAK-${envConfig.stackName}-CloudTAK-pmtiles`,

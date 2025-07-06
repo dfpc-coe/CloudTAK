@@ -26,8 +26,7 @@ export const MOCK_CONFIGS = {
     },
     cloudtak: {
       hostname: 'map',
-      takAdminEmail: 'admin@test.com',
-      apiGatewayEndpointType: 'EDGE'
+      takAdminEmail: 'admin@test.com'
     },
     ecr: {
       imageRetentionCount: 5,
@@ -65,8 +64,7 @@ export const MOCK_CONFIGS = {
     },
     cloudtak: {
       hostname: 'map',
-      takAdminEmail: 'admin@prod.com',
-      apiGatewayEndpointType: 'EDGE'
+      takAdminEmail: 'admin@prod.com'
     },
     ecr: {
       imageRetentionCount: 20,
