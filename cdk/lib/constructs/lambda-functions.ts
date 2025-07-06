@@ -90,13 +90,13 @@ export class LambdaFunctions extends Construct {
       reservedConcurrentExecutions: 20,
       environment: {
         'TAK_ETL_API': serviceUrl.startsWith('http') ? serviceUrl : `https://${serviceUrl}`,
-        'StackName': cdk.Stack.of(this).stackName
+        'StackName': cdk.Stack.of(this).stackName,
+        'SigningSecret': `{{resolve:secretsmanager:${signingSecret.secretName}:SecretString::AWSCURRENT}}`
       },
       environmentEncryption: props.kmsKey
     });
     
-    // Grant access to signing secret
-    signingSecret.grantRead(this.eventLambda);
+    // Note: No need to grant read access when using CloudFormation dynamic references
     
     // Create ETL Function Role for dynamic Lambda functions (matches CloudFormation export)
     const etlFunctionRole = new iam.Role(this, 'ETLFunctionRole', {
@@ -161,18 +161,8 @@ export class LambdaFunctions extends Construct {
           statements: [
             new iam.PolicyStatement({
               effect: iam.Effect.ALLOW,
-              actions: ['s3:GetObject', 's3:ListBucket', 's3:GetBucketLocation', 's3:HeadObject'],
+              actions: ['s3:List*', 's3:Get*', 's3:Head*', 's3:Describe*'],
               resources: [assetBucketArn, `${assetBucketArn}/*`]
-            }),
-            new iam.PolicyStatement({
-              effect: iam.Effect.ALLOW,
-              actions: ['kms:Decrypt'],
-              resources: ['*'],
-              conditions: {
-                StringEquals: {
-                  'kms:ViaService': [`s3.${cdk.Stack.of(this).region}.amazonaws.com`]
-                }
-              }
             })
           ]
         })
@@ -205,18 +195,17 @@ export class LambdaFunctions extends Construct {
       environment: {
         'StackName': cdk.Stack.of(this).stackName,
         'ASSET_BUCKET': assetBucketName,
-        'APIROOT': `https://${tilesHostname}`
+        'APIROOT': `https://${tilesHostname}`,
+        'SigningSecret': `{{resolve:secretsmanager:${signingSecret.secretName}:SecretString::AWSCURRENT}}`
       },
       environmentEncryption: kmsKey
     });
     
-    // Grant access to signing secret
-    signingSecret.grantRead(this.tilesLambda);
+    // Note: No need to grant read access when using CloudFormation dynamic references
     
     // Create API Gateway for PMTiles
-    const endpointType = envConfig.cloudtak.apiGatewayEndpointType === 'EDGE' 
-      ? apigateway.EndpointType.EDGE 
-      : apigateway.EndpointType.REGIONAL;
+    // Force REGIONAL endpoint to use local certificate (EDGE requires us-east-1 certificate)
+    const endpointType = apigateway.EndpointType.REGIONAL;
     
     this.tilesApi = new apigateway.RestApi(this, 'PMTilesAPI', {
       restApiName: `TAK-${envConfig.stackName}-CloudTAK-pmtiles`,
@@ -224,10 +213,7 @@ export class LambdaFunctions extends Construct {
       endpointConfiguration: {
         types: [endpointType]
       },
-      domainName: {
-        domainName: tilesHostname,
-        certificate: certificate
-      },
+      disableExecuteApiEndpoint: true,
       defaultCorsPreflightOptions: {
         allowOrigins: apigateway.Cors.ALL_ORIGINS,
         allowMethods: apigateway.Cors.ALL_METHODS,
@@ -249,23 +235,41 @@ export class LambdaFunctions extends Construct {
       sourceArn: `${this.tilesApi.arnForExecuteApi()}/*/*`
     });
     
-    // Create Route53 records for tiles subdomain
+    // Create custom domain and base path mapping (matches CloudFormation approach)
+    const domainName = new apigateway.DomainName(this, 'PMTilesDomain', {
+      domainName: tilesHostname,
+      certificate: certificate,
+      endpointType: endpointType
+    });
+    
+    // Create deployment and stage explicitly (ensure method exists first)
+    const deployment = new apigateway.Deployment(this, 'PMTilesDeployment', {
+      api: this.tilesApi,
+      description: `TAK-${envConfig.stackName}-CloudTAK PMTiles API`
+    });
+    
+    deployment.node.addDependency(proxyResource);
+    
+    const stage = new apigateway.Stage(this, 'PMTilesStage', {
+      deployment: deployment,
+      stageName: 'tiles'
+    });
+    
+    // Create base path mapping
+    new apigateway.BasePathMapping(this, 'PMTilesBasePathMapping', {
+      domainName: domainName,
+      restApi: this.tilesApi,
+      stage: stage
+    });
+    
+    // Create Route53 records for tiles subdomain (using custom domain)
     new route53.ARecord(this, 'PMTilesDNS', {
       zone: hostedZone,
       recordName: `tiles.${envConfig.cloudtak.hostname}`,
       target: route53.RecordTarget.fromAlias(
-        new route53targets.ApiGateway(this.tilesApi)
+        new route53targets.ApiGatewayDomain(domainName)
       ),
       comment: `${cdk.Stack.of(this).stackName} PMTiles API DNS Entry`
-    });
-    
-    new route53.AaaaRecord(this, 'PMTilesDNSIPv6', {
-      zone: hostedZone,
-      recordName: `tiles.${envConfig.cloudtak.hostname}`,
-      target: route53.RecordTarget.fromAlias(
-        new route53targets.ApiGateway(this.tilesApi)
-      ),
-      comment: `${cdk.Stack.of(this).stackName} PMTiles API IPv6 DNS Entry`
     });
     
     this.etlFunctionRole = etlFunctionRole;

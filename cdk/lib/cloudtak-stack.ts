@@ -35,7 +35,7 @@ import { AuthentikUserCreator } from './constructs/authentik-user-creator';
 import { registerOutputs } from './outputs';
 import { createBaseImportValue, BASE_EXPORT_NAMES } from './cloudformation-imports';
 import { ContextEnvironmentConfig } from './stack-config';
-import { TagHelper } from './utils/tag-helper';
+import { generateStandardTags, TagDefaults } from './utils/tag-helpers';
 import { ConfigValidator } from './utils/config-validator';
 
 export interface CloudTakStackProps extends cdk.StackProps {
@@ -56,11 +56,15 @@ export class CloudTakStack extends cdk.Stack {
     const { environment, envConfig } = props;
 
     // Apply comprehensive tagging
-    const standardTags = TagHelper.createStandardTags(
-      envConfig.stackName,
-      this.region
+    const standardTags = generateStandardTags(
+      envConfig,
+      environment,
+      this.node.tryGetContext('defaults') as TagDefaults
     );
-    TagHelper.applyStandardTags(this, standardTags);
+    
+    Object.entries(standardTags).forEach(([key, value]) => {
+      cdk.Tags.of(this).add(key, value);
+    });
 
     // Import base infrastructure resources from BaseInfra stack
     const vpc = ec2.Vpc.fromVpcAttributes(this, 'VPC', {
