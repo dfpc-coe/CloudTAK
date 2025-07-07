@@ -139,6 +139,7 @@ export const Basemap = pgTable('basemaps', {
     overlay: boolean().notNull().default(false),
     username: text().references(() => Profile.username),
     bounds: geometry({ type: GeometryType.Polygon, srid: 4326 }).$type<Polygon>(),
+    tilesize: integer().notNull().default(256),
     center: geometry({ type: GeometryType.Point, srid: 4326 }).$type<Point>(),
     minzoom: integer().notNull().default(0),
     maxzoom: integer().notNull().default(16),
