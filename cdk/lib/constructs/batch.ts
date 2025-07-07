@@ -12,7 +12,7 @@ export interface BatchProps {
   vpc: ec2.IVpc;
   ecrRepository: ecr.IRepository;
   dataImageAsset?: ecrAssets.DockerImageAsset;
-  assetBucketArn: string;
+  assetBucketName: string;
   serviceUrl: string;
 }
 
@@ -24,7 +24,7 @@ export class Batch extends Construct {
   constructor(scope: Construct, id: string, props: BatchProps) {
     super(scope, id);
 
-    const { envConfig, vpc, ecrRepository, dataImageAsset, assetBucketArn, serviceUrl } = props;
+    const { envConfig, vpc, ecrRepository, dataImageAsset, assetBucketName, serviceUrl } = props;
 
     const batchSecurityGroup = new ec2.SecurityGroup(this, 'BatchSecurityGroup', {
       vpc: vpc,
@@ -54,7 +54,7 @@ export class Batch extends Construct {
             new iam.PolicyStatement({
               effect: iam.Effect.ALLOW,
               actions: ['s3:GetObject', 's3:PutObject', 's3:DeleteObject', 's3:ListBucket', 's3:GetBucketLocation'],
-              resources: [assetBucketArn, `${assetBucketArn}/*`]
+              resources: [`arn:${cdk.Stack.of(this).partition}:s3:::${assetBucketName}`, `arn:${cdk.Stack.of(this).partition}:s3:::${assetBucketName}/*`]
             }),
             new iam.PolicyStatement({
               effect: iam.Effect.ALLOW,
@@ -135,8 +135,8 @@ export class Batch extends Construct {
         ],
         environment: [
           { name: 'StackName', value: cdk.Stack.of(this).stackName },
-          { name: 'TAK_ETL_URL', value: serviceUrl },
-          { name: 'TAK_ETL_BUCKET', value: assetBucketArn.split(':')[5] }
+          { name: 'TAK_ETL_URL', value: serviceUrl.startsWith('http') ? serviceUrl : `https://${serviceUrl}` },
+          { name: 'TAK_ETL_BUCKET', value: assetBucketName }
         ]
       }
     });

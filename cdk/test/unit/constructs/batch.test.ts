@@ -17,7 +17,7 @@ describe('Batch Construct', () => {
       envConfig: MOCK_CONFIGS.DEV_TEST,
       vpc,
       ecrRepository,
-      assetBucketArn: 'arn:aws:s3:::test-bucket',
+      assetBucketName: 'test-bucket',
       serviceUrl: 'https://test.example.com'
     });
 
@@ -42,7 +42,7 @@ describe('Batch Construct', () => {
       envConfig: MOCK_CONFIGS.PROD,
       vpc,
       ecrRepository,
-      assetBucketArn: 'arn:aws:s3:::test-bucket',
+      assetBucketName: 'test-bucket',
       serviceUrl: 'https://prod.example.com'
     });
 

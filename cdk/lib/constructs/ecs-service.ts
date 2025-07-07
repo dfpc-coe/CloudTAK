@@ -157,6 +157,12 @@ export class EcsService extends Construct {
               resources: ['*']
             }),
 
+            // CloudWatch Logs permissions for Batch job logs
+            new cdk.aws_iam.PolicyStatement({
+              effect: cdk.aws_iam.Effect.ALLOW,
+              actions: ['logs:GetLogEvents', 'logs:DescribeLogStreams', 'logs:DescribeLogGroups'],
+              resources: [`arn:${cdk.Stack.of(this).partition}:logs:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:log-group:/aws/batch/job*`]
+            }),
             // KMS permissions for decryption
             new cdk.aws_iam.PolicyStatement({
               effect: cdk.aws_iam.Effect.ALLOW,

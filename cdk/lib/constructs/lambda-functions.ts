@@ -15,7 +15,7 @@ export interface LambdaFunctionsProps {
   ecrRepository: ecr.IRepository;
   eventsImageAsset?: ecrAssets.DockerImageAsset;
   tilesImageAsset?: ecrAssets.DockerImageAsset;
-  assetBucketArn: string;
+  assetBucketName: string;
   serviceUrl: string;
   signingSecret: secretsmanager.ISecret;
   kmsKey: cdk.aws_kms.IKey;
@@ -32,7 +32,7 @@ export class LambdaFunctions extends Construct {
   constructor(scope: Construct, id: string, props: LambdaFunctionsProps) {
     super(scope, id);
 
-    const { envConfig, ecrRepository, eventsImageAsset, tilesImageAsset, assetBucketArn, serviceUrl, signingSecret, kmsKey, hostedZone, certificate } = props;
+    const { envConfig, ecrRepository, eventsImageAsset, tilesImageAsset, assetBucketName, serviceUrl, signingSecret, kmsKey, hostedZone, certificate } = props;
 
     const eventLambdaRole = new iam.Role(this, 'EventLambdaRole', {
       roleName: `TAK-${envConfig.stackName}-CloudTAK-events`,
@@ -43,7 +43,7 @@ export class LambdaFunctions extends Construct {
             new iam.PolicyStatement({
               effect: iam.Effect.ALLOW,
               actions: ['s3:GetObject', 's3:PutObject', 's3:DeleteObject', 's3:ListBucket', 's3:GetBucketLocation'],
-              resources: [assetBucketArn, `${assetBucketArn}/*`]
+              resources: [`arn:${cdk.Stack.of(this).partition}:s3:::${assetBucketName}`, `arn:${cdk.Stack.of(this).partition}:s3:::${assetBucketName}/*`]
             }),
             new iam.PolicyStatement({
               effect: iam.Effect.ALLOW,
@@ -119,7 +119,7 @@ export class LambdaFunctions extends Construct {
             new iam.PolicyStatement({
               effect: iam.Effect.ALLOW,
               actions: ['s3:GetObject', 's3:PutObject', 's3:DeleteObject', 's3:ListBucket', 's3:GetBucketLocation'],
-              resources: [assetBucketArn, `${assetBucketArn}/*`]
+              resources: [`arn:${cdk.Stack.of(this).partition}:s3:::${assetBucketName}`, `arn:${cdk.Stack.of(this).partition}:s3:::${assetBucketName}/*`]
             }),
             new iam.PolicyStatement({
               effect: iam.Effect.ALLOW,
@@ -162,7 +162,12 @@ export class LambdaFunctions extends Construct {
             new iam.PolicyStatement({
               effect: iam.Effect.ALLOW,
               actions: ['s3:List*', 's3:Get*', 's3:Head*', 's3:Describe*'],
-              resources: [assetBucketArn, `${assetBucketArn}/*`]
+              resources: [`arn:${cdk.Stack.of(this).partition}:s3:::${assetBucketName}`, `arn:${cdk.Stack.of(this).partition}:s3:::${assetBucketName}/*`]
+            }),
+            new iam.PolicyStatement({
+              effect: iam.Effect.ALLOW,
+              actions: ['secretsmanager:GetSecretValue', 'secretsmanager:DescribeSecret'],
+              resources: [`arn:${cdk.Stack.of(this).partition}:secretsmanager:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:secret:TAK-${envConfig.stackName}-*`]
             }),
             new iam.PolicyStatement({
               effect: iam.Effect.ALLOW,
@@ -184,7 +189,6 @@ export class LambdaFunctions extends Construct {
     
     // Create PMTiles Lambda
     const tilesTag = cloudtakImageTag ? `pmtiles-${cloudtakImageTag}` : 'pmtiles-latest';
-    const assetBucketName = assetBucketArn.split(':').pop() || assetBucketArn;
     const baseHostname = serviceUrl.replace('https://', '').replace('http://', '');
     const tilesHostname = `tiles.${baseHostname}`;
     
@@ -202,7 +206,7 @@ export class LambdaFunctions extends Construct {
       role: tilesLambdaRole,
       memorySize: 256,
       timeout: cdk.Duration.seconds(15),
-      description: 'Return Mapbox Vector Tiles from a PMTiles Store',
+      description: 'Return Mapbox Vector Tiles from a PMTiles Store - Fixed',
       environment: {
         'StackName': cdk.Stack.of(this).stackName,
         'ASSET_BUCKET': assetBucketName,
@@ -227,17 +231,35 @@ export class LambdaFunctions extends Construct {
       disableExecuteApiEndpoint: true,
       defaultCorsPreflightOptions: {
         allowOrigins: apigateway.Cors.ALL_ORIGINS,
-        allowMethods: apigateway.Cors.ALL_METHODS,
-        allowHeaders: ['Content-Type', 'X-Amz-Date', 'Authorization', 'X-Api-Key', 'X-Amz-Security-Token', 'X-Amz-User-Agent']
+        allowMethods: ['GET', 'HEAD', 'OPTIONS'],
+        allowHeaders: ['Content-Type', 'X-Amz-Date', 'Authorization', 'X-Api-Key', 'X-Amz-Security-Token', 'X-Amz-User-Agent'],
+        allowCredentials: false
       },
       cloudWatchRole: true,
       cloudWatchRoleRemovalPolicy: cdk.RemovalPolicy.DESTROY
     });
     
+    // Create API Gateway execution role (like CloudFormation)
+    const apiGatewayRole = new iam.Role(this, 'PMTilesApiGatewayRole', {
+      assumedBy: new iam.ServicePrincipal('apigateway.amazonaws.com'),
+      inlinePolicies: {
+        'lambda-invoke': new iam.PolicyDocument({
+          statements: [
+            new iam.PolicyStatement({
+              effect: iam.Effect.ALLOW,
+              actions: ['lambda:InvokeFunction'],
+              resources: [this.tilesLambda.functionArn]
+            })
+          ]
+        })
+      }
+    });
+    
     // Add proxy resource for all paths
     const proxyResource = this.tilesApi.root.addResource('{proxy+}');
     proxyResource.addMethod('GET', new apigateway.LambdaIntegration(this.tilesLambda, {
-      proxy: true
+      proxy: true,
+      credentialsRole: apiGatewayRole
     }));
     
     // Grant API Gateway permission to invoke Lambda
@@ -266,11 +288,11 @@ export class LambdaFunctions extends Construct {
       stageName: 'tiles'
     });
     
-    // Create base path mapping
+    // Create base path mapping (like CloudFormation - no stage specified)
     new apigateway.BasePathMapping(this, 'PMTilesBasePathMapping', {
       domainName: domainName,
-      restApi: this.tilesApi,
-      stage: stage
+      restApi: this.tilesApi
+      // No stage specified - uses default like CloudFormation
     });
     
     // Create Route53 records for tiles subdomain (using custom domain)

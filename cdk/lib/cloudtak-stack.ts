@@ -297,7 +297,7 @@ export class CloudTakStack extends cdk.Stack {
       ecrRepository,
       eventsImageAsset,
       tilesImageAsset,
-      assetBucketArn: s3Resources.assetBucket.bucketArn,
+      assetBucketName: s3Resources.assetBucket.bucketName,
       serviceUrl: route53Records.serviceUrl,
       signingSecret: secrets.signingSecret,
       kmsKey,
@@ -336,7 +336,7 @@ export class CloudTakStack extends cdk.Stack {
       vpc,
       ecrRepository,
       dataImageAsset,
-      assetBucketArn: s3Resources.assetBucket.bucketArn,
+      assetBucketName: s3Resources.assetBucket.bucketName,
       serviceUrl: route53Records.serviceUrl
     });
 

@@ -27,7 +27,7 @@ describe('LambdaFunctions Construct', () => {
       hostedZone,
       certificate,
       serviceUrl: 'https://test.example.com',
-      assetBucketArn: 'arn:aws:s3:::test-bucket',
+      assetBucketName: 'test-bucket',
       signingSecret
     });
 
@@ -62,7 +62,7 @@ describe('LambdaFunctions Construct', () => {
       hostedZone,
       certificate,
       serviceUrl: 'https://test.example.com',
-      assetBucketArn: 'arn:aws:s3:::test-bucket',
+      assetBucketName: 'test-bucket',
       signingSecret
     });
 
