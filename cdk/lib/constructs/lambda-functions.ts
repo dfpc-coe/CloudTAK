@@ -228,12 +228,27 @@ export class LambdaFunctions extends Construct {
       endpointConfiguration: {
         types: [endpointType]
       },
+      binaryMediaTypes: ['application/vnd.mapbox-vector-tile', 'application/x-protobuf'],
       disableExecuteApiEndpoint: true,
       deploy: false,  // Disable default deployment to prevent prod stage
       // No default CORS - will add explicit OPTIONS method like CloudFormation
       cloudWatchRole: true,
-      cloudWatchRoleRemovalPolicy: cdk.RemovalPolicy.DESTROY
+      cloudWatchRoleRemovalPolicy: cdk.RemovalPolicy.DESTROY,
+      policy: new iam.PolicyDocument({
+        statements: [
+          new iam.PolicyStatement({
+            effect: iam.Effect.ALLOW,
+            principals: [new iam.AnyPrincipal()],
+            actions: ['execute-api:Invoke'],
+            resources: ['*']
+          })
+        ]
+      })
     });
+    
+    // Enable IPv6 support via CloudFormation property
+    const cfnApi = this.tilesApi.node.defaultChild as apigateway.CfnRestApi;
+    cfnApi.addPropertyOverride('EndpointConfiguration.IpAddressType', 'dualstack');
     
     // Create API Gateway execution role (like CloudFormation)
     const apiGatewayRole = new iam.Role(this, 'PMTilesApiGatewayRole', {
@@ -288,7 +303,8 @@ export class LambdaFunctions extends Construct {
     const domainName = new apigateway.DomainName(this, 'PMTilesDomain', {
       domainName: tilesHostname,
       certificate: certificate,
-      endpointType: endpointType
+      endpointType: endpointType,
+      securityPolicy: apigateway.SecurityPolicy.TLS_1_2
     });
     
     // Create deployment and stage like CloudFormation
@@ -319,6 +335,16 @@ export class LambdaFunctions extends Construct {
         new route53targets.ApiGatewayDomain(domainName)
       ),
       comment: `${cdk.Stack.of(this).stackName} PMTiles API DNS Entry`
+    });
+    
+    // Add IPv6 support with AAAA record
+    new route53.AaaaRecord(this, 'PMTilesDNSIPv6', {
+      zone: hostedZone,
+      recordName: `tiles.${envConfig.cloudtak.hostname}`,
+      target: route53.RecordTarget.fromAlias(
+        new route53targets.ApiGatewayDomain(domainName)
+      ),
+      comment: `${cdk.Stack.of(this).stackName} PMTiles API IPv6 DNS Entry`
     });
     
     this.etlFunctionRole = etlFunctionRole;
