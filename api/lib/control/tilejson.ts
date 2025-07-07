@@ -36,6 +36,9 @@ export const TileJSONType = Type.Object({
     description: Type.String(),
     attribution: Type.Optional(Type.String()),
 
+    // This is a custom attribute and not in the original TileJSON spec
+    tilesize: Type.Optional(Type.Integer()),
+
     minzoom: Type.Integer(),
     maxzoom: Type.Integer(),
     tiles: Type.Array(Type.String()),
@@ -176,6 +179,7 @@ export default class TileJSON {
             scheme: 'xyz',
             type: config.type || 'raster',
             bounds, center,
+            tilesize: config.tilesize,
             minzoom: config.minzoom || 0,
             maxzoom: config.maxzoom || 16,
             tiles: [ String(config.url) ],
