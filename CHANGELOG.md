@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v10.20.0 - 2025-07-07
+
+- :arrow_up: Update Batch-Alarms to ensure CloudWatch dashboards links remain clickable
+
 ### v10.19.0 - 2025-07-03
 
 - :rocket: Migrate DrawTools to it's own component to clean up Map.vue
