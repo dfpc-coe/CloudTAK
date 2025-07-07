@@ -229,12 +229,8 @@ export class LambdaFunctions extends Construct {
         types: [endpointType]
       },
       disableExecuteApiEndpoint: true,
-      defaultCorsPreflightOptions: {
-        allowOrigins: apigateway.Cors.ALL_ORIGINS,
-        allowMethods: ['GET', 'HEAD', 'OPTIONS'],
-        allowHeaders: ['Content-Type', 'X-Amz-Date', 'Authorization', 'X-Api-Key', 'X-Amz-Security-Token', 'X-Amz-User-Agent'],
-        allowCredentials: false
-      },
+      deploy: false,  // Disable default deployment to prevent prod stage
+      // No default CORS - will add explicit OPTIONS method like CloudFormation
       cloudWatchRole: true,
       cloudWatchRoleRemovalPolicy: cdk.RemovalPolicy.DESTROY
     });
@@ -262,11 +258,31 @@ export class LambdaFunctions extends Construct {
       credentialsRole: apiGatewayRole
     }));
     
-    // Grant API Gateway permission to invoke Lambda
-    this.tilesLambda.addPermission('APIGatewayInvoke', {
-      principal: new iam.ServicePrincipal('apigateway.amazonaws.com'),
-      sourceArn: `${this.tilesApi.arnForExecuteApi()}/*/*`
+    // Add explicit OPTIONS method like CloudFormation
+    proxyResource.addMethod('OPTIONS', new apigateway.MockIntegration({
+      integrationResponses: [{
+        statusCode: '204',
+        responseParameters: {
+          'method.response.header.Access-Control-Allow-Headers': "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+          'method.response.header.Access-Control-Allow-Origin': "'*'",
+          'method.response.header.Access-Control-Allow-Methods': "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
+        }
+      }],
+      requestTemplates: {
+        'application/json': '{ "statusCode": 200 }'
+      }
+    }), {
+      methodResponses: [{
+        statusCode: '204',
+        responseParameters: {
+          'method.response.header.Access-Control-Allow-Headers': true,
+          'method.response.header.Access-Control-Allow-Origin': true,
+          'method.response.header.Access-Control-Allow-Methods': true
+        }
+      }]
     });
+    
+    // No Lambda permissions needed - using API Gateway execution role
     
     // Create custom domain and base path mapping (matches CloudFormation approach)
     const domainName = new apigateway.DomainName(this, 'PMTilesDomain', {
@@ -275,10 +291,10 @@ export class LambdaFunctions extends Construct {
       endpointType: endpointType
     });
     
-    // Create deployment and stage explicitly (ensure method exists first)
+    // Create deployment and stage like CloudFormation
     const deployment = new apigateway.Deployment(this, 'PMTilesDeployment', {
       api: this.tilesApi,
-      description: `TAK-${envConfig.stackName}-CloudTAK PMTiles API`
+      description: envConfig.stackName
     });
     
     deployment.node.addDependency(proxyResource);
@@ -288,11 +304,11 @@ export class LambdaFunctions extends Construct {
       stageName: 'tiles'
     });
     
-    // Create base path mapping (like CloudFormation - no stage specified)
+    // Create base path mapping to tiles stage
     new apigateway.BasePathMapping(this, 'PMTilesBasePathMapping', {
       domainName: domainName,
-      restApi: this.tilesApi
-      // No stage specified - uses default like CloudFormation
+      restApi: this.tilesApi,
+      stage: stage
     });
     
     // Create Route53 records for tiles subdomain (using custom domain)
