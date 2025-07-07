@@ -1,7 +1,7 @@
 {
     "name": "@tak-ps/CloudTAK",
     "type": "module",
-    "version": "10.19.0",
+    "version": "10.20.0",
     "description": "Facilitate ETL operations to bring non-TAK sources into a TAK Server",
     "scripts": {
         "lint": "eslint bin/ cloudformation/",
@@ -23,7 +23,7 @@
     },
     "homepage": "https://github.com/dfpc-coe/CloudTAK#readme",
     "dependencies": {
-        "@openaddresses/batch-alarms": "^4.4.2",
+        "@openaddresses/batch-alarms": "^4.7.4",
         "@openaddresses/cloudfriend": "^7.0.0",
         "@openaddresses/deploy": "^9.0.0"
     },
