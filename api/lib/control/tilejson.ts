@@ -54,7 +54,8 @@ export interface TileJSONInterface {
     name: string;
     url: string;
     description?: string;
-    attribution?: string;
+    attribution: string | null | undefined;
+    tilesize?: number;
     bounds?: Array<number>;
     center?: Array<number>;
     type?: string;
@@ -179,6 +180,7 @@ export default class TileJSON {
             scheme: 'xyz',
             type: config.type || 'raster',
             bounds, center,
+            attribution: config.attribution || undefined,
             tilesize: config.tilesize,
             minzoom: config.minzoom || 0,
             maxzoom: config.maxzoom || 16,
