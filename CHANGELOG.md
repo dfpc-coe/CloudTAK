@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v10.21.1 - 2025-07-07
+
+- :bug: Update MissionSync response schema due to 4xx schema errors seen in the field
+
 ### v10.21.0 - 2025-07-07
 
 - :bug: Alarms were only being wired to SNS on incoming layers
