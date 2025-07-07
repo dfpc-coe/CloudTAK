@@ -811,17 +811,15 @@ export default async function router(schema: Schema, config: Config) {
                 default: false,
                 description: 'Get Live Alarm state from CloudWatch'
             }),
-        }),
-        params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 }),
-            layerid: Type.Integer({ minimum: 1 }),
-        }),
-        query: Type.Object({
             token: Type.Optional(Type.String()),
             download: Type.Boolean({
                 default: false,
                 description: 'Download Layer as JSON file'
             })
+        }),
+        params: Type.Object({
+            connectionid: Type.Integer({ minimum: 1 }),
+            layerid: Type.Integer({ minimum: 1 }),
         }),
         res: LayerResponse
     }, async (req, res) => {
