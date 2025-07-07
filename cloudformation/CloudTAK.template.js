@@ -44,7 +44,7 @@ export default cf.merge(
         prefix: 'BatchELB',
         topic: cf.ref('HighUrgencyAlarmTopic'),
         apache: cf.stackName,
-        cluster: cf.join(['coe-ecs-', cf.ref('Environment')]),
+        cluster: cf.join(['tak-vpc-', cf.ref('Environment')]),
         service: cf.getAtt('Service', 'Name'),
         loadbalancer: cf.getAtt('ELB', 'LoadBalancerFullName'),
         targetgroup: cf.getAtt('TargetGroup', 'TargetGroupFullName')
