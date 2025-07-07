@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v10.21.0 - 2025-07-07
+
+- :bug: Alarms were only being wired to SNS on incoming layers
+
 ### v10.20.1 - 2025-07-07 - :tada: @chriselsen
 
 - :bug: Fix HREF for CloudTAK Logo if no Brand Logo is set
