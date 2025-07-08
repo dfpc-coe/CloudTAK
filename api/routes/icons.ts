@@ -6,7 +6,7 @@ import path from 'node:path';
 import fs from 'node:fs/promises';
 import Err from '@openaddresses/batch-error';
 import Config from '../lib/config.js';
-//import Sprites from '../lib/sprites.js';
+import Sprites from '../lib/sprites.js';
 import archiver from 'archiver';
 import xml2js from 'xml2js';
 import { Param } from '@openaddresses/batch-generic';
@@ -314,6 +314,8 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(icon);
+
+            await Sprites.regen(config, iconset.uid);
         } catch (err) {
             Err.respond(err, res);
         }
@@ -429,6 +431,8 @@ export default async function router(schema: Schema, config: Config) {
             icon = await config.models.Icon.commit(icon.id, req.body);
 
             res.json(icon);
+
+            await Sprites.regen(config, iconset.uid);
         } catch (err) {
             Err.respond(err, res);
         }
@@ -461,6 +465,8 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Icon Deleted'
             });
+
+            await Sprites.regen(config, iconset.uid);
         } catch (err) {
             Err.respond(err, res);
         }
