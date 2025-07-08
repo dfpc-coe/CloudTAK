@@ -25,11 +25,18 @@ export enum IconsetFormatEnum {
     ZIP = 'zip'
 }
 
+const useDataAlt = true;
+
 export default async function router(schema: Schema, config: Config) {
     const DefaultSprite = {
         json: JSON.parse(String(await fs.readFile(new URL('../icons/generator.json', import.meta.url)))),
         image: await fs.readFile(new URL('../icons/generator.png', import.meta.url))
     };
+
+    for await (const iconset of config.models.Iconset.iter()) {
+        if (iconset.spritesheet_json && iconset.spritesheet_data) continue;
+        await Sprites.regen(config, iconset.uid, { useDataAlt });
+    }
 
     await schema.get('/iconset', {
         name: 'List Iconsets',
@@ -315,7 +322,7 @@ export default async function router(schema: Schema, config: Config) {
 
             res.json(icon);
 
-            await Sprites.regen(config, iconset.uid);
+            await Sprites.regen(config, iconset.uid, { useDataAlt });
         } catch (err) {
             Err.respond(err, res);
         }
@@ -432,7 +439,7 @@ export default async function router(schema: Schema, config: Config) {
 
             res.json(icon);
 
-            await Sprites.regen(config, iconset.uid);
+            await Sprites.regen(config, iconset.uid, { useDataAlt });
         } catch (err) {
             Err.respond(err, res);
         }
@@ -466,7 +473,7 @@ export default async function router(schema: Schema, config: Config) {
                 message: 'Icon Deleted'
             });
 
-            await Sprites.regen(config, iconset.uid);
+            await Sprites.regen(config, iconset.uid, { useDataAlt });
         } catch (err) {
             Err.respond(err, res);
         }
