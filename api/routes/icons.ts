@@ -26,7 +26,6 @@ export enum IconsetFormatEnum {
 }
 
 export default async function router(schema: Schema, config: Config) {
-    // Eventually look at replacing this with memcached?
     const SpriteMap: Record<string, SpriteRecord> = {
         default: {
             json: JSON.parse(String(await fs.readFile(new URL('../icons/generator.json', import.meta.url)))),
