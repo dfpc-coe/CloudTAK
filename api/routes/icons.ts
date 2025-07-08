@@ -542,7 +542,7 @@ export default async function router(schema: Schema, config: Config) {
                 }
 
                 if (iconset.spritesheet_json) {
-                    res.json(iconset.spritesheet_json);
+                    res.json(JSON.parse(iconset.spritesheet_json));
                 } else {
                     throw new Err(400, null, 'Request regeneration of Iconset Spritesheet');
                 }
@@ -566,6 +566,8 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req, { token: true });
+
+            res.type('png');
 
             if (req.params.iconset === 'default') {
                 res.send(DefaultSprite.image);
