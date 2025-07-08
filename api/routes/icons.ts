@@ -567,8 +567,6 @@ export default async function router(schema: Schema, config: Config) {
                 } else {
                     throw new Err(400, null, 'Request regeneration of Iconset Spritesheet');
                 }
-
-                res.send(sprites.image);
             }
         } catch (err) {
             Err.respond(err, res);
