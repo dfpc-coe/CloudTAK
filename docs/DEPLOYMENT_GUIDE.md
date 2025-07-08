@@ -6,13 +6,13 @@
 - AWS Account with configured credentials
 - Base infrastructure stack (`TAK-<n>-BaseInfra`) deployed
 - Public Route 53 hosted zone for your domain
-- Node.js 18+ and npm installed
+- Node.js and npm installed
 - Docker installed and running
 
 ### **One-Command Deployment**
 ```bash
 # Install dependencies
-cd cdk && npm install
+npm install
 
 # Deploy development environment
 npm run deploy:dev
@@ -29,10 +29,10 @@ npm run deploy:prod
 
 | Environment | Stack Name | Domain | CloudTAK Cost* | Complete Stack Cost** | Features |
 |-------------|------------|--------|----------------|----------------------|----------|
-| **dev-test** | `TAK-Dev-CloudTAK` | `cloudtak.dev.tak.nz` | ~$45 | ~$175 | Cost-optimized, single task |
-| **prod** | `TAK-Prod-CloudTAK` | `cloudtak.tak.nz` | ~$180 | ~$568 | High availability, auto-scaling |
+| **dev-test** | `TAK-Dev-CloudTAK` | `cloudtak.dev.tak.nz` | ~$70 | ~$290 | Cost-optimized, Aurora Serverless v2 |
+| **prod** | `TAK-Prod-CloudTAK` | `cloudtak.tak.nz` | ~$380 | ~$1158 | High availability, Aurora Multi-AZ |
 
-*CloudTAK Infrastructure only, **Complete deployment (BaseInfra + CloudTAK)  
+*CloudTAK Infrastructure only, **Complete deployment (BaseInfra + AuthInfra + TakInfra + VideoInfra + CloudTAK)  
 Estimated AWS costs for ap-southeast-2, excluding data transfer and usage
 
 ---
@@ -64,7 +64,7 @@ npm run cdk:diff:prod # Production diff
 ### **Prerequisites**
 1. **AWS Account** with appropriate permissions
 2. **Base Infrastructure** deployed (`TAK-<n>-BaseInfra`)
-3. **Node.js 18+** and npm installed  
+3. **Node.js** and npm installed  
 4. **AWS CLI** configured with credentials
 5. **Docker** installed and running
 
@@ -73,7 +73,7 @@ npm run cdk:diff:prod # Production diff
 # 1. Clone and install
 git clone <repository-url>
 cd CloudTAK
-cd cdk && npm install
+npm install
 
 # 2. Set environment variables (if using AWS profiles)
 export CDK_DEFAULT_ACCOUNT=$(aws sts get-caller-identity --query Account --output text --profile your-profile)
@@ -125,13 +125,7 @@ Error: Cannot import value TAK-Demo-BaseInfra-VPC-ID
 ```
 Error: Docker build failed
 ```
-**Solution:** Ensure Docker is running and docker-compose.yml exists.
-
-#### **Upstream Sync Issues**
-```
-Error: Merge conflicts with upstream
-```
-**Solution:** Manually resolve conflicts or use `[force-deploy]` in commit message.
+**Solution:** Ensure Docker is running and Dockerfiles exist in api/ and tasks/ directories.
 
 ### **Debug Commands**
 ```bash
@@ -144,7 +138,7 @@ npm run cdk:diff:dev
 npm run cdk:diff:prod
 
 # View CloudFormation events
-aws cloudformation describe-stack-events --stack-name TAK-Dev-CloudTAK
+aws cloudformation describe-stack-events --stack-name TAK-DevTest-CloudTAK
 ```
 
 ---
@@ -183,4 +177,3 @@ npm run cdk:destroy -- --context envType=prod
 - **[Architecture Guide](ARCHITECTURE.md)** - Technical architecture details
 - **[Configuration Guide](PARAMETERS.md)** - Complete configuration reference
 - **[Docker Image Strategy](DOCKER_IMAGE_STRATEGY.md)** - Image building and deployment strategy
-- **[AWS GitHub Setup](AWS_GITHUB_SETUP.md)** - CI/CD pipeline configuration

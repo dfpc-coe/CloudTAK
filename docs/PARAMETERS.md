@@ -24,7 +24,7 @@ All configurations are stored in [`cdk.json`](../cdk/cdk.json) under the `contex
 {
   "context": {
     "dev-test": {
-      "stackName": "DevTest",
+      "stackName": "Dev",
       "ecs": {
         "taskCpu": 1024,
         "taskMemory": 4096,
@@ -33,12 +33,11 @@ All configurations are stored in [`cdk.json`](../cdk/cdk.json) under the `contex
         "enableEcsExec": true
       },
       "cloudtak": {
-        "hostname": "cloudtak",
-        "databaseName": "tak_ps_etl",
-        "ecrRepositoryName": "coe-ecr-etl"
+        "hostname": "map",
+        "takAdminEmail": "admin@tak.nz"
       },
       "ecr": {
-        "imageRetentionCount": 10,
+        "imageRetentionCount": 5,
         "scanOnPush": false
       },
       "general": {
@@ -57,9 +56,8 @@ All configurations are stored in [`cdk.json`](../cdk/cdk.json) under the `contex
         "enableEcsExec": false
       },
       "cloudtak": {
-        "hostname": "cloudtak",
-        "databaseName": "tak_ps_etl",
-        "ecrRepositoryName": "coe-ecr-etl"
+        "hostname": "map",
+        "takAdminEmail": "admin@tak.nz"
       },
       "ecr": {
         "imageRetentionCount": 20,
@@ -79,10 +77,10 @@ All configurations are stored in [`cdk.json`](../cdk/cdk.json) under the `contex
 
 | Environment | Stack Name | Description | CloudTAK Cost* | Complete Stack Cost** |
 |-------------|------------|-------------|----------------|----------------------|
-| `dev-test` | `TAK-DevTest-CloudTAK` | Cost-optimized development | ~$45 | ~$175 |
-| `prod` | `TAK-Prod-CloudTAK` | High-availability production | ~$180 | ~$568 |
+| `dev-test` | `TAK-Dev-CloudTAK` | Cost-optimized development | ~$70 | ~$290 |
+| `prod` | `TAK-Prod-CloudTAK` | High-availability production | ~$380 | ~$1158 |
 
-*CloudTAK Infrastructure only, **Complete deployment (BaseInfra + CloudTAK)  
+*CloudTAK Infrastructure only, **Complete deployment (BaseInfra + AuthInfra + TakInfra + VideoInfra + CloudTAK)  
 Estimated AWS costs for ap-southeast-2, excluding data processing and storage usage
 
 ### **Key Configuration Differences**
@@ -93,7 +91,7 @@ Estimated AWS costs for ap-southeast-2, excluding data processing and storage us
 | **ECS Tasks** | `1` task | `2` tasks | High availability |
 | **ECS Exec** | `true` (debugging) | `false` (security) | Development access |
 | **Container Insights** | `false` | `true` | ECS monitoring |
-| **ECR Image Retention** | `10` images | `20` images | Image history |
+| **ECR Image Retention** | `5` images | `20` images | Image history |
 | **ECR Vulnerability Scanning** | `false` | `true` | Security scanning |
 | **Removal Policy** | `DESTROY` | `RETAIN` | Resource cleanup |
 
@@ -112,17 +110,26 @@ Use CDK's built-in `--context` flag with **flat parameter names** to override an
 | `enableDetailedLogging` | Enable detailed application logging | `true` | `false` |
 | `enableEcsExec` | Enable ECS exec for debugging | `true` | `false` |
 
+### **Database Configuration**
+| Parameter | Description | dev-test | prod |
+|-----------|-------------|----------|------|
+| `instanceClass` | Aurora instance class | `db.serverless` | `db.t4g.large` |
+| `instanceCount` | Number of database instances | `1` | `2` |
+| `engineVersion` | PostgreSQL engine version | `17.4` | `17.4` |
+| `enablePerformanceInsights` | Enable performance insights | `false` | `true` |
+| `backupRetentionDays` | Backup retention period (days) | `7` | `30` |
+| `deleteProtection` | Enable deletion protection | `false` | `true` |
+
 ### **CloudTAK Configuration**
 | Parameter | Description | dev-test | prod |
 |-----------|-------------|----------|------|
-| `hostname` | Hostname for CloudTAK service | `cloudtak` | `cloudtak` |
-| `databaseName` | Database name | `tak_ps_etl` | `tak_ps_etl` |
-| `ecrRepositoryName` | ECR repository name | `coe-ecr-etl` | `coe-ecr-etl` |
+| `hostname` | Hostname for CloudTAK service | `map` | `map` |
+| `takAdminEmail` | Admin email address | `admin@tak.nz` | `admin@tak.nz` |
 
 ### **ECR Configuration**
 | Parameter | Description | dev-test | prod |
 |-----------|-------------|----------|------|
-| `imageRetentionCount` | Number of ECR images to retain | `10` | `20` |
+| `imageRetentionCount` | Number of ECR images to retain | `5` | `20` |
 | `scanOnPush` | Enable ECR vulnerability scanning | `false` | `true` |
 
 ### **General Configuration**
@@ -221,8 +228,7 @@ npm run deploy:prod -- \
 | Parameter | Type | Description | Valid Values |
 |-----------|------|-------------|-------------|
 | `hostname` | string | CloudTAK hostname | Any valid hostname |
-| `databaseName` | string | Database name | Any valid database name |
-| `ecrRepositoryName` | string | ECR repository name | Any valid ECR repository name |
+| `takAdminEmail` | string | Admin email address | Valid email address |
 
 ## 📋 Deployment Examples
 

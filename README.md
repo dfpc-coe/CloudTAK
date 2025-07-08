@@ -24,6 +24,24 @@ This CloudTAK infrastructure requires the base infrastructure layer. Layers can 
                 │                                        │
                 ▼                                        ▼
 ┌─────────────────────────────────┐    ┌─────────────────────────────────┐
+│        VideoInfra               │    │        VideoInfra               │
+│    CloudFormation Stack         │    │    CloudFormation Stack         │
+└─────────────────────────────────┘    └─────────────────────────────────┘
+                │                                        │
+                ▼                                        ▼
+┌─────────────────────────────────┐    ┌─────────────────────────────────┐
+│         TakInfra                │    │         TakInfra                │
+│    CloudFormation Stack         │    │    CloudFormation Stack         │
+└─────────────────────────────────┘    └─────────────────────────────────┘
+                │                                        │
+                ▼                                        ▼
+┌─────────────────────────────────┐    ┌─────────────────────────────────┐
+│        AuthInfra                │    │        AuthInfra                │
+│    CloudFormation Stack         │    │    CloudFormation Stack         │
+└─────────────────────────────────┘    └─────────────────────────────────┘
+                │                                        │
+                ▼                                        ▼
+┌─────────────────────────────────┐    ┌─────────────────────────────────┐
 │        BaseInfra                │    │        BaseInfra                │
 │    CloudFormation Stack         │    │    CloudFormation Stack         │
 └─────────────────────────────────┘    └─────────────────────────────────┘
@@ -32,9 +50,12 @@ This CloudTAK infrastructure requires the base infrastructure layer. Layers can 
 | Layer | Repository | Description |
 |-------|------------|-------------|
 | **BaseInfra** | [`base-infra`](https://github.com/TAK-NZ/base-infra)  | Foundation: VPC, ECS, S3, KMS, ACM |
-| **CloudTAK** | `CloudTAK` (this repo) | Web interface and ETL services |
+| **AuthInfra** | [`auth-infra`](https://github.com/TAK-NZ/auth-infra) | SSO via Authentik, LDAP |
+| **TakInfra** | [`tak-infra`](https://github.com/TAK-NZ/tak-infra) | TAK Server |
+| **VideoInfra** | [`video-infra`](https://github.com/TAK-NZ/video-infra) | Video Server based on Mediamtx |
+| **CloudTAK** | `CloudTAK` (this repo) | CloudTAK web interface and ETL |
 
-**Deployment Order**: BaseInfra must be deployed first, followed by CloudTAK. CloudTAK imports outputs from BaseInfra via CloudFormation exports.
+**Deployment Order**: BaseInfra must be deployed first, followed by AuthInfra, then TakInfra, VideoInfra, and finally CloudTAK. Each layer imports outputs from the layer below via CloudFormation exports.
 
 ## Quick Start
 
@@ -42,14 +63,14 @@ This CloudTAK infrastructure requires the base infrastructure layer. Layers can 
 - [AWS Account](https://signin.aws.amazon.com/signup) with configured credentials
 - Base infrastructure stack (`TAK-<n>-BaseInfra`) must be deployed first
 - Public Route 53 hosted zone (e.g., `tak.nz`)
-- [Node.js](https://nodejs.org/) 18+ and npm installed
+- [Node.js](https://nodejs.org/) and npm installed
 - [Docker](https://docker.com/) installed and running
 
 ### Installation & Deployment
 
 ```bash
 # 1. Install dependencies
-cd cdk && npm install
+npm install
 
 # 2. Bootstrap CDK (first time only)
 npx cdk bootstrap --profile your-aws-profile
@@ -68,11 +89,18 @@ npm run deploy:prod
 - **ECS Tasks** - ETL processing tasks (data, events, pmtiles)
 - **Application Load Balancer** - HTTP/HTTPS traffic distribution
 - **Target Groups** - Health check and traffic routing
+- **API Gateway** - PMTiles API endpoint with custom domain
 
-### Storage & Integration
+### Database & Storage
+- **Aurora PostgreSQL** - Encrypted cluster with backup retention for CloudTAK data
+- **S3 Buckets** - Asset storage and ALB access logs (imported from BaseInfra)
 - **ECR Repository** - Container image storage (imported from BaseInfra)
-- **S3 Buckets** - Asset and configuration storage (imported from BaseInfra)
-- **External Database** - Connects to external TAK databases
+
+### Processing & Integration
+- **AWS Batch** - Scalable ETL job processing for data, events, and pmtiles
+- **Lambda Functions** - Event-driven processing for S3 notifications and image handling
+- **Secrets Manager** - Application secrets and database credentials
+- **CloudWatch Alarms** - SNS topics and alarms for Lambda function monitoring
 
 ### Security & DNS
 - **Security Groups** - Fine-grained network access controls
@@ -80,34 +108,40 @@ npm run deploy:prod
 - **KMS Encryption** - Data encryption at rest and in transit
 - **ACM Certificates** - SSL certificate management
 
-## Upstream Synchronization
+## Docker Image Handling
 
-CloudTAK automatically synchronizes with the upstream [dfpc-coe/CloudTAK](https://github.com/dfpc-coe/CloudTAK) repository:
+This stack uses a **hybrid Docker image strategy** that supports both pre-built images from ECR and local Docker building for maximum flexibility.
 
-### Automated Sync Process
-1. **Weekly Schedule**: Automatic sync every Monday at 2AM UTC
-2. **Merge Upstream**: Fetch and merge latest changes
-3. **Apply Branding**: Apply TAK.NZ customizations
-4. **Create PR**: Generate pull request for review
-5. **Build & Deploy**: Automated build and deployment after merge
+- **Strategy**: See [Docker Image Strategy Guide](docs/DOCKER_IMAGE_STRATEGY.md) for details
+- **CI/CD Mode**: Uses pre-built images for fast deployments (~8 minutes vs ~15 minutes)
+- **Development Mode**: Builds images locally for flexible development
+- **Automatic Fallback**: Seamlessly switches between modes based on context parameters
 
-### Manual Sync
-```bash
-# Trigger manual upstream sync
-./scripts/sync-upstream.sh
+### Docker Images Used
 
-# Apply branding after sync
-./scripts/apply-branding.sh
-```
+1. **CloudTAK API**: Web interface and API services
+2. **Events Task**: Event processing container
+3. **PMTiles Task**: Tile generation container
+4. **Data Task**: Data processing container
+
+### Upstream Integration
+- **Automatic Sync**: Weekly sync with upstream repository
+- **Branding Application**: TAK.NZ customizations applied after sync
+- **Version Tagging**: Git SHA and version-based image tags
+
+### Authentication Integration
+- **Authentik User Creation**: Automatically creates CloudTAK admin user in Authentik
+- **SSO Integration**: Integrates with AuthInfra layer for single sign-on
+- **Admin Email**: Configurable admin email for user creation
 
 ## Available Environments
 
 | Environment | Stack Name | Description | Domain | CloudTAK Cost* | Complete Stack Cost** |
 |-------------|------------|-------------|--------|----------------|----------------------|
-| `dev-test` | `TAK-DevTest-CloudTAK` | Cost-optimized development | `cloudtak.dev.tak.nz` | ~$45 | ~$175 |
-| `prod` | `TAK-Prod-CloudTAK` | High-availability production | `cloudtak.tak.nz` | ~$180 | ~$568 |
+| `dev-test` | `TAK-Dev-CloudTAK` | Cost-optimized development | `cloudtak.dev.tak.nz` | ~$70 | ~$290 |
+| `prod` | `TAK-Prod-CloudTAK` | High-availability production | `cloudtak.tak.nz` | ~$380 | ~$1158 |
 
-*CloudTAK Infrastructure only, **Complete deployment (BaseInfra + CloudTAK)  
+*CloudTAK Infrastructure only, **Complete deployment (BaseInfra + AuthInfra + TakInfra + VideoInfra + CloudTAK)  
 Estimated AWS costs for ap-southeast-2, excluding data transfer and usage
 
 ## Development Workflow
@@ -131,24 +165,13 @@ npm run cdk:diff:prod         # Show what would change in prod
 npm run cdk:bootstrap         # Bootstrap CDK in account
 ```
 
-### Local Development
-```bash
-# Run locally with Docker Compose
-docker-compose up
 
-# Build specific services
-docker-compose build api
-docker-compose build tasks/data
-
-# Run ETL tasks
-docker-compose run tasks/events
-```
 
 ### Configuration System
 
 The project uses **AWS CDK context-based configuration** for consistent deployments:
 
-- **All settings** stored in [`cdk.json`](cdk/cdk.json) under `context` section
+- **All settings** stored in [`cdk.json`](cdk.json) under `context` section
 - **Version controlled** - consistent deployments across team members
 - **Runtime overrides** - use `--context` flag for one-off changes
 - **Environment-specific** - separate configs for dev-test and production
@@ -165,22 +188,7 @@ npm run deploy:prod -- --context taskCpu=4096 --context taskMemory=8192
 npm run deploy:dev -- --context stackName=Demo
 ```
 
-## Docker Image Strategy
 
-CloudTAK uses a **hybrid Docker image strategy**:
-
-- **CI/CD Mode**: Pre-built images from ECR for fast deployments (~8 minutes)
-- **Development Mode**: Local Docker builds for flexible development (~15 minutes)
-- **Automatic Fallback**: Seamlessly switches between modes based on context
-
-### Image Types
-1. **CloudTAK API**: Web interface and API services
-2. **ETL Tasks**: Data processing containers (data, events, pmtiles)
-
-### Upstream Integration
-- **Automatic Sync**: Weekly sync with upstream repository
-- **Branding Application**: TAK.NZ customizations applied after sync
-- **Version Tagging**: Git SHA and version-based image tags
 
 ## 📚 Documentation
 
@@ -188,7 +196,6 @@ CloudTAK uses a **hybrid Docker image strategy**:
 - **[🏗️ Architecture Guide](docs/ARCHITECTURE.md)** - Technical architecture and design decisions  
 - **[⚙️ Configuration Guide](docs/PARAMETERS.md)** - Complete configuration management reference
 - **[🐳 Docker Image Strategy](docs/DOCKER_IMAGE_STRATEGY.md)** - Hybrid image strategy for fast CI/CD and flexible development
-- **[⚙️ AWS GitHub Setup](docs/AWS_GITHUB_SETUP.md)** - CI/CD pipeline configuration
 
 ## Security Features
 
@@ -198,17 +205,6 @@ CloudTAK uses a **hybrid Docker image strategy**:
 - **🔒 IAM Policies** - Least-privilege access patterns throughout
 - **🔐 Container Security** - Non-root containers with minimal privileges
 - **📋 Automated Updates** - Weekly upstream sync with security patches
-
-## CI/CD Pipeline
-
-### GitHub Actions Workflows
-- **Demo Pipeline**: Push to main → Sync → Build → Deploy → Test → Revert
-- **Production Pipeline**: Version tag → Sync → Build → Deploy (with approval)
-- **Weekly Sync**: Automated upstream synchronization with PR creation
-
-### Deployment Environments
-- **Demo Environment**: Automated testing with production configuration
-- **Production Environment**: Manual approval required for deployment
 
 ## Getting Help
 

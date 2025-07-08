@@ -255,7 +255,7 @@ export class EcsService extends Construct {
     const configBucket = s3.Bucket.fromBucketArn(
       this,
       'ConfigBucket',
-      cdk.Fn.importValue(createBaseImportValue(envConfig.stackName, BASE_EXPORT_NAMES.S3_BUCKET))
+      cdk.Fn.importValue(createBaseImportValue(envConfig.stackName, BASE_EXPORT_NAMES.S3_ENV_CONFIG))
     );
 
     // Grant S3 access for environment files

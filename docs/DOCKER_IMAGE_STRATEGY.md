@@ -1,6 +1,6 @@
 # Docker Image Strategy
 
-This document explains the hybrid Docker image strategy implemented in the CloudTAK stack, which supports both pre-built images and local Docker building.
+This document explains the hybrid Docker image strategy implemented in the CloudTAK stack, which supports both pre-built images from ECR and local Docker building for maximum flexibility.
 
 ## Overview
 
@@ -21,6 +21,9 @@ This provides the best of both worlds:
 |-----------|-------------|---------|
 | `usePreBuiltImages` | Enable/disable pre-built image usage | `true` or `false` |
 | `cloudtakImageTag` | Tag for CloudTAK API image | `cloudtak-abc123` |
+| `eventsImageTag` | Tag for events task image | `events-abc123` |
+| `tilesImageTag` | Tag for pmtiles task image | `tiles-abc123` |
+| `dataImageTag` | Tag for data task image | `data-abc123` |
 
 ### Default Behavior
 
@@ -34,7 +37,8 @@ This provides the best of both worlds:
 ```bash
 npm run cdk deploy -- \
   --context usePreBuiltImages=true \
-  --context cloudtakImageTag=cloudtak-abc123
+  --context cloudtakImageTag=cloudtak-abc123 \
+  --context etlImageTag=etl-data-abc123
 ```
 
 ### Local Development (Build on Demand)
@@ -44,8 +48,7 @@ npm run deploy:dev    # Dev environment, build locally
 npm run deploy:prod   # Prod environment, build locally
 
 # Or use CDK directly
-npm run cdk deploy -- \
-  --context envType=dev-test \
+npm run deploy:dev -- \
   --context usePreBuiltImages=false
 ```
 
@@ -57,21 +60,10 @@ The stack uses the ECR repository created by BaseInfra:
 - **ETL Tasks**: `${AWS_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_NAME}:${TASK}-${TAG}`
 - **Repository Name**: Dynamically retrieved from BaseInfra stack exports
 
-## Upstream Synchronization
-
-### Automatic Sync Process
-1. **Fetch upstream changes** from dfpc-coe/CloudTAK
-2. **Merge changes** into local branch
-3. **Apply TAK.NZ branding** via `scripts/apply-branding.sh`
-4. **Build images** with updated code and branding
-5. **Push to ECR** with version tags
-
-### Branding Application
-The branding script applies TAK.NZ customizations:
-- Logo replacement
-- Text branding updates
-- Icon generation
-- Configuration adjustments
+## Upstream Integration
+- **Automatic Sync**: Weekly sync with upstream repository
+- **Branding Application**: TAK.NZ customizations applied after sync
+- **Version Tagging**: Git SHA and version-based image tags
 
 ## Implementation Details
 
@@ -82,11 +74,13 @@ const usePreBuiltImages = this.node.tryGetContext('usePreBuiltImages') ?? false;
 const cloudtakImageTag = this.node.tryGetContext('cloudtakImageTag');
 
 if (usePreBuiltImages && cloudtakImageTag) {
-  // Use pre-built image from ECR
-  const imageUri = `${account}.dkr.ecr.${region}.amazonaws.com/${ecrRepoName}:${cloudtakImageTag}`;
+  // Get ECR repository from BaseInfra and build image URI
+  const ecrRepoArn = Fn.importValue(createBaseImportValue(stackNameComponent, BASE_EXPORT_NAMES.ECR_REPO));
+  const ecrRepoName = Fn.select(1, Fn.split('/', ecrRepoArn));
+  const imageUri = `${account}.dkr.ecr.${region}.amazonaws.com/${Token.asString(ecrRepoName)}:${cloudtakImageTag}`;
   containerImage = ecs.ContainerImage.fromRegistry(imageUri);
 } else {
-  // Build Docker image locally
+  // Fall back to building Docker image asset
   const dockerImageAsset = new ecrAssets.DockerImageAsset(/* ... */);
   containerImage = ecs.ContainerImage.fromDockerImageAsset(dockerImageAsset);
 }
@@ -129,28 +123,22 @@ Error: Docker build failed
 - Check docker-compose.yml syntax
 - Verify build context and dependencies
 
-**Upstream sync conflicts:**
-```
-Error: Merge conflicts with upstream
-```
-- Manually resolve conflicts
-- Check branding compatibility
-- Use `[force-deploy]` to override validation
+
 
 ### Debug Commands
 
 ```bash
 # Test synthesis with pre-built images
-npm run cdk synth -- \
+npm run synth:dev -- \
   --context usePreBuiltImages=true \
   --context cloudtakImageTag=cloudtak-abc123
 
 # Test synthesis with local building
-npm run cdk synth -- \
+npm run synth:dev -- \
   --context usePreBuiltImages=false
 
 # Check available context
-npm run cdk context
+npm run cdk:context
 ```
 
 ## Future Enhancements

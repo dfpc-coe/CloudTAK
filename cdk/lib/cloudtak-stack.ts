@@ -238,42 +238,10 @@ export class CloudTakStack extends cdk.Stack {
       kmsKey
     });
 
-    // Create access logs bucket for ALB
-    const logsBucket = new cdk.aws_s3.Bucket(this, 'AccessLogsBucket', {
-      bucketName: `tak-${envConfig.stackName.toLowerCase()}-cloudtak-${this.region}-access-logs`,
-      removalPolicy: envConfig.general.removalPolicy === 'RETAIN' 
-        ? cdk.RemovalPolicy.RETAIN 
-        : cdk.RemovalPolicy.DESTROY,
-      autoDeleteObjects: envConfig.general.removalPolicy !== 'RETAIN'
-    });
-    
-    // Grant ALB service account permission to write access logs
-    const elbServiceAccountMap: { [key: string]: string } = {
-      'us-east-1': '127311923021', 'us-east-2': '033677994240', 'us-west-1': '027434742980', 'us-west-2': '797873946194',
-      'ca-central-1': '985666609251', 'eu-central-1': '054676820928', 'eu-west-1': '156460612806', 'eu-west-2': '652711504416',
-      'eu-west-3': '009996457667', 'eu-north-1': '897822967062', 'eu-south-1': '635631232127', 'ap-east-1': '754344448648',
-      'ap-northeast-1': '582318560864', 'ap-northeast-2': '600734575887', 'ap-northeast-3': '383597477331', 'ap-southeast-1': '114774131450',
-      'ap-southeast-2': '783225319266', 'ap-southeast-3': '589379963580', 'ap-south-1': '718504428378', 'me-south-1': '076674570225',
-      'sa-east-1': '507241528517', 'af-south-1': '098369216593', 'us-gov-west-1': '048591011584', 'us-gov-east-1': '190560391635'
-    };
-    
-    const elbPrincipal = elbServiceAccountMap[this.region] 
-      ? new cdk.aws_iam.AccountPrincipal(elbServiceAccountMap[this.region])
-      : new cdk.aws_iam.ServicePrincipal('elasticloadbalancing.amazonaws.com');
-    
-    logsBucket.addToResourcePolicy(new cdk.aws_iam.PolicyStatement({
-      effect: cdk.aws_iam.Effect.ALLOW,
-      principals: [elbPrincipal],
-      actions: ['s3:PutObject'],
-      resources: [`${logsBucket.bucketArn}/*`]
-    }));
-    
-    logsBucket.addToResourcePolicy(new cdk.aws_iam.PolicyStatement({
-      effect: cdk.aws_iam.Effect.ALLOW,
-      principals: [elbPrincipal],
-      actions: ['s3:GetBucketAcl'],
-      resources: [logsBucket.bucketArn]
-    }));
+    // Import ALB access logs bucket from BaseInfra
+    const logsBucket = cdk.aws_s3.Bucket.fromBucketArn(this, 'ImportedLogsBucket',
+      cdk.Fn.importValue(createBaseImportValue(envConfig.stackName, BASE_EXPORT_NAMES.S3_ALB_LOGS))
+    );
     
     // Create Application Load Balancer with HTTPS
     const loadBalancer = new LoadBalancer(this, 'LoadBalancer', {

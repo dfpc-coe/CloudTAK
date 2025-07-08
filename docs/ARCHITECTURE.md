@@ -9,15 +9,20 @@ The CloudTAK Infrastructure provides web-based TAK services with ETL capabilitie
 │   Web Clients   │────│  Application     │────│   CloudTAK      │
 │ (Browsers/APIs) │    │  Load Balancer   │    │  (ECS Service)  │
 └─────────────────┘    └──────────────────┘    └─────────────────┘
-                                                        │
-                                ┌───────────────────────┼─────────────────┐
-                                │                       │                 │
-                                ▼                       ▼                 ▼
-┌─────────────────┐    ┌──────────────────┐       ┌──────────┐    ┌──────────────┐
-│   Base Layer    │────│   ETL Tasks      │       │   RDS    │    │     S3       │
-│  (BaseInfra)    │    │  (ECS Tasks)     │       │Database  │    │   Storage    │
-└─────────────────┘    └──────────────────┘       │(External)│    │   Buckets    │
-                                                  └──────────┘    └──────────────┘
+        │                                               │
+        │              ┌──────────────────┐             │
+        └──────────────│   API Gateway    │             │
+                       │   (PMTiles)      │             │
+                       └──────────────────┘             │
+                                │                       │
+                ┌───────────────┼───────────────────────┼─────────────────────────────┐
+                │               │       │               │                             │
+                ▼               ▼       ▼               ▼                             ▼
+┌─────────────────┐    ┌──────────────────┐    ┌──────────────┐    ┌──────────────────┐
+│   Base Layer    │    │   ETL Tasks      │    │   Aurora     │    │   Base Layer     │
+│ (VPC/ECS/S3)    │    │ (Batch/Lambda)   │    │ PostgreSQL   │    │  (S3 Buckets)    │
+└─────────────────┘    └──────────────────┘    │  Database    │    └──────────────────┘
+                                               └──────────────┘
 ```
 
 ## Component Details
@@ -33,6 +38,7 @@ The CloudTAK Infrastructure provides web-based TAK services with ETL capabilitie
 #### 2. ETL Task Services
 - **Technology**: Containerized ETL tasks running in ECS
 - **Purpose**: Data processing and transformation for TAK data
+- **Tasks**: Data processing, events processing, pmtiles generation
 - **Scaling**: On-demand task execution
 - **Integration**: Connects to external databases and APIs
 
@@ -42,17 +48,44 @@ The CloudTAK Infrastructure provides web-based TAK services with ETL capabilitie
 - **Configuration**: Health checks and target group management
 - **SSL**: Automated certificate management via ACM
 
+#### 4. API Gateway
+- **Technology**: AWS API Gateway (Regional)
+- **Purpose**: PMTiles API endpoint for tile serving
+- **Integration**: Lambda proxy integration for tile requests
+- **Domain**: Custom domain with SSL certificate
+- **CORS**: Configured for cross-origin requests
+
 ### Data Layer
 
-#### 1. External Database Integration
-- **Purpose**: Connects to external TAK databases for data access
-- **Configuration**: Environment-based connection strings
-- **Security**: Secure connection via VPC and security groups
+#### 1. Aurora PostgreSQL Database
+- **Purpose**: Primary data store for CloudTAK application data
+- **Configuration**: Serverless v2 (dev-test) or provisioned instances (prod)
+- **Backup**: Automated backups with configurable retention
+- **Encryption**: Encrypted at rest using AWS KMS
 
 #### 2. S3 Storage Integration
-- **Purpose**: Asset storage and configuration management
-- **Configuration**: Imported from base infrastructure layer
+- **Purpose**: Asset storage and ALB access logs
+- **Configuration**: S3 buckets imported from BaseInfra layer
 - **Usage**: Static assets, logs, and configuration files
+- **Integration**: CloudTAK connects to existing S3 resources
+
+#### 3. AWS Batch for ETL Processing
+- **Purpose**: Scalable ETL job processing
+- **Tasks**: Data processing, events processing, pmtiles generation
+- **Scaling**: On-demand compute resources
+- **Integration**: Connects to Aurora database and S3 buckets
+
+#### 4. Lambda Functions
+- **Purpose**: Event-driven processing and S3 notifications
+- **Triggers**: S3 object creation events
+- **Tasks**: Image processing, event handling, tile generation
+- **Integration**: Processes assets uploaded to S3 bucket
+
+#### 5. CloudWatch Alarms and SNS
+- **Purpose**: Monitoring and alerting for Lambda function errors
+- **SNS Topics**: High urgency and low urgency notification topics
+- **Alarms**: CloudWatch alarms for Lambda function error metrics
+- **Integration**: Automated notifications when Lambda functions fail
 
 ### Network Architecture
 
@@ -62,9 +95,10 @@ The CloudTAK Infrastructure provides web-based TAK services with ETL capabilitie
 - **NAT Gateway**: Outbound internet access for private subnets
 
 #### 2. Load Balancing
-- **Application Load Balancer**: Layer 7 load balancing for HTTP/HTTPS
+- **Application Load Balancer**: Layer 7 load balancing for HTTP/HTTPS with dual-stack IPv4/IPv6
 - **Target Groups**: Health check endpoints for CloudTAK services
 - **SSL Termination**: Automated certificate management
+- **Access Logs**: Dedicated S3 bucket for ALB access and connection logs
 
 #### 3. Security Groups
 - **Principle of Least Privilege**: Minimal required access between components
@@ -81,7 +115,7 @@ The CloudTAK Infrastructure provides web-based TAK services with ETL capabilitie
 - **Tasks**: Single task instance
 - **Container Insights**: Disabled
 - **ECS Exec**: Enabled (debugging access)
-- **ECR**: 10 image retention, no vulnerability scanning
+- **ECR**: 5 image retention, no vulnerability scanning
 - **Resource Removal**: DESTROY policy (allows cleanup)
 
 #### **prod**
@@ -97,6 +131,7 @@ The CloudTAK Infrastructure provides web-based TAK services with ETL capabilitie
 - **CDK Context**: CLI-based parameter overrides
 - **Environment Defaults**: Fallback configuration based on environment type
 - **Hierarchical Resolution**: Context → Environment Defaults
+- **Configuration File**: All settings stored in [`cdk.json`](../cdk/cdk.json)
 
 ## Security Architecture
 
@@ -192,7 +227,7 @@ The infrastructure implements a layered security model with dedicated security g
 ## Cost Optimization
 
 ### Development Environment Optimizations
-- **Single Task**: Minimal compute allocation
+- **Single Task**: Minimal compute allocation (~$25/month savings)
 - **Smaller Resources**: Lower CPU/memory allocation
 - **Container Insights Disabled**: Reduces CloudWatch costs
 - **Fewer ECR Images**: Reduced storage costs
@@ -209,7 +244,7 @@ The infrastructure implements a layered security model with dedicated security g
 - **VPC**: Network infrastructure and subnets
 - **ECS Cluster**: Container orchestration platform
 - **ECR Repository**: Container image storage
-- **S3 Buckets**: Asset and configuration storage
+- **S3 Buckets**: Asset storage and ALB access logs
 - **KMS Keys**: Encryption key management
 - **ACM Certificates**: SSL certificate management
 
@@ -218,7 +253,8 @@ The infrastructure implements a layered security model with dedicated security g
 - **API Integrations**: Third-party service connections
 - **Monitoring**: CloudWatch and external monitoring systems
 
-### 3. Service Discovery
+### 3. DNS and Service Discovery
+- **Route53 Records**: Both A (IPv4) and AAAA (IPv6) records for dual-stack support
 - **ECS Service Discovery**: Internal service communication
-- **Load Balancer Integration**: External service access
+- **Load Balancer Integration**: External service access with dual-stack support
 - **Health Check Endpoints**: Service health monitoring
