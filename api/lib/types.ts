@@ -97,6 +97,21 @@ export const VideoResponse = Type.Object({
     cpu: Type.Number()
 })
 
+export const IconsetResponse = Type.Object({
+    uid: Type.String(),
+    created: Type.String(),
+    updated: Type.String(),
+    version: Type.Integer(),
+    name: Type.String(),
+    username: Type.Union([Type.Null(), Type.String()]),
+    default_group: Type.Union([Type.Null(), Type.String()]),
+    default_friendly: Type.Union([Type.Null(), Type.String()]),
+    default_hostile: Type.Union([Type.Null(), Type.String()]),
+    default_neutral: Type.Union([Type.Null(), Type.String()]),
+    default_unknown: Type.Union([Type.Null(), Type.String()]),
+    skip_resize: Type.Boolean()
+});
+
 export const ServerResponse = Type.Object({
     id: Type.Integer(),
     status: Type.String(),
@@ -191,11 +206,6 @@ export const TaskResponse = createSelectSchema(schemas.Task, {
     id: Type.Integer(),
     created: Type.String(),
     updated: Type.String(),
-});
-
-export const IconsetResponse = createSelectSchema(schemas.Iconset, {
-    version: Type.Integer(),
-    skip_resize: Type.Boolean(),
 });
 
 export const IconResponse = createSelectSchema(schemas.Icon, {

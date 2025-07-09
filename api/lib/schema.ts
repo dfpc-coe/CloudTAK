@@ -205,7 +205,10 @@ export const Iconset = pgTable('iconsets', {
     default_hostile: text(),
     default_neutral: text(),
     default_unknown: text(),
-    skip_resize: boolean().notNull().default(false)
+    skip_resize: boolean().notNull().default(false),
+
+    spritesheet_data: text(),
+    spritesheet_json: json(),
 }, (table) => {
     return {
         username_idx: index("iconsets_username_idx").on(table.username),

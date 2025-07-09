@@ -12,6 +12,18 @@
 
 ### Pending Release
 
+### v10.22.0 - 2025-07-09
+
+- :rocket: Pregenerate and store spritesheets alongside the Iconset in the database
+
+### v10.21.1 - 2025-07-07
+
+- :bug: Update MissionSync response schema due to 4xx schema errors seen in the field
+
+### v10.21.0 - 2025-07-07
+
+- :bug: Alarms were only being wired to SNS on incoming layers
+
 ### v10.20.1 - 2025-07-07 - :tada: @chriselsen
 
 - :bug: Fix HREF for CloudTAK Logo if no Brand Logo is set

@@ -1,5 +1,5 @@
 {
-  "id": "7da7340d-3cb3-460f-9ad6-03d15a8cc079",
+  "id": "5a0382cc-b5a3-483e-a0ec-98eebc0f52fa",
   "prevId": "4a6dd15d-4440-4e4d-a242-30b2d9c912a4",
   "version": "7",
   "dialect": "postgresql",
@@ -65,13 +65,6 @@
           "type": "GEOMETRY(POLYGON, 4326)",
           "primaryKey": false,
           "notNull": false
-        },
-        "tilesize": {
-          "name": "tilesize",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 256
         },
         "center": {
           "name": "center",
@@ -713,6 +706,18 @@
           "primaryKey": false,
           "notNull": true,
           "default": false
+        },
+        "spritesheet_data": {
+          "name": "spritesheet_data",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "spritesheet_json": {
+          "name": "spritesheet_json",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {
