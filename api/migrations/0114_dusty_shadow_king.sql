@@ -1,1 +1,0 @@
-ALTER TABLE "basemaps" ADD COLUMN "attribution" text;
