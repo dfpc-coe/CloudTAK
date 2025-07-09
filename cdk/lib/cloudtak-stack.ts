@@ -240,7 +240,7 @@ export class CloudTakStack extends cdk.Stack {
 
     // Import ALB access logs bucket from BaseInfra
     const logsBucket = cdk.aws_s3.Bucket.fromBucketArn(this, 'ImportedLogsBucket',
-      cdk.Fn.importValue(createBaseImportValue(envConfig.stackName, BASE_EXPORT_NAMES.S3_ALB_LOGS))
+      cdk.Fn.importValue(createBaseImportValue(envConfig.stackName, BASE_EXPORT_NAMES.S3_ELB_LOGS))
     );
     
     // Create Application Load Balancer with HTTPS

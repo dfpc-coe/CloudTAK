@@ -44,7 +44,11 @@ export class LoadBalancer extends Construct {
     this.httpsListener = this.alb.addListener('HTTPSListener', {
       port: 443,
       protocol: elbv2.ApplicationProtocol.HTTPS,
-      certificates: [certificate]
+      certificates: [certificate],
+      defaultAction: elbv2.ListenerAction.fixedResponse(503, {
+        contentType: 'text/html',
+        messageBody: '<h1>Service Temporarily Unavailable</h1><p>CloudTAK is starting up...</p>'
+      })
     });
 
     this.alb.addListener('HTTPListener', {

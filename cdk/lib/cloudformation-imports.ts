@@ -13,7 +13,7 @@ export const BASE_EXPORT_NAMES = {
   ECR_REPO: 'EcrRepoArn',
   KMS_KEY: 'KmsKeyArn',
   S3_ENV_CONFIG: 'S3EnvConfigArn',
-  S3_ALB_LOGS: 'S3AlbLogsArn',
+  S3_ELB_LOGS: 'S3ElbLogsArn',
   HOSTED_ZONE_ID: 'HostedZoneId',
   HOSTED_ZONE_NAME: 'HostedZoneName',
   CERTIFICATE_ARN: 'CertificateArn'
