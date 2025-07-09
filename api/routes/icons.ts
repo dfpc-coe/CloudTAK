@@ -528,7 +528,8 @@ export default async function router(schema: Schema, config: Config) {
         query: Type.Object({
             scope: Type.Optional(Type.Enum(ResourceCreationScope)),
             token: Type.Optional(Type.String()),
-        })
+        }),
+        res: Type.Unknown()
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req, { token: true });
@@ -542,7 +543,7 @@ export default async function router(schema: Schema, config: Config) {
                 }
 
                 if (iconset.spritesheet_json) {
-                    res.json(JSON.parse(iconset.spritesheet_json));
+                    res.json(JSON.parse(String(iconset.spritesheet_json)));
                 } else {
                     throw new Err(400, null, 'Request regeneration of Iconset Spritesheet');
                 }
