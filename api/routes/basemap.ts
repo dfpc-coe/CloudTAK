@@ -57,6 +57,7 @@ export default async function router(schema: Schema, config: Config) {
                 name?: string;
                 type: Basemap_Type;
                 url?: string;
+                attribution?: string;
                 bounds?: object;
                 center?: object;
                 minzoom?: number;
@@ -128,6 +129,7 @@ export default async function router(schema: Schema, config: Config) {
                     const tjbody = await tjres.json();
 
                     if (tjbody.name) imported.name = tjbody.name;
+                    if (tjbody.attribution) imported.attribution = tjbody.attribution;
                     if (tjbody.maxzoom !== undefined) imported.maxzoom = tjbody.maxzoom;
                     if (tjbody.minzoom !== undefined) imported.minzoom = tjbody.minzoom;
                     if (tjbody.tiles.length) {
