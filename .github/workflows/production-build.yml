@@ -82,15 +82,15 @@ jobs:
           export Environment=prod
           
           # Build API image
-          docker compose build api
-          docker tag cloudtak-api:latest "${{ steps.tags.outputs.ecr-repo-uri }}:${{ steps.tags.outputs.cloudtak-tag }}"
+          docker buildx build "./api/" -t "cloudtak-api" --platform linux/amd64
+          docker tag "cloudtak-api:latest" "${{ steps.tags.outputs.ecr-repo-uri }}:${{ steps.tags.outputs.cloudtak-tag }}"
           docker push "${{ steps.tags.outputs.ecr-repo-uri }}:${{ steps.tags.outputs.cloudtak-tag }}"
           
           # Build task images
           for task_dir in tasks/*/; do
             if [ -d "$task_dir" ]; then
               task=$(basename "$task_dir")
-              docker buildx build "./tasks/$task/" -t "cloudtak-$task"
+              docker buildx build "./tasks/$task/" -t "cloudtak-$task" --platform linux/amd64
               docker tag "cloudtak-$task:latest" "${{ steps.tags.outputs.ecr-repo-uri }}:$task-${{ steps.tags.outputs.cloudtak-tag }}"
               docker push "${{ steps.tags.outputs.ecr-repo-uri }}:$task-${{ steps.tags.outputs.cloudtak-tag }}"
             fi
