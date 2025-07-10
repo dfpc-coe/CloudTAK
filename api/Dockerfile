@@ -36,7 +36,8 @@ RUN npm run lint \
         wget -O data.zip.tmp "$DATA_SOURCE_URL"; \
     fi \
     && unzip data.zip.tmp \
-    && mv CloudTAK-Data-*/. dist/data/ \
+    && mkdir -p dist/data \
+    && cp -r CloudTAK-Data-*/* dist/data/ \
     && rm -rf data.zip.tmp CloudTAK-Data-*
 
 CMD ["./start"]
