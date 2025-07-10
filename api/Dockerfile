@@ -8,9 +8,9 @@ WORKDIR $HOME
 
 # Data source configuration
 ARG DATA_SOURCE_URL=https://github.com/dfpc-coe/CloudTAK-Data/archive/refs/tags/v1.1.0.zip
-ARG USE_S3=false
+ARG USE_LOCAL_ZIP=false
 
-RUN apk add --no-cache git nodejs-current npm memcached python3 make bash g++ openssl postgresql-client grep wget unzip awscli
+RUN apk add --no-cache git nodejs-current npm memcached python3 make bash g++ openssl postgresql-client grep wget unzip
 
 WORKDIR $HOME/api
 
@@ -30,13 +30,13 @@ RUN cd web \
 
 RUN npm run lint \
     && npm run build \
-    && if [ "$USE_S3" = "true" ]; then \
-        aws s3 cp "$DATA_SOURCE_URL" data.zip; \
+    && if [ "$USE_LOCAL_ZIP" = "true" ]; then \
+        cp data.zip data.zip.tmp; \
     else \
-        wget -O data.zip "$DATA_SOURCE_URL"; \
+        wget -O data.zip.tmp "$DATA_SOURCE_URL"; \
     fi \
-    && unzip data.zip \
+    && unzip data.zip.tmp \
     && mv CloudTAK-Data-*/. dist/data/ \
-    && rm -rf data.zip CloudTAK-Data-*
+    && rm -rf data.zip.tmp CloudTAK-Data-*
 
 CMD ["./start"]
