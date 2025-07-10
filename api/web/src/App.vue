@@ -180,17 +180,23 @@ onErrorCaptured((err) => {
 });
 
 onMounted(async () => {
-    let status;
+    let status = 'configured'; // Default to configured to show landing page
     try {
         const server = await std('/api/server') as Server;
         status = server.status;
     } catch (err) {
-        console.warn('Server Error (Likely the server is in a configured state)', err);
+        console.warn('Server Error (Likely the server is in a configured state or not running)', err);
+        // When no server is available, we'll show the landing page by keeping status as 'configured'
         status = 'configured';
     }
 
+    // Initialize brand store, but don't fail if it can't connect
     const brandStore = useBrandStore();
-    await brandStore.init();
+    try {
+        await brandStore.init();
+    } catch (err) {
+        console.warn('Brand store initialization failed, using defaults', err);
+    }
 
     window.addEventListener('unhandledrejection', (e) => {
         error.value = e.reason;
@@ -200,11 +206,17 @@ onMounted(async () => {
         delete localStorage.token;
         router.push("/configure");
     } else {
+        // Only try to authenticate if we have a token and can connect to the server
         if (localStorage.token) {
-            await refreshLogin();
-        } else if (route.name !== 'login') {
-            routeLogin();
+            try {
+                await refreshLogin();
+            } catch (err) {
+                console.warn('Auto-login failed, clearing token', err);
+                delete localStorage.token;
+                // Don't redirect to login, let the home page show the landing page
+            }
         }
+        // If no token or login failed, the Home component will show the landing page
     }
 
     loading.value = false;
@@ -241,10 +253,8 @@ async function getLogin() {
         user.value = undefined;
         delete localStorage.token;
 
-        if (route.name !== 'login') {
-            routeLogin();
-        }
-
+        // Don't automatically redirect to login if server is unavailable
+        // The Home component will handle showing the landing page instead
         return false;
     }
 
