@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v10.22.1 - 2025-07-10 - :tada: @chriselsen
+
+- :rocket: Improve Docker efficency & size and allow for custom CloudTAK Data path
+
 ### v10.22.0 - 2025-07-09
 
 - :rocket: Pregenerate and store spritesheets alongside the Iconset in the database
