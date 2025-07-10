@@ -51,7 +51,7 @@ All configurations are stored in [`cdk.json`](../cdk/cdk.json) under the `contex
       "ecs": {
         "taskCpu": 2048,
         "taskMemory": 8192,
-        "desiredCount": 2,
+        "desiredCount": 1,
         "enableDetailedLogging": false,
         "enableEcsExec": false
       },
@@ -106,7 +106,7 @@ Use CDK's built-in `--context` flag with **flat parameter names** to override an
 |-----------|-------------|----------|------|
 | `taskCpu` | CPU units for ECS tasks | `1024` | `2048` |
 | `taskMemory` | Memory (MB) for ECS tasks | `4096` | `8192` |
-| `desiredCount` | Desired number of running tasks | `1` | `2` |
+| `desiredCount` | Desired number of running tasks | `1` | `1` |
 | `enableDetailedLogging` | Enable detailed application logging | `true` | `false` |
 | `enableEcsExec` | Enable ECS exec for debugging | `true` | `false` |
 

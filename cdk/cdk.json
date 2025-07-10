@@ -70,7 +70,7 @@
       "ecs": {
         "taskCpu": 2048,
         "taskMemory": 8192,
-        "desiredCount": 2,
+        "desiredCount": 1,
         "enableDetailedLogging": false,
         "enableEcsExec": false
       },
