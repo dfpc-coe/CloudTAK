@@ -139,6 +139,8 @@ export const Basemap = pgTable('basemaps', {
     overlay: boolean().notNull().default(false),
     username: text().references(() => Profile.username),
     bounds: geometry({ type: GeometryType.Polygon, srid: 4326 }).$type<Polygon>(),
+    tilesize: integer().notNull().default(256),
+    attribution: text(),
     center: geometry({ type: GeometryType.Point, srid: 4326 }).$type<Point>(),
     minzoom: integer().notNull().default(0),
     maxzoom: integer().notNull().default(16),
@@ -203,7 +205,10 @@ export const Iconset = pgTable('iconsets', {
     default_hostile: text(),
     default_neutral: text(),
     default_unknown: text(),
-    skip_resize: boolean().notNull().default(false)
+    skip_resize: boolean().notNull().default(false),
+
+    spritesheet_data: text(),
+    spritesheet_json: json(),
 }, (table) => {
     return {
         username_idx: index("iconsets_username_idx").on(table.username),

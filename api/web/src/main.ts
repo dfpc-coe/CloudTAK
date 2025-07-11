@@ -342,14 +342,6 @@ const router = VueRouter.createRouter({
                     path: 'leases',
                     name: 'admin-video-leases',
                     component: () => import('./components/Admin/Videos/AdminVideoLeases.vue')
-                },{
-                    path: 'tasks',
-                    name: 'admin-video-tasks',
-                    component: () => import('./components/Admin/Videos/AdminVideoTasks.vue')
-                },{
-                    path: 'tasks/:task',
-                    name: 'admin-video',
-                    component: () => import('./components/Admin/Videos/AdminVideoTask.vue')
                 }]
             },{
                 path: 'overlay',

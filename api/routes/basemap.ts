@@ -57,6 +57,7 @@ export default async function router(schema: Schema, config: Config) {
                 name?: string;
                 type: Basemap_Type;
                 url?: string;
+                attribution?: string;
                 bounds?: object;
                 center?: object;
                 minzoom?: number;
@@ -128,6 +129,7 @@ export default async function router(schema: Schema, config: Config) {
                     const tjbody = await tjres.json();
 
                     if (tjbody.name) imported.name = tjbody.name;
+                    if (tjbody.attribution) imported.attribution = tjbody.attribution;
                     if (tjbody.maxzoom !== undefined) imported.maxzoom = tjbody.maxzoom;
                     if (tjbody.minzoom !== undefined) imported.minzoom = tjbody.minzoom;
                     if (tjbody.tiles.length) {
@@ -292,6 +294,8 @@ export default async function router(schema: Schema, config: Config) {
             scope: Type.Enum(ResourceCreationScope, { default: ResourceCreationScope.USER }),
             url: Type.String(),
             overlay: Type.Boolean({ default: false }),
+            tilesize: Type.Integer({ default: 256, minimum: 256, maximum: 512 }),
+            attribution: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             minzoom: Type.Optional(Type.Integer()),
             maxzoom: Type.Optional(Type.Integer()),
             format: Type.Optional(Type.Enum(Basemap_Format)),
@@ -363,6 +367,8 @@ export default async function router(schema: Schema, config: Config) {
             overlay: Type.Optional(Type.Boolean()),
             scope: Type.Enum(ResourceCreationScope, { default: ResourceCreationScope.USER }),
             url: Type.Optional(Type.String()),
+            tilesize: Type.Optional(Type.Integer({ default: 256, minimum: 256, maximum: 512 })),
+            attribution: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             minzoom: Type.Optional(Type.Integer()),
             maxzoom: Type.Optional(Type.Integer()),
             format: Type.Optional(Type.Enum(Basemap_Format)),

@@ -26,7 +26,7 @@
             <TablerIconButton
                 v-if='!isDraggable'
                 title='Add Overlay'
-                @click='$router.push("/menu/datas")'
+                @click='router.push("/menu/datas")'
             >
                 <IconPlus
                     :size='32'

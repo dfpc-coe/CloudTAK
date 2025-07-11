@@ -10,6 +10,8 @@ import { Static } from '@sinclair/typebox'
 import { StackFrame } from './cloudformation.js';
 import { Capabilities } from '@tak-ps/etl'
 
+const ECR_TASKS_REPOSITORY = process.env.ECR_TASKS_REPOSITORY_NAME || 'coe-ecr-etl-tasks';
+
 /**
  * @class
  */
@@ -93,7 +95,7 @@ export default class Lambda {
                         },
                         Role: cf.importValue(config.StackName + '-etl-role'),
                         Code: {
-                            ImageUri: cf.join([cf.accountId, '.dkr.ecr.', cf.region, `.amazonaws.com/coe-ecr-etl-tasks:`, cf.ref('Task')])
+                            ImageUri: cf.join([cf.accountId, '.dkr.ecr.', cf.region, `.amazonaws.com/${ECR_TASKS_REPOSITORY}:`, cf.ref('Task')])
                         }
                     }
                 }
@@ -249,32 +251,6 @@ export default class Lambda {
                 }
             }
 
-            if (layer.priority !== 'off') {
-                if (stack.Resources.LambdaAlarm) {
-                    stack.Resources.LambdaAlarm.Properties.AlarmActions.push(
-                        cf.join(['arn:', cf.partition, ':sns:', cf.region, `:`, cf.accountId, `:${config.StackName}-${layer.priority}-urgency`])
-                    );
-                }
-
-                if (stack.Resources.OutgoingQueueBacklogAlarm) {
-                    stack.Resources.OutgoingDeadQueueBacklogAlarm.Properties.AlarmActions.push(
-                        cf.join(['arn:', cf.partition, ':sns:', cf.region, `:`, cf.accountId, `:${config.StackName}-${layer.priority}-urgency`])
-                    );
-                }
-    
-                if (stack.Resources.OutgoingQueueBacklogAlarm) {
-                    stack.Resources.OutgoingQueueBacklogAlarm.Properties.AlarmActions.push(
-                        cf.join(['arn:', cf.partition, ':sns:', cf.region, `:`, cf.accountId, `:${config.StackName}-${layer.priority}-urgency`])
-                    );
-                }
-
-                if (stack.Resources.LambdaNoInvocationAlarm) {
-                    stack.Resources.LambdaNoInvocationAlarm.Properties.AlarmActions.push(
-                        cf.join(['arn:', cf.partition, ':sns:', cf.region, `:`, cf.accountId, `:${config.StackName}-${layer.priority}-urgency`])
-                    );
-                }
-            }
-
             if (layer.incoming.cron && Schedule.is_aws(layer.incoming.cron)) {
                 stack.Parameters.ScheduleExpression = {
                     Type: 'String',
@@ -307,6 +283,33 @@ export default class Lambda {
                 };
             }
         }
+
+        if (layer.priority !== 'off') {
+            if (stack.Resources.LambdaAlarm) {
+                stack.Resources.LambdaAlarm.Properties.AlarmActions.push(
+                    cf.join(['arn:', cf.partition, ':sns:', cf.region, `:`, cf.accountId, `:${config.StackName}-${layer.priority}-urgency`])
+                );
+            }
+
+            if (stack.Resources.OutgoingDeadQueueBacklogAlarm) {
+                stack.Resources.OutgoingDeadQueueBacklogAlarm.Properties.AlarmActions.push(
+                    cf.join(['arn:', cf.partition, ':sns:', cf.region, `:`, cf.accountId, `:${config.StackName}-${layer.priority}-urgency`])
+                );
+            }
+
+            if (stack.Resources.OutgoingQueueBacklogAlarm) {
+                stack.Resources.OutgoingQueueBacklogAlarm.Properties.AlarmActions.push(
+                    cf.join(['arn:', cf.partition, ':sns:', cf.region, `:`, cf.accountId, `:${config.StackName}-${layer.priority}-urgency`])
+                );
+            }
+
+            if (stack.Resources.LambdaNoInvocationAlarm) {
+                stack.Resources.LambdaNoInvocationAlarm.Properties.AlarmActions.push(
+                    cf.join(['arn:', cf.partition, ':sns:', cf.region, `:`, cf.accountId, `:${config.StackName}-${layer.priority}-urgency`])
+                );
+            }
+        }
+
 
         return stack;
     }

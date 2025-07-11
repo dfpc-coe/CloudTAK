@@ -594,12 +594,12 @@
         "query": true,
         "res": false
     },
-    "GET /icon/sprite{:size}.json": {
+    "GET /iconset/:iconset/sprite{:size}.json": {
         "body": false,
         "query": true,
-        "res": false
+        "res": true
     },
-    "GET /icon/sprite{:size}.png": {
+    "GET /iconset/:iconset/sprite{:size}.png": {
         "body": false,
         "query": true,
         "res": false
@@ -1219,27 +1219,7 @@
         "query": false,
         "res": true
     },
-    "GET /video/server": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "GET /video/service/path/:path": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "POST /video/server": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "GET /video/server/:serverid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "DELETE /video/server/:serverid": {
         "body": false,
         "query": false,
         "res": true

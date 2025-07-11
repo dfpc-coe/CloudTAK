@@ -139,7 +139,7 @@
                     <TablerEnum
                         v-model='overlay.type'
                         label='Type'
-                        :options='["vector", "raster"]'
+                        :options='["vector", "raster", "raster-dem"]'
                     />
                 </div>
                 <div class='col-12 col-md-6'>
