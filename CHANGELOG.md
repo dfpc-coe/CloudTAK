@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v10.23.0 - 2025-07-11
+
+- :rocket: Allow specifying `tilesize` in Basemaps to ensure MapLibre uses the correct tile size for raster layers
+- :rocket: Allow specifying `attribution` in Basemap and import the field from TileJSON if present
+- :bug: Add `raster-dem` option on the Admin Basemap management editor
+
 ### v10.22.1 - 2025-07-10 - :tada: @chriselsen
 
 - :rocket: Improve Docker efficency & size and allow for custom CloudTAK Data path
