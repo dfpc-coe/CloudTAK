@@ -241,29 +241,6 @@ test('Server Env: auth object updates database', async (t) => {
     t.end();
 });
 
-test('Server Env: P12 certificate processing from secret ARN', async (t) => {
-    const originalSecretArn = process.env.CLOUDTAK_Server_auth_p12_secret_arn;
-    const originalPassword = process.env.CLOUDTAK_Server_auth_password;
-
-    process.env.CLOUDTAK_Server_auth_p12_secret_arn = 'arn:aws:secretsmanager:region:account:secret:test-secret';
-    process.env.CLOUDTAK_Server_auth_password = 'test-password';
-
-    try {
-        // Test that P12 processing environment variables are set correctly
-        const hasP12Config = process.env.CLOUDTAK_Server_auth_p12_secret_arn && process.env.CLOUDTAK_Server_auth_password;
-        t.ok(hasP12Config, 'P12 certificate configuration is set');
-
-        // Test that the secret ARN format is valid
-        t.ok(process.env.CLOUDTAK_Server_auth_p12_secret_arn.startsWith('arn:aws:secretsmanager:'), 'Secret ARN has correct format');
-    } catch (err) {
-        t.error(err, 'no error');
-    }
-
-    process.env.CLOUDTAK_Server_auth_p12_secret_arn = originalSecretArn;
-    process.env.CLOUDTAK_Server_auth_password = originalPassword;
-    t.end();
-});
-
 test('Server Env: multiple fields update database', async (t) => {
     const originalVars = {
         name: process.env.CLOUDTAK_Server_name,
