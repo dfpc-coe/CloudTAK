@@ -150,7 +150,7 @@ test('GET: api/basemap/1/tiles', async (t) => {
             type: 'raster',
             bounds: [ -180, -90, 180, 90 ],
             center: [ 0, 0 ],
-            tilesize: 256,
+            tileSize: 256,
             minzoom: 0,
             maxzoom: 16,
             actions: { feature: [] },
