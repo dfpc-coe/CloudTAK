@@ -24,7 +24,7 @@ import * as ecrAssets from 'aws-cdk-lib/aws-ecr-assets';
 import { Database } from './constructs/database';
 import { SecurityGroups } from './constructs/security-groups';
 import { LoadBalancer } from './constructs/load-balancer';
-import { EcsService } from './constructs/ecs-service';
+import { CloudTakApi } from './constructs/cloudtak-api';
 import { Route53 } from './constructs/route53';
 import { S3Resources } from './constructs/s3-resources';
 import { Batch } from './constructs/batch';
@@ -280,7 +280,7 @@ export class CloudTakStack extends cdk.Stack {
     );
 
     // Create ECS Fargate service for the CloudTAK API
-    const ecsService = new EcsService(this, 'EcsService', {
+    const cloudtakApi = new CloudTakApi(this, 'CloudTakApi', {
       environment,
       envConfig,
       vpc,
@@ -325,10 +325,10 @@ export class CloudTakStack extends cdk.Stack {
     });
 
     // Ensure ECS service waits for database and Route53 records
-    ecsService.service.node.addDependency(database.cluster);
-    ecsService.service.node.addDependency(database.connectionStringSecret);
-    ecsService.service.node.addDependency(route53Records.aRecord);
-    ecsService.service.node.addDependency(route53Records.aaaaRecord);
+    cloudtakApi.service.node.addDependency(database.cluster);
+    cloudtakApi.service.node.addDependency(database.connectionStringSecret);
+    cloudtakApi.service.node.addDependency(route53Records.aRecord);
+    cloudtakApi.service.node.addDependency(route53Records.aaaaRecord);
 
     // Register CloudFormation outputs
     registerOutputs({
@@ -336,14 +336,13 @@ export class CloudTakStack extends cdk.Stack {
       serviceUrl: route53Records.serviceUrl,
       loadBalancer: loadBalancer.alb,
       database: database.cluster,
-      assetBucket: s3Resources.assetBucket,
-      ecrRepository: dockerImageAsset ? dockerImageAsset.repository : undefined
+      assetBucket: s3Resources.assetBucket
     });
 
     // Add MediaInfra integration outputs
-    new cdk.CfnOutput(this, 'ApiUrl', {
-      value: route53Records.serviceUrl + '/api',
-      exportName: `TAK-${envConfig.stackName}-CloudTAK-ApiUrl`
+    new cdk.CfnOutput(this, 'ApiURL', {
+      value: `https://${route53Records.serviceUrl}/api`,
+      exportName: `TAK-${envConfig.stackName}-CloudTAK-ApiURL`
     });
 
     new cdk.CfnOutput(this, 'SigningSecretArn', {
@@ -356,9 +355,6 @@ export class CloudTakStack extends cdk.Stack {
       exportName: `TAK-${envConfig.stackName}-CloudTAK-MediaSecret`
     });
 
-    new cdk.CfnOutput(this, 'EcsSecurityGroupId', {
-      value: securityGroups.ecs.securityGroupId,
-      exportName: `TAK-${envConfig.stackName}-CloudTAK-EcsSecurityGroup`
-    });
+
   }
 }

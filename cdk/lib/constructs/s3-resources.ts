@@ -21,7 +21,7 @@ export class S3Resources extends Construct {
     const { envConfig, kmsKey, eventLambda } = props;
 
     this.assetBucket = new s3.Bucket(this, 'AssetBucket', {
-      bucketName: `tak-${envConfig.stackName.toLowerCase()}-cloudtak-${cdk.Stack.of(this).region.toLowerCase()}-assets`,
+      bucketName: `tak-${envConfig.stackName.toLowerCase()}-cloudtak-${cdk.Stack.of(this).region.toLowerCase()}-${cdk.Stack.of(this).account}-assets`,
       encryption: s3.BucketEncryption.KMS,
       encryptionKey: kmsKey,
       versioned: envConfig.s3.enableVersioning,

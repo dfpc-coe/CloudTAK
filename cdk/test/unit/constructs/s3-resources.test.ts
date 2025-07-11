@@ -109,7 +109,7 @@ describe('S3Resources Construct', () => {
     expect(s3Resources.assetBucket).toBeDefined();
     const template = Template.fromStack(stack);
     template.hasResourceProperties('AWS::S3::Bucket', {
-      BucketName: 'tak-devtest-cloudtak-us-east-1-assets'
+      BucketName: 'tak-devtest-cloudtak-us-east-1-123456789012-assets'
     });
   });
 });

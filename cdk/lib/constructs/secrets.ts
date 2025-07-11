@@ -33,10 +33,19 @@ export class Secrets extends Construct {
         : cdk.RemovalPolicy.DESTROY
     });
 
-    // Reference existing media secret
-    this.mediaSecret = secretsmanager.Secret.fromSecretNameV2(this, 'MediaSecret', 
-      `TAK-${envConfig.stackName}-CloudTAK/api/media`
-    );
+    // Create media secret
+    this.mediaSecret = new secretsmanager.Secret(this, 'MediaSecret', {
+      description: `TAK-${envConfig.stackName}-CloudTAK Media Secret`,
+      secretName: `TAK-${envConfig.stackName}-CloudTAK/api/media`,
+      generateSecretString: {
+        excludePunctuation: true,
+        passwordLength: 32
+      },
+      encryptionKey: kmsKey,
+      removalPolicy: envConfig.general.removalPolicy === 'RETAIN' 
+        ? cdk.RemovalPolicy.RETAIN 
+        : cdk.RemovalPolicy.DESTROY
+    });
 
     // Create admin password secret
     this.adminPasswordSecret = new secretsmanager.Secret(this, 'AdminPasswordSecret', {

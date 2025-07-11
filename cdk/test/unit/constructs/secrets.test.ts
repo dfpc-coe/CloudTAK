@@ -1,65 +1,72 @@
-import { App, Stack } from 'aws-cdk-lib';
+import * as cdk from 'aws-cdk-lib';
 import { Template } from 'aws-cdk-lib/assertions';
+import * as kms from 'aws-cdk-lib/aws-kms';
 import { Secrets } from '../../../lib/constructs/secrets';
-import { CDKTestHelper } from '../../__helpers__/cdk-test-utils';
 import { MOCK_CONFIGS } from '../../__fixtures__/mock-configs';
 
 describe('Secrets Construct', () => {
-  it('creates signing secret', () => {
-    const app = new App();
-    const stack = new Stack(app, 'TestStack1', {
-      env: { account: '123456789012', region: 'us-east-1' }
-    });
-    const { kmsKey } = CDKTestHelper.createMockInfrastructure(stack);
+  let app: cdk.App;
+  let stack: cdk.Stack;
+  let template: Template;
 
-    const secrets = new Secrets(stack, 'TestSecrets', {
-      envConfig: MOCK_CONFIGS.DEV_TEST,
+  beforeEach(() => {
+    app = new cdk.App();
+    stack = new cdk.Stack(app, 'TestStack');
+    
+    const kmsKey = new kms.Key(stack, 'TestKey');
+    const envConfig = MOCK_CONFIGS.DEV_TEST;
+    
+    new Secrets(stack, 'TestSecrets', {
+      envConfig,
       kmsKey
     });
-
-    expect(secrets.signingSecret).toBeDefined();
-    expect(secrets.adminPasswordSecret).toBeDefined();
-    expect(secrets.mediaSecret).toBeDefined();
-
-    const template = Template.fromStack(stack);
-    template.hasResourceProperties('AWS::SecretsManager::Secret', {
-      Description: 'TAK-DevTest-CloudTAK Signing Secret'
-    });
+    
+    template = Template.fromStack(stack);
   });
 
-  it('creates admin password secret', () => {
-    const app = new App();
-    const stack = new Stack(app, 'TestStack2', {
-      env: { account: '123456789012', region: 'us-east-1' }
-    });
-    const { kmsKey } = CDKTestHelper.createMockInfrastructure(stack);
-
-    new Secrets(stack, 'TestSecrets', {
-      envConfig: MOCK_CONFIGS.DEV_TEST,
-      kmsKey
-    });
-
-    const template = Template.fromStack(stack);
+  test('creates all required secrets for CloudTAK API', () => {
+    // Verify signing secret exists
     template.hasResourceProperties('AWS::SecretsManager::Secret', {
+      Name: 'TAK-DevTest-CloudTAK/api/secret',
+      Description: 'TAK-DevTest-CloudTAK Signing Secret'
+    });
+
+    // Verify media secret exists
+    template.hasResourceProperties('AWS::SecretsManager::Secret', {
+      Name: 'TAK-DevTest-CloudTAK/api/media',
+      Description: 'TAK-DevTest-CloudTAK Media Secret'
+    });
+
+    // Verify admin password secret exists
+    template.hasResourceProperties('AWS::SecretsManager::Secret', {
+      Name: 'TAK-DevTest-CloudTAK/API/Admin-Password',
       Description: 'CloudTAK Admin Username and Password'
     });
   });
 
-  it('encrypts secrets with KMS', () => {
-    const app = new App();
-    const stack = new Stack(app, 'TestStack3', {
-      env: { account: '123456789012', region: 'us-east-1' }
-    });
-    const { kmsKey } = CDKTestHelper.createMockInfrastructure(stack);
+  test('creates exactly 3 secrets', () => {
+    template.resourceCountIs('AWS::SecretsManager::Secret', 3);
+  });
 
-    new Secrets(stack, 'TestSecrets', {
-      envConfig: MOCK_CONFIGS.DEV_TEST,
-      kmsKey
+  test('all secrets use KMS encryption', () => {
+    template.allResourcesProperties('AWS::SecretsManager::Secret', {
+      KmsKeyId: {
+        'Fn::GetAtt': [
+          'TestKey4CACAF33',
+          'Arn'
+        ]
+      }
     });
+  });
 
-    const template = Template.fromStack(stack);
+  test('admin password secret has correct template structure', () => {
     template.hasResourceProperties('AWS::SecretsManager::Secret', {
-      KmsKeyId: 'arn:aws:kms:us-west-2:123456789012:key/12345678-1234-1234-1234-123456789012'
+      GenerateSecretString: {
+        SecretStringTemplate: '{"username":"ckadmin"}',
+        GenerateStringKey: 'password',
+        ExcludePunctuation: true,
+        PasswordLength: 32
+      }
     });
   });
 });

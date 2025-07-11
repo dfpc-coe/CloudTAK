@@ -24,7 +24,7 @@ import { createTakImportValue, TAK_EXPORT_NAMES, createBaseImportValue, BASE_EXP
 
 import { CLOUDTAK_CONSTANTS } from '../utils/constants';
 
-export interface EcsServiceProps {
+export interface CloudTakApiProps {
   environment: 'prod' | 'dev-test';
   envConfig: ContextEnvironmentConfig;
   vpc: ec2.IVpc;
@@ -42,11 +42,11 @@ export interface EcsServiceProps {
   serviceUrl: string;
 }
 
-export class EcsService extends Construct {
+export class CloudTakApi extends Construct {
   public readonly service: ecs.FargateService;
   public readonly taskDefinition: ecs.FargateTaskDefinition;
 
-  constructor(scope: Construct, id: string, props: EcsServiceProps) {
+  constructor(scope: Construct, id: string, props: CloudTakApiProps) {
     super(scope, id);
 
     const { 

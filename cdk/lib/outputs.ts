@@ -10,14 +10,13 @@ export interface OutputsProps {
   loadBalancer: elbv2.ApplicationLoadBalancer;
   database: rds.DatabaseCluster;
   assetBucket: s3.Bucket;
-  ecrRepository?: ecr.IRepository;
 }
 
 export function registerOutputs(props: OutputsProps): void {
-  const { stack, serviceUrl, loadBalancer, database, assetBucket, ecrRepository } = props;
+  const { stack, serviceUrl, loadBalancer, database, assetBucket } = props;
 
   new cdk.CfnOutput(stack, 'ServiceURL', {
-    value: serviceUrl,
+    value: `https://${serviceUrl}`,
     description: 'CloudTAK Service HTTPS URL',
     exportName: `${stack.stackName}-ServiceURL`
   });
@@ -36,11 +35,5 @@ export function registerOutputs(props: OutputsProps): void {
     exportName: `${stack.stackName}-AssetBucket`
   });
 
-  if (ecrRepository && 'repositoryUri' in ecrRepository) {
-    new cdk.CfnOutput(stack, 'ECRRepository', {
-      value: ecrRepository.repositoryUri,
-      description: 'ECR Repository URI',
-      exportName: `${stack.stackName}-ECRRepository`
-    });
-  }
+
 }
