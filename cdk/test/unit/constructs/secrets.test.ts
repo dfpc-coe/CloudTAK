@@ -19,6 +19,7 @@ describe('Secrets Construct', () => {
 
     expect(secrets.signingSecret).toBeDefined();
     expect(secrets.adminPasswordSecret).toBeDefined();
+    expect(secrets.mediaSecret).toBeDefined();
 
     const template = Template.fromStack(stack);
     template.hasResourceProperties('AWS::SecretsManager::Secret', {

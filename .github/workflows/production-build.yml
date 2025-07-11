@@ -1,14 +1,31 @@
 name: Build and Push Docker Images - Production
 
+# This workflow builds and pushes CloudTAK Docker images for production deployment.
+# It is triggered on version tags, syncs with upstream, applies branding, and builds all container images.
+# Images are tagged with git SHA and pushed to ECR for production use.
+
 on:
   push:
-    tags: ['v*']
+    tags:
+      - 'v*'
   workflow_call:
+    inputs:
+      force_rebuild:
+        description: 'Force rebuild even if version unchanged'
+        required: false
+        default: false
+        type: boolean
     outputs:
       cloudtak-tag:
         description: 'CloudTAK API image tag'
         value: ${{ jobs.build-images.outputs.cloudtak-tag }}
   workflow_dispatch:
+    inputs:
+      force_rebuild:
+        description: 'Force rebuild even if version unchanged'
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   id-token: write
@@ -46,6 +63,7 @@ jobs:
       - name: Get ECR Repository and Build Tags
         id: tags
         run: |
+          # Get ECR repository ARN from BaseInfra exports
           ECR_REPO_ARN=$(aws cloudformation describe-stacks \
             --stack-name TAK-${{ vars.STACK_NAME }}-BaseInfra \
             --query 'Stacks[0].Outputs[?OutputKey==`EcrRepoArnOutput`].OutputValue' \
@@ -56,12 +74,18 @@ jobs:
             exit 1
           fi
           
+          # Extract repository name from ARN and build URI
           ECR_REPO_NAME=$(echo $ECR_REPO_ARN | cut -d'/' -f2)
           ECR_REPO_URI="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${ECR_REPO_NAME}"
           
-          VERSION=${GITHUB_REF#refs/tags/v}
           GITSHA=$(git rev-parse --short HEAD)
-          CLOUDTAK_TAG="cloudtak-${VERSION}-${GITSHA}"
+          
+          if [[ "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
+            TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+            CLOUDTAK_TAG="cloudtak-${GITSHA}-${TIMESTAMP}"
+          else
+            CLOUDTAK_TAG="cloudtak-${GITSHA}"
+          fi
           
           echo "ecr-repo-uri=$ECR_REPO_URI" >> $GITHUB_OUTPUT
           echo "cloudtak-tag=$CLOUDTAK_TAG" >> $GITHUB_OUTPUT
@@ -76,27 +100,48 @@ jobs:
       
       - name: Build and Push CloudTAK Images
         run: |
-          export GITSHA=$(git rev-parse --short HEAD)
-          export AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}
-          export AWS_REGION=${{ secrets.AWS_REGION }}
-          export Environment=prod
-          
-          # Build API image
-          docker buildx build "./api/" -t "cloudtak-api" --platform linux/amd64
-          docker tag "cloudtak-api:latest" "${{ steps.tags.outputs.ecr-repo-uri }}:${{ steps.tags.outputs.cloudtak-tag }}"
-          docker push "${{ steps.tags.outputs.ecr-repo-uri }}:${{ steps.tags.outputs.cloudtak-tag }}"
-          
-          # Build task images
-          for task_dir in tasks/*/; do
-            if [ -d "$task_dir" ]; then
-              task=$(basename "$task_dir")
-              docker buildx build "./tasks/$task/" -t "cloudtak-$task" --platform linux/amd64
-              docker tag "cloudtak-$task:latest" "${{ steps.tags.outputs.ecr-repo-uri }}:$task-${{ steps.tags.outputs.cloudtak-tag }}"
-              docker push "${{ steps.tags.outputs.ecr-repo-uri }}:$task-${{ steps.tags.outputs.cloudtak-tag }}"
-            fi
-          done
+          # Check if main image already exists
+          if aws ecr describe-images --repository-name $(echo ${{ steps.tags.outputs.ecr-repo-uri }} | cut -d'/' -f2) --image-ids imageTag=${{ steps.tags.outputs.cloudtak-tag }} >/dev/null 2>&1; then
+            echo "✅ CloudTAK image ${{ steps.tags.outputs.cloudtak-tag }} already exists, skipping build"
+          else
+            echo "🔨 Building CloudTAK images with tag ${{ steps.tags.outputs.cloudtak-tag }}"
+            
+            # Build API image
+            docker build \
+              -f api/Dockerfile \
+              --no-cache \
+              --rm \
+              -t ${{ steps.tags.outputs.ecr-repo-uri }}:${{ steps.tags.outputs.cloudtak-tag }} \
+              api/
+            
+            docker push ${{ steps.tags.outputs.ecr-repo-uri }}:${{ steps.tags.outputs.cloudtak-tag }}
+            
+            # Build task images
+            for task_dir in tasks/*/; do
+              if [ -d "$task_dir" ]; then
+                task=$(basename "$task_dir")
+                echo "🔨 Building $task task image"
+                
+                docker build \
+                  -f tasks/$task/Dockerfile \
+                  --no-cache \
+                  --rm \
+                  -t ${{ steps.tags.outputs.ecr-repo-uri }}:$task-${{ steps.tags.outputs.cloudtak-tag }} \
+                  tasks/$task/
+                
+                docker push ${{ steps.tags.outputs.ecr-repo-uri }}:$task-${{ steps.tags.outputs.cloudtak-tag }}
+              fi
+            done
+            
+            echo "✅ CloudTAK images pushed successfully"
+          fi
       
       - name: Output Image Information
         run: |
           echo "✅ Successfully built and pushed CloudTAK images:"
           echo "📦 CloudTAK API: ${{ steps.tags.outputs.cloudtak-tag }}"
+          echo ""
+          echo "🚀 To deploy with this image, use:"
+          echo "npm run deploy:prod -- \\"
+          echo "  --context usePreBuiltImages=true \\"
+          echo "  --context cloudtakImageTag=${{ steps.tags.outputs.cloudtak-tag }}"

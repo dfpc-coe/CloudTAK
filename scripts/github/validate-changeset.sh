@@ -22,7 +22,7 @@ CHANGESET_NAME="github-actions-$(date +%s)"
 aws cloudformation create-change-set \
     --stack-name "$STACK_NAME" \
     --change-set-name "$CHANGESET_NAME" \
-    --template-body file://cdk.out/$STACK_NAME.template.json \
+    --template-body file://cdk/cdk.out/$STACK_NAME.template.json \
     --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM \
     --change-set-type UPDATE
 

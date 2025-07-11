@@ -1,0 +1,81 @@
+name: CloudTAK Test
+
+# This workflow is triggered on pushes to the main branch when API or tasks change.
+# It can also be triggered manually or called by other workflows.
+# It runs comprehensive tests on CloudTAK components including linting, type checking, and coverage.
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'api/**'
+      - 'tasks/**'
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  data:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Docker Data Task Build
+        run: docker buildx build ./tasks/data -t cloudtak-data
+
+      - name: Docker Data Task Lint
+        run: docker run cloudtak-data:latest npm run lint
+
+      - name: Docker Data Task Test
+        run: docker run cloudtak-data:latest npm run test
+
+  events:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org/
+
+      - name: Install
+        working-directory: ./tasks/events/
+        run: npm install
+
+      - name: Lint
+        working-directory: ./tasks/events/
+        run: npm run lint
+
+      - name: Check
+        working-directory: ./tasks/events/
+        run: npm run check
+
+  pmtiles:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org/
+
+      - name: Install
+        working-directory: ./tasks/pmtiles/
+        run: npm install
+
+      - name: Lint
+        working-directory: ./tasks/pmtiles/
+        run: npm run lint
+
+      - name: Check
+        working-directory: ./tasks/pmtiles/
+        run: npm run check
+
+      - name: Build
+        working-directory: ./tasks/pmtiles/
+        run: npm run build

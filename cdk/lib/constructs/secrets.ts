@@ -13,6 +13,7 @@ export interface SecretsProps {
 export class Secrets extends Construct {
   public readonly signingSecret: secretsmanager.Secret;
   public readonly adminPasswordSecret: secretsmanager.Secret;
+  public readonly mediaSecret: secretsmanager.ISecret;
 
   constructor(scope: Construct, id: string, props: SecretsProps) {
     super(scope, id);
@@ -32,19 +33,10 @@ export class Secrets extends Construct {
         : cdk.RemovalPolicy.DESTROY
     });
 
-    // Create media secret to match old CloudFormation pattern
-    new secretsmanager.Secret(this, 'MediaSecret', {
-      description: `TAK-${envConfig.stackName}-CloudTAK Media Secret`,
-      secretName: `TAK-${envConfig.stackName}-CloudTAK/api/media`,
-      generateSecretString: {
-        excludePunctuation: true,
-        passwordLength: 16
-      },
-      encryptionKey: kmsKey,
-      removalPolicy: envConfig.general.removalPolicy === 'RETAIN' 
-        ? cdk.RemovalPolicy.RETAIN 
-        : cdk.RemovalPolicy.DESTROY
-    });
+    // Reference existing media secret
+    this.mediaSecret = secretsmanager.Secret.fromSecretNameV2(this, 'MediaSecret', 
+      `TAK-${envConfig.stackName}-CloudTAK/api/media`
+    );
 
     // Create admin password secret
     this.adminPasswordSecret = new secretsmanager.Secret(this, 'AdminPasswordSecret', {

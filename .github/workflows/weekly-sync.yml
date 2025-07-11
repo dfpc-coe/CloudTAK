@@ -1,8 +1,12 @@
 name: Weekly Upstream Sync
 
+# This workflow automatically syncs with the upstream CloudTAK repository weekly.
+# It runs every Saturday at 2AM New Zealand time, creates a sync branch, applies branding, and opens a PR.
+# Manual intervention is required if merge conflicts occur.
+
 on:
   schedule:
-    - cron: '0 2 * * 1'  # Monday 2AM UTC
+    - cron: '0 14 * * 6'  # Saturday 2AM NZST (14:00 UTC)
   workflow_dispatch:
 
 permissions:
@@ -13,6 +17,14 @@ jobs:
   sync-upstream:
     runs-on: ubuntu-latest
     steps:
+      - name: Check if sync is enabled
+        run: |
+          if [[ "${{ vars.ENABLE_WEEKLY_SYNC }}" == "false" ]]; then
+            echo "⏸️ Weekly sync is disabled via ENABLE_WEEKLY_SYNC variable"
+            exit 0
+          fi
+          echo "✅ Weekly sync is enabled"
+      
       - name: Checkout
         uses: actions/checkout@v4
         with:

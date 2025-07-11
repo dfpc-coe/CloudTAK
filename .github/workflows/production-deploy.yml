@@ -1,5 +1,9 @@
 name: Production Deployment
 
+# This workflow deploys CloudTAK to the production environment.
+# It is triggered on version tags, runs tests, builds images, validates changes, and deploys.
+# Includes change set validation and requires manual approval for production environment.
+
 on:
   push:
     tags: ['v*']
@@ -40,6 +44,7 @@ jobs:
 
       - name: Bootstrap CDK (if needed)
         run: |
+          cd cdk
           if ! aws cloudformation describe-stacks --stack-name CDKToolkit 2>/dev/null; then
             npx cdk bootstrap aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ secrets.AWS_REGION }} --context envType=prod
           fi
@@ -52,6 +57,7 @@ jobs:
 
       - name: Validate Production Change Set
         run: |
+          # Check if override is requested
           if [[ "${{ github.event.head_commit.message }}" == *"[force-deploy]"* ]]; then
             echo "🚨 Force deploy detected - skipping change set validation"
           else
@@ -60,9 +66,5 @@ jobs:
 
       - name: Deploy Production
         run: |
-          npm run cdk deploy -- \
-            --context envType=prod \
-            --context stackName=${{ vars.STACK_NAME }} \
-            --context usePreBuiltImages=true \
-            --context cloudtakImageTag=${{ steps.images.outputs.cloudtak-tag }} \
-            --require-approval never
+          cd cdk
+          npm run cdk deploy -- --context envType=prod --context stackName=${{ vars.STACK_NAME }} --context usePreBuiltImages=true --context cloudtakImageTag=${{ steps.images.outputs.cloudtak-tag }} --require-approval never

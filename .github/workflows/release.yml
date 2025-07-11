@@ -1,25 +1,75 @@
-name: NPM Release
+name: Release
+
+# This workflow creates GitHub releases when version tags are pushed.
+# It generates release notes from CHANGELOG.md or git commits and creates a GitHub release.
+# The release will trigger the production deployment workflow.
 
 on:
   push:
     tags:
-      - '*'
+      - 'v*'  # Accept all v* tags (v1.0.0, v2025.6, v2025.6.1, etc.)
 
 jobs:
-  build:
+  create-release:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    permissions:
+      contents: write  # Required for creating releases
+    
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch full history for changelog generation
 
-      - name: Get tag
-        id: tag
-        uses: dawidd6/action-get-tag@v1
+      - name: Get tag and previous tag
+        id: tags
+        run: |
+          CURRENT_TAG="${GITHUB_REF#refs/tags/}"
+          echo "current-tag=$CURRENT_TAG" >> $GITHUB_OUTPUT
+          
+          # Get previous tag for changelog generation
+          PREVIOUS_TAG=$(git tag --sort=-version:refname | grep -v "$CURRENT_TAG" | head -n1)
+          echo "previous-tag=$PREVIOUS_TAG" >> $GITHUB_OUTPUT
+          echo "Found tags: current=$CURRENT_TAG, previous=$PREVIOUS_TAG"
 
-      - name: Generate CHANGELOG
-        run: grep -Pzo "### ${{steps.tag.outputs.tag}}(?s).*?(?=###)" CHANGELOG.md > RELEASE
+      - name: Generate Release Notes
+        id: changelog
+        run: |
+          CURRENT_TAG="${{ steps.tags.outputs.current-tag }}"
+          PREVIOUS_TAG="${{ steps.tags.outputs.previous-tag }}"
+          
+          echo "## Release $CURRENT_TAG" > RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          
+          # Try to extract from CHANGELOG.md first
+          if [[ -f "CHANGELOG.md" ]] && grep -q "### $CURRENT_TAG" CHANGELOG.md; then
+            echo "📋 **Changes from CHANGELOG.md:**" >> RELEASE_NOTES.md
+            echo "" >> RELEASE_NOTES.md
+            awk "/### $CURRENT_TAG/,/### [v0-9]/ {
+              if (/### [v0-9]/ && !/### $CURRENT_TAG/) exit;
+              if (!/### $CURRENT_TAG/) print
+            }" CHANGELOG.md >> RELEASE_NOTES.md
+          else
+            # Generate from git commits
+            echo "📋 **Changes since $PREVIOUS_TAG:**" >> RELEASE_NOTES.md
+            echo "" >> RELEASE_NOTES.md
+            
+            if [[ -n "$PREVIOUS_TAG" ]]; then
+              git log --pretty=format:"- %s" "$PREVIOUS_TAG..$CURRENT_TAG" >> RELEASE_NOTES.md
+            else
+              echo "- Initial release" >> RELEASE_NOTES.md
+            fi
+          fi
+          
+          echo "" >> RELEASE_NOTES.md
+          echo "---" >> RELEASE_NOTES.md
+          echo "🚀 **Deployment:** This release will trigger production deployment after approval." >> RELEASE_NOTES.md
 
-      - name: Github Release
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          body_path: RELEASE
+          body_path: RELEASE_NOTES.md
+          generate_release_notes: true  # GitHub will append auto-generated notes
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -339,5 +339,26 @@ export class CloudTakStack extends cdk.Stack {
       assetBucket: s3Resources.assetBucket,
       ecrRepository: dockerImageAsset ? dockerImageAsset.repository : undefined
     });
+
+    // Add MediaInfra integration outputs
+    new cdk.CfnOutput(this, 'ApiUrl', {
+      value: route53Records.serviceUrl + '/api',
+      exportName: `TAK-${envConfig.stackName}-CloudTAK-ApiUrl`
+    });
+
+    new cdk.CfnOutput(this, 'SigningSecretArn', {
+      value: secrets.signingSecret.secretArn,
+      exportName: `TAK-${envConfig.stackName}-CloudTAK-SigningSecret`
+    });
+
+    new cdk.CfnOutput(this, 'MediaSecretArn', {
+      value: secrets.mediaSecret.secretArn,
+      exportName: `TAK-${envConfig.stackName}-CloudTAK-MediaSecret`
+    });
+
+    new cdk.CfnOutput(this, 'EcsSecurityGroupId', {
+      value: securityGroups.ecs.securityGroupId,
+      exportName: `TAK-${envConfig.stackName}-CloudTAK-EcsSecurityGroup`
+    });
   }
 }

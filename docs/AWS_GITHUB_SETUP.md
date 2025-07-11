@@ -115,6 +115,12 @@ graph TD
 | `STACK_NAME` | demo, prod | Stack name suffix | `Demo`, `Prod` | ✅ |
 | `DEMO_TEST_DURATION` | demo | Test wait time in seconds | `300` | ❌ |
 
+**Repository Variables:**
+
+| Variable | Description | Default | Usage |
+|----------|-------------|---------|-------|
+| `ENABLE_WEEKLY_SYNC` | Enable/disable weekly upstream sync | `true` | Set to `false` to temporarily disable weekly sync |
+
 ## 6. Verification
 
 Test the CloudTAK setup:
