@@ -242,7 +242,10 @@ export default async function router(schema: Schema, config: Config) {
         }),
         query: Type.Object({
             token: Type.Optional(Type.String()),
-            download: Type.Boolean()
+            download: Type.Boolean({
+                default: false,
+                description: 'Download auth as P12 file'
+            })
         }),
     }, async (req, res) => {
         try {

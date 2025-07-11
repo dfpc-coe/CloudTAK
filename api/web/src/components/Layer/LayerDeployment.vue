@@ -7,16 +7,6 @@
             <div class='ms-auto'>
                 <div class='btn-list'>
                     <TablerIconButton
-                        title='Manual Run'
-                        @click='invoke'
-                    >
-                        <IconPlayerPlay
-                            :size='24'
-                            stroke='1'
-                        />
-                    </TablerIconButton>
-
-                    <TablerIconButton
                         title='Redeploy'
                         @click='redeploy'
                     >
@@ -245,7 +235,6 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
-    IconPlayerPlay,
     IconPencil,
     IconRefresh,
     IconSettings,
@@ -304,14 +293,6 @@ async function refresh() {
     disabled.value = true;
 
     await fetchLogs();
-}
-
-async function invoke() {
-    loading.value.full = true;
-    await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/task/invoke`, {
-        method: 'POST'
-    });
-    loading.value.full = false;
 }
 
 async function redeploy(showLoading=true) {

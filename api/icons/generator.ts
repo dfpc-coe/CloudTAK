@@ -50,7 +50,7 @@ for (const icon of xmljs.xml2js(String(await fs.readFile(new URL('../icons/icons
 }
 
 let i = 0;
-const defaultSprites = await Sprites(
+const defaultSprites = await Sprites.from_icons(
     iconset.map((icon) => {
         return {
             id: ++i,

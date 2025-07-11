@@ -41,11 +41,11 @@
                                                 role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
-                                                    "active": String($route.name).startsWith("admin-server"),
-                                                    "cursor-pointer": !String($route.name).startsWith("admin-server")
+                                                    "active": String(route.name).startsWith("admin-server"),
+                                                    "cursor-pointer": !String(route.name).startsWith("admin-server")
                                                 }'
-                                                @keyup.enter='$router.push(`/admin/server`)'
-                                                @click='$router.push(`/admin/server`)'
+                                                @keyup.enter='router.push(`/admin/server`)'
+                                                @click='router.push(`/admin/server`)'
                                             >
                                                 <IconServer
                                                     v-tooltip='nest ? "TAK Server Connection" : false'
@@ -62,11 +62,11 @@
                                                 role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
-                                                    "active": String($route.name) === "admin-config",
-                                                    "cursor-pointer": String($route.name) !== "admin-config"
+                                                    "active": String(route.name) === "admin-config",
+                                                    "cursor-pointer": String(route.name) !== "admin-config"
                                                 }'
-                                                @keyup.enter='$router.push(`/admin/config`)'
-                                                @click='$router.push(`/admin/config`)'
+                                                @keyup.enter='router.push(`/admin/config`)'
+                                                @click='router.push(`/admin/config`)'
                                             >
                                                 <IconSettings
                                                     v-tooltip='nest ? "CloudTAK Settings" : false'
@@ -91,11 +91,11 @@
                                                 role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
-                                                    "active": String($route.name).startsWith("admin-user"),
-                                                    "cursor-pointer": !String($route.name).startsWith("admin-user")
+                                                    "active": String(route.name).startsWith("admin-user"),
+                                                    "cursor-pointer": !String(route.name).startsWith("admin-user")
                                                 }'
-                                                @keyup.enter='$router.push(`/admin/user`)'
-                                                @click='$router.push(`/admin/user`)'
+                                                @keyup.enter='router.push(`/admin/user`)'
+                                                @click='router.push(`/admin/user`)'
                                             >
                                                 <IconUsers
                                                     v-tooltip='nest ? "Users" : false'
@@ -112,11 +112,11 @@
                                                 role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
-                                                    "active": String($route.name).includes("admin-overlays"),
-                                                    "cursor-pointer": !String($route.name).includes("admin-overlays")
+                                                    "active": String(route.name).includes("admin-overlays"),
+                                                    "cursor-pointer": !String(route.name).includes("admin-overlays")
                                                 }'
-                                                @keyup.enter='$router.push(`/admin/overlay`)'
-                                                @click='$router.push(`/admin/overlay`)'
+                                                @keyup.enter='router.push(`/admin/overlay`)'
+                                                @click='router.push(`/admin/overlay`)'
                                             >
                                                 <IconMap
                                                     v-tooltip='nest ? "Basemaps & Overlays" : false'
@@ -133,11 +133,11 @@
                                                 role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
-                                                    "active": String($route.name).startsWith("admin-palette"),
-                                                    "cursor-pointer": !String($route.name).startsWith("admin-palette")
+                                                    "active": String(route.name).startsWith("admin-palette"),
+                                                    "cursor-pointer": !String(route.name).startsWith("admin-palette")
                                                 }'
-                                                @keyup.enter='$router.push(`/admin/palette`)'
-                                                @click='$router.push(`/admin/palette`)'
+                                                @keyup.enter='router.push(`/admin/palette`)'
+                                                @click='router.push(`/admin/palette`)'
                                             >
                                                 <IconBrush
                                                     v-tooltip='nest ? "Draw Palette" : false'
@@ -162,11 +162,11 @@
                                                 role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
-                                                    "active": String($route.name) === "admin-connection",
-                                                    "cursor-pointer": String($route.name) !== "admin-connection"
+                                                    "active": String(route.name) === "admin-connection",
+                                                    "cursor-pointer": String(route.name) !== "admin-connection"
                                                 }'
-                                                @keyup.enter='$router.push(`/admin/connection`)'
-                                                @click='$router.push(`/admin/connection`)'
+                                                @keyup.enter='router.push(`/admin/connection`)'
+                                                @click='router.push(`/admin/connection`)'
                                             >
                                                 <IconNetwork
                                                     v-tooltip='nest ? "Connections" : false'
@@ -183,11 +183,11 @@
                                                 role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
-                                                    "active": String($route.name) === "admin-layers",
-                                                    "cursor-pointer": String($route.name) !== "admin-layers"
+                                                    "active": String(route.name) === "admin-layers",
+                                                    "cursor-pointer": String(route.name) !== "admin-layers"
                                                 }'
-                                                @keyup.enter='$router.push(`/admin/layer`)'
-                                                @click='$router.push(`/admin/layer`)'
+                                                @keyup.enter='router.push(`/admin/layer`)'
+                                                @click='router.push(`/admin/layer`)'
                                             >
                                                 <IconBuildingBroadcastTower
                                                     v-tooltip='nest ? "Layers" : false'
@@ -204,11 +204,11 @@
                                                 role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
-                                                    "active": String($route.name).startsWith("admin-tasks"),
-                                                    "cursor-pointer": !String($route.name).startsWith("admin-tasks")
+                                                    "active": String(route.name).startsWith("admin-tasks"),
+                                                    "cursor-pointer": !String(route.name).startsWith("admin-tasks")
                                                 }'
-                                                @keyup.enter='$router.push(`/admin/tasks`)'
-                                                @click='$router.push(`/admin/tasks`)'
+                                                @keyup.enter='router.push(`/admin/tasks`)'
+                                                @click='router.push(`/admin/tasks`)'
                                             >
                                                 <IconBrandDocker
                                                     v-tooltip='nest ? "ETL Task Runners" : false'
@@ -225,11 +225,11 @@
                                                 role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
-                                                    "active": String($route.name) === "admin-data",
-                                                    "cursor-pointer": String($route.name) !== "admin-data"
+                                                    "active": String(route.name) === "admin-data",
+                                                    "cursor-pointer": String(route.name) !== "admin-data"
                                                 }'
-                                                @keyup.enter='$router.push(`/admin/data`)'
-                                                @click='$router.push(`/admin/data`)'
+                                                @keyup.enter='router.push(`/admin/data`)'
+                                                @click='router.push(`/admin/data`)'
                                             >
                                                 <IconDatabase
                                                     v-tooltip='nest ? "Data Syncs" : false'

@@ -383,7 +383,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             const sprite = [{
                 id: 'default',
-                url: String(stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=default`))
+                url: String(stdurl(`/api/iconset/default/sprite?token=${localStorage.token}`))
             }]
 
             // Eventually make a sprite URL part of the overlay so KMLs can load a sprite package & add paging support
@@ -391,7 +391,7 @@ export const useMapStore = defineStore('cloudtak', {
             for (const iconset of iconsets.items) {
                 sprite.push({
                     id: iconset.uid,
-                    url: String(stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=${iconset.uid}&alt=true`))
+                    url: String(stdurl(`/api/iconset/${iconset.uid}/sprite?token=${localStorage.token}&alt=true`))
                 });
             }
 

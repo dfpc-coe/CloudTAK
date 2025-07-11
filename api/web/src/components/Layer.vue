@@ -37,6 +37,15 @@
                                 <div class='ms-auto'>
                                     <div class='btn-list'>
                                         <TablerIconButton
+                                            title='Download Config'
+                                            @click='downloadConfig'
+                                        >
+                                            <IconDownload
+                                                :size='32'
+                                                stroke='1'
+                                            />
+                                        </TablerIconButton>
+                                        <TablerIconButton
                                             title='Layer Alerts'
                                             @click='router.push(`/connection/${route.params.connectionid}/layer/${layer.id}/alert`)'
                                         >
@@ -62,11 +71,11 @@
                                 class='card-body'
                                 :markdown='layer.description'
                             />
-                            <div class='card-footer d-flex'>
+                            <div class='card-footer d-flex align-items-center'>
                                 <div>
                                     Last updated <span v-text='timeDiff(layer.updated)' />
                                 </div>
-                                <div class='ms-auto'> 
+                                <div class='ms-auto'>
                                     <InitialAuthor
                                         :email='layer.username || "Unknown"'
                                     />
@@ -378,6 +387,7 @@ import {
     IconWorldDownload,
     IconWorldUpload,
     IconPencil,
+    IconDownload,
     IconAlertTriangle,
     IconPlaneDeparture,
     IconAdjustments,
@@ -499,6 +509,10 @@ async function fetchStatus(load = false) {
     loading.value.stack = load;
     stack.value = await std(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}/task`) as ETLLayerTask;
     loading.value.stack = false;
+}
+
+function downloadConfig() {
+    window.location.href = String(stdurl(`/api/connection/${route.params.connectionid}/layer/${route.params.layerid}?download=true&token=${localStorage.token}`));
 }
 
 async function fetchCapabilities() {

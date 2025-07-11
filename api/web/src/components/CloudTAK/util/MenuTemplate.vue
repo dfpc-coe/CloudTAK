@@ -14,7 +14,7 @@
                 <TablerIconButton
                     v-if='backType === "close"'
                     title='Close Menu'
-                    @click='$router.push("/")'
+                    @click='router.push("/")'
                 >
                     <IconCircleX
                         :size='32'
@@ -25,7 +25,7 @@
                     v-if='backType === "back"'
                     title='Close Menu'
                     icon='IconCircleArrowLeft'
-                    @click='$router.back()'
+                    @click='router.back()'
                 >
                     <IconCircleArrowLeft
                         :size='32'
