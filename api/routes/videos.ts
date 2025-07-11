@@ -1,11 +1,9 @@
-import { Static, Type } from '@sinclair/typebox'
+import { Type } from '@sinclair/typebox'
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
-import EC2 from '../lib/aws/ec2.js';
 import ECSVideoControl, { Configuration, PathConfig, PathListItem } from '../lib/control/video-service.js';
-import { StandardResponse, VideoResponse } from '../lib/types.js';
 
 export default async function router(schema: Schema, config: Config) {
     const videoControl = new ECSVideoControl(config);
