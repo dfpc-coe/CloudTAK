@@ -2,7 +2,7 @@ import { Type } from '@sinclair/typebox'
 import Schema from '@openaddresses/batch-schema';
 import { GenerateUpsert } from '@openaddresses/batch-generic';
 import {
-    Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Text, Profile_Projection, Profile_Zoom,
+    toEnum, Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Text, Profile_Projection, Profile_Zoom,
 } from '../lib/enums.js'
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
@@ -123,6 +123,115 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
+    await schema.get('/config/display', {
+        name: 'Default Display Config',
+        group: 'Config',
+        description: 'Return Default Display Config',
+        res: Type.Object({
+            'stale': Type.Object({
+                value: Type.Enum(Profile_Stale, {
+                    default: Profile_Stale.TenMinutes
+                }),
+                options: Type.Array(Type.Enum(Profile_Stale))
+            }),
+            'distance': Type.Object({
+                value: Type.Enum(Profile_Distance, {
+                    default: Profile_Distance.MILE
+                }),
+                options: Type.Array(Type.Enum(Profile_Distance))
+            }),
+            'elevation': Type.Object({
+                value: Type.Enum(Profile_Elevation, {
+                    default: Profile_Elevation.FEET
+                }),
+                options: Type.Array(Type.Enum(Profile_Elevation))
+            }),
+            'speed': Type.Object({
+                value: Type.Enum(Profile_Speed, {
+                    default: Profile_Speed.MPH
+                }),
+                options: Type.Array(Type.Enum(Profile_Speed))
+            }),
+            'projection': Type.Object({
+                value: Type.Enum(Profile_Projection, {
+                    default: Profile_Projection.GLOBE
+                }),
+                options: Type.Array(Type.Enum(Profile_Projection))
+            }),
+            'zoom': Type.Object({
+                value: Type.Enum(Profile_Zoom, {
+                    default: Profile_Zoom.CONDITIONAL
+                }),
+                options: Type.Array(Type.Enum(Profile_Zoom))
+            }),
+            'text': Type.Object({
+                value: Type.Enum(Profile_Text, {
+                    default: Profile_Text.Medium
+                }),
+                options: Type.Array(Type.Enum(Profile_Text))
+            }),
+        })
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req);
+
+            const keys = [
+                'display::stale',
+                'display::distance',
+                'display::elevation',
+                'display::speed',
+                'display::projection',
+                'display::zoom',
+                'display::text',
+            ];
+
+            const final: Record<string, string> = {};
+            (await Promise.allSettled(keys.map((key) => {
+                return config.models.Setting.from(key);
+            }))).forEach((k) => {
+                if (k.status === 'rejected') return;
+                return final[k.value.key.replace('display::', '')] = String(k.value.value);
+            });
+
+            for (let display of keys) {
+                display = display.replace('display::', '')
+            }
+
+            res.json({
+                stale: {
+                    value: toEnum.fromString(Type.Enum(Profile_Stale), final.stale),
+                    options: Object.values(Profile_Stale)
+                },
+                distance: {
+                    value: toEnum.fromString(Type.Enum(Profile_Distance), final.distance),
+                    options: Object.values(Profile_Distance)
+                },
+                elevation: {
+                    value: toEnum.fromString(Type.Enum(Profile_Elevation), final.elevation),
+                    options: Object.values(Profile_Elevation)
+                },
+                speed: {
+                    value: toEnum.fromString(Type.Enum(Profile_Speed), final.speed),
+                    options: Object.values(Profile_Speed)
+                },
+                projection: {
+                    value: toEnum.fromString(Type.Enum(Profile_Projection), final.projection),
+                    options: Object.values(Profile_Projection)
+                },
+                zoom: {
+                    value: toEnum.fromString(Type.Enum(Profile_Zoom), final.zoom),
+                    options: Object.values(Profile_Zoom)
+                },
+                text: {
+                    value: toEnum.fromString(Type.Enum(Profile_Text), final.text),
+                    options: Object.values(Profile_Text)
+                }
+            });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
     await schema.get('/config/login', {
         name: 'Login Config',
         group: 'Config',
@@ -238,6 +347,8 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
+            await Auth.as_user(config, req);
+
             const keys = [
                 'map::center',
                 'map::pitch',
