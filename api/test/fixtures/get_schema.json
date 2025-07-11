@@ -1219,27 +1219,7 @@
         "query": false,
         "res": true
     },
-    "GET /video/server": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "GET /video/service/path/:path": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "POST /video/server": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "GET /video/server/:serverid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "DELETE /video/server/:serverid": {
         "body": false,
         "query": false,
         "res": true
