@@ -243,7 +243,7 @@ export default class Flight {
 
             Object.assign(this.config, custom);
 
-            this.config.models.Server.generate({
+            await this.config.models.Server.generate({
                 name: 'Test Runner',
                 url: 'ssl://localhost',
                 auth: {
