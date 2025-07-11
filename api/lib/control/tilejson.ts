@@ -42,7 +42,7 @@ export const TileJSONType = Type.Object({
     minzoom: Type.Integer(),
     maxzoom: Type.Integer(),
     tiles: Type.Array(Type.String()),
-    bounds: Type.Array(Type.Number()),
+    bounds: Type.Tuple([Type.Number(), Type.Number(), Type.Number(), Type.Number()]),
     center: Type.Array(Type.Number()),
     type: Type.String(),
     format: Type.Optional(Type.String()),
