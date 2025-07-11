@@ -12,6 +12,86 @@
 
 ### Pending Release
 
+### v10.25.0 - 2025-07-11
+
+- :tada: Support updating the proxy source for a Video Lease
+
+### v10.24.0 - 2025-07-11
+
+- :tada: Remove single video server deploy options. This would typically be a major release but this feature hasn't been used by anyone other than COTAK and has been retired for > 1 year
+
+### v10.23.0 - 2025-07-11
+
+- :rocket: Allow specifying `tilesize` in Basemaps to ensure MapLibre uses the correct tile size for raster layers
+- :rocket: Allow specifying `attribution` in Basemap and import the field from TileJSON if present
+- :bug: Add `raster-dem` option on the Admin Basemap management editor
+
+### v10.22.1 - 2025-07-10 - :tada: @chriselsen
+
+- :rocket: Improve Docker efficency & size and allow for custom CloudTAK Data path
+
+### v10.22.0 - 2025-07-09
+
+- :rocket: Pregenerate and store spritesheets alongside the Iconset in the database
+
+### v10.21.1 - 2025-07-07
+
+- :bug: Update MissionSync response schema due to 4xx schema errors seen in the field
+
+### v10.21.0 - 2025-07-07
+
+- :bug: Alarms were only being wired to SNS on incoming layers
+
+### v10.20.1 - 2025-07-07 - :tada: @chriselsen
+
+- :bug: Fix HREF for CloudTAK Logo if no Brand Logo is set
+
+### v10.20.0 - 2025-07-07
+
+- :arrow_up: Update Batch-Alarms to ensure CloudWatch dashboards links remain clickable
+
+### v10.19.0 - 2025-07-03
+
+- :rocket: Migrate DrawTools to it's own component to clean up Map.vue
+- :tada: Introduce initial Lost Person Input for generating range rings
+- :rocket: Optimize style by not rendering polygon interiors if fill-opacity = 0
+- :rocket: Optimuze label placement by rendering Polygon labels with fill-opacity = 0 as line labels
+
+### v10.18.0 - 2025-07-03
+
+- :rocket: Support `emergency` section on CoT type
+- :bug: Attempt to fix HLS issue in chrome - Ref: https://github.com/video-dev/hls.js/issues/737
+
+### v10.17.0 - 2025-07-03
+
+- :rocket: Allow ECR repositories to be configured via Env Vars
+
+### v10.16.0 - 2025-07-02
+
+- :rocket: Add Layer Schema support for `number` and `integer`
+- :rocket: Add default application support for `number` and `integer`
+
+### v10.15.0 - 2025-07-02
+
+- :rocket: Move Layer Invoke button to incoming config where it applied
+- :rocket: Allow downloading a Layer Config file
+
+### v10.14.0 - 2025-07-01
+
+- :rocket: Return 404 on tiles outside of TileJSON bounds
+
+### v10.13.0 - 2025-07-01
+
+- :rocket: Migrate to Vue Page for Docs & update OpenAPI Defs
+
+### v10.12.0 - 2025-06-30
+
+- :rocket: Attempt to determine delimiter type in CSV Import
+
+### v10.11.0 - 2025-06-30
+
+- :rocket: Include OpenAPI Prefix & Security Document
+
 ### v10.10.0 - 2025-06-27
 
 - :rocket: Explicitly set `archived: true` on CoTs added to Mission Sync

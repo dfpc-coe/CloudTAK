@@ -84,7 +84,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         do {
             const res = await fetch(`http://${process.env.AWS_LAMBDA_RUNTIME_API}/2018-06-01/runtime/invocation/next`);
             const RequestID = res.headers.get('Lambda-Runtime-Aws-Request-Id');
-            const data = await res.json() as object;
+            const data = await res.json() as {
+                Records: Array<object>
+            };
 
             try {
                 if (Object.keys(data).includes('Records')) {

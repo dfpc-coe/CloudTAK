@@ -10,7 +10,7 @@ export default async function router(schema: Schema) {
         query: Type.Object({
             token: Type.String()
         }),
-        res: TileJSON
+        res: Type.Unknown(),
     }, async (req, res) => {
         try {
             throw new Err(400, null, 'Not Configured');

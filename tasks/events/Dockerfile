@@ -13,7 +13,7 @@ RUN export VERSION_TIPPECANOE='2.77.0' && \
     PREFIX=/usr/local make install && \
     rm -rf /tmp/tippecanoe
 
-FROM alpine:3.21 AS runtime
+FROM alpine:3.22 AS runtime
 
 ENV HOME=/home/events
 WORKDIR $HOME
