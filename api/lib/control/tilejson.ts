@@ -158,7 +158,7 @@ export default class TileJSON {
     }
 
     static json(config: TileJSONInterface): Static<typeof TileJSONType> {
-        const bounds = config.bounds || [-180, -90, 180, 90];
+        const bounds = config.bounds as [number, number, number, number ] || [-180, -90, 180, 90];
         const center = config.center || pointOnFeature(bboxPolygon(bounds as BBox)).geometry.coordinates;
 
         const vector_layers: Array<Static<typeof VectorLayer>> = [];
@@ -179,7 +179,8 @@ export default class TileJSON {
             description: '',
             scheme: 'xyz',
             type: config.type || 'raster',
-            bounds, center,
+            bounds,
+            center,
             attribution: config.attribution || undefined,
             tileSize: config.tilesize,
             minzoom: config.minzoom || 0,
