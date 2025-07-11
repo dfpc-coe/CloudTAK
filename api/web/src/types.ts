@@ -91,6 +91,8 @@ export type Attachment = paths["/api/attachment"]["get"]["responses"]["200"]["co
 
 export type ConfigGroups = paths["/api/config/group"]["get"]["responses"]["200"]["content"]["application/json"]
 
+export type TileJSON = paths["/api/basemap/{:basemapid}/tiles"]["get"]["responses"]["200"]["content"]["application/json"]
+
 export type Basemap = paths["/api/basemap/{:basemapid}"]["patch"]["responses"]["200"]["content"]["application/json"]
 export type BasemapList = paths["/api/basemap"]["get"]["responses"]["200"]["content"]["application/json"]
 

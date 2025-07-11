@@ -302,7 +302,7 @@ export interface paths {
                     /** @description No Description */
                     type?: "raster" | "raster-dem" | "vector";
                     /** @description No Description */
-                    sort: "id" | "created" | "updated" | "name" | "title" | "url" | "overlay" | "username" | "bounds" | "center" | "minzoom" | "maxzoom" | "collection" | "format" | "scheme" | "styles" | "type" | "enableRLS";
+                    sort: "id" | "created" | "updated" | "name" | "title" | "url" | "overlay" | "username" | "bounds" | "tilesize" | "attribution" | "center" | "minzoom" | "maxzoom" | "collection" | "format" | "scheme" | "styles" | "type" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description Only show Basemaps belonging to a given collection */
@@ -336,6 +336,8 @@ export interface paths {
                                 url: string;
                                 overlay: boolean;
                                 username: string | null;
+                                tilesize: number;
+                                attribution: string | null;
                                 minzoom: number;
                                 maxzoom: number;
                                 collection?: null | string;
@@ -413,6 +415,9 @@ export interface paths {
                         url: string;
                         /** @default false */
                         overlay: boolean;
+                        /** @default 256 */
+                        tilesize: number;
+                        attribution?: null | string;
                         minzoom?: number;
                         maxzoom?: number;
                         format?: "png" | "jpeg" | "mvt";
@@ -441,6 +446,8 @@ export interface paths {
                             url: string;
                             overlay: boolean;
                             username: string | null;
+                            tilesize: number;
+                            attribution: string | null;
                             minzoom: number;
                             maxzoom: number;
                             collection?: null | string;
@@ -503,6 +510,8 @@ export interface paths {
                             url: string;
                             overlay: boolean;
                             username: string | null;
+                            tilesize: number;
+                            attribution: string | null;
                             minzoom: number;
                             maxzoom: number;
                             collection?: null | string;
@@ -569,6 +578,9 @@ export interface paths {
                         /** @default user */
                         scope: "server" | "user";
                         url?: string;
+                        /** @default 256 */
+                        tilesize?: number;
+                        attribution?: null | string;
                         minzoom?: number;
                         maxzoom?: number;
                         format?: "png" | "jpeg" | "mvt";
@@ -597,6 +609,8 @@ export interface paths {
                             url: string;
                             overlay: boolean;
                             username: string | null;
+                            tilesize: number;
+                            attribution: string | null;
                             minzoom: number;
                             maxzoom: number;
                             collection?: null | string;
@@ -651,10 +665,16 @@ export interface paths {
                             name: string;
                             description: string;
                             attribution?: string;
+                            tileSize?: number;
                             minzoom: number;
                             maxzoom: number;
                             tiles: string[];
-                            bounds: number[];
+                            bounds: [
+                                number,
+                                number,
+                                number,
+                                number
+                            ];
                             center: number[];
                             type: string;
                             format?: string;
@@ -1991,6 +2011,7 @@ export interface paths {
                                 course?: number;
                                 slope?: number;
                                 speed?: number;
+                                labels?: boolean;
                                 "marker-color"?: string;
                                 "marker-opacity"?: number;
                                 stroke?: string;
@@ -2235,6 +2256,7 @@ export interface paths {
                                         course?: number;
                                         slope?: number;
                                         speed?: number;
+                                        labels?: boolean;
                                         "marker-color"?: string;
                                         "marker-opacity"?: number;
                                         stroke?: string;
@@ -2499,6 +2521,7 @@ export interface paths {
                                 course?: number;
                                 slope?: number;
                                 speed?: number;
+                                labels?: boolean;
                                 "marker-color"?: string;
                                 "marker-opacity"?: number;
                                 stroke?: string;
@@ -2772,6 +2795,7 @@ export interface paths {
                                     course?: number;
                                     slope?: number;
                                     speed?: number;
+                                    labels?: boolean;
                                     "marker-color"?: string;
                                     "marker-opacity"?: number;
                                     stroke?: string;
@@ -7608,7 +7632,9 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": unknown;
+                    };
                 };
             };
         };
@@ -8569,6 +8595,7 @@ export interface paths {
                                 course?: number;
                                 slope?: number;
                                 speed?: number;
+                                labels?: boolean;
                                 "marker-color"?: string;
                                 "marker-opacity"?: number;
                                 stroke?: string;
@@ -8844,6 +8871,7 @@ export interface paths {
                                     course?: number;
                                     slope?: number;
                                     speed?: number;
+                                    labels?: boolean;
                                     "marker-color"?: string;
                                     "marker-opacity"?: number;
                                     stroke?: string;
@@ -9847,6 +9875,7 @@ export interface paths {
                                     course?: number;
                                     slope?: number;
                                     speed?: number;
+                                    labels?: boolean;
                                     "marker-color"?: string;
                                     "marker-opacity"?: number;
                                     stroke?: string;
@@ -12197,6 +12226,7 @@ export interface paths {
                                     course?: number;
                                     slope?: number;
                                     speed?: number;
+                                    labels?: boolean;
                                     "marker-color"?: string;
                                     "marker-opacity"?: number;
                                     stroke?: string;
@@ -12449,6 +12479,7 @@ export interface paths {
                             course?: number;
                             slope?: number;
                             speed?: number;
+                            labels?: boolean;
                             "marker-color"?: string;
                             "marker-opacity"?: number;
                             stroke?: string;
@@ -12687,6 +12718,7 @@ export interface paths {
                                 course?: number;
                                 slope?: number;
                                 speed?: number;
+                                labels?: boolean;
                                 "marker-color"?: string;
                                 "marker-opacity"?: number;
                                 stroke?: string;
@@ -12980,6 +13012,7 @@ export interface paths {
                                 course?: number;
                                 slope?: number;
                                 speed?: number;
+                                labels?: boolean;
                                 "marker-color"?: string;
                                 "marker-opacity"?: number;
                                 stroke?: string;

@@ -597,7 +597,7 @@
     "GET /iconset/:iconset/sprite{:size}.json": {
         "body": false,
         "query": true,
-        "res": false
+        "res": true
     },
     "GET /iconset/:iconset/sprite{:size}.png": {
         "body": false,
