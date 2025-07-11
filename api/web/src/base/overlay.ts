@@ -204,9 +204,11 @@ export default class Overlay {
             const url = stdurl(this.url);
             url.searchParams.append('token', localStorage.token);
 
+            const tileJSON = await std(url.toString())
+
             mapStore.map.addSource(String(this.id), {
                 type: 'raster',
-                url: String(url)
+                ...tileJSON
             });
         } else if (this.type === 'vector' && this.url) {
             const url = stdurl(this.url);
