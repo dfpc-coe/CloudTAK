@@ -85,18 +85,6 @@ export const PaletteFeatureStyle = Type.Object({
     'fill-opacity': Type.Optional(Type.String()),
 })
 
-export const VideoResponse = Type.Object({
-    id: Type.String(),
-    version: Type.Integer(),
-    created: Type.String(),
-    status: Type.String(),
-    statusDesired: Type.String(),
-    ipPublic: Type.Optional(Type.String()),
-    ipPrivate: Type.Optional(Type.String()),
-    memory: Type.Number(),
-    cpu: Type.Number()
-})
-
 export const IconsetResponse = Type.Object({
     uid: Type.String(),
     created: Type.String(),
