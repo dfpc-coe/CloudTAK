@@ -1,6 +1,9 @@
 import { Type } from '@sinclair/typebox'
 import Schema from '@openaddresses/batch-schema';
 import { GenerateUpsert } from '@openaddresses/batch-generic';
+import {
+    Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Text, Profile_Projection, Profile_Zoom,
+} from '../lib/enums.js'
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
@@ -55,6 +58,14 @@ export default async function router(schema: Schema, config: Config) {
                 minimum: 0,
                 maximum: 20
             })),
+
+            'display::stale': Type.Optional(Type.Enum(Profile_Stale)),
+            'display::distance': Type.Optional(Type.Enum(Profile_Distance)),
+            'display::elevation': Type.Optional(Type.Enum(Profile_Elevation)),
+            'display::speed': Type.Optional(Type.Enum(Profile_Speed)),
+            'display::projection': Type.Optional(Type.Enum(Profile_Projection)),
+            'display::zoom': Type.Optional(Type.Enum(Profile_Zoom)),
+            'display::text': Type.Optional(Type.Enum(Profile_Text)),
 
             'group::Yellow': Type.Optional(Type.String()),
             'group::Cyan': Type.Optional(Type.String()),
