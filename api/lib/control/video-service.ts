@@ -503,32 +503,21 @@ export default class VideoServiceControl {
                     throw new Err(500, err instanceof Error ? err : new Error(String(err)), 'Failed to generate proxy stream');
                 }
             }
-
-            const res = await fetch(url, {
-                method: 'POST',
-                headers,
-                body: JSON.stringify({
-                    name: lease.path,
-                    source: lease.proxy,
-                    sourceOnDemand: true,
-                    record: lease.recording,
-                })
-            })
-
-            if (!res.ok) throw new Err(500, null, await res.text())
-        } else {
-            const res = await fetch(url, {
-                method: 'POST',
-                headers,
-                body: JSON.stringify({
-                    name: lease.path,
-                    record: lease.recording,
-                    ...this.recording
-                }),
-            })
-
-            if (!res.ok) throw new Err(500, null, await res.text())
         }
+
+        const res = await fetch(url, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+                name: lease.path,
+                source: lease.proxy ? lease.proxy : undefined,
+                sourceOnDemand: lease.proxy ? true : undefined,
+                record: lease.recording,
+                ...this.recording
+            })
+        })
+
+        if (!res.ok) throw new Err(500, null, await res.text())
 
         return lease;
     }
@@ -580,6 +569,7 @@ export default class VideoServiceControl {
             source_id: string | null | undefined;
             source_type?: VideoLease_SourceType,
             source_model?: string,
+            proxy?: string | null,
         },
         opts: {
             connection?: number;
@@ -614,6 +604,8 @@ export default class VideoServiceControl {
                 headers,
                 body: JSON.stringify({
                     name: lease.path,
+                    source: lease.proxy ? lease.proxy : undefined,
+                    sourceOnDemand: lease.proxy ? true : undefined,
                     record: lease.recording,
                     ...this.recording
                 }),
@@ -633,6 +625,8 @@ export default class VideoServiceControl {
                     headers,
                     body: JSON.stringify({
                         name: lease.path,
+                        source: lease.proxy ? lease.proxy : undefined,
+                        sourceOnDemand: lease.proxy ? true : undefined,
                         record: lease.recording,
                         ...this.recording
                     }),
