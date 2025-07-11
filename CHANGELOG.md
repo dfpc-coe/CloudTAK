@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v10.24.0 - 2025-07-11
+
+- :tada: Remove single video server deploy options. This would typically be a major release but this feature hasn't been used by anyone other than COTAK and has been retired for > 1 year
+
 ### v10.23.0 - 2025-07-11
 
 - :rocket: Allow specifying `tilesize` in Basemaps to ensure MapLibre uses the correct tile size for raster layers
