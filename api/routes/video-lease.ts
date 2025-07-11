@@ -409,7 +409,8 @@ export default async function router(schema: Schema, config: Config) {
             permanent: Type.Boolean({
                 default: false,
                 description: 'System Admins can create non-expiring leases'
-            })
+            }),
+            proxy: Type.Optional(Type.String())
         }),
         res: Type.Object({
             lease: VideoLeaseResponse,
@@ -435,6 +436,7 @@ export default async function router(schema: Schema, config: Config) {
                 source_id: req.body.source_id,
                 source_type: req.body.source_type,
                 source_model: req.body.source_model,
+                proxy: req.body.proxy,
             }, {
                 username: user.email,
                 admin: user.access === AuthUserAccess.ADMIN
