@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v10.26.0 - 2025-07-11
+
+- :tada: Add new option for Server Admins to set the default units for new users
+
 ### v10.25.0 - 2025-07-11
 
 - :tada: Support updating the proxy source for a Video Lease
