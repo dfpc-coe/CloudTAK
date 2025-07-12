@@ -132,8 +132,11 @@
                 >
                     <div class='row'>
                         <div class='col-lg-12'>
-                            <div class="alert alert-info d-flex" role="alert">
-                                <div class="alert-icon">
+                            <div
+                                class='alert alert-info d-flex'
+                                role='alert'
+                            >
+                                <div class='alert-icon'>
                                     <IconInfoCircle
                                         :size='24'
                                         stroke='1'

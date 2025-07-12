@@ -26,8 +26,8 @@
             </div>
 
             <Coordinate
-                label='Origin'
                 v-model='config.coordinates'
+                label='Origin'
                 :edit='true'
                 :hover='true'
                 :modes='["dd"]'
@@ -35,24 +35,24 @@
             />
 
             <PropertyDistance
+                v-model='config.rings["25%"]'
                 label='25% Containment Radius'
                 :edit='true'
                 :hover='true'
-                v-model='config.rings["25%"]'
             />
 
             <PropertyDistance
+                v-model='config.rings["50%"]'
                 label='50% Containment Radius'
                 :edit='true'
                 :hover='true'
-                v-model='config.rings["50%"]'
             />
 
             <PropertyDistance
+                v-model='config.rings["75%"]'
                 label='75% Containment Radius'
                 :edit='true'
                 :hover='true'
-                v-model='config.rings["75%"]'
             />
 
             <button
