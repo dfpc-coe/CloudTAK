@@ -5,6 +5,7 @@ import moment from 'moment';
 import type { Profile } from './schema.js';
 import { X509Certificate } from 'crypto';
 import { TAKAPI, APIAuthPassword, APIAuthCertificate } from '@tak-ps/node-tak';
+import ProfileControl from './control/profile.js';
 
 export enum AuthProviderAccess {
     ADMIN = 'admin',
@@ -14,9 +15,11 @@ export enum AuthProviderAccess {
 
 export default class AuthProvider {
     config: Config;
+    profile: ProfileControl;
 
     constructor(config: Config) {
         this.config = config;
+        this.profile = new ProfileControl(config);
     }
 
     async login(username: string, password: string): Promise<string> {
@@ -30,7 +33,7 @@ export default class AuthProvider {
             profile = await this.config.models.Profile.from(username);
         } catch (err) {
             if (err instanceof Error && err.message.includes('Item Not Found')) {
-                profile = await this.config.models.Profile.generate({
+                profile = await this.profile.generate({
                     username: username,
                     auth: await api.Credentials.generate()
                 });
