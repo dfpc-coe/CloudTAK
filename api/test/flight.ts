@@ -12,6 +12,7 @@ import Config from '../lib/config.js';
 import drop from './drop.js';
 import { pathToRegexp } from 'path-to-regexp';
 import test from 'tape';
+import ProfileControl from '../lib/control/profile.js';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import * as pgtypes from '../lib/schema.js';
@@ -273,7 +274,9 @@ export default class Flight {
 
            if (!this.config) throw new Error('TakeOff not completed');
 
-           await this.config.models.Profile.generate({
+           const profileControl = new ProfileControl(this.config);
+
+           await profileControl.generate({
                 username: username + '@example.com',
                 system_admin: opts.admin,
                 auth: { cert: 'cert123', key: 'key123' },
