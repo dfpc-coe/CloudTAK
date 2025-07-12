@@ -916,3 +916,42 @@ test('Style: Delete Feature by Style', async () => {
 
     assert.equal(feat, null);
 });
+
+test('Style: {{slice remarks}}', async () => {
+    const style = new Style({
+        stale: 123,
+        enabled_styles: true,
+        styles: {
+            remarks: '{{slice remarks 5}}'
+        }
+    });
+
+    assert.deepEqual(await style.feat({
+        type: 'Feature',
+        properties: {
+            metadata: {
+                remarks: 'DFPC Ingalls',
+            }
+        },
+        geometry: {
+            type: 'Point',
+            coordinates: [0, 0]
+        }
+    }), {
+        type: 'Feature',
+        properties: {
+            remarks: 'Ingalls',
+            metadata: {
+                remarks: 'DFPC Ingalls',
+            },
+            stale: 123000
+        },
+        geometry: {
+            coordinates: [
+                0,
+                0
+            ],
+            type: 'Point'
+        },
+    });
+});
