@@ -180,13 +180,16 @@ export default class Config {
         for (const envkey in process.env) {
             if (!envkey.startsWith('CLOUDTAK')) continue;
 
+            // TODO Strongly type via the Type in routes/config
             if (envkey.startsWith('CLOUDTAK_Config_')) {
                 const key = envkey.replace(/^CLOUDTAK_Config_/, '').replace(/_/g, '::');
                 console.error(`ok - Updating ${key} with value from environment`);
                 await config.models.Setting.generate({
                     key,
                     value: process.env[envkey]
-                },{ upsert: GenerateUpsert.UPDATE })
+                },{
+                    upsert: GenerateUpsert.UPDATE
+                })
             }
         }
 

@@ -141,7 +141,6 @@
         v-if='modal === ModalInputType.RANGE'
         @close='modal = ModalInputType.NONE'
     />
-
 </template>
 
 <script setup lang='ts'>
