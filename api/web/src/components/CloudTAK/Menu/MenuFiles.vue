@@ -48,15 +48,15 @@
                     v-for='asset in list.assets'
                     :key='asset.name'
                 >
-                    <div class='col-12 py-2 px-3 d-flex align-items-center hover-dark'>
+                    <div
+                        @click='opened.has(asset.name) ? opened.delete(asset.name) : opened.add(asset.name)'
+                        class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'
+                    >
                         <div class='col-auto'>
                             <IconMapPlus
                                 v-if='asset.visualized'
-                                v-tooltip='"Add to Map"'
-                                class='cursor-pointer'
                                 :size='32'
                                 stroke='1'
-                                @click='createOverlay(asset)'
                             />
                             <IconMapOff
                                 v-else
@@ -67,74 +67,88 @@
                         </div>
                         <div class='col-auto'>
                             <div
-                                class='col-12 text-truncate px-2'
+                                class='col-12 text-truncate px-2 user-select-none'
                                 style='max-width: 250px;'
                                 v-text='asset.name'
                             />
                             <div class='col-12 subheader'>
-                                <span class='mx-2'>
+                                <span class='mx-2 user-select-none'>
                                     <TablerBytes :bytes='asset.size' /> - <TablerEpoch :date='asset.updated' />
                                 </span>
                             </div>
                         </div>
-                        <div class='col-auto ms-auto btn-list'>
-                            <TablerDropdown>
-                                <TablerIconButton
-                                    title='More Options'
-                                >
-                                    <IconDotsVertical
-                                        :size='20'
-                                        stroke='1'
-                                    />
-                                </TablerIconButton>
+                    </div>
 
-                                <template #dropdown>
-                                    <div clas='card-body'>
-                                        <TablerDelete
-                                            displaytype='icon'
-                                            @delete='deleteAsset(asset)'
-                                        />
-                                        <div
-                                            class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2 py-2'
-                                            @click.stop.prevent='downloadAsset(asset)'
-                                        >
-                                            <IconDownload
-                                                :size='32'
-                                                stroke='1'
-                                            />
-                                            <span class='mx-2'>Download Original</span>
-                                        </div>
-                                        <div
-                                            v-if='(!basemap.username && isSystemAdmin) || basemap.username'
-                                            class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2 py-2'
-                                            @click.stop.prevent='editModal = basemap'
-                                        >
-                                            <IconSettings
-                                                v-tooltip='"Edit Basemap"'
-                                                :size='32'
-                                                stroke='1'
-                                            />
-                                            <span class='mx-2'>Edit Basemap</span>
-                                        </div>
-                                        <div
-                                            class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2 py-2'
-                                            @click.stop.prevent='share = [basemap.id]'
-                                        >
-                                            <IconShare2
-                                                :size='32'
-                                                stroke='1'
-                                            />
-                                            <span class='mx-2'>Share</span>
-                                        </div>
-                                    </div>
-                                </template>
-                            </TablerDropdown>
+                    <div
+                        v-if='opened.has(asset.name)'
+                        class='pt-1 mx-4'
+                    >
+                        <div class='rounded bg-child' >
+                            <div
+                                class='cursor-pointer rounded-top col-12 hover-dark d-flex align-items-center px-2 py-2 user-select-none'
+                                v-if='asset.visualized'
+                                @click.stop.prevent='createOverlay(asset)'
+                            >
+                                <IconMapPlus
+                                    :size='32'
+                                    stroke='1'
+                                />
+                                <span class='mx-2'>Add to Map as Overlay</span>
+                            </div>
+                            <div
+                                class='rounded-top col-12 hover-dark d-flex align-items-center px-2 py-2 user-select-none'
+                                v-else
+                            >
+                                <IconMapOff
+                                    :size='32'
+                                    stroke='1'
+                                />
+                                <span class='mx-2'>Cannot Add to Map - Unsupported Format</span>
+                            </div>
+
+                            <div
+                                class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2 py-2 user-select-none'
+                                @click.stop.prevent='downloadAsset(asset)'
+                            >
+                                <IconDownload
+                                    :size='32'
+                                    stroke='1'
+                                />
+                                <span class='mx-2'>Download Original</span>
+                            </div>
+                            <div
+                                class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2 py-2 user-select-none'
+                                @click.stop.prevent='shareToPackage = asset.name'
+                            >
+                                <IconPackage
+                                    :size='32'
+                                    stroke='1'
+                                />
+                                <span class='mx-2'>Create Data Package</span>
+                            </div>
+
+                            <TablerDelete
+                                displaytype='menu'
+                                class='hover-dark rounded-bottom'
+                                label='Delete File'
+                                @delete='deleteAsset(asset)'
+                            />
                         </div>
                     </div>
                 </div>
             </template>
         </template>
     </MenuTemplate>
+
+    <ShareToPackage
+        v-if='shareToPackage'
+        :name='shareToPackage'
+        :assets='[{
+            type: "profile",
+            name: shareToPackage
+        }]'
+        @close='shareToPackage = undefined'
+    />
 </template>
 
 <script setup lang='ts'>
@@ -144,7 +158,6 @@ import type { ProfileAsset, ProfileAssetList } from '../../../types.ts';
 import { std, stdurl } from '../../../std.ts';
 import {
     TablerDelete,
-    TablerDropdown,
     TablerIconButton,
     TablerRefreshButton,
     TablerAlert,
@@ -154,12 +167,13 @@ import {
     TablerEpoch
 } from '@tak-ps/vue-tabler';
 import {
+    IconPackage,
     IconUpload,
     IconMapOff,
     IconMapPlus,
     IconDownload,
-    IconDotsVertical,
 } from '@tabler/icons-vue';
+import ShareToPackage from '../util/ShareToPackage.vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import { useMapStore } from '../../../stores/map.ts';
 import Overlay from '../../../base/overlay.ts';
@@ -169,6 +183,8 @@ const mapStore = useMapStore();
 
 const router = useRouter();
 const upload = ref(false)
+const opened = ref<Set<string>>(new Set());
+const shareToPackage: ref<string | undefined> = ref();
 const error = ref<Error | undefined>(undefined);
 const loading = ref(true);
 
@@ -233,6 +249,10 @@ async function downloadAsset(asset: ProfileAsset) {
     const url = stdurl(`/api/profile/asset/${asset.name}`);
     url.searchParams.append('token', localStorage.token);
     window.open(url, "_blank")
+}
+
+async function createPackage(asset: ProfileAsset) {
+    console.error('Create');
 }
 
 async function fetchList() {

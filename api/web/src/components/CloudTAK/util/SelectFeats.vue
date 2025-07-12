@@ -136,7 +136,7 @@
 
 <script setup lang='ts'>
 import { ref } from 'vue';
-import DisplayFeature from './Feature.vue';
+import DisplayFeature from './FeatureRow.vue';
 import COT from '../../../base/cot.ts';
 import { useMapStore } from '../../../stores/map.ts';
 import {

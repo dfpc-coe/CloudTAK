@@ -228,7 +228,7 @@
 import MenuTemplate from '../util/MenuTemplate.vue';
 import VideoLeaseModal from './Videos/VideoLeaseModal.vue';
 import EmptyInfo from '../util/EmptyInfo.vue';
-import Feature from '../util/Feature.vue';
+import Feature from '../util/FeatureRow.vue';
 import { std, stdurl } from '../../../std.ts';
 import COT from '../../../base/cot.ts';
 import VideoLeaseSourceType from '../util/VideoLeaseSourceType.vue';

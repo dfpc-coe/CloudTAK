@@ -62,11 +62,6 @@
                 v-else-if='error'
                 :err='error'
             />
-            <ShareToPackage
-                v-else-if='shareToPackage.shown && missionSub'
-                :feats='shareToPackage.features'
-                @close='shareToPackage.shown = false'
-            />
             <template v-else>
                 <div
                     class='px-2 py-2 round btn-group w-100'
@@ -191,6 +186,13 @@
             </template>
         </template>
     </MenuTemplate>
+
+    <ShareToPackage
+        v-if='shareToPackage.shown && missionSub'
+        :name='`${new Date().toISOString().replace(/T.*/, "")} ${mission.name}`'
+        :feats='shareToPackage.features'
+        @close='shareToPackage.shown = false'
+    />
 </template>
 
 <script setup lang='ts'>
