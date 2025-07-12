@@ -95,7 +95,7 @@ export default async function router(schema: Schema, config: Config) {
     });
 
     await schema.put('/marti/package', {
-        name: 'Create COT Package',
+        name: 'Create Package',
         group: 'MartiPackages',
         description: 'Helper API to create share package',
         body: Type.Object({
@@ -108,10 +108,18 @@ export default async function router(schema: Schema, config: Config) {
                 description: 'Should the Data Package be a public package, if so it will be published to the Data Package list'
             }),
             uids: Type.Array(Type.String(), {
+                default: [],
+                description: 'A list of client UIDs to automatically share the data package with'
+            }),
+            assets: Type.Array(Type.Object({
+                type: Type.Literal('profile'),
+                name: Type.String()
+            }), {
                 default: []
             }),
             basemaps: Type.Array(Type.Number(), {
-                default: []
+                default: [],
+                description: 'A list of CloudTAK basemap IDs to include in the package'
             }),
             features: Type.Array(Type.Object({
                 id: Type.String(),
@@ -131,7 +139,7 @@ export default async function router(schema: Schema, config: Config) {
             const auth = profile.auth;
             const creatorUid = profile.username;
 
-            if (!req.body.basemaps.length && !req.body.features.length) {
+            if (!req.body.basemaps.length && !req.body.features.length && !req.body.assets.length) {
                 throw new Err(400, null, 'Cannot share an empty package');
             }
 
@@ -186,6 +194,12 @@ export default async function router(schema: Schema, config: Config) {
                 await pkg.addFile(await S3.get(attachment[0].Key), {
                     name: path.parse(attachment[0].Key).base,
                     attachment: uid
+                });
+            }
+
+            for (const asset of req.body.assets) {
+                await pkg.addFile(await S3.get(`profile/${user.email}/${asset.name}`), {
+                    name: path.parse(asset.name).base
                 });
             }
 
