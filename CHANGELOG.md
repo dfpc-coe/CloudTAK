@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v10.28.0 - 2025-07-12
+
+- :tada: Respect Mission Context and when in an active mission automatically add new CoTs to the mission
+- :rocket: Introduce `render` function to handle all map refresh requests in a single unified interface
+- :bug: Mission Syncs were not always getting refreshed when a subscription was dirty
+
 ### v10.27.0 - 2025-07-11
 
 - :rocket: Add HandleBar Slice functionality
