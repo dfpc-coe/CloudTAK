@@ -23,12 +23,17 @@ import type {
     MissionSubscriptions
 } from '../types.ts';
 
+/**
+ * High Level Wrapper around the Data/Mission Sync API
+ */
 export default class Subscription {
     meta: Mission;
     role: MissionRole;
     token?: string;
     logs: Array<MissionLog>;
     cots: Map<string, COT>;
+
+    _dirty: boolean;
 
     _remote: BroadcastChannel | null;
     _atlas: Atlas | Remote<Atlas>;
@@ -56,6 +61,8 @@ export default class Subscription {
         if (opts && opts.token) {
             this.token = opts.token;
         }
+
+        this._dirty = false;
 
         this.cots = new Map();
 
@@ -86,10 +93,35 @@ export default class Subscription {
         mapStore.worker.db.subscriptionDelete(this.meta.guid);
     }
 
+    /**
+     * Upsert a feature into the mission.
+     * This will udpate the feature in the local DB, submit it to the TAK Server and
+     * mark the subscription as dirty for a re-render
+     *
+     * @param cot - The COT object to upsert
+     */
+    async updateFeature(cot: COT): Promise<void> {
+        this.cots.set(String(cot.id), cot);
+
+        this._dirty = true;
+
+        const feat = cot.as_feature({
+            clone: true
+        });
+
+        feat.properties.dest = [{
+            mission: this.meta.name
+        }];
+
+        await this._atlas.conn.sendCOT(feat);
+    }
+
     async deleteFeature(uid: string): Promise<void> {
         if (this._remote) return;
 
         this.cots.delete(uid);
+
+        this._dirty = true;
 
         const atlas = this._atlas as Atlas;
 

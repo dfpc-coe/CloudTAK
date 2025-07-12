@@ -26,6 +26,9 @@ export default class AtlasDatabase {
 
     cots: Map<string, COT>;
 
+    // Stores Active Mission if present
+    mission?: Subscription;
+
     hidden: Set<string>;
 
     // Store ImageIDs currently loaded in MapLibre
@@ -60,6 +63,14 @@ export default class AtlasDatabase {
 
     }
 
+    async makeActiveMission(guid? : string): Promise<void> {
+        if (guid) {
+            this.mission = await this.subscriptionGet(guid);
+        } else {
+            this.mission = undefined;
+        }
+    }
+
     async hide(id: string): Promise<void> {
         this.pendingHidden.add(id);
     }
@@ -77,10 +88,33 @@ export default class AtlasDatabase {
         await this.loadArchive()
     }
 
-    async subscriptionListUid(): Promise<Set<string>> {
-        return new Set(Array.from(this.subscriptions.values()).map((sub) => {
-            return sub.meta.guid
-        }));
+    /**
+     * Return a list of Subscription GUIDs
+     * @param opts - Options
+     * @param opts.dirty - If true return only subscriptions that have changed
+     */
+    async subscriptionListUid(opts?: {
+        dirty: boolean
+    }): Promise<Set<string>> {
+        if (!opts) opts = { dirty: false };
+
+        return new Set(Array.from(this.subscriptions.values())
+            .filter((sub) => {
+                if (!opts.dirty) return true;
+                return sub._dirty;
+            })
+           .map((sub) => {
+                return sub.meta.guid
+            }));
+    }
+
+    async subscriptionClean(guid: string): Promise<boolean> {
+        const sub = this.subscriptions.get(guid);
+        if (!sub) return false;
+
+        sub._dirty = false;
+
+        return true;
     }
 
     async subscriptionList(): Promise<Array<{
@@ -372,7 +406,10 @@ export default class AtlasDatabase {
         });
 
         // TODO Throw an error?
-        if (!cot) return;
+        if (!cot) {
+            console.warn(`Cannot remove CoT ${id} as it does not exist in the store`);
+            return;
+        }
 
         if (cot.origin.mode === OriginMode.CONNECTION) {
             this.pendingDelete.add(id);
@@ -467,7 +504,7 @@ export default class AtlasDatabase {
      * @param opts - Optional Options
      * @param opts.skipSave - Don't save the COT to the Profile Feature Database
      * @param opts.skipBroadcast - Don't broadcast the COT on the internal message bus to the UI
-     * @param opts.authored - If the COT is new, append creator information
+     * @param opts.authored - If the COT is new, append creator information & potentially add it to a mission
      * @param opts.mission_guid - Explicitly use Mission Store
      */
     async add(
@@ -486,7 +523,11 @@ export default class AtlasDatabase {
             feat.properties.creator = await this.atlas.profile.creator();
         }
 
-        const mission_guid = opts.mission_guid || this.subscriptionPending.get(feat.id);
+        const mission_guid =
+            // The feature was explicitly assigned to a given GUID
+            opts.mission_guid
+            // The feature was notified by the server that it is for a given GUID
+            || this.subscriptionPending.get(feat.id);
 
         if (mission_guid)  {
             const sub = this.subscriptions.get(mission_guid);
@@ -521,7 +562,20 @@ export default class AtlasDatabase {
 
             let exists = this.cots.get(feat.id);
 
-            if (exists) {
+            if (this.mission && !exists && opts.authored) {
+                const sub = this.subscriptions.get(this.mission.meta.guid);
+
+                if (!sub) {
+                    throw new Error(`Cannot add ${feat.id} to mission ${mission_guid} as it is not loaded`)
+                }
+
+                exists = new COT(this.atlas, feat, {
+                    mode: OriginMode.MISSION,
+                    mode_id: this.mission.meta.guid
+                }, opts);
+
+                sub.updateFeature(exists);
+            } else if (exists) {
                 exists.update({
                     path: feat.path,
                     properties: feat.properties,
