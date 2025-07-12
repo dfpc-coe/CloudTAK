@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v10.30.0 - 2025-07-12
+
+- :tada: Support the Data Sync QR Code
+
 ### v10.29.0 - 2025-07-12
 
 - :tada: Add new unified Data Package Creation Modal
