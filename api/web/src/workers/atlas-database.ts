@@ -406,7 +406,10 @@ export default class AtlasDatabase {
         });
 
         // TODO Throw an error?
-        if (!cot) return;
+        if (!cot) {
+            console.warn(`Cannot remove CoT ${id} as it does not exist in the store`);
+            return;
+        }
 
         if (cot.origin.mode === OriginMode.CONNECTION) {
             this.pendingDelete.add(id);
