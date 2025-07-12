@@ -156,6 +156,7 @@ async function share() {
                 type: 'FeatureCollection',
                 name: body.value.name,
                 public: true,
+                assets: props.assets,
                 features: feats.map((f) => {
                     f = JSON.parse(JSON.stringify(f));
                     return { id: f.id || f.properties.id, type: f.type, properties: f.properties, geometry: f.geometry }
