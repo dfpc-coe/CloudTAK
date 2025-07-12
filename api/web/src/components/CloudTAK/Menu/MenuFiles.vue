@@ -77,22 +77,58 @@
                                 </span>
                             </div>
                         </div>
-                        <div class='col-auto ms-auto'>
-                            <div class='d-flex btn-list'>
-                                <TablerDelete
-                                    displaytype='icon'
-                                    @delete='deleteAsset(asset)'
-                                />
+                        <div class='col-auto ms-auto btn-list'>
+                            <TablerDropdown>
                                 <TablerIconButton
-                                    title='Download Asset'
-                                    @click='downloadAsset(asset)'
+                                    title='More Options'
                                 >
-                                    <IconDownload
-                                        :size='32'
+                                    <IconDotsVertical
+                                        :size='20'
                                         stroke='1'
                                     />
                                 </TablerIconButton>
-                            </div>
+
+                                <template #dropdown>
+                                    <div clas='card-body'>
+                                        <TablerDelete
+                                            displaytype='icon'
+                                            @delete='deleteAsset(asset)'
+                                        />
+                                        <div
+                                            class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2 py-2'
+                                            @click.stop.prevent='downloadAsset(asset)'
+                                        >
+                                            <IconDownload
+                                                :size='32'
+                                                stroke='1'
+                                            />
+                                            <span class='mx-2'>Download Original</span>
+                                        </div>
+                                        <div
+                                            v-if='(!basemap.username && isSystemAdmin) || basemap.username'
+                                            class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2 py-2'
+                                            @click.stop.prevent='editModal = basemap'
+                                        >
+                                            <IconSettings
+                                                v-tooltip='"Edit Basemap"'
+                                                :size='32'
+                                                stroke='1'
+                                            />
+                                            <span class='mx-2'>Edit Basemap</span>
+                                        </div>
+                                        <div
+                                            class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2 py-2'
+                                            @click.stop.prevent='share = [basemap.id]'
+                                        >
+                                            <IconShare2
+                                                :size='32'
+                                                stroke='1'
+                                            />
+                                            <span class='mx-2'>Share</span>
+                                        </div>
+                                    </div>
+                                </template>
+                            </TablerDropdown>
                         </div>
                     </div>
                 </div>
@@ -108,6 +144,7 @@ import type { ProfileAsset, ProfileAssetList } from '../../../types.ts';
 import { std, stdurl } from '../../../std.ts';
 import {
     TablerDelete,
+    TablerDropdown,
     TablerIconButton,
     TablerRefreshButton,
     TablerAlert,
@@ -121,6 +158,7 @@ import {
     IconMapOff,
     IconMapPlus,
     IconDownload,
+    IconDotsVertical,
 } from '@tabler/icons-vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import { useMapStore } from '../../../stores/map.ts';
