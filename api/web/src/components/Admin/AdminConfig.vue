@@ -118,6 +118,52 @@
 
                 <div
                     class='col-lg-12 hover-light py-2 cursor-pointer'
+                    @click='opened.has("display") ? opened.delete("display") : opened.add("display")'
+                >
+                    <IconChevronDown v-if='opened.has("display")' />
+                    <IconChevronRight v-else />
+
+                    <span class='mx-2 user-select-none'>Display Defaults</span>
+                </div>
+
+                <div
+                    v-if='opened.has("display")'
+                    class='col-lg-12 py-2 border rounded'
+                >
+                    <div class='row'>
+                        <div class='col-lg-12'>
+                            <div
+                                class='alert alert-info d-flex'
+                                role='alert'
+                            >
+                                <div class='alert-icon'>
+                                    <IconInfoCircle
+                                        :size='24'
+                                        stroke='1'
+                                    />
+                                </div>
+
+                                These are the default display settings for new users. Existing users will not be affected.
+                            </div>
+                        </div>
+
+                        <div
+                            v-for='display in Object.keys(config).filter(key => key.startsWith("display::"))'
+                            :key='display'
+                            class='col-lg-12'
+                        >
+                            <TablerEnum
+                                v-model='config[display]'
+                                :label='display.replace("display::", "").replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())'
+                                :options='displayUnits[display.replace("display::", "")] || []'
+                                :disabled='!edit'
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    class='col-lg-12 hover-light py-2 cursor-pointer'
                     @click='opened.has("groups") ? opened.delete("groups") : opened.add("groups")'
                 >
                     <IconChevronDown v-if='opened.has("groups")' />
@@ -254,115 +300,109 @@
     </div>
 </template>
 
-<script>
-import { std, stdurl } from '/src/std.ts';
+<script setup>
+import { ref, onMounted } from 'vue';
+import { std, stdurl } from '../../std.ts';
 import {
     TablerLoading,
     TablerIconButton,
+    TablerEnum,
     TablerToggle,
     TablerInput
 } from '@tak-ps/vue-tabler';
 import UploadLogo from '../util/UploadLogo.vue';
 import {
     IconPencil,
+    IconInfoCircle,
     IconChevronRight,
     IconChevronDown,
 } from '@tabler/icons-vue';
-import timeDiff from '../../timediff.ts';
 
-export default {
-    name: 'AdminConfig',
-    components: {
-        IconPencil,
-        IconChevronRight,
-        IconChevronDown,
-        TablerLoading,
-        TablerIconButton,
-        UploadLogo,
-        TablerToggle,
-        TablerInput,
-    },
-    data: function() {
-        const groups = [
-            "Yellow",
-            "Cyan",
-            "Green",
-            "Red",
-            "Purple",
-            "Orange",
-            "Blue",
-            "Magenta",
-            "White",
-            "Maroon",
-            "Dark Blue",
-            "Teal",
-            "Dark Green",
-            "Brown",
-        ];
+const groups = ref([
+    "Yellow",
+    "Cyan",
+    "Green",
+    "Red",
+    "Purple",
+    "Orange",
+    "Blue",
+    "Magenta",
+    "White",
+    "Maroon",
+    "Dark Blue",
+    "Teal",
+    "Dark Green",
+    "Brown",
+]);
 
-        const config = {
-            'agol::enabled': false,
-            'agol::token': '',
+const config = ref({
+    'agol::enabled': false,
+    'agol::token': '',
 
-            'media::url': '',
+    'media::url': '',
 
-            'map::center': '-100,40',
-            'map::zoom': 4,
-            'map::bearing': 0,
-            'map::pitch': 0,
+    'map::center': '-100,40',
+    'map::zoom': 4,
+    'map::bearing': 0,
+    'map::pitch': 0,
 
-            'provider::url': '',
-            'provider::secret': '',
-            'provider::client': '',
+    'provider::url': '',
+    'provider::secret': '',
+    'provider::client': '',
 
-            'login::logo': '',
-            'login::forgot': '',
-            'login::signup': '',
-        }
+    'login::logo': '',
+    'login::forgot': '',
+    'login::signup': '',
 
-        for (const group of groups) {
-            config[`group::${group}`] = '';
-        }
+})
 
-        return {
-            edit: false,
-            loading: true,
-            opened: new Set(),
-            groups,
-            config
-        }
-    },
-    mounted: async function() {
-        await this.fetch();
-    },
-    methods: {
-        timeDiff: function(updated) {
-            return timeDiff(updated);
-        },
-        fetch: async function() {
-            this.edit = false;
-            this.loading = true;
-            const url = stdurl('/api/config')
-            url.searchParams.append('keys', Object.keys(this.config).join(','));
-            const config = await std(url);
+const displayUnits = ref({});
 
-            for (const key of Object.keys(config)) {
-                if (config[key] === undefined) continue;
-                this.config[key] = config[key];
-            }
+for (const group of groups.value) {
+    config.value[`group::${group}`] = '';
+}
 
-            this.loading = false;
-        },
-        postConfig: async function() {
-            this.loading = true;
-            await std(`/api/config`, {
-                method: 'PUT',
-                body: this.config
-            });
+const edit = ref(false);
+const loading = ref(true);
+const opened = ref(new Set());
 
-            this.edit = false;
-            this.loading = false;
-        }
+onMounted(async () => {
+    await fetch();
+});
+
+async function fetch() {
+    edit.value = false;
+    loading.value = true;
+
+    const display = await std('/api/config/display')
+    for (const [key, value] of Object.entries(display)) {
+        displayUnits.value[key] = value.options;
     }
+
+    const url = stdurl('/api/config')
+    url.searchParams.append('keys', Object.keys(config.value).join(','));
+    const configRes = await std(url);
+
+    for (const key of Object.keys(configRes)) {
+        if (configRes[key] === undefined) continue;
+        config.value[key] = configRes[key];
+    }
+
+    for (const key of Object.keys(display)) {
+        config.value[`display::${key}`]  = display[key].value
+    }
+
+    loading.value = false;
+}
+
+async function postConfig() {
+    loading.value = true;
+    await std(`/api/config`, {
+        method: 'PUT',
+        body: config.value
+    });
+
+    edit.value = false;
+    loading.value = false;
 }
 </script>
