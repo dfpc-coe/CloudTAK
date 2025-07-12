@@ -104,7 +104,7 @@
                                 v-if='!mapStore.mission || mapStore.mission.meta.guid !== props.mission.guid && sub'
                                 class='btn btn-green'
                                 style='height: 32px;'
-                                @click='mapStore.mission = sub'
+                                @click='mapStore.makeActiveMission(sub)'
                             >
                                 Make Active
                             </button>
@@ -112,7 +112,7 @@
                                 v-else
                                 class='btn btn-muted'
                                 style='height: 32px;'
-                                @click='mapStore.mission = undefined'
+                                @click='mapStore.makeActiveMission()'
                             >
                                 Deactivate
                             </button>
