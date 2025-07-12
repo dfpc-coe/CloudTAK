@@ -132,43 +132,43 @@ export default async function router(schema: Schema, config: Config) {
                 value: Type.Enum(Profile_Stale, {
                     default: Profile_Stale.TenMinutes
                 }),
-                options: Type.Array(Type.Enum(Profile_Stale))
+                options: Type.Array(Type.String())
             }),
             'distance': Type.Object({
                 value: Type.Enum(Profile_Distance, {
                     default: Profile_Distance.MILE
                 }),
-                options: Type.Array(Type.Enum(Profile_Distance))
+                options: Type.Array(Type.String())
             }),
             'elevation': Type.Object({
                 value: Type.Enum(Profile_Elevation, {
                     default: Profile_Elevation.FEET
                 }),
-                options: Type.Array(Type.Enum(Profile_Elevation))
+                options: Type.Array(Type.String())
             }),
             'speed': Type.Object({
                 value: Type.Enum(Profile_Speed, {
                     default: Profile_Speed.MPH
                 }),
-                options: Type.Array(Type.Enum(Profile_Speed))
+                options: Type.Array(Type.String())
             }),
             'projection': Type.Object({
                 value: Type.Enum(Profile_Projection, {
                     default: Profile_Projection.GLOBE
                 }),
-                options: Type.Array(Type.Enum(Profile_Projection))
+                options: Type.Array(Type.String())
             }),
             'zoom': Type.Object({
                 value: Type.Enum(Profile_Zoom, {
                     default: Profile_Zoom.CONDITIONAL
                 }),
-                options: Type.Array(Type.Enum(Profile_Zoom))
+                options: Type.Array(Type.String())
             }),
             'text': Type.Object({
                 value: Type.Enum(Profile_Text, {
                     default: Profile_Text.Medium
                 }),
-                options: Type.Array(Type.Enum(Profile_Text))
+                options: Type.Array(Type.String())
             }),
         })
     }, async (req, res) => {
@@ -199,31 +199,31 @@ export default async function router(schema: Schema, config: Config) {
 
             res.json({
                 stale: {
-                    value: toEnum.fromString(Type.Enum(Profile_Stale), final.stale),
+                    value: toEnum.fromString(Type.Enum(Profile_Stale), final.stale || Profile_Stale.TenMinutes),
                     options: Object.values(Profile_Stale)
                 },
                 distance: {
-                    value: toEnum.fromString(Type.Enum(Profile_Distance), final.distance),
+                    value: toEnum.fromString(Type.Enum(Profile_Distance), final.distance || Profile_Distance.MILE),
                     options: Object.values(Profile_Distance)
                 },
                 elevation: {
-                    value: toEnum.fromString(Type.Enum(Profile_Elevation), final.elevation),
+                    value: toEnum.fromString(Type.Enum(Profile_Elevation), final.elevation || Profile_Elevation.FEET),
                     options: Object.values(Profile_Elevation)
                 },
                 speed: {
-                    value: toEnum.fromString(Type.Enum(Profile_Speed), final.speed),
+                    value: toEnum.fromString(Type.Enum(Profile_Speed), final.speed || Profile_Speed.MPH),
                     options: Object.values(Profile_Speed)
                 },
                 projection: {
-                    value: toEnum.fromString(Type.Enum(Profile_Projection), final.projection),
+                    value: toEnum.fromString(Type.Enum(Profile_Projection), final.projection || Profile_Projection.GLOBE),
                     options: Object.values(Profile_Projection)
                 },
                 zoom: {
-                    value: toEnum.fromString(Type.Enum(Profile_Zoom), final.zoom),
+                    value: toEnum.fromString(Type.Enum(Profile_Zoom), final.zoom || Profile_Zoom.CONDITIONAL),
                     options: Object.values(Profile_Zoom)
                 },
                 text: {
-                    value: toEnum.fromString(Type.Enum(Profile_Text), final.text),
+                    value: toEnum.fromString(Type.Enum(Profile_Text), final.text || Profile_Text.Medium),
                     options: Object.values(Profile_Text)
                 }
             });
