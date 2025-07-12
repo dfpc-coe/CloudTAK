@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v10.29.0 - 2025-07-12
+
+- :tada: Add new unified Data Package Creation Modal
+- :tada: Allow creating Data Packages from user file uploads
+- :bug: Fix bug where Mission CoTs weren't properly obtained when creating a Data Package from a Mission
+- :rocket: Update SelectFeatures to use new unified Data Package creator
+
 ### v10.28.0 - 2025-07-12
 
 - :tada: Respect Mission Context and when in an active mission automatically add new CoTs to the mission
