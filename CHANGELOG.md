@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v10.27.0 - 2025-07-11
+
+- :rocket: Add HandleBar Slice functionality
+
 ### v10.26.1 - 2025-07-11
 
 - :bug: Fix source layer removal
