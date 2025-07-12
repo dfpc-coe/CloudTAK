@@ -132,17 +132,22 @@
                         <TablerIconButton
                             title='Invite QR Code'
                             @click='showQR = true'
-                        ><IconQrcode
-                            :size='32'
-                            stroke='1'
-                         /></TablerIconButton>
+                        >
+                            <IconQrcode
+                                :size='32'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
                     </div>
                 </div>
             </div>
         </div>
     </MenuTemplate>
 
-    <TablerModal size='lg' v-if='showQR'>
+    <TablerModal
+        v-if='showQR'
+        size='lg'
+    >
         <div class='modal-status bg-red' />
         <button
             type='button'
@@ -156,7 +161,10 @@
                     :size='28'
                     stroke='1'
                 />
-                <span class='mx-2' v-text='props.mission.name + " Invite QR"'></span>
+                <span
+                    class='mx-2'
+                    v-text='props.mission.name + " Invite QR"'
+                />
             </div>
         </div>
         <div class='modal-body'>
@@ -166,7 +174,7 @@
                     style='
                         filter: invert(100%);
                     '
-                />
+                >
             </div>
         </div>
     </TablerModal>
@@ -206,7 +214,7 @@ const props = defineProps({
 const sub = ref<Subscription | undefined>();
 
 const missionQRURL = computed(() => {
-    return stdurl(`/api/marti/missions/${props.mission.guid}/qr?token=${localStorage.token}`);
+    return String(stdurl(`/api/marti/missions/${props.mission.guid}/qr?token=${localStorage.token}`));
 });
 
 onMounted(async () => {

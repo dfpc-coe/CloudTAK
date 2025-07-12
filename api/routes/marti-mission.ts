@@ -150,7 +150,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const mission = await api.Mission.get(
                 req.params.name,
-                req.query,
+                {},
                 opts
             );
 
