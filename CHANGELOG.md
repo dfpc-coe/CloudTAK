@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v10.26.1 - 2025-07-11
+
+- :bug: Fix source layer removal
+
 ### v10.26.0 - 2025-07-11
 
 - :tada: Add new option for Server Admins to set the default units for new users
