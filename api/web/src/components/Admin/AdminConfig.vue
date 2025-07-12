@@ -317,7 +317,6 @@ import {
     IconChevronRight,
     IconChevronDown,
 } from '@tabler/icons-vue';
-import timeDiff from '../../timediff.ts';
 
 const groups = ref([
     "Yellow",
@@ -389,7 +388,7 @@ async function fetch() {
         config.value[key] = configRes[key];
     }
 
-    for (const [key, value] of Object.entries(display)) {
+    for (const key of Object.keys(display)) {
         config.value[`display::${key}`]  = display[key].value
     }
 
