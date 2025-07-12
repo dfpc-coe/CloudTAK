@@ -640,7 +640,7 @@ function setLocation() {
             }
         })
 
-        await mapStore.updateCOT();
+        await mapStore.refresh();
     });
 }
 
@@ -672,7 +672,7 @@ async function handleRadial(event: string): Promise<void> {
             mission: true
         })
 
-        await mapStore.updateCOT();
+        await mapStore.refresh();
     } else if (event === 'cot:lock') {
         mapStore.locked.push(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
         closeRadial()
@@ -691,7 +691,8 @@ async function handleRadial(event: string): Promise<void> {
         await mapStore.worker.db.add(feat, {
             authored: true
         });
-        mapStore.updateCOT();
+
+        await mapStore.refresh();
         closeRadial()
     } else if (event === 'context:info') {
         // @ts-expect-error Figure out geometry.coordinates type
@@ -721,7 +722,7 @@ async function mountMap(): Promise<void> {
 
             timer.value = setInterval(async () => {
                 if (!mapStore.map) return;
-                await mapStore.updateCOT();
+                await mapStore.refresh();
             }, 500);
 
             return resolve();

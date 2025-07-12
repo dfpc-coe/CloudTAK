@@ -88,10 +88,33 @@ export default class AtlasDatabase {
         await this.loadArchive()
     }
 
-    async subscriptionListUid(): Promise<Set<string>> {
-        return new Set(Array.from(this.subscriptions.values()).map((sub) => {
-            return sub.meta.guid
-        }));
+    /**
+     * Return a list of Subscription GUIDs
+     * @param opts - Options
+     * @param opts.dirty - If true return only subscriptions that have changed
+     */
+    async subscriptionListUid(opts?: {
+        dirty: boolean
+    }): Promise<Set<string>> {
+        if (!opts) opts = { dirty: false };
+
+        return new Set(Array.from(this.subscriptions.values())
+            .filter((sub) => {
+                if (!opts.dirty) return true;
+                return sub._dirty;
+            })
+           .map((sub) => {
+                return sub.meta.guid
+            }));
+    }
+
+    async subscriptionClean(guid: string): Promise<boolean> {
+        const sub = this.subscriptions.get(guid);
+        if (!sub) return false;
+
+        sub._dirty = false;
+
+        return true;
     }
 
     async subscriptionList(): Promise<Array<{
