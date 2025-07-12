@@ -120,7 +120,17 @@ export class CDKTestHelper {
   static createMockEcrRepository(stack: Stack, id = 'TestRepo'): ecr.IRepository {
     return ecr.Repository.fromRepositoryArn(
       stack, id, 
-      'arn:aws:ecr:us-west-2:123456789012:repository/test-repo'
+      'arn:aws:ecr:us-west-2:123456789012:repository/mock-ecr-repository'
+    );
+  }
+
+  /**
+   * Create mock KMS key
+   */
+  static createMockKmsKey(stack: Stack, id = 'TestKmsKey'): kms.IKey {
+    return kms.Key.fromKeyArn(
+      stack, id, 
+      'arn:aws:kms:us-west-2:123456789012:key/12345678-1234-1234-1234-123456789012'
     );
   }
 

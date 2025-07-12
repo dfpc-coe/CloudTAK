@@ -72,9 +72,8 @@ export class LoadBalancer extends Construct {
       }
     });
 
-    this.httpsListener.addAction('DefaultAction', {
-      action: elbv2.ListenerAction.forward([this.targetGroup]),
-      priority: 1
+    this.httpsListener.addTargetGroups('DefaultAction', {
+      targetGroups: [this.targetGroup]
     });
   }
 }

@@ -32,6 +32,7 @@ import { Secrets } from './constructs/secrets';
 import { LambdaFunctions } from './constructs/lambda-functions';
 import { Alarms } from './constructs/alarms';
 import { AuthentikUserCreator } from './constructs/authentik-user-creator';
+import { EtlEcr } from './constructs/etl-ecr';
 import { registerOutputs } from './outputs';
 import { createBaseImportValue, BASE_EXPORT_NAMES } from './cloudformation-imports';
 import { ContextEnvironmentConfig } from './stack-config';
@@ -217,6 +218,12 @@ export class CloudTakStack extends cdk.Stack {
       kmsKey
     });
 
+    // Create dedicated ECR repository for ETL tasks
+    const etlEcr = new EtlEcr(this, 'EtlEcr', {
+      envConfig,
+      kmsKey
+    });
+
     // Create security groups for different components
     const securityGroups = new SecurityGroups(this, 'SecurityGroups', {
       vpc,
@@ -289,6 +296,7 @@ export class CloudTakStack extends cdk.Stack {
       albTargetGroup: loadBalancer.targetGroup,
       ecrRepository,
       dockerImageAsset,
+      etlEcrRepository: etlEcr.repository,
       databaseSecret: database.masterSecret,
       databaseHostname: database.cluster.clusterEndpoint.hostname,
       connectionStringSecret: database.connectionStringSecret,
@@ -353,6 +361,11 @@ export class CloudTakStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'MediaSecretArn', {
       value: secrets.mediaSecret.secretArn,
       exportName: `TAK-${envConfig.stackName}-CloudTAK-MediaSecret`
+    });
+
+    new cdk.CfnOutput(this, 'EtlEcrRepoArn', {
+      value: etlEcr.repository.repositoryArn,
+      exportName: `TAK-${envConfig.stackName}-CloudTAK-EtlEcrRepoArn`
     });
 
 

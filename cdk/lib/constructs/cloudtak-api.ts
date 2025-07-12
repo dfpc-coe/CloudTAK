@@ -33,6 +33,7 @@ export interface CloudTakApiProps {
   albTargetGroup: elbv2.ApplicationTargetGroup;
   ecrRepository: ecr.IRepository;
   dockerImageAsset?: ecrAssets.DockerImageAsset;
+  etlEcrRepository: ecr.IRepository;
   databaseSecret: secretsmanager.ISecret;
   databaseHostname: string;
   connectionStringSecret: secretsmanager.ISecret;
@@ -58,6 +59,7 @@ export class CloudTakApi extends Construct {
       albTargetGroup,
       ecrRepository,
       dockerImageAsset,
+      etlEcrRepository,
       databaseSecret,
       databaseHostname,
       connectionStringSecret,
@@ -182,7 +184,7 @@ export class CloudTakApi extends Construct {
             new cdk.aws_iam.PolicyStatement({
               effect: cdk.aws_iam.Effect.ALLOW,
               actions: ['ecr:ListImages', 'ecr:DescribeImages'],
-              resources: [ecrRepository.repositoryArn]
+              resources: [etlEcrRepository.repositoryArn]
             })
           ]
         })
@@ -305,7 +307,7 @@ export class CloudTakApi extends Construct {
         'CLOUDTAK_Server_auth_password': 'atakatak',
         'CLOUDTAK_Server_auth_p12_secret_arn': cdk.Fn.importValue(createTakImportValue(envConfig.stackName, TAK_EXPORT_NAMES.TAK_ADMIN_CERT_SECRET_ARN)),
         // PR #717 - Configurable ECR and ECS names
-        'ECR_TASKS_REPOSITORY_NAME': ecrRepository.repositoryName,
+        'ECR_TASKS_REPOSITORY_NAME': etlEcrRepository.repositoryName,
         'ECS_CLUSTER_PREFIX': `TAK-${envConfig.stackName}-BaseInfra`
       },
       secrets: {
