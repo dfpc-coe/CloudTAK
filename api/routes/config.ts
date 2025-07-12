@@ -1,11 +1,17 @@
 import { Type } from '@sinclair/typebox'
 import Schema from '@openaddresses/batch-schema';
 import { GenerateUpsert } from '@openaddresses/batch-generic';
+import ProfileControl, { DefaultUnits } from '../lib/control/profile.js';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
+import {
+    Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Text, Profile_Projection, Profile_Zoom,
+} from '../lib/enums.js'
 import Config from '../lib/config.js';
 
 export default async function router(schema: Schema, config: Config) {
+    const profileControl = new ProfileControl(config);
+
     await schema.get('/config', {
         name: 'Get Config',
         group: 'Config',
@@ -67,6 +73,14 @@ export default async function router(schema: Schema, config: Config) {
                 maximum: 20
             })),
 
+            'display::stale': Type.Optional(Type.Enum(Profile_Stale)),
+            'display::distance': Type.Optional(Type.Enum(Profile_Distance)),
+            'display::elevation': Type.Optional(Type.Enum(Profile_Elevation)),
+            'display::speed': Type.Optional(Type.Enum(Profile_Speed)),
+            'display::projection': Type.Optional(Type.Enum(Profile_Projection)),
+            'display::zoom': Type.Optional(Type.Enum(Profile_Zoom)),
+            'display::text': Type.Optional(Type.Enum(Profile_Text)),
+
             'group::Yellow': Type.Optional(Type.String()),
             'group::Cyan': Type.Optional(Type.String()),
             'group::Green': Type.Optional(Type.String()),
@@ -124,6 +138,21 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(final);
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/config/display', {
+        name: 'Default Display Config',
+        group: 'Config',
+        description: 'Return Default Display Config',
+        res: DefaultUnits
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req);
+
+            res.json(await profileControl.defaultUnits());
         } catch (err) {
             Err.respond(err, res);
         }
@@ -244,6 +273,8 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
+            await Auth.as_user(config, req);
+
             const keys = [
                 'map::center',
                 'map::pitch',

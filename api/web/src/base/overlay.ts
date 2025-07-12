@@ -360,7 +360,7 @@ export default class Overlay {
             mapStore.map.removeLayer(String(l.id));
         }
 
-        if (mapStore.map.getStyle().sources[String([this.id])]) {
+        if (mapStore.map.getStyle().sources[String(this.id)]) {
             // Don't crash the map if it already  removed
             mapStore.map.removeSource(String(this.id));
         }

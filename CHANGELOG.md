@@ -12,6 +12,18 @@
 
 ### Pending Release
 
+### v10.27.0 - 2025-07-11
+
+- :rocket: Add HandleBar Slice functionality
+
+### v10.26.1 - 2025-07-11
+
+- :bug: Fix source layer removal
+
+### v10.26.0 - 2025-07-11
+
+- :tada: Add new option for Server Admins to set the default units for new users
+
 ### v10.25.0 - 2025-07-11
 
 - :tada: Support updating the proxy source for a Video Lease
