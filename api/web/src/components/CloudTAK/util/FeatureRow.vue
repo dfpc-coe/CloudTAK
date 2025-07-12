@@ -16,8 +16,8 @@
             v-else
             class='d-flex align-items-center px-3 py-2'
             :class='{
-                "cursor-pointer": isZoomable,
-                "cursor-default": !isZoomable,
+                "cursor-pointer": isZoomable && props.hover,
+                "cursor-default": !isZoomable || props.hover === false,
                 "hover-button": hover,
                 "py-2": !compact
             }'
@@ -176,7 +176,7 @@ async function selectClick() {
 }
 
 async function flyToClick() {
-    if (!isZoomable.value || isDeleting.value || isDeleted.value) return;
+    if (!props.hover || !isZoomable.value || isDeleting.value || isDeleted.value) return;
 
     const cot = await mapStore.worker.db.get(props.feature.id, {
         mission: true

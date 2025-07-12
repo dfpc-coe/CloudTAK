@@ -12,9 +12,9 @@ handlebars.registerHelper('fallback', (...params: Array<unknown>) => {
 })
 
 handlebars.registerHelper('slice', (text: string, start: number, end?: number) => {
-    if (text && !isNaN(start) && !isNaN(end)) {
+    if (text && !isNaN(Number(start)) && !isNaN(Number(end))) {
         return text.substring(start, end);
-    } else if (text && !isNaN(start)) {
+    } else if (text && !isNaN(Number(start))) {
         return text.substring(start);
     } else {
         return '';
