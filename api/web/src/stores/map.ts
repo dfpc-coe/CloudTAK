@@ -233,6 +233,20 @@ export const useMapStore = defineStore('cloudtak', {
             this.map.flyTo(flyTo);
         },
 
+        /**
+         * Trigger a rerender of the underlyin GeoJSON Features
+         */
+        refresh: async function(): Promise<void> {
+            await this.updateCOT();
+
+            const missions = [];
+
+            for (const uid of await this.worker.db.subscriptionListUid({ dirty: true })) {
+                missions.push(this.loadMission(uid));
+            }
+            await Promise.allSettled(missions);
+        },
+
         updateCOT: async function(): Promise<void> {
             try {
                 const diff = await this.worker.db.diff();
@@ -289,6 +303,8 @@ export const useMapStore = defineStore('cloudtak', {
 
             // @ts-expect-error Source.setData is not defined
             oStore.setData(await sub.collection());
+
+            await this.worker.db.subscriptionClean(guid);
 
             return true;
         },
