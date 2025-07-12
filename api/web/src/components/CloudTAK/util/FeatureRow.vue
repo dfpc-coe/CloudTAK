@@ -176,7 +176,7 @@ async function selectClick() {
 }
 
 async function flyToClick() {
-    if (!isZoomable.value || isDeleting.value || isDeleted.value) return;
+    if (!props.hover || !isZoomable.value || isDeleting.value || isDeleted.value) return;
 
     const cot = await mapStore.worker.db.get(props.feature.id, {
         mission: true
