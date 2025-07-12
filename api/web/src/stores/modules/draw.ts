@@ -198,7 +198,7 @@ export default class DrawTool {
                         authored: !(await this.mapStore.worker.db.has(feat.id))
                     });
 
-                    await this.mapStore.updateCOT();
+                    await this.mapStore.refresh();
                 }
             }
         })
@@ -217,7 +217,7 @@ export default class DrawTool {
 
             await this.mapStore.worker.db.add(feat as Feature);
 
-            await this.mapStore.updateCOT();
+            await this.mapStore.refresh();
         })
 
         this.mode = DrawToolMode.STATIC;
@@ -248,7 +248,7 @@ export default class DrawTool {
         if (this.editing) {
             await this.mapStore.worker.db.unhide(this.editing.id);
             this.editing = null;
-            await this.mapStore.updateCOT();
+            await this.mapStore.refresh();
         }
     }
 
@@ -279,7 +279,7 @@ export default class DrawTool {
             });
 
             await this.mapStore.worker.db.hide(cot.id);
-            await this.mapStore.updateCOT();
+            await this.mapStore.refresh();
 
             const errorStatus = this.draw.addFeatures([feat as terraDraw.GeoJSONStoreFeatures]).filter((status) => {
                 return !status.valid;

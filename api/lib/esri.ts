@@ -93,11 +93,15 @@ export class EsriBase {
         this.base = base;
     }
 
-    static async from(base: string | URL, auth?: EsriAuth): Promise<EsriBase> {
+    static async from(
+        base: string | URL,
+        auth?: EsriAuth
+    ): Promise<EsriBase> {
         const esri = new EsriBase(base, auth);
         await esri.fetchVersion();
 
         if (auth) await esri.generateToken();
+
         return esri;
     }
 
