@@ -38,22 +38,25 @@
                             max-height: 20vh;
                         '
                     >
-                    <div
-                        v-for='asset of props.assets'
-                        class='d-flex align-items-center px-3 py-2'
-                    >
-                        <IconFile
-                            :size='24'
-                            stroke='1'
-                        />
-                        <span class='mx-2 user-select-none' v-text='asset.name'/>
-                    </div>
+                        <div
+                            v-for='asset of props.assets'
+                            class='d-flex align-items-center px-3 py-2'
+                        >
+                            <IconFile
+                                :size='24'
+                                stroke='1'
+                            />
+                            <span
+                                class='mx-2 user-select-none'
+                                v-text='asset.name'
+                            />
+                        </div>
                         <FeatureRow
                             v-for='feat of props.feats'
                             :key='feat.id'
                             :feature='feat'
                             :hover='false'
-                            :deleteButton='false'
+                            :delete-button='false'
                         />
                     </div>
                     <TablerNone
@@ -88,12 +91,10 @@ import {
     TablerLoading,
     TablerButton,
     TablerInput,
-    TablerIconButton
 } from '@tak-ps/vue-tabler';
 import { std } from '../../../std.ts';
 import { useMapStore } from '../../../stores/map.ts';
 import {
-    IconX,
     IconFile,
     IconPackage,
 } from '@tabler/icons-vue';
