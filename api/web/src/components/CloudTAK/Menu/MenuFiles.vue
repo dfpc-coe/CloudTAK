@@ -49,8 +49,8 @@
                     :key='asset.name'
                 >
                     <div
-                        @click='opened.has(asset.name) ? opened.delete(asset.name) : opened.add(asset.name)'
                         class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'
+                        @click='opened.has(asset.name) ? opened.delete(asset.name) : opened.add(asset.name)'
                     >
                         <div class='col-auto'>
                             <IconMapPlus
@@ -83,10 +83,10 @@
                         v-if='opened.has(asset.name)'
                         class='pt-1 mx-4'
                     >
-                        <div class='rounded bg-child' >
+                        <div class='rounded bg-child'>
                             <div
-                                class='cursor-pointer rounded-top col-12 hover-dark d-flex align-items-center px-2 py-2 user-select-none'
                                 v-if='asset.visualized'
+                                class='cursor-pointer rounded-top col-12 hover-dark d-flex align-items-center px-2 py-2 user-select-none'
                                 @click.stop.prevent='createOverlay(asset)'
                             >
                                 <IconMapPlus
@@ -96,8 +96,8 @@
                                 <span class='mx-2'>Add to Map as Overlay</span>
                             </div>
                             <div
-                                class='rounded-top col-12 hover-dark d-flex align-items-center px-2 py-2 user-select-none'
                                 v-else
+                                class='rounded-top col-12 hover-dark d-flex align-items-center px-2 py-2 user-select-none'
                             >
                                 <IconMapOff
                                     :size='32'
@@ -184,7 +184,7 @@ const mapStore = useMapStore();
 const router = useRouter();
 const upload = ref(false)
 const opened = ref<Set<string>>(new Set());
-const shareToPackage: ref<string | undefined> = ref();
+const shareToPackage = ref<string | undefined>();
 const error = ref<Error | undefined>(undefined);
 const loading = ref(true);
 
@@ -249,10 +249,6 @@ async function downloadAsset(asset: ProfileAsset) {
     const url = stdurl(`/api/profile/asset/${asset.name}`);
     url.searchParams.append('token', localStorage.token);
     window.open(url, "_blank")
-}
-
-async function createPackage(asset: ProfileAsset) {
-    console.error('Create');
 }
 
 async function fetchList() {

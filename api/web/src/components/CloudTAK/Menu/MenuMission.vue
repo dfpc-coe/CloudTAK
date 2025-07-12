@@ -189,7 +189,7 @@
 
     <ShareToPackage
         v-if='shareToPackage.shown && missionSub'
-        :name='`${new Date().toISOString().replace(/T.*/, "")} ${mission.name}`'
+        :name='`${new Date().toISOString().replace(/T.*/, "")} ${mission ? mission.name : "Mission"}`'
         :feats='shareToPackage.features'
         @close='shareToPackage.shown = false'
     />
