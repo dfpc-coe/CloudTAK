@@ -1,4 +1,5 @@
 import { Static, Type } from '@sinclair/typebox'
+import qr from 'qr-image';
 import Schema from '@openaddresses/batch-schema';
 import { Feature } from '@tak-ps/node-cot'
 import Err from '@openaddresses/batch-error';
@@ -125,6 +126,43 @@ export default async function router(schema: Schema, config: Config) {
             );
 
             res.json(missionContent);
+        } catch (err) {
+             Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/marti/missions/:name/qr', {
+        name: 'Mission QR',
+        group: 'MartiMissions',
+        params: Type.Object({
+            name: Type.String(),
+        }),
+        description: 'Return an SVG of a QR Code for a mission',
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req, { token: true });
+            const auth = (await config.models.Profile.from(user.email)).auth;
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+
+            const opts: Static<typeof MissionOptions> = req.headers['missionauthorization']
+                ? { token: String(req.headers['missionauthorization']) }
+                : await config.conns.subscription(user.email, req.params.name)
+
+            const mission = await api.Mission.get(
+                req.params.name,
+                {},
+                opts
+            );
+
+            res.type('svg');
+
+            const svg = qr.image([
+                `${config.server.url.replace('ssl://', '')}:ssl`,
+                `${config.server.api.replace('https://', '')}-ssl-${mission.name}`,
+                mission.name
+            ].join(','), { type: 'svg' });
+
+            svg.pipe(res);
         } catch (err) {
              Err.respond(err, res);
         }
