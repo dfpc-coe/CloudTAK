@@ -76,7 +76,7 @@
                         v-text='mission.description || "No Feed Description"'
                     />
                 </div>
-                <div class='col-12'>
+                <div class='col-12 pt-3'>
                     <div class='datagrid-title user-select-none'>
                         Subscription
                     </div>
@@ -124,17 +124,74 @@
                         desc='Updating Subscription...'
                     />
                 </div>
+                <div class='col-12 pt-3'>
+                    <div class='datagrid-title user-select-none'>
+                        Tools
+                    </div>
+                    <div class='btn-list'>
+                        <TablerIconButton
+                            title='Invite QR Code'
+                            @click='showQR = true'
+                        >
+                            <IconQrcode
+                                :size='32'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
+                    </div>
+                </div>
             </div>
         </div>
     </MenuTemplate>
+
+    <TablerModal
+        v-if='showQR'
+        size='lg'
+    >
+        <div class='modal-status bg-red' />
+        <button
+            type='button'
+            class='btn-close'
+            aria-label='Close'
+            @click='showQR = false'
+        />
+        <div class='modal-header text-white'>
+            <div class='d-flex align-items-center'>
+                <IconQrcode
+                    :size='28'
+                    stroke='1'
+                />
+                <span
+                    class='mx-2'
+                    v-text='props.mission.name + " Invite QR"'
+                />
+            </div>
+        </div>
+        <div class='modal-body'>
+            <div class='col-12'>
+                <img
+                    :src='missionQRURL'
+                    style='
+                        filter: invert(100%);
+                    '
+                >
+            </div>
+        </div>
+    </TablerModal>
 </template>
 
 <script setup lang='ts'>
 import { ref, computed, onMounted } from 'vue';
 import type { MissionSubscriptions } from '../../../../types.ts'
+import { stdurl } from '../../../../std.ts'
 import Subscription from '../../../../base/subscription.ts';
 import {
+    IconQrcode
+} from '@tabler/icons-vue';
+import {
     TablerLoading,
+    TablerIconButton,
+    TablerModal,
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../../util/MenuTemplate.vue';
 import Overlay from '../../../../base/overlay.ts';
@@ -156,6 +213,10 @@ const props = defineProps({
 
 const sub = ref<Subscription | undefined>();
 
+const missionQRURL = computed(() => {
+    return String(stdurl(`/api/marti/missions/${props.mission.guid}/qr?token=${localStorage.token}`));
+});
+
 onMounted(async () => {
     await fetchSubscriptions();
 
@@ -163,6 +224,8 @@ onMounted(async () => {
         sub.value = await mapStore.worker.db.subscriptionGet(props.mission.guid);
     }
 });
+
+const showQR = ref(false);
 
 const loading = ref({
     users: false,
