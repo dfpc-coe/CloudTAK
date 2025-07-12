@@ -149,7 +149,7 @@ import {
     TablerLoading,
     TablerIconButton,
 } from '@tak-ps/vue-tabler';
-import SingleFeature from '../../util/Feature.vue';
+import SingleFeature from '../../util/FeatureRow.vue';
 import MissionLayerEdit from './MissionLayerEdit.vue';
 
 const emit = defineEmits([

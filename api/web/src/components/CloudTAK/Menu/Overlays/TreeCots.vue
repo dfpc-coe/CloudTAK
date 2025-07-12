@@ -299,7 +299,7 @@ import {
     TablerLoading,
 } from '@tak-ps/vue-tabler';
 import Contact from '../../util/Contact.vue';
-import Feature from '../../util/Feature.vue';
+import Feature from '../../util/FeatureRow.vue';
 import ContactPuck from '../../util/ContactPuck.vue';
 import DeleteModal from './DeleteModal.vue';
 import {
