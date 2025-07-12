@@ -253,6 +253,8 @@ async function getLogin() {
 </script>
 
 <style lang='scss'>
+$cloudtak-default: #182433;
+$cloudtak-child:  #192f45;
 $cloudtak-yellow: #FFB703;
 $cloudtak-orange: #FF9820;
 $cloudtak-navy: #023047;
@@ -263,7 +265,11 @@ $cloudtak-blue: #07556D;
 }
 
 .btn-primary {
-    background-color: #07556D !important;
+    background-color: $cloudtak-blue !important;
+}
+
+.bg-child {
+    background-color: $cloudtak-child !important;
 }
 
 .hover-button-hidden {

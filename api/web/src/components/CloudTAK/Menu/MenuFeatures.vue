@@ -140,7 +140,7 @@ import { ref, watch, nextTick, onMounted, onBeforeUnmount, useTemplateRef } from
 import { stdurl } from '../../../std.ts';
 import COT from '../../../base/cot.ts';
 import MenuTemplate from '../util/MenuTemplate.vue';
-import Feature from '../util/Feature.vue';
+import Feature from '../util/FeatureRow.vue';
 import {
     TablerNone,
     TablerInput,

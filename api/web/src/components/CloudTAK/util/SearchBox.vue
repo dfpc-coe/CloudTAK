@@ -33,7 +33,7 @@
 
 <script setup lang='ts'>
 import type { SearchForward, SearchSuggest } from '../../../types.ts';
-import Feature from './Feature.vue';
+import Feature from './FeatureRow.vue';
 import { std, stdurl } from '../../../std.ts'
 import { useMapStore } from '../../../stores/map.ts';
 import COT from '../../../base/cot.ts';
