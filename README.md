@@ -70,7 +70,7 @@ This CloudTAK infrastructure requires the base infrastructure layer. Layers can 
 
 ```bash
 # 1. Install dependencies
-npm install
+cd cdk && npm install
 
 # 2. Bootstrap CDK (first time only)
 npx cdk bootstrap --profile your-aws-profile
@@ -85,14 +85,14 @@ npm run deploy:prod
 ## Infrastructure Resources
 
 ### Compute & Services
-- **ECS Service** - CloudTAK web application with auto-scaling
+- **ECS Service** - CloudTAK web application with configurable scaling
 - **ECS Tasks** - ETL processing tasks (data, events, pmtiles)
-- **Application Load Balancer** - HTTP/HTTPS traffic distribution
+- **Application Load Balancer** - HTTP/HTTPS traffic distribution with dual-stack IPv4/IPv6
 - **Target Groups** - Health check and traffic routing
 - **API Gateway** - PMTiles API endpoint with custom domain
 
 ### Database & Storage
-- **Aurora PostgreSQL** - Encrypted cluster with backup retention for CloudTAK data
+- **Aurora PostgreSQL** - Serverless v2 (dev) or provisioned instances (prod) with encryption
 - **S3 Buckets** - Asset storage and ALB access logs (imported from BaseInfra)
 - **ECR Repository** - Container image storage (imported from BaseInfra)
 
@@ -104,9 +104,9 @@ npm run deploy:prod
 
 ### Security & DNS
 - **Security Groups** - Fine-grained network access controls
-- **Route 53 Records** - CloudTAK endpoint DNS management
-- **KMS Encryption** - Data encryption at rest and in transit
-- **ACM Certificates** - SSL certificate management
+- **Route 53 Records** - CloudTAK endpoint DNS management with dual-stack support
+- **KMS Encryption** - Data encryption at rest and in transit (imported from BaseInfra)
+- **ACM Certificates** - SSL certificate management (imported from BaseInfra)
 
 ## Docker Image Handling
 
@@ -125,7 +125,8 @@ This stack uses a **hybrid Docker image strategy** that supports both pre-built 
 4. **Data Task**: Data processing container
 
 ### Upstream Integration
-- **Automatic Sync**: Weekly sync with upstream repository
+- **Configurable Sync**: Weekly sync with upstream repository (configurable via SYNC_MODE)
+- **Sync Modes**: Disabled, main branch, or latest version tag
 - **Branding Application**: TAK.NZ customizations applied after sync
 - **Version Tagging**: Git SHA and version-based image tags
 
@@ -138,8 +139,8 @@ This stack uses a **hybrid Docker image strategy** that supports both pre-built 
 
 | Environment | Stack Name | Description | Domain | CloudTAK Cost* | Complete Stack Cost** |
 |-------------|------------|-------------|--------|----------------|----------------------|
-| `dev-test` | `TAK-Dev-CloudTAK` | Cost-optimized development | `cloudtak.dev.tak.nz` | ~$70 | ~$290 |
-| `prod` | `TAK-Prod-CloudTAK` | High-availability production | `cloudtak.tak.nz` | ~$380 | ~$1158 |
+| `dev-test` | `TAK-Dev-CloudTAK` | Cost-optimized development | `map.dev.tak.nz` | ~$70 | ~$290 |
+| `prod` | `TAK-Prod-CloudTAK` | High-availability production | `map.tak.nz` | ~$380 | ~$1158 |
 
 *CloudTAK Infrastructure only, **Complete deployment (BaseInfra + AuthInfra + TakInfra + VideoInfra + CloudTAK)  
 Estimated AWS costs for ap-southeast-2, excluding data transfer and usage
@@ -151,11 +152,14 @@ Estimated AWS costs for ap-southeast-2, excluding data transfer and usage
 # Development and Testing
 npm run dev                    # Build and test
 npm run test                   # Run tests
-npm run lint                   # Run linting
+npm run test:coverage          # Generate coverage report
+npm run test:watch             # Run tests in watch mode
 
 # Environment-Specific Deployment
 npm run deploy:dev            # Deploy to dev-test
 npm run deploy:prod           # Deploy to production
+npm run deploy:local:dev      # Deploy dev with local Docker builds
+npm run deploy:local:prod     # Deploy prod with local Docker builds
 npm run synth:dev             # Preview dev infrastructure
 npm run synth:prod            # Preview prod infrastructure
 
@@ -171,7 +175,7 @@ npm run cdk:bootstrap         # Bootstrap CDK in account
 
 The project uses **AWS CDK context-based configuration** for consistent deployments:
 
-- **All settings** stored in [`cdk.json`](cdk.json) under `context` section
+- **All settings** stored in [`cdk/cdk.json`](cdk/cdk.json) under `context` section
 - **Version controlled** - consistent deployments across team members
 - **Runtime overrides** - use `--context` flag for one-off changes
 - **Environment-specific** - separate configs for dev-test and production
@@ -179,13 +183,16 @@ The project uses **AWS CDK context-based configuration** for consistent deployme
 #### Configuration Override Examples
 ```bash
 # Override CloudTAK hostname for deployment
-npm run deploy:dev -- --context hostname=map
+npm run deploy:dev -- --context hostname=cloudtak
 
 # Deploy with different resource allocation
 npm run deploy:prod -- --context taskCpu=4096 --context taskMemory=8192
 
 # Custom stack name
 npm run deploy:dev -- --context stackName=Demo
+
+# Use local Docker builds instead of pre-built images
+npm run deploy:local:dev
 ```
 
 
@@ -196,6 +203,7 @@ npm run deploy:dev -- --context stackName=Demo
 - **[🏗️ Architecture Guide](docs/ARCHITECTURE.md)** - Technical architecture and design decisions  
 - **[⚙️ Configuration Guide](docs/PARAMETERS.md)** - Complete configuration management reference
 - **[🐳 Docker Image Strategy](docs/DOCKER_IMAGE_STRATEGY.md)** - Hybrid image strategy for fast CI/CD and flexible development
+- **[🔧 Environment Variables](docs/ENVIRONMENT_VARIABLES.md)** - CloudTAK application configuration via environment variables
 
 ## Security Features
 

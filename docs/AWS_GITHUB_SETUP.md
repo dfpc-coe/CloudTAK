@@ -90,13 +90,19 @@ graph TD
 ### 4.4 Weekly Upstream Sync (`weekly-sync.yml`)
 
 **Triggers:**
-- Schedule: Monday 2AM UTC
+- Schedule: Saturday 2AM NZST (14:00 UTC)
 - Manual dispatch
 
 **Process:**
-1. Sync with upstream CloudTAK repository
-2. Apply TAK.NZ branding
-3. Create pull request for review
+1. Check sync mode configuration
+2. Sync with upstream CloudTAK repository (main branch or latest tag)
+3. Apply TAK.NZ branding
+4. Create pull request for review
+
+**Sync Modes:**
+- `main` - Sync with upstream main branch
+- `tag` - Sync with latest version tag
+- Unset/disabled - No sync performed
 
 ## 5. Required Secrets and Variables
 

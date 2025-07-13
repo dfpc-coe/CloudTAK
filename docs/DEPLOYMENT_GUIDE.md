@@ -11,8 +11,8 @@
 
 ### **One-Command Deployment**
 ```bash
-# Install dependencies
-npm install
+# Install dependencies (from cdk directory)
+cd cdk && npm install
 
 # Deploy development environment
 npm run deploy:dev
@@ -29,8 +29,8 @@ npm run deploy:prod
 
 | Environment | Stack Name | Domain | CloudTAK Cost* | Complete Stack Cost** | Features |
 |-------------|------------|--------|----------------|----------------------|----------|
-| **dev-test** | `TAK-Dev-CloudTAK` | `cloudtak.dev.tak.nz` | ~$70 | ~$290 | Cost-optimized, Aurora Serverless v2 |
-| **prod** | `TAK-Prod-CloudTAK` | `cloudtak.tak.nz` | ~$380 | ~$1158 | High availability, Aurora Multi-AZ |
+| **dev-test** | `TAK-Dev-CloudTAK` | `map.dev.tak.nz` | ~$70 | ~$290 | Cost-optimized, Aurora Serverless v2 |
+| **prod** | `TAK-Prod-CloudTAK` | `map.tak.nz` | ~$380 | ~$1158 | High availability, Aurora Multi-AZ |
 
 *CloudTAK Infrastructure only, **Complete deployment (BaseInfra + AuthInfra + TakInfra + VideoInfra + CloudTAK)  
 Estimated AWS costs for ap-southeast-2, excluding data transfer and usage
@@ -72,7 +72,7 @@ npm run cdk:diff:prod # Production diff
 ```bash
 # 1. Clone and install
 git clone <repository-url>
-cd CloudTAK
+cd CloudTAK/cdk
 npm install
 
 # 2. Set environment variables (if using AWS profiles)
@@ -138,7 +138,7 @@ npm run cdk:diff:dev
 npm run cdk:diff:prod
 
 # View CloudFormation events
-aws cloudformation describe-stack-events --stack-name TAK-DevTest-CloudTAK
+aws cloudformation describe-stack-events --stack-name TAK-Dev-CloudTAK
 ```
 
 ---
@@ -156,17 +156,17 @@ aws cloudformation describe-stacks --stack-name TAK-Dev-CloudTAK \
 ```
 
 ### **Access Services**
-- **CloudTAK Web Interface**: `https://cloudtak.{domain}`
-- **CloudTAK API**: `https://cloudtak.{domain}/api`
+- **CloudTAK Web Interface**: `https://map.{domain}`
+- **CloudTAK API**: `https://map.{domain}/api`
 - **ETL Tasks**: Managed via ECS console
 
 ### **Cleanup**
 ```bash
 # Destroy development environment
-npm run cdk:destroy -- --context envType=dev-test
+npx cdk destroy --context envType=dev-test
 
 # Destroy production environment (use with caution!)
-npm run cdk:destroy -- --context envType=prod
+npx cdk destroy --context envType=prod
 ```
 
 ---

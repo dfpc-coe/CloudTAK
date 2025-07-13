@@ -1,30 +1,41 @@
 # Configuration Management Guide
 
-The CloudTAK Infrastructure uses **AWS CDK context-based configuration** with centralized settings in [`cdk.json`](../cdk/cdk.json). This provides a single source of truth for all environment configurations while supporting runtime overrides.
+The CloudTAK Infrastructure uses **AWS CDK context-based configuration** with centralized settings in [`cdk/cdk.json`](../cdk/cdk.json). This provides a single source of truth for all environment configurations while supporting runtime overrides.
 
 ## Quick Configuration Reference
 
 ### **Environment-Specific Deployment**
 ```bash
 # Deploy with default configuration
-npm run deploy:dev     # Development environment
+npm run deploy:dev     # Development environment (dev-test)
 npm run deploy:prod    # Production environment
 
 # Deploy with configuration overrides
-npm run deploy:dev -- --context hostname=map
-npm run deploy:prod -- --context desiredCount=3
+npm run deploy:dev -- --context hostname=cloudtak
+npm run deploy:prod -- --context desiredCount=2
 ```
 
 ## Configuration System Architecture
 
 ### **Context-Based Configuration**
-All configurations are stored in [`cdk.json`](../cdk/cdk.json) under the `context` section:
+All configurations are stored in [`cdk/cdk.json`](../cdk/cdk.json) under the `context` section:
 
 ```json
 {
   "context": {
     "dev-test": {
       "stackName": "Dev",
+      "database": {
+        "instanceClass": "db.serverless",
+        "instanceCount": 1,
+        "engineVersion": "17.4",
+        "allocatedStorage": 20,
+        "maxAllocatedStorage": 100,
+        "enablePerformanceInsights": false,
+        "monitoringInterval": 0,
+        "backupRetentionDays": 7,
+        "deleteProtection": false
+      },
       "ecs": {
         "taskCpu": 1024,
         "taskMemory": 4096,
@@ -44,10 +55,24 @@ All configurations are stored in [`cdk.json`](../cdk/cdk.json) under the `contex
         "removalPolicy": "DESTROY",
         "enableDetailedLogging": true,
         "enableContainerInsights": false
+      },
+      "s3": {
+        "enableVersioning": true
       }
     },
     "prod": {
       "stackName": "Prod",
+      "database": {
+        "instanceClass": "db.t4g.large",
+        "instanceCount": 2,
+        "engineVersion": "17.4",
+        "allocatedStorage": 100,
+        "maxAllocatedStorage": 1000,
+        "enablePerformanceInsights": true,
+        "monitoringInterval": 60,
+        "backupRetentionDays": 30,
+        "deleteProtection": true
+      },
       "ecs": {
         "taskCpu": 2048,
         "taskMemory": 8192,
@@ -67,6 +92,9 @@ All configurations are stored in [`cdk.json`](../cdk/cdk.json) under the `contex
         "removalPolicy": "RETAIN",
         "enableDetailedLogging": false,
         "enableContainerInsights": true
+      },
+      "s3": {
+        "enableVersioning": true
       }
     }
   }
@@ -87,8 +115,10 @@ Estimated AWS costs for ap-southeast-2, excluding data processing and storage us
 
 | Setting | dev-test | prod | Impact |
 |---------|----------|------|--------|
+| **Database Instance** | `db.serverless` | `db.t4g.large` | Performance and cost |
+| **Database Count** | `1` instance | `2` instances | High availability |
 | **ECS Resources** | `1024 CPU, 4096 MB` | `2048 CPU, 8192 MB` | Performance |
-| **ECS Tasks** | `1` task | `2` tasks | High availability |
+| **ECS Tasks** | `1` task | `1` task | Resource allocation |
 | **ECS Exec** | `true` (debugging) | `false` (security) | Development access |
 | **Container Insights** | `false` | `true` | ECS monitoring |
 | **ECR Image Retention** | `5` images | `20` images | Image history |
@@ -145,7 +175,7 @@ Use CDK's built-in `--context` flag with **flat parameter names** to override an
 
 ```bash
 # Custom CloudTAK hostname
-npm run deploy:dev -- --context hostname=map
+npm run deploy:dev -- --context hostname=cloudtak
 
 # ECS scaling
 npm run deploy:dev -- --context taskCpu=2048 --context taskMemory=8192
@@ -252,7 +282,7 @@ npm run deploy:dev -- \
 npm run deploy:dev -- \
   --context taskCpu=2048 \
   --context taskMemory=8192 \
-  --context desiredCount=2
+  --context desiredCount=1
 
 # Production with cost optimization
 npm run deploy:prod -- \

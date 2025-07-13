@@ -2,6 +2,18 @@
 
 CloudTAK supports configuration through environment variables that override database settings when present at startup. This document lists all available configuration environment variables.
 
+## S3 Configuration File
+
+For production deployments, CloudTAK can load configuration from an S3 bucket (imported from BaseInfra). Upload a `cloudtak-config.env` file to the S3 configuration bucket to provide environment variables.
+
+**Example**: See `cloudtak-config.env.example` in the repository root for a complete configuration template.
+
+**Usage**:
+1. Copy `cloudtak-config.env.example` to `cloudtak-config.env`
+2. Customize the configuration values
+3. Upload to the S3 bucket: `s3://{bucket-name}/cloudtak-config.env`
+4. The CloudTAK service will automatically load these environment variables on startup
+
 ## Server Configuration Variables
 
 These variables configure the TAK server connection and are processed during application startup to solve the first-boot configuration problem.

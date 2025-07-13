@@ -43,9 +43,9 @@ npm run cdk deploy -- \
 
 ### Local Development (Build on Demand)
 ```bash
-# Use NPM scripts for convenience
-npm run deploy:dev    # Dev environment, build locally
-npm run deploy:prod   # Prod environment, build locally
+# Use NPM scripts for local builds
+npm run deploy:local:dev    # Dev environment, build locally
+npm run deploy:local:prod   # Prod environment, build locally
 
 # Or use CDK directly
 npm run deploy:dev -- \
