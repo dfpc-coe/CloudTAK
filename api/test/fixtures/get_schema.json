@@ -89,6 +89,11 @@
         "query": false,
         "res": true
     },
+    "GET /config/display": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /config/login": {
         "body": false,
         "query": false,
@@ -494,51 +499,6 @@
         "query": true,
         "res": true
     },
-    "POST /import": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "PUT /import/:import": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "PUT /import": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /import/:import": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "PATCH /import/:import": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "DELETE /import/:import": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /import": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "POST /import/:import/batch": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /import/:import/batch": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "GET /iconset": {
         "body": false,
         "query": true,
@@ -594,15 +554,60 @@
         "query": true,
         "res": false
     },
-    "GET /icon/sprite{:size}.json": {
+    "GET /iconset/:iconset/sprite{:size}.json": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /iconset/:iconset/sprite{:size}.png": {
         "body": false,
         "query": true,
         "res": false
     },
-    "GET /icon/sprite{:size}.png": {
+    "POST /import": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PUT /import/:import": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PUT /import": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /import/:import": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PATCH /import/:import": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /import/:import": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /import": {
         "body": false,
         "query": true,
-        "res": false
+        "res": true
+    },
+    "POST /import/:import/batch": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /import/:import/batch": {
+        "body": false,
+        "query": false,
+        "res": true
     },
     "GET /layer": {
         "body": false,
@@ -743,6 +748,11 @@
         "body": false,
         "query": false,
         "res": true
+    },
+    "GET /marti/missions/:name/qr": {
+        "body": false,
+        "query": false,
+        "res": false
     },
     "GET /marti/missions/:name/changes": {
         "body": false,
@@ -1219,27 +1229,7 @@
         "query": false,
         "res": true
     },
-    "GET /video/server": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "GET /video/service/path/:path": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "POST /video/server": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "GET /video/server/:serverid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "DELETE /video/server/:serverid": {
         "body": false,
         "query": false,
         "res": true

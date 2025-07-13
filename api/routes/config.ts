@@ -1,11 +1,17 @@
 import { Type } from '@sinclair/typebox'
 import Schema from '@openaddresses/batch-schema';
 import { GenerateUpsert } from '@openaddresses/batch-generic';
+import ProfileControl, { DefaultUnits } from '../lib/control/profile.js';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
+import {
+    Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Text, Profile_Projection, Profile_Zoom,
+} from '../lib/enums.js'
 import Config from '../lib/config.js';
 
 export default async function router(schema: Schema, config: Config) {
+    const profileControl = new ProfileControl(config);
+
     await schema.get('/config', {
         name: 'Get Config',
         group: 'Config',
@@ -37,24 +43,43 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Config',
         description: 'Update Config Key/Values',
         body: Type.Object({
-            'agol::enabled': Type.Optional(Type.Boolean()),
-            'agol::token': Type.Optional(Type.String()),
+            'agol::enabled': Type.Optional(Type.Boolean({
+                description: 'Enable ArcGIS Online Integration'
+            })),
+            'agol::token': Type.Optional(Type.String({
+                description: 'ArcGIS Online API Token'
+            })),
 
-            'media::url': Type.Optional(Type.String()),
+            'media::url': Type.Optional(Type.String({
+                description: 'Base URL for Media Service'
+            })),
 
-            'map::center': Type.Optional(Type.String()),
+            'map::center': Type.Optional(Type.String({
+                description: 'Map Center Coordinates (lng,lat)',
+            })),
             'map::pitch': Type.Optional(Type.Integer({
+                description: 'Default Map Pitch Angle',
                 minimum: 0,
                 maximum: 90
             })),
             'map::bearing': Type.Optional(Type.String({
+                description: 'Default Map Bearing',
                 minimum: 0,
                 maximum: 360
             })),
             'map::zoom': Type.Optional(Type.Integer({
+                description: 'Default Map Zoom Level',
                 minimum: 0,
                 maximum: 20
             })),
+
+            'display::stale': Type.Optional(Type.Enum(Profile_Stale)),
+            'display::distance': Type.Optional(Type.Enum(Profile_Distance)),
+            'display::elevation': Type.Optional(Type.Enum(Profile_Elevation)),
+            'display::speed': Type.Optional(Type.Enum(Profile_Speed)),
+            'display::projection': Type.Optional(Type.Enum(Profile_Projection)),
+            'display::zoom': Type.Optional(Type.Enum(Profile_Zoom)),
+            'display::text': Type.Optional(Type.Enum(Profile_Text)),
 
             'group::Yellow': Type.Optional(Type.String()),
             'group::Cyan': Type.Optional(Type.String()),
@@ -83,9 +108,15 @@ export default async function router(schema: Schema, config: Config) {
             'provider::secret': Type.Optional(Type.String()),
             'provider::client': Type.Optional(Type.String()),
 
-            'login::signup': Type.Optional(Type.String()),
-            'login::forgot': Type.Optional(Type.String()),
-            'login::logo': Type.Optional(Type.String()),
+            'login::signup': Type.Optional(Type.String({
+                description: 'URL for Signup Page'
+            })),
+            'login::forgot': Type.Optional(Type.String({
+                description: 'URL for Forgot Password Page'
+            })),
+            'login::logo': Type.Optional(Type.String({
+                description: 'Base64 encoded PNG for logo'
+            })),
         }),
         res: Type.Any()
     }, async (req, res) => {
@@ -107,6 +138,21 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             res.json(final);
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/config/display', {
+        name: 'Default Display Config',
+        group: 'Config',
+        description: 'Return Default Display Config',
+        res: DefaultUnits
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req);
+
+            res.json(await profileControl.defaultUnits());
         } catch (err) {
             Err.respond(err, res);
         }
@@ -227,6 +273,8 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
+            await Auth.as_user(config, req);
+
             const keys = [
                 'map::center',
                 'map::pitch',

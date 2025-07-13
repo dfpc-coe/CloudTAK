@@ -1,7 +1,7 @@
 {
     "name": "@tak-ps/CloudTAK.api",
     "type": "module",
-    "version": "10.19.0",
+    "version": "10.30.0",
     "description": "Facilitate ETL operations to bring non-TAK sources into a TAK Server",
     "main": "index.js",
     "scripts": {
@@ -54,7 +54,7 @@
         "@sinclair/typebox": "^0.34.0",
         "@tak-ps/etl": "^9.14.0",
         "@tak-ps/node-cot": "^13.2.0",
-        "@tak-ps/node-tak": "^10.0.0",
+        "@tak-ps/node-tak": "^10.2.0",
         "@turf/bbox": "^7.1.0",
         "@turf/bbox-polygon": "^7.2.0",
         "@turf/meta": "^7.0.0",
@@ -83,6 +83,7 @@
         "moment": "^2.29.4",
         "pem": "^1.14.7",
         "pg": "^8.8.0",
+        "qr-image": "^3.2.0",
         "sanitize-html": "^2.17.0",
         "semver-sort": "^1.0.0",
         "sharp": "^0.34.0",
@@ -114,6 +115,7 @@
         "@types/node": "^24.0.0",
         "@types/pem": "^1.9.6",
         "@types/pg": "^8.6.6",
+        "@types/qr-image": "^3.2.9",
         "@types/sanitize-html": "^2.16.0",
         "@types/semver-sort": "^0.0.5",
         "@types/sinon": "^17.0.0",

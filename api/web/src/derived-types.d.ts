@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-    "/schema": {
+    "/api/schema": {
         parameters: {
             query?: never;
             header?: never;
@@ -51,7 +51,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/openapi": {
+    "/api/openapi": {
         parameters: {
             query?: never;
             header?: never;
@@ -87,7 +87,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/agency": {
+    "/api/agency": {
         parameters: {
             query?: never;
             header?: never;
@@ -132,7 +132,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/agency/{:agencyid}": {
+    "/api/agency/{:agencyid}": {
         parameters: {
             query?: never;
             header?: never;
@@ -171,7 +171,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/attachment": {
+    "/api/attachment": {
         parameters: {
             query?: never;
             header?: never;
@@ -241,7 +241,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/attachment/{:hash}": {
+    "/api/attachment/{:hash}": {
         parameters: {
             query?: never;
             header?: never;
@@ -278,7 +278,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/basemap": {
+    "/api/basemap": {
         parameters: {
             query?: never;
             header?: never;
@@ -302,7 +302,7 @@ export interface paths {
                     /** @description No Description */
                     type?: "raster" | "raster-dem" | "vector";
                     /** @description No Description */
-                    sort: "id" | "created" | "updated" | "name" | "title" | "url" | "overlay" | "username" | "bounds" | "center" | "minzoom" | "maxzoom" | "collection" | "format" | "scheme" | "styles" | "type" | "enableRLS";
+                    sort: "id" | "created" | "updated" | "name" | "title" | "url" | "overlay" | "username" | "bounds" | "tilesize" | "attribution" | "center" | "minzoom" | "maxzoom" | "collection" | "format" | "scheme" | "styles" | "type" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description Only show Basemaps belonging to a given collection */
@@ -336,6 +336,8 @@ export interface paths {
                                 url: string;
                                 overlay: boolean;
                                 username: string | null;
+                                tilesize: number;
+                                attribution: string | null;
                                 minzoom: number;
                                 maxzoom: number;
                                 collection?: null | string;
@@ -413,6 +415,9 @@ export interface paths {
                         url: string;
                         /** @default false */
                         overlay: boolean;
+                        /** @default 256 */
+                        tilesize: number;
+                        attribution?: null | string;
                         minzoom?: number;
                         maxzoom?: number;
                         format?: "png" | "jpeg" | "mvt";
@@ -441,6 +446,8 @@ export interface paths {
                             url: string;
                             overlay: boolean;
                             username: string | null;
+                            tilesize: number;
+                            attribution: string | null;
                             minzoom: number;
                             maxzoom: number;
                             collection?: null | string;
@@ -464,7 +471,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/basemap/{:basemapid}": {
+    "/api/basemap/{:basemapid}": {
         parameters: {
             query?: never;
             header?: never;
@@ -503,6 +510,8 @@ export interface paths {
                             url: string;
                             overlay: boolean;
                             username: string | null;
+                            tilesize: number;
+                            attribution: string | null;
                             minzoom: number;
                             maxzoom: number;
                             collection?: null | string;
@@ -569,6 +578,9 @@ export interface paths {
                         /** @default user */
                         scope: "server" | "user";
                         url?: string;
+                        /** @default 256 */
+                        tilesize?: number;
+                        attribution?: null | string;
                         minzoom?: number;
                         maxzoom?: number;
                         format?: "png" | "jpeg" | "mvt";
@@ -597,6 +609,8 @@ export interface paths {
                             url: string;
                             overlay: boolean;
                             username: string | null;
+                            tilesize: number;
+                            attribution: string | null;
                             minzoom: number;
                             maxzoom: number;
                             collection?: null | string;
@@ -616,7 +630,7 @@ export interface paths {
         };
         trace?: never;
     };
-    "/basemap/{:basemapid}/tiles": {
+    "/api/basemap/{:basemapid}/tiles": {
         parameters: {
             query?: never;
             header?: never;
@@ -651,10 +665,16 @@ export interface paths {
                             name: string;
                             description: string;
                             attribution?: string;
+                            tileSize?: number;
                             minzoom: number;
                             maxzoom: number;
                             tiles: string[];
-                            bounds: number[];
+                            bounds: [
+                                number,
+                                number,
+                                number,
+                                number
+                            ];
                             center: number[];
                             type: string;
                             format?: string;
@@ -681,7 +701,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/basemap/{:basemapid}/tiles/{:z}/{:x}/{:y}": {
+    "/api/basemap/{:basemapid}/tiles/{:z}/{:x}/{:y}": {
         parameters: {
             query?: never;
             header?: never;
@@ -718,7 +738,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/basemap/{:basemapid}/feature/{:featureid}": {
+    "/api/basemap/{:basemapid}/feature/{:featureid}": {
         parameters: {
             query?: never;
             header?: never;
@@ -772,7 +792,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/config": {
+    "/api/config": {
         parameters: {
             query?: never;
             header?: never;
@@ -869,7 +889,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/config/login": {
+    "/api/config/login": {
         parameters: {
             query?: never;
             header?: never;
@@ -909,7 +929,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/config/tiles": {
+    "/api/config/tiles": {
         parameters: {
             query?: never;
             header?: never;
@@ -947,7 +967,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/config/group": {
+    "/api/config/group": {
         parameters: {
             query?: never;
             header?: never;
@@ -986,7 +1006,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/config/map": {
+    "/api/config/map": {
         parameters: {
             query?: never;
             header?: never;
@@ -1031,7 +1051,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/connection/{:connectionid}/asset": {
+    "/api/connection/{:connectionid}/asset": {
         parameters: {
             query?: never;
             header?: never;
@@ -1103,7 +1123,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/connection/{:connectionid}/asset/{:asset}.{:ext}": {
+    "/api/connection/{:connectionid}/asset/{:asset}.{:ext}": {
         parameters: {
             query?: never;
             header?: never;
@@ -1165,7 +1185,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/connection/{:connectionid}/channel": {
+    "/api/connection/{:connectionid}/channel": {
         parameters: {
             query?: never;
             header?: never;
@@ -1207,7 +1227,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/connection/{:connectionid}/data/{:dataid}/asset": {
+    "/api/connection/{:connectionid}/data/{:dataid}/asset": {
         parameters: {
             query?: never;
             header?: never;
@@ -1284,7 +1304,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/connection/{:connectionid}/data/{:dataid}/asset/{:asset}.{:ext}": {
+    "/api/connection/{:connectionid}/data/{:dataid}/asset/{:asset}.{:ext}": {
         parameters: {
             query?: never;
             header?: never;
@@ -1364,7 +1384,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/connection/{:connectionid}/data/{:dataid}/asset/{:asset}.pmtiles/tile": {
+    "/api/connection/{:connectionid}/data/{:dataid}/asset/{:asset}.pmtiles/tile": {
         parameters: {
             query?: never;
             header?: never;
@@ -1398,7 +1418,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/connection/{:connectionid}/data/{:dataid}/job": {
+    "/api/connection/{:connectionid}/data/{:dataid}/job": {
         parameters: {
             query?: never;
             header?: never;
@@ -1443,7 +1463,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/connection/{:connectionid}/data/{:dataid}/job/{:jobid}": {
+    "/api/connection/{:connectionid}/data/{:dataid}/job/{:jobid}": {
         parameters: {
             query?: never;
             header?: never;
@@ -1485,7 +1505,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/connection/{:connectionid}/data/{:dataid}/job/{:jobid}/logs": {
+    "/api/connection/{:connectionid}/data/{:dataid}/job/{:jobid}/logs": {
         parameters: {
             query?: never;
             header?: never;
@@ -1526,7 +1546,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/connection/{:connectionid}/data": {
+    "/api/connection/{:connectionid}/data": {
         parameters: {
             query?: never;
             header?: never;
@@ -1649,7 +1669,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/connection/{:connectionid}/data/{:dataid}": {
+    "/api/connection/{:connectionid}/data/{:dataid}": {
         parameters: {
             query?: never;
             header?: never;
@@ -1777,7 +1797,7 @@ export interface paths {
         };
         trace?: never;
     };
-    "/connection/{:connectionid}/layer/{:layerid}/alert": {
+    "/api/connection/{:connectionid}/layer/{:layerid}/alert": {
         parameters: {
             query?: never;
             header?: never;
@@ -1901,7 +1921,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/connection/{:connectionid}/layer/{:layerid}/alert/{:alertid}": {
+    "/api/connection/{:connectionid}/layer/{:layerid}/alert/{:alertid}": {
         parameters: {
             query?: never;
             header?: never;
@@ -1940,7 +1960,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/layer/{:layerid}/cot": {
+    "/api/layer/{:layerid}/cot": {
         parameters: {
             query?: never;
             header?: never;
@@ -1991,6 +2011,7 @@ export interface paths {
                                 course?: number;
                                 slope?: number;
                                 speed?: number;
+                                labels?: boolean;
                                 "marker-color"?: string;
                                 "marker-opacity"?: number;
                                 stroke?: string;
@@ -2235,6 +2256,7 @@ export interface paths {
                                         course?: number;
                                         slope?: number;
                                         speed?: number;
+                                        labels?: boolean;
                                         "marker-color"?: string;
                                         "marker-opacity"?: number;
                                         stroke?: string;
@@ -2451,7 +2473,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/connection/{:connectionid}/layer/{:layerid}/cot/{:uid}": {
+    "/api/connection/{:connectionid}/layer/{:layerid}/cot/{:uid}": {
         parameters: {
             query?: never;
             header?: never;
@@ -2499,6 +2521,7 @@ export interface paths {
                                 course?: number;
                                 slope?: number;
                                 speed?: number;
+                                labels?: boolean;
                                 "marker-color"?: string;
                                 "marker-opacity"?: number;
                                 stroke?: string;
@@ -2715,7 +2738,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/connection/{:connectionid}/layer/{:layerid}/cot/{:uid}/all": {
+    "/api/connection/{:connectionid}/layer/{:layerid}/cot/{:uid}/all": {
         parameters: {
             query?: never;
             header?: never;
@@ -2772,6 +2795,7 @@ export interface paths {
                                     course?: number;
                                     slope?: number;
                                     speed?: number;
+                                    labels?: boolean;
                                     "marker-color"?: string;
                                     "marker-opacity"?: number;
                                     stroke?: string;
@@ -2989,7 +3013,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/connection/{:connectionid}/layer/{:layerid}/incoming/ephemeral": {
+    "/api/connection/{:connectionid}/layer/{:layerid}/incoming/ephemeral": {
         parameters: {
             query?: never;
             header?: never;
@@ -3029,7 +3053,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/connection/{:connectionid}/layer/{:layerid}/outgoing/ephemeral": {
+    "/api/connection/{:connectionid}/layer/{:layerid}/outgoing/ephemeral": {
         parameters: {
             query?: never;
             header?: never;
@@ -3069,7 +3093,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/layer/redeploy": {
+    "/api/layer/redeploy": {
         parameters: {
             query?: never;
             header?: never;
@@ -3108,7 +3132,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/connection/{:connectionid}/layer": {
+    "/api/connection/{:connectionid}/layer": {
         parameters: {
             query?: never;
             header?: never;
@@ -3536,7 +3560,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/connection/{:connectionid}/layer/{:layerid}/incoming": {
+    "/api/connection/{:connectionid}/layer/{:layerid}/incoming": {
         parameters: {
             query?: never;
             header?: never;
@@ -4110,7 +4134,7 @@ export interface paths {
         };
         trace?: never;
     };
-    "/connection/{:connectionid}/layer/{:layerid}/outgoing": {
+    "/api/connection/{:connectionid}/layer/{:layerid}/outgoing": {
         parameters: {
             query?: never;
             header?: never;
@@ -4232,7 +4256,7 @@ export interface paths {
         };
         trace?: never;
     };
-    "/connection/{:connectionid}/layer/{:layerid}": {
+    "/api/connection/{:connectionid}/layer/{:layerid}": {
         parameters: {
             query?: never;
             header?: never;
@@ -4245,6 +4269,10 @@ export interface paths {
                 query: {
                     /** @description Get Live Alarm state from CloudWatch */
                     alarms: boolean;
+                    /** @description No Description */
+                    token?: string;
+                    /** @description Download Layer as JSON file */
+                    download: boolean;
                 };
                 header?: never;
                 path?: never;
@@ -4652,7 +4680,7 @@ export interface paths {
         };
         trace?: never;
     };
-    "/connection/{:connectionid}/layer/{:layerid}/redeploy": {
+    "/api/connection/{:connectionid}/layer/{:layerid}/redeploy": {
         parameters: {
             query?: never;
             header?: never;
@@ -4691,7 +4719,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/connection/{:connectionid}/layer/{:layerid}/task": {
+    "/api/connection/{:connectionid}/layer/{:layerid}/task": {
         parameters: {
             query?: never;
             header?: never;
@@ -4774,7 +4802,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/connection/{:connectionid}/layer/{:layerid}/task/invoke": {
+    "/api/connection/{:connectionid}/layer/{:layerid}/task/invoke": {
         parameters: {
             query?: never;
             header?: never;
@@ -4813,7 +4841,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/connection/{:connectionid}/layer/{:layerid}/task/logs": {
+    "/api/connection/{:connectionid}/layer/{:layerid}/task/logs": {
         parameters: {
             query?: never;
             header?: never;
@@ -4854,7 +4882,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/connection/{:connectionid}/layer/{:layerid}/task/capabilities": {
+    "/api/connection/{:connectionid}/layer/{:layerid}/task/capabilities": {
         parameters: {
             query?: never;
             header?: never;
@@ -4906,7 +4934,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/connection/{:connectionid}/token": {
+    "/api/connection/{:connectionid}/token": {
         parameters: {
             query?: never;
             header?: never;
@@ -4996,7 +5024,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/connection/{:connectionid}/token/{:id}": {
+    "/api/connection/{:connectionid}/token/{:id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -5065,7 +5093,7 @@ export interface paths {
         };
         trace?: never;
     };
-    "/connection/{:connectionid}/video/lease": {
+    "/api/connection/{:connectionid}/video/lease": {
         parameters: {
             query?: never;
             header?: never;
@@ -5263,7 +5291,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/connection/{:connectionid}/video/lease/{:lease}": {
+    "/api/connection/{:connectionid}/video/lease/{:lease}": {
         parameters: {
             query?: never;
             header?: never;
@@ -5458,7 +5486,7 @@ export interface paths {
         };
         trace?: never;
     };
-    "/connection": {
+    "/api/connection": {
         parameters: {
             query?: never;
             header?: never;
@@ -5587,7 +5615,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/connection/{:connectionid}": {
+    "/api/connection/{:connectionid}": {
         parameters: {
             query?: never;
             header?: never;
@@ -5713,7 +5741,7 @@ export interface paths {
         };
         trace?: never;
     };
-    "/connection/{:connectionid}/auth": {
+    "/api/connection/{:connectionid}/auth": {
         parameters: {
             query?: never;
             header?: never;
@@ -5726,7 +5754,7 @@ export interface paths {
                 query: {
                     /** @description No Description */
                     token?: string;
-                    /** @description No Description */
+                    /** @description Download auth as P12 file */
                     download: boolean;
                 };
                 header?: never;
@@ -5752,7 +5780,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/connection/{:connectionid}/refresh": {
+    "/api/connection/{:connectionid}/refresh": {
         parameters: {
             query?: never;
             header?: never;
@@ -5804,7 +5832,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/error": {
+    "/api/error": {
         parameters: {
             query?: never;
             header?: never;
@@ -5893,7 +5921,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/esri": {
+    "/api/esri": {
         parameters: {
             query?: never;
             header?: never;
@@ -5950,7 +5978,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/esri/portal": {
+    "/api/esri/portal": {
         parameters: {
             query?: never;
             header?: never;
@@ -5996,7 +6024,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/esri/portal/content": {
+    "/api/esri/portal/content": {
         parameters: {
             query?: never;
             header?: never;
@@ -6044,7 +6072,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/esri/portal/service": {
+    "/api/esri/portal/service": {
         parameters: {
             query?: never;
             header?: never;
@@ -6093,7 +6121,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/esri/portal/server": {
+    "/api/esri/portal/server": {
         parameters: {
             query?: never;
             header?: never;
@@ -6141,7 +6169,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/esri/server": {
+    "/api/esri/server": {
         parameters: {
             query?: never;
             header?: never;
@@ -6184,7 +6212,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/esri/server/layer": {
+    "/api/esri/server/layer": {
         parameters: {
             query?: never;
             header?: never;
@@ -6287,596 +6315,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/iconset": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Iconsets */
-        get: {
-            parameters: {
-                query: {
-                    /** @description No Description */
-                    scope?: "server" | "user";
-                    /** @description Limit the number of responses returned */
-                    limit: number;
-                    /** @description Iterate through "pages" of items based on the "limit" query param */
-                    page: number;
-                    /** @description Order in which results are returned based on the "sort" query param */
-                    order: "asc" | "desc";
-                    /** @description No Description */
-                    sort?: "uid" | "created" | "updated" | "version" | "name" | "username" | "default_group" | "default_friendly" | "default_hostile" | "default_neutral" | "default_unknown" | "skip_resize" | "enableRLS";
-                    /** @description Filter results by a human readable name field */
-                    filter: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            total: number;
-                            items: {
-                                uid: string;
-                                created: string;
-                                updated: string;
-                                version: number;
-                                name: string;
-                                username: string | null;
-                                default_group: string | null;
-                                default_friendly: string | null;
-                                default_hostile: string | null;
-                                default_neutral: string | null;
-                                default_unknown: string | null;
-                                skip_resize: boolean;
-                            }[];
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        /** Create Iconset */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        uid: string;
-                        version: number;
-                        /** @description Human readable name */
-                        name: string;
-                        scope?: "server" | "user";
-                        default_group?: string;
-                        default_friendly?: string;
-                        default_hostile?: string;
-                        default_neutral?: string;
-                        default_unknown?: string;
-                        skip_resize?: boolean;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            uid: string;
-                            created: string;
-                            updated: string;
-                            version: number;
-                            name: string;
-                            username: string | null;
-                            default_group: string | null;
-                            default_friendly: string | null;
-                            default_hostile: string | null;
-                            default_neutral: string | null;
-                            default_unknown: string | null;
-                            skip_resize: boolean;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/iconset/{:iconset}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Iconset */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description No Description */
-                    format?: "json" | "zip";
-                    /** @description No Description */
-                    download?: boolean;
-                    /** @description Resize Images to 32x32px */
-                    resize?: boolean;
-                    /** @description No Description */
-                    token?: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            uid: string;
-                            created: string;
-                            updated: string;
-                            version: number;
-                            name: string;
-                            username: string | null;
-                            default_group: string | null;
-                            default_friendly: string | null;
-                            default_hostile: string | null;
-                            default_neutral: string | null;
-                            default_unknown: string | null;
-                            skip_resize: boolean;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        /** Delete Iconset */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        /** Update Iconset */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        public?: boolean;
-                        default_group?: string;
-                        default_friendly?: string;
-                        default_hostile?: string;
-                        default_neutral?: string;
-                        default_unknown?: string;
-                        skip_resize?: boolean;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            uid: string;
-                            created: string;
-                            updated: string;
-                            version: number;
-                            name: string;
-                            username: string | null;
-                            default_group: string | null;
-                            default_friendly: string | null;
-                            default_hostile: string | null;
-                            default_neutral: string | null;
-                            default_unknown: string | null;
-                            skip_resize: boolean;
-                        };
-                    };
-                };
-            };
-        };
-        trace?: never;
-    };
-    "/iconset/{:iconset}/icon": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Create Icon */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        /** @description Human readable name */
-                        name: string;
-                        data: string;
-                        data_alt?: string;
-                        type2525b?: string | null;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: number;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            iconset: string;
-                            type2525b: string | null;
-                            data: string;
-                            data_alt: string | null;
-                            path: string;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/icon": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Icons */
-        get: {
-            parameters: {
-                query: {
-                    /** @description No Description */
-                    scope?: "server" | "user";
-                    /** @description No Description */
-                    limit?: number;
-                    /** @description Iterate through "pages" of items based on the "limit" query param */
-                    page: number;
-                    /** @description Order in which results are returned based on the "sort" query param */
-                    order: "asc" | "desc";
-                    /** @description No Description */
-                    sort?: "id" | "created" | "updated" | "name" | "iconset" | "type2525b" | "data" | "data_alt" | "path" | "enableRLS";
-                    /** @description No Description */
-                    iconset?: string;
-                    /** @description Filter results by a human readable name field */
-                    filter: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            total: number;
-                            items: {
-                                id: number;
-                                created: string;
-                                updated: string;
-                                name: string;
-                                iconset: string;
-                                type2525b: string | null;
-                                data: string;
-                                data_alt: string | null;
-                                path: string;
-                            }[];
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/iconset/{:iconset}/icon/{:icon}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Icon Metadata */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: number;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            iconset: string;
-                            type2525b: string | null;
-                            data: string;
-                            data_alt: string | null;
-                            path: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        /** Remove Icon from Iconset */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        /** Update Icon in Iconset */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        name?: string;
-                        data?: string;
-                        data_alt?: string;
-                        type2525b?: string | null;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: number;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            iconset: string;
-                            type2525b: string | null;
-                            data: string;
-                            data_alt: string | null;
-                            path: string;
-                        };
-                    };
-                };
-            };
-        };
-        trace?: never;
-    };
-    "/iconset/{:iconset}/icon/{:icon}/raw": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Icon Data */
-        get: {
-            parameters: {
-                query: {
-                    /** @description No Description */
-                    token?: string;
-                    /** @description Use alternate icon if possible */
-                    alt: boolean;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/icon/sprite{:size}.json": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Spriteset JSON for CoT types */
-        get: {
-            parameters: {
-                query: {
-                    /** @description No Description */
-                    iconset: string;
-                    /** @description No Description */
-                    scope?: "server" | "user";
-                    /** @description No Description */
-                    token?: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/icon/sprite{:size}.png": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Return a sprite sheet for CoT Types */
-        get: {
-            parameters: {
-                query: {
-                    /** @description No Description */
-                    iconset: string;
-                    /** @description No Description */
-                    scope?: "server" | "user";
-                    /** @description No Description */
-                    token?: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/import": {
+    "/api/import": {
         parameters: {
             query?: never;
             header?: never;
@@ -7012,7 +6451,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/import/{:import}": {
+    "/api/import/{:import}": {
         parameters: {
             query?: never;
             header?: never;
@@ -7158,7 +6597,7 @@ export interface paths {
         };
         trace?: never;
     };
-    "/import/{:import}/batch": {
+    "/api/import/{:import}/batch": {
         parameters: {
             query?: never;
             header?: never;
@@ -7232,7 +6671,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/layer": {
+    "/api/layer": {
         parameters: {
             query?: never;
             header?: never;
@@ -7457,7 +6896,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/layer/{:layerid}": {
+    "/api/layer/{:layerid}": {
         parameters: {
             query?: never;
             header?: never;
@@ -7659,7 +7098,592 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/template": {
+    "/api/iconset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Iconsets */
+        get: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    scope?: "server" | "user";
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort?: "uid" | "created" | "updated" | "version" | "name" | "username" | "default_group" | "default_friendly" | "default_hostile" | "default_neutral" | "default_unknown" | "skip_resize" | "spritesheet_data" | "spritesheet_json" | "enableRLS";
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                uid: string;
+                                created: string;
+                                updated: string;
+                                version: number;
+                                name: string;
+                                username: null | string;
+                                default_group: null | string;
+                                default_friendly: null | string;
+                                default_hostile: null | string;
+                                default_neutral: null | string;
+                                default_unknown: null | string;
+                                skip_resize: boolean;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create Iconset */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        uid: string;
+                        version: number;
+                        /** @description Human readable name */
+                        name: string;
+                        scope?: "server" | "user";
+                        default_group?: string;
+                        default_friendly?: string;
+                        default_hostile?: string;
+                        default_neutral?: string;
+                        default_unknown?: string;
+                        skip_resize?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            uid: string;
+                            created: string;
+                            updated: string;
+                            version: number;
+                            name: string;
+                            username: null | string;
+                            default_group: null | string;
+                            default_friendly: null | string;
+                            default_hostile: null | string;
+                            default_neutral: null | string;
+                            default_unknown: null | string;
+                            skip_resize: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/iconset/{:iconset}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Iconset */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description No Description */
+                    format?: "json" | "zip";
+                    /** @description No Description */
+                    download?: boolean;
+                    /** @description Resize Images to 32x32px */
+                    resize?: boolean;
+                    /** @description No Description */
+                    token?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            uid: string;
+                            created: string;
+                            updated: string;
+                            version: number;
+                            name: string;
+                            username: null | string;
+                            default_group: null | string;
+                            default_friendly: null | string;
+                            default_hostile: null | string;
+                            default_neutral: null | string;
+                            default_unknown: null | string;
+                            skip_resize: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /** Delete Iconset */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update Iconset */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        public?: boolean;
+                        default_group?: string;
+                        default_friendly?: string;
+                        default_hostile?: string;
+                        default_neutral?: string;
+                        default_unknown?: string;
+                        skip_resize?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            uid: string;
+                            created: string;
+                            updated: string;
+                            version: number;
+                            name: string;
+                            username: null | string;
+                            default_group: null | string;
+                            default_friendly: null | string;
+                            default_hostile: null | string;
+                            default_neutral: null | string;
+                            default_unknown: null | string;
+                            skip_resize: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/iconset/{:iconset}/icon": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Icon */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Human readable name */
+                        name: string;
+                        data: string;
+                        data_alt?: string;
+                        type2525b?: string | null;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            iconset: string;
+                            type2525b: string | null;
+                            data: string;
+                            data_alt: string | null;
+                            path: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/icon": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Icons */
+        get: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    scope?: "server" | "user";
+                    /** @description No Description */
+                    limit?: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort?: "id" | "created" | "updated" | "name" | "iconset" | "type2525b" | "data" | "data_alt" | "path" | "enableRLS";
+                    /** @description No Description */
+                    iconset?: string;
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: number;
+                                created: string;
+                                updated: string;
+                                name: string;
+                                iconset: string;
+                                type2525b: string | null;
+                                data: string;
+                                data_alt: string | null;
+                                path: string;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/iconset/{:iconset}/icon/{:icon}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Icon Metadata */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            iconset: string;
+                            type2525b: string | null;
+                            data: string;
+                            data_alt: string | null;
+                            path: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /** Remove Icon from Iconset */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update Icon in Iconset */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name?: string;
+                        data?: string;
+                        data_alt?: string;
+                        type2525b?: string | null;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            iconset: string;
+                            type2525b: string | null;
+                            data: string;
+                            data_alt: string | null;
+                            path: string;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/iconset/{:iconset}/icon/{:icon}/raw": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Icon Data */
+        get: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    token?: string;
+                    /** @description Use alternate icon if possible */
+                    alt: boolean;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/iconset/{:iconset}/sprite{:size}.json": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Spriteset JSON for CoT types */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description No Description */
+                    scope?: "server" | "user";
+                    /** @description No Description */
+                    token?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": unknown;
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/iconset/{:iconset}/sprite{:size}.png": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return a sprite sheet for CoT Types */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description No Description */
+                    token?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/template": {
         parameters: {
             query?: never;
             header?: never;
@@ -8061,7 +8085,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/template/{:templateid}": {
+    "/api/template/{:templateid}": {
         parameters: {
             query?: never;
             header?: never;
@@ -8256,7 +8280,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/ldap/channel": {
+    "/api/ldap/channel": {
         parameters: {
             query?: never;
             header?: never;
@@ -8305,7 +8329,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/ldap/user": {
+    "/api/ldap/user": {
         parameters: {
             query?: never;
             header?: never;
@@ -8359,7 +8383,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/ldap/user/{:email}": {
+    "/api/ldap/user/{:email}": {
         parameters: {
             query?: never;
             header?: never;
@@ -8401,7 +8425,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/login": {
+    "/api/login": {
         parameters: {
             query?: never;
             header?: never;
@@ -8472,7 +8496,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/marti/export": {
+    "/api/marti/export": {
         parameters: {
             query?: never;
             header?: never;
@@ -8523,7 +8547,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/marti/cot/{:uid}": {
+    "/api/marti/cot/{:uid}": {
         parameters: {
             query?: never;
             header?: never;
@@ -8571,6 +8595,7 @@ export interface paths {
                                 course?: number;
                                 slope?: number;
                                 speed?: number;
+                                labels?: boolean;
                                 "marker-color"?: string;
                                 "marker-opacity"?: number;
                                 stroke?: string;
@@ -8787,7 +8812,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/marti/cot/{:uid}/all": {
+    "/api/marti/cot/{:uid}/all": {
         parameters: {
             query?: never;
             header?: never;
@@ -8846,6 +8871,7 @@ export interface paths {
                                     course?: number;
                                     slope?: number;
                                     speed?: number;
+                                    labels?: boolean;
                                     "marker-color"?: string;
                                     "marker-opacity"?: number;
                                     stroke?: string;
@@ -9063,7 +9089,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/marti/api/files/{:hash}": {
+    "/api/marti/api/files/{:hash}": {
         parameters: {
             query?: never;
             header?: never;
@@ -9128,7 +9154,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/marti/missions/{:name}/layer": {
+    "/api/marti/missions/{:name}/layer": {
         parameters: {
             query?: never;
             header?: never;
@@ -9254,7 +9280,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/marti/missions/{:name}/layer/{:layerid}": {
+    "/api/marti/missions/{:name}/layer/{:layerid}": {
         parameters: {
             query?: never;
             header?: never;
@@ -9320,7 +9346,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/marti/missions/{:name}/layer/{:uid}": {
+    "/api/marti/missions/{:name}/layer/{:uid}": {
         parameters: {
             query?: never;
             header?: never;
@@ -9388,7 +9414,7 @@ export interface paths {
         };
         trace?: never;
     };
-    "/marti/missions/{:name}/log": {
+    "/api/marti/missions/{:name}/log": {
         parameters: {
             query?: never;
             header?: never;
@@ -9470,7 +9496,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/marti/missions/{:name}/log/{:logid}": {
+    "/api/marti/missions/{:name}/log/{:logid}": {
         parameters: {
             query?: never;
             header?: never;
@@ -9529,7 +9555,7 @@ export interface paths {
         };
         trace?: never;
     };
-    "/marti/missions/{:name}/log/{:log}": {
+    "/api/marti/missions/{:name}/log/{:log}": {
         parameters: {
             query?: never;
             header?: never;
@@ -9568,7 +9594,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/marti/missions/{:name}": {
+    "/api/marti/missions/{:name}": {
         parameters: {
             query?: never;
             header?: never;
@@ -9606,8 +9632,8 @@ export interface paths {
                     content: {
                         "application/json": {
                             name: string;
-                            description: string;
-                            chatRoom: string;
+                            description?: string;
+                            chatRoom?: string;
                             baseLayer?: string;
                             bbox?: string;
                             path?: string;
@@ -9705,8 +9731,8 @@ export interface paths {
                     content: {
                         "application/json": {
                             name: string;
-                            description: string;
-                            chatRoom: string;
+                            description?: string;
+                            chatRoom?: string;
                             baseLayer?: string;
                             bbox?: string;
                             path?: string;
@@ -9799,7 +9825,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/marti/missions/{:guid}/cot": {
+    "/api/marti/missions/{:guid}/cot": {
         parameters: {
             query?: never;
             header?: never;
@@ -9849,6 +9875,7 @@ export interface paths {
                                     course?: number;
                                     slope?: number;
                                     speed?: number;
+                                    labels?: boolean;
                                     "marker-color"?: string;
                                     "marker-opacity"?: number;
                                     stroke?: string;
@@ -10066,7 +10093,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/marti/missions/{:guid}/cot/{:uid}": {
+    "/api/marti/missions/{:guid}/cot/{:uid}": {
         parameters: {
             query?: never;
             header?: never;
@@ -10108,7 +10135,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/marti/missions/{:name}/changes": {
+    "/api/marti/missions/{:name}/changes": {
         parameters: {
             query?: never;
             header?: never;
@@ -10188,7 +10215,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/marti/mission": {
+    "/api/marti/mission": {
         parameters: {
             query?: never;
             header?: never;
@@ -10223,8 +10250,8 @@ export interface paths {
                             type: string;
                             data: {
                                 name: string;
-                                description: string;
-                                chatRoom: string;
+                                description?: string;
+                                chatRoom?: string;
                                 baseLayer?: string;
                                 bbox?: string;
                                 path?: string;
@@ -10291,7 +10318,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/marti/missions/{:name}/archive": {
+    "/api/marti/missions/{:name}/archive": {
         parameters: {
             query?: never;
             header?: never;
@@ -10328,7 +10355,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/marti/missions/{:name}/role": {
+    "/api/marti/missions/{:name}/role": {
         parameters: {
             query?: never;
             header?: never;
@@ -10368,7 +10395,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/marti/missions/{:name}/subscriptions": {
+    "/api/marti/missions/{:name}/subscriptions": {
         parameters: {
             query?: never;
             header?: never;
@@ -10410,7 +10437,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/marti/missions/{:name}/subscriptions/roles": {
+    "/api/marti/missions/{:name}/subscriptions/roles": {
         parameters: {
             query?: never;
             header?: never;
@@ -10462,7 +10489,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/marti/missions/{:name}/contacts": {
+    "/api/marti/missions/{:name}/contacts": {
         parameters: {
             query?: never;
             header?: never;
@@ -10506,7 +10533,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/marti/missions/{:name}/upload": {
+    "/api/marti/missions/{:name}/upload": {
         parameters: {
             query?: never;
             header?: never;
@@ -10551,7 +10578,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/marti/missions/{:name}/upload/{:hash}": {
+    "/api/marti/missions/{:name}/upload/{:hash}": {
         parameters: {
             query?: never;
             header?: never;
@@ -10593,7 +10620,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/marti/package": {
+    "/api/marti/package": {
         parameters: {
             query?: never;
             header?: never;
@@ -10734,7 +10761,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/marti/package/{:uid}": {
+    "/api/marti/package/{:uid}": {
         parameters: {
             query?: never;
             header?: never;
@@ -10806,7 +10833,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/marti/subscription": {
+    "/api/marti/subscription": {
         parameters: {
             query?: never;
             header?: never;
@@ -10898,7 +10925,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/marti/subscription/{:clientuid}": {
+    "/api/marti/subscription/{:clientuid}": {
         parameters: {
             query?: never;
             header?: never;
@@ -10975,7 +11002,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/marti/video": {
+    "/api/marti/video": {
         parameters: {
             query?: never;
             header?: never;
@@ -11112,7 +11139,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/marti/video/{:uid}": {
+    "/api/marti/video/{:uid}": {
         parameters: {
             query?: never;
             header?: never;
@@ -11267,7 +11294,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/marti/group": {
+    "/api/marti/group": {
         parameters: {
             query?: never;
             header?: never;
@@ -11365,7 +11392,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/marti/api/contacts/all": {
+    "/api/marti/api/contacts/all": {
         parameters: {
             query?: never;
             header?: never;
@@ -11409,7 +11436,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/marti/signClient": {
+    "/api/marti/signClient": {
         parameters: {
             query?: never;
             header?: never;
@@ -11456,7 +11483,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/palette": {
+    "/api/palette": {
         parameters: {
             query?: never;
             header?: never;
@@ -11562,7 +11589,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/palette/{:palette}": {
+    "/api/palette/{:palette}": {
         parameters: {
             query?: never;
             header?: never;
@@ -11677,7 +11704,7 @@ export interface paths {
         };
         trace?: never;
     };
-    "/palette/{:palette}/feature": {
+    "/api/palette/{:palette}/feature": {
         parameters: {
             query?: never;
             header?: never;
@@ -11783,7 +11810,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/palette/{:palette}/feature/{:feature}": {
+    "/api/palette/{:palette}/feature/{:feature}": {
         parameters: {
             query?: never;
             header?: never;
@@ -11898,7 +11925,7 @@ export interface paths {
         };
         trace?: never;
     };
-    "/profile/asset": {
+    "/api/profile/asset": {
         parameters: {
             query?: never;
             header?: never;
@@ -11950,7 +11977,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/profile/asset/{:asset}.{:ext}": {
+    "/api/profile/asset/{:asset}.{:ext}": {
         parameters: {
             query?: never;
             header?: never;
@@ -12010,7 +12037,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/profile/asset/{:asset}.pmtiles/tile": {
+    "/api/profile/asset/{:asset}.pmtiles/tile": {
         parameters: {
             query?: never;
             header?: never;
@@ -12047,7 +12074,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/profile/chat": {
+    "/api/profile/chat": {
         parameters: {
             query?: never;
             header?: never;
@@ -12086,7 +12113,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/profile/chat/{:chatroom}": {
+    "/api/profile/chat/{:chatroom}": {
         parameters: {
             query?: never;
             header?: never;
@@ -12134,7 +12161,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/profile/feature": {
+    "/api/profile/feature": {
         parameters: {
             query?: never;
             header?: never;
@@ -12199,6 +12226,7 @@ export interface paths {
                                     course?: number;
                                     slope?: number;
                                     speed?: number;
+                                    labels?: boolean;
                                     "marker-color"?: string;
                                     "marker-opacity"?: number;
                                     stroke?: string;
@@ -12451,6 +12479,7 @@ export interface paths {
                             course?: number;
                             slope?: number;
                             speed?: number;
+                            labels?: boolean;
                             "marker-color"?: string;
                             "marker-opacity"?: number;
                             stroke?: string;
@@ -12689,6 +12718,7 @@ export interface paths {
                                 course?: number;
                                 slope?: number;
                                 speed?: number;
+                                labels?: boolean;
                                 "marker-color"?: string;
                                 "marker-opacity"?: number;
                                 stroke?: string;
@@ -12932,7 +12962,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/profile/feature/{:id}": {
+    "/api/profile/feature/{:id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -12982,6 +13012,7 @@ export interface paths {
                                 course?: number;
                                 slope?: number;
                                 speed?: number;
+                                labels?: boolean;
                                 "marker-color"?: string;
                                 "marker-opacity"?: number;
                                 stroke?: string;
@@ -13223,7 +13254,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/profile/interest": {
+    "/api/profile/interest": {
         parameters: {
             query?: never;
             header?: never;
@@ -13340,7 +13371,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/profile/interest/{:interestid}": {
+    "/api/profile/interest/{:interestid}": {
         parameters: {
             query?: never;
             header?: never;
@@ -13429,7 +13460,7 @@ export interface paths {
         };
         trace?: never;
     };
-    "/profile/overlay": {
+    "/api/profile/overlay": {
         parameters: {
             query?: never;
             header?: never;
@@ -13598,7 +13629,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/profile/overlay/{:overlay}": {
+    "/api/profile/overlay/{:overlay}": {
         parameters: {
             query?: never;
             header?: never;
@@ -13703,7 +13734,7 @@ export interface paths {
         };
         trace?: never;
     };
-    "/profile": {
+    "/api/profile": {
         parameters: {
             query?: never;
             header?: never;
@@ -13837,7 +13868,7 @@ export interface paths {
         };
         trace?: never;
     };
-    "/search/reverse/{:longitude}/{:latitude}": {
+    "/api/search/reverse/{:longitude}/{:latitude}": {
         parameters: {
             query?: never;
             header?: never;
@@ -13957,7 +13988,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/search/forward": {
+    "/api/search/forward": {
         parameters: {
             query?: never;
             header?: never;
@@ -14019,7 +14050,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/search/suggest": {
+    "/api/search/suggest": {
         parameters: {
             query?: never;
             header?: never;
@@ -14066,7 +14097,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/server/injector": {
+    "/api/server/injector": {
         parameters: {
             query?: never;
             header?: never;
@@ -14169,7 +14200,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/server/repeater": {
+    "/api/server/repeater": {
         parameters: {
             query?: never;
             header?: never;
@@ -14215,7 +14246,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/server/repeater/{:uid}": {
+    "/api/server/repeater/{:uid}": {
         parameters: {
             query?: never;
             header?: never;
@@ -14254,7 +14285,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/server": {
+    "/api/server": {
         parameters: {
             query?: never;
             header?: never;
@@ -14359,7 +14390,7 @@ export interface paths {
         };
         trace?: never;
     };
-    "/swagger": {
+    "/api/swagger": {
         parameters: {
             query?: never;
             header?: never;
@@ -14395,7 +14426,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/task": {
+    "/api/task": {
         parameters: {
             query?: never;
             header?: never;
@@ -14500,7 +14531,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/task/{:taskid}": {
+    "/api/task/{:taskid}": {
         parameters: {
             query?: never;
             header?: never;
@@ -14539,7 +14570,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/task/raw": {
+    "/api/task/raw": {
         parameters: {
             query?: never;
             header?: never;
@@ -14578,7 +14609,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/task/raw/{:task}": {
+    "/api/task/raw/{:task}": {
         parameters: {
             query?: never;
             header?: never;
@@ -14617,7 +14648,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/task/raw/{:task}/version/{:version}": {
+    "/api/task/raw/{:task}/version/{:version}": {
         parameters: {
             query?: never;
             header?: never;
@@ -14656,7 +14687,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/task/{:task}": {
+    "/api/task/{:task}": {
         parameters: {
             query?: never;
             header?: never;
@@ -14713,7 +14744,7 @@ export interface paths {
         };
         trace?: never;
     };
-    "/task/{:task}/readme": {
+    "/api/task/{:task}/readme": {
         parameters: {
             query?: never;
             header?: never;
@@ -14751,7 +14782,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/token": {
+    "/api/token": {
         parameters: {
             query?: never;
             header?: never;
@@ -14839,7 +14870,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/token/{:id}": {
+    "/api/token/{:id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -14907,7 +14938,7 @@ export interface paths {
         };
         trace?: never;
     };
-    "/type/cot": {
+    "/api/type/cot": {
         parameters: {
             query?: never;
             header?: never;
@@ -14959,7 +14990,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/type/cot/{:type}": {
+    "/api/type/cot/{:type}": {
         parameters: {
             query?: never;
             header?: never;
@@ -14999,7 +15030,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/user": {
+    "/api/user": {
         parameters: {
             query?: never;
             header?: never;
@@ -15077,7 +15108,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/user/{:username}": {
+    "/api/user/{:username}": {
         parameters: {
             query?: never;
             header?: never;
@@ -15195,7 +15226,7 @@ export interface paths {
         };
         trace?: never;
     };
-    "/video/auth": {
+    "/api/video/auth": {
         parameters: {
             query?: never;
             header?: never;
@@ -15247,7 +15278,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/video/active": {
+    "/api/video/active": {
         parameters: {
             query?: never;
             header?: never;
@@ -15326,7 +15357,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/video/lease": {
+    "/api/video/lease": {
         parameters: {
             query?: never;
             header?: never;
@@ -15512,7 +15543,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/video/lease/{:lease}": {
+    "/api/video/lease/{:lease}": {
         parameters: {
             query?: never;
             header?: never;
@@ -15735,7 +15766,7 @@ export interface paths {
         };
         trace?: never;
     };
-    "/video/service": {
+    "/api/video/service": {
         parameters: {
             query?: never;
             header?: never;
@@ -15815,7 +15846,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/video/server": {
+    "/api/video/server": {
         parameters: {
             query?: never;
             header?: never;
@@ -15899,7 +15930,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/video/service/path/{:path}": {
+    "/api/video/service/path/{:path}": {
         parameters: {
             query?: never;
             header?: never;
@@ -15963,7 +15994,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/video/server/{:serverid}": {
+    "/api/video/server/{:serverid}": {
         parameters: {
             query?: never;
             header?: never;

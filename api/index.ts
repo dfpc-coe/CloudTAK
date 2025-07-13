@@ -213,7 +213,7 @@ export default async function server(config: Config): Promise<ServerManager> {
                     const profile = await config.models.Profile.from(parsedParams.connection);
                     if (!profile.auth.cert || !profile.auth.key) throw new Error('No Cert Found on profile');
 
-                    client = await config.conns.add(new ProfileConnConfig(config, parsedParams.connection, profile.auth), true);
+                    client = await config.conns.add(new ProfileConnConfig(config, parsedParams.connection, profile.auth));
                 } else {
                     client = config.conns.get(parsedParams.connection);
                 }

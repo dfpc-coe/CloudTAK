@@ -67,37 +67,35 @@
                         </TablerButton>
 
                         <template #dropdown>
-                            <div clas='col-12'>
-                                <div
-                                    class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2'
-                                    @click='share = ShareType.PACKAGE'
-                                >
-                                    <IconPackages
-                                        :size='32'
-                                        stroke='1'
-                                    />
-                                    New Data Package
-                                </div>
-                                <div
-                                    class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2'
-                                    @click='share = ShareType.MISSION'
-                                >
-                                    <IconAmbulance
-                                        :size='32'
-                                        stroke='1'
-                                    />
-                                    Add to Data Sync
-                                </div>
-                                <div
-                                    class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2'
-                                    @click='deleteFeatures'
-                                >
-                                    <IconTrash
-                                        :size='32'
-                                        stroke='1'
-                                    />
-                                    Delete Features
-                                </div>
+                            <div
+                                class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2'
+                                @click='share = ShareType.PACKAGE'
+                            >
+                                <IconPackages
+                                    :size='32'
+                                    stroke='1'
+                                />
+                                New Data Package
+                            </div>
+                            <div
+                                class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2'
+                                @click='share = ShareType.MISSION'
+                            >
+                                <IconAmbulance
+                                    :size='32'
+                                    stroke='1'
+                                />
+                                Add to Data Sync
+                            </div>
+                            <div
+                                class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2'
+                                @click='deleteFeatures'
+                            >
+                                <IconTrash
+                                    :size='32'
+                                    stroke='1'
+                                />
+                                Delete Features
                             </div>
                         </template>
                     </TablerDropdown>
@@ -128,7 +126,7 @@
                 :feats='Array.from(selected.values()).map((c) => c.as_feature())'
                 :compact='true'
                 @done='selected.clear()'
-                @cancel='share = ShareType.NONE'
+                @close='share = ShareType.NONE'
             />
         </template>
     </div>
@@ -136,7 +134,7 @@
 
 <script setup lang='ts'>
 import { ref } from 'vue';
-import DisplayFeature from './Feature.vue';
+import DisplayFeature from './FeatureRow.vue';
 import COT from '../../../base/cot.ts';
 import { useMapStore } from '../../../stores/map.ts';
 import {
