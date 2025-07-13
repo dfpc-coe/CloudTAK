@@ -105,7 +105,7 @@ export class CloudTakApi extends Construct {
             // SQS permissions for layer queues
             new cdk.aws_iam.PolicyStatement({
               effect: cdk.aws_iam.Effect.ALLOW,
-              actions: ['sqs:SendMessage', 'sqs:ReceiveMessage', 'sqs:DeleteMessage', 'sqs:GetQueueAttributes', 'sqs:GetQueueUrl'],
+              actions: ['sqs:PurgeQueue', 'sqs:SendMessage', 'sqs:SendMessageBatch', 'sqs:ChangeMessageVisibility', 'sqs:GetQueueUrl', 'sqs:GetQueueAttributes', 'sqs:DeleteMessage'],
               resources: [`arn:${cdk.Stack.of(this).partition}:sqs:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:tak-cloudtak-${environment}-layer-*`]
             }),
             // Secrets Manager access
@@ -115,16 +115,26 @@ export class CloudTakApi extends Construct {
               resources: [`arn:${cdk.Stack.of(this).partition}:secretsmanager:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:secret:TAK-${envConfig.stackName}-*`]
             }),
 
-            // Lambda permissions for layer invocation
+            // Lambda permissions for layer management
             new cdk.aws_iam.PolicyStatement({
               effect: cdk.aws_iam.Effect.ALLOW,
-              actions: ['lambda:InvokeFunction'],
-              resources: [`arn:${cdk.Stack.of(this).partition}:lambda:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:function:TAK-${envConfig.stackName}-layer-*`]
+              actions: ['lambda:*'],
+              resources: [`arn:${cdk.Stack.of(this).partition}:lambda:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:function:TAK-${envConfig.stackName}-CloudTAK-layer-*`]
             }),
             new cdk.aws_iam.PolicyStatement({
               effect: cdk.aws_iam.Effect.ALLOW,
-              actions: ['cloudformation:DescribeStacks'],
-              resources: [`arn:${cdk.Stack.of(this).partition}:cloudformation:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:stack/TAK-${envConfig.stackName}-layer-*`]
+              actions: [
+                'cloudformation:DescribeStacks', 
+                'cloudformation:ListExports',
+                'cloudformation:CreateStack',
+                'cloudformation:UpdateStack', 
+                'cloudformation:DeleteStack',
+                'cloudformation:CancelUpdateStack'
+              ],
+              resources: [
+                `arn:${cdk.Stack.of(this).partition}:cloudformation:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:stack/TAK-${envConfig.stackName}-*`,
+                `arn:${cdk.Stack.of(this).partition}:cloudformation:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:stack/TAK-${envConfig.stackName}-layer-*`
+              ]
             }),
             // Batch job permissions
             new cdk.aws_iam.PolicyStatement({
@@ -150,7 +160,8 @@ export class CloudTakApi extends Construct {
               actions: ['iam:PassRole'],
               resources: [
                 `arn:${cdk.Stack.of(this).partition}:iam::${cdk.Stack.of(this).account}:role/TAK-${envConfig.stackName}-media-*`,
-                `arn:${cdk.Stack.of(this).partition}:iam::${cdk.Stack.of(this).account}:role/service-role/TAK-${envConfig.stackName}-media-*`
+                `arn:${cdk.Stack.of(this).partition}:iam::${cdk.Stack.of(this).account}:role/service-role/TAK-${envConfig.stackName}-media-*`,
+                `arn:${cdk.Stack.of(this).partition}:iam::${cdk.Stack.of(this).account}:role/TAK-${envConfig.stackName}-CloudTAK-etl`
               ]
             }),
             new cdk.aws_iam.PolicyStatement({
@@ -159,11 +170,28 @@ export class CloudTakApi extends Construct {
               resources: ['*']
             }),
 
-            // CloudWatch Logs permissions for Batch job logs
+            // CloudWatch Logs permissions for Batch job logs and Lambda logs
             new cdk.aws_iam.PolicyStatement({
               effect: cdk.aws_iam.Effect.ALLOW,
-              actions: ['logs:GetLogEvents', 'logs:DescribeLogStreams', 'logs:DescribeLogGroups'],
-              resources: [`arn:${cdk.Stack.of(this).partition}:logs:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:log-group:/aws/batch/job*`]
+              actions: [
+                'logs:GetLogEvents', 
+                'logs:DescribeLogStreams', 
+                'logs:DescribeLogGroups', 
+                'logs:DeleteLogGroup',
+                'logs:CreateLogGroup',
+                'logs:PutRetentionPolicy',
+                'logs:TagResource'
+              ],
+              resources: [
+                `arn:${cdk.Stack.of(this).partition}:logs:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:log-group:/aws/batch/job*`,
+                `arn:${cdk.Stack.of(this).partition}:logs:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:log-group:/aws/lambda/TAK-${envConfig.stackName}-CloudTAK-layer-*`
+              ]
+            }),
+            // CloudWatch permissions for alarms
+            new cdk.aws_iam.PolicyStatement({
+              effect: cdk.aws_iam.Effect.ALLOW,
+              actions: ['cloudwatch:DescribeAlarms', 'cloudwatch:GetMetricStatistics', 'cloudwatch:PutMetricAlarm', 'cloudwatch:DeleteAlarms'],
+              resources: ['*']
             }),
             // KMS permissions for decryption
             new cdk.aws_iam.PolicyStatement({
@@ -180,10 +208,10 @@ export class CloudTakApi extends Construct {
                 }
               }
             }),
-            // ECR permissions
+            // ECR permissions (matching old CloudFormation)
             new cdk.aws_iam.PolicyStatement({
               effect: cdk.aws_iam.Effect.ALLOW,
-              actions: ['ecr:ListImages', 'ecr:DescribeImages'],
+              actions: ['ecr:Describe*', 'ecr:Get*', 'ecr:BatchDeleteImage', 'ecr:List*'],
               resources: [etlEcrRepository.repositoryArn]
             })
           ]
@@ -343,5 +371,12 @@ export class CloudTakApi extends Construct {
 
     // Attach service to ALB target group for load balancing
     this.service.attachToApplicationTargetGroup(albTargetGroup);
+
+    // Export API URL for Lambda layer imports
+    new cdk.CfnOutput(this, 'ApiUrlOutput', {
+      description: 'Hosted API Location',
+      value: serviceUrl.startsWith('http') ? serviceUrl : `https://${serviceUrl}`,
+      exportName: `TAK-${envConfig.stackName}-CloudTAK-hosted`
+    });
   }
 }

@@ -8,24 +8,36 @@ set -e
 # Configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-REGION="ap-southeast-2"
 
 # Parse arguments
 STACK_NAME="$1"
 TAG="$2"
 AWS_PROFILE=""
+REGION=""
 
-# Check for --profile in all arguments
+# Check for --profile and --region in all arguments
 for ((i=1; i<=$#; i++)); do
     if [[ "${!i}" == "--profile" ]]; then
         ((i++))
         AWS_PROFILE="${!i}"
-        break
     elif [[ "${!i}" == --profile=* ]]; then
         AWS_PROFILE="${!i#*=}"
-        break
+    elif [[ "${!i}" == "--region" ]]; then
+        ((i++))
+        REGION="${!i}"
+    elif [[ "${!i}" == --region=* ]]; then
+        REGION="${!i#*=}"
     fi
 done
+
+# Determine region: --region > profile-specific region > ap-southeast-2
+if [[ -z "$REGION" ]]; then
+    if [[ -n "$AWS_PROFILE" ]]; then
+        REGION=$(aws configure get region --profile "$AWS_PROFILE" 2>/dev/null || echo "ap-southeast-2")
+    else
+        REGION=$(aws configure get region 2>/dev/null || echo "ap-southeast-2")
+    fi
+fi
 
 # Set default tag if not provided
 if [[ -z "$TAG" || "$TAG" == --profile* ]]; then
@@ -34,8 +46,8 @@ fi
 
 if [[ -z "$STACK_NAME" ]]; then
     echo "Error: Stack name is required"
-    echo "Usage: $0 <stack-name> [tag] [--profile profile-name]"
-    echo "Example: $0 Demo v1.0.0 --profile tak-nz-demo"
+    echo "Usage: $0 <stack-name> [tag] [--profile profile-name] [--region region-name]"
+    echo "Example: $0 Demo v1.0.0 --profile tak-nz-demo --region us-east-1"
     exit 1
 fi
 

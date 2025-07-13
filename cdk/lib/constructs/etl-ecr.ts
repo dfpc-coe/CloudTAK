@@ -39,5 +39,16 @@ export class EtlEcr extends Construct {
         ? cdk.RemovalPolicy.RETAIN 
         : cdk.RemovalPolicy.DESTROY
     });
+
+    // Add repository policy to allow Lambda service to pull images
+    this.repository.addToResourcePolicy(new cdk.aws_iam.PolicyStatement({
+      effect: cdk.aws_iam.Effect.ALLOW,
+      principals: [new cdk.aws_iam.ServicePrincipal('lambda.amazonaws.com')],
+      actions: [
+        'ecr:BatchCheckLayerAvailability',
+        'ecr:GetDownloadUrlForLayer',
+        'ecr:BatchGetImage'
+      ]
+    }));
   }
 }
