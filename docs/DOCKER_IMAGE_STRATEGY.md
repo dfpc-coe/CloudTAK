@@ -21,9 +21,11 @@ This provides the best of both worlds:
 |-----------|-------------|---------|
 | `usePreBuiltImages` | Enable/disable pre-built image usage | `true` or `false` |
 | `cloudtakImageTag` | Tag for CloudTAK API image | `cloudtak-abc123` |
-| `eventsImageTag` | Tag for events task image | `events-abc123` |
-| `tilesImageTag` | Tag for pmtiles task image | `tiles-abc123` |
-| `dataImageTag` | Tag for data task image | `data-abc123` |
+
+**Note**: The `cloudtakImageTag` is used to derive all other image tags:
+- Events Lambda: `events-${cloudtakImageTag}` → `events-abc123`
+- PMTiles Lambda: `pmtiles-${cloudtakImageTag}` → `pmtiles-abc123`
+- Data Task (Batch): `data-${cloudtakImageTag}` → `data-abc123`
 
 ### Default Behavior
 
@@ -35,30 +37,33 @@ This provides the best of both worlds:
 
 ### GitHub Actions (Pre-built Images)
 ```bash
-npm run cdk deploy -- \
+npm run deploy:dev -- \
   --context usePreBuiltImages=true \
-  --context cloudtakImageTag=cloudtak-abc123 \
-  --context etlImageTag=etl-data-abc123
+  --context cloudtakImageTag=cloudtak-abc123
 ```
 
 ### Local Development (Build on Demand)
 ```bash
-# Use NPM scripts for local builds
-npm run deploy:local:dev    # Dev environment, build locally
-npm run deploy:local:prod   # Prod environment, build locally
+# Use NPM scripts for local builds (default behavior)
+npm run deploy:dev     # Dev environment, build locally
+npm run deploy:prod    # Prod environment, build locally
 
-# Or use CDK directly
+# Or explicitly disable pre-built images
 npm run deploy:dev -- \
   --context usePreBuiltImages=false
 ```
 
 ## Image Repositories
 
-The stack uses the ECR repository created by BaseInfra:
+The stack uses two ECR repositories from BaseInfra:
 
-- **CloudTAK API**: `${AWS_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_NAME}:${TAG}`
-- **ETL Tasks**: `${AWS_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_NAME}:${TASK}-${TAG}`
-- **Repository Name**: Dynamically retrieved from BaseInfra stack exports
+- **CloudTAK API & Lambda Functions**: Uses `ECR_ARTIFACTS_REPO` from BaseInfra
+  - API: `${ECR_REPO}:cloudtak-${SHA}`
+  - Events Lambda: `${ECR_REPO}:events-${SHA}`
+  - PMTiles Lambda: `${ECR_REPO}:pmtiles-${SHA}`
+- **ETL Tasks (Batch)**: Uses `ECR_ETL_TASKS_REPO` from BaseInfra
+  - Data Task: `${ETL_ECR_REPO}:data-${SHA}`
+- **Repository Names**: Dynamically retrieved from BaseInfra stack exports
 
 ## Upstream Integration
 - **Automatic Sync**: Weekly sync with upstream repository

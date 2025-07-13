@@ -112,7 +112,7 @@ export class Batch extends Construct {
       ? `${dataImageAsset.repository.repositoryUri}:${dataImageAsset.imageTag}`
       : (() => {
           const cloudtakImageTag = cdk.Stack.of(this).node.tryGetContext('cloudtakImageTag');
-          const dataTag = cloudtakImageTag ? `data-${cloudtakImageTag}` : 'data-latest';
+          const dataTag = cloudtakImageTag ? `data-${cloudtakImageTag.replace('cloudtak-', '')}` : 'data-latest';
           return `${ecrRepository.repositoryUri}:${dataTag}`;
         })();
     

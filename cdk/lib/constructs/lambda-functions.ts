@@ -70,7 +70,7 @@ export class LambdaFunctions extends Construct {
 
     // Get image tag from context for CI/CD deployments
     const cloudtakImageTag = cdk.Stack.of(this).node.tryGetContext('cloudtakImageTag');
-    const eventsTag = cloudtakImageTag ? `events-${cloudtakImageTag}` : 'events-latest';
+    const eventsTag = cloudtakImageTag ? `events-${cloudtakImageTag.replace('cloudtak-', '')}` : 'events-latest';
     
     this.eventLambda = new lambda.Function(this, 'EventLambda', {
       functionName: `TAK-${envConfig.stackName}-CloudTAK-events`,
@@ -168,7 +168,7 @@ export class LambdaFunctions extends Construct {
     });
     
     // Create PMTiles Lambda
-    const tilesTag = cloudtakImageTag ? `pmtiles-${cloudtakImageTag}` : 'pmtiles-latest';
+    const tilesTag = cloudtakImageTag ? `pmtiles-${cloudtakImageTag.replace('cloudtak-', '')}` : 'pmtiles-latest';
     const baseHostname = serviceUrl.replace('https://', '').replace('http://', '');
     const tilesHostname = `tiles.${baseHostname}`;
     

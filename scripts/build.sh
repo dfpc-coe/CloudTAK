@@ -14,9 +14,15 @@ for env in STACK_NAME AWS_REGION AWS_ACCOUNT_ID; do
     fi
 done
 
-# Get git SHA and create tag to match GitHub workflows
-GITSHA=$(git rev-parse --short HEAD)
-CLOUDTAK_TAG="cloudtak-${GITSHA}"
+# Get content SHA and create tag to match GitHub workflows
+CONTENT_SHA=$(git log -1 --format="%h" -- api/ tasks/)
+
+if [[ -z "$CONTENT_SHA" ]]; then
+    echo "ERROR: No commits found for api/ or tasks/ directories"
+    exit 1
+fi
+
+CLOUDTAK_TAG="cloudtak-${CONTENT_SHA}"
 
 echo "🔄 Building images to mimic GitHub workflow..."
 
@@ -64,7 +70,8 @@ build_api() {
 # Build and push task container
 build_task() {
     local task="$1"
-    local TASK_TAG="$task-$(echo $CLOUDTAK_TAG | sed 's/cloudtak-//')"
+    local CONTENT_SHA=$(echo $CLOUDTAK_TAG | sed 's/cloudtak-//')
+    local TASK_TAG="$task-$CONTENT_SHA"
     echo "Building CloudTAK task: $task with tag: $TASK_TAG"
     docker build \
         -f "tasks/$task/Dockerfile" \
@@ -78,26 +85,37 @@ build_task() {
 # Main execution
 ecr_login
 
-if [ -z "$1" ]; then
-    echo "Building all containers..."
-    build_api
-    
-    for task_dir in tasks/*/; do
-        if [ -d "$task_dir" ]; then
-            task=$(basename "$task_dir")
-            build_task "$task"
-        fi
-    done
-elif [ "$1" = "api" ]; then
-    build_api
+# Check if main image already exists
+if aws ecr describe-images --repository-name "$ECR_REPO_NAME" --image-ids imageTag="$CLOUDTAK_TAG" ${AWS_PROFILE:+--profile "$AWS_PROFILE"} >/dev/null 2>&1; then
+    echo "✅ CloudTAK image $CLOUDTAK_TAG already exists, skipping build"
 else
-    build_task "$1"
+    echo "🔨 Building CloudTAK images with tag $CLOUDTAK_TAG"
+    
+    if [ -z "$1" ]; then
+        echo "Building all containers..."
+        build_api
+        
+        for task_dir in tasks/*/; do
+            if [ -d "$task_dir" ]; then
+                task=$(basename "$task_dir")
+                build_task "$task"
+            fi
+        done
+    elif [ "$1" = "api" ]; then
+        build_api
+    else
+        build_task "$1"
+    fi
 fi
 
 echo "✅ Build complete!"
-echo "📦 CloudTAK images built with tag: $CLOUDTAK_TAG"
+echo "📦 CloudTAK images built with tags:"
+echo "  - API: $CLOUDTAK_TAG"
+echo "  - Events: events-$CONTENT_SHA"
+echo "  - PMTiles: pmtiles-$CONTENT_SHA"
+echo "  - Data: data-$CONTENT_SHA"
 echo ""
 echo "🚀 To deploy with these images, use:"
-echo "npm run cdk deploy -- \\"
+echo "npm run deploy:dev -- \\"
 echo "  --context usePreBuiltImages=true \\"
 echo "  --context cloudtakImageTag=$CLOUDTAK_TAG"
