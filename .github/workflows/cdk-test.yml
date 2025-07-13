@@ -45,9 +45,12 @@ jobs:
             node-version: '22'
             registry-url: https://registry.npmjs.org/
             cache: 'npm'
+            cache-dependency-path: 'cdk/package-lock.json'
 
       - name: Install CDK package dependencies
-        run: npm ci  # Use npm ci for faster, reliable installs
+        run: |
+          cd cdk
+          npm ci  # Use npm ci for faster, reliable installs
 
       - name: TypeScript compilation check
         run: |
