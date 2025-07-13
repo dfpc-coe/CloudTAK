@@ -17,15 +17,15 @@ This CloudTAK infrastructure requires the base infrastructure layer. Layers can 
         Domain: tak.nz                        Domain: dev.tak.nz
 
 ┌─────────────────────────────────┐    ┌─────────────────────────────────┐
-│         CloudTAK                │    │         CloudTAK                │
+│        VideoInfra               │    │        VideoInfra               │
 │    CloudFormation Stack         │    │    CloudFormation Stack         │
-│      (This Repository)          │    │      (This Repository)          │
 └─────────────────────────────────┘    └─────────────────────────────────┘
                 │                                        │
                 ▼                                        ▼
 ┌─────────────────────────────────┐    ┌─────────────────────────────────┐
-│        VideoInfra               │    │        VideoInfra               │
+│         CloudTAK                │    │         CloudTAK                │
 │    CloudFormation Stack         │    │    CloudFormation Stack         │
+│      (This Repository)          │    │      (This Repository)          │
 └─────────────────────────────────┘    └─────────────────────────────────┘
                 │                                        │
                 ▼                                        ▼
@@ -52,10 +52,10 @@ This CloudTAK infrastructure requires the base infrastructure layer. Layers can 
 | **BaseInfra** | [`base-infra`](https://github.com/TAK-NZ/base-infra)  | Foundation: VPC, ECS, S3, KMS, ACM |
 | **AuthInfra** | [`auth-infra`](https://github.com/TAK-NZ/auth-infra) | SSO via Authentik, LDAP |
 | **TakInfra** | [`tak-infra`](https://github.com/TAK-NZ/tak-infra) | TAK Server |
-| **VideoInfra** | [`video-infra`](https://github.com/TAK-NZ/video-infra) | Video Server based on Mediamtx |
 | **CloudTAK** | `CloudTAK` (this repo) | CloudTAK web interface and ETL |
+| **VideoInfra** | [`video-infra`](https://github.com/TAK-NZ/video-infra) | Video Server based on Mediamtx |
 
-**Deployment Order**: BaseInfra must be deployed first, followed by AuthInfra, then TakInfra, VideoInfra, and finally CloudTAK. Each layer imports outputs from the layer below via CloudFormation exports.
+**Deployment Order**: BaseInfra must be deployed first, followed by AuthInfra, then TakInfra, CloudTAK, and finally VideoInfra. Each layer imports outputs from the layer below via CloudFormation exports.
 
 ## Quick Start
 

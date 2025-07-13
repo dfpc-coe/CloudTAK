@@ -39,7 +39,8 @@
       },
       "cloudtak": {
         "hostname": "map",
-        "takAdminEmail": "admin@tak.nz"
+        "takAdminEmail": "admin@tak.nz",
+        "useS3CloudTAKConfigFile": false
       },
       "ecr": {
         "imageRetentionCount": 5,
@@ -76,7 +77,8 @@
       },
       "cloudtak": {
         "hostname": "map",
-        "takAdminEmail": "admin@tak.nz"
+        "takAdminEmail": "admin@tak.nz",
+        "useS3CloudTAKConfigFile": true
       },
       "ecr": {
         "imageRetentionCount": 20,

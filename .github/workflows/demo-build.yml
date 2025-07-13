@@ -69,18 +69,25 @@ jobs:
           ECR_REPO_NAME=$(echo $ECR_REPO_ARN | cut -d'/' -f2)
           ECR_REPO_URI="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${ECR_REPO_NAME}"
           
-          GITSHA=$(git rev-parse --short HEAD)
+          # Get the last commit SHA that touched api/ or tasks/ directories
+          CONTENT_SHA=$(git log -1 --format="%h" -- api/ tasks/)
+          
+          if [[ -z "$CONTENT_SHA" ]]; then
+            echo "ERROR: No commits found for api/ or tasks/ directories"
+            exit 1
+          fi
           
           if [[ "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
             TIMESTAMP=$(date +%Y%m%d-%H%M%S)
-            CLOUDTAK_TAG="cloudtak-${GITSHA}-${TIMESTAMP}"
+            CLOUDTAK_TAG="cloudtak-${CONTENT_SHA}-${TIMESTAMP}"
           else
-            CLOUDTAK_TAG="cloudtak-${GITSHA}"
+            CLOUDTAK_TAG="cloudtak-${CONTENT_SHA}"
           fi
           
           echo "ecr-repo-uri=$ECR_REPO_URI" >> $GITHUB_OUTPUT
           echo "cloudtak-tag=$CLOUDTAK_TAG" >> $GITHUB_OUTPUT
           echo "Using ECR repository: $ECR_REPO_URI"
+          echo "Content SHA (api/tasks): $CONTENT_SHA"
           echo "Building CloudTAK image with tag: $CLOUDTAK_TAG"
       
       - name: Login to Amazon ECR
@@ -107,20 +114,21 @@ jobs:
             
             docker push ${{ steps.tags.outputs.ecr-repo-uri }}:${{ steps.tags.outputs.cloudtak-tag }}
             
-            # Build task images
+            # Build task images with same content SHA
             for task_dir in tasks/*/; do
               if [ -d "$task_dir" ]; then
                 task=$(basename "$task_dir")
-                echo "🔨 Building $task task image"
+                TASK_TAG="$task-$(echo ${{ steps.tags.outputs.cloudtak-tag }} | sed 's/cloudtak-//')"
+                echo "🔨 Building $task task image with tag: $TASK_TAG"
                 
                 docker build \
                   -f tasks/$task/Dockerfile \
                   --no-cache \
                   --rm \
-                  -t ${{ steps.tags.outputs.ecr-repo-uri }}:$task-${{ steps.tags.outputs.cloudtak-tag }} \
+                  -t ${{ steps.tags.outputs.ecr-repo-uri }}:$TASK_TAG \
                   tasks/$task/
                 
-                docker push ${{ steps.tags.outputs.ecr-repo-uri }}:$task-${{ steps.tags.outputs.cloudtak-tag }}
+                docker push ${{ steps.tags.outputs.ecr-repo-uri }}:$TASK_TAG
               fi
             done
             
@@ -129,10 +137,17 @@ jobs:
       
       - name: Output Image Information
         run: |
+          CONTENT_SHA=$(echo ${{ steps.tags.outputs.cloudtak-tag }} | sed 's/cloudtak-//')
           echo "✅ Successfully built and pushed CloudTAK images:"
           echo "📦 CloudTAK API: ${{ steps.tags.outputs.cloudtak-tag }}"
+          echo "📦 Events Task: events-${CONTENT_SHA}"
+          echo "📦 PMTiles Task: pmtiles-${CONTENT_SHA}"
+          echo "📦 Data Task: data-${CONTENT_SHA}"
           echo ""
-          echo "🚀 To deploy with this image, use:"
+          echo "🚀 To deploy with these images, use:"
           echo "npm run deploy:dev -- \\"
           echo "  --context usePreBuiltImages=true \\"
-          echo "  --context cloudtakImageTag=${{ steps.tags.outputs.cloudtak-tag }}"
+          echo "  --context cloudtakImageTag=${{ steps.tags.outputs.cloudtak-tag }} \\"
+          echo "  --context eventsImageTag=events-${CONTENT_SHA} \\"
+          echo "  --context tilesImageTag=pmtiles-${CONTENT_SHA} \\"
+          echo "  --context dataImageTag=data-${CONTENT_SHA}"

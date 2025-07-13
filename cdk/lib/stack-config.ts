@@ -30,6 +30,7 @@ export interface ContextEnvironmentConfig {
   cloudtak: {
     hostname: string;
     takAdminEmail: string;
+    useS3CloudTAKConfigFile: boolean;
   };
   ecr: {
     imageRetentionCount: number;

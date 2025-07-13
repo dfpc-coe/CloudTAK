@@ -340,8 +340,8 @@ export class CloudTakApi extends Construct {
           return ecs.ContainerImage.fromEcrRepository(ecrRepository, apiTag);
         })();
 
-    // Add container to task definition
-    const container = this.taskDefinition.addContainer('api', {
+    // Prepare container definition options
+    let containerDefinitionOptions: ecs.ContainerDefinitionOptions = {
       image: containerImage,
       logging: ecs.LogDrivers.awsLogs({
         streamPrefix: 'cloudtak-api',
@@ -373,11 +373,21 @@ export class CloudTakApi extends Construct {
         'POSTGRES': ecs.Secret.fromSecretsManager(connectionStringSecret),
         'CLOUDTAK_ADMIN_USERNAME': ecs.Secret.fromSecretsManager(adminPasswordSecret, 'username'),
         'CLOUDTAK_ADMIN_PASSWORD': ecs.Secret.fromSecretsManager(adminPasswordSecret, 'password')
-      },
-      environmentFiles: [
-        ecs.EnvironmentFile.fromBucket(configBucket, 'cloudtak-config.env')
-      ]
-    });
+      }
+    };
+
+    // Add environment files if S3 config file is enabled
+    if (envConfig.cloudtak.useS3CloudTAKConfigFile) {
+      containerDefinitionOptions = {
+        ...containerDefinitionOptions,
+        environmentFiles: [
+          ecs.EnvironmentFile.fromBucket(configBucket, 'cloudtak-config.env')
+        ]
+      };
+    }
+
+    // Add container to task definition
+    const container = this.taskDefinition.addContainer('api', containerDefinitionOptions);
 
     // Expose port 5000 for the API
     container.addPortMappings({

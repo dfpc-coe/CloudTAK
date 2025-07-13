@@ -12,7 +12,7 @@ For production deployments, CloudTAK can load configuration from an S3 bucket (i
 1. Copy `cloudtak-config.env.example` to `cloudtak-config.env`
 2. Customize the configuration values
 3. Upload to the S3 bucket: `s3://{bucket-name}/cloudtak-config.env`
-4. The CloudTAK service will automatically load these environment variables on startup
+4. Enable S3 configuration in deployment: `useS3CloudTAKConfigFile=true`
 
 ## Server Configuration Variables
 

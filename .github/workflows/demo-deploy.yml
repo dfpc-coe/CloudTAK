@@ -87,10 +87,22 @@ jobs:
           CLOUDTAK_TAG="${{ needs.build-images.outputs.cloudtak-tag }}"
           echo "cloudtak-tag=$CLOUDTAK_TAG" >> $GITHUB_OUTPUT
 
+      - name: Configure Database Context
+        id: db-config
+        run: |
+          COMMIT_MSG="${{ github.event.head_commit.message }}"
+          if [[ "$COMMIT_MSG" != *"[use-prod-db]"* ]]; then
+            echo "🔄 Using dev-test database settings for faster deployment"
+            echo "db-context=--context instanceClass=db.serverless --context instanceCount=1 --context enablePerformanceInsights=false --context monitoringInterval=0 --context backupRetentionDays=7 --context deleteProtection=false" >> $GITHUB_OUTPUT
+          else
+            echo "🚀 Using production database settings"
+            echo "db-context=" >> $GITHUB_OUTPUT
+          fi
+
       - name: Deploy Demo with Prod Profile
         run: |
           cd cdk
-          npm run cdk deploy -- --context envType=prod --context stackName=${{ vars.STACK_NAME }} --context usePreBuiltImages=true --context cloudtakImageTag=${{ steps.images.outputs.cloudtak-tag }} --require-approval never
+          npm run cdk deploy -- --context envType=prod --context stackName=${{ vars.STACK_NAME }} --context usePreBuiltImages=true --context cloudtakImageTag=${{ steps.images.outputs.cloudtak-tag }} --context useS3CloudTAKConfigFile=false ${{ steps.db-config.outputs.db-context }} --require-approval never
 
       - name: Wait for Testing Period
         run: sleep ${{ vars.DEMO_TEST_DURATION || '300' }}
@@ -128,4 +140,4 @@ jobs:
       - name: Revert Demo to Dev-Test Profile
         run: |
           cd cdk
-          npm run cdk deploy -- --context envType=dev-test --context stackName=${{ vars.STACK_NAME }} --context usePreBuiltImages=true --context cloudtakImageTag=${{ needs.deploy-and-test.outputs.cloudtak-tag }} --require-approval never
+          npm run cdk deploy -- --context envType=dev-test --context stackName=${{ vars.STACK_NAME }} --context usePreBuiltImages=true --context cloudtakImageTag=${{ needs.deploy-and-test.outputs.cloudtak-tag }} --context useS3CloudTAKConfigFile=true --require-approval never
