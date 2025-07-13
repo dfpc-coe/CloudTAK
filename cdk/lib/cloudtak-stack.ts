@@ -32,7 +32,7 @@ import { Secrets } from './constructs/secrets';
 import { LambdaFunctions } from './constructs/lambda-functions';
 import { Alarms } from './constructs/alarms';
 import { AuthentikUserCreator } from './constructs/authentik-user-creator';
-import { EtlEcr } from './constructs/etl-ecr';
+
 import { registerOutputs } from './outputs';
 import { createBaseImportValue, BASE_EXPORT_NAMES } from './cloudformation-imports';
 import { ContextEnvironmentConfig } from './stack-config';
@@ -133,7 +133,7 @@ export class CloudTakStack extends cdk.Stack {
     if (usePreBuiltImages) {
       // Use BaseInfra ECR repository for CI/CD deployments
       ecrRepository = ecr.Repository.fromRepositoryArn(this, 'ImportedECRRepository',
-        cdk.Fn.importValue(createBaseImportValue(envConfig.stackName, BASE_EXPORT_NAMES.ECR_REPO))
+        cdk.Fn.importValue(createBaseImportValue(envConfig.stackName, BASE_EXPORT_NAMES.ECR_ARTIFACTS_REPO))
       );
     } else {
       // Create Docker image assets for local deployments
@@ -218,11 +218,10 @@ export class CloudTakStack extends cdk.Stack {
       kmsKey
     });
 
-    // Create dedicated ECR repository for ETL tasks
-    const etlEcr = new EtlEcr(this, 'EtlEcr', {
-      envConfig,
-      kmsKey
-    });
+    // Import ETL ECR repository from BaseInfra
+    const etlEcrRepository = ecr.Repository.fromRepositoryArn(this, 'ImportedETLECRRepository',
+      cdk.Fn.importValue(createBaseImportValue(envConfig.stackName, BASE_EXPORT_NAMES.ECR_ETL_TASKS_REPO))
+    );
 
     // Create security groups for different components
     const securityGroups = new SecurityGroups(this, 'SecurityGroups', {
@@ -296,7 +295,7 @@ export class CloudTakStack extends cdk.Stack {
       albTargetGroup: loadBalancer.targetGroup,
       ecrRepository,
       dockerImageAsset,
-      etlEcrRepository: etlEcr.repository,
+      etlEcrRepository: etlEcrRepository,
       databaseSecret: database.masterSecret,
       databaseHostname: database.cluster.clusterEndpoint.hostname,
       connectionStringSecret: database.connectionStringSecret,
@@ -364,7 +363,7 @@ export class CloudTakStack extends cdk.Stack {
     });
 
     new cdk.CfnOutput(this, 'EtlEcrRepoArn', {
-      value: etlEcr.repository.repositoryArn,
+      value: etlEcrRepository.repositoryArn,
       exportName: `TAK-${envConfig.stackName}-CloudTAK-EtlEcrRepoArn`
     });
 

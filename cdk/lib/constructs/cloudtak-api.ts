@@ -208,6 +208,36 @@ export class CloudTakApi extends Construct {
                 }
               }
             }),
+            // SNS permissions for alarm notifications
+            new cdk.aws_iam.PolicyStatement({
+              effect: cdk.aws_iam.Effect.ALLOW,
+              actions: ['sns:Publish'],
+              resources: [`arn:${cdk.Stack.of(this).partition}:sns:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:TAK-${envConfig.stackName}-*-urgency`]
+            }),
+            // EventBridge permissions for scheduled Lambda functions
+            new cdk.aws_iam.PolicyStatement({
+              effect: cdk.aws_iam.Effect.ALLOW,
+              actions: ['events:PutRule', 'events:PutTargets', 'events:DeleteRule', 'events:RemoveTargets', 'events:DescribeRule'],
+              resources: [`arn:${cdk.Stack.of(this).partition}:events:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:rule/TAK-${envConfig.stackName}-CloudTAK-layer-*`]
+            }),
+            // API Gateway permissions for webhook functionality
+            new cdk.aws_iam.PolicyStatement({
+              effect: cdk.aws_iam.Effect.ALLOW,
+              actions: ['apigateway:POST', 'apigateway:DELETE', 'apigateway:GET', 'apigateway:PUT'],
+              resources: [`arn:${cdk.Stack.of(this).partition}:apigateway:${cdk.Stack.of(this).region}::/apis/*/routes*`, `arn:${cdk.Stack.of(this).partition}:apigateway:${cdk.Stack.of(this).region}::/apis/*/integrations*`]
+            }),
+            // Lambda event source mapping permissions
+            new cdk.aws_iam.PolicyStatement({
+              effect: cdk.aws_iam.Effect.ALLOW,
+              actions: ['lambda:CreateEventSourceMapping', 'lambda:UpdateEventSourceMapping', 'lambda:GetEventSourceMapping', 'lambda:DeleteEventSourceMapping', 'lambda:AddPermission', 'lambda:RemovePermission'],
+              resources: ['*']
+            }),
+            // SQS queue management permissions
+            new cdk.aws_iam.PolicyStatement({
+              effect: cdk.aws_iam.Effect.ALLOW,
+              actions: ['sqs:CreateQueue', 'sqs:DeleteQueue', 'sqs:SetQueueAttributes', 'sqs:ListQueueTags', 'sqs:TagQueue'],
+              resources: [`arn:${cdk.Stack.of(this).partition}:sqs:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:TAK-${envConfig.stackName}-CloudTAK-layer-*`]
+            }),
             // ECR permissions (matching old CloudFormation)
             new cdk.aws_iam.PolicyStatement({
               effect: cdk.aws_iam.Effect.ALLOW,

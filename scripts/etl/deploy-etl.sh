@@ -83,7 +83,7 @@ fi
 echo "AWS Account ID: $AWS_ACCOUNT_ID"
 
 # Get ECR repository URI from CloudFormation exports
-ECR_EXPORT_NAME="TAK-${STACK_NAME}-CloudTAK-EtlEcrRepoArn"
+ECR_EXPORT_NAME="TAK-${STACK_NAME}-BaseInfra-EcrEtlTasksRepoArn"
 
 ECR_REPO_ARN=$(aws cloudformation list-exports \
     --query "Exports[?Name=='${ECR_EXPORT_NAME}'].Value" \
@@ -91,7 +91,7 @@ ECR_REPO_ARN=$(aws cloudformation list-exports \
     --region "$REGION" $AWS_OPTS)
 
 if [[ -z "$ECR_REPO_ARN" || "$ECR_REPO_ARN" == "None" ]]; then
-    echo "Error: ETL ECR repository not found. Ensure CloudTAK stack is deployed."
+    echo "Error: ETL ECR repository not found. Ensure BaseInfra stack is deployed."
     echo "Available exports:"
     aws cloudformation list-exports --query "Exports[?contains(Name, 'ECR')].Name" --output table --region "$REGION" $AWS_OPTS
     exit 1
