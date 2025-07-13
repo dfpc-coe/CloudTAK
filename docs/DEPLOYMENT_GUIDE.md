@@ -29,8 +29,8 @@ npm run deploy:prod
 
 | Environment | Stack Name | Domain | CloudTAK Cost* | Complete Stack Cost** | Features |
 |-------------|------------|--------|----------------|----------------------|----------|
-| **dev-test** | `TAK-Dev-CloudTAK` | `map.dev.tak.nz` | ~$70 | ~$290 | Cost-optimized, Aurora Serverless v2 |
-| **prod** | `TAK-Prod-CloudTAK` | `map.tak.nz` | ~$380 | ~$1158 | High availability, Aurora Multi-AZ |
+| **dev-test** | `TAK-Dev-CloudTAK` | `map.dev.tak.nz` | ~$45 | ~$200 | Cost-optimized, Aurora Serverless v2 |
+| **prod** | `TAK-Prod-CloudTAK` | `map.tak.nz` | ~$180 | ~$650 | Production-ready, Aurora Multi-AZ |
 
 *CloudTAK Infrastructure only, **Complete deployment (BaseInfra + AuthInfra + TakInfra + VideoInfra + CloudTAK)  
 Estimated AWS costs for ap-southeast-2, excluding data transfer and usage

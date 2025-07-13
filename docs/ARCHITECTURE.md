@@ -2,16 +2,16 @@
 
 ## System Architecture
 
-The CloudTAK Infrastructure provides web-based TAK services with ETL capabilities, database integration, and containerized deployment on AWS ECS with auto-scaling and high availability features.
+The CloudTAK Infrastructure provides web-based TAK services with ETL capabilities, database integration, and containerized deployment on AWS ECS with single-instance deployment and database redundancy.
 
 ```
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   Web Clients   │────│  Application     │────│   CloudTAK      │
+│   Web Clients   │──▶│  Application     │───▶│   CloudTAK      │
 │ (Browsers/APIs) │    │  Load Balancer   │    │  (ECS Service)  │
 └─────────────────┘    └──────────────────┘    └─────────────────┘
         │                                               │
         │              ┌──────────────────┐             │
-        └──────────────│   API Gateway    │             │
+        └────────────▶│   API Gateway    │             │
                        │   (PMTiles)      │             │
                        └──────────────────┘             │
                                 │                       │
@@ -32,7 +32,7 @@ The CloudTAK Infrastructure provides web-based TAK services with ETL capabilitie
 #### 1. CloudTAK API Application
 - **Technology**: Node.js/TypeScript application running in ECS Fargate
 - **Purpose**: Web-based TAK interface and API services
-- **Scaling**: Auto-scaling based on CPU utilization (production only)
+- **Scaling**: Single instance deployment (desiredCount: 1)
 - **Storage**: External database integration, S3 for assets
 
 #### 2. ETL Task Services
@@ -48,11 +48,11 @@ The CloudTAK Infrastructure provides web-based TAK services with ETL capabilitie
 - **Configuration**: Health checks and target group management
 - **SSL**: Automated certificate management via ACM
 
-#### 4. API Gateway
+#### 4. PMTiles API Gateway
 - **Technology**: AWS API Gateway (Regional)
-- **Purpose**: PMTiles API endpoint for tile serving
-- **Integration**: Lambda proxy integration for tile requests
-- **Domain**: Custom domain with SSL certificate
+- **Purpose**: PMTiles tile serving via Lambda proxy
+- **Integration**: Lambda proxy integration for PMTiles requests
+- **Domain**: Custom subdomain (tiles.hostname) with SSL certificate
 - **CORS**: Configured for cross-origin requests
 
 ### Data Layer
@@ -119,9 +119,9 @@ The CloudTAK Infrastructure provides web-based TAK services with ETL capabilitie
 - **Resource Removal**: DESTROY policy (allows cleanup)
 
 #### **prod**
-- **Focus**: High availability, security, and production readiness
+- **Focus**: Production readiness, security, and enhanced monitoring
 - **ECS**: Higher resource allocation (2048/8192)
-- **Tasks**: Multiple task instances for redundancy
+- **Tasks**: Single task instance (desiredCount: 1)
 - **Container Insights**: Enabled (monitoring and observability)
 - **ECS Exec**: Disabled (security)
 - **ECR**: 20 image retention, vulnerability scanning enabled
@@ -209,7 +209,22 @@ The infrastructure implements a layered security model with dedicated security g
 
 ## Scalability and Performance
 
-### 1. Auto Scaling (Production)
+### 1. Resource Allocation
+- **Development**: 1 vCPU, 4GB RAM, single instance
+- **Production**: 2 vCPU, 8GB RAM, single instance
+- **Database**: Aurora Serverless v2 (dev) or provisioned instances (prod)
+- **ETL Processing**: AWS Batch with on-demand scaling
+
+### 2. Performance Considerations
+- **Single Instance**: API does not support horizontal scaling
+- **Database**: Multi-AZ deployment for production reliability
+- **Load Balancer**: Health checks and traffic distribution
+- **Caching**: CloudFront integration available via base infrastructure
+
+### 3. Limitations
+- **API Scaling**: No auto-scaling implemented - single container instance
+- **High Availability**: Database redundancy only, API is single point of failure
+- **Concurrent Users**: Limited by single instance resource allocationtion)
 - **ECS Service**: Auto-scaling based on CPU utilization
 - **Target Capacity**: 1-10 tasks based on demand
 - **ETL Tasks**: Independent scaling per task type

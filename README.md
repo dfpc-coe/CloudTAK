@@ -4,9 +4,13 @@
 
 ## Overview
 
+The [Team Awareness Kit (TAK)](https://tak.gov/solutions/emergency) provides Fire, Emergency Management, and First Responders an operationally agnostic tool for improved situational awareness and a common operational picture. 
+
 CloudTAK provides a web-based interface for Team Awareness Kit (TAK) data with ETL (Extract, Transform, Load) capabilities for processing and visualizing situational awareness information. This repository deploys the CloudTAK infrastructure layer with containerized services, auto-scaling, and enterprise-grade security features.
 
 It is specifically targeted at the deployment of [TAK.NZ](https://tak.nz) via a CI/CD pipeline with automated upstream synchronization from the [dfpc-coe/CloudTAK](https://github.com/dfpc-coe/CloudTAK) repository.
+
+Nevertheless others interested in deploying a similar infrastructure can do so by adapting the configuration items.
 
 ### Architecture Layers
 
@@ -62,9 +66,10 @@ This CloudTAK infrastructure requires the base infrastructure layer. Layers can 
 ### Prerequisites
 - [AWS Account](https://signin.aws.amazon.com/signup) with configured credentials
 - Base infrastructure stack (`TAK-<n>-BaseInfra`) must be deployed first
+- Authentication infrastructure stack (`TAK-<n>-AuthInfra`) must be deployed first
+- TAK server infrastructure stack (`TAK-<n>-TakInfra`) must be deployed first
 - Public Route 53 hosted zone (e.g., `tak.nz`)
 - [Node.js](https://nodejs.org/) and npm installed
-- [Docker](https://docker.com/) installed and running
 
 ### Installation & Deployment
 
@@ -139,8 +144,8 @@ This stack uses a **hybrid Docker image strategy** that supports both pre-built 
 
 | Environment | Stack Name | Description | Domain | CloudTAK Cost* | Complete Stack Cost** |
 |-------------|------------|-------------|--------|----------------|----------------------|
-| `dev-test` | `TAK-Dev-CloudTAK` | Cost-optimized development | `map.dev.tak.nz` | ~$70 | ~$290 |
-| `prod` | `TAK-Prod-CloudTAK` | High-availability production | `map.tak.nz` | ~$380 | ~$1158 |
+| `dev-test` | `TAK-Dev-CloudTAK` | Cost-optimized development | `map.dev.tak.nz` | ~$45 | ~$200 |
+| `prod` | `TAK-Prod-CloudTAK` | Production-ready deployment | `map.tak.nz` | ~$180 | ~$650 |
 
 *CloudTAK Infrastructure only, **Complete deployment (BaseInfra + AuthInfra + TakInfra + VideoInfra + CloudTAK)  
 Estimated AWS costs for ap-southeast-2, excluding data transfer and usage

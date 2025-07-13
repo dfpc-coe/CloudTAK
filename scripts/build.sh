@@ -23,11 +23,13 @@ echo "🔄 Building images to mimic GitHub workflow..."
 # Get ECR repository from BaseInfra stack
 ECR_REPO_ARN=$(aws cloudformation describe-stacks \
     --stack-name "TAK-${STACK_NAME}-BaseInfra" \
-    --query 'Stacks[0].Outputs[?OutputKey==`EcrRepoArnOutput`].OutputValue' \
+    --query 'Stacks[0].Outputs[?OutputKey==`EcrArtifactsRepoArnOutput`].OutputValue' \
     --output text)
 
 if [[ -z "$ECR_REPO_ARN" ]]; then
-    echo "ERROR: ECR repository ARN not found in BaseInfra stack outputs"
+    echo "ERROR: ECR artifacts repository ARN not found in BaseInfra stack outputs"
+    echo "Available outputs:"
+    aws cloudformation describe-stacks --stack-name "TAK-${STACK_NAME}-BaseInfra" --query 'Stacks[0].Outputs[].OutputKey' --output text
     exit 1
 fi
 
@@ -50,18 +52,27 @@ ecr_login() {
 # Build and push API container
 build_api() {
     echo "Building CloudTAK API..."
-    docker compose build api
-    docker tag cloudtak-api:latest "$ECR_REPO_URI:$CLOUDTAK_TAG"
+    docker build \
+        -f api/Dockerfile \
+        --no-cache \
+        --rm \
+        -t "$ECR_REPO_URI:$CLOUDTAK_TAG" \
+        api/
     docker push "$ECR_REPO_URI:$CLOUDTAK_TAG"
 }
 
 # Build and push task container
 build_task() {
     local task="$1"
-    echo "Building CloudTAK task: $task"
-    docker buildx build "./tasks/$task/" -t "cloudtak-$task"
-    docker tag "cloudtak-$task:latest" "$ECR_REPO_URI:$task-$CLOUDTAK_TAG"
-    docker push "$ECR_REPO_URI:$task-$CLOUDTAK_TAG"
+    local TASK_TAG="$task-$(echo $CLOUDTAK_TAG | sed 's/cloudtak-//')"
+    echo "Building CloudTAK task: $task with tag: $TASK_TAG"
+    docker build \
+        -f "tasks/$task/Dockerfile" \
+        --no-cache \
+        --rm \
+        -t "$ECR_REPO_URI:$TASK_TAG" \
+        "tasks/$task/"
+    docker push "$ECR_REPO_URI:$TASK_TAG"
 }
 
 # Main execution
