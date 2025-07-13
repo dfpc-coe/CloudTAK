@@ -83,6 +83,20 @@ These variables follow the pattern `CLOUDTAK_Config_` and override database sett
 | `CLOUDTAK_Config_map_bearing` | integer (0-360) | 0 | Initial map bearing |
 | `CLOUDTAK_Config_map_zoom` | integer (0-20) | 4 | Initial map zoom level |
 
+### Display Defaults Configuration
+
+These settings configure the default display preferences for new users. Existing users will not be affected by changes to these settings.
+
+| Environment Variable | Type | Default | Options | Description |
+|---------------------|------|---------|---------|-------------|
+| `CLOUDTAK_Config_display_stale` | string | "10 Minutes" | "Immediate", "10 Minutes", "30 Minutes", "1 Hour", "Never" | Default stale data timeout |
+| `CLOUDTAK_Config_display_distance` | string | "mile" | "meter", "kilometer", "mile" | Default distance unit |
+| `CLOUDTAK_Config_display_elevation` | string | "feet" | "meter", "feet" | Default elevation unit |
+| `CLOUDTAK_Config_display_speed` | string | "mi/h" | "m/s", "km/h", "mi/h" | Default speed unit |
+| `CLOUDTAK_Config_display_projection` | string | "globe" | "mercator", "globe" | Default map projection |
+| `CLOUDTAK_Config_display_zoom` | string | "conditional" | "always", "conditional", "never" | Default zoom behavior |
+| `CLOUDTAK_Config_display_text` | string | "Medium" | "Small", "Medium", "Large" | Default text size |
+
 ### TAK User Group Configuration
 
 | Environment Variable | Type | Description |
@@ -166,6 +180,15 @@ export CLOUDTAK_Server_auth_key="-----BEGIN PRIVATE KEY-----\nMIIE...\n-----END 
 # Set map center to New Zealand coordinates
 export CLOUDTAK_Config_map_center="-41.2865,174.7762"
 export CLOUDTAK_Config_map_zoom=6
+
+# Configure display defaults for new users
+export CLOUDTAK_Config_display_stale="30 Minutes"
+export CLOUDTAK_Config_display_distance="kilometer"
+export CLOUDTAK_Config_display_elevation="meter"
+export CLOUDTAK_Config_display_speed="km/h"
+export CLOUDTAK_Config_display_projection="mercator"
+export CLOUDTAK_Config_display_zoom="conditional"
+export CLOUDTAK_Config_display_text="Medium"
 
 # Enable ArcGIS Online
 export CLOUDTAK_Config_agol_enabled=true

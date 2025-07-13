@@ -96,6 +96,20 @@ jobs:
             docker login --username AWS --password-stdin \
             ${{ steps.tags.outputs.ecr-repo-uri }}
       
+      - name: Apply Branding (Conditional)
+        run: |
+          if [[ "${{ vars.APPLY_BRANDING }}" == "true" ]]; then
+            echo "🎨 Applying TAK.NZ branding..."
+            if [ -f "scripts/apply-branding.sh" ]; then
+              ./scripts/apply-branding.sh
+              echo "✅ Branding applied successfully"
+            else
+              echo "⚠️ Branding script not found, skipping"
+            fi
+          else
+            echo "⏭️ Branding disabled, building with upstream code"
+          fi
+      
       - name: Build and Push CloudTAK Images
         run: |
           # Check if main image already exists

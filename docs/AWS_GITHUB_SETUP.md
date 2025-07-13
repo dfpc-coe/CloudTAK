@@ -96,13 +96,28 @@ graph TD
 **Process:**
 1. Check sync mode configuration
 2. Sync with upstream CloudTAK repository (main branch or latest tag)
-3. Apply TAK.NZ branding
+3. Commit clean upstream code (no branding applied)
 4. Create pull request for review
 
 **Sync Modes:**
 - `main` - Sync with upstream main branch
 - `tag` - Sync with latest version tag
 - Unset/disabled - No sync performed
+
+**Note:** Branding is now applied at build time, not during sync. This keeps the main branch clean with upstream code only.
+
+### 4.5 Image Building with Conditional Branding
+
+**Build Process:**
+1. Checkout clean upstream code from main branch
+2. Apply TAK.NZ branding (if `APPLY_BRANDING=true`)
+3. Build Docker images with applied branding
+4. Push branded images to ECR
+
+**Branding Control:**
+- `APPLY_BRANDING=true` - Build with TAK.NZ branding applied
+- `APPLY_BRANDING=false` - Build with clean upstream code
+- Allows testing both branded and unbranded versions
 
 ## 5. Required Secrets and Variables
 
@@ -126,6 +141,7 @@ graph TD
 | Variable | Description | Values | Usage |
 |----------|-------------|--------|-------|
 | `SYNC_MODE` | Controls weekly upstream sync behavior | `main`, `tag`, or unset | `main` = sync with main branch, `tag` = sync with latest version tag, unset = disabled |
+| `APPLY_BRANDING` | Controls whether TAK.NZ branding is applied during image builds | `true`, `false` | `true` = apply branding at build time, `false` = build with upstream code only |
 
 ## 6. Verification
 
