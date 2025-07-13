@@ -70,7 +70,8 @@ This CloudTAK infrastructure requires the base infrastructure layer. Layers can 
 - TAK server infrastructure stack (`TAK-<n>-TakInfra`) must be deployed first
 - Public Route 53 hosted zone (e.g., `tak.nz`)
 - [Node.js](https://nodejs.org/) and npm installed
-
+- **For CI/CD deployment:** See [AWS & GitHub Setup Guide](docs/AWS_GITHUB_SETUP.md) for multi-account OIDC configuration
+  
 ### Installation & Deployment
 
 ```bash
