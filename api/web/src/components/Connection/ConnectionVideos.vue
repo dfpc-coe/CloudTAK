@@ -6,19 +6,27 @@
             </h3>
 
             <div class='ms-auto btn-list'>
-                <TablerIconButton
+                <TablerDelete
+                    displaytype='icon'
+                    @delete='deleteAll'
+                />
+                <TablerRefreshButton
                     title='Refresh'
+                    :loading='loading'
                     @click='fetch'
-                >
-                    <IconRefresh
-                        :size='32'
-                        stroke='1'
-                    />
-                </TablerIconButton>
+                />
             </div>
         </div>
 
         <div style='min-height: 20vh; margin-bottom: 60px'>
+            <div class='col-12 px-2 py-2'>
+                <TablerInput
+                    v-model='paging.filter'
+                    icon='search'
+                    placeholder='Filter'
+                />
+            </div>
+
             <TablerLoading v-if='loading' />
             <TablerAlert
                 v-else-if='error'
@@ -74,13 +82,12 @@ import { std, stdurl } from '../../std.ts';
 import type { ETLConnectionVideoLeaseList } from '../../types.ts';
 import TableFooter from '../util/TableFooter.vue';
 import {
-    IconRefresh,
-} from '@tabler/icons-vue';
-import {
+    TablerInput,
     TablerEpoch,
     TablerAlert,
+    TablerDelete,
     TablerLoading,
-    TablerIconButton,
+    TablerRefreshButton,
     TablerNone,
 } from '@tak-ps/vue-tabler';
 
@@ -106,6 +113,24 @@ watch(paging.value, async () => {
 onMounted(async () => {
     await fetch();
 });
+
+async function deleteAll() {
+    loading.value = true;
+    error.value = undefined;
+
+    try {
+        const url = stdurl(`/api/connection/${route.params.connectionid}/video/lease`);
+        await std(url, {
+            method: 'DELETE',
+        });
+
+        await fetch();
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    } finally {
+        loading.value = false;
+    }
+}
 
 async function fetch() {
     loading.value = true;

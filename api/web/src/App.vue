@@ -14,12 +14,12 @@
                         height='50'
                         width='50'
                         src='/logo.png'
-                        @click='$router.push("/")'
+                        @click='router.push("/")'
                     >
                 </div>
                 <div class='col mx-2'>
                     <div class='page-pretitle'>
-                        Colorado - DFPC - CoE
+                        TAK.NZ &bull; Team Awareness &bull; Te mōhio o te rōpū
                     </div>
                     <h2 class='page-title'>
                         CloudTAK
@@ -32,10 +32,10 @@
                 >
                     <div class='btn-list'>
                         <a
-                            :href='docsURL'
                             class='btn btn-dark'
                             target='_blank'
                             rel='noreferrer'
+                            @click='externalDocs'
                         >
                             <IconCode
                                 size='32'
@@ -61,7 +61,7 @@
                             >
                                 <div
                                     class='d-flex dropdown-item cursor-pointer hover-dark'
-                                    @click='$router.push("/connection")'
+                                    @click='router.push("/connection")'
                                 >
                                     <IconNetwork
                                         size='32'
@@ -71,7 +71,7 @@
                                 </div>
                                 <div
                                     class='d-flex dropdown-item cursor-pointer hover-dark'
-                                    @click='$router.push("/admin")'
+                                    @click='router.push("/admin")'
                                 >
                                     <IconSettings
                                         size='32'
@@ -98,17 +98,17 @@
             </div>
         </header>
 
-        <Loading v-if='loading && !$route.path.includes("configure") && !$route.path.includes("login")' />
+        <Loading v-if='loading && !route.path.includes("configure") && !route.path.includes("login")' />
         <router-view
             v-else
             :user='user'
-            @err='err = $event'
+            @err='error = $event'
             @login='refreshLogin'
         />
         <TablerError
-            v-if='err'
-            :err='err'
-            @close='err = null'
+            v-if='error'
+            :err='error'
+            @close='error = undefined'
         />
         <LoginModal
             v-if='login'
@@ -118,8 +118,9 @@
     </div>
 </template>
 
-<script lang='ts'>
-import { defineComponent } from 'vue'
+<script setup lang='ts'>
+import { ref, computed, onErrorCaptured, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router';
 import type { Login, Server } from './types.ts';
 import { useBrandStore } from './stores/brand.ts';
 import '@tabler/core/dist/js/tabler.min.js';
@@ -136,138 +137,124 @@ import Loading from './components/Loading.vue';
 import {
     TablerError
 } from '@tak-ps/vue-tabler';
-import { std, stdurl } from './std.ts';
+import { std } from './std.ts';
 
-export default defineComponent({
-    name: 'TakPSETL',
-    components: {
-        LoginModal,
-        IconCode,
-        IconSettings,
-        IconLogout,
-        IconUser,
-        IconNetwork,
-        TablerError,
-        Loading,
-    },
-    data: function(): {
-        loading: boolean;
-        login: boolean;
-        mounted: boolean;
-        err: null | Error;
-        user: null | Login;
-    }{
-        return {
-            loading: true,
-            login: false,
-            mounted: false,
-            user: null,
-            err: null,
-        }
-    },
-    computed: {
-        docsURL: function(): string {
-            return String(stdurl('/docs'))
-        },
-        navShown: function() {
-            if (!this.$route || !this.$route.name) {
-                return false;
-            } else {
-                return (
-                    !String(this.$route.name).startsWith("home")
-                    && !["login", "configure"].includes(String(this.$route.name))
-                )
-            }
-        }
-    },
-    errorCaptured: function(err) {
-        if (!(err instanceof Error)) {
-            err = new Error(String(err));
-        }
+const router = useRouter();
+const route = useRoute();
 
-        const e = err as Error;
+const loading = ref(true);
+const login = ref(false);
+const mounted = ref(false);
+const user = ref<Login | undefined>();
+const error = ref<Error | undefined>();
 
-        if (e.message === '401') {
-            // Popup Modal if reauthenticating vs initial login
-
-            if (this.$route.name !== 'login') {
-                this.login = true;
-            }
-        } else if (String(e) === 'Error: Authentication Required') {
-            this.routeLogin();
-        } else {
-            this.err = e;
-        }
-    },
-    mounted: async function() {
-        let status;
-        try {
-            const server = await std('/api/server') as Server;
-            status = server.status;
-        } catch (err) {
-            console.warn('Server Error (Likely the server is in a configured state)', err);
-            status = 'configured';
-        }
-
-        const brandStore = useBrandStore();
-        await brandStore.init();
-
-        window.addEventListener('unhandledrejection', (e) => {
-            this.err = e.reason;
-        });
-
-        if (status === 'unconfigured') {
-            delete localStorage.token;
-            this.$router.push("/configure");
-        } else {
-            if (localStorage.token) {
-                await this.refreshLogin();
-            } else if (this.$route.name !== 'login') {
-                this.routeLogin();
-            }
-        }
-
-        this.loading = false;
-        this.mounted = true;
-    },
-    methods: {
-        logout: function() {
-            this.user = null;
-            delete localStorage.token;
-            this.$router.push("/login");
-        },
-        routeLogin: function() {
-            this.$router.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
-        },
-        refreshLogin: async function() {
-            this.loading = true;
-
-            await this.getLogin();
-
-            this.loading = false;
-        },
-        getLogin: async function() {
-            try {
-                this.user = await std('/api/login') as Login;
-            } catch (err) {
-                console.error(err);
-                this.user = null;
-                delete localStorage.token;
-
-                if (this.$route.name !== 'login') {
-                    this.routeLogin();
-                }
-
-                return false;
-            }
-
-            return true;
-        },
+const navShown = computed<boolean>(() => {
+    if (!route || !route.name) {
+        return false;
+    } else {
+        return (
+            !String(route.name).startsWith("home")
+            && !["login", "configure"].includes(String(route.name))
+        )
     }
 });
+
+onErrorCaptured((err) => {
+    if (!(err instanceof Error)) {
+        error.value = new Error(String(err));
+    }
+
+    const e = err as Error;
+
+    if (e.message === '401') {
+        // Popup Modal if reauthenticating vs initial login
+
+        if (route.name !== 'login') {
+            login.value = true;
+        }
+    } else if (String(e) === 'Error: Authentication Required') {
+        routeLogin();
+    } else {
+        error.value = e;
+    }
+});
+
+onMounted(async () => {
+    let status;
+    try {
+        const server = await std('/api/server') as Server;
+        status = server.status;
+    } catch (err) {
+        console.warn('Server Error (Likely the server is in a configured state)', err);
+        status = 'configured';
+    }
+
+    const brandStore = useBrandStore();
+    await brandStore.init();
+
+    window.addEventListener('unhandledrejection', (e) => {
+        error.value = e.reason;
+    });
+
+    if (status === 'unconfigured') {
+        delete localStorage.token;
+        router.push("/configure");
+    } else {
+        if (localStorage.token) {
+            await refreshLogin();
+        } else if (route.name !== 'login') {
+            routeLogin();
+        }
+    }
+
+    loading.value = false;
+    mounted.value = true;
+});
+
+function logout() {
+    user.value = undefined;
+    delete localStorage.token;
+    router.push("/login");
+}
+
+function externalDocs() {
+    window.location.href = '/docs';
+}
+
+function routeLogin() {
+    router.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+}
+
+async function refreshLogin() {
+    loading.value = true;
+
+    await getLogin();
+
+    loading.value = false;
+}
+
+async function getLogin() {
+    try {
+        user.value = await std('/api/login') as Login;
+    } catch (err) {
+        console.error(err);
+        user.value = undefined;
+        delete localStorage.token;
+
+        if (route.name !== 'login') {
+            routeLogin();
+        }
+
+        return false;
+    }
+
+    return true;
+}
 </script>
 
 <style lang='scss'>
+$cloudtak-default: #182433;
+$cloudtak-child:  #192f45;
 $cloudtak-yellow: #FFB703;
 $cloudtak-orange: #FF9820;
 $cloudtak-navy: #023047;
@@ -278,7 +265,11 @@ $cloudtak-blue: #07556D;
 }
 
 .btn-primary {
-    background-color: #07556D !important;
+    background-color: $cloudtak-blue !important;
+}
+
+.bg-child {
+    background-color: $cloudtak-child !important;
 }
 
 .hover-button-hidden {

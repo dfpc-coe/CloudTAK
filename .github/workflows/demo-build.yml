@@ -1,0 +1,167 @@
+name: Build and Push Docker Images - Demo
+
+# This workflow builds and pushes CloudTAK Docker images for the demo environment.
+# It is triggered on pushes to main when API or tasks change, or can be called by other workflows.
+# Images are tagged with git SHA and pushed to ECR for deployment.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'api/**'
+      - 'tasks/**'
+      - 'cdk.json'
+  workflow_call:
+    inputs:
+      force_rebuild:
+        description: 'Force rebuild even if version unchanged'
+        required: false
+        default: false
+        type: boolean
+    outputs:
+      cloudtak-tag:
+        description: 'CloudTAK API image tag'
+        value: ${{ jobs.build-images.outputs.cloudtak-tag }}
+  workflow_dispatch:
+    inputs:
+      force_rebuild:
+        description: 'Force rebuild even if version unchanged'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-images:
+    runs-on: ubuntu-latest
+    environment: demo
+    outputs:
+      cloudtak-tag: ${{ steps.tags.outputs.cloudtak-tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+
+        
+      - name: Setup CDK Environment
+        uses: ./.github/actions/setup-cdk
+        with:
+          aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+          role-session-name: GitHubActions-DockerBuild
+      
+      - name: Get ECR Repository and Build Tags
+        id: tags
+        run: |
+          ECR_REPO_ARN=$(aws cloudformation describe-stacks \
+            --stack-name TAK-${{ vars.STACK_NAME }}-BaseInfra \
+            --query 'Stacks[0].Outputs[?OutputKey==`EcrRepoArnOutput`].OutputValue' \
+            --output text)
+          
+          if [[ -z "$ECR_REPO_ARN" ]]; then
+            echo "ERROR: ECR repository ARN not found in BaseInfra stack outputs"
+            exit 1
+          fi
+          
+          ECR_REPO_NAME=$(echo $ECR_REPO_ARN | cut -d'/' -f2)
+          ECR_REPO_URI="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${ECR_REPO_NAME}"
+          
+          # Get the last commit SHA that touched api/ or tasks/ directories
+          CONTENT_SHA=$(git log -1 --format="%h" -- api/ tasks/)
+          
+          if [[ -z "$CONTENT_SHA" ]]; then
+            echo "ERROR: No commits found for api/ or tasks/ directories"
+            exit 1
+          fi
+          
+          if [[ "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
+            TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+            CLOUDTAK_TAG="cloudtak-${CONTENT_SHA}-${TIMESTAMP}"
+          else
+            CLOUDTAK_TAG="cloudtak-${CONTENT_SHA}"
+          fi
+          
+          echo "ecr-repo-uri=$ECR_REPO_URI" >> $GITHUB_OUTPUT
+          echo "cloudtak-tag=$CLOUDTAK_TAG" >> $GITHUB_OUTPUT
+          echo "Using ECR repository: $ECR_REPO_URI"
+          echo "Content SHA (api/tasks): $CONTENT_SHA"
+          echo "Building CloudTAK image with tag: $CLOUDTAK_TAG"
+      
+      - name: Login to Amazon ECR
+        run: |
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | \
+            docker login --username AWS --password-stdin \
+            ${{ steps.tags.outputs.ecr-repo-uri }}
+      
+      - name: Apply Branding (Conditional)
+        run: |
+          if [[ "${{ vars.APPLY_BRANDING }}" == "true" ]]; then
+            echo "🎨 Applying TAK.NZ branding..."
+            if [ -f "scripts/apply-branding.sh" ]; then
+              ./scripts/apply-branding.sh
+              echo "✅ Branding applied successfully"
+            else
+              echo "⚠️ Branding script not found, skipping"
+            fi
+          else
+            echo "⏭️ Branding disabled, building with upstream code"
+          fi
+      
+      - name: Build and Push CloudTAK Images
+        run: |
+          # Check if main image already exists
+          if aws ecr describe-images --repository-name $(echo ${{ steps.tags.outputs.ecr-repo-uri }} | cut -d'/' -f2) --image-ids imageTag=${{ steps.tags.outputs.cloudtak-tag }} >/dev/null 2>&1; then
+            echo "✅ CloudTAK image ${{ steps.tags.outputs.cloudtak-tag }} already exists, skipping build"
+          else
+            echo "🔨 Building CloudTAK images with tag ${{ steps.tags.outputs.cloudtak-tag }}"
+            
+            # Build API image
+            docker build \
+              -f api/Dockerfile \
+              --no-cache \
+              --rm \
+              -t ${{ steps.tags.outputs.ecr-repo-uri }}:${{ steps.tags.outputs.cloudtak-tag }} \
+              api/
+            
+            docker push ${{ steps.tags.outputs.ecr-repo-uri }}:${{ steps.tags.outputs.cloudtak-tag }}
+            
+            # Build task images with same content SHA
+            for task_dir in tasks/*/; do
+              if [ -d "$task_dir" ]; then
+                task=$(basename "$task_dir")
+                TASK_TAG="$task-$(echo ${{ steps.tags.outputs.cloudtak-tag }} | sed 's/cloudtak-//')"
+                echo "🔨 Building $task task image with tag: $TASK_TAG"
+                
+                docker build \
+                  -f tasks/$task/Dockerfile \
+                  --no-cache \
+                  --rm \
+                  -t ${{ steps.tags.outputs.ecr-repo-uri }}:$TASK_TAG \
+                  tasks/$task/
+                
+                docker push ${{ steps.tags.outputs.ecr-repo-uri }}:$TASK_TAG
+              fi
+            done
+            
+            echo "✅ CloudTAK images pushed successfully"
+          fi
+      
+      - name: Output Image Information
+        run: |
+          CONTENT_SHA=$(echo ${{ steps.tags.outputs.cloudtak-tag }} | sed 's/cloudtak-//')
+          echo "✅ Successfully built and pushed CloudTAK images:"
+          echo "📦 CloudTAK API: ${{ steps.tags.outputs.cloudtak-tag }}"
+          echo "📦 Events Task: events-${CONTENT_SHA}"
+          echo "📦 PMTiles Task: pmtiles-${CONTENT_SHA}"
+          echo "📦 Data Task: data-${CONTENT_SHA}"
+          echo ""
+          echo "🚀 To deploy with these images, use:"
+          echo "npm run deploy:dev -- \\"
+          echo "  --context usePreBuiltImages=true \\"
+          echo "  --context cloudtakImageTag=${{ steps.tags.outputs.cloudtak-tag }} \\"
+          echo "  --context eventsImageTag=events-${CONTENT_SHA} \\"
+          echo "  --context tilesImageTag=pmtiles-${CONTENT_SHA} \\"
+          echo "  --context dataImageTag=data-${CONTENT_SHA}"

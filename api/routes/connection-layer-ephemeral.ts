@@ -14,8 +14,8 @@ export default async function router(schema: Schema, config: Config) {
             connectionid: Type.Integer({ minimum: 1 }),
             layerid: Type.Integer({ minimum: 1 }),
         }),
-        body: Type.Record(Type.String(), Type.String()),
-        res: Type.Record(Type.String(), Type.String())
+        body: Type.Record(Type.String(), Type.Any()),
+        res: Type.Record(Type.String(), Type.Any())
     }, async (req, res) => {
         try {
             const { connection } = await Auth.is_connection(config, req, {
@@ -24,6 +24,8 @@ export default async function router(schema: Schema, config: Config) {
                     { access: AuthResourceAccess.LAYER, id: req.params.layerid }
                 ]
             }, req.params.connectionid);
+
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             const layer =  await config.models.Layer.augmented_from(req.params.layerid)
 
@@ -54,7 +56,7 @@ export default async function router(schema: Schema, config: Config) {
             connectionid: Type.Integer({ minimum: 1 }),
             layerid: Type.Integer({ minimum: 1 }),
         }),
-        body: Type.Record(Type.String(), Type.String()),
+        body: Type.Record(Type.String(), Type.Any()),
         res: Type.Record(Type.String(), Type.String())
     }, async (req, res) => {
         try {
@@ -64,6 +66,8 @@ export default async function router(schema: Schema, config: Config) {
                     { access: AuthResourceAccess.LAYER, id: req.params.layerid }
                 ]
             }, req.params.connectionid);
+
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             const layer =  await config.models.Layer.augmented_from(req.params.layerid)
 

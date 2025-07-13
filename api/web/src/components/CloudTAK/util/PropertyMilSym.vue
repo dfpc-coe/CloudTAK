@@ -1,8 +1,16 @@
 <template>
     <div class='col-12 py-2'>
         <div class='col-12'>
-            <IconBadges :size='18' stroke='1' color='#6b7990' class='ms-2 me-1'/>
-            <label class='subheader user-select-none' v-text='props.label'></label>
+            <IconBadges
+                :size='18'
+                stroke='1'
+                color='#6b7990'
+                class='ms-2 me-1'
+            />
+            <label
+                class='subheader user-select-none'
+                v-text='props.label'
+            />
         </div>
         <div class='px-2'>
             <div class='col-12 bg-gray-500 rounded-bottom px-1 py-1'>
@@ -15,9 +23,7 @@
             </div>
         </div>
     </div>
-    <div class='pb-2 col-12'>
-
-    </div>
+    <div class='pb-2 col-12' />
 </template>
 
 <script setup lang='ts'>

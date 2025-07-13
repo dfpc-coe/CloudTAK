@@ -89,6 +89,11 @@
         "query": false,
         "res": true
     },
+    "GET /config/display": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /config/login": {
         "body": false,
         "query": false,
@@ -379,6 +384,11 @@
         "query": true,
         "res": true
     },
+    "DELETE /connection/:connectionid/video/lease": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /connection/:connectionid/video/lease/:lease": {
         "body": false,
         "query": false,
@@ -418,6 +428,11 @@
         "body": false,
         "query": false,
         "res": true
+    },
+    "GET /connection/:connectionid/auth": {
+        "body": false,
+        "query": true,
+        "res": false
     },
     "POST /connection/:connectionid/refresh": {
         "body": false,
@@ -539,12 +554,12 @@
         "query": true,
         "res": false
     },
-    "GET /icon/sprite{:size}.json": {
+    "GET /iconset/:iconset/sprite{:size}.json": {
         "body": false,
         "query": true,
-        "res": false
+        "res": true
     },
-    "GET /icon/sprite{:size}.png": {
+    "GET /iconset/:iconset/sprite{:size}.png": {
         "body": false,
         "query": true,
         "res": false
@@ -733,6 +748,11 @@
         "body": false,
         "query": false,
         "res": true
+    },
+    "GET /marti/missions/:name/qr": {
+        "body": false,
+        "query": false,
+        "res": false
     },
     "GET /marti/missions/:name/changes": {
         "body": false,
@@ -1209,27 +1229,7 @@
         "query": false,
         "res": true
     },
-    "GET /video/server": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "GET /video/service/path/:path": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "POST /video/server": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "GET /video/server/:serverid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "DELETE /video/server/:serverid": {
         "body": false,
         "query": false,
         "res": true

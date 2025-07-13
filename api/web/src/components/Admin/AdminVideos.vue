@@ -43,24 +43,6 @@
             :size='32'
             stroke='1'
         /><span class='mx-2'>Video Leases</span></label>
-
-        <input
-            id='tasks'
-            type='radio'
-            class='btn-check'
-            autocomplete='off'
-            :checked='route.name === "admin-video-tasks"'
-            @click='router.push({ name: `admin-video-tasks` })'
-        >
-        <label
-            for='tasks'
-            type='button'
-            class='btn btn-sm'
-        ><IconServer2
-            v-tooltip='"Video Tasks"'
-            :size='32'
-            stroke='1'
-        /><span class='mx-2'>Manual Video Servers</span></label>
     </div>
 
     <router-view />

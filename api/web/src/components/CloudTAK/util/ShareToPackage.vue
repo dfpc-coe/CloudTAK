@@ -1,89 +1,135 @@
 <template>
-    <div class='mb-2'>
-        <div class='sticky-top col-12 d-flex align-items-center user-select-none'>
-            <span class='subheader mx-2'>Create Data Package</span>
-            <div
-                v-if='compact'
-                class='ms-auto'
-            >
-                <TablerIconButton
-                    title='Cancel Share'
-                    class='mx-2 my-2'
-                    @click='emit("cancel")'
-                >
-                    <IconX
-                        :size='20'
-                        stroke='1'
-                    />
-                </TablerIconButton>
-            </div>
-        </div>
-
-
-        <TablerLoading v-if='loading' />
-        <div
-            v-else
-            class='row mx-2'
-        >
-            <div class='col-12'>
-                <TablerInput
-                    v-model='body.name'
-                    label='Package Name'
+    <TablerModal size='lg'>
+        <div class='modal-status bg-red' />
+        <button
+            type='button'
+            class='btn-close'
+            aria-label='Close'
+            @click='emit("close")'
+        />
+        <div class='modal-header text-white'>
+            <div class='d-flex align-items-center'>
+                <IconPackage
+                    :size='28'
+                    stroke='1'
                 />
-            </div>
-            <div class='col-12 pt-3'>
-                <TablerButton
-                    class='w-100'
-                    @click='share'
-                >
-                    Create
-                </TablerButton>
+                <span class='mx-2'>Create Data Package</span>
             </div>
         </div>
-    </div>
+        <div class='modal-body text-white'>
+            <TablerLoading v-if='loading' />
+            <div
+                v-else
+                class='row mx-2'
+            >
+                <div class='col-12'>
+                    <TablerInput
+                        v-model='body.name'
+                        label='Name'
+                    />
+                </div>
+                <div class='col-12 pt-3'>
+                    <label class='mx-2 user-select-none'>Contents:</label>
+
+                    <div
+                        v-if='props.feats.length !== 0 || props.assets.length !== 0'
+                        class='col-12 overflow-auto'
+                        style='
+                            max-height: 20vh;
+                        '
+                    >
+                        <div
+                            v-for='asset of props.assets'
+                            class='d-flex align-items-center px-3 py-2'
+                        >
+                            <IconFile
+                                :size='24'
+                                stroke='1'
+                            />
+                            <span
+                                class='mx-2 user-select-none'
+                                v-text='asset.name'
+                            />
+                        </div>
+                        <FeatureRow
+                            v-for='feat of props.feats'
+                            :key='feat.id'
+                            :feature='feat'
+                            :hover='false'
+                            :delete-button='false'
+                        />
+                    </div>
+                    <TablerNone
+                        v-else
+                        :compact='true'
+                        :create='false'
+                        label='Contents'
+                    />
+                </div>
+
+                <!-- TODO SHOW CHANNEL SELECTION -->
+
+                <div class='col-12 pt-3'>
+                    <TablerButton
+                        class='w-100'
+                        @click='share'
+                    >
+                        Create
+                    </TablerButton>
+                </div>
+            </div>
+        </div>
+    </TablerModal>
 </template>
 
 <script setup lang='ts'>
 import { ref } from 'vue';
 import type { PropType } from 'vue';
 import {
+    TablerNone,
+    TablerModal,
     TablerLoading,
     TablerButton,
     TablerInput,
-    TablerIconButton
 } from '@tak-ps/vue-tabler';
 import { std } from '../../../std.ts';
 import { useMapStore } from '../../../stores/map.ts';
 import {
-    IconX,
+    IconFile,
+    IconPackage,
 } from '@tabler/icons-vue';
 import { useRouter } from 'vue-router';
+import FeatureRow from './FeatureRow.vue';
 import type { Feature, Content } from '../../../types.ts';
 
 const mapStore = useMapStore();
 const router = useRouter();
 
 const props = defineProps({
+    name: {
+        type: String,
+        default: ''
+    },
+    assets: {
+        type: Array as PropType<Array<{
+            type: string;
+            name: string;
+        }>>,
+        default: () => []
+    },
     feats: {
         type: Array as PropType<Array<Feature>>,
-        required: true
+        required: true,
+        default: () => []
     },
-    compact: {
-        type: Boolean,
-        default: false
-    },
-    maxheight: {
-        type: String,
-        default: '100%'
-    }
 });
 
-const emit = defineEmits(['cancel', 'done']);
+const emit = defineEmits(['close', 'done']);
 
 const loading = ref(false);
 
 const body = ref({
-    name: ''
+    name: props.name
 })
 
 async function share() {
@@ -94,29 +140,38 @@ async function share() {
             // FileShare is manually generated and won't exist in CoT Store
             return f;
         } else {
-            const feat = await mapStore.worker.db.get(f.id);
+            const feat = await mapStore.worker.db.get(f.id, {
+                mission: true
+            });
+            console.error(feat);
             if (feat) feats.push(feat.as_feature());
         }
     }
 
     loading.value = true;
 
-    const content = await std('/api/marti/package', {
-        method: 'PUT',
-        body: {
-            type: 'FeatureCollection',
-            name: body.value.name,
-            public: true,
-            features: feats.map((f) => {
-                f = JSON.parse(JSON.stringify(f));
-                return { id: f.id || f.properties.id, type: f.type, properties: f.properties, geometry: f.geometry }
-            })
-        }
-    }) as Content;
+    try {
+        const content = await std('/api/marti/package', {
+            method: 'PUT',
+            body: {
+                type: 'FeatureCollection',
+                name: body.value.name,
+                public: true,
+                assets: props.assets,
+                features: feats.map((f) => {
+                    f = JSON.parse(JSON.stringify(f));
+                    return { id: f.id || f.properties.id, type: f.type, properties: f.properties, geometry: f.geometry }
+                })
+            }
+        }) as Content;
 
-    emit('done');
+        emit('done');
 
-    router.push(`/menu/packages/${content.Hash}`);
+        router.push(`/menu/packages/${content.Hash}`);
+    } catch (err) {
+        loading.value = false;
+        throw err;
+    }
 
 }
 </script>

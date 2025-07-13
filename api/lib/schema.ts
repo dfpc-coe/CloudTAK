@@ -49,7 +49,7 @@ export const Profile = pgTable('profile', {
     name: text().default('Unknown'),
     username: text().primaryKey(),
     last_login: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    auth: json().$type<ConnectionAuth>().notNull(),
+    auth: json().$type<Static<typeof ConnectionAuth>>().notNull(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     phone: text().notNull().default(''),
@@ -91,7 +91,9 @@ export const VideoLease = pgTable('video_lease', {
 
     username: text().references(() => Profile.username),
     connection: integer().references(() => Connection.id),
+    layer: integer().references(() => Layer.id),
 
+    source_id: text(),
     source_type: text().$type<VideoLease_SourceType>().notNull().default(VideoLease_SourceType.UNKNOWN),
     source_model: text().notNull().default(''),
 
@@ -137,6 +139,8 @@ export const Basemap = pgTable('basemaps', {
     overlay: boolean().notNull().default(false),
     username: text().references(() => Profile.username),
     bounds: geometry({ type: GeometryType.Polygon, srid: 4326 }).$type<Polygon>(),
+    tilesize: integer().notNull().default(256),
+    attribution: text(),
     center: geometry({ type: GeometryType.Point, srid: 4326 }).$type<Point>(),
     minzoom: integer().notNull().default(0),
     maxzoom: integer().notNull().default(16),
@@ -178,9 +182,11 @@ export const Import = pgTable('imports', {
 export const Task = pgTable('tasks', {
     id: serial().primaryKey(),
     prefix: text().notNull(),
+    favorite: boolean().notNull().default(false),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     name: text().notNull(),
+    logo: text(),
     repo: text(),
     readme: text()
 }, (t) => ({
@@ -199,7 +205,10 @@ export const Iconset = pgTable('iconsets', {
     default_hostile: text(),
     default_neutral: text(),
     default_unknown: text(),
-    skip_resize: boolean().notNull().default(false)
+    skip_resize: boolean().notNull().default(false),
+
+    spritesheet_data: text(),
+    spritesheet_json: json(),
 }, (table) => {
     return {
         username_idx: index("iconsets_username_idx").on(table.username),
@@ -221,6 +230,7 @@ export const Icon = pgTable('icons', {
 
 export const Connection = pgTable('connections', {
     id: serial().primaryKey(),
+    readonly: boolean().notNull().default(false),
     agency: integer(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
@@ -228,7 +238,7 @@ export const Connection = pgTable('connections', {
     name: text().notNull(),
     description: text().notNull().default(''),
     enabled: boolean().notNull().default(true),
-    auth: json().$type<ConnectionAuth>().notNull()
+    auth: json().$type<Static<typeof ConnectionAuth>>().notNull()
 });
 
 export const Data = pgTable('data', {
@@ -262,8 +272,8 @@ export const Layer = pgTable('layers', {
     connection: integer().references(() => Connection.id),
     logging: boolean().notNull().default(true),
     task: text().notNull(),
-    memory: integer().notNull().default(128),
-    timeout: integer().notNull().default(128),
+    memory: integer().notNull().default(256),
+    timeout: integer().notNull().default(120),
 }, (t) => ({
     unq: unique().on(t.connection, t.name)
 }));
@@ -276,7 +286,7 @@ export const LayerOutgoing = pgTable('layers_outgoing', {
     filters: json().$type<Static<typeof FilterContainer>>().notNull().default({}),
 
     environment: json().notNull().default({}),
-    ephemeral: json().$type<Record<string, string>>().notNull().default({}),
+    ephemeral: json().$type<Record<string, any>>().notNull().default({}),
 });
 
 export const LayerIncoming = pgTable('layers_incoming', {
@@ -296,7 +306,7 @@ export const LayerIncoming = pgTable('layers_incoming', {
     styles: json().$type<Static<typeof StyleContainer>>().notNull().default({}),
     stale: integer().notNull().default(20),
     environment: json().notNull().default({}),
-    ephemeral: json().$type<Record<string, string>>().notNull().default({}),
+    ephemeral: json().$type<Record<string, any>>().notNull().default({}),
     config: json().$type<Static<typeof Layer_Config>>().notNull().default({}),
     data: integer().references(() => Data.id)
 });
@@ -367,7 +377,7 @@ export const ProfileInterest = pgTable('profile_interests', {
     id: serial().primaryKey(),
     name: text().notNull(),
     username: text().notNull().references(() => Profile.username),
-    bounds: geometry({ type: GeometryType.Polygon, srid: 4326 }).$type<Polygon>(),
+    bounds: geometry({ type: GeometryType.Polygon, srid: 4326 }).$type<Polygon>().notNull(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
 });

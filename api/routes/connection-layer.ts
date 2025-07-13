@@ -90,6 +90,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         res: Type.Object({
             total: Type.Integer(),
+            tasks: Type.Array(Type.String()),
             status: Type.Object({
                 healthy: Type.Integer(),
                 alarm: Type.Integer(),
@@ -99,9 +100,11 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            await Auth.is_connection(config, req, {
+            const { connection } = await Auth.is_connection(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             }, req.params.connectionid);
+
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             const list = await config.models.Layer.augmented_list({
                 limit: req.query.limit,
@@ -132,6 +135,7 @@ export default async function router(schema: Schema, config: Config) {
 
             res.json({
                 status,
+                tasks: await config.models.Layer.tasks(),
                 total: list.total,
                 items: list.items.map((layer) => {
                     return {
@@ -160,26 +164,40 @@ export default async function router(schema: Schema, config: Config) {
         }),
         body: Type.Object({
             name: Default.NameField,
+            task: Type.String(),
             priority: Type.Optional(Type.Enum(Layer_Priority)),
             description: Default.DescriptionField,
-            webhooks: Type.Optional(Type.Boolean()),
             enabled: Type.Optional(Type.Boolean()),
-            task: Type.String(),
-            logging: Type.Boolean(),
-            memory: Type.Optional(Type.Integer()),
-            timeout: Type.Optional(Type.Integer()),
+            logging: Type.Boolean({
+                default: true,
+                description: 'Enable Logging for this Layer'
+            }),
+            memory: Type.Integer({
+                default: 128,
+                description: 'Memory in MB for this Layer',
+                minimum: 128,
+                maximum: 10240
+            }),
+            timeout: Type.Integer({
+                default: 120,
+                description: 'Timeout in seconds for this Layer',
+                minimum: 1,
+                maximum: 900
+            }),
         }),
         res: LayerResponse
     }, async (req, res) => {
         try {
-            const auth = await Auth.is_connection(config, req, {
+            const { connection, auth } = await Auth.is_connection(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             }, req.params.connectionid);
+
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             const layer = await layerControl.generate({
                 ...req.body,
                 connection: req.params.connectionid,
-                username: auth.auth instanceof AuthUser ? auth.auth.email : null
+                username: auth instanceof AuthUser ? auth.email : null
             }, {
                 alarms: req.query.alarms
             });
@@ -220,6 +238,8 @@ export default async function router(schema: Schema, config: Config) {
                     { access: AuthResourceAccess.LAYER, id: req.params.layerid }
                 ]
             }, req.params.connectionid);
+
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             let layer = await config.models.Layer.augmented_from(req.params.layerid);
 
@@ -323,6 +343,8 @@ export default async function router(schema: Schema, config: Config) {
                     { access: AuthResourceAccess.LAYER, id: req.params.layerid }
                 ]
             }, req.params.connectionid);
+
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             const layer = await config.models.Layer.augmented_from(req.params.layerid);
 
@@ -452,6 +474,8 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+
             let layer = await config.models.Layer.augmented_from(req.params.layerid);
 
             if (layer.connection !== connection.id) {
@@ -510,6 +534,8 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+
             let layer = await config.models.Layer.augmented_from(req.params.layerid);
 
             if (layer.connection !== connection.id) {
@@ -566,6 +592,8 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
+
             const layer = await config.models.Layer.augmented_from(req.params.layerid);
 
             if (layer.connection !== connection.id) {
@@ -620,6 +648,8 @@ export default async function router(schema: Schema, config: Config) {
                     { access: AuthResourceAccess.LAYER, id: req.params.layerid }
                 ]
             }, req.params.connectionid);
+
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             let layer = await config.models.Layer.augmented_from(req.params.layerid);
 
@@ -676,8 +706,16 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.Optional(Default.NameField),
             priority: Type.Optional(Type.Enum(Layer_Priority)),
             description: Type.Optional(Default.DescriptionField),
-            memory: Type.Optional(Type.Integer()),
-            timeout: Type.Optional(Type.Integer()),
+            memory: Type.Optional(Type.Integer({
+                description: 'Memory in MB for this Layer',
+                minimum: 128,
+                maximum: 10240
+            })),
+            timeout: Type.Optional(Type.Integer({
+                description: 'Timeout in seconds for this Layer',
+                minimum: 1,
+                maximum: 900
+            })),
             enabled: Type.Optional(Type.Boolean()),
             task: Type.Optional(Type.String()),
             logging: Type.Optional(Type.Boolean()),
@@ -691,6 +729,8 @@ export default async function router(schema: Schema, config: Config) {
                     { access: AuthResourceAccess.LAYER, id: req.params.layerid }
                 ]
             }, req.params.connectionid);
+
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             let layer = await config.models.Layer.augmented_from(req.params.layerid);
 
@@ -771,6 +811,11 @@ export default async function router(schema: Schema, config: Config) {
                 default: false,
                 description: 'Get Live Alarm state from CloudWatch'
             }),
+            token: Type.Optional(Type.String()),
+            download: Type.Boolean({
+                default: false,
+                description: 'Download Layer as JSON file'
+            })
         }),
         params: Type.Object({
             connectionid: Type.Integer({ minimum: 1 }),
@@ -780,11 +825,14 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             const { connection } = await Auth.is_connection(config, req, {
+                token: true,
                 resources: [
                     { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
                     { access: AuthResourceAccess.LAYER, id: req.params.layerid }
                 ]
             }, req.params.connectionid);
+
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
                 return await config.models.Layer.augmented_from(req.params.layerid);
@@ -803,10 +851,19 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
-            res.json({
-                status,
-                ...layer
-            });
+            const hydrated = { status, ...layer };
+
+            if (req.query.download) {
+                res.setHeader('Content-Disposition', `attachment; filename="connection-${connection.id}-layer-${layer.id}.json"`);
+                res.setHeader('Content-Type', 'application/json');
+                res.write(JSON.stringify(hydrated, null, 4));
+                res.end();
+            } else {
+                res.json({
+                    status,
+                    ...layer
+                });
+            }
         } catch (err) {
             Err.respond(err, res);
         }
@@ -828,6 +885,8 @@ export default async function router(schema: Schema, config: Config) {
                     { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }
                 ]
             }, req.params.connectionid);
+
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             const layer = await config.models.Layer.augmented_from(req.params.layerid);
 
@@ -874,6 +933,8 @@ export default async function router(schema: Schema, config: Config) {
                     { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }
                 ]
             }, req.params.connectionid);
+
+            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
             const layer = await config.models.Layer.augmented_from(req.params.layerid);
 

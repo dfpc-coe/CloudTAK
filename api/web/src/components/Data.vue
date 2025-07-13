@@ -114,13 +114,12 @@
                                 </div>
                             </div>
 
-                            <div class='card-footer d-flex'>
+                            <div class='card-footer d-flex align-items-center'>
                                 <div>
                                     Last updated <span v-text='timeDiff(data.updated)' />
                                 </div>
                                 <div class='ms-auto'> 
-                                    Inital Creation
-                                    <span v-text='data.username' />
+                                    <InitialAuthor :email='data.username || "Unknown"' />
                                 </div>
                             </div>
                         </div>
@@ -215,6 +214,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { std } from '../std.ts';
 import PageFooter from './PageFooter.vue';
 import timeDiff from '../timediff.ts';
+import InitialAuthor from './util/InitialAuthor.vue';
 import {
     TablerLoading,
     TablerIconButton,

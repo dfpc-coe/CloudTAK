@@ -1,0 +1,42 @@
+name: 'Setup CDK Environment'
+description: 'Setup Node.js, AWS credentials, and install CDK dependencies'
+
+inputs:
+  aws-role-arn:
+    description: 'AWS IAM role ARN to assume'
+    required: true
+  aws-region:
+    description: 'AWS region'
+    required: true
+  role-session-name:
+    description: 'AWS role session name'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: 'cdk/package-lock.json'
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ inputs.aws-role-arn }}
+        aws-region: ${{ inputs.aws-region }}
+        role-session-name: ${{ inputs.role-session-name }}
+
+    - name: Install CDK dependencies
+      shell: bash
+      run: |
+        cd cdk
+        npm ci
+
+    - name: Build CDK project
+      shell: bash
+      run: |
+        cd cdk
+        npm run build

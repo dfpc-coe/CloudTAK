@@ -1,6 +1,11 @@
 <template>
     <div class='col-12'>
-        <IconMountain :size='18' stroke='1' color='#6b7990' class='ms-2 me-1'/>
+        <IconMountain
+            :size='18'
+            stroke='1'
+            color='#6b7990'
+            class='ms-2 me-1'
+        />
         <label class='subheader user-select-none'>Distance</label>
         <div class='mx-2'>
             <CopyField

@@ -8,13 +8,17 @@
             @click='emit("close")'
         />
 
-        <div class='modal-header'>
+        <div class='modal-header user-select-none'>
+            <IconMap
+                :size='32'
+                stroke='1'
+                class='me-2'
+            />
             <div
                 v-if='basemap.id'
                 class='strong d-flex align-items-center'
-            >
-                Basemap <span v-text='basemap.name' />
-            </div>
+                v-text='basemap.name'
+            />
             <div
                 v-else
                 class='strong align-items-center'
@@ -156,21 +160,27 @@
                             </div>
                         </TablerInput>
                     </div>
-                    <div class='col-md-4'>
+                    <div class='col-md-3'>
                         <TablerInput
                             v-model='editing.minzoom'
                             required
                             label='MinZoom'
                         />
                     </div>
-                    <div class='col-md-4'>
+                    <div class='col-md-3'>
                         <TablerInput
                             v-model='editing.maxzoom'
                             required
                             label='MaxZoom'
                         />
                     </div>
-                    <div class='col-12 col-md-4'>
+                    <div class='col-12 col-md-3'>
+                        <TablerInput
+                            v-model='editing.tilesize'
+                            label='Tile Size'
+                        />
+                    </div>
+                    <div class='col-12 col-md-3'>
                         <TablerEnum
                             v-model='editing.format'
                             required
@@ -181,8 +191,15 @@
                     <div class='col-12'>
                         <TablerInput
                             v-model='editing.collection'
-                            label='Collection'
-                            placeholder='Optional Collection'
+                            label='Collection Folder'
+                            placeholder='Optional Collection Folder'
+                        />
+                    </div>
+                    <div class='col-12'>
+                        <TablerInput
+                            v-model='editing.attribution'
+                            label='Attribution'
+                            placeholder='Optional Attribution'
                         />
                     </div>
                     <div class='col-md-12 mt-3'>
@@ -213,6 +230,7 @@ import { ref, onMounted } from 'vue';
 import { std, stdurl } from '../../../../std.ts';
 import Upload from '../../../util/Upload.vue';
 import {
+    IconMap,
     IconDownload,
     IconFileImport,
     IconFileUpload
@@ -263,6 +281,8 @@ const editing = ref({
     type: 'raster',
     minzoom: 0,
     maxzoom: 16,
+    tilesize: 256,
+    attribution: '',
     format: 'png',
     bounds: [-180, -90, 180, 90 ],
     center: [0, 0],
@@ -332,16 +352,20 @@ async function create() {
 
     loading.value = true;
     try {
+        const body = JSON.parse(JSON.stringify(editing.value));
+
+        if (!body.bounds || !body.bounds.length) delete body.bounds;
+        if (!body.center || !body.center.length) delete body.center;
+
+        if (!body.collection || body.collection.trim().length === 0) {
+            body.collection = null;
+        }
+
+        if (!body.attribution || body.attribution.trim().length === 0) {
+            body.attribution = null;
+        }
+
         if (props.basemap.id) {
-            const body = JSON.parse(JSON.stringify(editing.value));
-
-            if (!body.bounds || !body.bounds.length) delete body.bounds;
-            if (!body.center || !body.center.length) delete body.center;
-
-            if (!body.collection || body.collection.trim().length === 0) {
-                body.collection = null;
-            }
-
             await std(`/api/basemap/${props.basemap.id}`, {
                 method: 'PATCH',
                 body: {
@@ -351,15 +375,6 @@ async function create() {
             });
             emit('close');
         } else {
-            const body = JSON.parse(JSON.stringify(editing.value));
-
-            if (!body.bounds || !body.bounds.length) delete body.bounds;
-            if (!body.center || !body.center.length) delete body.center;
-
-            if (!body.collection || body.collection.trim().length === 0) {
-                body.collection = null;
-            }
-
             await std('/api/basemap', {
                 method: 'POST',
                 body: {

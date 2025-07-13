@@ -22,7 +22,11 @@ export default function styles(id: string, opts: {
         id: `${id}-poly`,
         type: 'fill',
         source: id,
-        filter: ["==", "$type", "Polygon"],
+        filter: [
+            'all',
+            ['==', '$type', 'Polygon'],
+            ['!=', 'fill-opacity', 0],
+        ],
         layout: {},
         paint: {
             'fill-opacity': ["number", ["get", "fill-opacity"], 1],
@@ -122,7 +126,7 @@ export default function styles(id: string, opts: {
                 ['has', 'group']
             ],
             paint: {
-                'icon-opacity': 1,
+                'icon-opacity': ["number", ["get", "marker-opacity"], 1],
                 'icon-halo-color': '#ffffff',
                 'icon-halo-width': 4
             },
@@ -161,7 +165,7 @@ export default function styles(id: string, opts: {
                 ['has', 'icon']
             ],
             paint: {
-                'icon-opacity': ['get', 'icon-opacity'],
+                'icon-opacity': ["number", ["get", "marker-opacity"], 1],
                 'icon-halo-color': '#ffffff',
                 'icon-halo-width': 4
             },
@@ -271,7 +275,13 @@ export default function styles(id: string, opts: {
             id: `${id}-text-line`,
             type: 'symbol',
             source: id,
-            filter: [ 'all', ['==', '$type', 'LineString'], ],
+            filter: [ 'any',
+                ['==', '$type', 'LineString'],
+                ['all',
+                    ['==', '$type', 'Polygon'],
+                    ['==', 'fill-opacity', 0]
+                ]
+            ],
             minzoom: MIN_LABEL_ZOOM,
             paint: {
                 'text-color': '#ffffff',
@@ -307,7 +317,11 @@ export default function styles(id: string, opts: {
             id: `${id}-text-poly`,
             type: 'symbol',
             source: id,
-            filter: [ 'all', ['==', '$type', 'Polygon'], ],
+            filter: [
+                'all',
+                ['==', '$type', 'Polygon'],
+                ['!=', 'fill-opacity', 0],
+            ],
             minzoom: MIN_LABEL_ZOOM,
             paint: {
                 'text-color': '#ffffff',

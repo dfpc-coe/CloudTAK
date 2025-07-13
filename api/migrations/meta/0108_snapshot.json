@@ -1,6 +1,6 @@
 {
-  "id": "9b6227de-7e22-4390-87de-07bd24434728",
-  "prevId": "515a338a-2c1c-46f1-b926-3e6bc0391b20",
+  "id": "557da532-1d03-4a13-81a8-a0c1923a5b0e",
+  "prevId": "61fb3d42-5f30-400a-9f05-01b731e2f6f5",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -1253,6 +1253,13 @@
           "notNull": true,
           "default": "Now()"
         },
+        "filters": {
+          "name": "filters",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::json"
+        },
         "environment": {
           "name": "environment",
           "type": "json",
@@ -1670,7 +1677,7 @@
         "id": {
           "name": "id",
           "type": "text",
-          "primaryKey": false,
+          "primaryKey": true,
           "notNull": true
         },
         "path": {
@@ -2337,6 +2344,12 @@
         "connection": {
           "name": "connection",
           "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "source_id": {
+          "name": "source_id",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },

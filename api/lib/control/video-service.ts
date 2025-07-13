@@ -433,11 +433,13 @@ export default class VideoServiceControl {
         name: string;
         ephemeral: boolean;
         expiration: string | null;
+        source_id: string | null | undefined;
         source_type?: VideoLease_SourceType;
         source_model?: string;
         path: string;
         username?: string;
         connection?: number;
+        layer?: number;
         recording: boolean;
         publish: boolean;
         secure: boolean;
@@ -460,9 +462,12 @@ export default class VideoServiceControl {
             path: opts.path,
             recording: opts.recording,
             publish: opts.publish,
+            source_id: opts.source_id,
             source_type: opts.source_type,
             source_model: opts.source_model,
             username: opts.username,
+            connection: opts.connection,
+            layer: opts.layer,
             channel: opts.channel,
             proxy: opts.proxy
         });
@@ -498,38 +503,27 @@ export default class VideoServiceControl {
                     throw new Err(500, err instanceof Error ? err : new Error(String(err)), 'Failed to generate proxy stream');
                 }
             }
-
-            const res = await fetch(url, {
-                method: 'POST',
-                headers,
-                body: JSON.stringify({
-                    name: lease.path,
-                    source: lease.proxy,
-                    sourceOnDemand: true,
-                    record: lease.recording,
-                })
-            })
-
-            if (!res.ok) throw new Err(500, null, await res.text())
-        } else {
-            const res = await fetch(url, {
-                method: 'POST',
-                headers,
-                body: JSON.stringify({
-                    name: lease.path,
-                    record: lease.recording,
-                    ...this.recording
-                }),
-            })
-
-            if (!res.ok) throw new Err(500, null, await res.text())
         }
+
+        const res = await fetch(url, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+                name: lease.path,
+                source: lease.proxy ? lease.proxy : undefined,
+                sourceOnDemand: lease.proxy ? true : undefined,
+                record: lease.recording,
+                ...this.recording
+            })
+        })
+
+        if (!res.ok) throw new Err(500, null, await res.text())
 
         return lease;
     }
 
     async from(
-        leaseid: string,
+        leaseid: number,
         opts: {
             connection?: number
             username?: string
@@ -563,7 +557,7 @@ export default class VideoServiceControl {
     }
 
     async commit(
-        leaseid: string,
+        leaseid: number,
         body: {
             name?: string,
             channel?: string | null,
@@ -572,8 +566,10 @@ export default class VideoServiceControl {
             expiration?: string | null,
             recording?: boolean,
             publish?: boolean,
+            source_id: string | null | undefined;
             source_type?: VideoLease_SourceType,
             source_model?: string,
+            proxy?: string | null,
         },
         opts: {
             connection?: number;
@@ -584,14 +580,15 @@ export default class VideoServiceControl {
         const video = await this.settings();
         if (!video.configured) throw new Err(400, null, 'Media Integration is not configured');
 
-        // Performs Permission Check
-        await this.from(leaseid, opts);
+        if (body.secure !== undefined) {
+            // Performs Permission Check
+            const lease = await this.from(leaseid, opts);
+            await this.updateSecure(lease, body.secure, body.secure_rotate);
+        } else {
+            await this.from(leaseid, opts);
+        }
 
         const lease = await this.config.models.VideoLease.commit(leaseid, body);
-
-        if (body.secure !== undefined) {
-            await this.updateSecure(lease, body.secure, body.secure_rotate);
-        }
 
         try {
             await this.path(lease.path);
@@ -607,6 +604,8 @@ export default class VideoServiceControl {
                 headers,
                 body: JSON.stringify({
                     name: lease.path,
+                    source: lease.proxy ? lease.proxy : undefined,
+                    sourceOnDemand: lease.proxy ? true : undefined,
                     record: lease.recording,
                     ...this.recording
                 }),
@@ -626,6 +625,8 @@ export default class VideoServiceControl {
                     headers,
                     body: JSON.stringify({
                         name: lease.path,
+                        source: lease.proxy ? lease.proxy : undefined,
+                        sourceOnDemand: lease.proxy ? true : undefined,
                         record: lease.recording,
                         ...this.recording
                     }),
@@ -704,7 +705,7 @@ export default class VideoServiceControl {
     }
 
     async delete(
-        leaseid: string,
+        leaseid: number,
         opts: {
             username?: string;
             connection?: number;

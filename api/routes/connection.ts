@@ -10,6 +10,7 @@ import { Connection } from '../lib/schema.js';
 import { MachineConnConfig } from '../lib/connection-config.js';
 import Schema from '@openaddresses/batch-schema';
 import * as Default from '../lib/limits.js';
+import { generateP12 } from '../lib/certificate.js';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/connection', {
@@ -88,7 +89,8 @@ export default async function router(schema: Schema, config: Config) {
         body: Type.Object({
             name: Default.NameField,
             description: Default.DescriptionField,
-            enabled: Type.Optional(Type.Boolean({ default: true })),
+            readonly: Type.Boolean({ default: false }),
+            enabled: Type.Boolean({ default: true }),
             agency: Type.Optional(Type.Union([Type.Null(), Type.Integer({ minimum: 1 })])),
             integrationId: Type.Optional(Type.Integer()),
             auth: Type.Object({
@@ -110,7 +112,13 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
-            if (!config.server) throw new Err(400, null, 'TAK Server must be configured before a connection can be made');
+            if (!config.server) {
+                throw new Err(400, null, 'TAK Server must be configured before a connection can be made');
+            }
+
+            if (req.body.readonly) {
+                req.body.enabled = false;
+            }
 
             const conn = await config.models.Connection.generate({
                 ...req.body,
@@ -160,13 +168,17 @@ export default async function router(schema: Schema, config: Config) {
         res: ConnectionResponse
     }, async (req, res) => {
         try {
-            await Auth.is_connection(config, req, {
+            const { connection } = await Auth.is_connection(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             }, req.params.connectionid);
 
             if (req.body.agency && await Auth.is_user(config, req)) {
                 const user = await Auth.as_user(config, req, { admin: true });
                 if (!user) throw new Err(400, null, 'Only System Admins can change an agency once a connection is created');
+            }
+
+            if (connection.readonly) {
+                req.body.enabled = false;
             }
 
             const conn = await config.models.Connection.commit(req.params.connectionid, {
@@ -205,18 +217,59 @@ export default async function router(schema: Schema, config: Config) {
         res: ConnectionResponse
     }, async (req, res) => {
         try {
-            await Auth.is_connection(config, req, {
+            const { connection } = await Auth.is_connection(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             }, req.params.connectionid);
 
-            const conn = await config.models.Connection.from(req.params.connectionid);
-            const { validFrom, validTo, subject } = new X509Certificate(conn.auth.cert);
+            const { validFrom, validTo, subject } = new X509Certificate(connection.auth.cert);
 
             res.json({
-                status: config.conns.status(conn.id),
+                status: config.conns.status(connection.id),
                 certificate: { validFrom, validTo, subject },
-                ...conn
+                ...connection
             });
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/connection/:connectionid/auth', {
+        name: 'Get Connection Auth',
+        group: 'Connection',
+        description: 'Connections that are marked as ReadOnly are used for external integrations and are able to download the X509 Certificate',
+        params: Type.Object({
+            connectionid: Type.Integer({ minimum: 1 }),
+        }),
+        query: Type.Object({
+            token: Type.Optional(Type.String()),
+            download: Type.Boolean({
+                default: false,
+                description: 'Download auth as P12 file'
+            })
+        }),
+    }, async (req, res) => {
+        try {
+            const { connection } = await Auth.is_connection(config, req, {
+                token: true,
+                resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
+            }, req.params.connectionid);
+
+            if (connection.readonly === false) {
+                throw new Err(400, null, 'Connection is not ReadOnly and cannot return auth');
+            }
+
+            const buff = await generateP12(
+                connection.auth.key,
+                connection.auth.cert
+            );
+
+            if (req.query.download) {
+                res.setHeader('Content-Disposition', `attachment; filename="connection-auth-${connection.id}.p12"`);
+            }
+
+            res.setHeader('Content-Type', 'application/x-pkcs12');
+            res.write(buff);
+            res.end();
         } catch (err) {
             Err.respond(err, res);
         }
@@ -232,27 +285,25 @@ export default async function router(schema: Schema, config: Config) {
         res: ConnectionResponse
     }, async (req, res) => {
         try {
-            await Auth.is_connection(config, req, {
+            const { connection } = await Auth.is_connection(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             }, req.params.connectionid);
 
-            const conn = await config.models.Connection.from(req.params.connectionid);
+            if (!connection.enabled) throw new Err(400, null, 'Connection is not currently enabled');
 
-            if (!conn.enabled) throw new Err(400, null, 'Connection is not currently enabled');
-
-            if (config.conns.has(conn.id)) {
-                await config.conns.delete(conn.id);
-                await config.conns.add(new MachineConnConfig(config, conn));
+            if (config.conns.has(connection.id)) {
+                await config.conns.delete(connection.id);
+                await config.conns.add(new MachineConnConfig(config, connection));
             } else {
-                await config.conns.add(new MachineConnConfig(config, conn));
+                await config.conns.add(new MachineConnConfig(config, connection));
             }
 
-            const { validFrom, validTo, subject } = new X509Certificate(conn.auth.cert);
+            const { validFrom, validTo, subject } = new X509Certificate(connection.auth.cert);
 
             res.json({
-                status: config.conns.status(conn.id),
+                status: config.conns.status(connection.id),
                 certificate: { validFrom, validTo, subject },
-                ...conn
+                ...connection
             });
         } catch (err) {
             Err.respond(err, res);

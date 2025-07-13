@@ -1,5 +1,5 @@
 <template>
-    <div class='container px-0'>
+    <div class='w-100 px-0'>
         <div
             class='sticky-top col-12 bg-dark'
             :style='`z-index: ${zindex};`'
@@ -14,7 +14,7 @@
                 <TablerIconButton
                     v-if='backType === "close"'
                     title='Close Menu'
-                    @click='$router.push("/")'
+                    @click='router.push("/")'
                 >
                     <IconCircleX
                         :size='32'
@@ -25,7 +25,7 @@
                     v-if='backType === "back"'
                     title='Close Menu'
                     icon='IconCircleArrowLeft'
-                    @click='$router.back()'
+                    @click='router.back()'
                 >
                     <IconCircleArrowLeft
                         :size='32'

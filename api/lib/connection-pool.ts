@@ -6,30 +6,28 @@ import { randomUUID } from 'node:crypto';
 import Modeler from '@openaddresses/batch-generic';
 import { Connection } from './schema.js';
 import sleep from './sleep.js';
-import TAK, { TAKAPI, APIAuthCertificate, CoT } from '@tak-ps/node-tak';
+import TAK, { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
+import CoT, { CoTParser } from '@tak-ps/node-cot';
 import type ConnectionConfig from './connection-config.js';
-import { MachineConnConfig } from './connection-config.js';
+import { MachineConnConfig, ProfileConnConfig } from './connection-config.js';
 
 export class ConnectionClient {
     config: ConnectionConfig;
     tak: TAK;
     retry: number;
     initial: boolean;
-    ephemeral: boolean;
 
     retrying: boolean;
 
     constructor(
         config: ConnectionConfig,
         tak: TAK,
-        ephemeral = false
     ) {
         this.tak = tak;
         this.config = config;
         this.retry = 0;
         this.initial = true;
         this.retrying = false;
-        this.ephemeral = ephemeral;
     }
 
     destroy(): void {
@@ -123,7 +121,6 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
     async cots(
         conn: ConnectionConfig,
         cots: CoT[],
-        ephemeral=false
     ) {
         try {
             if (this.config.wsClients.has(String(conn.id))) {
@@ -137,10 +134,10 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                         cot.archived(true);
                     }
 
-                    const feat = cot.to_geojson();
+                    const feat = CoTParser.to_geojson(cot);
 
                     try {
-                        if (ephemeral && feat.properties && feat.properties.chat) {
+                        if (conn instanceof ProfileConnConfig && feat.properties && feat.properties.chat) {
                             await this.config.models.ProfileChat.generate({
                                 username: String(conn.id),
                                 chatroom: feat.properties.chat.senderCallsign,
@@ -149,7 +146,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                                 message_id: feat.properties.chat.messageId || randomUUID(),
                                 message: feat.properties.remarks || ''
                             });
-                        } else if (ephemeral && feat.properties.fileshare) {
+                        } else if (conn instanceof ProfileConnConfig && feat.properties.fileshare) {
                             const file = new URL(feat.properties.fileshare.senderUrl);
 
                             await this.importControl.create({
@@ -179,7 +176,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                 }
             }
 
-            if (!ephemeral && !this.config.nosinks) {
+            if (conn instanceof MachineConnConfig && !this.config.nosinks) {
                 await this.sinks.cots(conn, cots);
             }
         } catch (err) {
@@ -187,13 +184,16 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         }
     }
 
-    async add(connConfig: ConnectionConfig, ephemeral=false): Promise<ConnectionClient> {
+    async add(connConfig: ConnectionConfig): Promise<ConnectionClient> {
         if (!connConfig.auth || !connConfig.auth.cert || !connConfig.auth.key) throw new Err(400, null, 'Connection must have auth.cert & auth.key');
-        const tak = await TAK.connect(new URL(this.config.server.url), connConfig.auth, {
+        const tak = await TAK.connect(new URL(this.config.server.url), {
+            key: connConfig.auth.key,
+            cert: connConfig.auth.cert,
+        },{
             id: connConfig.id
         });
 
-        const connClient = new ConnectionClient(connConfig, tak, ephemeral);
+        const connClient = new ConnectionClient(connConfig, tak);
 
         const api = await TAKAPI.init(new URL(String(this.config.server.api)), new APIAuthCertificate(connConfig.auth.cert, connConfig.auth.key));
         this.set(connConfig.id, connClient);
@@ -202,7 +202,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
             connClient.retry = 0;
             connClient.initial = false;
 
-            this.cots(connConfig, [cot], ephemeral);
+            this.cots(connConfig, [cot]);
         }).on('secureConnect', async () => {
             for (const sub of await connConfig.subscriptions()) {
                 let retry = true;

@@ -1,0 +1,70 @@
+name: Production Deployment
+
+# This workflow deploys CloudTAK to the production environment.
+# It is triggered on version tags, runs tests, builds images, validates changes, and deploys.
+# Includes change set validation and requires manual approval for production environment.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      force_deploy:
+        description: 'Force deployment without tag'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  test:
+    uses: ./.github/workflows/cdk-test.yml
+
+  build-images:
+    uses: ./.github/workflows/production-build.yml
+    secrets: inherit
+
+  deploy-production:
+    runs-on: ubuntu-latest
+    environment: production
+    needs: [test, build-images]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Setup CDK Environment
+        uses: ./.github/actions/setup-cdk
+        with:
+          aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+          role-session-name: GitHubActions-Production
+
+      - name: Bootstrap CDK (if needed)
+        run: |
+          cd cdk
+          if ! aws cloudformation describe-stacks --stack-name CDKToolkit 2>/dev/null; then
+            npx cdk bootstrap aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ secrets.AWS_REGION }} --context envType=prod
+          fi
+
+      - name: Extract Image Tags
+        id: images
+        run: |
+          CLOUDTAK_TAG="${{ needs.build-images.outputs.cloudtak-tag }}"
+          echo "cloudtak-tag=$CLOUDTAK_TAG" >> $GITHUB_OUTPUT
+
+      - name: Validate Production Change Set
+        run: |
+          # Check if override is requested
+          if [[ "${{ github.event.head_commit.message }}" == *"[force-deploy]"* ]]; then
+            echo "🚨 Force deploy detected - skipping change set validation"
+          else
+            ./scripts/github/validate-changeset.sh TAK-${{ vars.STACK_NAME }}-CloudTAK
+          fi
+
+      - name: Deploy Production
+        run: |
+          cd cdk
+          npm run cdk deploy -- --context envType=prod --context stackName=${{ vars.STACK_NAME }} --context usePreBuiltImages=true --context cloudtakImageTag=${{ steps.images.outputs.cloudtak-tag }} --require-approval never

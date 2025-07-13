@@ -1,0 +1,143 @@
+name: Demo Testing Pipeline
+
+# This workflow provides comprehensive testing by deploying to demo environment with production configuration.
+# It runs on pushes to main, validates production settings, deploys for testing, then reverts to dev-test.
+# This ensures production configuration is tested before actual production deployment.
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+      - '.gitignore'
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: demo-deploy
+  cancel-in-progress: false
+
+jobs:
+  # Run CDK unit tests and linting
+  test:
+    uses: ./.github/workflows/cdk-test.yml
+
+  # Build Docker images for demo environment
+  build-images:
+    uses: ./.github/workflows/demo-build.yml
+    secrets: inherit
+
+  # Validate production configuration without deploying
+  # Runs in parallel with build-images to save time
+  validate-prod:
+    runs-on: ubuntu-latest
+    environment: demo
+    needs: [test]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Setup CDK Environment
+        uses: ./.github/actions/setup-cdk
+        with:
+          aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+          role-session-name: GitHubActions-Demo
+
+      - name: Validate CDK Synthesis (Prod Profile)
+        run: |
+          cd cdk
+          npm run cdk synth -- --context envType=prod --context stackName=${{ vars.STACK_NAME }}
+
+      - name: Validate Change Set
+        run: |
+          # Check if override is requested
+          if [[ "${{ github.event.head_commit.message }}" == *"[force-deploy]"* ]]; then
+            echo "🚨 Force deploy detected - skipping change set validation"
+          else
+            ./scripts/github/validate-changeset.sh TAK-${{ vars.STACK_NAME }}-CloudTAK
+          fi
+
+  # Deploy demo environment with production configuration for testing
+  # Uses built images and runs automated tests
+  deploy-and-test:
+    runs-on: ubuntu-latest
+    environment: demo
+    needs: [validate-prod, build-images]
+    outputs:
+      cloudtak-tag: ${{ steps.images.outputs.cloudtak-tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Setup CDK Environment
+        uses: ./.github/actions/setup-cdk
+        with:
+          aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+          role-session-name: GitHubActions-Demo
+
+      - name: Extract Image Tags
+        id: images
+        run: |
+          CLOUDTAK_TAG="${{ needs.build-images.outputs.cloudtak-tag }}"
+          echo "cloudtak-tag=$CLOUDTAK_TAG" >> $GITHUB_OUTPUT
+
+      - name: Configure Database Context
+        id: db-config
+        run: |
+          COMMIT_MSG="${{ github.event.head_commit.message }}"
+          if [[ "$COMMIT_MSG" != *"[use-prod-db]"* ]]; then
+            echo "🔄 Using dev-test database settings for faster deployment"
+            echo "db-context=--context instanceClass=db.serverless --context instanceCount=1 --context enablePerformanceInsights=false --context monitoringInterval=0 --context backupRetentionDays=7 --context deleteProtection=false" >> $GITHUB_OUTPUT
+          else
+            echo "🚀 Using production database settings"
+            echo "db-context=" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Deploy Demo with Prod Profile
+        run: |
+          cd cdk
+          npm run cdk deploy -- --context envType=prod --context stackName=${{ vars.STACK_NAME }} --context usePreBuiltImages=true --context cloudtakImageTag=${{ steps.images.outputs.cloudtak-tag }} --context useS3CloudTAKConfigFile=false ${{ steps.db-config.outputs.db-context }} --require-approval never
+
+      - name: Wait for Testing Period
+        run: sleep ${{ vars.DEMO_TEST_DURATION || '300' }}
+
+      - name: Run Automated Tests
+        run: |
+          echo "Placeholder for automated tests"
+          # TODO: Add health checks and integration tests
+          # Health check URL should be retrieved from BaseInfra stack outputs
+          # curl -f https://$(aws cloudformation describe-stacks --stack-name TAK-${{ vars.STACK_NAME }}-BaseInfra --query 'Stacks[0].Outputs[?OutputKey==`DomainNameOutput`].OutputValue' --output text)/health || exit 1
+
+  # Always revert demo environment back to dev-test configuration
+  # Ensures demo environment is left in a consistent state regardless of test results
+  revert-to-dev-test:
+    runs-on: ubuntu-latest
+    environment: demo
+    needs: [deploy-and-test]
+    if: always()
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Setup CDK Environment
+        uses: ./.github/actions/setup-cdk
+        with:
+          aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+          role-session-name: GitHubActions-Demo
+
+      - name: Validate CDK Synthesis (Dev-Test Profile)
+        run: |
+          cd cdk
+          npm run cdk synth -- --context envType=dev-test --context stackName=${{ vars.STACK_NAME }}
+
+      - name: Revert Demo to Dev-Test Profile
+        run: |
+          cd cdk
+          npm run cdk deploy -- --context envType=dev-test --context stackName=${{ vars.STACK_NAME }} --context usePreBuiltImages=true --context cloudtakImageTag=${{ needs.deploy-and-test.outputs.cloudtak-tag }} --context useS3CloudTAKConfigFile=true --require-approval never

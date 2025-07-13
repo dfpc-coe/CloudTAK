@@ -1,0 +1,72 @@
+name: Test CDK code
+
+# This workflow is triggered on pushes and pull requests to the main branch.
+# It can also be triggered manually.
+# It runs tests on the CDK code to ensure that it is functioning correctly.
+# The workflow will not run for draft pull requests.
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.draft == false }}
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    steps:
+      - run: echo "🌅 Job triggered by ${{ github.event_name }} event"
+      - run: echo "💨 Job running on ${{ runner.os }}"
+      - run: echo "🕊️ Branch is ${{ github.ref }}"
+      - run: echo "👾 Repository is ${{ github.repository }}."
+      
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+
+      - name: Install system dependencies
+        # Required for TAK server XML configuration validation (xmllint)
+        # Note: auth-infra doesn't need this, but tak-infra has XML validation tests
+        run: sudo apt-get update && sudo apt-get install -y libxml2-utils
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+            node-version: '22'
+            registry-url: https://registry.npmjs.org/
+            cache: 'npm'
+            cache-dependency-path: 'cdk/package-lock.json'
+
+      - name: Install CDK package dependencies
+        run: |
+          cd cdk
+          npm ci  # Use npm ci for faster, reliable installs
+
+      - name: TypeScript compilation check
+        run: |
+          cd cdk
+          npx tsc --noEmit --skipLibCheck
+
+      - name: Check for Breaking Changes
+        run: |
+          # Check if override is requested
+          OVERRIDE="false"
+          if [[ "${{ github.event.head_commit.message }}" == *"[force-deploy]"* ]]; then
+            OVERRIDE="true"
+          fi
+          ./scripts/github/check-breaking-changes.sh cloudtak prod $OVERRIDE
+
+      - name: Run tests with coverage report
+        run: |
+          cd cdk
+          npm run test:coverage

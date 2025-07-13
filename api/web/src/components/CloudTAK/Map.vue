@@ -125,7 +125,10 @@
                     '
                 >
                     <template v-if='!mapStore.mission'>
-                        <div class='d-flex align-items-center user-select-none'>
+                        <div
+                            class='hover-button d-flex align-items-center user-select-none cursor-pointer'
+                            @click='router.push("/menu/missions")'
+                        >
                             <IconMap
                                 :size='32'
                                 stroke='1'
@@ -256,23 +259,13 @@
                 </div>
             </div>
 
-            <CoordInput
-                v-if='pointInput'
-                @close='pointInput = false'
-            />
-
-            <RangeInput
-                v-if='rangeInput'
-                @close='rangeInput = false'
-            />
-
             <SearchBox
                 v-if='searchBoxShown'
                 style='
                     z-index: 1;
-                    top: 50px;
-                    left: 50px;
-                    width: 200px;
+                    top: 40px;
+                    left: 40px;
+                    width: 300px;
                 '
                 @close='searchBoxShown = false'
             />
@@ -312,118 +305,7 @@
                     style='width: 10px;'
                 />
 
-
-                <TablerDropdown>
-                    <template #default>
-                        <TablerIconButton
-                            title='Geometry Editing'
-                            class='mx-2 cursor-pointer hover-button'
-                            @click='closeAllMenu'
-                        >
-                            <IconPencil
-                                :size='40'
-                                stroke='1'
-                            />
-                        </TablerIconButton>
-                    </template>
-                    <template #dropdown>
-                        <div
-                            class='card py-1'
-                            style='min-width: 200px;'
-                        >
-                            <div
-                                class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
-                                @click='pointInput = true'
-                            >
-                                <IconCursorText
-                                    :size='25'
-                                    stroke='1'
-                                />
-                                <span class='ps-2'>Coordinate Input</span>
-                            </div>
-                            <div
-                                class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
-                                @click='rangeInput = true'
-                            >
-                                <IconCompass
-                                    :size='25'
-                                    stroke='1'
-                                />
-                                <span class='ps-2'>Range &amp; Bearing</span>
-                            </div>
-                            <div
-                                class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
-                                @click='mapStore.draw.start(DrawToolMode.POINT)'
-                            >
-                                <IconPoint
-                                    :size='25'
-                                    stroke='1'
-                                />
-                                <span class='ps-2'>Draw Point</span>
-                            </div>
-                            <div
-                                class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
-                                @click='mapStore.draw.start(DrawToolMode.LINESTRING)'
-                            >
-                                <IconLine
-                                    :size='25'
-                                    stroke='1'
-                                />
-                                <span class='ps-2'>Draw Line</span>
-                            </div>
-                            <div
-                                class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
-                                @click='mapStore.draw.start(DrawToolMode.POLYGON)'
-                            >
-                                <IconPolygon
-                                    :size='25'
-                                    stroke='1'
-                                />
-                                <span class='ps-2'>Draw Polygon</span>
-                            </div>
-                            <div
-                                class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
-                                @click='mapStore.draw.start(DrawToolMode.RECTANGLE)'
-                            >
-                                <IconVector
-                                    :size='25'
-                                    stroke='1'
-                                />
-                                <span class='ps-2'>Draw Rectangle</span>
-                            </div>
-                            <div
-                                class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
-                                @click='mapStore.draw.start(DrawToolMode.CIRCLE)'
-                            >
-                                <IconCircle
-                                    :size='25'
-                                    stroke='1'
-                                />
-                                <span class='ps-2'>Draw Circle</span>
-                            </div>
-                            <div
-                                class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
-                                @click='mapStore.draw.start(DrawToolMode.SECTOR)'
-                            >
-                                <IconCone
-                                    :size='25'
-                                    stroke='1'
-                                />
-                                <span class='ps-2'>Draw Sector</span>
-                            </div>
-                            <div
-                                class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
-                                @click='mapStore.draw.start(DrawToolMode.FREEHAND)'
-                            >
-                                <IconLasso
-                                    :size='25'
-                                    stroke='1'
-                                />
-                                <span class='ps-2'>Lasso Select</span>
-                            </div>
-                        </div>
-                    </template>
-                </TablerDropdown>
+                <DrawTools />
             </div>
 
             <div
@@ -459,8 +341,6 @@
             <SideMenu
                 v-if='
                     mapStore.isLoaded
-                        && !pointInput
-                        && !rangeInput
                         && (
                             (noMenuShown && !mobileDetected)
                             || (!noMenuShown)
@@ -535,14 +415,12 @@ import WarnChannels from './util/WarnChannels.vue';
 import Notifications from './Notifications.vue';
 import SearchBox from './util/SearchBox.vue';
 import WarnConfiguration from './util/WarnConfiguration.vue';
-import CoordInput from './CoordInput.vue';
-import RangeInput from './RangeInput.vue';
+import DrawTools from './DrawTools.vue';
 import type { MapGeoJSONFeature, LngLatLike } from 'maplibre-gl';
 import type { Feature } from '../../types.ts';
 import CloudTAKFeatView from './FeatView.vue';
 import {
     IconSearch,
-    IconCompass,
     IconLocationOff,
     IconLocationPin,
     IconLocation,
@@ -551,17 +429,8 @@ import {
     IconMinus,
     IconLockAccess,
     IconAmbulance,
-    IconPencil,
-    IconLasso,
     IconMap,
     IconX,
-    IconPoint,
-    IconLine,
-    IconCone,
-    IconCircle,
-    IconPolygon,
-    IconCursorText,
-    IconVector,
     IconBell,
     IconAngle,
     IconCircleArrowUp,
@@ -601,8 +470,6 @@ const warnChannels = ref<boolean>(false)
 const warnConfiguration = ref<boolean>(false);
 
 const searchBoxShown = ref(false);
-const pointInput = ref<boolean>(false);
-const rangeInput = ref<boolean>(false);
 const feat = ref()        // Show the Feat Viewer sidebar
 
 const upload = ref({
@@ -649,8 +516,6 @@ const mapRef = useTemplateRef<HTMLElement>('map');
 
 const noMenuShown = computed<boolean>(() => {
     return !feat.value
-        && !pointInput.value
-        && !rangeInput.value
         && (!route.name || !String(route.name).startsWith('home-menu'))
 });
 
@@ -741,8 +606,6 @@ function selectFeat(selectedFeat: MapGeoJSONFeature) {
 function closeAllMenu() {
     feat.value = false;
     router.push("/");
-    pointInput.value = false;
-    rangeInput.value = false;
 }
 
 function closeRadial() {
@@ -777,7 +640,7 @@ function setLocation() {
             }
         })
 
-        await mapStore.updateCOT();
+        await mapStore.refresh();
     });
 }
 
@@ -805,11 +668,11 @@ async function handleRadial(event: string): Promise<void> {
             router.push('/');
         }
 
-        await mapStore.worker.db.remove(String(cot.id), {
+        await mapStore.worker.db.remove(String(cot.id || cot.properties.id), {
             mission: true
         })
 
-        await mapStore.updateCOT();
+        await mapStore.refresh();
     } else if (event === 'cot:lock') {
         mapStore.locked.push(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
         closeRadial()
@@ -828,7 +691,8 @@ async function handleRadial(event: string): Promise<void> {
         await mapStore.worker.db.add(feat, {
             authored: true
         });
-        mapStore.updateCOT();
+
+        await mapStore.refresh();
         closeRadial()
     } else if (event === 'context:info') {
         // @ts-expect-error Figure out geometry.coordinates type
@@ -858,7 +722,7 @@ async function mountMap(): Promise<void> {
 
             timer.value = setInterval(async () => {
                 if (!mapStore.map) return;
-                await mapStore.updateCOT();
+                await mapStore.refresh();
             }, 500);
 
             return resolve();

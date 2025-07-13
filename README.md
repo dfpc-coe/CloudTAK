@@ -1,207 +1,249 @@
-<p align=center><img src='./api/web/public/CloudTAKLogo.svg' alt='CloudTAK Logo' width='128'/></p>
+# CloudTAK Infrastructure
 
-<h1 align=center>CloudTAK</h1>
+<p align=center>Modern AWS CDK v2 infrastructure for CloudTAK web interface and ETL services
 
-<p align=center>Full Featured in-browser TAK Client powered by AWS</p>
-<p align=center>&</p>
-<p align=center>Facilitate ETL operations to bring non-TAK data sources into a TAK Server</p>
+## Overview
 
-<img src='./docs/Screenshot.png' alt='Screenshot of CloudTAK'/>
+The [Team Awareness Kit (TAK)](https://tak.gov/solutions/emergency) provides Fire, Emergency Management, and First Responders an operationally agnostic tool for improved situational awareness and a common operational picture. 
 
-## Installation
+CloudTAK provides a web-based interface for Team Awareness Kit (TAK) data with ETL (Extract, Transform, Load) capabilities for processing and visualizing situational awareness information. This repository deploys the CloudTAK infrastructure layer with containerized services, auto-scaling, and enterprise-grade security features.
 
-Testing locally can be done either running the server directly (recommended for development) or
-by running the provided Docker Compose services (recommended for limited testing)
+It is specifically targeted at the deployment of [TAK.NZ](https://tak.nz) via a CI/CD pipeline with automated upstream synchronization from the [dfpc-coe/CloudTAK](https://github.com/dfpc-coe/CloudTAK) repository.
 
-Note that for full functionality, CloudTAK needs to be deployed into an AWS environment and that
-many of the services it provides will initiate AWS API calls with no graceful fallback.
+Nevertheless others interested in deploying a similar infrastructure can do so by adapting the configuration items.
 
-### Docker Compose
+### Architecture Layers
+
+This CloudTAK infrastructure requires the base infrastructure layer. Layers can be deployed in multiple independent environments:
 
 ```
-docker compose up --build
+        PRODUCTION ENVIRONMENT                DEVELOPMENT ENVIRONMENT
+        Domain: tak.nz                        Domain: dev.tak.nz
+
+┌─────────────────────────────────┐    ┌─────────────────────────────────┐
+│        MediaInfra               │    │        MediaInfra               │
+│    CloudFormation Stack         │    │    CloudFormation Stack         │
+└─────────────────────────────────┘    └─────────────────────────────────┘
+                │                                        │
+                ▼                                        ▼
+┌─────────────────────────────────┐    ┌─────────────────────────────────┐
+│         CloudTAK                │    │         CloudTAK                │
+│    CloudFormation Stack         │    │    CloudFormation Stack         │
+│      (This Repository)          │    │      (This Repository)          │
+└─────────────────────────────────┘    └─────────────────────────────────┘
+                │                                        │
+                ▼                                        ▼
+┌─────────────────────────────────┐    ┌─────────────────────────────────┐
+│         TakInfra                │    │         TakInfra                │
+│    CloudFormation Stack         │    │    CloudFormation Stack         │
+└─────────────────────────────────┘    └─────────────────────────────────┘
+                │                                        │
+                ▼                                        ▼
+┌─────────────────────────────────┐    ┌─────────────────────────────────┐
+│        AuthInfra                │    │        AuthInfra                │
+│    CloudFormation Stack         │    │    CloudFormation Stack         │
+└─────────────────────────────────┘    └─────────────────────────────────┘
+                │                                        │
+                ▼                                        ▼
+┌─────────────────────────────────┐    ┌─────────────────────────────────┐
+│        BaseInfra                │    │        BaseInfra                │
+│    CloudFormation Stack         │    │    CloudFormation Stack         │
+└─────────────────────────────────┘    └─────────────────────────────────┘
 ```
 
-Once the database and API service have built, the server will start on port 5000.
-In your webbrowser visit `http://localhost:5000` to view the ETL UI
+| Layer | Repository | Description |
+|-------|------------|-------------|
+| **BaseInfra** | [`base-infra`](https://github.com/TAK-NZ/base-infra)  | Foundation: VPC, ECS, S3, KMS, ACM |
+| **AuthInfra** | [`auth-infra`](https://github.com/TAK-NZ/auth-infra) | SSO via Authentik, LDAP |
+| **TakInfra** | [`tak-infra`](https://github.com/TAK-NZ/tak-infra) | TAK Server |
+| **CloudTAK** | `CloudTAK` (this repo) | CloudTAK web interface and ETL |
+| **MediaInfra** | [`media-infra`](https://github.com/TAK-NZ/media-infra) | Video Server based on Mediamtx |
 
-### Local Development
+**Deployment Order**: BaseInfra must be deployed first, followed by AuthInfra, then TakInfra, CloudTAK, and finally MediaInfra. Each layer imports outputs from the layer below via CloudFormation exports.
 
-Installation outside of the docker environment is also fairly straightforward.
-In the `./api`, perform the following
+## Quick Start
 
-```sh
-npm install
-echo "CREATE DATABASE tak_ps_etl" | psql
-cd web/
-npm install
-npm run build
-cd ..
-npm run dev
+### Prerequisites
+- [AWS Account](https://signin.aws.amazon.com/signup) with configured credentials
+- Base infrastructure stack (`TAK-<n>-BaseInfra`) must be deployed first
+- Authentication infrastructure stack (`TAK-<n>-AuthInfra`) must be deployed first
+- TAK server infrastructure stack (`TAK-<n>-TakInfra`) must be deployed first
+- Public Route 53 hosted zone (e.g., `tak.nz`)
+- [Node.js](https://nodejs.org/) and npm installed
+
+### Installation & Deployment
+
+```bash
+# 1. Install dependencies
+cd cdk && npm install
+
+# 2. Bootstrap CDK (first time only)
+npx cdk bootstrap --profile your-aws-profile
+
+# 3. Deploy development environment
+npm run deploy:dev
+
+# 4. Deploy production environment  
+npm run deploy:prod
 ```
 
-## Initial Configuration
+## Infrastructure Resources
 
-Almost all values with the exception of the initial Postgres Connection string are stored in the database and can be
-changed via the Administrative Interface in the Web UI.
+### Compute & Services
+- **ECS Service** - CloudTAK web application with configurable scaling
+- **ECS Tasks** - ETL processing tasks (data, events, pmtiles)
+- **Application Load Balancer** - HTTP/HTTPS traffic distribution with dual-stack IPv4/IPv6
+- **Target Groups** - Health check and traffic routing
+- **API Gateway** - PMTiles API endpoint with custom domain
 
-Alternatively, values can be configured by setting Environment Variables on launch. Note that if this is done,
-environment variables present at launch they will OVERRIDE any values that might be present in the database
+### Database & Storage
+- **Aurora PostgreSQL** - Serverless v2 (dev) or provisioned instances (prod) with encryption
+- **S3 Buckets** - Asset storage and ALB access logs (imported from BaseInfra)
+- **ECR Repository** - Container image storage (imported from BaseInfra)
 
-### CloudTAK Config Values
+### Processing & Integration
+- **AWS Batch** - Scalable ETL job processing for data, events, and pmtiles
+- **Lambda Functions** - Event-driven processing for S3 notifications and image handling
+- **Secrets Manager** - Application secrets and database credentials
+- **CloudWatch Alarms** - SNS topics and alarms for Lambda function monitoring
 
-Any of the listed config keys present in the `POST /config` API can all be set via Env Vars at startup.
+### Security & DNS
+- **Security Groups** - Fine-grained network access controls
+- **Route 53 Records** - CloudTAK endpoint DNS management with dual-stack support
+- **KMS Encryption** - Data encryption at rest and in transit (imported from BaseInfra)
+- **ACM Certificates** - SSL certificate management (imported from BaseInfra)
 
-To do so, follow the following formatting rules:
-- Append `CLOUDTAK_Config_`
-- Replace any instance of `::` with `_`
-- All characters after `CLOUDTAK_Config_` are case SENSITIVE
+## Docker Image Handling
 
-For example:
-- `media::url` would map to: `CLOUDTAK_Config_media_url`
-- `group::Brown` would map to: `CLOUDTAK_Config_group_Brown`
+This stack uses a **hybrid Docker image strategy** that supports both pre-built images from ECR and local Docker building for maximum flexibility.
 
-## AWS Deployment
+- **Strategy**: See [Docker Image Strategy Guide](docs/DOCKER_IMAGE_STRATEGY.md) for details
+- **CI/CD Mode**: Uses pre-built images for fast deployments (~8 minutes vs ~15 minutes)
+- **Development Mode**: Builds images locally for flexible development
+- **Automatic Fallback**: Seamlessly switches between modes based on context parameters
 
-### 1. Pre-Reqs
+### Docker Images Used
 
-The ETL service assumes several pre-requisite dependencies are deployed before
-initial ETL deployment.
-The following are dependencies which need to be created:
+1. **CloudTAK API**: Web interface and API services
+2. **Events Task**: Event processing container
+3. **PMTiles Task**: Tile generation container
+4. **Data Task**: Data processing container
 
-| Name                  | Notes |
-| --------------------- | ----- |
-| `coe-vpc-<name>`      | VPC & networking to place tasks in - [repo](https://github.com/dfpc-coe/vpc)      |
-| `coe-ecs-<name>`      | ECS Cluster for API Service - [repo](https://github.com/dfpc-coe/ecs)             |
-| `coe-ecr-etl`         | ECR Repository for storing API Images - [repo](https://github.com/dfpc-coe/ecr)   |
-| `coe-ecr-etl-tasks`   | ECR Repository for storing Task Images - [repo](https://github.com/dfpc-coe/ecr)  |
-| `coe-elb-access`      | Centralized ELB Logs - [repo](https://github.com/dfpc-coe/elb-logs)               |
+### Upstream Integration
+- **Configurable Sync**: Weekly sync with upstream repository (configurable via SYNC_MODE)
+- **Sync Modes**: Disabled, main branch, or latest version tag
+- **Branding Application**: TAK.NZ customizations applied after sync
+- **Version Tagging**: Git SHA and version-based image tags
 
-An AWS ACM certificate must also be generated that covers the subdomain that CloudTAK is deployed to as well
-as the second level wildcard. Where in the example below CloudTAK is deployed to ie: `map.example.com` The second
-level wildcard will be used for serving tiles, currently configured to be `tiles.map.example.com`
+### Authentication Integration
+- **Authentik User Creation**: Automatically creates CloudTAK admin user in Authentik
+- **SSO Integration**: Integrates with AuthInfra layer for single sign-on
+- **Admin Email**: Configurable admin email for user creation
 
-IE:
-```
-*.example.com
-*.map.example.com
-```
+## Available Environments
 
-**coe-ecr-etl**
+| Environment | Stack Name | Description | Domain | CloudTAK Cost* | Complete Stack Cost** |
+|-------------|------------|-------------|--------|----------------|----------------------|
+| `dev-test` | `TAK-Dev-CloudTAK` | Cost-optimized development | `map.dev.tak.nz` | ~$45 | ~$200 |
+| `prod` | `TAK-Prod-CloudTAK` | Production-ready deployment | `map.tak.nz` | ~$180 | ~$650 |
 
-Can be created using the [dfpc-coe/ecr](https://github.com/dfpc-coe/ecr) repository.
+*CloudTAK Infrastructure only, **Complete deployment (BaseInfra + AuthInfra + TakInfra + VideoInfra + CloudTAK)  
+Estimated AWS costs for ap-southeast-2, excluding data transfer and usage
 
-From the ecr repo:
-```sh
-npm install
-npx deploy create etl
-```
+## Development Workflow
 
-**coe-ecr-etl-tasks**
+### NPM Scripts
+```bash
+# Development and Testing
+npm run dev                    # Build and test
+npm run test                   # Run tests
+npm run test:coverage          # Generate coverage report
+npm run test:watch             # Run tests in watch mode
 
-Can be created using the [dfpc-coe/ecr](https://github.com/dfpc-coe/ecr) repository.
+# Environment-Specific Deployment
+npm run deploy:dev            # Deploy to dev-test
+npm run deploy:prod           # Deploy to production
+npm run deploy:local:dev      # Deploy dev with local Docker builds
+npm run deploy:local:prod     # Deploy prod with local Docker builds
+npm run synth:dev             # Preview dev infrastructure
+npm run synth:prod            # Preview prod infrastructure
 
-From the ecr repo:
-```sh
-npm install
-npx deploy create etl-tasks
-```
-
-### 2. Installing Dependencies
-
-From the root directory, install the deploy dependencies
-
-```sh
-npm install
-```
-
-### 3. Building Docker Images & Pushing to ECR
-
-An script to build docker images and publish them to your ECR is provided and can be run using:
-
-```
-npm run build
-```
-
-from the root of the project. Ensure that you have created the necessary ECR repositories as descrived in the
-previos step and that you have AWS credentials provided in your current terminal environment as an `aws ecr get-login-password`
-call will be issued.
-
-### Deployment
-
-From the root directory, install the deploy dependencies
-
-```sh
-npm install
+# Infrastructure Management
+npm run cdk:diff:dev          # Show what would change in dev
+npm run cdk:diff:prod         # Show what would change in prod
+npm run cdk:bootstrap         # Bootstrap CDK in account
 ```
 
-Deployment to AWS is handled via AWS Cloudformation. The template can be found in the `./cloudformation`
-directory. The deployment itself is performed by [Deploy](https://github.com/openaddresses/deploy) which
-was installed in the previous step.
 
-The deploy tool can be run via the following
 
-```sh
-npx deploy
+### Configuration System
+
+The project uses **AWS CDK context-based configuration** for consistent deployments:
+
+- **All settings** stored in [`cdk/cdk.json`](cdk/cdk.json) under `context` section
+- **Version controlled** - consistent deployments across team members
+- **Runtime overrides** - use `--context` flag for one-off changes
+- **Environment-specific** - separate configs for dev-test and production
+
+#### Configuration Override Examples
+```bash
+# Override CloudTAK hostname for deployment
+npm run deploy:dev -- --context hostname=cloudtak
+
+# Deploy with different resource allocation
+npm run deploy:prod -- --context taskCpu=4096 --context taskMemory=8192
+
+# Custom stack name
+npm run deploy:dev -- --context stackName=Demo
+
+# Use local Docker builds instead of pre-built images
+npm run deploy:local:dev
 ```
 
-To install it globally - view the deploy [README](https://github.com/openaddresses/deploy)
-
-Deploy uses your existing AWS credentials. Ensure that your `~/.aws/credentials` has an entry like:
-
-```
-[coe]
-aws_access_key_id = <redacted>
-aws_secret_access_key = <redacted>
-```
-
-Then deploy the webhooks sub-stack with:
-
-```
-npx deploy create <stack> --template cloudformation/webhooks.template.js
-```
-
-This will create the API Gateway resources necessary for accepting incoming ETL Data Events
-
-Deployment of the main stack can then be performed via the following:
-
-```
-npx deploy create <stack>
-npx deploy update <stack>
-npx deploy info <stack> --outputs
-npx deploy info <stack> --parameters
-```
-
-Stacks can be created, deleted, cancelled, etc all via the deploy tool. For further information
-information about `deploy` functionality run the following for help.
-
-```sh
-npx deploy
-```
-
-Further help about a specific command can be obtained via something like:
-
-```sh
-npx deploy info --help
-```
-
-### Optional Dependencies that can be deployed at any time
-
-| Name                  | Notes |
-| --------------------- | ----- |
-| `coe-media-<name>`   | Task Definitions for Media Server Support - [repo](ttps://github.com/dfoc-coe/media-infra) |
 
 
-### S3 Bucket Contents
+## 📚 Documentation
 
-An S3 bucket will be created as part of the CloudFormatiom stack that contains geospatial assets
-related to user files, missions, CoTs, etc. The following table is an overview of the prefixes
-in the bucket and their purpose
+- **[🚀 Deployment Guide](docs/DEPLOYMENT_GUIDE.md)** - Comprehensive deployment instructions and configuration options
+- **[🏗️ Architecture Guide](docs/ARCHITECTURE.md)** - Technical architecture and design decisions  
+- **[⚙️ Configuration Guide](docs/PARAMETERS.md)** - Complete configuration management reference
+- **[🐳 Docker Image Strategy](docs/DOCKER_IMAGE_STRATEGY.md)** - Hybrid image strategy for fast CI/CD and flexible development
+- **[🔧 Environment Variables](docs/ENVIRONMENT_VARIABLES.md)** - CloudTAK application configuration via environment variables
 
-| Prefix | Description |
-| ------ | ----------- |
-| `attachment/{sha256}/{file.ext}`  | CoT Attachments by Data Package reported SHA |
-| `data/{data sync id}/{file.ext}`  | CloudTAK managed Data Sync file contents |
-| `import/{UUID}/{file.ext}`        | User Imports |
-| `profile/{email}/{file.ext}`      | User Files |
+## Security Features
 
+### Enterprise-Grade Security
+- **🔑 KMS Encryption** - All data encrypted with customer-managed keys
+- **🛡️ Network Security** - Private subnets with controlled internet access
+- **🔒 IAM Policies** - Least-privilege access patterns throughout
+- **🔐 Container Security** - Non-root containers with minimal privileges
+- **📋 Automated Updates** - Weekly upstream sync with security patches
+
+## Getting Help
+
+### Common Issues
+- **Base Infrastructure** - Ensure base infrastructure stack is deployed first
+- **Route53 Hosted Zone** - Ensure your domain's hosted zone exists before deployment
+- **AWS Permissions** - CDK requires broad permissions for CloudFormation operations
+- **Docker Issues** - Ensure Docker is running for local development
+- **Upstream Conflicts** - Use manual conflict resolution for complex merge conflicts
+
+### Support Resources
+- **AWS CDK Documentation** - https://docs.aws.amazon.com/cdk/
+- **CloudTAK Upstream** - https://github.com/dfpc-coe/CloudTAK
+- **TAK.NZ Project** - https://github.com/TAK-NZ/
+- **Issue Tracking** - Use GitHub Issues for bug reports and feature requests
+
+## Contributing
+
+### Development Process
+1. **Fork Repository** - Create your own fork for development
+2. **Create Branch** - Use feature branches for development
+3. **Test Changes** - Run tests and validate deployment
+4. **Submit PR** - Create pull request with detailed description
+5. **Review Process** - Code review and automated testing
+
+### Upstream Contributions
+- **Bug Fixes** - Submit to upstream dfpc-coe/CloudTAK repository
+- **TAK.NZ Specific** - Keep customizations in this repository
+- **Documentation** - Improve documentation for better maintainability

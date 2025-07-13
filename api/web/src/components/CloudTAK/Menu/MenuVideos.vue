@@ -23,7 +23,7 @@
             <template v-else>
                 <TablerIconButton
                     title='Publish Video Stream'
-                    @click='$router.push(`/menu/videos/remote/new`)'
+                    @click='router.push(`/menu/videos/remote/new`)'
                 >
                     <IconPlus
                         :size='32'
@@ -121,7 +121,7 @@
                             <div class='ms-auto btn-list'>
                                 <TablerIconButton
                                     title='Edit Lease'
-                                    @click.stop='$router.push(`/menu/videos/remote/${connection.uuid}`)'
+                                    @click.stop='router.push(`/menu/videos/remote/${connection.uuid}`)'
                                 >
                                     <IconPencil
                                         :size='24'
@@ -134,7 +134,7 @@
                             v-for='video in videos'
                             :key='video.id'
                             :feature='video'
-                            @click='$router.push(`/cot/${video.id}`)'
+                            @click='router.push(`/cot/${video.id}`)'
                         />
                     </template>
                 </div>
@@ -228,7 +228,7 @@
 import MenuTemplate from '../util/MenuTemplate.vue';
 import VideoLeaseModal from './Videos/VideoLeaseModal.vue';
 import EmptyInfo from '../util/EmptyInfo.vue';
-import Feature from '../util/Feature.vue';
+import Feature from '../util/FeatureRow.vue';
 import { std, stdurl } from '../../../std.ts';
 import COT from '../../../base/cot.ts';
 import VideoLeaseSourceType from '../util/VideoLeaseSourceType.vue';
@@ -253,7 +253,9 @@ import {
 } from '@tabler/icons-vue';
 
 import { ref, watch, onMounted } from 'vue'
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
 const mapStore = useMapStore();
 const floatStore = useFloatStore();
 

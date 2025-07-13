@@ -11,7 +11,19 @@ handlebars.registerHelper('fallback', (...params: Array<unknown>) => {
     return found;
 })
 
-handlebars.registerHelper('htmlstrip', function (text: string) {
+handlebars.registerHelper('slice', (text: string, start: number, end?: number) => {
+    if (text && !isNaN(Number(start)) && !isNaN(Number(end))) {
+        return text.substring(start, end);
+    } else if (text && !isNaN(Number(start))) {
+        return text.substring(start);
+    } else {
+        return '';
+    }
+});
+
+handlebars.registerHelper('htmlstrip', (text: string) => {
+    if (!text) return '';
+
     let addLine = false;
     let addSpace = false;
     const newLine = ['tr'];

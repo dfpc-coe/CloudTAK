@@ -1,10 +1,25 @@
 <template>
     <div class='px-1 pb-2 col-12'>
-        <IconCone :size='18' stroke='1' color='#6b7990' class='ms-2 me-1'/>
-        <label class='subheader user-select-none'>Sensor FOV</label>
+        <IconCone
+            :size='18'
+            stroke='1'
+            color='#6b7990'
+            class='ms-2 me-1'
+        />
+        <label class='subheader user-select-none'>Sensor</label>
 
         <div class='mx-2 py-3'>
             <div class='row g-2 rounded px-2 bg-gray-500 pb-2'>
+                <div class='col-6'>
+                    <label class='subheader user-select-none'>Type</label>
+
+                    <div v-text='sensor.type || "Unknown"' />
+                </div>
+                <div class='col-6'>
+                    <label class='subheader user-select-none'>Model</label>
+                    <div v-text='sensor.model || "Unknown"' />
+                </div>
+
                 <TablerRange
                     v-if='sensor.range !== undefined'
                     v-model='sensor.range'
@@ -66,7 +81,7 @@
 <script setup>
 import { ref, watch } from 'vue'
 import {
-    IconCone
+    IconCone,
 } from '@tabler/icons-vue';
 import {
     TablerRange,

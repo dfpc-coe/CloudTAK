@@ -1,6 +1,7 @@
 import type {
     ProfileOverlay,
-    ProfileOverlay_Create
+    ProfileOverlay_Create,
+    TileJSON
 } from '../types.ts';
 import { DrawToolMode } from '../stores/modules/draw.ts';
 import type { FeatureCollection } from 'geojson';
@@ -204,9 +205,11 @@ export default class Overlay {
             const url = stdurl(this.url);
             url.searchParams.append('token', localStorage.token);
 
+            const tileJSON = await std(url.toString()) as TileJSON 
+
             mapStore.map.addSource(String(this.id), {
+                ...tileJSON,
                 type: 'raster',
-                url: String(url)
             });
         } else if (this.type === 'vector' && this.url) {
             const url = stdurl(this.url);
@@ -258,9 +261,7 @@ export default class Overlay {
             this.styles = [];
         }
 
-        console.error('STYLES', this.styles);
-
-        if (this.type === 'vector' && opts.clickable === undefined) {
+        if (this.type === 'vector' && this. mode !== 'basemap' && opts.clickable === undefined) {
             opts.clickable = this.styles.map((l) => {
                 return { id: l.id, type: 'feat' };
             });
@@ -359,7 +360,10 @@ export default class Overlay {
             mapStore.map.removeLayer(String(l.id));
         }
 
-        mapStore.map.removeSource(String(this.id));
+        if (mapStore.map.getStyle().sources[String(this.id)]) {
+            // Don't crash the map if it already  removed
+            mapStore.map.removeSource(String(this.id));
+        }
     }
 
     async replace(

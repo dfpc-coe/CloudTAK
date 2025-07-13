@@ -1,0 +1,43 @@
+{
+  "name": "@tak-nz/cloudtak-cdk",
+  "version": "1.0.0",
+  "description": "CDK Infrastructure for TAK CloudTAK",
+  "bin": {
+    "cdk": "bin/cdk.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "test": "unset CDK_DEFAULT_ACCOUNT && unset CDK_DEFAULT_REGION && jest",
+    "test:unit": "unset CDK_DEFAULT_ACCOUNT && unset CDK_DEFAULT_REGION && jest test/unit",
+    "test:integration": "unset CDK_DEFAULT_ACCOUNT && unset CDK_DEFAULT_REGION && jest test/integration",
+    "test:watch": "unset CDK_DEFAULT_ACCOUNT && unset CDK_DEFAULT_REGION && jest --watch",
+    "test:coverage": "unset CDK_DEFAULT_ACCOUNT && unset CDK_DEFAULT_REGION && jest --coverage",
+    "cdk": "cdk",
+    "clean": "rm -f bin/*.js bin/*.d.ts lib/*.js lib/*.d.ts lib/constructs/*.js lib/constructs/*.d.ts lib/utils/*.js lib/utils/*.d.ts test/*.js test/*.d.ts; rm -rf cdk.out/*",
+    "dev": "npm run build && npm run test",
+    "deploy:dev": "npm run build && cdk deploy --context envType=dev-test --no-warnings",
+    "deploy:prod": "npm run build && cdk deploy --context envType=prod --no-warnings",
+    "deploy:local:dev": "npm run build && cdk deploy --context envType=dev-test --context usePreBuiltImages=false --no-warnings",
+    "deploy:local:prod": "npm run build && cdk deploy --context envType=prod --context usePreBuiltImages=false --no-warnings",
+    "synth:dev": "npm run build && cdk synth --context envType=dev-test",
+    "synth:prod": "npm run build && cdk synth --context envType=prod",
+    "cdk:diff:dev": "npm run build && cdk diff --context envType=dev-test",
+    "cdk:diff:prod": "npm run build && cdk diff --context envType=prod",
+    "cdk:bootstrap": "cdk bootstrap"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "@types/node": "22.7.9",
+    "aws-cdk": "^2.1020.2",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5",
+    "ts-node": "^10.9.2",
+    "typescript": "~5.6.3"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.167.0",
+    "constructs": "^10.0.0",
+    "source-map-support": "^0.5.21"
+  }
+}
