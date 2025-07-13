@@ -17,13 +17,21 @@ jobs:
   sync-upstream:
     runs-on: ubuntu-latest
     steps:
-      - name: Check if sync is enabled
+      - name: Check sync mode
         run: |
-          if [[ "${{ vars.ENABLE_WEEKLY_SYNC }}" == "false" ]]; then
-            echo "⏸️ Weekly sync is disabled via ENABLE_WEEKLY_SYNC variable"
-            exit 0
-          fi
-          echo "✅ Weekly sync is enabled"
+          SYNC_MODE="${{ vars.SYNC_MODE }}"
+          case "$SYNC_MODE" in
+            "main")
+              echo "✅ Sync mode: main branch"
+              ;;
+            "tag")
+              echo "✅ Sync mode: latest version tag"
+              ;;
+            *)
+              echo "⏸️ Sync disabled (SYNC_MODE not set or invalid)"
+              exit 0
+              ;;
+          esac
       
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,16 +46,38 @@ jobs:
 
       - name: Sync with Upstream
         run: |
+          SYNC_MODE="${{ vars.SYNC_MODE }}"
           git remote add upstream https://github.com/dfpc-coe/CloudTAK.git || true
-          git fetch upstream
+          git fetch upstream --tags
+          
+          # Determine sync target
+          case "$SYNC_MODE" in
+            "main")
+              SYNC_TARGET="upstream/main"
+              SYNC_DESC="main branch"
+              ;;
+            "tag")
+              LATEST_TAG=$(git describe --tags --abbrev=0 upstream/main 2>/dev/null || echo "")
+              if [ -z "$LATEST_TAG" ]; then
+                echo "⚠️ No tags found, falling back to main branch"
+                SYNC_TARGET="upstream/main"
+                SYNC_DESC="main branch (no tags available)"
+              else
+                SYNC_TARGET="$LATEST_TAG"
+                SYNC_DESC="tag $LATEST_TAG"
+              fi
+              ;;
+          esac
+          
+          echo "🔄 Syncing with $SYNC_DESC"
           
           # Create sync branch
           SYNC_BRANCH="sync/upstream-$(date +%Y%m%d)"
           git checkout -b "$SYNC_BRANCH"
           
           # Merge upstream changes
-          if git merge upstream/main --no-edit; then
-            echo "✅ Upstream merge successful"
+          if git merge "$SYNC_TARGET" --no-edit; then
+            echo "✅ Upstream merge successful from $SYNC_DESC"
             
             # Apply branding if script exists
             if [ -f "scripts/apply-branding.sh" ]; then
@@ -61,8 +91,8 @@ jobs:
             
             # Create pull request
             gh pr create \
-              --title "Weekly upstream sync - $(date +%Y-%m-%d)" \
-              --body "Automated sync with upstream CloudTAK repository. Please review changes before merging." \
+              --title "Weekly upstream sync from $SYNC_DESC - $(date +%Y-%m-%d)" \
+              --body "Automated sync with upstream CloudTAK repository from $SYNC_DESC. Please review changes before merging." \
               --head "$SYNC_BRANCH" \
               --base main
           else

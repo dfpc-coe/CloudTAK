@@ -117,9 +117,9 @@ graph TD
 
 **Repository Variables:**
 
-| Variable | Description | Default | Usage |
-|----------|-------------|---------|-------|
-| `ENABLE_WEEKLY_SYNC` | Enable/disable weekly upstream sync | `true` | Set to `false` to temporarily disable weekly sync |
+| Variable | Description | Values | Usage |
+|----------|-------------|--------|-------|
+| `SYNC_MODE` | Controls weekly upstream sync behavior | `main`, `tag`, or unset | `main` = sync with main branch, `tag` = sync with latest version tag, unset = disabled |
 
 ## 6. Verification
 

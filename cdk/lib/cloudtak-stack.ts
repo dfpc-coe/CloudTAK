@@ -132,9 +132,11 @@ export class CloudTakStack extends cdk.Stack {
     
     if (usePreBuiltImages) {
       // Use BaseInfra ECR repository for CI/CD deployments
-      ecrRepository = ecr.Repository.fromRepositoryArn(this, 'ImportedECRRepository',
-        cdk.Fn.importValue(createBaseImportValue(envConfig.stackName, BASE_EXPORT_NAMES.ECR_ARTIFACTS_REPO))
-      );
+      const ecrRepositoryArn = cdk.Fn.importValue(createBaseImportValue(envConfig.stackName, BASE_EXPORT_NAMES.ECR_ARTIFACTS_REPO));
+      ecrRepository = ecr.Repository.fromRepositoryAttributes(this, 'ImportedECRRepository', {
+        repositoryArn: ecrRepositoryArn,
+        repositoryName: cdk.Fn.select(1, cdk.Fn.split('/', cdk.Fn.select(5, cdk.Fn.split(':', ecrRepositoryArn))))
+      });
     } else {
       // Create Docker image assets for local deployments
       dockerImageAsset = new ecrAssets.DockerImageAsset(this, 'CloudTAKDockerAsset', {
@@ -219,9 +221,11 @@ export class CloudTakStack extends cdk.Stack {
     });
 
     // Import ETL ECR repository from BaseInfra
-    const etlEcrRepository = ecr.Repository.fromRepositoryArn(this, 'ImportedETLECRRepository',
-      cdk.Fn.importValue(createBaseImportValue(envConfig.stackName, BASE_EXPORT_NAMES.ECR_ETL_TASKS_REPO))
-    );
+    const etlEcrRepositoryArn = cdk.Fn.importValue(createBaseImportValue(envConfig.stackName, BASE_EXPORT_NAMES.ECR_ETL_TASKS_REPO));
+    const etlEcrRepository = ecr.Repository.fromRepositoryAttributes(this, 'ImportedETLECRRepository', {
+      repositoryArn: etlEcrRepositoryArn,
+      repositoryName: cdk.Fn.select(1, cdk.Fn.split('/', cdk.Fn.select(5, cdk.Fn.split(':', etlEcrRepositoryArn))))
+    });
 
     // Create security groups for different components
     const securityGroups = new SecurityGroups(this, 'SecurityGroups', {
