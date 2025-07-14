@@ -25,5 +25,11 @@ export default ts.config(
             "vue/no-v-model-argument": 0,
             "vue/require-v-for-key": 0
         }
+    },
+    {
+        files: ['src/test/**/*.ts'],
+        rules: {
+            "@typescript-eslint/no-explicit-any": "off"
+        }
     }
 )

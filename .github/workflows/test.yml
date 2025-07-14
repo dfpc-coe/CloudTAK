@@ -11,6 +11,9 @@ on:
       - reopened
       - ready_for_review
 
+permissions:
+  contents: read
+
 jobs:
   data:
     if: github.event.pull_request.draft == false
@@ -119,3 +122,33 @@ jobs:
 
       - name: Docker Cleanup
         run: docker compose kill
+
+  web:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{github.event.pull_request.head.sha || github.sha}}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org/
+
+      - name: Install
+        working-directory: ./api/web/
+        run: npm install
+
+      - name: Lint
+        working-directory: ./api/web/
+        run: npm run lint
+
+      - name: Check
+        working-directory: ./api/web/
+        run: npm run check
+
+      - name: Test
+        working-directory: ./api/web/
+        run: npm run test:run
