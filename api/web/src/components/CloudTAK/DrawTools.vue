@@ -122,6 +122,16 @@
                         />
                         <span class='ps-2'>Lasso Select</span>
                     </div>
+                    <div
+                        class='col-12 py-1 px-2 hover-button cursor-pointer user-select-none'
+                        @click='modal = ModalInputType.IMPORT'
+                    >
+                        <IconFileImport
+                            :size='25'
+                            stroke='1'
+                        />
+                        <span class='ps-2'>GeoJSON Import</span>
+                    </div>
                 </div>
             </div>
         </template>
@@ -141,6 +151,11 @@
         v-if='modal === ModalInputType.RANGE'
         @close='modal = ModalInputType.NONE'
     />
+
+    <GeoJSONInput
+        v-if='modal === ModalInputType.IMPORT'
+        @close='modal = ModalInputType.NONE'
+    />
 </template>
 
 <script setup lang='ts'>
@@ -149,9 +164,11 @@ import { DrawToolMode } from '../../stores/modules/draw.ts';
 import CoordInput from './CoordInput.vue';
 import LostPersonBehaviorInput from './LostPersonBehaviorInput.vue';
 import RangeInput from './RangeInput.vue';
+import GeoJSONInput from './GeoJSONInput.vue';
 import {
     IconWalk,
     IconLasso,
+    IconFileImport,
     IconCone,
     IconCircle,
     IconVector,
@@ -172,6 +189,7 @@ enum ModalInputType {
     NONE = 'none',
     RANGE = 'range',
     POINT = 'point',
+    IMPORT = 'import',
     LOST_PERSON_BEHAVIOR = 'lost_person_behavior',
 }
 

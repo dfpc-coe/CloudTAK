@@ -262,6 +262,7 @@ export default async function router(schema: Schema, config: Config) {
             publish: Type.Optional(Type.Boolean({
                 description: 'Publish stream URL to TAK Server Video Manager'
             })),
+            proxy: Type.Optional(Type.String()),
         }),
         res: Type.Object({
             lease: VideoLeaseResponse,
@@ -312,6 +313,7 @@ export default async function router(schema: Schema, config: Config) {
                 source_id: req.body.source_id,
                 source_type: req.body.source_type,
                 source_model: req.body.source_model,
+                proxy: req.body.proxy
             }, {
                 connection: req.params.connectionid,
                 admin: profile ? profile.system_admin : false
