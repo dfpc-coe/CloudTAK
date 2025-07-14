@@ -115,13 +115,13 @@ import {
     IconFileImport,
 } from '@tabler/icons-vue';
 import FeatureRow from './util/FeatureRow.vue';
-import type { Feature } from '../../types.ts';
+import type { InputFeature } from '../../types.ts';
 
 const mapStore = useMapStore();
 
 const error = ref<Error | undefined>();
 const file = ref<File | undefined>();
-const feats = ref<Feature[]>([]);
+const feats = ref<InputFeature[]>([]);
 
 const emit = defineEmits(['close', 'done']);
 
@@ -156,7 +156,7 @@ async function uploadGeoJSON() {
             // TODO Ideally CloudTAK in the future will use CoTs natively so we will
             // Remove this To_GeoJSON conversion
 
-            const name = file.value.name ? file.value.name.replace(/\..*$/, '') : new Date().toISOString().replace(/T.*/, '') + ' Import';
+            const name = file.value?.name ? file.value.name.replace(/\..*$/, '') : new Date().toISOString().replace(/T.*/, '') + ' Import';
 
             for (const feat of fc.features) {
                 try {
@@ -164,7 +164,9 @@ async function uploadGeoJSON() {
 
                     norm.path = `/${name}/`
 
-                    feats.value.push(norm);
+                    // TODO Remote once we support the metadata property throughout
+                    // @ts-expect-error The "metadata" property is jamming us up - Once we swithc to node-cot this will be solved
+                    feats.value.push(norm)
                 } catch (err) {
                     console.error('Error normalizing GeoJSON feature:', feat, err);
                 }
