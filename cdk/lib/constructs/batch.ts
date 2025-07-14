@@ -95,6 +95,7 @@ export class Batch extends Construct {
     const privateSubnets = vpc.selectSubnets({ subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS });
 
     this.computeEnvironment = new batch.CfnComputeEnvironment(this, 'ComputeEnvironment', {
+      computeEnvironmentName: `TAK-${envConfig.stackName}-CloudTAK-compute-env`,
       type: 'MANAGED',
       state: 'ENABLED',
       serviceRole: batchServiceRole.roleArn,
@@ -116,6 +117,7 @@ export class Batch extends Construct {
         })();
     
     this.jobDefinition = new batch.CfnJobDefinition(this, 'JobDefinition', {
+      jobDefinitionName: `TAK-${envConfig.stackName}-CloudTAK-data-job`,
       type: 'container',
       platformCapabilities: ['FARGATE'],
       retryStrategy: { attempts: 1 },
@@ -140,6 +142,7 @@ export class Batch extends Construct {
     });
 
     this.jobQueue = new batch.CfnJobQueue(this, 'JobQueue', {
+      jobQueueName: `TAK-${envConfig.stackName}-CloudTAK-queue`,
       state: 'ENABLED',
       priority: 1,
       computeEnvironmentOrder: [{
