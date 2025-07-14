@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v10.32.1 - 2025-07-14
+
+- :rocket: Truncate coordinates used for snapping
+
 ### v10.32.0 - 2025-07-14
 
 - :rocket: Use Vue3 Teleport for modals to fix a couple bugs where modals weren't taking over the full page and instead being crammed inside a small div
