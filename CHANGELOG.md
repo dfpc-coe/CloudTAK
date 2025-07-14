@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v10.31.0 - 2025-07-13
+
+- :tada: Support importing arbitrary GeoJSON files
+
 ### v10.30.0 - 2025-07-12
 
 - :tada: Support the Data Sync QR Code
