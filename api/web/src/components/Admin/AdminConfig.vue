@@ -131,21 +131,10 @@
                     class='col-lg-12 py-2 border rounded'
                 >
                     <div class='row'>
-                        <div class='col-lg-12'>
-                            <div
-                                class='alert alert-info d-flex'
-                                role='alert'
-                            >
-                                <div class='alert-icon'>
-                                    <IconInfoCircle
-                                        :size='24'
-                                        stroke='1'
-                                    />
-                                </div>
-
-                                These are the default display settings for new users. Existing users will not be affected.
-                            </div>
-                        </div>
+                        <TablerInlineAlert
+                            title='Application Behavior'
+                            description='These are the default display settings for new users. Existing users will not be affected.'
+                        />
 
                         <div
                             v-for='display in Object.keys(config).filter(key => key.startsWith("display::"))'
@@ -305,6 +294,7 @@ import { ref, onMounted } from 'vue';
 import { std, stdurl } from '../../std.ts';
 import {
     TablerLoading,
+    TablerInlineAlert,
     TablerIconButton,
     TablerEnum,
     TablerToggle,
@@ -313,7 +303,6 @@ import {
 import UploadLogo from '../util/UploadLogo.vue';
 import {
     IconPencil,
-    IconInfoCircle,
     IconChevronRight,
     IconChevronDown,
 } from '@tabler/icons-vue';
