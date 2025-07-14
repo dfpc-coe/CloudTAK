@@ -12,9 +12,11 @@ if [[ "$1" == "--current-branch" ]]; then
 fi
 
 # Check if upstream remote exists
+ADDED_UPSTREAM=false
 if ! git remote get-url upstream >/dev/null 2>&1; then
     echo "❌ Upstream remote not found. Adding dfpc-coe/CloudTAK as upstream..."
     git remote add upstream https://github.com/dfpc-coe/CloudTAK.git
+    ADDED_UPSTREAM=true
 fi
 
 # Fetch latest from upstream
@@ -47,6 +49,12 @@ fi
 if [ -f "branding/build-cdk.sh" ]; then
     echo "🎨 Applying branding..."
     ./branding/build-cdk.sh
+fi
+
+# Clean up upstream remote if we added it
+if [[ "$ADDED_UPSTREAM" == "true" ]]; then
+    echo "🧹 Removing temporary upstream remote..."
+    git remote remove upstream
 fi
 
 echo "✅ Sync complete!"
