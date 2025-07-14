@@ -162,9 +162,7 @@ async function createLogin() {
         const login = await std('/api/login', {
             method: 'POST',
             body: {
-                username: body.value.username.match(/[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/)
-                    ? body.value.username.toLowerCase()
-                    : body.value.username,
+                username: body.value.username,
                 password: body.value.password
              }
         }) as Login_CreateRes
