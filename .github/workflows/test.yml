@@ -11,6 +11,9 @@ on:
       - reopened
       - ready_for_review
 
+permissions:
+  contents: read
+
 jobs:
   data:
     if: github.event.pull_request.draft == false
