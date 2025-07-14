@@ -23,8 +23,12 @@ concurrency:
 
 jobs:
   # Run CDK unit tests and linting
-  test:
+  cdk-test:
     uses: ./.github/workflows/cdk-test.yml
+
+  # Run CloudTAK application tests
+  cloudtak-test:
+    uses: ./.github/workflows/cloudtak-test.yml
 
   # Build Docker images for demo environment
   build-images:
@@ -36,7 +40,7 @@ jobs:
   validate-prod:
     runs-on: ubuntu-latest
     environment: demo
-    needs: [test]
+    needs: [cdk-test, cloudtak-test]
     steps:
       - name: Checkout
         uses: actions/checkout@v4

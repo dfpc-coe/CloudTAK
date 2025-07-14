@@ -20,8 +20,13 @@ permissions:
   contents: read
 
 jobs:
-  test:
+  # Run CDK unit tests and linting
+  cdk-test:
     uses: ./.github/workflows/cdk-test.yml
+
+  # Run CloudTAK application tests
+  cloudtak-test:
+    uses: ./.github/workflows/cloudtak-test.yml
 
   build-images:
     uses: ./.github/workflows/production-build.yml
@@ -30,7 +35,7 @@ jobs:
   deploy-production:
     runs-on: ubuntu-latest
     environment: production
-    needs: [test, build-images]
+    needs: [cdk-test, cloudtak-test, build-images]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
