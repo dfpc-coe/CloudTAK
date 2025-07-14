@@ -275,6 +275,28 @@ export default class AtlasDatabase {
     }
 
     /**
+     * Iterate over all CoTs and delete toTs that match the filter pattern
+     * @param filter - JSONata filter expression to match CoTs against
+     */
+    async filterRemove(
+        filter: string,
+        opts: {
+            mission?: boolean,
+        } = {}
+    ): Promise<void> {
+        const cots = await this.filter(filter, opts);
+
+        const all = [];
+        for (const cot of cots.values()) {
+            all.push(this.remove(cot.id, {
+                mission: opts.mission || false
+            }));
+        }
+
+        await Promise.allSettled(all);
+    }
+
+    /**
      * Iterate over cot messages and return list of CoTs that match filter pattern
      */
     async filter(

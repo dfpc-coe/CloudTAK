@@ -89,6 +89,14 @@
                             stroke='2'
                         />
                         <span v-text='path.name.replace(/(^\/|\/$)/g, "")' />
+
+                        <div class='ms-auto btn-list hover-button-hidden'>
+                            <TablerDelete
+                                displaytype='Icon'
+                                :size='20'
+                                @delete='deletePath(path)'
+                            />
+                        </div>
                     </div>
                     <div
                         v-if='path.opened'
@@ -145,6 +153,7 @@ import {
     TablerNone,
     TablerInput,
     TablerLoading,
+    TablerDelete,
     TablerDropdown,
     TablerIconButton,
     TablerRefreshButton
@@ -340,6 +349,16 @@ async function download(format: string): Promise<void> {
 async function closePath(path: Path): Promise<void> {
     path.opened = false;
     path.cots.clear();
+}
+
+async function deletePath(path: Path): Promise<void> {
+    if (path.sortable) {
+        path.sortable.destroy();
+        path.sortable = undefined;
+    }
+
+    await mapStore.worker.db.filterRemove(`path = "${path.name}" and properties.archived`);
+    await refresh();
 }
 
 async function openPath(path: Path): Promise<void> {
