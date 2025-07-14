@@ -128,8 +128,8 @@ const emit = defineEmits(['close', 'done']);
 const loading = ref(false);
 
 async function processUpload(event: Event) {
-    if (!event.target || !(event.target instanceof HTMLInputElement)) return;
-    if (event.target.files?.length === 0) return;
+    if (!event.target || !(event.target instanceof HTMLInputElement) || !event.target.files) return;
+    if (event.target.files.length === 0) return;
 
     file.value = event.target.files[0];
 }
@@ -145,7 +145,9 @@ async function uploadGeoJSON() {
 
     reader.onload = async (e) => {
         try {
-            const fc = JSON.parse(e.target.result);
+            if (!e.target || !e.target.result) throw new Error('File read error: No content');
+
+            const fc = JSON.parse(String(e.target.result));
 
             if (!fc || !fc.features || !Array.isArray(fc.features)) {
                 throw new Error('Invalid GeoJSON format');
