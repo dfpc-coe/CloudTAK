@@ -110,7 +110,7 @@ import {
 import { std } from '../../std.ts';
 import { useMapStore } from '../../stores/map.ts';
 import GenericAlert from '../util/GenericAlert.vue';
-import { from_geojson, to_geojson } from '@tak-ps/node-cot/from_geojson';
+import { normalize_geojson } from '@tak-ps/node-cot/normalize_geojson';
 import {
     IconFile,
     IconPackage,
@@ -153,6 +153,15 @@ async function uploadGeoJSON() {
 
             if (!fc || !fc.features || !Array.isArray(fc.features)) {
                 throw new Error('Invalid GeoJSON format');
+            }
+
+            // TODO Ideally CloudTAK in the future will use CoTs natively so we will
+            // Remove this To_GeoJSON conversion
+
+            for (const feat of fc.features) {
+                const cot = await from_geojson(feat);
+
+                console.error(cot);
             }
 
 
