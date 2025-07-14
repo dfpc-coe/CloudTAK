@@ -38,6 +38,14 @@ export default defineConfig(({ mode }) => {
         server: {
             port: 8080,
         },
+        test: {
+            environment: 'jsdom',
+            globals: true,
+            setupFiles: ['./src/test/setup.ts'],
+            alias: {
+                '@tak-ps/vue-tabler': '/src/test/__mocks__/@tak-ps/vue-tabler.ts',
+            },
+        },
     }
 
     if (process.env.VITE_MODE !== 's3') {
