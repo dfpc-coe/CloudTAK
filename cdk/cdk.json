@@ -48,7 +48,7 @@
       },
       "general": {
         "removalPolicy": "DESTROY",
-        "enableDetailedLogging": true,
+        "enableDetailedLogging": false,
         "enableContainerInsights": false
       },
       "s3": {
