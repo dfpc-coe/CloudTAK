@@ -180,7 +180,8 @@ export class CloudTakApi extends Construct {
                 'logs:DeleteLogGroup',
                 'logs:CreateLogGroup',
                 'logs:PutRetentionPolicy',
-                'logs:TagResource'
+                'logs:TagResource',
+                'logs:ListTagsForResource'
               ],
               resources: [
                 `arn:${cdk.Stack.of(this).partition}:logs:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:log-group:/aws/batch/job*`,
