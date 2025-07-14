@@ -67,7 +67,7 @@
                             <div
                                 v-for='agency in list.items'
                                 :key='agency.id'
-                                class='hover-light px-2 py-2 cursor-pointer row rounded col-12'
+                                class='hover px-2 py-2 cursor-pointer row rounded col-12'
                                 @click='selected = agency'
                             >
                                 <div class='d-flex align-items-center'>

@@ -100,7 +100,7 @@
                         <div
                             v-for='connection in connections.videoConnections'
                             :key='connection.uuid'
-                            class='d-flex align-items-center px-3 py-2 hover-dark cursor-pointer'
+                            class='d-flex align-items-center px-3 py-2 hover cursor-pointer'
                             @click='floatStore.addConnection(connection)'
                         >
                             <span class='me-1'>
@@ -163,7 +163,7 @@
                     v-for='l in leases.items'
                     v-else
                     :key='l.id'
-                    class='col-12 py-2 px-3 d-flex align-items-center hover-dark cursor-pointer'
+                    class='col-12 py-2 px-3 d-flex align-items-center hover cursor-pointer'
                     @click='lease = l'
                 >
                     <div class='row g-0 w-100'>

@@ -33,7 +33,7 @@
                     :key='cot.id'
                 >
                     <div
-                        class='col-12 py-2 px-3 d-flex align-items-center hover-dark user-select-none cursor-pointer'
+                        class='col-12 py-2 px-3 d-flex align-items-center hover user-select-none cursor-pointer'
                         @click='clickRoute(cot)'
                     >
                         <div class='col-auto'>

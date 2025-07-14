@@ -53,7 +53,7 @@
             :key='l.id'
         >
             <div
-                class='hover-light cursor-pointer'
+                class='hover cursor-pointer'
                 @click='open.has(l.id) ? open.delete(l.id) : open.add(l.id)'
             >
                 <div class='px-3 py-2 d-flex align-items-center'>

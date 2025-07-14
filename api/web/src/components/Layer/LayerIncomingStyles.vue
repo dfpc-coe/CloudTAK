@@ -125,7 +125,7 @@
                         <div
                             tabindex='0'
                             role='menuitem'
-                            class='cursor-pointer hover-light list-group-item list-group-item-action'
+                            class='cursor-pointer hover list-group-item list-group-item-action'
                             @click='query = q_idx'
                         >
                             <div class='d-flex'>
@@ -148,7 +148,7 @@
             </template>
             <template v-else-if='query !== null'>
                 <div class='card-body'>
-                    <div class='col-md-12 hover-light rounded px-2 py-2'>
+                    <div class='col-md-12 hover rounded px-2 py-2'>
                         <TablerInput
                             v-model='queries[query].query'
                             :disabled='disabled'

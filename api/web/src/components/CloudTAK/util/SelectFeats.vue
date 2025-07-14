@@ -68,7 +68,7 @@
 
                         <template #dropdown>
                             <div
-                                class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2'
+                                class='cursor-pointer col-12 hover d-flex align-items-center px-2'
                                 @click='share = ShareType.PACKAGE'
                             >
                                 <IconPackages
@@ -78,7 +78,7 @@
                                 New Data Package
                             </div>
                             <div
-                                class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2'
+                                class='cursor-pointer col-12 hover d-flex align-items-center px-2'
                                 @click='share = ShareType.MISSION'
                             >
                                 <IconAmbulance
@@ -88,7 +88,7 @@
                                 Add to Data Sync
                             </div>
                             <div
-                                class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2'
+                                class='cursor-pointer col-12 hover d-flex align-items-center px-2'
                                 @click='deleteFeatures'
                             >
                                 <IconTrash
