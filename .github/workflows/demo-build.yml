@@ -58,7 +58,7 @@ jobs:
         run: |
           ECR_REPO_ARN=$(aws cloudformation describe-stacks \
             --stack-name TAK-${{ vars.STACK_NAME }}-BaseInfra \
-            --query 'Stacks[0].Outputs[?OutputKey==`EcrRepoArnOutput`].OutputValue' \
+            --query 'Stacks[0].Outputs[?OutputKey==`EcrArtifactsRepoArnOutput`].OutputValue' \
             --output text)
           
           if [[ -z "$ECR_REPO_ARN" ]]; then
