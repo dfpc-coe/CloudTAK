@@ -363,7 +363,6 @@ export default class TileJSON {
                     return;
                 }
 
-
                 const tiles = geojsonvt({
                     type: 'FeatureCollection',
                     features: fc.features.map((feat) => {

@@ -13,7 +13,7 @@ import { WorkerMessageType } from '../base/events.ts';
 import type { GeoJSONSourceDiff, LngLatLike } from 'maplibre-gl';
 import { booleanWithin } from '@turf/boolean-within';
 import type { Polygon } from 'geojson';
-import type { Feature, APIList } from '../types.ts';
+import type { InputFeature, Feature, APIList } from '../types.ts';
 import type { Mission, MissionRole } from '../types.ts';
 
 type NestedArray = {
@@ -470,7 +470,7 @@ export default class AtlasDatabase {
                         continue;
                     }
 
-                    sub.cots.delete(change.contentUid);
+                    await sub.deleteFeature(change.contentUid);
                     updateGuid = task.properties.mission.guid;
                 }
             }
@@ -508,7 +508,7 @@ export default class AtlasDatabase {
      * @param opts.mission_guid - Explicitly use Mission Store
      */
     async add(
-        feat: Feature,
+        feature: InputFeature,
         opts?: {
             skipSave?: boolean;
             skipBroadcast?: boolean;
@@ -518,6 +518,10 @@ export default class AtlasDatabase {
         }
     ): Promise<void> {
         if (!opts) opts = {};
+
+        feature.properties.id = feature.id;
+
+        const feat = feature as Feature;
 
         if (opts.authored) {
             feat.properties.creator = await this.atlas.profile.creator();
@@ -540,7 +544,7 @@ export default class AtlasDatabase {
                 mode_id: mission_guid
             }, opts);
 
-            sub.cots.set(String(cot.id), cot);
+            sub.updateFeature(cot);
 
             this.atlas.postMessage({
                 type: WorkerMessageType.Mission_Change_Feature,
