@@ -44,7 +44,7 @@
                 <div
                     v-for='(mission, mission_it) in filteredList'
                     :key='mission_it'
-                    class='cursor-pointer col-12 py-2 hover-dark'
+                    class='cursor-pointer col-12 py-2 hover'
                     @click='openMission(mission, false)'
                 >
                     <div class='px-3 d-flex'>

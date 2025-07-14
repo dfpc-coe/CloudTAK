@@ -89,7 +89,7 @@
                     <div
                         v-for='feature of palette.features'
                         :key='feature.uuid'
-                        class='hover-light px-2 py-2 cursor-pointer d-flex align-items-center rounded'
+                        class='hover px-2 py-2 cursor-pointer d-flex align-items-center rounded'
                         @click='router.push(`/admin/palette/${route.params.palette}/feature/${feature.uuid}`)'
                     >
                         <IconPoint

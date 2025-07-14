@@ -34,7 +34,7 @@
                         v-for='chat in chats.items'
                         role='menuitem'
                         tabindex='0'
-                        class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'
+                        class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover'
                         @click='$router.push(`/menu/chats/${chat.chatroom}`)'
                     >
                         <IconUser

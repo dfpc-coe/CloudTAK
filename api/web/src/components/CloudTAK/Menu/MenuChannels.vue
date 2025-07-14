@@ -57,9 +57,9 @@
                 <div
                     v-for='ch in processChannels'
                     :key='ch.name'
-                    class='col-lg-12 hover-dark'
+                    class='col-lg-12 hover'
                 >
-                    <div class='hover-dark'>
+                    <div class='hover'>
                         <div class='px-2'>
                             <div class='col-12 py-2 px-2 d-flex align-items-center'>
                                 <IconEye

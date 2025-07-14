@@ -1,5 +1,5 @@
 <template>
-    <div class='col-12 row g-0 hover-dark'>
+    <div class='col-12 row g-0 hover'>
         <div class='col-12'>
             <label class='subheader mx-2'>National Weather Service</label>
         </div>

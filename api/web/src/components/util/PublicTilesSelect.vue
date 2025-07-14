@@ -53,7 +53,7 @@
                         v-else
                     >
                         <div
-                            class='hover-light px-2 py-2 cursor-pointer rounded user-select-none d-flex align-items-center'
+                            class='hover px-2 py-2 cursor-pointer rounded user-select-none d-flex align-items-center'
                             @click='select(task)'
                         >
                             <div v-text='task.name.replace(/^public\//, "").replace(/\.pmtiles$/, "")' />

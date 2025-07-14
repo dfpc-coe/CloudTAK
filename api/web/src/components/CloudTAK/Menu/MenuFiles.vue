@@ -49,7 +49,7 @@
                     :key='asset.name'
                 >
                     <div
-                        class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'
+                        class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover'
                         @click='opened.has(asset.name) ? opened.delete(asset.name) : opened.add(asset.name)'
                     >
                         <div class='col-auto'>
@@ -86,7 +86,7 @@
                         <div class='rounded bg-child'>
                             <div
                                 v-if='asset.visualized'
-                                class='cursor-pointer rounded-top col-12 hover-dark d-flex align-items-center px-2 py-2 user-select-none'
+                                class='cursor-pointer rounded-top col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
                                 @click.stop.prevent='createOverlay(asset)'
                             >
                                 <IconMapPlus
@@ -97,7 +97,7 @@
                             </div>
                             <div
                                 v-else
-                                class='rounded-top col-12 hover-dark d-flex align-items-center px-2 py-2 user-select-none'
+                                class='rounded-top col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
                             >
                                 <IconMapOff
                                     :size='32'
@@ -107,7 +107,7 @@
                             </div>
 
                             <div
-                                class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2 py-2 user-select-none'
+                                class='cursor-pointer col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
                                 @click.stop.prevent='downloadAsset(asset)'
                             >
                                 <IconDownload
@@ -117,7 +117,7 @@
                                 <span class='mx-2'>Download Original</span>
                             </div>
                             <div
-                                class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2 py-2 user-select-none'
+                                class='cursor-pointer col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
                                 @click.stop.prevent='shareToPackage = asset.name'
                             >
                                 <IconPackage
@@ -129,7 +129,7 @@
 
                             <TablerDelete
                                 displaytype='menu'
-                                class='hover-dark rounded-bottom'
+                                class='hover rounded-bottom'
                                 label='Delete File'
                                 @delete='deleteAsset(asset)'
                             />

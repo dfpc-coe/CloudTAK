@@ -40,7 +40,7 @@
                     key='fit'
                 >
                     <div
-                        class='row hover-dark px-2 py-2 cursor-pointer user-select-none'
+                        class='row hover px-2 py-2 cursor-pointer user-select-none'
                         @click='opened.has(fit) ? opened.delete(fit) : opened.add(fit)'
                     >
                         <div

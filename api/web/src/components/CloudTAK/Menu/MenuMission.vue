@@ -25,7 +25,7 @@
                 <template #dropdown>
                     <div clas='col-12'>
                         <div
-                            class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2 py-2'
+                            class='cursor-pointer col-12 hover d-flex align-items-center px-2 py-2'
                             @click='shareToPackageSetup'
                         >
                             <IconPackages
@@ -35,7 +35,7 @@
                             <span class='mx-2'>Export Data Package</span>
                         </div>
                         <div
-                            class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2 py-2'
+                            class='cursor-pointer col-12 hover d-flex align-items-center px-2 py-2'
                             @click='exportToPackage'
                         >
                             <IconFileZip

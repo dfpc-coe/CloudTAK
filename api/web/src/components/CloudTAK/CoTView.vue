@@ -162,7 +162,7 @@
                                         <div
                                             v-if='cot.properties.attachments === undefined'
                                             role='button'
-                                            class='hover-dark px-2 py-2 d-flex align-items-center'
+                                            class='hover px-2 py-2 d-flex align-items-center'
                                             @click='updateProperty("attachments", [])'
                                         >
                                             <IconPaperclip
@@ -175,7 +175,7 @@
                                         <div
                                             v-if='cot.properties.video === undefined'
                                             role='button'
-                                            class='hover-dark px-2 py-2 d-flex align-items-center'
+                                            class='hover px-2 py-2 d-flex align-items-center'
                                             @click='updateProperty("video", { url: "" })'
                                         >
                                             <IconMovie
@@ -188,7 +188,7 @@
                                         <div
                                             v-if='cot.properties.sensor === undefined'
                                             role='button'
-                                            class='hover-dark px-2 py-2 d-flex align-items-center'
+                                            class='hover px-2 py-2 d-flex align-items-center'
                                             @click='updateProperty("sensor", {})'
                                         >
                                             <IconCone
@@ -716,7 +716,7 @@
                 class='col-12 px-1 pb-2'
             >
                 <div
-                    class='col-12 py-2 d-flex align-items-center hover-dark cursor-pointer user-select-none'
+                    class='col-12 py-2 d-flex align-items-center hover cursor-pointer user-select-none'
                     @click='chevrons.has("metadata") ? chevrons.delete("metadata") : chevrons.add("metadata")'
                 >
                     <TablerIconButton

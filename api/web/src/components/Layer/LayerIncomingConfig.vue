@@ -86,25 +86,25 @@
                                         class='px-1 py-1'
                                     >
                                         <li
-                                            class='py-1 px-1 cursor-pointer hover-light'
+                                            class='py-1 px-1 cursor-pointer hover'
                                             @click='incoming.cron = "rate(1 minute)"'
                                         >
                                             rate(1 minute)
                                         </li>
                                         <li
-                                            class='py-1 px-1 cursor-pointer hover-light'
+                                            class='py-1 px-1 cursor-pointer hover'
                                             @click='incoming.cron = "rate(5 minutes)"'
                                         >
                                             rate(5 minutes)
                                         </li>
                                         <li
-                                            class='py-1 px-1 cursor-pointer hover-light'
+                                            class='py-1 px-1 cursor-pointer hover'
                                             @click='incoming.cron = "cron(15 10 * * ? *)"'
                                         >
                                             cron(15 10 * * ? *)
                                         </li>
                                         <li
-                                            class='py-1 px-1 cursor-pointer hover-light'
+                                            class='py-1 px-1 cursor-pointer hover'
                                             @click='incoming.cron = "cron(0/5 8-17 ? * MON-FRI *)"'
                                         >
                                             cron(0/5 8-17 ? * MON-FRI *)
