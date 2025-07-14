@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v10.32.0 - 2025-07-14
+
+- :rocket: Use Vue3 Teleport for modals to fix a couple bugs where modals weren't taking over the full page and instead being crammed inside a small div
+- :rocket: Move Theme state to HTML element for better thematic support throughout the app
+- :rocket: Make `hover` generic based on theme, replacing hardcoded `hover-dark` and `hover-light`
+- :rocket: Remove instances of `bg-white` and let the theme do it's magic
+
 ### v10.31.0 - 2025-07-13
 
 - :tada: Support importing arbitrary GeoJSON files
