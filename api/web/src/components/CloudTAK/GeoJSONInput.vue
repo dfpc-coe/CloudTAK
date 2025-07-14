@@ -9,7 +9,7 @@
         />
         <div class='modal-header text-white'>
             <div class='d-flex align-items-center'>
-                <IconPackage
+                <IconFileImport
                     :size='28'
                     stroke='1'
                 />
@@ -25,21 +25,23 @@
                 <div class='col-12'>
                     <TablerFileInput
                         type='file'
-                        accept=".json, .geojson"
-                        @change='processUpload($event)'
+                        accept='.json, .geojson'
                         label='File'
+                        @change='processUpload($event)'
                     />
                 </div>
 
                 <div class='col-12 pt-3'>
-                    <GenericAlert
+                    <TablerInlineAlert
                         v-if='error'
+                        title='An Error Occurred'
                         :description='error.message'
                     />
                 </div>
 
                 <div class='col-12 pt-3'>
-                    <GenericAlert
+                    <TablerInlineAlert
+                        title='FYI'
                         description='Large GeoJSON files should be uploaded via the Imports menu'
                     />
                 </div>
@@ -55,17 +57,17 @@
                 </div>
             </div>
             <div
-                v-if='feats.length'
+                v-else-if='feats.length'
                 class='row mx-2'
             >
-                <div v-if='feats.length' class='col-12 pt-3'>
-                    <label class='mx-2 user-select-none'>Contents:</label>
+                <div class='col-12 pt-3'>
+                    <label class='mx-2 user-select-none'>Features To Import:</label>
 
                     <div
                         v-if='feats.length !== 0'
                         class='col-12 overflow-auto'
                         style='
-                            max-height: 20vh;
+                            max-height: 40vh;
                         '
                     >
                         <FeatureRow
@@ -80,16 +82,16 @@
                         v-else
                         :compact='true'
                         :create='false'
-                        label='Contents'
+                        label='Features'
                     />
                 </div>
 
                 <div class='col-12 pt-3'>
                     <TablerButton
-                        class='w-100'
-                        @click='share'
+                        class='btn-primary w-100'
+                        @click='saveToMap'
                     >
-                        Create
+                        Save To Map
                     </TablerButton>
                 </div>
             </div>
@@ -99,28 +101,23 @@
 
 <script setup lang='ts'>
 import { ref } from 'vue';
-import type { PropType } from 'vue';
 import {
     TablerNone,
     TablerModal,
     TablerLoading,
     TablerButton,
+    TablerInlineAlert,
     TablerFileInput,
 } from '@tak-ps/vue-tabler';
-import { std } from '../../std.ts';
 import { useMapStore } from '../../stores/map.ts';
-import GenericAlert from '../util/GenericAlert.vue';
 import { normalize_geojson } from '@tak-ps/node-cot/normalize_geojson';
 import {
-    IconFile,
-    IconPackage,
+    IconFileImport,
 } from '@tabler/icons-vue';
-import { useRouter } from 'vue-router';
 import FeatureRow from './util/FeatureRow.vue';
 import type { Feature } from '../../types.ts';
 
 const mapStore = useMapStore();
-const router = useRouter();
 
 const error = ref<Error | undefined>();
 const file = ref<File | undefined>();
@@ -143,7 +140,6 @@ async function uploadGeoJSON() {
     loading.value = true;
     feats.value = [];
 
-
     const reader = new FileReader();
     reader.readAsText(file.value);
 
@@ -159,9 +155,11 @@ async function uploadGeoJSON() {
             // Remove this To_GeoJSON conversion
 
             for (const feat of fc.features) {
-                const cot = await from_geojson(feat);
-
-                console.error(cot);
+                try {
+                    feats.value.push(await normalize_geojson(feat));
+                } catch (err) {
+                    console.error('Error normalizing GeoJSON feature:', feat, err);
+                }
             }
 
 
@@ -171,6 +169,20 @@ async function uploadGeoJSON() {
             error.value = err instanceof Error ? err : new Error(String(err));
         }
     };
+}
 
+async function saveToMap() {
+    loading.value = true;
+
+    for (const feat of feats.value) {
+        await mapStore.worker.db.add(JSON.parse(JSON.stringify(feat)), {
+            authored: true
+        });
+    }
+
+    loading.value = false;
+
+    emit('done');
+    emit('close');
 }
 </script>

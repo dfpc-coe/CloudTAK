@@ -540,7 +540,7 @@ export default class AtlasDatabase {
                 mode_id: mission_guid
             }, opts);
 
-            sub.cots.set(String(cot.id), cot);
+            sub.updateFeature(cot);
 
             this.atlas.postMessage({
                 type: WorkerMessageType.Mission_Change_Feature,
