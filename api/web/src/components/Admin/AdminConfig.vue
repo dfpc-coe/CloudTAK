@@ -23,7 +23,7 @@
             </div>
             <div class='card-body row'>
                 <div
-                    class='col-lg-12 hover-light py-2 cursor-pointer'
+                    class='col-lg-12 hover py-2 cursor-pointer'
                     @click='opened.has("login") ? opened.delete("login") : opened.add("login")'
                 >
                     <IconChevronDown v-if='opened.has("login")' />
@@ -61,7 +61,7 @@
                 </div>
 
                 <div
-                    class='col-lg-12 hover-light py-2 cursor-pointer'
+                    class='col-lg-12 hover py-2 cursor-pointer'
                     @click='opened.has("agol") ? opened.delete("agol") : opened.add("agol")'
                 >
                     <IconChevronDown v-if='opened.has("agol")' />
@@ -92,7 +92,7 @@
                 </div>
 
                 <div
-                    class='col-lg-12 hover-light py-2 cursor-pointer'
+                    class='col-lg-12 hover py-2 cursor-pointer'
                     @click='opened.has("media") ? opened.delete("media") : opened.add("media")'
                 >
                     <IconChevronDown v-if='opened.has("media")' />
@@ -117,7 +117,7 @@
                 </div>
 
                 <div
-                    class='col-lg-12 hover-light py-2 cursor-pointer'
+                    class='col-lg-12 hover py-2 cursor-pointer'
                     @click='opened.has("display") ? opened.delete("display") : opened.add("display")'
                 >
                     <IconChevronDown v-if='opened.has("display")' />
@@ -152,7 +152,7 @@
                 </div>
 
                 <div
-                    class='col-lg-12 hover-light py-2 cursor-pointer'
+                    class='col-lg-12 hover py-2 cursor-pointer'
                     @click='opened.has("groups") ? opened.delete("groups") : opened.add("groups")'
                 >
                     <IconChevronDown v-if='opened.has("groups")' />
@@ -181,7 +181,7 @@
                 </div>
 
                 <div
-                    class='col-lg-12 hover-light py-2 cursor-pointer'
+                    class='col-lg-12 hover py-2 cursor-pointer'
                     @click='opened.has("map") ? opened.delete("map") : opened.add("map")'
                 >
                     <IconChevronDown v-if='opened.has("map")' />
@@ -227,7 +227,7 @@
                 </div>
 
                 <div
-                    class='col-lg-12 hover-light py-2 cursor-pointer'
+                    class='col-lg-12 hover py-2 cursor-pointer'
                     @click='opened.has("provider") ? opened.delete("provider") : opened.add("provider")'
                 >
                     <IconChevronDown v-if='opened.has("provider")' />

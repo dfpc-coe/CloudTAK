@@ -38,7 +38,7 @@
             <template v-else>
                 <template v-for='i in list.items'>
                     <div
-                        class='col-12 hover-light px-2 py-2 rounded cursor-pointer'
+                        class='col-12 hover px-2 py-2 rounded cursor-pointer'
                         @click='injector = i'
                     >
                         <div

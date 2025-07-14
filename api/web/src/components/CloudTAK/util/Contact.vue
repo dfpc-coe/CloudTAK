@@ -4,7 +4,7 @@
         :class='{
             "cursor-pointer": isZoomable(contact),
             "cursor-default": !isZoomable(contact),
-            "hover-dark": hover,
+            "hover": hover,
             "py-2": !compact
         }'
         @click='flyTo(contact)'
