@@ -22,7 +22,7 @@
         <div
             v-if='!compact'
             ref='resize'
-            class='resize hover-dark cursor-drag'
+            class='resize hover cursor-drag'
         />
         <div
             ref='menu'
@@ -59,7 +59,7 @@
                         :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
-                            "py-2 px-3 hover-dark": !compact,
+                            "py-2 px-3 hover": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/features")'
@@ -87,7 +87,7 @@
                         :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
-                            "py-2 px-3 hover-dark": !compact,
+                            "py-2 px-3 hover": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/overlays")'
@@ -115,7 +115,7 @@
                         :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
-                            "py-2 px-3 hover-dark": !compact,
+                            "py-2 px-3 hover": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/contacts")'
@@ -143,7 +143,7 @@
                         :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
-                            "py-2 px-3 hover-dark": !compact,
+                            "py-2 px-3 hover": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/basemaps")'
@@ -171,7 +171,7 @@
                         :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
-                            "py-2 px-3 hover-dark": !compact,
+                            "py-2 px-3 hover": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/missions")'
@@ -199,7 +199,7 @@
                         :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
-                            "py-2 px-3 hover-dark": !compact,
+                            "py-2 px-3 hover": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/packages")'
@@ -227,7 +227,7 @@
                         :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
-                            "py-2 px-3 hover-dark": !compact,
+                            "py-2 px-3 hover": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/channels")'
@@ -255,7 +255,7 @@
                         :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
-                            "py-2 px-3 hover-dark": !compact,
+                            "py-2 px-3 hover": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/videos")'
@@ -283,7 +283,7 @@
                         :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
-                            "py-2 px-3 hover-dark": !compact,
+                            "py-2 px-3 hover": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/chats")'
@@ -311,7 +311,7 @@
                         :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
-                            "py-2 px-3 hover-dark": !compact,
+                            "py-2 px-3 hover": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/routes")'
@@ -339,7 +339,7 @@
                         :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
-                            "py-2 px-3 hover-dark": !compact,
+                            "py-2 px-3 hover": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/files")'
@@ -367,7 +367,7 @@
                         :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
-                            "py-2 px-3 hover-dark": !compact,
+                            "py-2 px-3 hover": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/imports")'
@@ -395,7 +395,7 @@
                         :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
-                            "py-2 px-3 hover-dark": !compact,
+                            "py-2 px-3 hover": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/iconsets")'
@@ -425,7 +425,7 @@
                         :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
-                            "py-2 px-3 hover-dark": !compact,
+                            "py-2 px-3 hover": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/connections")'
@@ -460,7 +460,7 @@
                         :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
-                            "py-2 px-3 hover-dark": !compact,
+                            "py-2 px-3 hover": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/debugger")'
@@ -495,7 +495,7 @@
                         :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
-                            "py-2 px-3 hover-dark": !compact,
+                            "py-2 px-3 hover": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/admin")'
@@ -529,7 +529,7 @@
                         :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
                         :class='{
-                            "py-2 px-3 hover-dark": !compact,
+                            "py-2 px-3 hover": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
                         @click='router.push("/menu/settings")'
@@ -586,7 +586,7 @@
                     <div
                         role='button'
                         style='width: 40px;'
-                        class='py-2 px-2 ms-auto d-flex hover-dark cursor-pointer'
+                        class='py-2 px-2 ms-auto d-flex hover cursor-pointer'
                         @click.stop.prevent='logout'
                         @keyup.enter='logout'
                     >

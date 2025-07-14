@@ -45,7 +45,7 @@
                         role='menuitem'
                         @click='router.push(`/connection/${conn.id}`)'
                     >
-                        <div class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
+                        <div class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover'>
                             <div class='col-auto'>
                                 <ConnectionStatus :connection='conn' />
                             </div>

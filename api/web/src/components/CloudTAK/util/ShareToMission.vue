@@ -36,7 +36,7 @@
             >
                 <div v-for='mission in missions'>
                     <div
-                        class='col-12 cursor-pointer hover-dark py-2'
+                        class='col-12 cursor-pointer hover py-2'
                         @click='selected.has(mission) ? selected.delete(mission) : selected.add(mission)'
                     >
                         <div class='d-flex align-items-center'>

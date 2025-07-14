@@ -29,7 +29,7 @@
             />
             <template v-else>
                 <template v-for='repeater in list.items'>
-                    <div class='col-12 hover-light d-flex align-items-center px-2 py-2'>
+                    <div class='col-12 hover d-flex align-items-center px-2 py-2'>
                         <div class='row'>
                             <div class='col-12'>
                                 <span v-text='repeater.callsign' />

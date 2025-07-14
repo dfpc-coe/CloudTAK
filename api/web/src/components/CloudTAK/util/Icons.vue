@@ -29,7 +29,7 @@
                         class='col-sm-2'
                         @click='router.push(`/menu/iconset/${icon.iconset}/${encodeURIComponent(icon.name)}`)'
                     >
-                        <div class='card card-sm hover-dark cursor-pointer'>
+                        <div class='card card-sm hover cursor-pointer'>
                             <div class='col-12'>
                                 <div
                                     class='d-flex justify-content-center mt-3'

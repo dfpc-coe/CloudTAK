@@ -16,7 +16,7 @@
 
                 <template #dropdown>
                     <div
-                        class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2 py-2'
+                        class='cursor-pointer col-12 hover d-flex align-items-center px-2 py-2'
                         @click.stop.prevent='download("geojson")'
                     >
                         <IconFile
@@ -26,7 +26,7 @@
                         <span class='mx-2'>GeoJSON</span>
                     </div>
                     <div
-                        class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2 py-2'
+                        class='cursor-pointer col-12 hover d-flex align-items-center px-2 py-2'
                         @click.stop.prevent='download("kml")'
                     >
                         <IconFile

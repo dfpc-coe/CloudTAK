@@ -50,7 +50,7 @@
                         v-else
                     >
                         <div
-                            class='hover-light px-2 py-2 cursor-pointer row rounded'
+                            class='hover px-2 py-2 cursor-pointer row rounded'
                             @click='selected = layer'
                         >
                             <div class='col-md-4'>
