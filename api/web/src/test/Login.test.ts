@@ -174,8 +174,8 @@ describe('Login.vue', () => {
 
       mockStd.mockResolvedValue({ token: 'test-token' })
 
-      // Use lowercase email as the regex only matches lowercase
-      wrapper!.vm.body.username = 'test.user@example.com'
+      // Test with mixed case email to verify it's preserved
+      wrapper!.vm.body.username = 'Test.User@Example.com'
       wrapper!.vm.body.password = 'password123'
 
       await wrapper!.vm.createLogin()
@@ -183,7 +183,7 @@ describe('Login.vue', () => {
       expect(mockStd).toHaveBeenCalledWith('/api/login', {
         method: 'POST',
         body: {
-          username: 'test.user@example.com',
+          username: 'Test.User@Example.com',
           password: 'password123',
         },
       })
@@ -309,24 +309,22 @@ describe('Login.vue', () => {
     })
   })
 
-  describe('Email Detection', () => {
+  describe('Username Handling', () => {
     const testCases = [
-      // Lowercase emails should be detected and remain lowercase
-      { input: 'user@example.com', expected: 'user@example.com', isEmail: true },
-      { input: 'test.email@domain.co.uk', expected: 'test.email@domain.co.uk', isEmail: true },
-      // Uppercase emails won't match the regex and will be treated as usernames
-      { input: 'Test.Email@DOMAIN.CO.UK', expected: 'Test.Email@DOMAIN.CO.UK', isEmail: false },
-      { input: 'USER@EXAMPLE.COM', expected: 'USER@EXAMPLE.COM', isEmail: false },
-      // Non-emails should be treated as usernames
-      { input: 'username', expected: 'username', isEmail: false },
-      { input: 'user123', expected: 'user123', isEmail: false },
-      { input: 'test_user', expected: 'test_user', isEmail: false },
-      { input: '@incomplete', expected: '@incomplete', isEmail: false },
-      { input: 'no-at-symbol.com', expected: 'no-at-symbol.com', isEmail: false },
+      // All inputs should be passed through unchanged
+      { input: 'user@example.com', expected: 'user@example.com' },
+      { input: 'test.email@domain.co.uk', expected: 'test.email@domain.co.uk' },
+      { input: 'Test.Email@DOMAIN.CO.UK', expected: 'Test.Email@DOMAIN.CO.UK' },
+      { input: 'USER@EXAMPLE.COM', expected: 'USER@EXAMPLE.COM' },
+      { input: 'username', expected: 'username' },
+      { input: 'user123', expected: 'user123' },
+      { input: 'test_user', expected: 'test_user' },
+      { input: '@incomplete', expected: '@incomplete' },
+      { input: 'no-at-symbol.com', expected: 'no-at-symbol.com' },
     ]
 
-    testCases.forEach(({ input, expected, isEmail }) => {
-      it(`correctly handles "${input}" as ${isEmail ? 'email' : 'username'}`, async () => {
+    testCases.forEach(({ input, expected }) => {
+      it(`correctly handles "${input}" without modification`, async () => {
         await createWrapper()
 
         mockStd.mockResolvedValue({ token: 'test-token' })
