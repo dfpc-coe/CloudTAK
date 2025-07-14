@@ -69,11 +69,11 @@ jobs:
           ECR_REPO_NAME=$(echo $ECR_REPO_ARN | cut -d'/' -f2)
           ECR_REPO_URI="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${ECR_REPO_NAME}"
           
-          # Get the last commit SHA that touched api/ or tasks/ directories
-          CONTENT_SHA=$(git log -1 --format="%h" -- api/ tasks/)
+          # Create deterministic hash based on actual file contents
+          CONTENT_SHA=$(find api/ tasks/ -type f -exec sha256sum {} \; | sort | sha256sum | cut -c1-8)
           
           if [[ -z "$CONTENT_SHA" ]]; then
-            echo "ERROR: No commits found for api/ or tasks/ directories"
+            echo "ERROR: Failed to generate content hash for api/ or tasks/ directories"
             exit 1
           fi
           
@@ -87,7 +87,7 @@ jobs:
           echo "ecr-repo-uri=$ECR_REPO_URI" >> $GITHUB_OUTPUT
           echo "cloudtak-tag=$CLOUDTAK_TAG" >> $GITHUB_OUTPUT
           echo "Using ECR repository: $ECR_REPO_URI"
-          echo "Content SHA (api/tasks): $CONTENT_SHA"
+          echo "Content hash (api/tasks): $CONTENT_SHA"
           echo "Building CloudTAK image with tag: $CLOUDTAK_TAG"
       
       - name: Login to Amazon ECR
@@ -115,42 +115,45 @@ jobs:
       
       - name: Build and Push CloudTAK Images
         run: |
+          REPO_NAME=$(echo ${{ steps.tags.outputs.ecr-repo-uri }} | cut -d'/' -f2)
+          CONTENT_SHA=$(echo ${{ steps.tags.outputs.cloudtak-tag }} | sed 's/cloudtak-//')
+          
           # Check if main image already exists
-          if aws ecr describe-images --repository-name $(echo ${{ steps.tags.outputs.ecr-repo-uri }} | cut -d'/' -f2) --image-ids imageTag=${{ steps.tags.outputs.cloudtak-tag }} >/dev/null 2>&1; then
-            echo "✅ CloudTAK image ${{ steps.tags.outputs.cloudtak-tag }} already exists, skipping build"
+          if aws ecr describe-images --repository-name $REPO_NAME --image-ids imageTag=${{ steps.tags.outputs.cloudtak-tag }} >/dev/null 2>&1; then
+            echo "✅ CloudTAK image ${{ steps.tags.outputs.cloudtak-tag }} already exists, skipping API build"
           else
-            echo "🔨 Building CloudTAK images with tag ${{ steps.tags.outputs.cloudtak-tag }}"
-            
-            # Build API image
+            echo "🔨 Building CloudTAK API image with tag ${{ steps.tags.outputs.cloudtak-tag }}"
             docker build \
               -f api/Dockerfile \
               --no-cache \
               --rm \
               -t ${{ steps.tags.outputs.ecr-repo-uri }}:${{ steps.tags.outputs.cloudtak-tag }} \
               api/
-            
             docker push ${{ steps.tags.outputs.ecr-repo-uri }}:${{ steps.tags.outputs.cloudtak-tag }}
-            
-            # Build task images with same content SHA
-            for task_dir in tasks/*/; do
-              if [ -d "$task_dir" ]; then
-                task=$(basename "$task_dir")
-                TASK_TAG="$task-$(echo ${{ steps.tags.outputs.cloudtak-tag }} | sed 's/cloudtak-//')"
+          fi
+          
+          # Build task images with individual existence checks
+          for task_dir in tasks/*/; do
+            if [ -d "$task_dir" ]; then
+              task=$(basename "$task_dir")
+              TASK_TAG="$task-${CONTENT_SHA}"
+              
+              if aws ecr describe-images --repository-name $REPO_NAME --image-ids imageTag=$TASK_TAG >/dev/null 2>&1; then
+                echo "✅ Task image $TASK_TAG already exists, skipping build"
+              else
                 echo "🔨 Building $task task image with tag: $TASK_TAG"
-                
                 docker build \
                   -f tasks/$task/Dockerfile \
                   --no-cache \
                   --rm \
                   -t ${{ steps.tags.outputs.ecr-repo-uri }}:$TASK_TAG \
                   tasks/$task/
-                
                 docker push ${{ steps.tags.outputs.ecr-repo-uri }}:$TASK_TAG
               fi
-            done
-            
-            echo "✅ CloudTAK images pushed successfully"
-          fi
+            fi
+          done
+          
+          echo "✅ CloudTAK image processing complete"
       
       - name: Output Image Information
         run: |
