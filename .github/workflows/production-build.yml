@@ -32,9 +32,14 @@ permissions:
   contents: read
 
 jobs:
+  # Run CloudTAK application tests before building
+  cloudtak-test:
+    uses: ./.github/workflows/cloudtak-test.yml
+
   build-images:
     runs-on: ubuntu-latest
     environment: production
+    needs: [cloudtak-test]
     outputs:
       cloudtak-tag: ${{ steps.tags.outputs.cloudtak-tag }}
     steps:
