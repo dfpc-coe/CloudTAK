@@ -117,6 +117,31 @@
                                 :options='["firebase"]'
                             />
                         </div>
+                        <template v-if='config["notification::push::enabled"] && config["notification::push::service"] === "firebase"'>
+                            <div class='col-lg-6 mt-2'>
+                                <TablerInput
+                                    v-model='config["notification::push::firebase::project_id"]'
+                                    :disabled='!edit'
+                                    label='Firebase Project ID'
+                                />
+                            </div>
+                            <div class='col-lg-6 mt-2'>
+                                <TablerInput
+                                    v-model='config["notification::push::firebase::client_email"]'
+                                    :disabled='!edit'
+                                    label='Firebase Client Email'
+                                />
+                            </div>
+                            <div class='col-lg-12'>
+                                <TablerInput
+                                    v-model='config["notification::push::firebase::private_key"]'
+                                    :disabled='!edit'
+                                    type='password'
+                                    autocomplete='new-password'
+                                    label='Firebase Private Key'
+                                />
+                            </div>
+                        </template>
                     </template>
                 </div>
             </template>
@@ -132,6 +157,7 @@ import {
     TablerLoading,
     TablerToggle,
     TablerEnum,
+    TablerInput,
     TablerIconButton,
     TablerAlert,
 } from '@tak-ps/vue-tabler';
@@ -149,6 +175,9 @@ interface NotificationConfig {
     'notification::email::service': string;
     'notification::push::enabled': boolean;
     'notification::push::service': string;
+    'notification::push::firebase::project_id': string;
+    'notification::push::firebase::client_email': string;
+    'notification::push::firebase::private_key': string;
 }
 
 const isOpen = ref<boolean>(false);
@@ -164,6 +193,9 @@ const config = ref<NotificationConfig>({
     'notification::email::service': 'aws',
     'notification::push::enabled': false,
     'notification::push::service': 'firebase',
+    'notification::push::firebase::project_id': '',
+    'notification::push::firebase::client_email': '',
+    'notification::push::firebase::private_key': '',
 });
 
 onMounted(() => {
@@ -196,6 +228,9 @@ async function fetch(): Promise<void> {
             'notification::email::service': data['notification::email::service'] ?? 'aws',
             'notification::push::enabled': data['notification::push::enabled'] ?? false,
             'notification::push::service': data['notification::push::service'] ?? 'firebase',
+            'notification::push::firebase::project_id': data['notification::push::firebase::project_id'] ?? '',
+            'notification::push::firebase::client_email': data['notification::push::firebase::client_email'] ?? '',
+            'notification::push::firebase::private_key': data['notification::push::firebase::private_key'] ?? '',
         };
     } catch (error) {
         err.value = error instanceof Error ? error : new Error(String(error));
