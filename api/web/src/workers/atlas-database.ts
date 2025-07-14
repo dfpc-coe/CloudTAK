@@ -470,7 +470,7 @@ export default class AtlasDatabase {
                         continue;
                     }
 
-                    sub.cots.delete(change.contentUid);
+                    await subscription.deleteFeature(change.contentUid);
                     updateGuid = task.properties.mission.guid;
                 }
             }
