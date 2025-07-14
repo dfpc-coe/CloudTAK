@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v10.33.0 - 2025-07-14
+
+- :rocket: Implement Folder Deletion Ops in My Features Pane
+- :bug: Fix styling on some normalized GeoJSON features
+
 ### v10.32.1 - 2025-07-14
 
 - :rocket: Truncate coordinates used for snapping
