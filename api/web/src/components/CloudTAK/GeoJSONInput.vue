@@ -156,9 +156,15 @@ async function uploadGeoJSON() {
             // TODO Ideally CloudTAK in the future will use CoTs natively so we will
             // Remove this To_GeoJSON conversion
 
+            const name = file.value.name ? file.value.name.replace(/\..*$/, '') : new Date().toISOString().replace(/T.*/, '') + ' Import';
+
             for (const feat of fc.features) {
                 try {
-                    feats.value.push(await normalize_geojson(feat));
+                    const norm = await normalize_geojson(feat);
+
+                    norm.path = `/${name}/`
+
+                    feats.value.push(norm);
                 } catch (err) {
                     console.error('Error normalizing GeoJSON feature:', feat, err);
                 }
