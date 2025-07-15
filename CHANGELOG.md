@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v10.35.0 - 2025-07-14
+
+- :rocket: Finally get `/docs` working as expected
+
 ### v10.34.0 - 2025-07-14
 
 - :rocket: Allow deleting all features from profile
