@@ -1,7 +1,7 @@
 {
     "name": "@tak-ps/CloudTAK.web",
     "type": "module",
-    "version": "10.32.2",
+    "version": "10.33.0",
     "private": true,
     "engines": {
         "node": ">= 22"
