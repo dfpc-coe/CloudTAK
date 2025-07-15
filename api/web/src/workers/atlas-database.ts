@@ -282,6 +282,7 @@ export default class AtlasDatabase {
         filter: string,
         opts: {
             mission?: boolean,
+            skipNetwork?: boolean
         } = {}
     ): Promise<void> {
         const cots = await this.filter(filter, opts);
@@ -289,7 +290,8 @@ export default class AtlasDatabase {
         const all = [];
         for (const cot of cots.values()) {
             all.push(this.remove(cot.id, {
-                mission: opts.mission || false
+                mission: opts.mission || false,
+                skipNetwork: opts.skipNetwork
             }));
         }
 

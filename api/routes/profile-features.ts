@@ -117,21 +117,25 @@ export default async function router(schema: Schema, config: Config) {
     await schema.delete('/profile/feature', {
         name: 'Delete Feature',
         group: 'ProfileFeature',
-        description: `
-            Delete features by path
-        `,
+        description: 'Delete multiple features',
         query: Type.Object({
-            path: Type.String()
+            path: Type.Optional(Type.String())
         }),
         res: StandardResponse
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
 
-            await config.models.ProfileFeature.delete(sql`
-                starts_with(path, ${req.query.path})
-                AND username = ${user.email}
-            `);
+            if (req.query.path) {
+                await config.models.ProfileFeature.delete(sql`
+                    starts_with(path, ${req.query.path})
+                    AND username = ${user.email}
+                `);
+            } else {
+                await config.models.ProfileFeature.delete(sql`
+                    username = ${user.email}
+                `);
+            }
 
             res.json({
                 status: 200,
