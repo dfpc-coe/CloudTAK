@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v10.33.1 - 2025-07-14
+
+- :rocket: Disable `Make Active` if WRITE permissions are not present
+
 ### v10.33.0 - 2025-07-14
 
 - :rocket: Implement Folder Deletion Ops in My Features Pane
