@@ -66,8 +66,17 @@ http {
             add_header 'Pragma' 'no-cache' always;
 
             alias /home/etl/api/web/dist/;
-            try_files $uri $uri.html $uri/ /index.html;
+            try_files /index.html =404;
         }
+
+        location / {
+            if ($request_uri ~ ^/(.*)\.html) {
+                return 302 /$1;
+            }
+
+             alias /home/etl/api/web/dist/;
+             try_files $uri $uri.html $uri/ /index.html;
+         }
 
         location /fonts/ {
             alias /home/etl/api/fonts/;
