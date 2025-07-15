@@ -96,6 +96,11 @@
         </header>
 
         <Loading v-if='loading && !route.path.includes("configure") && !route.path.includes("login")' />
+        <OfflineFallback
+            v-else-if='showOfflineFallback'
+            @retry='handleOfflineRetry'
+            @viewCached='handleViewCached'
+        />
         <router-view
             v-else
             :user='user'
@@ -116,13 +121,14 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, onErrorCaptured, onMounted } from 'vue'
+import { ref, computed, onErrorCaptured, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router';
 import type { Login, Server } from './types.ts';
 import { useBrandStore } from './stores/brand.ts';
 import '@tabler/core/dist/js/tabler.min.js';
 import '@tabler/core/dist/css/tabler.min.css';
 import LoginModal from './components/util/LoginModal.vue'
+import OfflineFallback from './components/OfflineFallback.vue'
 import {
     IconCode,
     IconLogout,
@@ -135,6 +141,7 @@ import {
     TablerError
 } from '@tak-ps/vue-tabler';
 import { std } from './std.ts';
+import { offlineService, isOnline, isOfflineMode, hasOfflineData } from './services/offline.ts';
 
 const router = useRouter();
 const route = useRoute();
@@ -144,6 +151,12 @@ const login = ref(false);
 const mounted = ref(false);
 const user = ref<Login | undefined>();
 const error = ref<Error | undefined>();
+const showOfflineFallback = ref(false);
+
+// Offline functionality
+const isAppOnline = isOnline;
+const isAppOffline = isOfflineMode;
+const hasOfflineAppData = hasOfflineData;
 
 const navShown = computed<boolean>(() => {
     if (!route || !route.name) {
@@ -177,19 +190,60 @@ onErrorCaptured((err) => {
 });
 
 onMounted(async () => {
+    // Initialize offline service
+    await offlineService.init();
+    offlineService.loadOfflineQueue();
+    
     let status;
+    let isServerAvailable = true;
+    
     try {
         const server = await std('/api/server') as Server;
         status = server.status;
     } catch (err) {
         console.warn('Server Error (Likely the server is in a configured state)', err);
-        status = 'configured';
+        isServerAvailable = false;
+        
+        // Check if we're offline or if it's a server configuration issue
+        if (!navigator.onLine) {
+            // We're offline, try to use cached data
+            const cachedResponse = await offlineService.getCachedResponse('/api/server');
+            if (cachedResponse) {
+                try {
+                    const cachedServer = await cachedResponse.json() as Server;
+                    status = cachedServer.status;
+                    console.log('📦 Using cached server info');
+                } catch (cacheErr) {
+                    console.warn('Failed to parse cached server data', cacheErr);
+                    status = 'configured'; // fallback
+                }
+            } else {
+                // No cached data available, show offline fallback
+                if (await offlineService.checkCachedData()) {
+                    showOfflineFallback.value = true;
+                    loading.value = false;
+                    return;
+                }
+                status = 'configured'; // fallback
+            }
+        } else {
+            status = 'configured'; // fallback for server issues
+        }
     }
 
-    const brandStore = useBrandStore();
-    await brandStore.init();
+    try {
+        const brandStore = useBrandStore();
+        await brandStore.init();
+    } catch (err) {
+        console.warn('Failed to initialize brand store, continuing...', err);
+    }
 
     window.addEventListener('unhandledrejection', (e) => {
+        // Enhance error handling for offline scenarios
+        if (e.reason?.message?.includes('fetch') && !navigator.onLine) {
+            console.log('📴 Network error in offline mode, this is expected');
+            return; // Don't show error for expected offline failures
+        }
         error.value = e.reason;
     });
 
@@ -198,7 +252,28 @@ onMounted(async () => {
         router.push("/configure");
     } else {
         if (localStorage.token) {
-            await refreshLogin();
+            try {
+                await refreshLogin();
+            } catch (err) {
+                if (!navigator.onLine) {
+                    // Try to continue with cached login data
+                    console.log('📴 Login failed offline, checking for cached user data');
+                    const cachedUserData = localStorage.getItem('cached-user');
+                    if (cachedUserData) {
+                        try {
+                            user.value = JSON.parse(cachedUserData);
+                            console.log('📦 Using cached user data');
+                        } catch (parseErr) {
+                            console.warn('Failed to parse cached user data');
+                            routeLogin();
+                        }
+                    } else {
+                        routeLogin();
+                    }
+                } else {
+                    throw err; // Re-throw if not an offline issue
+                }
+            }
         } else if (route.name !== 'login') {
             routeLogin();
         }
@@ -208,9 +283,30 @@ onMounted(async () => {
     mounted.value = true;
 });
 
+// Watch for network status changes
+watch(isOnline, async (online) => {
+    if (online) {
+        console.log('🌐 Network restored, processing offline queue...');
+        showOfflineFallback.value = false;
+        await offlineService.processOfflineQueue();
+        
+        // Try to refresh login if we have a token
+        if (localStorage.token && !user.value) {
+            try {
+                await refreshLogin();
+            } catch (err) {
+                console.warn('Failed to refresh login after coming online:', err);
+            }
+        }
+    } else {
+        console.log('📴 App is now offline');
+    }
+});
+
 function logout() {
     user.value = undefined;
     delete localStorage.token;
+    localStorage.removeItem('cached-user');
     router.push("/login");
 }
 
@@ -219,8 +315,58 @@ function externalDocs() {
 }
 
 function routeLogin() {
-    router.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+    if (!navigator.onLine && hasOfflineData.value) {
+        // If offline but we have cached data, show offline fallback instead
+        showOfflineFallback.value = true;
+        return;
+    }
+    router.push("/login");
 }
+
+// Offline fallback handlers
+async function handleOfflineRetry() {
+    if (navigator.onLine) {
+        showOfflineFallback.value = false;
+        loading.value = true;
+        
+        try {
+            // Try to refresh the app state
+            const server = await std('/api/server') as Server;
+            if (localStorage.token) {
+                await refreshLogin();
+            } else {
+                routeLogin();
+            }
+        } catch (err) {
+            console.error('Failed to retry connection:', err);
+            error.value = err as Error;
+        } finally {
+            loading.value = false;
+        }
+    }
+}
+
+function handleViewCached() {
+    // Hide offline fallback and show the cached app
+    showOfflineFallback.value = false;
+    
+    // If we have cached user data, use it
+    const cachedUserData = localStorage.getItem('cached-user');
+    if (cachedUserData && !user.value) {
+        try {
+            user.value = JSON.parse(cachedUserData);
+        } catch (parseErr) {
+            console.warn('Failed to parse cached user data');
+        }
+    }
+    
+    // Navigate to home to show cached content
+    if (route.name === 'login' || route.path === '/') {
+        router.push('/');
+    }
+}
+
+
 
 async function refreshLogin() {
     loading.value = true;
@@ -233,10 +379,28 @@ async function refreshLogin() {
 async function getLogin() {
     try {
         user.value = await std('/api/login') as Login;
+        // Cache successful login data for offline use
+        localStorage.setItem('cached-user', JSON.stringify(user.value));
     } catch (err) {
         console.error(err);
+        
+        // If we're offline, try to use cached login data
+        if (!navigator.onLine) {
+            const cachedUserData = localStorage.getItem('cached-user');
+            if (cachedUserData) {
+                try {
+                    user.value = JSON.parse(cachedUserData);
+                    console.log('📦 Using cached login data for offline mode');
+                    return true;
+                } catch (parseErr) {
+                    console.warn('Failed to parse cached login data');
+                }
+            }
+        }
+        
         user.value = undefined;
         delete localStorage.token;
+        localStorage.removeItem('cached-user');
 
         if (route.name !== 'login') {
             routeLogin();
