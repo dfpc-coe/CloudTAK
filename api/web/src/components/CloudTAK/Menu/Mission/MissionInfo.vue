@@ -102,6 +102,7 @@
 
                             <button
                                 v-if='!mapStore.mission || mapStore.mission.meta.guid !== props.mission.guid && sub'
+                                :disabled='!props.role.permissions.includes("MISSION_WRITE")'
                                 class='btn btn-green'
                                 style='height: 32px;'
                                 @click='mapStore.makeActiveMission(sub)'
@@ -111,6 +112,7 @@
                             <button
                                 v-else
                                 class='btn btn-muted'
+                                :disabled='!props.role.permissions.includes("MISSION_WRITE")'
                                 style='height: 32px;'
                                 @click='mapStore.makeActiveMission()'
                             >
