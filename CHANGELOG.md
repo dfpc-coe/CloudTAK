@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v10.34.0 - 2025-07-14
+
+- :rocket: Allow deleting all features from profile
+
 ### v10.33.1 - 2025-07-14
 
 - :rocket: Disable `Make Active` if WRITE permissions are not present
