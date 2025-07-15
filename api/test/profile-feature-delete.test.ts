@@ -212,7 +212,7 @@ test('GET: api/profile/feature', async (t) => {
 
         t.deepEquals(res.body.items.map((i: { id: string }) => { return i.id }).sort(), ['123-no-path', '123-path2']);
 
-        t.equals(res.body.total, 3);
+        t.equals(res.body.total, 2);
     } catch (err) {
         t.error(err, 'no error');
     }
