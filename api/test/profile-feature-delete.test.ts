@@ -19,7 +19,7 @@ test('PUT: api/profile/feature - Path', async (t) => {
             body: {
                 id: '123-path-1',
                 type: 'Feature',
-                path: '/Test Features/',
+                path: '/path1/',
                 properties: {
                     type: 'a-f-g',
                     how: 'm-g',
@@ -57,7 +57,7 @@ test('PUT: api/profile/feature - Path 2', async (t) => {
             body: {
                 id: '123-path2',
                 type: 'Feature',
-                path: '/Other Path/',
+                path: '/path2/',
                 properties: {
                     type: 'a-f-g',
                     how: 'm-g',
@@ -144,7 +144,7 @@ test('GET: api/profile/feature', async (t) => {
 
 test('DELETE: api/profile/feature?path=fake', async (t) => {
     try {
-        const res = await flight.fetch('/api/profile/feature?fake', {
+        const res = await flight.fetch('/api/profile/feature?path=fake', {
             method: 'DELETE',
             auth: {
                 bearer: flight.token.admin
@@ -174,6 +174,82 @@ test('GET: api/profile/feature', async (t) => {
         t.deepEquals(res.body.total, 3)
 
         t.ok(res.body.total, 3);
+    } catch (err) {
+        t.error(err, 'no error');
+    }
+
+    t.end();
+});
+
+test('DELETE: api/profile/feature?path=/path1/', async (t) => {
+    try {
+        const res = await flight.fetch(`/api/profile/feature?path=${encodeURIComponent('/path1/')}`, {
+            method: 'DELETE',
+            auth: {
+                bearer: flight.token.admin
+            }
+        }, true);
+
+        t.deepEquals(res.body, {
+            status: 200,
+            message: 'Features Deleted'
+        });
+    } catch (err) {
+        t.error(err, 'no error');
+    }
+
+    t.end();
+});
+
+test('GET: api/profile/feature', async (t) => {
+    try {
+        const res = await flight.fetch('/api/profile/feature', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin
+            }
+        }, true);
+
+        t.deepEquals(res.body.items.map(i => i.id).sort(), ['123-no-path', '123-path2']);
+
+        t.ok(res.body.total, 3);
+    } catch (err) {
+        t.error(err, 'no error');
+    }
+
+    t.end();
+});
+
+test('DELETE: api/profile/feature', async (t) => {
+    try {
+        const res = await flight.fetch(`/api/profile/feature`, {
+            method: 'DELETE',
+            auth: {
+                bearer: flight.token.admin
+            }
+        }, true);
+
+        t.deepEquals(res.body, {
+            status: 200,
+            message: 'Features Deleted'
+        });
+    } catch (err) {
+        t.error(err, 'no error');
+    }
+
+    t.end();
+});
+
+test('GET: api/profile/feature', async (t) => {
+    try {
+        const res = await flight.fetch('/api/profile/feature', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin
+            }
+        }, true);
+
+        t.equals(res.body.total, 0);
     } catch (err) {
         t.error(err, 'no error');
     }
