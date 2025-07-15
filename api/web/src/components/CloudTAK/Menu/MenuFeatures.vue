@@ -42,6 +42,32 @@
                 :loading='loading'
                 @click='refresh(true)'
             />
+
+            <TablerDropdown>
+                <TablerIconButton
+                    title='More Options'
+                >
+                    <IconDotsVertical
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+
+                <template #dropdown>
+                    <div
+                        style='min-width: 200px;'
+                    >
+                        <TablerDelete
+                            displaytype='menu'
+                            class='hover'
+                            label='Delete All Features'
+                            @delete='deleteFeatures'
+                        />
+                    </div>
+                </template>
+            </TablerDropdown>
+
+
         </template>
         <template #default>
             <div class='mx-2 my-2'>
@@ -158,12 +184,14 @@ import {
     TablerIconButton,
     TablerRefreshButton
 } from '@tak-ps/vue-tabler';
+import { std } from '../../../std.ts';
 import type { WorkerMessage } from '../../../base/events.ts';
 import { WorkerMessageType } from '../../../base/events.ts';
 import {
     IconFile,
     IconFolder,
     IconDownload,
+    IconDotsVertical,
     IconChevronRight,
     IconChevronDown
 } from '@tabler/icons-vue';
@@ -349,6 +377,25 @@ async function download(format: string): Promise<void> {
 async function closePath(path: Path): Promise<void> {
     path.opened = false;
     path.cots.clear();
+}
+
+async function deleteFeatures(): Promise<void> {
+    try {
+        loading.value = true;
+
+        await mapStore.worker.db.filterRemove(`properties.archived`, {
+            skipNetwork: true
+        });
+
+        await std('/api/profile/feature', {
+            method: 'DELETE'
+        });
+
+        loading.value = false;
+    } catch (err) {
+        loading.value = false;
+        throw err;
+    }
 }
 
 async function deletePath(path: Path): Promise<void> {
