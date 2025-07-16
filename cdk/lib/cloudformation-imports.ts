@@ -5,6 +5,7 @@
 export const BASE_EXPORT_NAMES = {
   VPC_ID: 'VpcId',
   VPC_CIDR_IPV4: 'VpcCidrIpv4',
+  VPC_CIDR_IPV6: 'VpcCidrIpv6',
   SUBNET_PUBLIC_A: 'SubnetPublicA',
   SUBNET_PUBLIC_B: 'SubnetPublicB', 
   SUBNET_PRIVATE_A: 'SubnetPrivateA',

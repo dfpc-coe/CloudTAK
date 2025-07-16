@@ -1,10 +1,14 @@
 import { Construct } from 'constructs';
+import * as cdk from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import { ContextEnvironmentConfig } from '../stack-config';
+import { createBaseImportValue, BASE_EXPORT_NAMES } from '../cloudformation-imports';
 
 export interface SecurityGroupsProps {
   vpc: ec2.IVpc;
   envConfig: ContextEnvironmentConfig;
+  vpcCidrIpv4?: string; // Optional override for VPC IPv4 CIDR
+  vpcCidrIpv6?: string; // Optional override for VPC IPv6 CIDR
 }
 
 export class SecurityGroups extends Construct {
@@ -15,7 +19,14 @@ export class SecurityGroups extends Construct {
   constructor(scope: Construct, id: string, props: SecurityGroupsProps) {
     super(scope, id);
 
-    const { vpc, envConfig } = props;
+    const { vpc, envConfig, vpcCidrIpv4: providedVpcCidrIpv4, vpcCidrIpv6: providedVpcCidrIpv6 } = props;
+    
+    // Import VPC CIDRs from BaseInfra if not provided
+    const vpcCidrIpv4 = providedVpcCidrIpv4 || 
+      cdk.Fn.importValue(createBaseImportValue(envConfig.stackName, BASE_EXPORT_NAMES.VPC_CIDR_IPV4));
+      
+    const vpcCidrIpv6 = providedVpcCidrIpv6 || 
+      cdk.Fn.importValue(createBaseImportValue(envConfig.stackName, BASE_EXPORT_NAMES.VPC_CIDR_IPV6));
 
     this.alb = new ec2.SecurityGroup(this, 'ALBSecurityGroup', {
       vpc: vpc,
@@ -58,15 +69,15 @@ export class SecurityGroups extends Construct {
     this.ecs.addEgressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(53), 'DNS TCP');
     this.ecs.addEgressRule(ec2.Peer.anyIpv6(), ec2.Port.tcp(53), 'DNS TCP IPv6');
     // VPC endpoints for AWS services
-    this.ecs.addEgressRule(ec2.Peer.ipv4(vpc.vpcCidrBlock), ec2.Port.tcp(443), 'VPC Endpoints');
-    // TAK Server connections
-    this.ecs.addEgressRule(ec2.Peer.ipv4(vpc.vpcCidrBlock), ec2.Port.tcp(8089), 'TAK Streaming CoT');
-    this.ecs.addEgressRule(ec2.Peer.ipv4(vpc.vpcCidrBlock), ec2.Port.tcp(8443), 'TAK Server API');
-    this.ecs.addEgressRule(ec2.Peer.ipv4(vpc.vpcCidrBlock), ec2.Port.tcp(8446), 'TAK Server WebTAK');
-    // Restrict to VPC CIDR for TAK Server connections instead of anyIpv6()
-    this.ecs.addEgressRule(ec2.Peer.ipv4(vpc.vpcCidrBlock), ec2.Port.tcp(8089), 'TAK Streaming CoT IPv6');
-    this.ecs.addEgressRule(ec2.Peer.ipv4(vpc.vpcCidrBlock), ec2.Port.tcp(8443), 'TAK Server API IPv6');
-    this.ecs.addEgressRule(ec2.Peer.ipv4(vpc.vpcCidrBlock), ec2.Port.tcp(8446), 'TAK Server WebTAK IPv6');
+    this.ecs.addEgressRule(ec2.Peer.ipv4(vpcCidrIpv4), ec2.Port.tcp(443), 'VPC Endpoints');
+    // TAK Server connections - IPv4
+    this.ecs.addEgressRule(ec2.Peer.ipv4(vpcCidrIpv4), ec2.Port.tcp(8089), 'TAK Streaming CoT');
+    this.ecs.addEgressRule(ec2.Peer.ipv4(vpcCidrIpv4), ec2.Port.tcp(8443), 'TAK Server API');
+    this.ecs.addEgressRule(ec2.Peer.ipv4(vpcCidrIpv4), ec2.Port.tcp(8446), 'TAK Server WebTAK');
+    // TAK Server connections - IPv6
+    this.ecs.addEgressRule(ec2.Peer.ipv6(vpcCidrIpv6), ec2.Port.tcp(8089), 'TAK Streaming CoT IPv6');
+    this.ecs.addEgressRule(ec2.Peer.ipv6(vpcCidrIpv6), ec2.Port.tcp(8443), 'TAK Server API IPv6');
+    this.ecs.addEgressRule(ec2.Peer.ipv6(vpcCidrIpv6), ec2.Port.tcp(8446), 'TAK Server WebTAK IPv6');
 
 
   }

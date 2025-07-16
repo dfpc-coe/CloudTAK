@@ -231,6 +231,7 @@ export class CloudTakStack extends cdk.Stack {
     const securityGroups = new SecurityGroups(this, 'SecurityGroups', {
       vpc,
       envConfig
+      // VPC CIDR will be imported directly in the SecurityGroups construct
     });
 
     // Create Aurora PostgreSQL database (serverless for dev-test, provisioned for prod)
