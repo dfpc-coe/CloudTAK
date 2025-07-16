@@ -63,9 +63,10 @@ export class SecurityGroups extends Construct {
     this.ecs.addEgressRule(ec2.Peer.ipv4(vpc.vpcCidrBlock), ec2.Port.tcp(8089), 'TAK Streaming CoT');
     this.ecs.addEgressRule(ec2.Peer.ipv4(vpc.vpcCidrBlock), ec2.Port.tcp(8443), 'TAK Server API');
     this.ecs.addEgressRule(ec2.Peer.ipv4(vpc.vpcCidrBlock), ec2.Port.tcp(8446), 'TAK Server WebTAK');
-    this.ecs.addEgressRule(ec2.Peer.anyIpv6(), ec2.Port.tcp(8089), 'TAK Streaming CoT IPv6');
-    this.ecs.addEgressRule(ec2.Peer.anyIpv6(), ec2.Port.tcp(8443), 'TAK Server API IPv6');
-    this.ecs.addEgressRule(ec2.Peer.anyIpv6(), ec2.Port.tcp(8446), 'TAK Server WebTAK IPv6');
+    // Restrict to VPC CIDR for TAK Server connections instead of anyIpv6()
+    this.ecs.addEgressRule(ec2.Peer.ipv4(vpc.vpcCidrBlock), ec2.Port.tcp(8089), 'TAK Streaming CoT IPv6');
+    this.ecs.addEgressRule(ec2.Peer.ipv4(vpc.vpcCidrBlock), ec2.Port.tcp(8443), 'TAK Server API IPv6');
+    this.ecs.addEgressRule(ec2.Peer.ipv4(vpc.vpcCidrBlock), ec2.Port.tcp(8446), 'TAK Server WebTAK IPv6');
 
 
   }
