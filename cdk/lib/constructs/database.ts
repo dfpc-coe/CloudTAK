@@ -174,7 +174,7 @@ export class Database extends Construct {
         },
         deletionProtection: props.envConfig.database.deleteProtection,
         removalPolicy: removalPolicy,
-        cloudwatchLogsExports: ['postgresql'],
+        cloudwatchLogsExports: props.envConfig.database.enableCloudWatchLogs ? ['postgresql'] : undefined,
         cloudwatchLogsRetention: props.envConfig.general.enableDetailedLogging ? 
           logs.RetentionDays.ONE_MONTH : 
           logs.RetentionDays.ONE_WEEK,
@@ -227,7 +227,7 @@ export class Database extends Construct {
         },
         deletionProtection: props.envConfig.database.deleteProtection,
         removalPolicy: removalPolicy,
-        cloudwatchLogsExports: ['postgresql'],
+        cloudwatchLogsExports: props.envConfig.database.enableCloudWatchLogs ? ['postgresql'] : undefined,
         cloudwatchLogsRetention: props.envConfig.general.enableDetailedLogging ? 
           logs.RetentionDays.ONE_MONTH : 
           logs.RetentionDays.ONE_WEEK,

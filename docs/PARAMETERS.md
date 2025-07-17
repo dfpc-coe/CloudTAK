@@ -149,12 +149,14 @@ Use CDK's built-in `--context` flag with **flat parameter names** to override an
 | `enablePerformanceInsights` | Enable performance insights | `false` | `true` |
 | `backupRetentionDays` | Backup retention period (days) | `7` | `30` |
 | `deleteProtection` | Enable deletion protection | `false` | `true` |
+| `enableCloudWatchLogs` | Enable PostgreSQL logs export to CloudWatch | `false` | `false` |
 
 ### **CloudTAK Configuration**
 | Parameter | Description | dev-test | prod |
 |-----------|-------------|----------|------|
 | `hostname` | Hostname for CloudTAK service | `map` | `map` |
 | `takAdminEmail` | Admin email address | `admin@tak.nz` | `admin@tak.nz` |
+| `useS3CloudTAKConfigFile` | Load config from S3 bucket | `false` | `true` |
 
 ### **ECR Configuration**
 | Parameter | Description | dev-test | prod |
@@ -198,6 +200,12 @@ npm run deploy:dev -- \
 npm run deploy:prod -- \
   --context imageRetentionCount=30 \
   --context scanOnPush=false
+
+# Enable PostgreSQL logs export to CloudWatch
+npm run deploy:dev -- --context enableCloudWatchLogs=true
+
+# Enable S3 config file loading in development
+npm run deploy:dev -- --context useS3CloudTAKConfigFile=true
 ```
 
 ---

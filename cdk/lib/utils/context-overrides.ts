@@ -27,6 +27,7 @@ export function applyContextOverrides(
       monitoringInterval: app.node.tryGetContext('monitoringInterval') ? Number(app.node.tryGetContext('monitoringInterval')) : baseConfig.database.monitoringInterval,
       backupRetentionDays: app.node.tryGetContext('backupRetentionDays') ? Number(app.node.tryGetContext('backupRetentionDays')) : baseConfig.database.backupRetentionDays,
       deleteProtection: app.node.tryGetContext('deleteProtection') ? app.node.tryGetContext('deleteProtection') === 'true' : baseConfig.database.deleteProtection,
+      enableCloudWatchLogs: app.node.tryGetContext('enableCloudWatchLogs') ? app.node.tryGetContext('enableCloudWatchLogs') === 'true' : baseConfig.database.enableCloudWatchLogs,
     },
     ecs: {
       ...baseConfig.ecs,
@@ -39,6 +40,8 @@ export function applyContextOverrides(
     cloudtak: {
       ...baseConfig.cloudtak,
       hostname: app.node.tryGetContext('hostname') ?? baseConfig.cloudtak.hostname,
+      takAdminEmail: app.node.tryGetContext('takAdminEmail') ?? baseConfig.cloudtak.takAdminEmail,
+      useS3CloudTAKConfigFile: app.node.tryGetContext('useS3CloudTAKConfigFile') ? app.node.tryGetContext('useS3CloudTAKConfigFile') === 'true' : baseConfig.cloudtak.useS3CloudTAKConfigFile,
     },
     ecr: {
       ...baseConfig.ecr,
