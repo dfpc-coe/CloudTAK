@@ -23,7 +23,7 @@
             </div>
             <div class='card-body row'>
                 <div
-                    class='col-lg-12 hover-light py-2 cursor-pointer'
+                    class='col-lg-12 hover py-2 cursor-pointer'
                     @click='opened.has("login") ? opened.delete("login") : opened.add("login")'
                 >
                     <IconChevronDown v-if='opened.has("login")' />
@@ -61,7 +61,7 @@
                 </div>
 
                 <div
-                    class='col-lg-12 hover-light py-2 cursor-pointer'
+                    class='col-lg-12 hover py-2 cursor-pointer'
                     @click='opened.has("agol") ? opened.delete("agol") : opened.add("agol")'
                 >
                     <IconChevronDown v-if='opened.has("agol")' />
@@ -92,7 +92,7 @@
                 </div>
 
                 <div
-                    class='col-lg-12 hover-light py-2 cursor-pointer'
+                    class='col-lg-12 hover py-2 cursor-pointer'
                     @click='opened.has("media") ? opened.delete("media") : opened.add("media")'
                 >
                     <IconChevronDown v-if='opened.has("media")' />
@@ -117,7 +117,7 @@
                 </div>
 
                 <div
-                    class='col-lg-12 hover-light py-2 cursor-pointer'
+                    class='col-lg-12 hover py-2 cursor-pointer'
                     @click='opened.has("display") ? opened.delete("display") : opened.add("display")'
                 >
                     <IconChevronDown v-if='opened.has("display")' />
@@ -131,21 +131,10 @@
                     class='col-lg-12 py-2 border rounded'
                 >
                     <div class='row'>
-                        <div class='col-lg-12'>
-                            <div
-                                class='alert alert-info d-flex'
-                                role='alert'
-                            >
-                                <div class='alert-icon'>
-                                    <IconInfoCircle
-                                        :size='24'
-                                        stroke='1'
-                                    />
-                                </div>
-
-                                These are the default display settings for new users. Existing users will not be affected.
-                            </div>
-                        </div>
+                        <TablerInlineAlert
+                            title='Application Behavior'
+                            description='These are the default display settings for new users. Existing users will not be affected.'
+                        />
 
                         <div
                             v-for='display in Object.keys(config).filter(key => key.startsWith("display::"))'
@@ -163,7 +152,7 @@
                 </div>
 
                 <div
-                    class='col-lg-12 hover-light py-2 cursor-pointer'
+                    class='col-lg-12 hover py-2 cursor-pointer'
                     @click='opened.has("groups") ? opened.delete("groups") : opened.add("groups")'
                 >
                     <IconChevronDown v-if='opened.has("groups")' />
@@ -192,7 +181,7 @@
                 </div>
 
                 <div
-                    class='col-lg-12 hover-light py-2 cursor-pointer'
+                    class='col-lg-12 hover py-2 cursor-pointer'
                     @click='opened.has("map") ? opened.delete("map") : opened.add("map")'
                 >
                     <IconChevronDown v-if='opened.has("map")' />
@@ -238,7 +227,7 @@
                 </div>
 
                 <div
-                    class='col-lg-12 hover-light py-2 cursor-pointer'
+                    class='col-lg-12 hover py-2 cursor-pointer'
                     @click='opened.has("provider") ? opened.delete("provider") : opened.add("provider")'
                 >
                     <IconChevronDown v-if='opened.has("provider")' />
@@ -305,6 +294,7 @@ import { ref, onMounted } from 'vue';
 import { std, stdurl } from '../../std.ts';
 import {
     TablerLoading,
+    TablerInlineAlert,
     TablerIconButton,
     TablerEnum,
     TablerToggle,
@@ -313,7 +303,6 @@ import {
 import UploadLogo from '../util/UploadLogo.vue';
 import {
     IconPencil,
-    IconInfoCircle,
     IconChevronRight,
     IconChevronDown,
 } from '@tabler/icons-vue';

@@ -80,7 +80,7 @@
 
                         <template v-for='item of list.items'>
                             <div
-                                class='d-flex align-items-center px-2 py-2 hover-dark cursor-pointer rounded'
+                                class='d-flex align-items-center px-2 py-2 hover cursor-pointer rounded'
                                 @click='updateType(item)'
                             >
                                 <FeatureIcon

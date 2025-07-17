@@ -10,7 +10,7 @@
         <div
             v-for='sub of subscriptions'
         >
-            <div class='col-12 py-2 px-2 d-flex hover-dark'>
+            <div class='col-12 py-2 px-2 d-flex hover'>
                 <div class='col-12 d-flex align-items-center'>
                     <IconUserBolt
                         v-if='sub.role.type === "MISSION_OWNER"'

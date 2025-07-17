@@ -49,7 +49,7 @@
                                 <div
                                     v-for='alert in list.items'
                                     :key='alert.id'
-                                    class='hover-light'
+                                    class='hover'
                                 >
                                     <div class='row px-3 py-2'>
                                         <div class='d-flex'>

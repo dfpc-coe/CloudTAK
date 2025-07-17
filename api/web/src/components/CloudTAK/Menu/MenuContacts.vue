@@ -46,7 +46,7 @@
                         class='col-lg-12'
                     >
                         <div
-                            class='col-lg-12 d-flex align-items-center cursor-pointer hover-dark'
+                            class='col-lg-12 d-flex align-items-center cursor-pointer hover'
                             style='height: 40px'
                             @click='opened.has(team) ? opened.delete(team) : opened.add(team)'
                         >
@@ -93,7 +93,7 @@
                 </template>
 
                 <div
-                    class='col-lg-12 d-flex align-items-center cursor-pointer hover-dark'
+                    class='col-lg-12 d-flex align-items-center cursor-pointer hover'
                     style='height: 40px'
                     @click='showOffline = !showOffline'
                 >

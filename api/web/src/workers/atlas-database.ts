@@ -13,7 +13,7 @@ import { WorkerMessageType } from '../base/events.ts';
 import type { GeoJSONSourceDiff, LngLatLike } from 'maplibre-gl';
 import { booleanWithin } from '@turf/boolean-within';
 import type { Polygon } from 'geojson';
-import type { Feature, APIList } from '../types.ts';
+import type { InputFeature, Feature, APIList } from '../types.ts';
 import type { Mission, MissionRole } from '../types.ts';
 
 type NestedArray = {
@@ -160,8 +160,9 @@ export default class AtlasDatabase {
 
         for (const cot of this.cots.values()) {
             coordEach(cot.geometry, (coord) => {
-                if (bounds.contains(coord as LngLatLike)) {
-                    coords.add(coord.slice(0, 2) as [number, number]);
+                const min = coord.slice(0, 2) as [number, number];
+                if (bounds.contains(min as LngLatLike)) {
+                    coords.add(min);
                 }
             });
         }
@@ -271,6 +272,30 @@ export default class AtlasDatabase {
         this.pendingDelete.clear();
 
         return diff;
+    }
+
+    /**
+     * Iterate over all CoTs and delete toTs that match the filter pattern
+     * @param filter - JSONata filter expression to match CoTs against
+     */
+    async filterRemove(
+        filter: string,
+        opts: {
+            mission?: boolean,
+            skipNetwork?: boolean
+        } = {}
+    ): Promise<void> {
+        const cots = await this.filter(filter, opts);
+
+        const all = [];
+        for (const cot of cots.values()) {
+            all.push(this.remove(cot.id, {
+                mission: opts.mission || false,
+                skipNetwork: opts.skipNetwork
+            }));
+        }
+
+        await Promise.allSettled(all);
     }
 
     /**
@@ -470,7 +495,7 @@ export default class AtlasDatabase {
                         continue;
                     }
 
-                    sub.cots.delete(change.contentUid);
+                    await sub.deleteFeature(change.contentUid);
                     updateGuid = task.properties.mission.guid;
                 }
             }
@@ -508,7 +533,7 @@ export default class AtlasDatabase {
      * @param opts.mission_guid - Explicitly use Mission Store
      */
     async add(
-        feat: Feature,
+        feature: InputFeature,
         opts?: {
             skipSave?: boolean;
             skipBroadcast?: boolean;
@@ -518,6 +543,10 @@ export default class AtlasDatabase {
         }
     ): Promise<void> {
         if (!opts) opts = {};
+
+        feature.properties.id = feature.id;
+
+        const feat = feature as Feature;
 
         if (opts.authored) {
             feat.properties.creator = await this.atlas.profile.creator();
@@ -540,7 +569,7 @@ export default class AtlasDatabase {
                 mode_id: mission_guid
             }, opts);
 
-            sub.cots.set(String(cot.id), cot);
+            sub.updateFeature(cot);
 
             this.atlas.postMessage({
                 type: WorkerMessageType.Mission_Change_Feature,

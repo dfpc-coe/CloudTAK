@@ -115,6 +115,17 @@ export type Feature = paths["/api/profile/feature/{:id}"]["get"]["responses"]["2
     }
 }
 
+export type InputFeature = paths["/api/profile/feature/{:id}"]["get"]["responses"]["200"]["content"]["application/json"] & {
+    origin?: Origin
+    properties: {
+        'id'?: string;
+        'icon-opacity'?: number;
+        'circle-opacity'?: number;
+
+        [index: string]: unknown
+    }
+}
+
 export type FeaturePropertyCreator = Exclude<Feature["properties"]["creator"], undefined>
 
 export type FeatureCollection = {
