@@ -114,7 +114,7 @@
                     <div
                         v-for='iconset in list.items'
                         :key='iconset.uid'
-                        class='col-12 hover-dark cursor-pointer py-2 px-3'
+                        class='col-12 hover cursor-pointer py-2 px-3'
                         @click='router.push(`/menu/iconset/${iconset.uid}`)'
                     >
                         <div class='d-flex align-items-center'>

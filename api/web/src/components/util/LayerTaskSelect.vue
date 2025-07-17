@@ -82,7 +82,7 @@
                         >
                             <div class='col-sm-6 col-lg-3'>
                                 <div
-                                    class='card card-link cursor-pointer hover-light'
+                                    class='card card-link cursor-pointer hover'
                                     @click='selected = select(task)'
                                 >
                                     <div class='card-header d-flex align-items-center user-select-none'>

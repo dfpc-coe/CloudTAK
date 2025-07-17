@@ -3,9 +3,6 @@
         <header
             v-if='navShown'
             class='navbar navbar-expand-md d-print-none'
-            data-bs-theme='dark'
-            data-bs-theme-base='neutral'
-            data-bs-theme-primary='blue'
         >
             <div class='container-xl'>
                 <div class='col-auto'>
@@ -19,7 +16,7 @@
                 </div>
                 <div class='col mx-2'>
                     <div class='page-pretitle'>
-                        TAK.NZ &bull; Team Awareness &bull; Te mōhio o te rōpū
+                        Colorado - DFPC - CoE
                     </div>
                     <h2 class='page-title'>
                         CloudTAK
@@ -60,7 +57,7 @@
                                 aria-labelledby='userProfileButton'
                             >
                                 <div
-                                    class='d-flex dropdown-item cursor-pointer hover-dark'
+                                    class='d-flex dropdown-item cursor-pointer hover'
                                     @click='router.push("/connection")'
                                 >
                                     <IconNetwork
@@ -70,7 +67,7 @@
                                     <span class='mx-2'>Connections</span>
                                 </div>
                                 <div
-                                    class='d-flex dropdown-item cursor-pointer hover-dark'
+                                    class='d-flex dropdown-item cursor-pointer hover'
                                     @click='router.push("/admin")'
                                 >
                                     <IconSettings
@@ -81,7 +78,7 @@
                                     <span class='ms-auto badge border border-red bg-red text-white'>Admin</span>
                                 </div>
                                 <div
-                                    class='d-flex dropdown-item cursor-pointer hover-dark'
+                                    class='d-flex dropdown-item cursor-pointer hover'
                                     @click='logout'
                                 >
                                     <IconLogout
@@ -272,16 +269,20 @@ $cloudtak-blue: #07556D;
     background-color: $cloudtak-child !important;
 }
 
+html[data-bs-theme='dark'] .hover:hover {
+    background: #0f172a;
+}
+
+html[data-bs-theme='light'] .hover:hover {
+    background: #f5f5f5;
+}
+
 .hover-button-hidden {
     visibility: hidden;
 }
 
 .hover-button:hover .hover-button-hidden {
     visibility: visible;
-}
-
-.hover-light:hover {
-    background: #f5f5f5;
 }
 
 .border-light {
@@ -292,10 +293,6 @@ $cloudtak-blue: #07556D;
 .hover-button:hover {
     border-radius: 6px;
     background-color: rgba(0, 0, 0, 0.2);
-}
-
-.hover-dark:hover {
-    background: #0f172a;
 }
 
 .border-dark {

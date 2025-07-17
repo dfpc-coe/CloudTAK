@@ -50,6 +50,10 @@ http {
         ${CSP}
 
         location = / {
+            if ($request_uri ~ ^/(.*)\.html) {
+                return 302 /$1;
+            }
+
             add_header 'X-Content-Type-Options' 'nosniff' always;
             add_header 'X-Frame-Options' 'DENY' always;
             add_header 'Referrer-Policy' 'strict-origin-when-cross-origin' always;
@@ -70,20 +74,9 @@ http {
                 return 302 /$1;
             }
 
-            alias /home/etl/api/web/dist/;
-            try_files $uri $uri.html $uri/ /index.html;
-        }
-
-        location /docs/ {
-            proxy_pass http://127.0.0.1:5001;
-            proxy_http_version 1.1;
-            proxy_set_header Upgrade $http_upgrade;
-            proxy_set_header Connection "Upgrade";
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header Host $host;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        }
+             alias /home/etl/api/web/dist/;
+             try_files $uri $uri.html $uri/ /index.html;
+         }
 
         location /fonts/ {
             alias /home/etl/api/fonts/;

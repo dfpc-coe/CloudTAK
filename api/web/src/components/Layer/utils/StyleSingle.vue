@@ -1,6 +1,6 @@
 <template>
     <div class='row g-2'>
-        <div class='col-md-12 hover-light rounded px-2 py-2'>
+        <div class='col-md-12 hover rounded px-2 py-2'>
             <div class='col-12 d-flex align-items-center'>
                 <label class='user-select-none subheader'><IconLicense
                     :size='20'
@@ -24,7 +24,7 @@
             />
         </div>
 
-        <div class='col-md-12 hover-light rounded px-2 py-2'>
+        <div class='col-md-12 hover rounded px-2 py-2'>
             <div class='col-12 d-flex align-items-center'> 
                 <label class='user-select-none subheader'><IconBlockquote
                     :size='20'
@@ -48,7 +48,7 @@
             />
         </div>
 
-        <div class='col-md-12 hover-light rounded px-2 py-2'>
+        <div class='col-md-12 hover rounded px-2 py-2'>
             <div class='col-12 d-flex align-items-center'>
                 <label class='user-select-none subheader'><IconBlockquote
                     :size='20'
@@ -71,7 +71,7 @@
             />
         </div>
 
-        <div class='col-md-12 hover-light rounded px-2 py-2'>
+        <div class='col-md-12 hover rounded px-2 py-2'>
             <div class='col-12 d-flex align-items-center'>
                 <label class='user-select-none subheader'><IconLink
                     :size='20'
@@ -152,7 +152,7 @@
             </div>
         </div>
 
-        <div class='col-md-12 hover-light rounded px-2 py-2'>
+        <div class='col-md-12 hover rounded px-2 py-2'>
             <div class='col-12 d-flex align-items-center'>
                 <label class='user-select-none subheader'><IconLicense
                     :size='20'
@@ -176,7 +176,7 @@
             />
         </div>
 
-        <div class='col-md-12 hover-light rounded px-2 py-2'>
+        <div class='col-md-12 hover rounded px-2 py-2'>
             <div class='col-12 d-flex align-items-center'>
                 <label class='user-select-none subheader'><IconBlockquote
                     :size='20'
@@ -200,7 +200,7 @@
             />
         </div>
 
-        <div class='col-md-12 hover-light rounded px-2 py-2'>
+        <div class='col-md-12 hover rounded px-2 py-2'>
             <div class='col-12 d-flex align-items-center'>
                 <label class='user-select-none subheader'><IconBlockquote
                     :size='20'
@@ -224,7 +224,7 @@
             />
         </div>
 
-        <div class='col-md-12 hover-light rounded px-2 py-2'>
+        <div class='col-md-12 hover rounded px-2 py-2'>
             <div class='col-12 d-flex align-items-center'>
                 <label class='user-select-none subheader'><IconLink
                     :size='20'
@@ -249,7 +249,7 @@
         </div>
 
         <template v-if='mode === "point"'>
-            <div class='col-md-12 hover-light rounded px-2 py-2'>
+            <div class='col-md-12 hover rounded px-2 py-2'>
                 <div class='col-12 d-flex align-items-center'>
                     <label class='user-select-none subheader'><IconCategory
                         :size='20'
@@ -272,7 +272,7 @@
                     :schema='props.schema'
                 />
             </div>
-            <div class='col-md-12 hover-light rounded px-2 py-2'>
+            <div class='col-md-12 hover rounded px-2 py-2'>
                 <div class='col-12 d-flex align-items-center'>
                     <label class='user-select-none subheader'><IconPhoto
                         :size='20'
@@ -293,7 +293,7 @@
                     :disabled='disabled || !filters[mode].enabled.icon'
                 />
             </div>
-            <div class='col-md-12 hover-light rounded px-2 py-2'>
+            <div class='col-md-12 hover rounded px-2 py-2'>
                 <div class='col-12 d-flex align-items-center'>
                     <label class='user-select-none subheader'><IconPaint
                         :size='20'
@@ -314,7 +314,7 @@
                     :disabled='disabled || !filters[mode].enabled["marker-color"]'
                 />
             </div>
-            <div class='col-md-12 hover-light rounded px-2 py-2'>
+            <div class='col-md-12 hover rounded px-2 py-2'>
                 <div class='col-12 d-flex align-items-center'>
                     <label class='user-select-none subheader'>
                         <IconGhost
@@ -347,7 +347,7 @@
             </div>
         </template>
         <template v-else-if='mode !== "point"'>
-            <div class='col-md-12 hover-light rounded px-2 py-2'>
+            <div class='col-md-12 hover rounded px-2 py-2'>
                 <div class='col-12 d-flex align-items-center'>
                     <label class='user-select-none subheader'><IconPaint
                         :size='20'
@@ -370,7 +370,7 @@
                 />
             </div>
 
-            <div class='col-md-12 hover-light rounded px-2 py-2'>
+            <div class='col-md-12 hover rounded px-2 py-2'>
                 <div class='col-12 d-flex align-items-center'>
                     <label class='user-select-none subheader'><IconBorderStyle2
                         :size='20'
@@ -391,7 +391,7 @@
                     :options='["Solid", "Dashed", "Dotted", "Outlined"]'
                 />
             </div>
-            <div class='col-md-12 hover-light rounded px-2 py-2'>
+            <div class='col-md-12 hover rounded px-2 py-2'>
                 <div class='col-12 d-flex align-items-center'>
                     <label class='user-select-none subheader'><IconRuler2
                         :size='20'
@@ -414,7 +414,7 @@
                     :step='1'
                 />
             </div>
-            <div class='col-md-12 hover-light rounded px-2 py-2'>
+            <div class='col-md-12 hover rounded px-2 py-2'>
                 <div class='col-12 d-flex align-items-center'>
                     <label class='user-select-none subheader'>
                         <IconGhost
@@ -447,7 +447,7 @@
             </div>
         </template>
         <template v-if='mode === "polygon"'>
-            <div class='col-md-12 hover-light rounded px-2 py-2'>
+            <div class='col-md-12 hover rounded px-2 py-2'>
                 <div class='col-12 d-flex align-items-center'>
                     <label class='user-select-none subheader'><IconPaint
                         :size='20'
@@ -468,7 +468,7 @@
                     :disabled='disabled || !filters[mode].enabled.fill'
                 />
             </div>
-            <div class='col-md-12 hover-light rounded px-2 py-2'>
+            <div class='col-md-12 hover rounded px-2 py-2'>
                 <div class='col-12 d-flex align-items-center'>
                     <label class='user-select-none subheader'>
                         <IconGhost

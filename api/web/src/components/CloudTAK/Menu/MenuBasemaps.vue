@@ -116,7 +116,7 @@
                                     <div clas='col-12'>
                                         <div
                                             v-if='(!basemap.username && isSystemAdmin) || basemap.username'
-                                            class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2 py-2'
+                                            class='cursor-pointer col-12 hover d-flex align-items-center px-2 py-2'
                                             @click.stop.prevent='editModal = basemap'
                                         >
                                             <IconSettings
@@ -127,7 +127,7 @@
                                             <span class='mx-2'>Edit Basemap</span>
                                         </div>
                                         <div
-                                            class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2 py-2'
+                                            class='cursor-pointer col-12 hover d-flex align-items-center px-2 py-2'
                                             @click.stop.prevent='download(basemap)'
                                         >
                                             <IconDownload
@@ -137,7 +137,7 @@
                                             <span class='mx-2'>Download XML</span>
                                         </div>
                                         <div
-                                            class='cursor-pointer col-12 hover-dark d-flex align-items-center px-2 py-2'
+                                            class='cursor-pointer col-12 hover d-flex align-items-center px-2 py-2'
                                             @click.stop.prevent='share = [basemap.id]'
                                         >
                                             <IconShare2

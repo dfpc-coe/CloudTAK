@@ -23,7 +23,7 @@
             <div
                 v-for='t in tokens.items'
                 :key='t.id'
-                class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'
+                class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover'
                 @click='token = t'
             >
                 <IconRobot

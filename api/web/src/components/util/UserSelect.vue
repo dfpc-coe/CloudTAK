@@ -51,7 +51,7 @@
                                         v-for='user of list.items'
                                         :key='user.username'
                                         tabindex='0'
-                                        class='cursor-pointer my-1 hover-light px-2 py-1'
+                                        class='cursor-pointer my-1 hover px-2 py-1'
                                         @keyup.enter='selected = user'
                                         @click='selected = user'
                                     >

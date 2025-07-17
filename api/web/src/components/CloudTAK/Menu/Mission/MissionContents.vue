@@ -47,7 +47,7 @@
             <div
                 v-for='content in mission.contents'
                 :key='content.data.uid'
-                class='col-12 d-flex px-2 py-2 hover-dark'
+                class='col-12 d-flex px-2 py-2 hover'
             >
                 <div>
                     <span
@@ -97,7 +97,7 @@
                 <div
                     v-for='imp in imports.items'
                     :key='imp.id'
-                    class='col-12 d-flex px-2 py-2 hover-dark align-items-center cursor-pointer'
+                    class='col-12 d-flex px-2 py-2 hover align-items-center cursor-pointer'
                     @click='router.push(`/menu/imports/${imp.id}`)'
                 >
                     <Status :status='imp.status' />
