@@ -19,6 +19,7 @@ export interface ContextEnvironmentConfig {
     monitoringInterval: number;
     backupRetentionDays: number;
     deleteProtection: boolean;
+    enableCloudWatchLogs?: boolean;
   };
   ecs: {
     taskCpu: number;

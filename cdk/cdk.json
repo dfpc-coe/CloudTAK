@@ -28,7 +28,8 @@
         "enablePerformanceInsights": false,
         "monitoringInterval": 0,
         "backupRetentionDays": 7,
-        "deleteProtection": false
+        "deleteProtection": false,
+        "enableCloudWatchLogs": false
       },
       "ecs": {
         "taskCpu": 1024,
@@ -66,7 +67,8 @@
         "enablePerformanceInsights": true,
         "monitoringInterval": 60,
         "backupRetentionDays": 30,
-        "deleteProtection": true
+        "deleteProtection": true,
+        "enableCloudWatchLogs": false
       },
       "ecs": {
         "taskCpu": 2048,
