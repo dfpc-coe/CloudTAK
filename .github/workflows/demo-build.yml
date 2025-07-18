@@ -54,15 +54,15 @@ jobs:
       - name: Setup CDK Environment
         uses: ./.github/actions/setup-cdk
         with:
-          aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-role-arn: ${{ secrets.DEMO_AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.DEMO_AWS_REGION }}
           role-session-name: GitHubActions-DockerBuild
       
       - name: Get ECR Repository and Build Tags
         id: tags
         run: |
           ECR_REPO_ARN=$(aws cloudformation describe-stacks \
-            --stack-name TAK-${{ vars.STACK_NAME }}-BaseInfra \
+            --stack-name TAK-${{ vars.DEMO_STACK_NAME }}-BaseInfra \
             --query 'Stacks[0].Outputs[?OutputKey==`EcrArtifactsRepoArnOutput`].OutputValue' \
             --output text)
           
@@ -72,7 +72,7 @@ jobs:
           fi
           
           ECR_REPO_NAME=$(echo $ECR_REPO_ARN | cut -d'/' -f2)
-          ECR_REPO_URI="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${ECR_REPO_NAME}"
+          ECR_REPO_URI="${{ secrets.DEMO_AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.DEMO_AWS_REGION }}.amazonaws.com/${ECR_REPO_NAME}"
           
           # Create deterministic hash based on actual file contents
           CONTENT_SHA=$(find api/ tasks/ -type f -exec sha256sum {} \; | sort | sha256sum | cut -c1-8)
@@ -97,7 +97,7 @@ jobs:
       
       - name: Login to Amazon ECR
         run: |
-          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | \
+          aws ecr get-login-password --region ${{ secrets.DEMO_AWS_REGION }} | \
             docker login --username AWS --password-stdin \
             ${{ steps.tags.outputs.ecr-repo-uri }}
       
