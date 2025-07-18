@@ -1,5 +1,5 @@
 name: 'Setup CDK Environment'
-description: 'Setup Node.js, AWS credentials, and install CDK dependencies'
+description: 'Common setup steps for CDK workflows: checkout, Node.js, AWS credentials, and npm install'
 
 inputs:
   aws-role-arn:
@@ -10,7 +10,8 @@ inputs:
     required: true
   role-session-name:
     description: 'AWS role session name'
-    required: true
+    required: false
+    default: 'GitHubActions'
 
 runs:
   using: 'composite'
@@ -18,7 +19,7 @@ runs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '18'
+        node-version: '22'
         cache: 'npm'
         cache-dependency-path: 'cdk/package-lock.json'
 
@@ -29,14 +30,8 @@ runs:
         aws-region: ${{ inputs.aws-region }}
         role-session-name: ${{ inputs.role-session-name }}
 
-    - name: Install CDK dependencies
+    - name: Install dependencies
       shell: bash
       run: |
         cd cdk
         npm ci
-
-    - name: Build CDK project
-      shell: bash
-      run: |
-        cd cdk
-        npm run build
