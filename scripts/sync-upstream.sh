@@ -39,17 +39,8 @@ git checkout upstream/main -- api/
 echo "📂 Syncing tasks/ folder..."
 git checkout upstream/main -- tasks/
 
-# Apply resource name patches
-if [ -f "scripts/patch-resource-names.sh" ]; then
-    echo "🔧 Applying resource name patches..."
-    ./scripts/patch-resource-names.sh
-fi
-
-# Apply branding
-if [ -f "branding/build-cdk.sh" ]; then
-    echo "🎨 Applying branding..."
-    ./branding/build-cdk.sh
-fi
+# No additional patching or branding needed
+echo "📝 Changes ready for review (branding applied at build time)"
 
 # Clean up upstream remote if we added it
 if [[ "$ADDED_UPSTREAM" == "true" ]]; then
