@@ -478,13 +478,30 @@ export const useMapStore = defineStore('cloudtak', {
                 this.pitch = map.getPitch()
             })
 
-            map.on('styleimagemissing', async (e) => {
+            map.on('styleimagemissing', (e) => {
                 if (e.id.startsWith('2525D:')) {
                     const sidc = e.id.replace('2525D:', '');
                     const size = 24;
                     const data = new ms.Symbol(sidc, { size }).asCanvas();
 
-                    map.addImage(e.id, await createImageBitmap(data));
+                    createImageBitmap(data).then(bitmap => {
+                        map.addImage(e.id, bitmap);
+                    });
+                } else if (e.id.startsWith('color-square-')) {
+                    const color = e.id.replace('color-square-', '');
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 32;
+                    canvas.height = 32;
+                    const ctx = canvas.getContext('2d');
+                    
+                    if (ctx) {
+                        ctx.fillStyle = color;
+                        ctx.fillRect(0, 0, 32, 32);
+                        
+                        createImageBitmap(canvas).then(bitmap => {
+                            map.addImage(e.id, bitmap);
+                        });
+                    }
                 }
             });
 
@@ -676,6 +693,9 @@ export const useMapStore = defineStore('cloudtak', {
             if (!click) return;
             return click.type;
         },
+
+
+
         radialClick: async function(feat: MapGeoJSONFeature | Feature, opts: {
             lngLat: LngLat;
             point: Point;
