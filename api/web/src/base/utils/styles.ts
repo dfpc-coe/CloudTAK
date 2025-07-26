@@ -180,7 +180,7 @@ export default function styles(id: string, opts: {
                 ],
                 'icon-rotate': ['get', 'course'],
                 'icon-allow-overlap': true,
-                'icon-image': '{icon}',
+                'icon-image': ['get', 'icon'],
                 'icon-anchor': 'center',
             }
         }
@@ -190,6 +190,30 @@ export default function styles(id: string, opts: {
         }
 
         styles.push(icon);
+
+        // Add colored dot overlay for icons with marker-color (bottom-right corner)
+        const iconDot: CircleLayerSpecification = {
+            id: `${id}-icon-dot`,
+            type: 'circle',
+            source: id,
+            filter: [
+                'all',
+                ['==', '$type', 'Point'],
+                ['has', 'icon'],
+                ['has', 'marker-color']
+            ],
+            paint: {
+                'circle-color': ['get', 'marker-color'],
+                'circle-radius': 5,
+                'circle-translate': [8, 8] // Bottom-right offset to match UI pattern
+            }
+        };
+
+        if (opts.sourceLayer) {
+            iconDot['source-layer'] = opts.sourceLayer;
+        }
+
+        styles.push(iconDot);
     }
 
     if (opts.group) {

@@ -478,13 +478,15 @@ export const useMapStore = defineStore('cloudtak', {
                 this.pitch = map.getPitch()
             })
 
-            map.on('styleimagemissing', async (e) => {
+            map.on('styleimagemissing', (e) => {
                 if (e.id.startsWith('2525D:')) {
                     const sidc = e.id.replace('2525D:', '');
                     const size = 24;
                     const data = new ms.Symbol(sidc, { size }).asCanvas();
 
-                    map.addImage(e.id, await createImageBitmap(data));
+                    createImageBitmap(data).then(bitmap => {
+                        map.addImage(e.id, bitmap);
+                    });
                 }
             });
 
