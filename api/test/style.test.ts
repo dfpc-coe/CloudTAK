@@ -1076,8 +1076,8 @@ test('Style: {{round}} - Default Decimals', async () => {
         stale: 123,
         enabled_styles: true,
         styles: {
-            // Round earthquake depth to default 2 decimal places
-            remarks: 'Depth: {{round depth}}km'
+            // Round earthquake depth to explicit 2 decimal places
+            remarks: 'Depth: {{round depth 2}}km'
         }
     });
 
