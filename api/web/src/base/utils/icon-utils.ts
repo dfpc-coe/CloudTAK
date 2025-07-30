@@ -2,16 +2,10 @@
  * Icon utility functions for CloudTAK
  */
 
-import { getSidcForCot, hasSidcMapping } from './cot-sidc-mapping.ts';
-
 /**
  * Determine the icon source type for a given icon ID
  */
 export function getIconSourceType(iconId: string): 'cot-sidc' | '2525d' | 'color-square-38' | 'color-square' | 'sprite' | 'unknown' {
-    if (hasSidcMapping(iconId)) {
-        return 'cot-sidc';
-    }
-    
     if (iconId.startsWith('2525D:')) {
         return '2525d';
     }
@@ -26,24 +20,6 @@ export function getIconSourceType(iconId: string): 'cot-sidc' | '2525d' | 'color
     
     // Assume it's in a sprite if none of the above match
     return 'sprite';
-}
-
-/**
- * Get the SIDC code for an icon, handling both direct SIDC and CoT mappings
- */
-export function getIconSidc(iconId: string): string | undefined {
-    // Check CoT mapping first
-    const cotSidc = getSidcForCot(iconId);
-    if (cotSidc) {
-        return cotSidc;
-    }
-    
-    // Check if it's a direct SIDC reference
-    if (iconId.startsWith('2525D:')) {
-        return iconId.replace('2525D:', '');
-    }
-    
-    return undefined;
 }
 
 /**
