@@ -180,7 +180,12 @@ export default function styles(id: string, opts: {
                 ],
                 'icon-rotate': ['get', 'course'],
                 'icon-allow-overlap': true,
-                'icon-image': ['get', 'icon'],
+                'icon-image': [
+                    'case',
+                    ['all', ['has', 'marker-color'], ['!=', ['slice', ['get', 'icon'], 0, 6], '2525D:']],
+                    ['concat', ['get', 'icon'], '-colored-', ['slice', ['get', 'marker-color'], 1]],
+                    ['get', 'icon']
+                ],
                 'icon-anchor': 'center',
             }
         }
@@ -189,40 +194,6 @@ export default function styles(id: string, opts: {
             icon['source-layer'] = opts.sourceLayer;
         }
 
-        // Add colored square background for icons with marker-color
-        const iconBackground: SymbolLayerSpecification = {
-            id: `${id}-icon-background`,
-            type: 'symbol',
-            source: id,
-            filter: [
-                'all',
-                ['==', '$type', 'Point'],
-                ['has', 'icon'],
-                ['has', 'marker-color']
-            ],
-            paint: {
-                'icon-opacity': [
-                    '*',
-                    ["number", ["get", "marker-opacity"], 1],
-                    0.8
-                ]
-            },
-            layout: {
-                'icon-image': [
-                    'concat',
-                    'color-square-',
-                    ['get', 'marker-color']
-                ],
-                'icon-size': 1,
-                'icon-allow-overlap': true
-            }
-        };
-
-        if (opts.sourceLayer) {
-            iconBackground['source-layer'] = opts.sourceLayer;
-        }
-
-        styles.push(iconBackground);
         styles.push(icon);
     }
 
