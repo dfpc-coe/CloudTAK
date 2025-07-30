@@ -8,7 +8,7 @@ import { getIconSourceType, getIconSidc, canGenerateIcon } from '../icon-utils.t
 describe('CoT to SIDC Mapping', () => {
     test('should map known CoT types to SIDC', () => {
         expect(getSidcForCot('a-f-S-X-M-T')).toBe('130330000014011100000000000000');
-        expect(getSidcForCot('a-f-G-U-C-I')).toBe('10031000001211000000');
+        expect(getSidcForCot('a-f-G-U-C-I')).toBe('13060000121100000000000000000000');
         expect(getSidcForCot('a-h-A-M-F-Q')).toBe('01044000001211000000');
     });
 
