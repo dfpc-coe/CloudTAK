@@ -21,6 +21,8 @@ import { std, stdurl } from '../std.js';
 import mapgl from 'maplibre-gl'
 import type Atlas from '../workers/atlas.ts';
 import { CloudTAKTransferHandler } from '../base/handler.ts';
+import { getSidcForCot } from '../base/utils/cot-sidc-mapping.ts';
+
 
 import type { ProfileOverlay, ProfileOverlayList, Basemap, APIList, Feature, IconsetList, MapConfig } from '../types.ts';
 import type { LngLat, LngLatLike, Point, MapMouseEvent, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl';
@@ -455,6 +457,8 @@ export const useMapStore = defineStore('cloudtak', {
             this._map = map;
             this._draw = new DrawTool(this);
 
+
+
             // If we missed the Profile_Location_Source make sure it gets synced
             const loc = await this.worker.profile.location;
             this.location = loc.source;
@@ -479,31 +483,90 @@ export const useMapStore = defineStore('cloudtak', {
             })
 
             map.on('styleimagemissing', (e) => {
-                if (e.id.startsWith('2525D:')) {
-                    const sidc = e.id.replace('2525D:', '');
+                // Check for CoT to SIDC mapping first
+                const sidc = getSidcForCot(e.id);
+                if (sidc) {
                     const size = 24;
                     const data = new ms.Symbol(sidc, { size }).asCanvas();
 
                     createImageBitmap(data).then(bitmap => {
                         map.addImage(e.id, bitmap);
                     });
-                } else if (e.id.startsWith('color-square-')) {
-                    const color = e.id.replace('color-square-', '');
-                    const canvas = document.createElement('canvas');
-                    canvas.width = 32;
-                    canvas.height = 32;
-                    const ctx = canvas.getContext('2d');
+                } else if (e.id.startsWith('2525D:')) {
+                    const sidcCode = e.id.replace('2525D:', '');
+                    const size = 24;
+                    const data = new ms.Symbol(sidcCode, { size }).asCanvas();
+
+                    createImageBitmap(data).then(bitmap => {
+                        map.addImage(e.id, bitmap);
+                    });
+                } else if (e.id.includes('-colored-')) {
+                    // Handle colored icons by creating them on-demand
+                    const parts = e.id.split('-colored-');
+                    const originalIconId = parts[0];
+                    const color = '#' + parts[1];
                     
-                    if (ctx) {
-                        ctx.fillStyle = color;
-                        ctx.fillRect(0, 0, 32, 32);
-                        
-                        createImageBitmap(canvas).then(bitmap => {
-                            map.addImage(e.id, bitmap);
-                        });
-                    }
+                    // Wait for original icon to be available
+                    const checkAndCreateColored = () => {
+                        const originalImage = map.getImage(originalIconId);
+                        if (originalImage) {
+                            // Create colored version
+                            const canvas = document.createElement('canvas');
+                            const ctx = canvas.getContext('2d');
+                            if (!ctx) return;
+
+                            canvas.width = originalImage.data.width;
+                            canvas.height = originalImage.data.height;
+
+                            // Create ImageData from the original image
+                            const imageData = new ImageData(
+                                new Uint8ClampedArray(originalImage.data.data),
+                                originalImage.data.width,
+                                originalImage.data.height
+                            );
+
+                            // Recolor white pixels
+                            const [r, g, b] = hexToRgb(color);
+                            const data = imageData.data;
+                            for (let i = 0; i < data.length; i += 4) {
+                                const alpha = data[i + 3];
+                                if (alpha === 0) continue;
+                                
+                                // Check if pixel is non-black (should be recolored)
+                                if (data[i] > 30 || data[i + 1] > 30 || data[i + 2] > 30) {
+                                    data[i] = r;
+                                    data[i + 1] = g;
+                                    data[i + 2] = b;
+                                }
+                            }
+
+                            // Draw to canvas and add to map
+                            ctx.putImageData(imageData, 0, 0);
+                            const canvasImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                            map.addImage(e.id, {
+                                width: canvas.width,
+                                height: canvas.height,
+                                data: canvasImageData.data
+                            });
+                        } else {
+                            // Original icon not ready, try again after a short delay
+                            setTimeout(checkAndCreateColored, 10);
+                        }
+                    };
+                    
+                    checkAndCreateColored();
                 }
             });
+            
+            // Helper function for hex to RGB conversion
+            function hexToRgb(hex: string): [number, number, number] {
+                const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                return result ? [
+                    parseInt(result[1], 16),
+                    parseInt(result[2], 16),
+                    parseInt(result[3], 16)
+                ] : [0, 255, 0];
+            }
 
             map.on('moveend', async () => {
                 if (this.draw.mode !== DrawToolMode.STATIC) {
