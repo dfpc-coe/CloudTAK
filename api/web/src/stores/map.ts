@@ -543,6 +543,16 @@ export const useMapStore = defineStore('cloudtak', {
                 }
             });
 
+            // Helper function for hex to RGB conversion
+            function hexToRgb(hex: string): [number, number, number] {
+                const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                return result ? [
+                    parseInt(result[1], 16),
+                    parseInt(result[2], 16),
+                    parseInt(result[3], 16)
+                ] : [0, 255, 0];
+            }
+
             map.on('moveend', async () => {
                 if (this.draw.mode !== DrawToolMode.STATIC) {
                     this.draw.snapping = await this.worker.db.snapping(this.map.getBounds().toArray());
