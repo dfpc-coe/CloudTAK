@@ -485,6 +485,61 @@ export const useMapStore = defineStore('cloudtak', {
                     const data = new ms.Symbol(sidc, { size }).asCanvas();
 
                     map.addImage(e.id, await createImageBitmap(data));
+                } else if (e.id.includes('-colored-')) {
+                    // Handle colored icons by creating them on-demand
+                    const parts = e.id.split('-colored-');
+                    const originalIconId = parts[0];
+                    const color = '#' + parts[1];
+                    
+                    const createColoredIcon = () => {
+                        const originalImage = map.getImage(originalIconId);
+                        if (!originalImage) return false;
+                        
+                        // Create colored version
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        if (!ctx) return false;
+
+                        canvas.width = originalImage.data.width;
+                        canvas.height = originalImage.data.height;
+
+                        // Create ImageData from the original image
+                        const imageData = new ImageData(
+                            new Uint8ClampedArray(originalImage.data.data),
+                            originalImage.data.width,
+                            originalImage.data.height
+                        );
+
+                        // Recolor white pixels while preserving alpha
+                        const [r, g, b] = hexToRgb(color);
+                        const data = imageData.data;
+                        for (let i = 0; i < data.length; i += 4) {
+                            const alpha = data[i + 3];
+                            if (alpha === 0) continue;
+                            
+                            // Check if pixel is white or light colored (should be recolored)
+                            if (data[i] > 200 && data[i + 1] > 200 && data[i + 2] > 200) {
+                                data[i] = r;
+                                data[i + 1] = g;
+                                data[i + 2] = b;
+                            }
+                        }
+
+                        // Draw to canvas and add to map
+                        ctx.putImageData(imageData, 0, 0);
+                        const canvasImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                        map.addImage(e.id, {
+                            width: canvas.width,
+                            height: canvas.height,
+                            data: canvasImageData.data
+                        });
+                        return true;
+                    };
+                    
+                    // Try to create immediately, if original icon not ready, wait briefly
+                    if (!createColoredIcon()) {
+                        setTimeout(() => createColoredIcon(), 1);
+                    }
                 }
             });
 
