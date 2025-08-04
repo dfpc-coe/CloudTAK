@@ -63,7 +63,7 @@ services:
             - AWS_S3_SecretAccessKey=cloudtakminioadmin
 
     media:
-        image: ghcr.io/dfpc-coe/media-infra:v3.3.4
+        image: ghcr.io/dfpc-coe/media-infra:v4.2.0
         restart: 'always'
         environment:
             - FORCE_NEW_CONFIG=false
