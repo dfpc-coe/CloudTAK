@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v10.35.1 - 2025-08-04 - :tada: @chriselsen
+
+- :bug: Fix White Card Background
+
 ### v10.35.0 - 2025-07-14
 
 - :rocket: Finally get `/docs` working as expected
