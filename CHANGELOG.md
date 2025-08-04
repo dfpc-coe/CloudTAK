@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v10.36.0 - 2025-08-04 - :tada: @chriselsen
+
+- :rocket: Resiliency improvements to the Floating Video Player
+
 ### v10.35.1 - 2025-08-04 - :tada: @chriselsen
 
 - :bug: Fix White Card Background
