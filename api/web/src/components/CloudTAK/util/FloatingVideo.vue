@@ -112,8 +112,10 @@
             <template v-else>
                 <video
                     ref='videoTag'
-                    class='w-100 h-100'
+                    class='w-100 h-100 live-video'
                     controls
+                    autoplay
+                    muted
                 />
             </template>
         </div>
@@ -121,6 +123,13 @@
 </template>
 
 <script setup lang='ts'>
+/**
+ * FloatingVideo Component
+ * 
+ * A draggable, resizable video player component for HLS live streaming.
+ * Features resilient error handling, automatic retry logic, and MediaMTX muxer restart recovery.
+ */
+
 import { ref, computed, onMounted, onUnmounted, nextTick, useTemplateRef } from 'vue'
 import { std, stdurl } from '../../../../src/std.ts';
 import StatusDot from './../../util/StatusDot.vue';
@@ -142,8 +151,10 @@ import {
     TablerIconButton,
 } from '@tak-ps/vue-tabler';
 
+// Store for managing floating panes
 const floatStore = useFloatStore();
 
+// Component props
 const props = defineProps({
     title: {
         type: String,
@@ -151,29 +162,42 @@ const props = defineProps({
     },
     uid: {
         type: String,
-        required: true
+        required: true // Unique identifier for this video pane
     }
 });
 
+// Template refs for DOM elements
 const videoTag = useTemplateRef<HTMLVideoElement>('videoTag');
 const container = useTemplateRef<HTMLElement>('container');
 const dragHandle = useTemplateRef<HTMLElement>('drag-handle');
 
+// Component events
 const emit = defineEmits(['close']);
 
+// UI state management
 const loading = ref(true);
 const error = ref<Error | undefined>();
 
+// HLS retry logic state
+const retryCount = ref(0);
+const maxRetries = ref(3); // Maximum retry attempts before giving up
+
+// HLS player instance
 const player = ref<Hls | undefined>()
 
+// Video streaming data
 const video = ref(floatStore.panes.get(props.uid) as VideoPane);
-const videoLease = ref<VideoLeaseResponse["lease"] | undefined>();
-const videoProtocols = ref<VideoLeaseResponse["protocols"] | undefined>();
-const observer = ref<ResizeObserver | undefined>();
-const lastPosition = ref({ top: 0, left: 0 })
+const videoLease = ref<VideoLeaseResponse["lease"] | undefined>(); // CloudTAK video lease
+const videoProtocols = ref<VideoLeaseResponse["protocols"] | undefined>(); // Available streaming protocols
 
+// Drag and resize functionality
+const observer = ref<ResizeObserver | undefined>(); // Watches for container resize events
+const lastPosition = ref({ top: 0, left: 0 }) // Last mouse position during drag
+
+// Active stream metadata
 const active = ref();
 
+// Computed title - uses stream metadata name if available, falls back to prop
 const title = computed(() => {
     if (active.value && active.value.metadata) {
         return active.value.metadata.name;
@@ -182,22 +206,29 @@ const title = computed(() => {
     }
 });
 
+// Cleanup when component is unmounted
 onUnmounted(async () => {
+    // Stop observing resize events
     if (observer.value) {
         observer.value.disconnect();
     }
 
+    // Destroy HLS player instance
     if (player.value) {
         player.value.destroy();
     }
 
+    // Clean up video lease from server
     await deleteLease();
 });
 
+// Initialize component when mounted
 onMounted(async () => {
+    // Set up resize observer to sync container size with store
     observer.value = new ResizeObserver((entries) => {
         if (!entries.length) return;
 
+        // Use requestAnimationFrame for smooth resize updates
         window.requestAnimationFrame(() => {
             if (video.value && video.value && container.value) {
                 video.value.config.height = entries[0].contentRect.height;
@@ -206,6 +237,7 @@ onMounted(async () => {
         });
     })
 
+    // Initialize container position and size from stored config
     if (container.value && video.value) {
         container.value.style.top = video.value.config.y + 'px';
         container.value.style.left = video.value.config.x + 'px';
@@ -213,24 +245,33 @@ onMounted(async () => {
         container.value.style.height = video.value.config.height + 'px';
         container.value.style.width = video.value.config.width + 'px';
 
+        // Start observing container for resize events
         observer.value.observe(container.value);
     }
 
+    // Set up drag functionality
     if (dragHandle.value) {
         dragHandle.value.addEventListener('mousedown', dragStart);
     }
 
+    // Start the video lease request process
     await requestLease();
 });
 
+/**
+ * Drag functionality - allows user to move the video player around the screen
+ */
 function dragStart(event: MouseEvent) {
     if (!container.value || !dragHandle.value) return;
 
+    // Store initial mouse position
     lastPosition.value.left = event.clientX;
     lastPosition.value.top = event.clientY;
 
+    // Add visual feedback for dragging state
     dragHandle.value.classList.add('dragging');
 
+    // Attach drag event listeners
     container.value.addEventListener('mousemove', dragMove);
     container.value.addEventListener('mouseleave', dragEnd);
     container.value.addEventListener('mouseup', dragEnd);
@@ -239,15 +280,18 @@ function dragStart(event: MouseEvent) {
 function dragMove(event: MouseEvent) {
     if (!container.value || !dragHandle.value || !video.value) return;
 
-
+    // Calculate new position based on mouse movement
     const dragElRect = container.value.getBoundingClientRect();
 
+    // Update stored position in video config
     video.value.config.x = dragElRect.left + event.clientX - lastPosition.value.left;
     video.value.config.y = dragElRect.top + event.clientY - lastPosition.value.top;
 
+    // Update last position for next move calculation
     lastPosition.value.left = event.clientX;
     lastPosition.value.top = event.clientY;
 
+    // Apply new position to DOM element
     container.value.style.top = video.value.config.y + 'px';
     container.value.style.left = video.value.config.x + 'px';
 }
@@ -255,17 +299,23 @@ function dragMove(event: MouseEvent) {
 function dragEnd() {
     if (!container.value || !dragHandle.value) return;
 
+    // Remove drag event listeners
     container.value.removeEventListener('mousemove', dragMove);
     container.value.removeEventListener('mouseleave', dragEnd);
     container.value.removeEventListener('mouseup', dragEnd);
 
+    // Remove visual feedback for dragging state
     dragHandle.value.classList.remove('dragging');
 }
 
+/**
+ * Clean up video lease from CloudTAK server when component is destroyed
+ */
 async function deleteLease(): Promise<void> {
     if (!videoLease.value) return;
 
     try {
+        // Delete the temporary video lease from server
         await std(`/api/video/lease/${videoLease.value.id}`, {
             method: 'DELETE',
         });
@@ -277,61 +327,84 @@ async function deleteLease(): Promise<void> {
     }
 }
 
+/**
+ * Create and configure HLS.js player with resilient settings for live streaming
+ */
 async function createPlayer(): Promise<void> {
     try {
         const url = new URL(videoProtocols.value!.hls!.url);
 
+        // Configure HLS.js with settings optimized for MediaMTX live streaming
         player.value = new Hls({
             enableWorker: true,
-            lowLatencyMode: false,
-            debug: true,
-            maxBufferSize: 3000000,
-            maxMaxBufferLength: 300,
+            lowLatencyMode: false, // More forgiving for stream restarts
+            debug: false,
+            backBufferLength: 90, // Keep more buffer for smoother playback
+            maxBufferLength: 30, // Larger buffer for resilience
+            maxMaxBufferLength: 600,
+            liveSyncDurationCount: 3, // More tolerant of discontinuities
+            liveMaxLatencyDurationCount: 10,
             xhrSetup: (xhr: XMLHttpRequest) => {
+                // Add authentication if stream requires it
                 if (url.username && url.password) {
                     xhr.setRequestHeader('Authorization', 'Basic ' + btoa(`${url.username}:${url.password}`));
                 }
             }
         });
 
+        // Attach HLS player to video element
         player.value.attachMedia(videoTag.value!);
 
+        // Load HLS source when media is attached
         player.value.on(Hls.Events.MEDIA_ATTACHED, async () => {
             if (player.value) player.value.loadSource(url.toString());
         });
 
+        // Auto-play when manifest is loaded and parsed
         player.value.on(Hls.Events.MANIFEST_PARSED, async () => {
             try {
-                //if (videoTag.value) await videoTag.value.play();
+                if (videoTag.value) await videoTag.value.play();
             } catch (err) {
                 console.error("Error playing video:", err);
-                //error.value = new Error('Failed to play video');
             }
         });
 
+        // Enhanced error handling for MediaMTX muxer restarts and network issues
         player.value.on(Hls.Events.ERROR, (event, data) => {
-            console.log("Hls.Events.ERROR", data);
+            console.log("HLS Error:", data);
 
-            if (data.fatal) {
-                switch (data.type) {
-                    case Hls.ErrorTypes.NETWORK_ERROR:
-                        console.log("Fatal network error encountered", data);
-                        if (player.value) player.value.destroy();
-                        error.value = data.error;
-                        break;
-                    case Hls.ErrorTypes.MEDIA_ERROR:
-                        console.log("Fatal media error encountered", data);
-                        if (player.value) {
-                            player.value.recoverMediaError();
-                        } else {
-                            error.value = data.error;
-                        }
-                        break;
-                    default:
-                        if (player.value) player.value.destroy();
-                        break;
+            // Handle non-fatal errors gracefully (common with MediaMTX restarts)
+            if (!data.fatal) {
+                if (data.details === 'manifestLoadError' || data.details === 'levelLoadError') {
+                    handleStreamRestart(); // Handle muxer restart scenario
                 }
+                return;
+            }
 
+            // Handle fatal errors with appropriate recovery strategies
+            switch (data.type) {
+                case Hls.ErrorTypes.NETWORK_ERROR:
+                    console.log("Fatal network error:", data);
+                    handleStreamError(data.error);
+                    break;
+                case Hls.ErrorTypes.MEDIA_ERROR:
+                    console.log("Fatal media error:", data);
+                    if (player.value) {
+                        try {
+                            // Attempt built-in media error recovery
+                            player.value.recoverMediaError();
+                        } catch {
+                            // Fall back to full retry if recovery fails
+                            handleStreamError(data.error);
+                        }
+                    } else {
+                        handleStreamError(data.error);
+                    }
+                    break;
+                default:
+                    // Handle other fatal errors with retry logic
+                    handleStreamError(data.error);
+                    break;
             }
         })
     } catch (err) {
@@ -339,7 +412,66 @@ async function createPlayer(): Promise<void> {
     }
 }
 
+/**
+ * Handle MediaMTX muxer restarts gracefully
+ * This occurs when MediaMTX creates new segment naming due to source hiccups
+ */
+function handleStreamRestart(): void {
+    console.log('Handling HLS stream restart (muxer restart detected)');
+    if (player.value && videoProtocols.value?.hls) {
+        try {
+            // Gracefully handle sequence mismatches by reloading from current position
+            const currentTime = videoTag.value?.currentTime || 0;
+            player.value.stopLoad();
+            player.value.startLoad(currentTime);
+        } catch (err) {
+            console.error('Error handling stream restart:', err);
+            // Fall back to full retry if restart handling fails
+            handleStreamError(err instanceof Error ? err : new Error(String(err)));
+        }
+    }
+}
+
+/**
+ * Handle stream errors with exponential backoff retry logic
+ * Implements 3-attempt retry system with increasing delays: 1s, 2s, 4s
+ */
+function handleStreamError(streamError: Error): void {
+    if (retryCount.value < maxRetries.value) {
+        // Calculate exponential backoff delay
+        const delay = 1000 * Math.pow(2, retryCount.value); // 1s, 2s, 4s
+        console.log(`Retrying stream in ${delay}ms (attempt ${retryCount.value + 1}/${maxRetries.value})`);
+        
+        retryCount.value++;
+        
+        // Retry after delay
+        setTimeout(() => {
+            // Clean up existing player before retry
+            if (player.value) {
+                player.value.destroy();
+                player.value = undefined;
+            }
+            // Attempt to recreate player
+            createPlayer();
+        }, delay);
+    } else {
+        // Max retries reached - give up and show error to user
+        console.error('Max retries reached, giving up');
+        if (player.value) {
+            player.value.destroy();
+            player.value = undefined;
+        }
+        error.value = streamError;
+        retryCount.value = 0; // Reset for potential future attempts
+    }
+}
+
+/**
+ * Request video lease from CloudTAK server and initialize streaming
+ * Handles both existing active streams and creation of new temporary leases
+ */
 async function requestLease(): Promise<void> {
+    // Validate prerequisites
     if (!video.value) {
         error.value = new Error('Video URL could not be loaded');
         return;
@@ -351,21 +483,24 @@ async function requestLease(): Promise<void> {
     }
 
     try {
+        // Check if stream is already active on the server
         const url = stdurl('/api/video/active');
         url.searchParams.append('url', video.value.config.url)
         active.value = await std(url);
 
         if (active.value.metadata) {
+            // Stream is already active - use existing protocols
             videoProtocols.value = active.value.metadata.protocols;
             loading.value = false;
         } else if (active.value.leasable) {
+            // Stream can be leased - create temporary lease
             const { lease, protocols } = await std('/api/video/lease', {
                 method: 'POST',
                 body:  {
                     name: 'Temporary Lease',
-                    ephemeral: true,
-                    duration: 1 * 60 * 60,
-                    proxy: video.value.config.url
+                    ephemeral: true, // Hidden from streaming list
+                    duration: 1 * 60 * 60, // 1 hour lease
+                    proxy: video.value.config.url // Proxy the external stream
                 }
             }) as VideoLeaseResponse
 
@@ -374,10 +509,13 @@ async function requestLease(): Promise<void> {
 
             loading.value = false;
         } else if (!active.value.leasable) {
+            // Stream cannot be leased
             error.value = new Error(active.value.message || 'Could not start stream');
         }
 
+        // Initialize HLS player if we have protocols available
         if (!error.value && videoProtocols.value && videoProtocols.value.hls) {
+            retryCount.value = 0; // Reset retry count for new lease
             nextTick(() => {
                 createPlayer();
             });
@@ -390,14 +528,32 @@ async function requestLease(): Promise<void> {
 </script>
 
 <style>
+/* Drag functionality styling */
 .dragging {
     cursor: move !important;
 }
 
+/* Resizable container with minimum dimensions */
 .resizable-content {
     min-height: 300px;
     min-width: 400px;
     resize: both;
     overflow: auto;
+}
+
+/* Hide inappropriate controls for live streaming */
+/* Timeline/seek bar - not useful for live streams */
+.live-video::-webkit-media-controls-timeline {
+    display: none;
+}
+
+/* Current time display - not meaningful for live streams */
+.live-video::-webkit-media-controls-current-time-display {
+    display: none;
+}
+
+/* Remaining time display - not applicable to live streams */
+.live-video::-webkit-media-controls-time-remaining-display {
+    display: none;
 }
 </style>
