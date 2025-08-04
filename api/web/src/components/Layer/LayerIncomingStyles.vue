@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class='card-header bg-white sticky-top'>
+        <div class='card-header sticky-top'>
             <h3 class='card-title'>
                 Style Overrides
             </h3>
