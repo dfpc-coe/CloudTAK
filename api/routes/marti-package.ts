@@ -159,7 +159,7 @@ export default async function router(schema: Schema, config: Config) {
                     }
                 }
 
-                await pkg.addCoT(CoTParser.from_geojson(feat))
+                await pkg.addCoT(await CoTParser.from_geojson(feat))
             }
 
             for (const basemapid of req.body.basemaps) {
