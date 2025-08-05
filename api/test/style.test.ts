@@ -955,3 +955,277 @@ test('Style: {{slice remarks}}', async () => {
         },
     });
 });
+
+// Test replace helper - basic single replacement functionality
+test('Style: {{replace}} - Single Replacement', async () => {
+    const style = new Style({
+        stale: 123,
+        enabled_styles: true,
+        styles: {
+            // Replace [nl] markers with spaces in VMS message
+            remarks: '{{replace currentMessage "[nl]" " "}}'
+        }
+    });
+
+    assert.deepEqual(await style.feat({
+        type: 'Feature',
+        properties: {
+            metadata: {
+                currentMessage: 'WINTER DRIVING[nl]CONDITIONS',
+            }
+        },
+        geometry: {
+            type: 'Point',
+            coordinates: [0, 0]
+        }
+    }), {
+        type: 'Feature',
+        properties: {
+            remarks: 'WINTER DRIVING CONDITIONS',
+            metadata: {
+                currentMessage: 'WINTER DRIVING[nl]CONDITIONS',
+            },
+            stale: 123000
+        },
+        geometry: {
+            coordinates: [0, 0],
+            type: 'Point'
+        },
+    });
+});
+
+// Test replace helper - chained multiple replacements
+test('Style: {{replace}} - Chained Replacements', async () => {
+    const style = new Style({
+        stale: 123,
+        enabled_styles: true,
+        styles: {
+            // Chain replacements to handle both [nl] and [np] markers
+            remarks: '{{replace (replace currentMessage "[nl]" " ") "[np]" " "}}'
+        }
+    });
+
+    assert.deepEqual(await style.feat({
+        type: 'Feature',
+        properties: {
+            metadata: {
+                currentMessage: 'WINTER DRIVING[nl]CONDITIONS[np]TAKE EXTRA CARE',
+            }
+        },
+        geometry: {
+            type: 'Point',
+            coordinates: [0, 0]
+        }
+    }), {
+        type: 'Feature',
+        properties: {
+            remarks: 'WINTER DRIVING CONDITIONS TAKE EXTRA CARE',
+            metadata: {
+                currentMessage: 'WINTER DRIVING[nl]CONDITIONS[np]TAKE EXTRA CARE',
+            },
+            stale: 123000
+        },
+        geometry: {
+            coordinates: [0, 0],
+            type: 'Point'
+        },
+    });
+});
+
+// Test replace helper - empty/null input handling
+test('Style: {{replace}} - Empty Input', async () => {
+    const style = new Style({
+        stale: 123,
+        enabled_styles: true,
+        styles: {
+            // Test replace helper with empty/null input
+            remarks: '{{replace emptyField "[nl]" " "}}'
+        }
+    });
+
+    assert.deepEqual(await style.feat({
+        type: 'Feature',
+        properties: {
+            metadata: {
+                emptyField: '',
+            }
+        },
+        geometry: {
+            type: 'Point',
+            coordinates: [0, 0]
+        }
+    }), {
+        type: 'Feature',
+        properties: {
+            remarks: '',
+            metadata: {
+                emptyField: '',
+            },
+            stale: 123000
+        },
+        geometry: {
+            coordinates: [0, 0],
+            type: 'Point'
+        },
+    });
+});
+
+// Test round helper - default 2 decimal places
+test('Style: {{round}} - Default Decimals', async () => {
+    const style = new Style({
+        stale: 123,
+        enabled_styles: true,
+        styles: {
+            // Round earthquake depth to explicit 2 decimal places
+            remarks: 'Depth: {{round depth 2}}km'
+        }
+    });
+
+    assert.deepEqual(await style.feat({
+        type: 'Feature',
+        properties: {
+            metadata: {
+                depth: 5.9296875,
+            }
+        },
+        geometry: {
+            type: 'Point',
+            coordinates: [0, 0]
+        }
+    }), {
+        type: 'Feature',
+        properties: {
+            remarks: 'Depth: 5.93km',
+            metadata: {
+                depth: 5.9296875,
+            },
+            stale: 123000
+        },
+        geometry: {
+            coordinates: [0, 0],
+            type: 'Point'
+        },
+    });
+});
+
+// Test round helper - custom decimal places
+test('Style: {{round}} - Custom Decimals', async () => {
+    const style = new Style({
+        stale: 123,
+        enabled_styles: true,
+        styles: {
+            // Round earthquake magnitude to 1 decimal place
+            callsign: 'M{{round magnitude 1}}'
+        }
+    });
+
+    assert.deepEqual(await style.feat({
+        type: 'Feature',
+        properties: {
+            metadata: {
+                magnitude: 2.7541372727277693,
+            }
+        },
+        geometry: {
+            type: 'Point',
+            coordinates: [0, 0]
+        }
+    }), {
+        type: 'Feature',
+        properties: {
+            callsign: 'M2.8',
+            metadata: {
+                magnitude: 2.7541372727277693,
+            },
+            stale: 123000
+        },
+        geometry: {
+            coordinates: [0, 0],
+            type: 'Point'
+        },
+    });
+});
+
+// Test round helper - null/undefined/NaN handling
+test('Style: {{round}} - Invalid Input', async () => {
+    const style = new Style({
+        stale: 123,
+        enabled_styles: true,
+        styles: {
+            // Test round helper with null/undefined input
+            remarks: 'Value: {{round invalidNumber}}'
+        }
+    });
+
+    assert.deepEqual(await style.feat({
+        type: 'Feature',
+        properties: {
+            metadata: {
+                invalidNumber: null,
+            }
+        },
+        geometry: {
+            type: 'Point',
+            coordinates: [0, 0]
+        }
+    }), {
+        type: 'Feature',
+        properties: {
+            remarks: 'Value: ',
+            metadata: {
+                invalidNumber: null,
+            },
+            stale: 123000
+        },
+        geometry: {
+            coordinates: [0, 0],
+            type: 'Point'
+        },
+    });
+});
+
+// Test combined usage - real-world earthquake data formatting
+test('Style: Combined {{replace}} and {{round}} - Earthquake Data', async () => {
+    const style = new Style({
+        stale: 123,
+        enabled_styles: true,
+        styles: {
+            // Combine both helpers for comprehensive earthquake data formatting
+            callsign: 'M{{round magnitude 1}} - {{replace locality "km" "km"}}',
+            remarks: 'Depth: {{round depth 2}}km, Quality: {{replace quality "best" "verified"}}'
+        }
+    });
+
+    assert.deepEqual(await style.feat({
+        type: 'Feature',
+        properties: {
+            metadata: {
+                magnitude: 2.7541372727277693,
+                depth: 5.9296875,
+                locality: '10 km north-west of Tokomaru Bay',
+                quality: 'best'
+            }
+        },
+        geometry: {
+            type: 'Point',
+            coordinates: [0, 0]
+        }
+    }), {
+        type: 'Feature',
+        properties: {
+            callsign: 'M2.8 - 10 km north-west of Tokomaru Bay',
+            remarks: 'Depth: 5.93km, Quality: verified',
+            metadata: {
+                magnitude: 2.7541372727277693,
+                depth: 5.9296875,
+                locality: '10 km north-west of Tokomaru Bay',
+                quality: 'best'
+            },
+            stale: 123000
+        },
+        geometry: {
+            coordinates: [0, 0],
+            type: 'Point'
+        },
+    });
+});
