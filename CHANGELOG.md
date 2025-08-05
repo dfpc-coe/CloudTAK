@@ -12,6 +12,18 @@
 
 ### Pending Release
 
+### v10.36.1 - 2025-08-04
+
+- :rocket: Increase default point size to match Iconset Size (@chriselsen)
+
+### v10.36.0 - 2025-08-04
+
+- :rocket: Resiliency improvements to the Floating Video Player (@chriselsen)
+
+### v10.35.1 - 2025-08-04 - :tada: @chriselsen
+
+- :bug: Fix White Card Background
+
 ### v10.35.0 - 2025-07-14
 
 - :rocket: Finally get `/docs` working as expected

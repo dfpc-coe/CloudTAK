@@ -134,7 +134,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                         cot.archived(true);
                     }
 
-                    const feat = CoTParser.to_geojson(cot);
+                    const feat = await CoTParser.to_geojson(cot);
 
                     try {
                         if (conn instanceof ProfileConnConfig && feat.properties && feat.properties.chat) {

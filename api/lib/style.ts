@@ -51,6 +51,19 @@ handlebars.registerHelper('htmlstrip', (text: string) => {
     }).trim();
 });
 
+// Replace all occurrences of a search string with replacement text
+// Usage: {{replace currentMessage '[nl]' ' '}} or chained {{replace (replace text '[nl]' ' ') '[np]' ' '}}
+handlebars.registerHelper('replace', (text: string, search: string, replacement: string) => {
+    if (!text) return '';
+    return text.replaceAll(search, replacement);
+});
+
+// Round numbers to specified decimal places (defaults to 2)
+// Usage: {{round depth 2}} or {{round magnitude 1}}
+handlebars.registerHelper('round', (number: number, decimals: number = 2) => {
+    if (number == null || isNaN(number)) return '';
+    return Number(number).toFixed(decimals);
+});
 
 interface ValidateStyle {
     id?: string;
