@@ -261,6 +261,7 @@
 
             <SearchBox
                 v-if='searchBoxShown'
+                class='position-absolute'
                 style='
                     z-index: 1;
                     top: 40px;

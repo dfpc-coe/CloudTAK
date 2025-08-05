@@ -1,13 +1,14 @@
 <template>
     <div
-        class='position-absolute text-white bg-dark rounded'
+        class='text-white bg-dark rounded'
     >
         <TablerInput
+            :label='props.label'
             ref='searchBoxRef'
             v-model='query.filter'
             :autofocus='true'
             class='mt-0'
-            placeholder='Place Search'
+            :placeholder='props.placeholder'
             icon='search'
         />
 
@@ -20,10 +21,15 @@
         <div
             v-for='item of results'
             :key='item.magicKey'
-            class='col-12 px-2 py-2 hover-button cursor-pointer'
+            class='col-12 px-3 py-2 hover-button cursor-pointer'
             @click='fetchSearch(item.text, item.magicKey)'
-            v-text='item.text'
-        />
+        >
+            <IconMapPin
+                :size='24'
+                stroke='1'
+            />
+            <span class='ms-2' v-text='item.text'/>
+        </div>
         <TablerLoading
             v-if='partialLoading'
             :compact='true'
@@ -41,7 +47,21 @@ import {
     TablerInput,
     TablerLoading
 } from '@tak-ps/vue-tabler';
+import {
+    IconMapPin
+} from '@tabler/icons-vue';
 import { ref, watch } from 'vue';
+
+const props = defineProps({
+    label: {
+        type: String,
+        default: ''
+    },
+    placeholder: {
+        type: String,
+        default: 'Search...'
+    }
+});
 
 const mapStore = useMapStore();
 
@@ -66,7 +86,10 @@ watch(query.value, async () => {
     await fetchSearch();
 });
 
-async function fetchSearch(queryText?: string, magicKey?: string) {
+async function fetchSearch(
+    queryText?: string,
+    magicKey?: string
+) {
     results.value = [];
 
     if (!magicKey || !queryText) {
@@ -88,24 +111,26 @@ async function fetchSearch(queryText?: string, magicKey?: string) {
         url.searchParams.append('magicKey', magicKey);
         const items = ((await std(url)) as SearchForward).items;
 
-        query.value.filter = '';
+        if (!items.length) return;
 
-        if (items.length) {
-            mapStore.map.fitBounds([
-                [items[0].extent.xmin, items[0].extent.ymin],
-                [items[0].extent.xmax, items[0].extent.ymax],
-            ], {
-                duration: 0,
-                padding: {
-                    top: 25,
-                    bottom: 25,
-                    left: 25,
-                    right: 25
-                }
-            });
+        results.value = [];
 
-            emit('close');
-        }
+        query.value.filter = items[0].address;
+
+        mapStore.map.fitBounds([
+            [items[0].extent.xmin, items[0].extent.ymin],
+            [items[0].extent.xmax, items[0].extent.ymax],
+        ], {
+            duration: 0,
+            padding: {
+                top: 25,
+                bottom: 25,
+                left: 25,
+                right: 25
+            }
+        });
+
+        emit('close');
     }
 }
 
