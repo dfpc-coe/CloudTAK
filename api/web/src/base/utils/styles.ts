@@ -91,7 +91,7 @@ export default function styles(id: string, opts: {
         layout: {},
         paint: {
             'circle-color': ["string", ["get", "marker-color"], "#00FF00"],
-            'circle-radius': ["number", ["get", "marker-radius"], 4],
+            'circle-radius': ["number", ["get", "marker-radius"], 8],
             'circle-opacity': ["number", ["get", "marker-opacity"], 1],
         }
     }
