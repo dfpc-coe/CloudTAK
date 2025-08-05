@@ -128,8 +128,10 @@ watch(props.modelValue, async () => {
     await refresh();
 });
 
-watch(files.value, () => {
+watch(files, () => {
     emit("update:modelValue", files.value.map(f => f.hash));
+}, {
+    deep: true
 });
 
 onMounted(async () => {
@@ -157,8 +159,15 @@ function uploadHeaders() {
     };
 }
 
-function uploadComplete(event) {
+async function uploadComplete(event) {
+    loading.value = true;
     upload.value = false;
+
+    const url = stdurl(`/api/attachment`);
+    url.searchParams.append('hash', JSON.parse(event).hash);
+    files.value.push(...(await std(url)).items);
+
+    loading.value = false;
 }
 
 function uploadURL() {
@@ -180,6 +189,7 @@ async function fetchMetadata() {
     for (const a of props.modelValue) {
         url.searchParams.append('hash', a);
     }
+
     files.value = (await std(url)).items;
 }
 </script>
