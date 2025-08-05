@@ -1061,7 +1061,7 @@ async function fetchType() {
     type.value = await std(`/api/type/cot/${cot.value.properties.type}`) as COTType
 }
 
-function updatePropertyAttachment(hashes: [string]) {
+function updatePropertyAttachment(hashes: string[]) {
     if (!cot.value) return;
 
     if (!cot.value.properties.attachments) {
