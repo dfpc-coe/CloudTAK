@@ -4,6 +4,15 @@
         :loading='!mapStore.isLoaded'
     >
         <template #buttons>
+            <TablerIconButton
+                title='New Route'
+                @click='router.push("/menu/routes/new")'
+            >
+                <IconPlus
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
             <TablerRefreshButton
                 :loading='loading'
                 @click='refresh(true)'
@@ -82,11 +91,13 @@ import {
     TablerInput,
     TablerDelete,
     TablerLoading,
+    TablerIconButton,
     TablerRefreshButton
 } from '@tak-ps/vue-tabler';
 import type { WorkerMessage } from '../../../base/events.ts';
 import { WorkerMessageType } from '../../../base/events.ts';
 import {
+    IconPlus,
     IconRoute,
 } from '@tabler/icons-vue';
 import { useMapStore } from '../../../stores/map.ts';

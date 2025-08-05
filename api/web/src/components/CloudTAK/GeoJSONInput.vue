@@ -115,6 +115,7 @@ import {
     IconFileImport,
 } from '@tabler/icons-vue';
 import FeatureRow from './util/FeatureRow.vue';
+import { bbox } from '@turf/bbox';
 import type { InputFeature } from '../../types.ts';
 
 const mapStore = useMapStore();
@@ -172,7 +173,6 @@ async function uploadGeoJSON() {
                 }
             }
 
-
             loading.value = false;
         } catch (err) {
             loading.value = false;
@@ -183,6 +183,21 @@ async function uploadGeoJSON() {
 
 async function saveToMap() {
     loading.value = true;
+
+    const bounds = bbox({
+        type: 'FeatureCollection',
+        features: feats.value
+    });
+
+    mapStore.map.fitBounds(bounds, {
+        duration: 0,
+        padding: {
+            top: 25,
+            bottom: 25,
+            left: 25,
+            right: 25
+        }
+    });
 
     for (const feat of feats.value) {
         await mapStore.worker.db.add(JSON.parse(JSON.stringify(feat)), {
