@@ -1,7 +1,7 @@
 {
     "name": "@tak-ps/CloudTAK.api",
     "type": "module",
-    "version": "10.35.0",
+    "version": "10.36.1",
     "description": "Facilitate ETL operations to bring non-TAK sources into a TAK Server",
     "main": "index.js",
     "scripts": {
@@ -53,8 +53,8 @@
         "@openaddresses/cloudfriend": "^7.0.0",
         "@sinclair/typebox": "^0.34.0",
         "@tak-ps/etl": "^9.14.0",
-        "@tak-ps/node-cot": "^13.2.0",
-        "@tak-ps/node-tak": "^10.2.0",
+        "@tak-ps/node-cot": "^14.0.0",
+        "@tak-ps/node-tak": "^11.0.0",
         "@turf/bbox": "^7.1.0",
         "@turf/bbox-polygon": "^7.2.0",
         "@turf/meta": "^7.0.0",
@@ -71,7 +71,6 @@
         "drizzle-orm": "^0.44.0",
         "drizzle-typebox": "^0.3.0",
         "express": "^5.0.0",
-        "form-data": "^4.0.0",
         "geojson-vt": "^4.0.2",
         "handlebars": "^4.7.8",
         "http-cookie-agent": "^7.0.0",

@@ -8,7 +8,7 @@ test('Filter: Basic Point', async () => {
         queries: [{
             query: 'properties.callsign = "TEST"'
         }]
-    }, CoTParser.from_geojson({
+    }, await CoTParser.from_geojson({
         type: 'Feature',
         properties: {},
         geometry: {
@@ -25,7 +25,7 @@ test('Filter: Callsign Match', async () => {
         queries: [{
             query: 'properties.callsign = "TEST"'
         }]
-    }, CoTParser.from_geojson({
+    }, await CoTParser.from_geojson({
         type: 'Feature',
         properties: {
             callsign: 'TEST'

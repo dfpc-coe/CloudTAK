@@ -24,7 +24,7 @@ export class ConnectionWebSocket {
                         const chat = new DirectChat(msg.data);
                         client.tak.write([chat]);
 
-                        const feat = CoTParser.to_geojson(chat);
+                        const feat = await CoTParser.to_geojson(chat);
                         await client.config.config.models.ProfileChat.generate({
                             username: String(client.config.id),
                             chatroom: msg.data.chatroom,
@@ -36,7 +36,7 @@ export class ConnectionWebSocket {
                     } else {
                         const feat = msg.data as Static<typeof Feature.Feature>;
 
-                        const cot = CoTParser.from_geojson(feat);
+                        const cot = await CoTParser.from_geojson(feat);
 
                         client.tak.write([cot]);
                     }

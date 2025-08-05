@@ -29,7 +29,7 @@ export default class Filter {
     ): Promise<boolean> {
         if (!filters.queries) return false;
 
-        const feature = CoTParser.to_geojson(cot);
+        const feature = await CoTParser.to_geojson(cot);
 
         try {
             for (const q of filters.queries) {

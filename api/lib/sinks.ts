@@ -39,18 +39,22 @@ export default class Sinks {
             }
 
             for (let i = 0; i < filtered.length; i+= 10) {
+                const slice = filtered.slice(i, i + 10)
+                const entries: SQS.SendMessageBatchRequestEntry[] = [];
+
+                for (const cot of slice) {
+                    entries.push({
+                        Id: (Math.random() + 1).toString(36).substring(7),
+                        MessageGroupId: `${String(layer.id)}-${cot.uid()}`,
+                        MessageBody: JSON.stringify({
+                            xml: await CoTParser.to_xml(cot),
+                            geojson: await CoTParser.to_geojson(cot)
+                        })
+                    } as SQS.SendMessageBatchRequestEntry);
+                }
+
                 try {
-                    await this.queue.submit(
-                        filtered.slice(i, i + 10).map((cot) => {
-                            return {
-                                Id: (Math.random() + 1).toString(36).substring(7),
-                                MessageGroupId: `${String(layer.id)}-${cot.uid()}`,
-                                MessageBody: JSON.stringify({
-                                    xml: CoTParser.to_xml(cot),
-                                    geojson: CoTParser.to_geojson(cot)
-                                })
-                            } as SQS.SendMessageBatchRequestEntry;
-                        }), queue);
+                    await this.queue.submit(entries, queue);
                 } catch (err) {
                     console.error(`Queue: `, queue, ':', err);
                 }
