@@ -21,6 +21,7 @@ import { std, stdurl } from '../std.js';
 import mapgl from 'maplibre-gl'
 import type Atlas from '../workers/atlas.ts';
 import { CloudTAKTransferHandler } from '../base/handler.ts';
+import { getSidcForCot } from '../base/utils/cot-sidc-mapping.ts';
 
 import type { ProfileOverlay, ProfileOverlayList, Basemap, APIList, Feature, IconsetList, MapConfig } from '../types.ts';
 import type { LngLat, LngLatLike, Point, MapMouseEvent, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl';
@@ -478,13 +479,34 @@ export const useMapStore = defineStore('cloudtak', {
                 this.pitch = map.getPitch()
             })
 
-            map.on('styleimagemissing', async (e) => {
-                if (e.id.startsWith('2525D:')) {
-                    const sidc = e.id.replace('2525D:', '');
+            map.on('styleimagemissing', (e) => {
+                // Check for CoT to SIDC mapping first
+                const sidc = getSidcForCot(e.id);
+                if (sidc) {
                     const size = 24;
                     const data = new ms.Symbol(sidc, { size }).asCanvas();
 
-                    map.addImage(e.id, await createImageBitmap(data));
+                    createImageBitmap(data).then(bitmap => {
+                        map.addImage(e.id, bitmap);
+                    });
+                } else if (e.id.startsWith('2525D:')) {
+                    const sidcCode = e.id.replace('2525D:', '');
+                    const size = 24;
+                    const data = new ms.Symbol(sidcCode, { size }).asCanvas();
+
+                    createImageBitmap(data).then(bitmap => {
+                        map.addImage(e.id, bitmap);
+                    });
+                } else if (e.id.includes('-colored-')) {
+                    // Handle colored icons - the IconColorManager will create these
+                    // This event fires when MapLibre can't find the colored version
+                    // The IconColorManager should have already created it, so this is a fallback
+                    console.warn(`Colored icon ${e.id} not found, falling back to original`);
+                    const originalIconId = e.id.split('-colored-')[0];
+                    const originalImage = map.getImage(originalIconId);
+                    if (originalImage) {
+                        map.addImage(e.id, originalImage.data);
+                    }
                 }
             });
 
