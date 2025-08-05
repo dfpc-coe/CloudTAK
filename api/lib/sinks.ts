@@ -46,8 +46,8 @@ export default class Sinks {
                                 Id: (Math.random() + 1).toString(36).substring(7),
                                 MessageGroupId: `${String(layer.id)}-${cot.uid()}`,
                                 MessageBody: JSON.stringify({
-                                    xml: CoTParser.to_xml(cot),
-                                    geojson: CoTParser.to_geojson(cot)
+                                    xml: await CoTParser.to_xml(cot),
+                                    geojson: await CoTParser.to_geojson(cot)
                                 })
                             } as SQS.SendMessageBatchRequestEntry;
                         }), queue);
