@@ -227,7 +227,7 @@ export default async function router(schema: Schema, config: Config) {
                     let buffer = Buffer.from(icon.data, 'base64');
 
                     if (req.query.resize) {
-                        buffer = await sharp(buffer).resize(32).toBuffer()
+                        buffer = Buffer.from(await sharp(buffer).resize(32).toBuffer())
                     }
 
                     archive.append(Buffer.from(icon.data, 'base64'), { name: icon.name });

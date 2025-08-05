@@ -84,7 +84,7 @@ export default async function router(schema: Schema, config: Config) {
             let cots = [];
             for (const feat of req.body.features) {
                 try {
-                    cots.push(CoTParser.from_geojson(feat))
+                    cots.push(await CoTParser.from_geojson(feat))
                 } catch (err) {
                     errors.push({
                         error: err instanceof Error ? err.message : String(err),
@@ -207,16 +207,20 @@ export default async function router(schema: Schema, config: Config) {
                         }
                     }
 
-                    cots = cots.filter((cot) => {
+                    const filtered = [];
+
+                    for (const cot of cots) {
                         const exist = existMap.get(cot.uid());
                         if (exist && data.mission_diff) {
-                            const b = CoTParser.from_geojson(exist);
+                            const b = await CoTParser.from_geojson(exist);
                             // TODO: Check for path change
-                            if (!CoTParser.isDiff(cot, b)) return false;
+                            if (!(await CoTParser.isDiff(cot, b))) continue
                         }
 
-                        return true;
-                    })
+                        filtered.push(cot);
+                    }
+
+                    cots = filtered;
                 } else {
                     for (const cot of cots) {
                         cot.addDest({ mission: data.name });
