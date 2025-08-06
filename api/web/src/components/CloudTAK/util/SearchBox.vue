@@ -9,31 +9,47 @@
             :autofocus='true'
             class='mt-0'
             :placeholder='props.placeholder'
+            @focus='selected = false'
             icon='search'
         />
 
-        <Feature
-            v-for='cot of cots'
-            :key='cot.id'
-            :delete-button='false'
-            :feature='cot'
-        />
         <div
-            v-for='item of results'
-            :key='item.magicKey'
-            class='col-12 px-3 py-2 hover-button cursor-pointer'
-            @click='fetchSearch(item.text, item.magicKey)'
+            class="dropdown-menu w-100 mt-2"
+            :class='{
+                "show": shown,
+            }'
         >
-            <IconMapPin
-                :size='24'
-                stroke='1'
+            <TablerNone
+                v-if='!partialLoading && !cots.length && !results.length'
+                :create='false'
             />
-            <span class='ms-2' v-text='item.text'/>
+            <template v-else>
+                <Feature
+                    v-for='cot of cots'
+                    :key='cot.id'
+                    :delete-button='false'
+                    :feature='cot'
+                />
+                <div
+                    v-for='item of results'
+                    :key='item.magicKey'
+                    class='col-12 px-3 py-2 hover-button cursor-pointer user-select-none text-truncate'
+                    @click='fetchSearch(item.text, item.magicKey)'
+                >
+                    <IconMapPin
+                        :size='24'
+                        stroke='1'
+                    />
+
+                    <span class='ms-2' v-text='item.text'/>
+                </div>
+
+                <TablerLoading
+                    v-if='partialLoading'
+                    :compact='true'
+                />
+            </template>
         </div>
-        <TablerLoading
-            v-if='partialLoading'
-            :compact='true'
-        />
     </div>
 </template>
 
@@ -44,13 +60,14 @@ import { std, stdurl } from '../../../std.ts'
 import { useMapStore } from '../../../stores/map.ts';
 import COT from '../../../base/cot.ts';
 import {
+    TablerNone,
     TablerInput,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
     IconMapPin
 } from '@tabler/icons-vue';
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 
 const props = defineProps({
     label: {
@@ -67,7 +84,16 @@ const mapStore = useMapStore();
 
 const emit = defineEmits(['close']);
 
+const selected = ref(false);
 const partialLoading = ref(false);
+
+const shown = computed(() => {
+    if (query.value.filter.length > 0 && !selected.value) {
+        return true;
+    } else {
+        return false;
+    }
+});
 
 const query = ref<{
     filter: string,
@@ -93,19 +119,22 @@ async function fetchSearch(
     results.value = [];
 
     if (!magicKey || !queryText) {
+        partialLoading.value = true;
+
         cots.value = await mapStore.worker.db
             .filter(`$contains($lowercase(properties.callsign), "${query.value.filter.toLowerCase()}")`, {
                 mission: true,
                 limit: 5
             })
 
-        partialLoading.value = true;
         const url = stdurl('/api/search/suggest');
         url.searchParams.append('query', query.value.filter);
         url.searchParams.append('limit', '5');
         results.value.push(...((await std(url)) as SearchSuggest).items)
         partialLoading.value = false;
-    } else {
+   } else {
+        selected.value = true;
+
         const url = stdurl('/api/search/forward');
         url.searchParams.append('query', queryText);
         url.searchParams.append('magicKey', magicKey);
