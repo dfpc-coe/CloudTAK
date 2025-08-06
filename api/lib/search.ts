@@ -11,6 +11,9 @@ const ReverseContainer = Type.Object({
     address: FetchReverse
 });
 
+export const FetchDirection = Type.Object({
+
+});
 
 export const FetchSuggest = Type.Object({
     text: Type.String(),
@@ -68,6 +71,19 @@ export default class Geocode {
         const body = await res.typed(ReverseContainer)
 
         return body.address;
+    }
+
+    async direction(stops: Array<[number, number]>): Promise<Array<Static<typeof FetchReverse>>> {
+        const url = new URL('https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/directions');
+        url.searchParams.append('stops', stops.map(stop => `${stop.lon},${stop.lat}`).join(';'));
+        url.searchParams.append('magicKey', magicKey);
+        url.searchParams.append('f', 'json');
+
+        const res = await fetch(url);
+
+        const body = await res.typed(ReverseContainer)
+
+        return [body.address];
     }
 
     async forward(query: string, magicKey: string, limit?: number): Promise<Array<Static<typeof FetchForward>>> {
