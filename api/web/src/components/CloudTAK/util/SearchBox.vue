@@ -6,7 +6,7 @@
             :label='props.label'
             ref='searchBoxRef'
             v-model='query.filter'
-            :autofocus='true'
+            :autofocus='props.autofocus'
             class='mt-0'
             :placeholder='props.placeholder'
             @focus='selected = false'
@@ -75,6 +75,10 @@ const props = defineProps({
         type: String,
         default: ''
     },
+    autofocus: {
+        type: Boolean,
+        default: false
+    },
     placeholder: {
         type: String,
         default: 'Search...'
@@ -83,7 +87,7 @@ const props = defineProps({
 
 const mapStore = useMapStore();
 
-const emit = defineEmits(['close', 'select']);
+const emit = defineEmits(['select']);
 
 const selected = ref(false);
 const partialLoading = ref(false);
@@ -171,7 +175,6 @@ async function fetchSearch(
             }
         });
 
-        console.error(items[0])
         emit('select', {
             name: items[0].address,
             coordinates: [ items[0].location.x, items[0].location.y ]

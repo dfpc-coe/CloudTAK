@@ -3,7 +3,7 @@ import { Static, Type } from '@sinclair/typebox';
 import { OptionalTileJSON } from './types.js';
 import { Basemap_Format, Basemap_Type, Basemap_Scheme  } from './enums.js';
 import { fetch } from '@tak-ps/etl';
-import type { ESRILayerList } from './esri/types.js';
+import { ESRILayerList, EsriExtent } from './esri/types.js';
 import {
     DefaultLayerPoints,
     DefaultLayerLines,
@@ -22,18 +22,6 @@ export enum EsriLayerType {
     IMAGE = 'ImageServer',
     UNKNOWN = 'Unknown'
 }
-
-// TODO Convert all extents to 4326
-export const EsriExtent = Type.Object({
-    xmin: Type.Number(),
-    ymin: Type.Number(),
-    xmax: Type.Number(),
-    ymax: Type.Number(),
-    spatialReference: Type.Object({
-        wkid: Type.Integer(),
-        latestWkid: Type.Integer()
-    })
-})
 
 export const ImageLayer = Type.Object({
     name: Type.String(),

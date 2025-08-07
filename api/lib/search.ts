@@ -1,5 +1,9 @@
 import fetch from './fetch.js';
+import { randomUUID } from 'node:crypto';
 import { Static, Type } from "@sinclair/typebox";
+import { EsriExtent, EsriSpatialReference } from './esri/types.js';
+import { Feature } from '@tak-ps/node-cot';
+import { CoTParser } from '@tak-ps/node-cot';
 
 export const FetchReverse = Type.Object({
     LongLabel: Type.String(),
@@ -11,8 +15,44 @@ const ReverseContainer = Type.Object({
     address: FetchReverse
 });
 
-export const FetchDirection = Type.Object({
-
+export const RouteContainer = Type.Object({
+    checksum: Type.String(),
+    requestID: Type.String(),
+    routes: Type.Object({
+        fieldAliases: Type.Object({}),
+        geometryType: Type.String(),
+        spatialReference: EsriSpatialReference,
+        fields: Type.Array(Type.Object({
+            name: Type.String(),
+            type: Type.String(),
+            alias: Type.String(),
+            length: Type.Optional(Type.Integer())
+        })),
+        features: Type.Array(Type.Object({
+            attributes: Type.Record(Type.String(), Type.Union([Type.Number(), Type.String()])),
+            geometry: Type.Object({
+                paths: Type.Array(Type.Array(Type.Array(Type.Number()))),
+            })
+        }))
+    }),
+    directions: Type.Array(Type.Object({
+        routeId: Type.Integer(),
+        routeName: Type.String(),
+        summary: Type.Object({
+            totalLength: Type.Number(),
+            totalTime: Type.Number(),
+            totalDriveTime: Type.Number(),
+            envelope: EsriExtent
+        }),
+        features: Type.Array(Type.Object({
+            attributes: Type.Record(Type.String(), Type.Union([Type.Number(), Type.String()])),
+            compressedGeometry: Type.String(),
+            strings: Type.Array(Type.Object({
+                string: Type.String(),
+                stringType: Type.String(),
+            }))
+        }))
+    }))
 });
 
 export const FetchSuggest = Type.Object({
@@ -36,12 +76,7 @@ export const FetchForward = Type.Object({
         LongLabel: Type.Optional(Type.String()),
         ShortLabel: Type.Optional(Type.String()),
     }),
-    extent: Type.Object({
-        xmin: Type.Number(),
-        ymin: Type.Number(),
-        xmax: Type.Number(),
-        ymax: Type.Number()
-    })
+    extent: EsriExtent
 });
 
 export const ForwardContainer = Type.Object({
@@ -73,17 +108,45 @@ export default class Geocode {
         return body.address;
     }
 
-    async direction(stops: Array<[number, number]>): Promise<Array<Static<typeof FetchReverse>>> {
-        const url = new URL('https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/directions');
-        url.searchParams.append('stops', stops.map(stop => `${stop.lon},${stop.lat}`).join(';'));
-        url.searchParams.append('magicKey', magicKey);
+    async route(
+        stops: Array<[number, number]>
+    ): Promise<Static<typeof Feature.FeatureCollection>> {
+        const url = new URL('https://route-api.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World/solve');
+        url.searchParams.append('stops', stops.map(stop => stop.join(',')).join(';'));
+        if (this.token) url.searchParams.append('token', this.token);
         url.searchParams.append('f', 'json');
 
         const res = await fetch(url);
 
-        const body = await res.typed(ReverseContainer)
+        const body = await res.typed(RouteContainer)
 
-        return [body.address];
+        const processed: Static<typeof Feature.FeatureCollection> = {
+            type: 'FeatureCollection',
+            features: []
+        }
+
+        for (const feat of body.routes.features) {
+            processed.features.push(await CoTParser.normalize_geojson({
+                id: String(randomUUID()),
+                type: 'Feature',
+                properties: {
+                    type: 'b-m-r',
+                    how: 'm-g',
+                    callsign: String(feat.attributes.Name),
+                    remarks: '',
+                    archived: true,
+                    metadata: {
+                        ...feat.attributes,
+                    }
+                },
+                geometry: {
+                    type: 'LineString',
+                    coordinates: feat.geometry.paths[0]
+                }
+            }));
+        }
+
+        return processed;
     }
 
     async forward(query: string, magicKey: string, limit?: number): Promise<Array<Static<typeof FetchForward>>> {
