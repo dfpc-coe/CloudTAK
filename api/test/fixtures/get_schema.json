@@ -1054,6 +1054,11 @@
         "query": true,
         "res": true
     },
+    "GET /search/route": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
     "GET /search/forward": {
         "body": false,
         "query": true,
