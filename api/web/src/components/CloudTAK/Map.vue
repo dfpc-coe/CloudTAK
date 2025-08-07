@@ -268,7 +268,8 @@
                     left: 40px;
                     width: 300px;
                 '
-                @close='searchBoxShown = false'
+                :autofocus='true'
+                @select='searchBoxShown = false'
             />
 
             <div
