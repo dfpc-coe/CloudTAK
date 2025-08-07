@@ -4,7 +4,8 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Weather, { FetchHourly } from '../lib/weather.js';
-import Geocode, { FetchReverse, FetchSuggest, FetchForward, FetchDirection } from '../lib/search.js';
+import Search, { FetchReverse, FetchSuggest, FetchForward, FetchDirection } from '../lib/search.js';
+import { Feature } from '@tak-ps/node-cot';
 import Config from '../lib/config.js';
 
 export default async function router(schema: Schema, config: Config) {
@@ -44,7 +45,7 @@ export default async function router(schema: Schema, config: Config) {
         items: Type.Array(FetchForward)
     });
 
-    const DirectionResponse = FetchDirection;
+    const DirectionResponse = Feature.FeatureCollection;
 
     await schema.get('/search/reverse/:longitude/:latitude', {
         name: 'Reverse Geocode',
@@ -142,7 +143,10 @@ export default async function router(schema: Schema, config: Config) {
                 response.items = await search.forward(req.query.query, req.query.magicKey, req.query.limit);
             }
 
-            res.json(response);
+            res.json({
+                type: 'FeatureCollection',
+                features: []
+            });
         } catch (err) {
              Err.respond(err, res);
         }
