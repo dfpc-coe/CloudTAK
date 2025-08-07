@@ -29,6 +29,7 @@
                     :key='cot.id'
                     :delete-button='false'
                     :feature='cot'
+                    @click='selectFeature(cot)'
                 />
                 <div
                     v-for='item of results'
@@ -82,7 +83,7 @@ const props = defineProps({
 
 const mapStore = useMapStore();
 
-const emit = defineEmits(['close']);
+const emit = defineEmits(['close', 'select']);
 
 const selected = ref(false);
 const partialLoading = ref(false);
@@ -111,6 +112,17 @@ const results = ref<Array<{
 watch(query.value, async () => {
     await fetchSearch();
 });
+
+async function selectFeature(cot: COT) {
+    selected.value = true;
+
+    query.value.filter = cot.properties.callsign;
+
+    emit('select', {
+        name: cot.properties.callsign,
+        coordinates: cot.properties.center
+    });
+}
 
 async function fetchSearch(
     queryText?: string,
@@ -159,7 +171,11 @@ async function fetchSearch(
             }
         });
 
-        emit('close');
+        console.error(items[0])
+        emit('select', {
+            name: items[0].address,
+            coordinates: [ items[0].location.x, items[0].location.y ]
+        });
     }
 }
 

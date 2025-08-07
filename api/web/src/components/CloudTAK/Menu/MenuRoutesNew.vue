@@ -4,22 +4,30 @@
         :loading='!mapStore.isLoaded'
     >
         <template #default>
-            <div class='mx-2 my-2'>
-                <SearchBox
-                    label='Start Location'
-                    placeholder='Start Location'
-                />
-            </div>
-            <div class='mx-2 my-2'>
-                <SearchBox
-                    label='End Location'
-                    placeholder='End Location'
-                />
-            </div>
             <TablerLoading
                 v-if='loading'
                 desc='Loading Features'
             />
+            <template v-else>
+                <div class='mx-2 my-2'>
+                    <SearchBox
+                        label='Start Location'
+                        placeholder='Start Location'
+                    />
+                </div>
+                <div class='mx-2 my-2'>
+                    <SearchBox
+                        label='End Location'
+                        placeholder='End Location'
+                    />
+                </div>
+                <div class='mx-2 my-3'>
+                    <button
+                        :disabled='!routePlan.start || !routePlan.end'
+                        class='btn btn-primary w-100'
+                    >Generate Route</button>
+                </div>
+            </template>
         </template>
     </MenuTemplate>
 </template>
@@ -49,6 +57,14 @@ const router = useRouter();
 const mapStore = useMapStore();
 
 const loading = ref(false);
+
+const routePlan = ref<{
+    start: null | [number, number];
+    end: null | [number, number];
+}>({
+    start: null,
+    end: null 
+});
 
 async function deleteRoute(id: string): Promise<void> {
     await mapStore.worker.db.remove(id);
