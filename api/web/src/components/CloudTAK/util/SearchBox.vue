@@ -1,33 +1,59 @@
 <template>
     <div
-        class='position-absolute text-white bg-dark rounded'
+        class='text-white bg-dark rounded'
     >
         <TablerInput
             ref='searchBoxRef'
             v-model='query.filter'
-            :autofocus='true'
+            :label='props.label'
+            :autofocus='props.autofocus'
             class='mt-0'
-            placeholder='Place Search'
+            :placeholder='props.placeholder'
             icon='search'
+            @focus='selected = false'
         />
 
-        <Feature
-            v-for='cot of cots'
-            :key='cot.id'
-            :delete-button='false'
-            :feature='cot'
-        />
         <div
-            v-for='item of results'
-            :key='item.magicKey'
-            class='col-12 px-2 py-2 hover-button cursor-pointer'
-            @click='fetchSearch(item.text, item.magicKey)'
-            v-text='item.text'
-        />
-        <TablerLoading
-            v-if='partialLoading'
-            :compact='true'
-        />
+            class='dropdown-menu w-100 mt-2'
+            :class='{
+                "show": shown,
+            }'
+        >
+            <TablerNone
+                v-if='!partialLoading && !cots.size && !results.length'
+                :create='false'
+            />
+            <template v-else>
+                <Feature
+                    v-for='cot of cots'
+                    :key='cot.id'
+                    :delete-button='false'
+                    :feature='cot'
+                    @click='selectFeature(cot)'
+                />
+                <div
+                    v-for='item of results'
+                    :key='item.magicKey'
+                    class='col-12 px-3 py-2 hover-button cursor-pointer user-select-none text-truncate'
+                    @click='fetchSearch(item.text, item.magicKey)'
+                >
+                    <IconMapPin
+                        :size='24'
+                        stroke='1'
+                    />
+
+                    <span
+                        class='ms-2'
+                        v-text='item.text'
+                    />
+                </div>
+
+                <TablerLoading
+                    v-if='partialLoading'
+                    :compact='true'
+                />
+            </template>
+        </div>
     </div>
 </template>
 
@@ -38,16 +64,44 @@ import { std, stdurl } from '../../../std.ts'
 import { useMapStore } from '../../../stores/map.ts';
 import COT from '../../../base/cot.ts';
 import {
+    TablerNone,
     TablerInput,
     TablerLoading
 } from '@tak-ps/vue-tabler';
-import { ref, watch } from 'vue';
+import {
+    IconMapPin
+} from '@tabler/icons-vue';
+import { ref, watch, computed } from 'vue';
+
+const props = defineProps({
+    label: {
+        type: String,
+        default: ''
+    },
+    autofocus: {
+        type: Boolean,
+        default: false
+    },
+    placeholder: {
+        type: String,
+        default: 'Search...'
+    }
+});
 
 const mapStore = useMapStore();
 
-const emit = defineEmits(['close']);
+const emit = defineEmits(['select']);
 
+const selected = ref(false);
 const partialLoading = ref(false);
+
+const shown = computed(() => {
+    if (query.value.filter.length > 0 && !selected.value) {
+        return true;
+    } else {
+        return false;
+    }
+});
 
 const query = ref<{
     filter: string,
@@ -66,46 +120,68 @@ watch(query.value, async () => {
     await fetchSearch();
 });
 
-async function fetchSearch(queryText?: string, magicKey?: string) {
-    results.value = [];
+async function selectFeature(cot: COT) {
+    selected.value = true;
 
+    query.value.filter = cot.properties.callsign;
+
+    emit('select', {
+        name: cot.properties.callsign,
+        coordinates: cot.properties.center
+    });
+}
+
+async function fetchSearch(
+    queryText?: string,
+    magicKey?: string
+) {
     if (!magicKey || !queryText) {
+        partialLoading.value = true;
+
         cots.value = await mapStore.worker.db
             .filter(`$contains($lowercase(properties.callsign), "${query.value.filter.toLowerCase()}")`, {
                 mission: true,
                 limit: 5
             })
 
-        partialLoading.value = true;
         const url = stdurl('/api/search/suggest');
         url.searchParams.append('query', query.value.filter);
         url.searchParams.append('limit', '5');
+
+        results.value = [];
         results.value.push(...((await std(url)) as SearchSuggest).items)
         partialLoading.value = false;
-    } else {
+   } else {
+        selected.value = true;
+
         const url = stdurl('/api/search/forward');
         url.searchParams.append('query', queryText);
         url.searchParams.append('magicKey', magicKey);
         const items = ((await std(url)) as SearchForward).items;
 
-        query.value.filter = '';
+        if (!items.length) return;
 
-        if (items.length) {
-            mapStore.map.fitBounds([
-                [items[0].extent.xmin, items[0].extent.ymin],
-                [items[0].extent.xmax, items[0].extent.ymax],
-            ], {
-                duration: 0,
-                padding: {
-                    top: 25,
-                    bottom: 25,
-                    left: 25,
-                    right: 25
-                }
-            });
+        results.value = [];
 
-            emit('close');
-        }
+        query.value.filter = items[0].address;
+
+        mapStore.map.fitBounds([
+            [items[0].extent.xmin, items[0].extent.ymin],
+            [items[0].extent.xmax, items[0].extent.ymax],
+        ], {
+            duration: 0,
+            padding: {
+                top: 25,
+                bottom: 25,
+                left: 25,
+                right: 25
+            }
+        });
+
+        emit('select', {
+            name: items[0].address,
+            coordinates: [ items[0].location.x, items[0].location.y ]
+        });
     }
 }
 

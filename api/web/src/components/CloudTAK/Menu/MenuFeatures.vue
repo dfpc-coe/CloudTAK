@@ -66,8 +66,6 @@
                     </div>
                 </template>
             </TablerDropdown>
-
-
         </template>
         <template #default>
             <div class='mx-2 my-2'>

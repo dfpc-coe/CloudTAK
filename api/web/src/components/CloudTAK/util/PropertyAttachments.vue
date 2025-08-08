@@ -108,14 +108,14 @@ import {
 } from '@tak-ps/vue-tabler'
 
 const props = defineProps({
-    attachments: {
+    modelValue: {
         type: Array,
         required: true
     }
 });
 
 const emit = defineEmits([
-    'attachment'
+    'update:modelValue'
 ]);
 
 const floatStore = useFloatStore();
@@ -124,8 +124,14 @@ const upload = ref(false);
 const loading = ref(true);
 const files = ref([]);
 
-watch(props.attachments, async () => {
+watch(props.modelValue, async () => {
     await refresh();
+});
+
+watch(files, () => {
+    emit("update:modelValue", files.value.map(f => f.hash));
+}, {
+    deep: true
 });
 
 onMounted(async () => {
@@ -138,7 +144,7 @@ function attachmentPane(file) {
 
 async function refresh() {
     loading.value = true;
-    if (props.attachments.length) {
+    if (props.modelValue.length) {
         await fetchMetadata();
     } else {
         files.value = [];
@@ -153,10 +159,15 @@ function uploadHeaders() {
     };
 }
 
-function uploadComplete(event) {
+async function uploadComplete(event) {
+    loading.value = true;
     upload.value = false;
 
-    emit("attachment", JSON.parse(event).hash);
+    const url = stdurl(`/api/attachment`);
+    url.searchParams.append('hash', JSON.parse(event).hash);
+    files.value.push(...(await std(url)).items);
+
+    loading.value = false;
 }
 
 function uploadURL() {
@@ -175,9 +186,10 @@ async function downloadAsset(file) {
 
 async function fetchMetadata() {
     const url = stdurl(`/api/attachment`);
-    for (const a of props.attachments) {
+    for (const a of props.modelValue) {
         url.searchParams.append('hash', a);
     }
+
     files.value = (await std(url)).items;
 }
 </script>

@@ -102,7 +102,8 @@ import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import CopyField from '../CloudTAK/util/CopyField.vue';
 import { std } from '../../../src/std.ts';
-import type { Palette, PaletteFeature } from '../../../src/types.ts';
+import type { Palette, PaletteFeature } from '../../types.ts';
+import { validateJSON } from '../../base/validators.ts';
 import {
     TablerInput,
     TablerEnum,
@@ -145,16 +146,6 @@ onMounted(async () => {
         loading.value = false;
     }
 });
-
-function validateJSON(text: string) {
-    try {
-        JSON.parse(text);
-    } catch (err) {
-        return err instanceof Error ? err.message : String(err);
-    }
-
-    return true;
-}
 
 async function savePaletteFeature() {
     loading.value = true;

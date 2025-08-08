@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v10.37.0 - 2025-08-07
+
+- :tada: Add the ability to create Routes via the new directions API
+- :bug: Attachments would be added but not immediately shown, now they are!
+- :rocket: Add input validation to Admin Config page
+- :rocket: Some minor DRY improvements to the codebase
+
 ### v10.36.1 - 2025-08-04
 
 - :rocket: Increase default point size to match Iconset Size (@chriselsen)
