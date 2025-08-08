@@ -163,7 +163,7 @@
                                             v-if='cot.properties.attachments === undefined'
                                             role='button'
                                             class='hover px-2 py-2 d-flex align-items-center'
-                                            @click='updateProperty("attachments", [])'
+                                            @click='updatePropertyAttachment([])'
                                         >
                                             <IconPaperclip
                                                 stroke='1'
@@ -414,11 +414,15 @@
                 />
             </div>
 
-            <PropertyAttachments
+            <div
                 v-if='!cot.properties.contact && cot.properties.attachments !== undefined'
-                :attachments='cot.properties.attachments || []'
-                @attachment='addAttachment($event)'
-            />
+                class='col-12 py-2'
+            >
+                <PropertyAttachments
+                    :model-value='cot.properties.attachments'
+                    @update:model-value='updatePropertyAttachment($event)'
+                />
+            </div>
 
             <div
                 v-if='cot.properties.remarks !== undefined'
@@ -790,7 +794,10 @@
             >
                 <CopyField
                     mode='pre'
-                    style='height: calc(100vh - 225px)'
+                    style='
+                        height: calc(100vh - 225px);
+                        width: 100%;
+                    '
                     :model-value='JSON.stringify(cot.as_feature(), null, 4)'
                 />
             </div>
@@ -1054,14 +1061,16 @@ async function fetchType() {
     type.value = await std(`/api/type/cot/${cot.value.properties.type}`) as COTType
 }
 
-function addAttachment(hash: string) {
+function updatePropertyAttachment(hashes: string[]) {
     if (!cot.value) return;
 
     if (!cot.value.properties.attachments) {
         cot.value.properties.attachments = [];
     }
 
-    cot.value.properties.attachments.push(hash)
+    cot.value.properties.attachments = hashes
+
+    cot.value.update({});
 }
 
 async function deleteCOT() {
