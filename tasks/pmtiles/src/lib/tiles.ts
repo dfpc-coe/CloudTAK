@@ -212,7 +212,7 @@ export class FileTiles {
 
             const data = tile_result.data;
 
-            res.set("Cache-Control", tile_result.cacheControl || "private, max-age=86400";
+            res.set("Cache-Control", tile_result.cacheControl || "private, max-age=86400");
             res.set('ETag', tile_result.etag || `"${createHash("sha256").update(Buffer.from(data)).digest("hex")}"`);
 
             // We need to force API Gateway to interpret the Lambda response as binary
