@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v10.38.0 - 2025-08-08
+
+- :tada: Automatically colour icons with their associated marker-color property if present
+
 ### v10.37.0 - 2025-08-07
 
 - :tada: Add the ability to create Routes via the new directions API
