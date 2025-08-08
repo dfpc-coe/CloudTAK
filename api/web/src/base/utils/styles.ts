@@ -180,7 +180,12 @@ export default function styles(id: string, opts: {
                 ],
                 'icon-rotate': ['get', 'course'],
                 'icon-allow-overlap': true,
-                'icon-image': '{icon}',
+                'icon-image': [
+                    'case',
+                    ['all', ['has', 'marker-color'], ['!=', ['slice', ['get', 'icon'], 0, 6], '2525D:']],
+                    ['concat', ['get', 'icon'], '-colored-', ['slice', ['get', 'marker-color'], 1]],
+                    ['get', 'icon']
+                ],
                 'icon-anchor': 'center',
             }
         }
