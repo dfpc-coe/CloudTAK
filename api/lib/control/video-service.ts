@@ -176,7 +176,7 @@ export default class VideoServiceControl {
      * @param stream Untrusted User provided stream URL
      * @param path Internally generated path for the stream
      */
-    async runOnDemand(stream: string, path: string): Promise<string> {
+    runOnDemand(stream: string, path: string): Promise<string> {
         // Ensure it is a valid URL and not shell injection
         const url = sanitizeURLSync(stream);
 
