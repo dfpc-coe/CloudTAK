@@ -20,8 +20,10 @@ app.disable('x-powered-by');
 app.use(cors({
     origin: '*',
     allowedHeaders: [
+        'ETAG',
         'Content-Type',
         'Content-Length',
+        'Cache-Control',
         'Authorization',
         'User-Agent',
         'x-requested-with'
