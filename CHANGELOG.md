@@ -12,6 +12,14 @@
 
 ### Pending Release
 
+### v10.39.0 - 2025-08-08
+
+- :tada: Implement FFMPEG `runOnDemand` function when using MediaMTX in Proxy Mode
+- :rocket: Navigate to uploaded Data Package when upload completes instead of the List View
+- :rocket: Show the Proxy URL in the Video Lease Modal if in proxy mode
+- :rocket: Allow setting the Proxy URL in the Video Lease Modal
+- :rocket: Add Cancel button when in editing mode in Video Lease Modal
+
 ### v10.38.1 - 2025-08-08
 
 - :rocket: Pass through CacheControl headers for Tiles
