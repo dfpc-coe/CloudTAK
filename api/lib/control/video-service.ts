@@ -1,6 +1,7 @@
 import Err from '@openaddresses/batch-error';
 import Config from '../config.js';
 import { Type, Static } from '@sinclair/typebox';
+import { sanitizeURLSync } from 'url-sanitizer';
 import { VideoLeaseResponse } from '../types.js';
 import { VideoLease_SourceType } from '../enums.js';
 import fetch from '../fetch.js';
@@ -86,11 +87,11 @@ export const VideoConfig = Type.Object({
 
 export const PathConfig = Type.Object({
     name: Type.String(),
-    source: Type.String(),
-    sourceFingerprint: Type.String(),
-    sourceOnDemand: Type.Boolean(),
-    sourceOnDemandStartTimeout: Type.String(),
-    sourceOnDemandCloseAfter: Type.String(),
+
+    runOnDemand: Type.String(),
+    runOnDemandStartTimeout: Type.String(),
+    runOnDemandCloseAfter: Type.String(),
+
     maxReaders: Type.Integer(),
 
     record: Type.Boolean(),
@@ -99,6 +100,7 @@ export const PathConfig = Type.Object({
 export const PathListItem = Type.Object({
     name: Type.String(),
     confName: Type.String(),
+
     source: Type.Union([
         Type.Object({
             id: Type.String(),
@@ -106,6 +108,7 @@ export const PathListItem = Type.Object({
         }),
         Type.Null()
     ]),
+
     ready: Type.Boolean(),
     readyTime: Type.Union([Type.String(), Type.Null()]),
     tracks: Type.Array(Type.String()),
@@ -165,6 +168,21 @@ export default class VideoServiceControl {
                 throw new Err(500, err instanceof Error ? err : new Error(String(err)), 'Media Service Configuration Error');
             }
         }
+    }
+
+    /**
+     * Generate an FFMPEG command to run a stream on demand.
+     *
+     * @param stream Untrusted User provided stream URL
+     * @param path Internally generated path for the stream
+     */
+    async runOnDemand(stream: string, path: string): Promise<string> {
+        // Ensure it is a valid URL and not shell injection
+        const url = sanitizeURLSync(stream);
+
+        if (!url) throw new Err(400, null, 'Invalid URL provided for stream');
+
+        return `ffmpeg -re -i '${url}' -vcodec libx264 -profile:v baseline -g 60 -acodec aac -f mpegts 'srt://127.0.0.1:8890?streamid=publish:${path}'`
     }
 
     async settings(): Promise<{
@@ -510,8 +528,7 @@ export default class VideoServiceControl {
             headers,
             body: JSON.stringify({
                 name: lease.path,
-                source: lease.proxy ? lease.proxy : undefined,
-                sourceOnDemand: lease.proxy ? true : undefined,
+                runOnDemand: lease.proxy ? this.runOnDemand(lease.proxy, lease.path) : undefined,
                 record: lease.recording,
                 ...this.recording
             })
@@ -604,8 +621,7 @@ export default class VideoServiceControl {
                 headers,
                 body: JSON.stringify({
                     name: lease.path,
-                    source: lease.proxy ? lease.proxy : undefined,
-                    sourceOnDemand: lease.proxy ? true : undefined,
+                    runOnDemand: lease.proxy ? this.runOnDemand(lease.proxy, lease.path) : undefined,
                     record: lease.recording,
                     ...this.recording
                 }),
@@ -625,8 +641,7 @@ export default class VideoServiceControl {
                     headers,
                     body: JSON.stringify({
                         name: lease.path,
-                        source: lease.proxy ? lease.proxy : undefined,
-                        sourceOnDemand: lease.proxy ? true : undefined,
+                        runOnDemand: lease.proxy ? this.runOnDemand(lease.proxy, lease.path) : undefined,
                         record: lease.recording,
                         ...this.recording
                     }),
