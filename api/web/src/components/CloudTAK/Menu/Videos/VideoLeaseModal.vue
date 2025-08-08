@@ -132,18 +132,31 @@
             <div class='modal-body row'>
                 <template v-if='Object.keys(protocols).length'>
                     <div class='col-12 d-flex align-items-center'>
-                        <div class='subheader'>
+                        <div class='subheader user-select-none'>
                             Video Streaming Protocols
                         </div>
 
                         <div class='ms-auto'>
-                            <div v-if='!secure'>
+                            <div
+                                v-if='lease.proxy'
+                                class='d-flex align-items-center user-select-none'
+                            >
+                                <IconServer
+                                    :size='32'
+                                    stroke='1'
+                                />
+                                <span class='ms-2'>External Stream URL</span>
+                            </div>
+                            <div
+                                v-else-if='!secure'
+                                class='d-flex align-items-center user-select-none'
+                            >
                                 <IconArrowsLeftRight
                                     v-tooltip='"Read/Write User"'
                                     :size='32'
                                     stroke='1'
                                 />
-                                <span class='ms-2 user-select-none'>Read-Write User</span>
+                                <span class='ms-2'>Read-Write User</span>
                             </div>
                             <div
                                 v-else
@@ -271,6 +284,19 @@
                         </div>
                     </template>
                 </template>
+
+                <div class='col-12 pt-4'>
+                    <div class='subheader user-select-none'>
+                        External Stream Config
+                    </div>
+                    <div class='pt-2'>
+                        <CopyField
+                            v-if='lease.proxy'
+                            label='External Stream URL'
+                            :model-value='lease.proxy'
+                        />
+                    </div>
+                </div>
             </div>
             <div class='modal-footer'>
                 <button
@@ -291,14 +317,66 @@
                 class='modal-body row g-2'
             >
                 <div class='col-12'>
+                    <div
+                        class='px-2 py-2 round btn-group w-100'
+                        role='group'
+                    >
+                        <input
+                            id='lease-host'
+                            type='radio'
+                            class='btn-check'
+                            autocomplete='off'
+                            :checked='typeof editLease.proxy !== "string"'
+                            @click='editLease.proxy = null'
+                        >
+                        <label
+                            for='lease-host'
+                            type='button'
+                            class='btn btn-sm'
+                        ><IconDrone
+                            v-tooltip='"Provide a stream URL to push data to"'
+                            :size='32'
+                            stroke='1'
+                        /><span class='ms-2'>Hosted Stream URL</span></label>
+
+                        <input
+                            id='lease-proxy'
+                            type='radio'
+                            class='btn-check'
+                            autocomplete='off'
+                            :checked='typeof editLease.proxy === "string"'
+                            @click='editLease.proxy = ""'
+                        >
+                        <label
+                            for='lease-proxy'
+                            type='button'
+                            class='btn btn-sm'
+                        ><IconServer
+                            v-tooltip='"Pull from existing external Stream URL"'
+                            :size='32'
+                            stroke='1'
+                        /><span class='ms-2'>External Stream URL</span></label>
+                    </div>
+                </div>
+                <div class='col-12 col-md-8'>
                     <TablerInput
                         v-model='editLease.name'
                         description='The human readable name of the Lease'
                         :disabled='disabled'
+                        :required='true'
                         label='Name'
                     />
                 </div>
-                <div class='col-12 col-md-6'>
+                <div class='col-12 col-md-4'>
+                    <TablerEnum
+                        v-model='editLease.duration'
+                        :options='durations'
+                        :disabled='disabled'
+                        label='Duration'
+                        description='Leases remain active on the server for the duration specified. Once the lease expires the lease can be renewed without the Lease URL changing'
+                    />
+                </div>
+                <div class='col-12 col-md-8'>
                     <TablerEnum
                         v-model='editLease.source_type'
                         default='unknown'
@@ -318,7 +396,7 @@
                         description='The type of sensor that is broadcasting'
                     />
                 </div>
-                <div class='col-12 col-md-6'>
+                <div class='col-12 col-md-4'>
                     <TablerInput
                         v-model='editLease.source_model'
                         :disabled='disabled'
@@ -326,13 +404,17 @@
                         description='Model Information about the sensor or source'
                     />
                 </div>
-                <div class='col-12'>
-                    <TablerEnum
-                        v-model='editLease.duration'
-                        :options='durations'
+                <div
+                    v-if='typeof editLease.proxy === "string"'
+                    class='col-12'
+                >
+                    <TablerInput
+                        v-model='editLease.proxy'
                         :disabled='disabled'
-                        label='Duration'
-                        description='Leases remain active on the server for the duration specified. Once the lease expires the lease can be renewed without the Lease URL changing'
+                        label='Media URL'
+                        :required='true'
+                        :error='validateURL(editLease.proxy, { protocols: ["http", "https", "rtsp", "rtsps", "rtmp", "rtmps", "srt"] })'
+                        description='Pull media into the Video Manager from an existing URL.'
                     />
                 </div>
                 <div class='col-12'>
@@ -351,7 +433,10 @@
                         description='Record stream when it is broadcasting'
                     />
                 </div>
-                <div class='col-12'>
+                <div
+                    v-if='typeof editLease.proxy !== "string"'
+                    class='col-12'
+                >
                     <TablerToggle
                         v-model='secure'
                         label='Read/Write Security'
@@ -414,32 +499,42 @@
                     </div>
                 </div>
             </div>
-            <div class='modal-footer'>
-                <button
-                    v-if='protocols.rtsp && !expired(editLease.expiration)'
-                    class='btn btn-secondary'
-                    @click='wizard = 1'
-                >
-                    <IconWand
-                        :size='20'
-                        stroke='1'
-                    />
-                    <span class='mx-2'>UAS Tool Wizard</span>
-                </button>
+            <div class='modal-footer d-flex'>
                 <button
                     v-if='!disabled'
-                    class='btn btn-primary'
-                    @click='saveLease'
+                    class='btn btn-secondary'
+                    @click='fetchLease'
                 >
-                    Save
+                    Cancel
                 </button>
-                <button
-                    v-if='disabled'
-                    class='btn btn-primary'
-                    @click='emit("close")'
-                >
-                    Done
-                </button>
+
+                <div class='ms-auto btn-list'>
+                    <button
+                        v-if='protocols.rtsp && !expired(editLease.expiration)'
+                        class='btn btn-secondary'
+                        @click='wizard = 1'
+                    >
+                        <IconWand
+                            :size='20'
+                            stroke='1'
+                        />
+                        <span class='mx-2'>UAS Tool Wizard</span>
+                    </button>
+                    <button
+                        v-if='!disabled'
+                        class='btn btn-primary'
+                        @click='saveLease'
+                    >
+                        Save
+                    </button>
+                    <button
+                        v-if='disabled'
+                        class='btn btn-primary'
+                        @click='emit("close")'
+                    >
+                        Done
+                    </button>
+                </div>
             </div>
         </template>
     </TablerModal>
@@ -447,12 +542,15 @@
 
 <script setup lang='ts'>
 import { std } from '../../../../std.ts';
+import { validateURL } from '../../../../base/validators.ts';
 import CopyField from '../../util/CopyField.vue';
 import { ref, watch, onMounted, withDefaults } from 'vue';
 import type { VideoLease, VideoLeaseResponse, VideoLeaseProtocols } from '../../../../types.ts';
 import VideoLeaseSourceType from '../../util/VideoLeaseSourceType.vue'
 import GroupSelect from '../../../util/GroupSelect.vue';
 import {
+    IconDrone,
+    IconServer,
     IconPencil,
     IconWand,
     IconArrowsLeftRight,
@@ -504,6 +602,7 @@ const editLease = ref<{
     channel: string | null
     source_type: string
     source_model: string
+    proxy?: string | null 
     expiration?: string | null
     stream_user: string | null
     stream_pass: string | null
@@ -555,6 +654,8 @@ function expired(expiration?: string | null) {
 
 async function fetchLease() {
     loading.value = true;
+
+    disabled.value = true;
 
     const res = await std(`/api/video/lease/${editLease.value.id}`, {
         method: 'GET',
@@ -616,6 +717,7 @@ async function saveLease() {
                 body: {
                     name: editLease.value.name,
                     secure: secure.value,
+                    proxy: editLease.value.proxy,
                     channel: channels.value.length ? channels.value[0] : null,
                     duration: editLease.value.duration === 'Permanent' ? undefined : parseInt(editLease.value.duration.split(' ')[0]) * 60 * 60,
                     permanent: editLease.value.duration === 'Permanent' ? true : false,
@@ -632,6 +734,7 @@ async function saveLease() {
                     name: editLease.value.name,
                     secure: secure.value,
                     channel: channels.value.length ? channels.value[0] : null,
+                    proxy: editLease.value.proxy,
                     duration: editLease.value.duration === 'Permanent' ? undefined : parseInt(editLease.value.duration.split(' ')[0]) * 60 * 60,
                     permanent: editLease.value.duration === 'Permanent' ? true : false,
                     recording: editLease.value.recording,

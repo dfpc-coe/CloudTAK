@@ -19,11 +19,17 @@ export function validateJSON(text: string): string {
     return '';
 }
 
-export function validateURL(text: string): string {
+export function validateURL(text: string, opts: {
+    protocols?: string[];
+}= {}): string {
     if (!text) return '';
 
-    if (!text.startsWith('http://') && !text.startsWith('https://')) {
-        return 'URL must start with http:// or https://';
+    if (!opts.protocols) opts.protocols = ['http', 'https']
+
+    if (!opts.protocols.some((p) => {
+        return text.startsWith(p + '://')
+    })) {
+        return `URL must start with one of ${opts.protocols.map(p => `${p}://`).join(', ')}`;
     }
 
     try {
