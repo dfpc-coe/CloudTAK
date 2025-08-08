@@ -114,6 +114,7 @@ import { normalize_geojson } from '@tak-ps/node-cot/normalize_geojson';
 import {
     IconFileImport,
 } from '@tabler/icons-vue';
+import type { LngLatBoundsLike } from 'maplibre-gl';
 import FeatureRow from './util/FeatureRow.vue';
 import { bbox } from '@turf/bbox';
 import type { InputFeature } from '../../types.ts';
@@ -189,7 +190,7 @@ async function saveToMap() {
         features: feats.value
     });
 
-    mapStore.map.fitBounds(bounds, {
+    mapStore.map.fitBounds(bounds as LngLatBoundsLike, {
         duration: 0,
         padding: {
             top: 25,
