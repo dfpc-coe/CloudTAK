@@ -7,9 +7,9 @@
 * - Source - MapLibre - Ref: https://maplibre.org/maplibre-style-spec/sources/
 */
 
-import ms from 'milsymbol';
 import { defineStore } from 'pinia'
 import DrawTool, { DrawToolMode } from './modules/draw.ts';
+import IconManager from './modules/icons.ts';
 import * as Comlink from 'comlink';
 import AtlasWorker from '../workers/atlas.ts?worker&url';
 import COT from '../base/cot.ts';
@@ -22,7 +22,7 @@ import mapgl from 'maplibre-gl'
 import type Atlas from '../workers/atlas.ts';
 import { CloudTAKTransferHandler } from '../base/handler.ts';
 
-import type { ProfileOverlay, ProfileOverlayList, Basemap, APIList, Feature, IconsetList, MapConfig } from '../types.ts';
+import type { ProfileOverlay, ProfileOverlayList, Basemap, APIList, Feature, MapConfig } from '../types.ts';
 import type { LngLat, LngLatLike, Point, MapMouseEvent, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl';
 
 export type TAKNotification = { type: string; name: string; body: string; url: string; created: string; }
@@ -31,6 +31,7 @@ export const useMapStore = defineStore('cloudtak', {
     state: (): {
         _map?: mapgl.Map;
         _draw?: DrawTool;
+        _icons?: IconManager;
         channel: BroadcastChannel;
 
         // Lock the map view to a given CoT - The last element is the currently locked value
@@ -134,6 +135,11 @@ export const useMapStore = defineStore('cloudtak', {
             if (!this._draw) throw new Error('Drawing Tools have not yet initialized');
             // @ts-expect-error Type difference, need to investigate
             return this._draw;
+        },
+        icons: function(): IconManager {
+            if (!this._icons) throw new Error('Icon Manager has not yet initialized');
+            // @ts-expect-error Type difference, need to investigate
+            return this._icons;
         }
     },
     actions: {
@@ -402,20 +408,7 @@ export const useMapStore = defineStore('cloudtak', {
                 console.error('Browser does not appear to support Notifications');
             }
 
-            const sprite = [{
-                id: 'default',
-                url: String(stdurl(`/api/iconset/default/sprite?token=${localStorage.token}`))
-            }]
-
-            // Eventually make a sprite URL part of the overlay so KMLs can load a sprite package & add paging support
-            const iconsets = await std('/api/iconset?limit=100') as IconsetList;
-            for (const iconset of iconsets.items) {
-                sprite.push({
-                    id: iconset.uid,
-                    url: String(stdurl(`/api/iconset/${iconset.uid}/sprite?token=${localStorage.token}&alt=true`))
-                });
-            }
-
+            const sprites = await IconManager.sprites();
             this.mapConfig = await std('/api/config/map') as MapConfig;
 
             const init: mapgl.MapOptions = {
@@ -431,7 +424,7 @@ export const useMapStore = defineStore('cloudtak', {
                 style: {
                     version: 8,
                     glyphs: String(stdurl('/fonts')) + '/{fontstack}/{range}.pbf',
-                    sprite,
+                    sprite: sprites,
                     sources: {
                         '-1': {
                             type: 'geojson',
@@ -454,6 +447,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             this._map = map;
             this._draw = new DrawTool(this);
+            this._icons = new IconManager(map);
 
             // If we missed the Profile_Location_Source make sure it gets synced
             const loc = await this.worker.profile.location;
@@ -478,15 +472,9 @@ export const useMapStore = defineStore('cloudtak', {
                 this.pitch = map.getPitch()
             })
 
-            map.on('styleimagemissing', async (e) => {
-                if (e.id.startsWith('2525D:')) {
-                    const sidc = e.id.replace('2525D:', '');
-                    const size = 24;
-                    const data = new ms.Symbol(sidc, { size }).asCanvas();
-
-                    map.addImage(e.id, await createImageBitmap(data));
-                }
-            });
+            map.on('styleimagemissing', (e) => {
+                this.icons.onStyleImageMissing(e);
+            })
 
             map.on('moveend', async () => {
                 if (this.draw.mode !== DrawToolMode.STATIC) {
