@@ -16,7 +16,7 @@
         "@aws-sdk/client-s3": "^3.787.0",
         "@aws-sdk/lib-storage": "^3.787.0",
         "@openaddresses/batch-schema": "^10.15.1",
-        "@tak-ps/node-cot": "^13.0.0",
+        "@tak-ps/node-cot": "^14.0.0",
         "@tmcw/togeojson": "^7.1.0",
         "@xmldom/xmldom": "^0.9.8",
         "array-includes-with-glob": "^5.0.9",
