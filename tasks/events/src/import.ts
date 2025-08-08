@@ -56,7 +56,7 @@ export default async function(md: Event) {
 
             const cots = await pkg.cots();
             for (const cot of cots) {
-                const feat = CoTParser.to_geojson(cot);
+                const feat = await CoTParser.to_geojson(cot);
 
                 if (feat.properties.attachments) {
                     const attachments = await pkg.attachments();

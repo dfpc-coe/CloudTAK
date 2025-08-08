@@ -15,7 +15,7 @@ export async function nativeDecompress(
     if (compression === pmtiles.Compression.None || compression === pmtiles.Compression.Unknown) {
         return buf;
     } else if (compression === pmtiles.Compression.Gzip) {
-        return zlib.gunzipSync(buf);
+        return zlib.gunzipSync(buf).buffer as ArrayBuffer;
     } else {
         throw Error("Compression method not supported");
     }
@@ -58,7 +58,7 @@ export class S3Source implements pmtiles.Source {
             }
 
             return {
-                data: arr.buffer,
+                data: arr.buffer as ArrayBuffer,
                 etag: resp.ETag,
                 expires: resp.Expires?.toISOString(),
                 cacheControl: resp.CacheControl,
