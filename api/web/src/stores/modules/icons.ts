@@ -2,9 +2,12 @@
  * Icon Color Manager for runtime icon recoloring
  */
 
+import ms from 'milsymbol'
 import type { Map as MapLibreMap } from 'maplibre-gl';
+import type { IconsetList } from '../../types.ts';
+import { std, stdurl } from '../../std.ts';
 
-export class IconColorManager {
+export default class IconManager {
     private cache = new Map<string, HTMLCanvasElement>();
     private map: MapLibreMap;
 
@@ -12,16 +15,54 @@ export class IconColorManager {
         this.map = map;
     }
 
+    static async sprites(): Promise<Array<{
+        id: string,
+        url: string
+    }>> {
+        const sprites = [{
+            id: 'default',
+            url: String(stdurl(`/api/iconset/default/sprite?token=${localStorage.token}`))
+        }]
+
+        // Eventually make a sprite URL part of the overlay so KMLs can load a sprite package & add paging support
+        const iconsets = await std('/api/iconset?limit=100') as IconsetList;
+        for (const iconset of iconsets.items) {
+            sprites.push({
+                id: iconset.uid,
+                url: String(stdurl(`/api/iconset/${iconset.uid}/sprites?token=${localStorage.token}&alt=true`))
+            });
+        }
+
+        return sprites;
+    }
+
+    public async onStyleImageMissing(e: { id: string }): Promise<void> {
+        if (e.id.startsWith('2525D:')) {
+            const sidc = e.id.replace('2525D:', '');
+            const size = 24;
+            const data = new ms.Symbol(sidc, { size }).asCanvas();
+
+            this.map.addImage(e.id, await createImageBitmap(data));
+        } else if (e.id.includes('-colored-')) {
+            // This is a colored icon, we need to load it from the icon manager
+            const parts = e.id.split('-colored-');
+            const originalIconId = parts[0];
+            const color = '#' + parts[1];
+
+            this.getColoredIcon(originalIconId, color);
+        }
+    }
+
     /**
      * Get or create a colored version of an icon
      */
-    getColoredIcon(iconId: string, color: string): string {
+    public getColoredIcon(iconId: string, color: string): string {
         const coloredIconId = `${iconId}-colored-${color.slice(1)}`;
-        
+
         if (!this.cache.has(coloredIconId)) {
             this.createColoredIcon(iconId, color, coloredIconId);
         }
-        
+
         return coloredIconId;
     }
 
@@ -59,7 +100,7 @@ export class IconColorManager {
 
         // Cache and add to map
         this.cache.set(coloredIconId, canvas);
-        
+
         // Convert canvas to ImageData for map
         const canvasImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         this.map.addImage(coloredIconId, {
@@ -78,7 +119,7 @@ export class IconColorManager {
 
         for (let i = 0; i < data.length; i += 4) {
             const alpha = data[i + 3];
-            
+
             // Skip transparent pixels
             if (alpha === 0) continue;
 
