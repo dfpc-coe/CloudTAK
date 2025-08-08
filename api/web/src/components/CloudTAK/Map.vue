@@ -261,13 +261,15 @@
 
             <SearchBox
                 v-if='searchBoxShown'
+                class='position-absolute'
                 style='
                     z-index: 1;
                     top: 40px;
                     left: 40px;
                     width: 300px;
                 '
-                @close='searchBoxShown = false'
+                :autofocus='true'
+                @select='searchBoxShown = false'
             />
 
             <div

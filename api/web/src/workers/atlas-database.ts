@@ -541,7 +541,7 @@ export default class AtlasDatabase {
             authored?: boolean,
             mission_guid?: string,
         }
-    ): Promise<void> {
+    ): Promise<COT> {
         if (!opts) opts = {};
 
         feature.properties.id = feature.id;
@@ -577,6 +577,8 @@ export default class AtlasDatabase {
                     guid: mission_guid
                 }
             });
+
+            return cot;
         } else {
             let is_mission_cot: COT | undefined;
             for (const value of this.subscriptions.values()) {
@@ -587,7 +589,7 @@ export default class AtlasDatabase {
                 }
             }
 
-            if (is_mission_cot) return;
+            if (is_mission_cot) return is_mission_cot;
 
             let exists = this.cots.get(feat.id);
 
@@ -625,6 +627,8 @@ export default class AtlasDatabase {
             if (exists.is_skittle) {
                 await this.atlas.team.set(exists);
             }
+
+            return exists;
         }
     }
 
