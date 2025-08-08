@@ -29,7 +29,7 @@
                     :url='stdurl("/api/marti/package")'
                     :headers='uploadHeaders()'
                     @cancel='upload = false'
-                    @done='fetchList'
+                    @done='finishUpload($event)'
                 />
             </div>
             <template v-else>
@@ -69,7 +69,7 @@
                         <div class='col-12 subheader d-flex'>
                             <div v-text='timeDiff(pkg.SubmissionDateTime)' />
                             <div
-                                class='ms-auto'
+                                class='ms-auto me-2'
                                 v-text='pkg.SubmissionUser'
                             />
                         </div>
@@ -136,6 +136,15 @@ function uploadHeaders() {
     return {
         Authorization: `Bearer ${localStorage.token}`
     };
+}
+
+function finishUpload(event: string) {
+    const e = JSON.parse(event) as {
+        UID: string;
+        Hash: string;
+    };
+
+    router.push(`/menu/packages/${e.Hash}`);
 }
 
 async function fetchList() {
