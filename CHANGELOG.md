@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v10.38.1 - 2025-08-08
+
+- :rocket: Pass through CacheControl headers for Tiles
+
 ### v10.38.0 - 2025-08-08
 
 - :tada: Automatically colour icons with their associated marker-color property if present
