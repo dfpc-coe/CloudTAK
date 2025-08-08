@@ -610,7 +610,7 @@
                                 <TablerInput
                                     :model-value='cot.properties["marker-color"]'
                                     label=''
-                                    default='#00FF00'
+                                    default='#FFFFFF'
                                     type='color'
                                     class='pb-2'
                                     @update:model-value='updateProperty("marker-color", $event)'
