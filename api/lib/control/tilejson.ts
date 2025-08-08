@@ -415,9 +415,10 @@ export default class TileJSON {
                                 ![
                                     'content-type',
                                     'content-length',
+                                    'cache-control',
                                     'content-encoding',
                                     'last-modified',
-                                ].includes(key)
+                                ].includes(key.toLowerCase())
                             ) {
                                 delete headers[key];
                             }
