@@ -4,15 +4,16 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Weather, { FetchHourly } from '../lib/weather.js';
-import Geocode, { FetchReverse, FetchSuggest, FetchForward } from '../lib/geocode.js';
+import Search, { FetchReverse, FetchSuggest, FetchForward } from '../lib/search.js';
+import { Feature } from '@tak-ps/node-cot';
 import Config from '../lib/config.js';
 
 export default async function router(schema: Schema, config: Config) {
     const weather = new Weather();
 
-    const geocode = new Geocode('');
+    const search = new Search('');
     if (await config.models.Setting.typed('agol::enabled', false)) {
-        geocode.token = (await config.models.Setting.typed('agol::token', '')).value;
+        search.token = (await config.models.Setting.typed('agol::token', '')).value;
     }
 
     const ReverseResponse = Type.Object({
@@ -43,6 +44,8 @@ export default async function router(schema: Schema, config: Config) {
     const ForwardResponse = Type.Object({
         items: Type.Array(FetchForward)
     });
+
+    const RouteResponse = Feature.FeatureCollection;
 
     await schema.get('/search/reverse/:longitude/:latitude', {
         name: 'Reverse Geocode',
@@ -94,9 +97,9 @@ export default async function router(schema: Schema, config: Config) {
                     }
                 })(),
                 (async () => {
-                    if (geocode.token) {
+                    if (search.token) {
                         try {
-                            response.reverse = await geocode.reverse(req.params.longitude, req.params.latitude);
+                            response.reverse = await search.reverse(req.params.longitude, req.params.latitude);
                         } catch (err) {
                             console.error('ESRI Fetch Error', err)
                         }
@@ -105,6 +108,46 @@ export default async function router(schema: Schema, config: Config) {
             ])
 
             res.json(response);
+        } catch (err) {
+             Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/search/route', {
+        name: 'Route',
+        group: 'Search',
+        description: 'Generate a route given stop information',
+        query: Type.Object({
+            start: Type.String({
+                description: 'Lat,Lng of starting position'
+            }),
+            /* TODO Implement via ESRI API
+            stops: Type.Optional(Type.Array(Type.String({
+                description: 'Lat,Lng of required stops'
+            }))),
+            */
+            end: Type.String({
+                description: 'Lat,Lng of end position'
+            }),
+        }),
+        res: RouteResponse
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req);
+
+            const stops = [
+                req.query.start.split(',').map(Number),
+                req.query.end.split(',').map(Number)
+            ] as [number, number][];
+
+            if (search.token) {
+                res.json(await search.route(stops));
+            } else {
+                res.json({
+                    type: 'FeatureCollection',
+                    features: []
+                });
+            }
         } catch (err) {
              Err.respond(err, res);
         }
@@ -128,8 +171,8 @@ export default async function router(schema: Schema, config: Config) {
                 items: [],
             };
 
-            if (geocode.token && req.query.query.trim().length) {
-                response.items = await geocode.forward(req.query.query, req.query.magicKey, req.query.limit);
+            if (search.token && req.query.query.trim().length) {
+                response.items = await search.forward(req.query.query, req.query.magicKey, req.query.limit);
             }
 
             res.json(response);
@@ -157,8 +200,8 @@ export default async function router(schema: Schema, config: Config) {
                 items: [],
             };
 
-            if (geocode.token && req.query.query.trim().length) {
-                response.items = await geocode.suggest(req.query.query, req.query.limit);
+            if (search.token && req.query.query.trim().length) {
+                response.items = await search.suggest(req.query.query, req.query.limit);
             }
             if (req.query.limit) {
                 response.items = response.items.splice(0, req.query.limit);

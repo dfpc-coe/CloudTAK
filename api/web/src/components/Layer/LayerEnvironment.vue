@@ -151,6 +151,7 @@
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { std } from '/src/std.ts';
+import { validateJSON } from '/src/base/validators.ts';
 import {
     TablerNone,
     TablerAlert,
@@ -198,16 +199,6 @@ const loading = ref({
 onMounted(async () => {
     await reload();
 });
-
-function validateJSON(text) {
-    try {
-        JSON.parse(text);
-    } catch (err) {
-        return err instanceof Error ? err.message : String(err);
-    }
-
-    return true;
-}
 
 function hasDateTime() {
     if (!props.capabilities) return false;

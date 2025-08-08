@@ -1,5 +1,19 @@
 import { Type } from '@sinclair/typebox';
 
+export const EsriSpatialReference = Type.Object({
+    wkid: Type.Integer(),
+    latestWkid: Type.Integer()
+});
+
+// TODO Convert all extents to 4326
+export const EsriExtent = Type.Object({
+    xmin: Type.Number(),
+    ymin: Type.Number(),
+    xmax: Type.Number(),
+    ymax: Type.Number(),
+    spatialReference: Type.Optional(EsriSpatialReference)
+})
+
 export const ESRIField = Type.Object({
     name: Type.String(),
     type: Type.String(),
@@ -27,16 +41,7 @@ export const ESRILayer = Type.Object({
     hasM: Type.Boolean(),
     hasZ: Type.Boolean(),
     objectIdField: Type.String(),
-    extent: Type.Object({
-        xmin: Type.Number(),
-        ymin: Type.Number(),
-        xmax: Type.Number(),
-        ymax: Type.Number(),
-        spatialReference: Type.Object({
-            wkid: Type.Optional(Type.Number()),
-            latestWkid: Type.Optional(Type.Number())
-        }),
-    }),
+    extent: EsriExtent,
     uniqueIdField: Type.Optional(Type.Object({
         name: Type.String(),
         isSystemMaintained: Type.Boolean()

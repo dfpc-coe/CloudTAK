@@ -77,6 +77,7 @@
 
 <script setup lang='ts'>
 import CopyField from './CopyField.vue';
+import { validateLatLng } from '../../../base/validators.ts';
 import {
     IconLabel
 } from '@tabler/icons-vue';
@@ -123,22 +124,7 @@ const config = ref({
 const validateInput = computed(() => {
     return (text: string): boolean | string => {
         if (config.value.mode === 'dd') {
-            const dd = text.split(',').map((d) => {
-                return Number(d.trim())
-            });
-
-            const errors = [];
-            if (dd.length !== 2) errors.push('Must have contain latitude,longitude');
-            if (isNaN(dd[0])) errors.push('First number (latitude) is not a number');
-            if (isNaN(dd[1])) errors.push('Second number (longitude) is not a number');
-
-            if (dd[0] < -90) errors.push('Latitude cannot be less than -90°');
-            if (dd[0] > 90) errors.push('Latitude cannot exceed 90°');
-
-            if (dd[1] < -180) errors.push('Longitude cannot be less than -180°');
-            if (dd[1] > 180) errors.push('Longitude cannot exceed 180°');
-
-            return errors.length ? errors[0] : true;
+            return validateLatLng(text);
         } else {
             return false;
         }

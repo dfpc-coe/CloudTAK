@@ -41,13 +41,13 @@
                             <TablerInput
                                 v-model='config["login::signup"]'
                                 :disabled='!edit'
-                                :error='(config["login::signup"] && config["login::signup"].startsWith("http")) ? "" : "Invalid URL"'
+                                :error='validateURL(config["login::signup"])'
                                 label='TAK Server Signup Link'
                             />
                             <TablerInput
                                 v-model='config["login::forgot"]'
                                 :disabled='!edit'
-                                :error='(config["login::forgot"] && config["login::forgot"].startsWith("http")) ? "" : "Invalid URL"'
+                                :error='validateURL(config["login::forgot"])'
                                 label='TAK Server Password Reset Link'
                             />
 
@@ -110,6 +110,7 @@
                             <TablerInput
                                 v-model='config["media::url"]'
                                 :disabled='!edit'
+                                :error='validateURL(config["media::url"])'
                                 label='CloudTAK Hosted MediaMTX Service URL'
                             />
                         </div>
@@ -198,7 +199,9 @@
                         <div class='col-lg-12'>
                             <TablerInput
                                 v-model='config[`map::center`]'
-                                label='Inital Map Center'
+                                label='Initial Map Center (<lat>,<lng>)'
+                                placeholder='Latitude, Longitude'
+                                :error='validateLatLng(config[`map::center`])'
                                 :disabled='!edit'
                             />
                         </div>
@@ -292,6 +295,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { std, stdurl } from '../../std.ts';
+import { validateURL, validateLatLng } from '../../base/validators.ts';
 import {
     TablerLoading,
     TablerInlineAlert,
@@ -330,7 +334,7 @@ const config = ref({
 
     'media::url': '',
 
-    'map::center': '-100,40',
+    'map::center': '40,-100',
     'map::zoom': 4,
     'map::bearing': 0,
     'map::pitch': 0,
@@ -374,7 +378,13 @@ async function fetch() {
 
     for (const key of Object.keys(configRes)) {
         if (configRes[key] === undefined) continue;
-        config.value[key] = configRes[key];
+
+        // Keep coordinate format consistent for users
+        if (key === 'map::center') {
+            configRes[key] = key.split(',').reverse().join(',');
+        } else {
+            config.value[key] = configRes[key];
+        }
     }
 
     for (const key of Object.keys(display)) {
@@ -388,7 +398,10 @@ async function postConfig() {
     loading.value = true;
     await std(`/api/config`, {
         method: 'PUT',
-        body: config.value
+        body: {
+            ...config.value,
+            'map::center': config.value['map::center'].split(',').reverse().join(','),
+        }
     });
 
     edit.value = false;
