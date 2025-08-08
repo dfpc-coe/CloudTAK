@@ -132,7 +132,7 @@
             <div class='modal-body row'>
                 <template v-if='Object.keys(protocols).length'>
                     <div class='col-12 d-flex align-items-center'>
-                        <div class='subheader'>
+                        <div class='subheader user-select-none'>
                             Video Streaming Protocols
                         </div>
 
@@ -286,10 +286,10 @@
                 </template>
 
                 <div class='col-12 pt-4'>
-                    <div class='subheader pb-3'>
+                    <div class='subheader user-select-none'>
                         External Stream Config
                     </div>
-                    <div>
+                    <div class='pt-2'>
                         <CopyField
                             v-if='lease.proxy'
                             label='External Stream URL'
@@ -327,7 +327,7 @@
                             class='btn-check'
                             autocomplete='off'
                             :checked='typeof editLease.proxy !== "string"'
-                            @click='editLease.proxy = undefined'
+                            @click='editLease.proxy = null'
                         >
                         <label
                             for='lease-host'
@@ -337,7 +337,7 @@
                             v-tooltip='"Provide a stream URL to push data to"'
                             :size='32'
                             stroke='1'
-                         /><span class='ms-2'>Hosted Stream URL</span></label>
+                        /><span class='ms-2'>Hosted Stream URL</span></label>
 
                         <input
                             id='lease-proxy'
@@ -355,7 +355,7 @@
                             v-tooltip='"Pull from existing external Stream URL"'
                             :size='32'
                             stroke='1'
-                         /><span class='ms-2'>External Stream URL</span></label>
+                        /><span class='ms-2'>External Stream URL</span></label>
                     </div>
                 </div>
                 <div class='col-12 col-md-8'>
@@ -405,7 +405,7 @@
                     />
                 </div>
                 <div
-                    v-if='editLease.proxy !== undefined'
+                    v-if='typeof editLease.proxy === "string"'
                     class='col-12'
                 >
                     <TablerInput
@@ -413,7 +413,7 @@
                         :disabled='disabled'
                         label='Media URL'
                         :required='true'
-                            :error='validateURL(editLease.proxy, { protocols: ["http", "https", "rtsp", "rtsps", "rtmp", "rtmps", "srt"] })'
+                        :error='validateURL(editLease.proxy, { protocols: ["http", "https", "rtsp", "rtsps", "rtmp", "rtmps", "srt"] })'
                         description='Pull media into the Video Manager from an existing URL.'
                     />
                 </div>
@@ -434,7 +434,7 @@
                     />
                 </div>
                 <div
-                    v-if='editLease.proxy === undefined'
+                    v-if='typeof editLease.proxy !== "string"'
                     class='col-12'
                 >
                     <TablerToggle
@@ -602,6 +602,7 @@ const editLease = ref<{
     channel: string | null
     source_type: string
     source_model: string
+    proxy?: string | null 
     expiration?: string | null
     stream_user: string | null
     stream_pass: string | null
