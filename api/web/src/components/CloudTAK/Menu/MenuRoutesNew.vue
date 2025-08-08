@@ -30,7 +30,9 @@
                         :disabled='!routePlan.start || !routePlan.end'
                         class='btn btn-primary w-100'
                         @click='generateRoute'
-                    >Generate Route</button>
+                    >
+                        Generate Route
+                    </button>
                 </div>
             </template>
         </template>
@@ -38,26 +40,16 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import SearchBox from '../util/SearchBox.vue';
-import COT from '../../../base/cot.ts';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import {
-    TablerNone,
-    TablerDelete,
     TablerLoading,
-    TablerIconButton,
-    TablerRefreshButton
 } from '@tak-ps/vue-tabler';
 import { std, stdurl } from '../../../std.ts';
-import type { WorkerMessage } from '../../../base/events.ts';
-import { WorkerMessageType } from '../../../base/events.ts';
-import {
-    IconPlus,
-    IconRoute,
-} from '@tabler/icons-vue';
 import { useMapStore } from '../../../stores/map.ts';
+import type { FeatureCollection } from '../../../types.ts';
 
 const router = useRouter();
 const mapStore = useMapStore();
@@ -72,11 +64,6 @@ const routePlan = ref<{
     end: null
 });
 
-async function deleteRoute(id: string): Promise<void> {
-    await mapStore.worker.db.remove(id);
-    await refresh();
-}
-
 async function generateRoute(): Promise<void> {
     if (!routePlan.value.start || !routePlan.value.end) {
         return;
@@ -89,11 +76,9 @@ async function generateRoute(): Promise<void> {
         url.searchParams.set('start', routePlan.value.start.join(','));
         url.searchParams.set('end', routePlan.value.end.join(','));
 
-        const route = await std(url);
+        const route = await std(url) as FeatureCollection;
 
         if (route.features.length > 0) {
-            const id = route.features[0].id;
-
             const cot = await mapStore.worker.db.add(route.features[0]);
 
             cot.flyTo();

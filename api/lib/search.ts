@@ -126,15 +126,10 @@ export default class Geocode {
         }
 
         for (const feat of body.routes.features) {
-            processed.features.push(await CoTParser.normalize_geojson({
+            const norm = await CoTParser.normalize_geojson({
                 id: String(randomUUID()),
                 type: 'Feature',
                 properties: {
-                    type: 'b-m-r',
-                    how: 'm-g',
-                    callsign: String(feat.attributes.Name),
-                    remarks: '',
-                    archived: true,
                     metadata: {
                         ...feat.attributes,
                     }
@@ -143,7 +138,14 @@ export default class Geocode {
                     type: 'LineString',
                     coordinates: feat.geometry.paths[0]
                 }
-            }));
+            });
+
+            norm.properties.type = 'b-m-r';
+            norm.properties.how = 'm-g';
+            norm.properties.callsign = String(feat.attributes.Name);
+            norm.properties.archived = true;
+
+            processed.features.push(norm);
         }
 
         return processed;

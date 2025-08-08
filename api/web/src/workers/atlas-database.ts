@@ -589,7 +589,7 @@ export default class AtlasDatabase {
                 }
             }
 
-            if (is_mission_cot) return;
+            if (is_mission_cot) return is_mission_cot;
 
             let exists = this.cots.get(feat.id);
 

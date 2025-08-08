@@ -3,24 +3,24 @@
         class='text-white bg-dark rounded'
     >
         <TablerInput
-            :label='props.label'
             ref='searchBoxRef'
             v-model='query.filter'
+            :label='props.label'
             :autofocus='props.autofocus'
             class='mt-0'
             :placeholder='props.placeholder'
-            @focus='selected = false'
             icon='search'
+            @focus='selected = false'
         />
 
         <div
-            class="dropdown-menu w-100 mt-2"
+            class='dropdown-menu w-100 mt-2'
             :class='{
                 "show": shown,
             }'
         >
             <TablerNone
-                v-if='!partialLoading && !cots.length && !results.length'
+                v-if='!partialLoading && !cots.size && !results.length'
                 :create='false'
             />
             <template v-else>
@@ -42,7 +42,10 @@
                         stroke='1'
                     />
 
-                    <span class='ms-2' v-text='item.text'/>
+                    <span
+                        class='ms-2'
+                        v-text='item.text'
+                    />
                 </div>
 
                 <TablerLoading
@@ -132,8 +135,6 @@ async function fetchSearch(
     queryText?: string,
     magicKey?: string
 ) {
-    results.value = [];
-
     if (!magicKey || !queryText) {
         partialLoading.value = true;
 
@@ -146,6 +147,8 @@ async function fetchSearch(
         const url = stdurl('/api/search/suggest');
         url.searchParams.append('query', query.value.filter);
         url.searchParams.append('limit', '5');
+
+        results.value = [];
         results.value.push(...((await std(url)) as SearchSuggest).items)
         partialLoading.value = false;
    } else {
