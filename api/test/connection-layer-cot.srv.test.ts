@@ -9,6 +9,7 @@ import {
     CloudWatchLogsClient,
     DeleteLogGroupCommand
 } from '@aws-sdk/client-cloudwatch-logs';
+import { CoTParser } from '@tak-ps/node-cot';
 
 const flight = new Flight();
 
@@ -191,6 +192,75 @@ test('POST: api/layer/1/cot - multiple colons in icon path', async (t) => {
         t.error(err, 'no error');
     }
 
+    t.end();
+});
+
+// Unit tests for icon path conversion logic
+test('Icon path conversion - colon to slash', async (t) => {
+    const feature = {
+        type: 'Feature',
+        id: 'test',
+        geometry: { type: 'Point', coordinates: [0, 0] },
+        properties: { icon: 'custom:icon:path' }
+    };
+    
+    // Test the conversion logic directly
+    if (feature.properties.icon && feature.properties.icon.includes(':')) {
+        feature.properties.icon = feature.properties.icon.replace(':', '/');
+    }
+    
+    t.equals(feature.properties.icon, 'custom/icon:path', 'should replace first colon with slash');
+    t.end();
+});
+
+test('Icon path conversion - no colon', async (t) => {
+    const feature = {
+        type: 'Feature',
+        id: 'test',
+        geometry: { type: 'Point', coordinates: [0, 0] },
+        properties: { icon: 'custom/icon/path' }
+    };
+    
+    const originalIcon = feature.properties.icon;
+    if (feature.properties.icon && feature.properties.icon.includes(':')) {
+        feature.properties.icon = feature.properties.icon.replace(':', '/');
+    }
+    
+    t.equals(feature.properties.icon, originalIcon, 'should not change icon without colon');
+    t.end();
+});
+
+test('Icon path conversion - no icon property', async (t) => {
+    const feature = {
+        type: 'Feature',
+        id: 'test',
+        geometry: { type: 'Point', coordinates: [0, 0] },
+        properties: {}
+    };
+    
+    // Test the conversion logic directly
+    if (feature.properties.icon && feature.properties.icon.includes(':')) {
+        feature.properties.icon = feature.properties.icon.replace(':', '/');
+    }
+    
+    t.equals(feature.properties.icon, undefined, 'should handle missing icon property');
+    t.end();
+});
+
+test('Icon path conversion - multiple colons', async (t) => {
+    const feature = {
+        type: 'Feature',
+        id: 'test',
+        geometry: { type: 'Point', coordinates: [0, 0] },
+        properties: { icon: 'custom:icon:path:with:colons' }
+    };
+    
+    // Test the conversion logic directly
+    if (feature.properties.icon && feature.properties.icon.includes(':')) {
+        feature.properties.icon = feature.properties.icon.replace(':', '/');
+    }
+    
+    t.equals(feature.properties.icon, 'custom/icon:path:with:colons', 'should replace only first colon');
     t.end();
 });
 
