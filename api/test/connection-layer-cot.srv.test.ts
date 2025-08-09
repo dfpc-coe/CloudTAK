@@ -66,7 +66,7 @@ test('POST: api/connection/1/layer - create layer for CoT tests', async (t) => {
 test('POST: api/layer/1/cot - reaches icon conversion code', async (t) => {
     try {
         // Create a layer with proper connection and incoming config
-        const layerRes = await flight.fetch('/api/connection/1/layer/1', {
+        await flight.fetch('/api/connection/1/layer/1', {
             method: 'PATCH',
             auth: {
                 bearer: flight.token.admin
