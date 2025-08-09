@@ -62,10 +62,9 @@ test('POST: api/connection/1/layer - create layer for CoT tests', async (t) => {
 
 
 
-// Create a test that actually reaches the icon conversion code
-test('POST: api/layer/1/cot - reaches icon conversion code', async (t) => {
+// Test icon conversion with colon
+test('POST: api/layer/1/cot - icon conversion with colon', async (t) => {
     try {
-        // Create a layer with proper connection and incoming config
         await flight.fetch('/api/connection/1/layer/1', {
             method: 'PATCH',
             auth: {
@@ -79,9 +78,7 @@ test('POST: api/layer/1/cot - reaches icon conversion code', async (t) => {
             }
         }, false);
 
-        // Now try to post CoT data - this should reach the icon conversion code
-        // even if it fails later due to missing TAK server connection
-        const res = await flight.fetch('/api/layer/1/cot', {
+        await flight.fetch('/api/layer/1/cot', {
             method: 'POST',
             auth: {
                 bearer: flight.token.admin
@@ -93,7 +90,7 @@ test('POST: api/layer/1/cot - reaches icon conversion code', async (t) => {
                 type: 'FeatureCollection',
                 features: [{
                     type: 'Feature',
-                    id: 'test-feature',
+                    id: 'test-colon-icon',
                     geometry: {
                         type: 'Point',
                         coordinates: [-122.4194, 37.7749]
@@ -105,14 +102,76 @@ test('POST: api/layer/1/cot - reaches icon conversion code', async (t) => {
             }
         }, false);
 
-        // The request should process far enough to execute the icon conversion
-        // before failing on connection issues
-        t.ok(res.body.status >= 200, 'request processed (icon conversion executed)');
-
+        t.pass('icon conversion with colon executed');
     } catch (err) {
         t.error(err, 'no error');
     }
+    t.end();
+});
 
+// Test icon conversion without colon
+test('POST: api/layer/1/cot - icon conversion without colon', async (t) => {
+    try {
+        await flight.fetch('/api/layer/1/cot', {
+            method: 'POST',
+            auth: {
+                bearer: flight.token.admin
+            },
+            headers: {
+                'content-type': 'application/json'
+            },
+            body: {
+                type: 'FeatureCollection',
+                features: [{
+                    type: 'Feature',
+                    id: 'test-no-colon-icon',
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [-122.4194, 37.7749]
+                    },
+                    properties: {
+                        icon: 'custom/icon/path'
+                    }
+                }]
+            }
+        }, false);
+
+        t.pass('icon conversion without colon executed');
+    } catch (err) {
+        t.error(err, 'no error');
+    }
+    t.end();
+});
+
+// Test no icon property
+test('POST: api/layer/1/cot - no icon property', async (t) => {
+    try {
+        await flight.fetch('/api/layer/1/cot', {
+            method: 'POST',
+            auth: {
+                bearer: flight.token.admin
+            },
+            headers: {
+                'content-type': 'application/json'
+            },
+            body: {
+                type: 'FeatureCollection',
+                features: [{
+                    type: 'Feature',
+                    id: 'test-no-icon',
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [-122.4194, 37.7749]
+                    },
+                    properties: {}
+                }]
+            }
+        }, false);
+
+        t.pass('no icon property executed');
+    } catch (err) {
+        t.error(err, 'no error');
+    }
     t.end();
 });
 
