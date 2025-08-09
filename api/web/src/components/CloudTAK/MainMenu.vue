@@ -781,8 +781,8 @@ onMounted(async () => {
     isAgencyAdmin.value = await mapStore.worker.profile.isAgencyAdmin();
 })
 
-function external(url) {
-    window.location = new URL(url, window.location.origin);
+function external(url: string) {
+    window.location.href = String(new URL(url, window.location.origin));
 }
 
 function returnHome() {
