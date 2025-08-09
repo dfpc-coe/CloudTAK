@@ -125,7 +125,7 @@ export const ProfileVideo = pgTable('profile_videos', {
     username: text().notNull().references(() => Profile.username),
 }, (table) => {
     return {
-        username_idx: index("profile_features_username_idx").on(table.username),
+        username_idx: index("profile_videos_username_idx").on(table.username),
     }
 })
 
