@@ -33,7 +33,7 @@
 
             <div class='mx-2'>
                 <div
-                    class='text-sm'
+                    class='text-truncate text-sm'
                     v-text='title'
                 />
                 <div
@@ -44,13 +44,17 @@
             </div>
 
             <div class='btn-list ms-auto'>
-                <span v-if='active && active.metadata'>
+                <span
+                    v-if='active && active.metadata'
+                    class='user-select-none'
+                >
                     <IconUsersGroup
                         :size='24'
                         stroke='1'
                     />
                     <span v-text='active.metadata.watchers + 1' />
                     <span
+                        v-if='video.config.width > 500'
                         class='ms-1'
                         v-text='active.metadata.watchers + 1 > 1 ? "Watchers" : "Watcher"'
                     />
@@ -68,7 +72,7 @@
             </div>
         </div>
         <div
-            class='modal-body'
+            class='modal-body d-flex justify-content-center align-items-center'
             :style='`height: calc(100% - 40px)`'
         >
             <div
@@ -78,28 +82,30 @@
                 <TablerLoading label='Loading Stream' />
             </div>
             <template v-else-if='error'>
-                <TablerAlert
-                    title='Video Error'
-                    :compact='true'
-                    :err='error'
-                />
+                <div class=''>
+                    <TablerAlert
+                        title='Video Error'
+                        :compact='true'
+                        :err='error'
+                    />
 
-                <div class='row g-2 col-12 ps-2 pt-4'>
-                    <div class='col-md-6'>
-                        <TablerButton
-                            class='w-100'
-                            @click='$emit("close")'
-                        >
-                            Close Player
-                        </TablerButton>
-                    </div>
-                    <div class='col-md-6'>
-                        <TablerButton
-                            class='w-100'
-                            @click='requestLease'
-                        >
-                            Retry
-                        </TablerButton>
+                    <div class='row g-2 col-12 ps-2 pt-4'>
+                        <div class='col-md-6'>
+                            <TablerButton
+                                class='w-100'
+                                @click='$emit("close")'
+                            >
+                                Close Player
+                            </TablerButton>
+                        </div>
+                        <div class='col-md-6'>
+                            <TablerButton
+                                class='w-100'
+                                @click='requestLease'
+                            >
+                                Retry
+                            </TablerButton>
+                        </div>
                     </div>
                 </div>
             </template>
@@ -125,7 +131,7 @@
 <script setup lang='ts'>
 /**
  * FloatingVideo Component
- * 
+ *
  * A draggable, resizable video player component for HLS live streaming.
  * Features resilient error handling, automatic retry logic, and MediaMTX muxer restart recovery.
  */
@@ -441,9 +447,9 @@ function handleStreamError(streamError: Error): void {
         // Calculate exponential backoff delay
         const delay = 1000 * Math.pow(2, retryCount.value); // 1s, 2s, 4s
         console.log(`Retrying stream in ${delay}ms (attempt ${retryCount.value + 1}/${maxRetries.value})`);
-        
+
         retryCount.value++;
-        
+
         // Retry after delay
         setTimeout(() => {
             // Clean up existing player before retry
