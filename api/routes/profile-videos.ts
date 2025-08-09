@@ -88,7 +88,7 @@ export default async function router(schema: Schema, config: Config) {
 
             res.json({
                 status: 200,
-                message: 'Feature Deleted'
+                message: 'Video Deleted'
             });
         } catch (err) {
              Err.respond(err, res);
