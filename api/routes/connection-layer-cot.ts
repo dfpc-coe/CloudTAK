@@ -84,6 +84,10 @@ export default async function router(schema: Schema, config: Config) {
             let cots = [];
             for (const feat of req.body.features) {
                 try {
+                    // Fix ETL icon paths: ensure '/' format for ATAK compatibility
+                    if (feat.properties.icon && feat.properties.icon.includes(':')) {
+                        feat.properties.icon = feat.properties.icon.replace(':', '/');
+                    }
                     cots.push(await CoTParser.from_geojson(feat))
                 } catch (err) {
                     errors.push({
