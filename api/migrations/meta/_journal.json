@@ -813,6 +813,13 @@
       "when": 1754749866877,
       "tag": "0115_hesitant_sway",
       "breakpoints": true
+    },
+    {
+      "idx": 116,
+      "version": "7",
+      "when": 1754752003923,
+      "tag": "0116_exotic_blindfold",
+      "breakpoints": true
     }
   ]
 }
