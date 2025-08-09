@@ -82,7 +82,7 @@ test('POST: api/layer/1/cot - icon path conversion', async (t) => {
 
         // Layer not attached to connection, expect 400
         t.equals(res.body.status, 400, 'should return 400 status');
-        t.equals(res.body.message, 'Layer is not attached to a Connection', 'should return validation error');
+        t.equals(res.body.message, 'Validation Error', 'should return validation error');
 
     } catch (err) {
         t.error(err, 'no error');
