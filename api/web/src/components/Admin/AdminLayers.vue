@@ -173,7 +173,7 @@ import { std, stdurl, stdclick } from '../../std.ts';
 import type { ETLLayerList, ETLLayer } from '../../types.ts';
 import TableHeader from '../util/TableHeader.vue'
 import TableFooter from '../util/TableFooter.vue'
-import Status from '../Layer/utils/StatusDot.vue';
+import Status from '../ETL/Layer/utils/StatusDot.vue';
 import {
     TablerNone,
     TablerInput,

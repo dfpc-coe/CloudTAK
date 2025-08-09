@@ -233,7 +233,7 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Get Feature',
         group: 'ProfileFeature',
         description: `
-            Delete a feature
+            Get a feature
         `,
         params: Type.Object({
             id: Type.String()

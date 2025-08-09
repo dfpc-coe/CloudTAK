@@ -1039,6 +1039,26 @@
         "query": true,
         "res": true
     },
+    "GET /profile/video": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /profile/video": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /profile/video/:id": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /profile/video/:id": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /profile": {
         "body": false,
         "query": false,

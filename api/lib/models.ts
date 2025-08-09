@@ -29,6 +29,7 @@ export default class Models {
     ProfileFeature: Modeler<typeof pgtypes.ProfileFeature>;
     ProfileOverlay: Modeler<typeof pgtypes.ProfileOverlay>;
     ProfileMission: Modeler<typeof pgtypes.ProfileMission>;
+    ProfileVideo: Modeler<typeof pgtypes.ProfileVideo>;
 
     VideoLease: Modeler<typeof pgtypes.VideoLease>;
 
@@ -62,6 +63,7 @@ export default class Models {
         this.ProfileFeature = new Modeler(pg, pgtypes.ProfileFeature);
         this.ProfileOverlay = new Modeler(pg, pgtypes.ProfileOverlay);
         this.ProfileMission = new Modeler(pg, pgtypes.ProfileMission);
+        this.ProfileVideo = new Modeler(pg, pgtypes.ProfileVideo);
         this.Basemap = new Basemap(pg);
         this.Import = new Modeler(pg, pgtypes.Import);
         this.VideoLease = new Modeler(pg, pgtypes.VideoLease);

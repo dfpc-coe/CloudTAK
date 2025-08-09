@@ -179,8 +179,8 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { std, stdurl } from '/src/std.ts';
-import StyleContainer from '../Styling/Style.vue';
+import { std, stdurl } from '../../std.ts';
+import StyleContainer from '../ETL/Styling/Style.vue';
 import UserSelect from '../util/UserSelect.vue';
 import PublicTilesSelect from '../util/PublicTilesSelect.vue';
 import {
