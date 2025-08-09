@@ -118,7 +118,7 @@ export const VideoLease = pgTable('video_lease', {
 });
 
 export const ProfileVideo = pgTable('profile_videos', {
-    id: uuid().notNull().default(sql`gen_random_uuid()`),
+    id: uuid().primaryKey().default(sql`gen_random_uuid()`),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     url: text().notNull(),
