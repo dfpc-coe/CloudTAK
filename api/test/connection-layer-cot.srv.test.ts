@@ -9,7 +9,6 @@ import {
     CloudWatchLogsClient,
     DeleteLogGroupCommand
 } from '@aws-sdk/client-cloudwatch-logs';
-import { CoTParser } from '@tak-ps/node-cot';
 
 const flight = new Flight();
 
