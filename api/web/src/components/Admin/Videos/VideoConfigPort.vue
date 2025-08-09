@@ -20,8 +20,8 @@
         </div>
 
         <div
-            v-text='props.port'
             class='d-flex justify-content-center subheader'
+            v-text='props.port'
         />
     </div>
 </template>
