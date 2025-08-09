@@ -117,6 +117,18 @@ export const VideoLease = pgTable('video_lease', {
     proxy: text().default(sql`null`),
 });
 
+export const ProfileVideo = pgTable('profile_videos', {
+    id: uuid().notNull().default(sql`gen_random_uuid()`),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    url: text().notNull(),
+    username: text().notNull().references(() => Profile.username),
+}, (table) => {
+    return {
+        username_idx: index("profile_features_username_idx").on(table.username),
+    }
+})
+
 export const ProfileFeature = pgTable('profile_features', {
     id: text().primaryKey().notNull(),
     path: text().notNull().default('/'),
