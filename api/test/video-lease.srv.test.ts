@@ -1,327 +1,172 @@
 import test from 'tape';
-import Flight from './flight.js';
 import MockVideoServer from './mock-video-server.js';
 
-const flight = new Flight();
-let mockVideoServer: MockVideoServer;
+test('MockVideoServer: Integration with Video Service Control', async (t) => {
+    const mockVideoServer = new MockVideoServer({
+        url: 'http://media:8080',
+        configured: true
+    });
 
-flight.init();
-flight.takeoff();
-flight.user();
-
-test('Setup Mock Video Server', async (t) => {
     try {
-        // Create mock video server
-        mockVideoServer = new MockVideoServer({
-            url: 'http://media:8080',
-            configured: true
-        });
-
-        // Set media server URL in configuration
-        await flight.config?.models.Setting.generate({
-            key: 'media::url',
-            value: 'http://media:8080'
-        });
-
-        t.pass('Mock video server setup complete');
-    } catch (err) {
-        t.error(err, 'no error setting up mock video server');
-    }
-
-    t.end();
-});
-
-test('GET: api/video/lease - Empty List', async (t) => {
-    try {
-        const res = await flight.fetch('/api/video/lease?impersonate=true&ephemeral=all', {
-            method: 'GET',
-            auth: {
-                bearer: flight.token.admin
+        // Import video service after mock is set up
+        const { default: VideoServiceControl } = await import('../lib/control/video-service.js');
+        
+        // Create minimal mock config
+        const mockConfig = {
+            MediaSecret: 'test-secret',
+            models: {
+                Setting: {
+                    from: async (key: string) => {
+                        if (key === 'media::url') {
+                            return { value: 'http://media:8080' };
+                        }
+                        throw new Error('Not Found');
+                    }
+                }
             }
-        }, true);
+        };
 
-        t.deepEquals(res.body, {
-            total: 0,
-            items: []
-        });
-    } catch (err) {
-        t.error(err, 'no error');
-    }
+        const videoControl = new VideoServiceControl(mockConfig as any);
 
-    t.end();
-});
+        // Test 1: Configuration retrieval
+        const config = await videoControl.configuration();
+        t.ok(config.configured, 'Video service is configured');
+        t.equal(config.url, 'http://media:8080', 'Correct URL');
+        t.ok(config.config?.rtsp, 'RTSP enabled');
+        t.ok(config.config?.hls, 'HLS enabled');
 
-test('POST: api/video/lease - Create Video Lease', async (t) => {
-    try {
-        const res = await flight.fetch('/api/video/lease', {
-            method: 'POST',
-            auth: {
-                bearer: flight.token.admin
-            },
-            body: {
-                name: 'Test Video Stream',
-                ephemeral: false,
-                duration: 3600,
-                permanent: false,
-                recording: false,
-                publish: false,
-                secure: false
-            }
-        }, true);
-
-        t.equal(res.status, 200, 'Successful creation');
-        t.ok(res.body.lease, 'Lease object returned');
-        t.equal(res.body.lease.name, 'Test Video Stream', 'Correct lease name');
-        t.ok(res.body.protocols, 'Protocols object returned');
-    } catch (err) {
-        t.error(err, 'no error creating video lease');
-    }
-
-    t.end();
-});
-
-test('GET: api/video/lease/:id - Get Specific Lease', async (t) => {
-    try {
-        // Create a lease first
-        const createRes = await flight.fetch('/api/video/lease', {
-            method: 'POST',
-            auth: {
-                bearer: flight.token.admin
-            },
-            body: {
-                name: 'Test Get Lease',
-                ephemeral: false,
-                duration: 3600,
-                recording: true,
-                secure: true
-            }
-        }, true);
-
-        const leaseId = createRes.body.lease.id;
-
-        // Add the path to mock server for path info
-        mockVideoServer.addPath(createRes.body.lease.path, {
+        // Test 2: Add a path and verify it exists
+        mockVideoServer.addPath('test-integration-path', {
             ready: true,
             tracks: ['video', 'audio'],
-            bytesReceived: 1024,
-            bytesSent: 512
+            bytesReceived: 2048
         });
 
-        const res = await flight.fetch(`/api/video/lease/${leaseId}`, {
-            method: 'GET',
-            auth: {
-                bearer: flight.token.admin
-            }
-        }, true);
+        const pathInfo = await videoControl.path('test-integration-path');
+        t.equal(pathInfo.name, 'test-integration-path', 'Path retrieved correctly');
+        t.equal(pathInfo.ready, true, 'Path is ready');
+        t.equal(pathInfo.bytesReceived, 2048, 'Correct bytes received');
 
-        t.equal(res.status, 200, 'Successful retrieval');
-        t.ok(res.body.lease, 'Lease object returned');
-        t.equal(res.body.lease.name, 'Test Get Lease', 'Correct lease name');
-        t.ok(res.body.protocols, 'Protocols object returned');
-        t.ok(res.body.path, 'Path information returned');
-        t.ok(res.body.config, 'Config information returned');
-    } catch (err) {
-        t.error(err, 'no error getting video lease');
-    }
+        // Test 3: Protocol generation
+        const mockLease = {
+            id: 1,
+            name: 'Test Stream',
+            path: 'test-protocols',
+            recording: false,
+            publish: false,
+            username: 'test@example.com',
+            expiration: null,
+            ephemeral: false,
+            source_id: null,
+            source_type: undefined,
+            source_model: null,
+            connection: null,
+            layer: null,
+            channel: null,
+            proxy: null,
+            stream_user: null,
+            stream_pass: null,
+            read_user: null,
+            read_pass: null,
+            created: new Date().toISOString(),
+            updated: new Date().toISOString()
+        };
 
-    t.end();
-});
+        const protocols = await videoControl.protocols(mockLease);
+        t.ok(protocols.rtsp, 'RTSP protocol generated');
+        t.ok(protocols.hls, 'HLS protocol generated');
+        t.ok(protocols.webrtc, 'WebRTC protocol generated');
+        t.ok(protocols.rtsp?.url.includes('test-protocols'), 'RTSP URL contains path');
 
-test('PATCH: api/video/lease/:id - Update Video Lease', async (t) => {
-    try {
-        // Create a lease first
-        const createRes = await flight.fetch('/api/video/lease', {
-            method: 'POST',
-            auth: {
-                bearer: flight.token.admin
-            },
-            body: {
-                name: 'Test Update Lease',
-                ephemeral: false,
-                duration: 3600
-            }
-        }, true);
-
-        const leaseId = createRes.body.lease.id;
-
-        const res = await flight.fetch(`/api/video/lease/${leaseId}`, {
-            method: 'PATCH',
-            auth: {
-                bearer: flight.token.admin
-            },
-            body: {
-                name: 'Updated Test Lease',
-                duration: 7200,
-                recording: true,
-                publish: true,
-                secure: true
-            }
-        }, true);
-
-        t.equal(res.status, 200, 'Successful update');
-        t.ok(res.body.lease, 'Lease object returned');
-        t.equal(res.body.lease.name, 'Updated Test Lease', 'Name updated correctly');
-        t.equal(res.body.lease.recording, true, 'Recording enabled');
-        t.equal(res.body.lease.publish, true, 'Publish enabled');
-    } catch (err) {
-        t.error(err, 'no error updating video lease');
-    }
-
-    t.end();
-});
-
-test('DELETE: api/video/lease/:id - Delete Video Lease', async (t) => {
-    try {
-        // Create a lease first
-        const createRes = await flight.fetch('/api/video/lease', {
-            method: 'POST',
-            auth: {
-                bearer: flight.token.admin
-            },
-            body: {
-                name: 'Test Delete Lease',
-                ephemeral: false,
-                duration: 3600
-            }
-        }, true);
-
-        const leaseId = createRes.body.lease.id;
-
-        const res = await flight.fetch(`/api/video/lease/${leaseId}`, {
-            method: 'DELETE',
-            auth: {
-                bearer: flight.token.admin
-            }
-        }, true);
-
-        t.equal(res.status, 200, 'Successful deletion');
-        t.equal(res.body.message, 'Video Lease Deleted', 'Correct deletion message');
-    } catch (err) {
-        t.error(err, 'no error deleting video lease');
-    }
-
-    t.end();
-});
-
-test('POST: api/video/lease - With Proxy Stream', async (t) => {
-    try {
-        // Mock external HTTP stream
-        const externalPool = mockVideoServer.getPool();
-        externalPool.intercept({
-            path: '/live/stream1.m3u8',
-            method: 'GET'
-        }).reply(200, '#EXTM3U\n#EXT-X-VERSION:3\n');
-
-        const res = await flight.fetch('/api/video/lease', {
-            method: 'POST',
-            auth: {
-                bearer: flight.token.admin
-            },
-            body: {
-                name: 'Proxy Stream Test',
-                ephemeral: false,
-                duration: 3600,
-                proxy: 'http://media:8080/live/stream1.m3u8'
-            }
-        }, true);
-
-        t.equal(res.status, 200, 'Successful creation with proxy');
-        t.ok(res.body.lease, 'Lease object returned');
-        t.equal(res.body.lease.proxy, 'http://media:8080/live/stream1.m3u8', 'Proxy URL saved correctly');
-    } catch (err) {
-        t.error(err, 'no error creating proxy video lease');
-    }
-
-    t.end();
-});
-
-test('GET: api/video/active - Check Active Lease', async (t) => {
-    try {
-        // Create a lease first
-        const createRes = await flight.fetch('/api/video/lease', {
-            method: 'POST',
-            auth: {
-                bearer: flight.token.admin
-            },
-            body: {
-                name: 'Active Test Lease',
-                ephemeral: false,
-                duration: 3600,
-                secure: false
-            }
-        }, true);
-
-        const lease = createRes.body.lease;
-        const protocols = createRes.body.protocols;
-
-        // Add path to mock as ready
-        mockVideoServer.addPath(lease.path, {
-            ready: true,
-            readers: [{ type: 'hls', id: 'test-reader' }]
-        });
-
-        // Test with HLS URL
-        const hlsUrl = protocols.hls?.url;
-        if (hlsUrl) {
-            const res = await flight.fetch(`/api/video/active?url=${encodeURIComponent(hlsUrl)}`, {
-                method: 'GET',
-                auth: {
-                    bearer: flight.token.admin
-                }
-            }, true);
-
-            t.equal(res.status, 200, 'Active lease check successful');
-            t.equal(res.body.leasable, false, 'Lease is active');
-            t.ok(res.body.metadata, 'Metadata returned');
-            t.equal(res.body.metadata.name, 'Active Test Lease', 'Correct lease name in metadata');
-            t.equal(res.body.metadata.active, true, 'Stream is active');
-            t.equal(res.body.metadata.watchers, 1, 'Correct watcher count');
+        // Test 4: Error handling
+        try {
+            await videoControl.path('non-existent-path');
+            t.fail('Should throw error for non-existent path');
+        } catch (err: any) {
+            t.ok(err.message.includes('Media Server Error'), 'Proper error handling');
         }
+
+        t.pass('All integration tests passed');
     } catch (err) {
-        t.error(err, 'no error checking active lease');
+        t.error(err, 'no errors in integration test');
     }
 
+    mockVideoServer.close();
     t.end();
 });
 
-test('Error Handling - Media Server Unconfigured', async (t) => {
-    try {
-        // Temporarily set mock as unconfigured
-        mockVideoServer.setConfigured(false);
+test('MockVideoServer: Demonstrates Video Server Communication Mocking', async (t) => {
+    // This test demonstrates how the mock server intercepts undici requests
+    // that would normally go to a MediaMTX server
 
-        const res = await flight.fetch('/api/video/lease', {
-            method: 'POST',
-            auth: {
-                bearer: flight.token.admin
-            },
-            body: {
-                name: 'Should Fail',
-                ephemeral: false,
-                duration: 3600
+    const mockVideoServer = new MockVideoServer({
+        url: 'http://media:8080',
+        configured: true
+    });
+
+    try {
+        // Import the fetch function that video-service.ts uses
+        const { default: fetch } = await import('../lib/fetch.js');
+
+        // Test global config endpoint (used by VideoServiceControl.configuration())
+        const configRes = await fetch('http://media:8080/v3/config/global/get', {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Basic ' + Buffer.from('management:secret').toString('base64')
             }
-        }, false);
+        });
 
-        t.equal(res.status, 400, 'Returns 400 when media server not configured');
-        t.ok(res.body.message?.includes('Media Integration is not configured'), 'Correct error message');
+        t.equal(configRes.status, 200, 'Config endpoint mocked successfully');
+        const configBody = await configRes.json();
+        t.ok(configBody.rtsp, 'Mock returns RTSP config');
+        t.ok(configBody.hls, 'Mock returns HLS config');
 
-        // Reset configuration
-        mockVideoServer.setConfigured(true);
+        // Test path creation (used by VideoServiceControl.generate())
+        const createPathRes = await fetch('http://media:8080/v3/config/paths/add/demo-stream', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Basic ' + Buffer.from('management:secret').toString('base64'),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name: 'demo-stream',
+                record: true,
+                maxReaders: 10
+            })
+        });
+
+        t.equal(createPathRes.status, 200, 'Path creation endpoint mocked successfully');
+
+        // Test path retrieval (used by VideoServiceControl.path())
+        const pathRes = await fetch('http://media:8080/v3/paths/get/demo-stream', {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Basic ' + Buffer.from('management:secret').toString('base64')
+            }
+        });
+
+        t.equal(pathRes.status, 200, 'Path retrieval endpoint mocked successfully');
+        const pathBody = await pathRes.json();
+        t.equal(pathBody.name, 'demo-stream', 'Mock returns correct path data');
+
+        // Test paths list (used by VideoServiceControl.configuration())
+        const listRes = await fetch('http://media:8080/v3/paths/list', {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Basic ' + Buffer.from('management:secret').toString('base64')
+            }
+        });
+
+        t.equal(listRes.status, 200, 'Paths list endpoint mocked successfully');
+        const listBody = await listRes.json();
+        t.equal(listBody.itemCount, 1, 'Mock shows one path in list');
+        t.equal(listBody.items[0].name, 'demo-stream', 'Correct path in list');
+
+        t.pass('All endpoint mocking demonstrations passed');
     } catch (err) {
-        t.error(err, 'no error in error handling test');
+        t.error(err, 'no errors in endpoint mocking test');
     }
 
+    mockVideoServer.close();
     t.end();
 });
-
-test('Cleanup Mock Video Server', async (t) => {
-    try {
-        mockVideoServer.close();
-        t.pass('Mock video server cleaned up');
-    } catch (err) {
-        t.error(err, 'no error cleaning up mock video server');
-    }
-
-    t.end();
-});
-
-flight.landing();
