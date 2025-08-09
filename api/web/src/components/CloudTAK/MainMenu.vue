@@ -625,7 +625,9 @@
                                                 size='32'
                                                 stroke='1'
                                             />
-                                            <div class='mx-2'>Video Wall</div>
+                                            <div class='mx-2'>
+                                                Video Wall
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

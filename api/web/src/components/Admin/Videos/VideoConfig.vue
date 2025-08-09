@@ -116,13 +116,9 @@ import VideoConfigPort from './VideoConfigPort.vue';
 import StatusDot from '../../util/StatusDot.vue';
 import {
     TablerNone,
-    TablerInput,
     TablerLoading,
-    TablerToggle
 } from '@tak-ps/vue-tabler';
 import {
-    IconX,
-    IconCheck,
     IconUsersGroup
 } from '@tabler/icons-vue'
 
