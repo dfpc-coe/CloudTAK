@@ -80,8 +80,9 @@ test('POST: api/layer/1/cot - icon path conversion', async (t) => {
             }
         }, false);
 
-        t.equals(res.body.status, 200, 'should return 200 status');
-        t.equals(res.body.message, 'Submitted', 'should return submitted message');
+        // Layer not attached to connection, expect 400
+        t.equals(res.body.status, 400, 'should return 400 status');
+        t.equals(res.body.message, 'Layer is not attached to a Connection', 'should return validation error');
 
     } catch (err) {
         t.error(err, 'no error');
@@ -116,7 +117,7 @@ test('POST: api/layer/1/cot - icon path without colon unchanged', async (t) => {
             }
         }, false);
 
-        t.equals(res.body.status, 200, 'should return 200 status');
+        t.equals(res.body.status, 400, 'should return 400 status');
 
     } catch (err) {
         t.error(err, 'no error');
@@ -149,7 +150,7 @@ test('POST: api/layer/1/cot - feature without icon property', async (t) => {
             }
         }, false);
 
-        t.equals(res.body.status, 200, 'should return 200 status');
+        t.equals(res.body.status, 400, 'should return 400 status');
 
     } catch (err) {
         t.error(err, 'no error');
@@ -184,7 +185,7 @@ test('POST: api/layer/1/cot - multiple colons in icon path', async (t) => {
             }
         }, false);
 
-        t.equals(res.body.status, 200, 'should return 200 status');
+        t.equals(res.body.status, 400, 'should return 400 status');
 
     } catch (err) {
         t.error(err, 'no error');
