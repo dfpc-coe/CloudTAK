@@ -50,7 +50,7 @@ export default async function router(schema: Schema, config: Config) {
             Push a new Profile Video to the database
         `,
         body: Type.Object({
-            url: Type.String()
+            lease: Type.Integer()
         }),
         res: ProfileVideoResponse,
     }, async (req, res) => {

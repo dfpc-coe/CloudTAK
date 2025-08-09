@@ -121,7 +121,7 @@ export const ProfileVideo = pgTable('profile_videos', {
     id: uuid().primaryKey().default(sql`gen_random_uuid()`),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    lease: text().notNull().references(() => VideoLease.id),
+    lease: integer().notNull().references(() => VideoLease.id),
     username: text().notNull().references(() => Profile.username),
 }, (table) => {
     return {
