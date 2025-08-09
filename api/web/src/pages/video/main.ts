@@ -13,7 +13,7 @@ const router = VueRouter.createRouter({
         {
             path: '/video',
             name: 'home',
-            component: () => import('../../components/ServerAdmin.vue'),
+            component: () => import('../../components/VideoWall.vue'),
             children: []
         }
     ]
