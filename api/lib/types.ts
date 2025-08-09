@@ -169,7 +169,9 @@ export const ProfileInterestResponse = createSelectSchema(schemas.ProfileInteres
     bounds: Feature.Geometry
 });
 
-export const ProfileVideoResponse = createSelectSchema(schemas.ProfileVideo, { });
+export const ProfileVideoResponse = createSelectSchema(schemas.ProfileVideo, {
+    lease: Type.Integer()
+});
 
 export const ProfileFeature = Type.Composite([ Feature.Feature, Type.Object({
     path: Type.String({ default: '/' }),
