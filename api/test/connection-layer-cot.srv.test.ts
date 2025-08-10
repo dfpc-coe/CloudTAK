@@ -62,9 +62,10 @@ test('POST: api/connection/1/layer - create layer for CoT tests', async (t) => {
 
 
 
-// Test icon conversion with colon
-test('POST: api/layer/1/cot - icon conversion with colon', async (t) => {
+// Test that reaches icon conversion code
+test('POST: api/layer/1/cot - icon conversion coverage', async (t) => {
     try {
+        // Configure layer with minimal incoming config
         await flight.fetch('/api/connection/1/layer/1', {
             method: 'PATCH',
             auth: {
@@ -78,7 +79,8 @@ test('POST: api/layer/1/cot - icon conversion with colon', async (t) => {
             }
         }, false);
 
-        await flight.fetch('/api/layer/1/cot', {
+        // Test with icon containing colon - this should execute the conversion code
+        const res1 = await flight.fetch('/api/layer/1/cot', {
             method: 'POST',
             auth: {
                 bearer: flight.token.admin
@@ -90,7 +92,7 @@ test('POST: api/layer/1/cot - icon conversion with colon', async (t) => {
                 type: 'FeatureCollection',
                 features: [{
                     type: 'Feature',
-                    id: 'test-colon-icon',
+                    id: 'icon-with-colon',
                     geometry: {
                         type: 'Point',
                         coordinates: [-122.4194, 37.7749]
@@ -102,17 +104,8 @@ test('POST: api/layer/1/cot - icon conversion with colon', async (t) => {
             }
         }, false);
 
-        t.pass('icon conversion with colon executed');
-    } catch (err) {
-        t.error(err, 'no error');
-    }
-    t.end();
-});
-
-// Test icon conversion without colon
-test('POST: api/layer/1/cot - icon conversion without colon', async (t) => {
-    try {
-        await flight.fetch('/api/layer/1/cot', {
+        // Test with icon without colon
+        const res2 = await flight.fetch('/api/layer/1/cot', {
             method: 'POST',
             auth: {
                 bearer: flight.token.admin
@@ -124,7 +117,7 @@ test('POST: api/layer/1/cot - icon conversion without colon', async (t) => {
                 type: 'FeatureCollection',
                 features: [{
                     type: 'Feature',
-                    id: 'test-no-colon-icon',
+                    id: 'icon-without-colon',
                     geometry: {
                         type: 'Point',
                         coordinates: [-122.4194, 37.7749]
@@ -136,17 +129,8 @@ test('POST: api/layer/1/cot - icon conversion without colon', async (t) => {
             }
         }, false);
 
-        t.pass('icon conversion without colon executed');
-    } catch (err) {
-        t.error(err, 'no error');
-    }
-    t.end();
-});
-
-// Test no icon property
-test('POST: api/layer/1/cot - no icon property', async (t) => {
-    try {
-        await flight.fetch('/api/layer/1/cot', {
+        // Test without icon property
+        const res3 = await flight.fetch('/api/layer/1/cot', {
             method: 'POST',
             auth: {
                 bearer: flight.token.admin
@@ -158,7 +142,7 @@ test('POST: api/layer/1/cot - no icon property', async (t) => {
                 type: 'FeatureCollection',
                 features: [{
                     type: 'Feature',
-                    id: 'test-no-icon',
+                    id: 'no-icon',
                     geometry: {
                         type: 'Point',
                         coordinates: [-122.4194, 37.7749]
@@ -168,7 +152,10 @@ test('POST: api/layer/1/cot - no icon property', async (t) => {
             }
         }, false);
 
-        t.pass('no icon property executed');
+        t.ok(res1.body, 'processed feature with colon icon');
+        t.ok(res2.body, 'processed feature without colon icon');
+        t.ok(res3.body, 'processed feature without icon');
+
     } catch (err) {
         t.error(err, 'no error');
     }
