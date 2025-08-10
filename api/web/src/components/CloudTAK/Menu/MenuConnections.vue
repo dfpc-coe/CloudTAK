@@ -111,8 +111,8 @@ import {
 } from '@tabler/icons-vue';
 
 import MenuTemplate from '../util/MenuTemplate.vue';
-import ConnectionStatus from './../../Connection/StatusDot.vue';
-import AgencyBadge from './../../Connection/AgencyBadge.vue';
+import ConnectionStatus from './../../ETL/Connection/StatusDot.vue';
+import AgencyBadge from './../../ETL/Connection/AgencyBadge.vue';
 import timeDiff from '../../../timediff.ts';
 
 const router = useRouter();

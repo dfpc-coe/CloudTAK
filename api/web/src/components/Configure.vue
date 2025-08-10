@@ -141,7 +141,7 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { std } from '../std.ts';
 import type { Server, Server_Update } from '../types.ts';
-import CertificateP12 from './Connection/CertificateP12.vue';
+import CertificateP12 from './ETL/Connection/CertificateP12.vue';
 import {
     TablerLoading,
     TablerInput

@@ -1,0 +1,1 @@
+ALTER TABLE "profile_videos" ADD PRIMARY KEY ("id");
