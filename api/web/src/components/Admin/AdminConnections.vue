@@ -103,10 +103,10 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router';
-import { std, stdurl, stdclick } from '/src/std.ts';
+import { std, stdurl, stdclick } from '../../std.ts';
 import TableHeader from '../util/TableHeader.vue'
 import TableFooter from '../util/TableFooter.vue'
-import Status from '../Connection/StatusDot.vue';
+import Status from '../ETL/Connection/StatusDot.vue';
 import {
     TablerNone,
     TablerAlert,

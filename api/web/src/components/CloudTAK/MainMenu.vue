@@ -605,12 +605,30 @@
                     <div class='d-flex justify-content-center mb-2'>
                         <TablerDropdown>
                             <template #default>
-                                <IconGridDots />
+                                <TablerIconButton
+                                    title='Application Switcher'
+                                >
+                                    <IconGridDots
+                                        :size='32'
+                                        stroke='1'
+                                    />
+                                </TablerIconButton>
                             </template>
                             <template #dropdown>
                                 <div class='card'>
                                     <div class='card-body'>
-                                        MAP
+                                        <div
+                                            class='px-2 py-2 d-flex align-items-center hover rounded cursor-pointer'
+                                            @click='external("/video")'
+                                        >
+                                            <IconDeviceTv
+                                                size='32'
+                                                stroke='1'
+                                            />
+                                            <div class='mx-2'>
+                                                Video Wall
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </template>
@@ -674,6 +692,7 @@ import {
     IconPackages,
     IconGridDots,
     IconSettings,
+    IconDeviceTv,
     IconAmbulance,
     IconServerCog,
     IconBoxMultiple,
@@ -681,7 +700,8 @@ import {
     IconAffiliate,
 } from '@tabler/icons-vue';
 import {
-    TablerDropdown
+    TablerDropdown,
+    TablerIconButton
 } from '@tak-ps/vue-tabler';
 import { useMapStore } from '../../stores/map.ts';
 import { useBrandStore } from '../../stores/brand.ts';
@@ -762,6 +782,10 @@ onMounted(async () => {
     isSystemAdmin.value = await mapStore.worker.profile.isSystemAdmin();
     isAgencyAdmin.value = await mapStore.worker.profile.isAgencyAdmin();
 })
+
+function external(url: string) {
+    window.location.href = String(new URL(url, window.location.origin));
+}
 
 function returnHome() {
     router.push("/");

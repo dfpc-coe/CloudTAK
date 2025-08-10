@@ -11,7 +11,7 @@ import App from './App.vue'
 // Connection layers under the `connection/` prefix
 const LayerFragment = (prefix: string) => {
     return {
-        component: () => import('./components/Layer.vue'),
+        component: () => import('./components/ETL/Layer.vue'),
         children: [{
             path: '',
             name: `${prefix}-default`,
@@ -21,31 +21,31 @@ const LayerFragment = (prefix: string) => {
         },{
             path: 'deployment',
             name: `${prefix}-deployment`,
-            component: () => import('./components/Layer/LayerDeployment.vue')
+            component: () => import('./components/ETL/Layer/LayerDeployment.vue')
         },{
             path: 'incoming/config',
             name: `${prefix}-incoming-config`,
-            component: () => import('./components/Layer/LayerIncomingConfig.vue')
+            component: () => import('./components/ETL/Layer/LayerIncomingConfig.vue')
         },{
             path: 'incoming/environment',
             name: `${prefix}-incoming-environment`,
-            component: () => import('./components/Layer/LayerEnvironment.vue')
+            component: () => import('./components/ETL/Layer/LayerEnvironment.vue')
         },{
             path: 'incoming/schema',
             name: `${prefix}-incoming-schema`,
-            component: () => import('./components/Layer/LayerIncomingSchema.vue')
+            component: () => import('./components/ETL/Layer/LayerIncomingSchema.vue')
         },{
             path: 'incoming/styles',
             name: `${prefix}-incoming-styles`,
-            component: () => import('./components/Layer/LayerIncomingStyles.vue')
+            component: () => import('./components/ETL/Layer/LayerIncomingStyles.vue')
         },{
             path: 'outgoing/environment',
             name: `${prefix}-outgoing-environment`,
-            component: () => import('./components/Layer/LayerEnvironment.vue')
+            component: () => import('./components/ETL/Layer/LayerEnvironment.vue')
         },{
             path: 'outgoing/config',
             name: `${prefix}-outgoing-config`,
-            component: () => import('./components/Layer/LayerOutgoingConfig.vue')
+            component: () => import('./components/ETL/Layer/LayerOutgoingConfig.vue')
         }]
     }
 }
@@ -215,8 +215,8 @@ const router = VueRouter.createRouter({
             }]
         },
 
-        { path: '/connection/:connectionid/layer/new', name: 'connection-layer-new', component: () => import('./components/LayerEdit.vue') },
-        { path: '/connection/:connectionid/data/:dataid/layer/new', name: 'connection-data-layer-new', component: () => import('./components/LayerEdit.vue') },
+        { path: '/connection/:connectionid/layer/new', name: 'connection-layer-new', component: () => import('./components/ETL/LayerEdit.vue') },
+        { path: '/connection/:connectionid/data/:dataid/layer/new', name: 'connection-data-layer-new', component: () => import('./components/ETL/LayerEdit.vue') },
 
         {
             path: '/connection/:connectionid/layer/:layerid',
@@ -225,14 +225,14 @@ const router = VueRouter.createRouter({
         },
 
 
-        { path: '/connection/:connectionid/layer/:layerid/edit', name: 'layer-edit', component: () => import('./components/LayerEdit.vue') },
-        { path: '/connection/:connectionid/layer/:layerid/alert', name: 'layer-alerts', component: () => import('./components/LayerAlerts.vue') },
+        { path: '/connection/:connectionid/layer/:layerid/edit', name: 'layer-edit', component: () => import('./components/ETL/LayerEdit.vue') },
+        { path: '/connection/:connectionid/layer/:layerid/alert', name: 'layer-alerts', component: () => import('./components/ETL/LayerAlerts.vue') },
 
-        { path: '/connection/:connectionid/data/new', name: 'data-new', component: () => import('./components/DataEdit.vue') },
+        { path: '/connection/:connectionid/data/new', name: 'data-new', component: () => import('./components/ETL/DataEdit.vue') },
         {
             path: '/connection/:connectionid/data/:dataid',
             name: 'data',
-            component: () => import('./components/Data.vue'),
+            component: () => import('./components/ETL/Data.vue'),
             children: [{
                 path: '',
                 name: 'data-default',
@@ -242,31 +242,31 @@ const router = VueRouter.createRouter({
             },{
                 path: 'groups',
                 name: 'data-groups',
-                component: () => import('./components/Data/DataGroups.vue')
+                component: () => import('./components/ETL/Data/DataGroups.vue')
             },{
                 path: 'files',
                 name: 'data-files',
-                component: () => import('./components/Data/DataFiles.vue')
+                component: () => import('./components/ETL/Data/DataFiles.vue')
             },{
                 path: 'layer',
                 name: 'data-layer',
-                component: () => import('./components/Data/DataLayer.vue')
+                component: () => import('./components/ETL/Data/DataLayer.vue')
             },{
                 path: 'jobs',
                 name: 'data-jobs',
-                component: () => import('./components/Data/DataJobs.vue')
+                component: () => import('./components/ETL/Data/DataJobs.vue')
             }]
         },
-        { path: '/connection/:connectionid/data/:dataid/edit', name: 'data-edit', component: () => import('./components/DataEdit.vue') },
-        { path: '/connection/:connectionid/data/:dataid/job/:jobid', name: 'data-job', component: () => import('./components/DataJob.vue') },
+        { path: '/connection/:connectionid/data/:dataid/edit', name: 'data-edit', component: () => import('./components/ETL/DataEdit.vue') },
+        { path: '/connection/:connectionid/data/:dataid/job/:jobid', name: 'data-job', component: () => import('./components/ETL/DataJob.vue') },
 
-        { path: '/connection', name: 'connections', component: () => import('./components/Connections.vue') },
-        { path: '/connection/new', name: 'connection-new', component: () => import('./components/ConnectionEdit.vue') },
+        { path: '/connection', name: 'connections', component: () => import('./components/ETL/Connections.vue') },
+        { path: '/connection/new', name: 'connection-new', component: () => import('./components/ETL/ConnectionEdit.vue') },
 
         {
             path: '/connection/:connectionid',
             name: 'connection',
-            component: () => import('./components/Connection.vue'),
+            component: () => import('./components/ETL/Connection.vue'),
             children: [{
                 path: '',
                 name: 'connection-default',
@@ -276,31 +276,31 @@ const router = VueRouter.createRouter({
             },{
                 path: 'groups',
                 name: 'connection-groups',
-                component: () => import('./components/Connection/ConnectionGroups.vue')
+                component: () => import('./components/ETL/Connection/ConnectionGroups.vue')
             },{
                 path: 'layer',
                 name: 'connection-layers',
-                component: () => import('./components/Connection/ConnectionLayer.vue')
+                component: () => import('./components/ETL/Connection/ConnectionLayer.vue')
             },{
                 path: 'files',
                 name: 'connection-files',
-                component: () => import('./components/Connection/ConnectionFiles.vue')
+                component: () => import('./components/ETL/Connection/ConnectionFiles.vue')
             },{
                 path: 'data',
                 name: 'connection-datas',
-                component: () => import('./components/Connection/ConnectionData.vue')
+                component: () => import('./components/ETL/Connection/ConnectionData.vue')
             },{
                 path: 'video',
                 name: 'connection-videos',
-                component: () => import('./components/Connection/ConnectionVideos.vue')
+                component: () => import('./components/ETL/Connection/ConnectionVideos.vue')
             },{
                 path: 'tokens',
                 name: 'connection-tokens',
-                component: () => import('./components/Connection/ConnectionTokens.vue')
+                component: () => import('./components/ETL/Connection/ConnectionTokens.vue')
             }]
         },
 
-        { path: '/connection/:connectionid/edit', name: 'connection-edit', component: () => import('./components/ConnectionEdit.vue') },
+        { path: '/connection/:connectionid/edit', name: 'connection-edit', component: () => import('./components/ETL/ConnectionEdit.vue') },
 
         { path: '/login', name: 'login', component: () => import('./components/Login.vue') },
 

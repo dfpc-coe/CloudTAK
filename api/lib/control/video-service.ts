@@ -88,9 +88,7 @@ export const VideoConfig = Type.Object({
 export const PathConfig = Type.Object({
     name: Type.String(),
 
-    runOnDemand: Type.String(),
-    runOnDemandStartTimeout: Type.String(),
-    runOnDemandCloseAfter: Type.String(),
+    runOnInit: Type.String(),
 
     maxReaders: Type.Integer(),
 
@@ -176,7 +174,7 @@ export default class VideoServiceControl {
      * @param stream Untrusted User provided stream URL
      * @param path Internally generated path for the stream
      */
-    runOnDemand(stream: string, path: string): Promise<string> {
+    runOnInit(stream: string, path: string): string {
         // Ensure it is a valid URL and not shell injection
         const url = sanitizeURLSync(stream);
 
@@ -236,6 +234,7 @@ export default class VideoServiceControl {
         if (!res.ok) throw new Err(500, null, await res.text())
         const body = await res.typed(VideoConfig);
 
+        // TODO support paging
         const urlPaths = new URL('/v3/paths/list', video.url);
         urlPaths.port = '9997';
 
@@ -528,7 +527,7 @@ export default class VideoServiceControl {
             headers,
             body: JSON.stringify({
                 name: lease.path,
-                runOnDemand: lease.proxy ? this.runOnDemand(lease.proxy, lease.path) : undefined,
+                runOnInit: lease.proxy ? this.runOnInit(lease.proxy, lease.path) : undefined,
                 record: lease.recording,
                 ...this.recording
             })
@@ -621,7 +620,7 @@ export default class VideoServiceControl {
                 headers,
                 body: JSON.stringify({
                     name: lease.path,
-                    runOnDemand: lease.proxy ? this.runOnDemand(lease.proxy, lease.path) : undefined,
+                    runOnInit: lease.proxy ? this.runOnInit(lease.proxy, lease.path) : undefined,
                     record: lease.recording,
                     ...this.recording
                 }),
@@ -641,7 +640,7 @@ export default class VideoServiceControl {
                     headers,
                     body: JSON.stringify({
                         name: lease.path,
-                        runOnDemand: lease.proxy ? this.runOnDemand(lease.proxy, lease.path) : undefined,
+                        runOnInit: lease.proxy ? this.runOnInit(lease.proxy, lease.path) : undefined,
                         record: lease.recording,
                         ...this.recording
                     }),

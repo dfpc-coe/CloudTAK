@@ -80,7 +80,7 @@
 
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue';
-import StyleLayer from '../../../Styling/Layer.vue';
+import StyleLayer from '../../../ETL/Styling/Layer.vue';
 import {
     TablerIconButton,
 } from '@tak-ps/vue-tabler'
