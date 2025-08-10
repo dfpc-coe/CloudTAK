@@ -234,6 +234,7 @@ export default class VideoServiceControl {
         if (!res.ok) throw new Err(500, null, await res.text())
         const body = await res.typed(VideoConfig);
 
+        // TODO support paging
         const urlPaths = new URL('/v3/paths/list', video.url);
         urlPaths.port = '9997';
 
