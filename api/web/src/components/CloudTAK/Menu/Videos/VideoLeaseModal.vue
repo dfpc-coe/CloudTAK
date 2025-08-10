@@ -138,7 +138,7 @@
 
                         <div class='ms-auto'>
                             <div
-                                v-if='lease.proxy'
+                                v-if='editLease.proxy'
                                 class='d-flex align-items-center user-select-none'
                             >
                                 <IconServer
@@ -291,9 +291,9 @@
                     </div>
                     <div class='pt-2'>
                         <CopyField
-                            v-if='lease.proxy'
+                            v-if='editLease.proxy'
                             label='External Stream URL'
-                            :model-value='lease.proxy'
+                            :model-value='editLease.proxy'
                         />
                     </div>
                 </div>
