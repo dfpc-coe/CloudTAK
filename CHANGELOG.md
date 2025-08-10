@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v10.40.0 - 2025-08-10
+
+- :tada: REQUIRES Media-Infra v5.0.0
+- :tada: Allow manually setting `proxy` source when configuring a Video Lease
+- :rocket: Cleaner Admin Video Service UI
+
 ### v10.39.0 - 2025-08-08
 
 - :tada: Implement FFMPEG `runOnDemand` function when using MediaMTX in Proxy Mode
