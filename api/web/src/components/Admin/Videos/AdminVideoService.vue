@@ -35,9 +35,6 @@ import type { VideoService } from '../../../types.ts';
 import { std, stdurl } from '../../../std.ts';
 import VideoConfig from './VideoConfig.vue';
 import {
-    IconRefresh
-} from '@tabler/icons-vue';
-import {
     TablerNone,
     TablerAlert,
     TablerLoading,
