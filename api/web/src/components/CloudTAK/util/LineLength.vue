@@ -7,6 +7,30 @@
                 :size='24'
             />
             <span
+                v-tooltip='"Feet"'
+                class='my-1 px-2 user-select-none'
+                :class='{
+                    "bg-gray-500 rounded-bottom": mode === "feet",
+                    "cursor-pointer": mode !== "feet",
+                }'
+                role='menuitem'
+                tabindex='0'
+                @keyup.enter='mode = "feet"'
+                @click='mode = "feet"'
+            >Feet</span>
+            <span
+                v-tooltip='"Yards"'
+                class='my-1 px-2 user-select-none'
+                :class='{
+                    "bg-gray-500 rounded-bottom": mode === "yard",
+                    "cursor-pointer": mode !== "yard",
+                }'
+                role='menuitem'
+                tabindex='0'
+                @keyup.enter='mode = "yard"'
+                @click='mode = "yard"'
+            >Yards</span>
+            <span
                 v-tooltip='"Meters"'
                 class='my-1 px-2 user-select-none'
                 :class='{
@@ -72,6 +96,10 @@ const inMode = computed(() => {
 
     if (mode.value === 'meter') {
         return cotLength * 1000;
+    } else if (mode.value === 'feet') {
+        return Math.round((cotLength * 3280.84) * 1000) / 1000;
+    } else if (mode.value === 'yard') {
+        return Math.round((cotLength * 1093.61) * 1000) / 1000;
     } else if (mode.value === 'kilometer') {
         return cotLength;
     } else if (mode.value === 'mile') {

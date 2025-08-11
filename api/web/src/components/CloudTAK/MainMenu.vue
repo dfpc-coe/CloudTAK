@@ -603,7 +603,9 @@
                     v-else-if='["home", "home-menu"].includes(String(route.name))'
                 >
                     <div class='d-flex justify-content-center mb-2'>
-                        <TablerDropdown>
+                        <TablerDropdown
+                            position='right'
+                        >
                             <template #default>
                                 <TablerIconButton
                                     title='Application Switcher'
