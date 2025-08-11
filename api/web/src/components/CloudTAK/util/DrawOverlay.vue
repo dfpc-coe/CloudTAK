@@ -1,143 +1,155 @@
 <template>
     <div
-        class='position-absolute bottom-0 text-white bg-dark px-2 py-2 rounded-top'
+        class='position-absolute bottom-0 text-white bg-dark rounded-top'
         style='
             z-index: 1;
-            left: calc(50% - 120px);
-            width: 300px;
+            left: calc(50% - 250px);
+            width: 500px;
         '
     >
         <div
             v-if='mapStore.draw.mode === DrawToolMode.POINT'
-            class='d-flex align-items-center'
+            class='card user-select-none'
         >
-            <CoordinateType
-                v-model='mapStore.draw.point.type'
-            />
+            <div class='card-header'>
+                <CoordinateType
+                    v-model='mapStore.draw.point.type'
+                />
 
-            <div class='ms-auto btn-list'>
-                <TablerIconButton
-                    title='Cancel Editing'
-                    @click='mapStore.draw.stop()'
-                >
-                    <IconX
-                        :size='24'
-                        stroke='1'
-                    />
-                </TablerIconButton>
+                <div class='ms-auto btn-list'>
+                    <TablerIconButton
+                        title='Cancel Editing'
+                        @click='mapStore.draw.stop()'
+                    >
+                        <IconX
+                            :size='24'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
+                </div>
             </div>
         </div>
         <div
             v-else-if='mapStore.draw.mode === DrawToolMode.CIRCLE'
-            class='d-flex align-items-center user-select-none'
+            class='card user-select-none'
         >
-            <IconCircle
-                :size='24'
-                stroke='1'
-            />
-            <span class='mx-2'>Circle Editing</span>
+            <div class='card-header'>
+                <IconCircle
+                    :size='24'
+                    stroke='1'
+                />
+                <span class='mx-2'>Circle Editing</span>
 
-            <div class='ms-auto btn-list'>
-                <TablerIconButton
-                    title='Cancel Editing'
-                    @click='mapStore.draw.stop()'
-                >
-                    <IconX
-                        :size='24'
-                        stroke='1'
-                    />
-                </TablerIconButton>
+                <div class='ms-auto btn-list'>
+                    <TablerIconButton
+                        title='Cancel Editing'
+                        @click='mapStore.draw.stop()'
+                    >
+                        <IconX
+                            :size='24'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
+                </div>
             </div>
         </div>
         <div
             v-else-if='mapStore.draw.mode === DrawToolMode.RECTANGLE'
-            class='d-flex align-items-center user-select-none'
+            class='card user-select-none'
         >
-            <IconVector
-                :size='24'
-                stroke='1'
-            /><span class='mx-2'>Rectangle Editing</span>
+            <div class='card-header'>
+                <IconVector
+                    :size='24'
+                    stroke='1'
+                /><span class='mx-2'>Rectangle Editing</span>
 
-            <div class='ms-auto btn-list'>
-                <TablerIconButton
-                    title='Cancel Editing'
-                    @click='mapStore.draw.stop()'
-                >
-                    <IconX
-                        :size='24'
-                        stroke='1'
-                    />
-                </TablerIconButton>
+                <div class='ms-auto btn-list'>
+                    <TablerIconButton
+                        title='Cancel Editing'
+                        @click='mapStore.draw.stop()'
+                    >
+                        <IconX
+                            :size='24'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
+                </div>
             </div>
         </div>
         <div
             v-else-if='mapStore.draw.mode === DrawToolMode.LINESTRING'
-            class='d-flex align-items-center user-select-none'
+            class='card user-select-none'
         >
-            <IconLine
-                :size='24'
-                stroke='1'
-            /><span class='mx-2'>Line Editing</span>
+            <div class='card-header'>
+                <IconLine
+                    :size='24'
+                    stroke='1'
+                /><span class='mx-2'>Line Editing</span>
 
-            <div class='ms-auto btn-list'>
-                <TablerIconButton
-                    title='Cancel Editing'
-                    @click='mapStore.draw.stop()'
-                >
-                    <IconX
-                        :size='24'
-                        stroke='1'
-                    />
-                </TablerIconButton>
+                <div class='ms-auto btn-list'>
+                    <TablerIconButton
+                        title='Cancel Editing'
+                        @click='mapStore.draw.stop()'
+                    >
+                        <IconX
+                            :size='24'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
+                </div>
             </div>
         </div>
         <div
             v-else-if='mapStore.draw.mode === DrawToolMode.POLYGON'
-            class='d-flex align-items-center user-select-none'
+            class='card user-select-none'
         >
-            <IconPolygon
-                :size='24'
-                stroke='1'
-            /><span class='mx-2'>Polygon Editing</span>
+            <div class='card-header'>
+                <IconPolygon
+                    :size='24'
+                    stroke='1'
+                /><span class='mx-2'>Polygon Editing</span>
 
-            <div class='ms-auto btn-list'>
-                <TablerIconButton
-                    title='Cancel Editing'
-                    @click='mapStore.draw.stop()'
-                >
-                    <IconX
-                        :size='24'
-                        stroke='1'
-                    />
-                </TablerIconButton>
+                <div class='ms-auto btn-list'>
+                    <TablerIconButton
+                        title='Cancel Editing'
+                        @click='mapStore.draw.stop()'
+                    >
+                        <IconX
+                            :size='24'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
+                </div>
             </div>
         </div>
         <div
             v-else-if='mapStore.draw.mode === DrawToolMode.SECTOR'
-            class='d-flex align-items-center user-select-none'
+            class='card user-select-none'
         >
-            <IconCone
-                :size='24'
-                stroke='1'
-            /><span class='mx-2'>Sector Editing</span>
+            <div class='card-header'>
+                <IconCone
+                    :size='24'
+                    stroke='1'
+                /><span class='mx-2'>Sector Editing</span>
 
-            <div class='ms-auto btn-list'>
-                <TablerIconButton
-                    title='Cancel Editing'
-                    @click='mapStore.draw.stop()'
-                >
-                    <IconX
-                        :size='24'
-                        stroke='1'
-                    />
-                </TablerIconButton>
+                <div class='ms-auto btn-list'>
+                    <TablerIconButton
+                        title='Cancel Editing'
+                        @click='mapStore.draw.stop()'
+                    >
+                        <IconX
+                            :size='24'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
+                </div>
             </div>
         </div>
         <div
             v-else-if='mapStore.draw.mode === DrawToolMode.FREEHAND'
-            class='user-select-none'
+            class='card user-select-none'
         >
-            <div class='col-12 d-flex align-items-center'>
+            <div class='card-header'>
                 <IconLasso
                     :size='24'
                     stroke='1'
@@ -170,7 +182,7 @@
                     </TablerIconButton>
                 </div>
             </div>
-            <div v-if='opened' class='col-12 px-2'>
+            <div v-if='opened' class='card-body'>
                 <TablerEnum
                     label='Layer Selection'
                     description='Features will be selected from the chosen layer.'
@@ -185,23 +197,25 @@
         </div>
         <div
             v-else-if='mapStore.draw.mode === DrawToolMode.SELECT'
-            class='d-flex align-items-center user-select-none'
+            class='card user-select-none'
         >
-            <IconPencil
-                :size='24'
-                stroke='1'
-            /><span class='mx-2'>Editing Existing Feature</span>
+            <div class='card-header'>
+                <IconPencil
+                    :size='24'
+                    stroke='1'
+                /><span class='mx-2'>Editing Existing Feature</span>
 
-            <div class='ms-auto btn-list'>
-                <TablerIconButton
-                    title='Cancel Editing'
-                    @click='mapStore.draw.stop()'
-                >
-                    <IconX
-                        :size='24'
-                        stroke='1'
-                    />
-                </TablerIconButton>
+                <div class='ms-auto btn-list'>
+                    <TablerIconButton
+                        title='Cancel Editing'
+                        @click='mapStore.draw.stop()'
+                    >
+                        <IconX
+                            :size='24'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
+                </div>
             </div>
         </div>
     </div>
