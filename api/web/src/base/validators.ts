@@ -19,6 +19,11 @@ export function validateJSON(text: string): string {
     return '';
 }
 
+export function validateTextNotEmpty(text: string): string {
+    if (!text || !text.trim()) return 'This field cannot be empty';
+    return '';
+}
+
 export function validateURL(text: string, opts: {
     protocols?: string[];
 }= {}): string {

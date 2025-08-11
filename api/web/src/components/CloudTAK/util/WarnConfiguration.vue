@@ -20,6 +20,7 @@
             <SettingsCallsign
                 mode='emit'
                 @update='emit("close")'
+                :forceCallsign='true'
             />
         </div>
     </TablerModal>
