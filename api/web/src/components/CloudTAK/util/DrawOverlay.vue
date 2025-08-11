@@ -174,6 +174,7 @@
 
                     <TablerIconButton
                         title='Cancel Editing'
+                        @click='mapStore.draw.stop()'
                     >
                         <IconX
                             :size='24'
