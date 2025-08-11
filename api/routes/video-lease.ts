@@ -5,7 +5,6 @@ import Err from '@openaddresses/batch-error';
 import Auth, { AuthUserAccess, AuthUser, AuthResource, AuthResourceAccess } from '../lib/auth.js';
 import Config from '../lib/config.js';
 import { sql } from 'drizzle-orm';
-import { VideoLease } from '../lib/schema.js';
 import { randomUUID } from 'node:crypto';
 import { StandardResponse, VideoLeaseResponse } from '../lib/types.js';
 import { VideoLease_SourceType, AllBoolean, AllBooleanCast } from '../lib/enums.js';
