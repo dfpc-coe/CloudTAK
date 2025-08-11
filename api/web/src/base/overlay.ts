@@ -148,7 +148,9 @@ export default class Overlay {
         this.username = overlay.username;
         this.created = overlay.created;
         this.updated = overlay.updated;
-        this.actions = overlay.actions || [];
+        this.actions = overlay.actions || {
+            feature: []
+        };
         this.pos = overlay.pos;
         this.type = overlay.type;
         this.opacity = overlay.opacity;
@@ -388,7 +390,7 @@ export default class Overlay {
 
         if (overlay.name) this.name = overlay.name;
         if (overlay.username) this.username = overlay.username;
-        if (overlay.actions) this.actions = overlay.actions || [];
+        if (overlay.actions) this.actions = overlay.actions || { feature: [] };
         if (overlay.type) this.type = overlay.type;
         if (overlay.opacity) this.opacity = overlay.opacity;
         if (overlay.visible) this.visible = overlay.visible;
