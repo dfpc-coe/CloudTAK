@@ -1,4 +1,5 @@
 import Err from '@openaddresses/batch-error';
+import { randomPoint } from '@turf/random';
 import ImportControl, { ImportModeEnum }  from './control/import.js';
 import Sinks from './sinks.js';
 import Config from './config.js';
@@ -167,6 +168,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                             } else if (feat.properties.type.startsWith("t-x")) {
                                 client.ws.send(JSON.stringify({ type: 'task', connection: conn.id, data: feat }));
                             } else {
+                console.error('Submitting Point', feat.geometry.coordinates);
                                 client.ws.send(JSON.stringify({ type: 'cot', connection: conn.id, data: feat }));
                             }
                         } else {
@@ -229,6 +231,16 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                     }
                 } while (retry)
             }
+
+        if (connConfig.id === 'nicholas.ingalls@state.co.us') {
+            const pts = randomPoint(100000);
+
+            for (const pt of pts.features) {
+                this.cots(connConfig, [ CoT.from_geojson(pt) ], ephemeral);
+            }
+        }
+
+
         }).on('end', async () => {
             console.error(`not ok - ${connConfig.id} - ${connConfig.name} @ end`);
             if (!tak.destroyed) {
