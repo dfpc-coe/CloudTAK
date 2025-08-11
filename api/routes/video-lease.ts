@@ -5,7 +5,7 @@ import Err from '@openaddresses/batch-error';
 import Auth, { AuthUserAccess, AuthUser, AuthResource, AuthResourceAccess } from '../lib/auth.js';
 import Config from '../lib/config.js';
 import { sql } from 'drizzle-orm';
-import { Token } from '../lib/schema.js';
+import { VideoLease } from '../lib/schema.js';
 import { randomUUID } from 'node:crypto';
 import { StandardResponse, VideoLeaseResponse } from '../lib/types.js';
 import { VideoLease_SourceType, AllBoolean, AllBooleanCast } from '../lib/enums.js';
@@ -191,7 +191,7 @@ export default async function router(schema: Schema, config: Config) {
             limit: Default.Limit,
             page: Default.Page,
             order: Default.Order,
-            sort: Type.Optional(Type.String({ default: 'created', enum: Object.keys(Token) })),
+            sort: Type.Optional(Type.String({ default: 'created', enum: Object.keys(VideoLease) })),
             expired: Type.Enum(AllBoolean, {
                 default: AllBoolean.FALSE
             }),
