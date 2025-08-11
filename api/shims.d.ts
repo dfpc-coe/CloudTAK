@@ -29,3 +29,34 @@ declare module '@openaddresses/cloudfriend' {
     function join(join: Array<any>)
 }
 
+declare module '@tak-ps/geojson-vt' {
+    function geoJSONToTile(
+        data: FeatureCollection,
+        z: number,
+        x: number,
+        y: number,
+        options?: {
+            maxZoom?: number;
+            tolerance?: number;
+            extent?: number;
+            buffer?: number;
+            lineMetrics?: boolean;
+        },
+        shouldWrap?: boolean,
+        shouldClip?: boolean
+    ): {
+        features: Array<Feature>,
+        numPoints: number,
+        numSimplified: number,
+        numFeatures: number,
+        source: null | Array<Feature>
+        x: number,
+        y: number,
+        z: number,
+        transformed: boolean,
+        minX: number,
+        minY: number,
+        maxX: number,
+        maxY: number,
+    } | null
+}
