@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v10.43.0 - 2025-08-11
+
+- :rocket: Allow selecting a given target layer for the Lasso Tool
+
 ### v10.42.0 - 2025-08-11
 
 - :rocket: Improve performance of JIT Vector Tile generation
