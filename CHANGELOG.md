@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v10.42.0 - 2025-08-11
+
+- :rocket: Improve performance of JIT Vector Tile generation
+
 ### v10.41.0 - 2025-08-10
 
 - :tada: REQUIRES Media-Infra v5.0.0
