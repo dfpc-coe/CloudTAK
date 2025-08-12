@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v10.44.1 - 2025-08-11
+
+- :bug: Truncate Sink MessageGroupID to 128 characters
+
 ### v10.44.0 - 2025-08-11
 
 - :tada: Per user request add "Feet" and "Yard" units to Distance & Line Length Components
