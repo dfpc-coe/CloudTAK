@@ -183,7 +183,10 @@
                     </TablerIconButton>
                 </div>
             </div>
-            <div v-if='opened' class='card-body'>
+            <div
+                v-if='opened'
+                class='card-body'
+            >
                 <TablerEnum
                     label='Layer Selection'
                     description='Features will be selected from the chosen layer.'

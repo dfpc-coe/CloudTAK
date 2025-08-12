@@ -46,8 +46,8 @@
             <div class='ms-auto'>
                 <button
                     class='btn btn-primary'
-                    @click='updateProfile'
                     :disabled='!!validateTextNotEmpty(profile.tak_callsign)'
+                    @click='updateProfile'
                 >
                     Update
                 </button>
