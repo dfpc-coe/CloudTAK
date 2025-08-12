@@ -80,7 +80,7 @@
                         </TablerIconButton>
                         <TablerIconButton
                             title='Share'
-                            @click='mode === "share" ? mode = "default" : mode = "share"'
+                            @click='share = true'
                         >
                             <IconShare2
                                 :size='32'
@@ -769,16 +769,6 @@
                 </div>
             </div>
         </div>
-        <template v-else-if='mode === "share"'>
-            <div class='overflow-auto'>
-                <Share
-                    style='height: 70vh'
-                    :feats='[cot.as_feature()]'
-                    @done='mode = "default"'
-                    @cancel='mode = "default"'
-                />
-            </div>
-        </template>
         <template v-else-if='mode === "channels"'>
             <div
                 style='height: calc(100vh - 225px)'
@@ -803,6 +793,13 @@
             </div>
         </template>
     </template>
+
+    <Share
+        v-if='share'
+        :feats='[cot.as_feature()]'
+        @done='share = false'
+        @cancel='share = false'
+    />
 </template>
 
 <script setup lang='ts'>
@@ -883,6 +880,7 @@ const cot = ref<COT | undefined>(undefined);
 
 const subscription = ref<Subscription | undefined>();
 
+const share = ref(false);
 const units = ref({
     display_speed: 'mi/h',
     display_elevation: 'feet',

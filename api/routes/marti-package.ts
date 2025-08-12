@@ -107,9 +107,16 @@ export default async function router(schema: Schema, config: Config) {
                 default: false,
                 description: 'Should the Data Package be a public package, if so it will be published to the Data Package list'
             }),
-            uids: Type.Array(Type.String(), {
+            destinations: Type.Array(Type.Object({
+                uid: Type.Optional(Type.String({
+                    description: 'A User UID to share the package with'
+                })),
+                group: Type.Optional(Type.String({
+                    description: 'A Channel/Group to share the package with'
+                }))
+            }), {
                 default: [],
-                description: 'A list of client UIDs to automatically share the data package with'
+                description: 'A list of destinations to automatically share the data package with'
             }),
             assets: Type.Array(Type.Object({
                 type: Type.Literal('profile'),
@@ -240,7 +247,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const client = config.conns.get(profile.username);
 
-            if (client && req.body.uids.length) {
+            if (client && req.body.destinations.length) {
                 const cot = new FileShare({
                     filename: id,
                     name: id,
@@ -253,8 +260,8 @@ export default async function router(schema: Schema, config: Config) {
 
                 if (!cot.raw.event.detail) cot.raw.event.detail = {};
                 cot.raw.event.detail.marti = {
-                    dest: req.body.uids.map((uid) => {
-                        return { _attributes: { uid: uid } };
+                    dest: req.body.destinations.map((dest) => {
+                        return { _attributes: dest };
                     })
                 }
 
