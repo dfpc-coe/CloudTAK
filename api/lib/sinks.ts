@@ -45,7 +45,7 @@ export default class Sinks {
                 for (const cot of slice) {
                     entries.push({
                         Id: (Math.random() + 1).toString(36).substring(7),
-                        MessageGroupId: `${String(layer.id)}-${cot.uid()}`,
+                        MessageGroupId: `${String(layer.id)}-${cot.uid()}`.slice(0, 128),
                         MessageBody: JSON.stringify({
                             xml: await CoTParser.to_xml(cot),
                             geojson: await CoTParser.to_geojson(cot)
