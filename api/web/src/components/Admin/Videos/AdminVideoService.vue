@@ -4,19 +4,19 @@
             Video Service
         </div>
         <div class='ms-auto btn-list'>
-            <TablerIconButton
+            <TablerRefreshButton
                 title='Refresh'
+                :loading='loading'
                 @click='fetchService'
-            >
-                <IconRefresh
-                    :size='32'
-                    stroke='1'
-                />
-            </TablerIconButton>
+            />
         </div>
     </div>
     <div class='card-body'>
         <TablerLoading v-if='loading' />
+        <TablerAlert
+            v-else-if='error'
+            :err='error'
+        />
         <TablerNone
             v-else-if='!service'
             label='Video ECS Service'
@@ -35,14 +35,13 @@ import type { VideoService } from '../../../types.ts';
 import { std, stdurl } from '../../../std.ts';
 import VideoConfig from './VideoConfig.vue';
 import {
-    IconRefresh
-} from '@tabler/icons-vue';
-import {
     TablerNone,
-    TablerIconButton,
-    TablerLoading
+    TablerAlert,
+    TablerLoading,
+    TablerRefreshButton,
 } from '@tak-ps/vue-tabler';
 
+const error = ref<Error | undefined>();
 const loading = ref(true);
 
 const service = ref<VideoService | undefined>();
@@ -55,8 +54,14 @@ onMounted(async () => {
 
 async function fetchService() {
     loading.value = true;
-    const url = stdurl('/api/video/service');
-    service.value = await std(url) as VideoService;
-    loading.value = false;
+
+    try {
+        const url = stdurl('/api/video/service');
+        service.value = await std(url) as VideoService;
+        loading.value = false;
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+        loading.value = false;
+    }
 }
 </script>
