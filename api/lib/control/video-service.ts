@@ -192,12 +192,19 @@ export default class VideoServiceControl {
         let video;
 
         try {
-            video = await this.config.models.Setting.from('media::url');
+            const kv = await this.config.models.Setting.from('media::url');
+            if (kv.value && typeof kv.value === 'string' && new URL(kv.value)) {
+                video = kv.value
+            } else {
+                throw new Err(400, null, 'Media Service URL is not configured');
+            }
         } catch (err) {
             if (err instanceof Error && err.message.includes('Not Found')) {
                 return {
                     configured: false
                 }
+            } else if (err instanceof Err) {
+                throw err;
             } else {
                 throw new Err(500, err instanceof Error ? err : new Error(String(err)), 'Media Service Configuration Error');
             }
@@ -205,7 +212,7 @@ export default class VideoServiceControl {
 
         return {
             configured: true,
-            url: typeof video.value === 'string' ? video.value : '',
+            url: video,
             username: 'management',
             password: this.config.MediaSecret
         }
