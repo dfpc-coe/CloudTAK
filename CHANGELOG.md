@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v10.44.0 - 2025-08-11
+
+- :tada: Per user request add "Feet" and "Yard" units to Distance & Line Length Components
+- :rocket: Inline error in Admin Video Service manager if an external media server hasn't yet been integrated
+- :bug: Fix sort types in VideoLease list as they were using the Token keys
+
 ### v10.43.0 - 2025-08-11
 
 - :rocket: Allow selecting a given target layer for the Lasso Tool
