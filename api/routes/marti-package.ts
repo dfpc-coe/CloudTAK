@@ -1,4 +1,5 @@
 import os from 'node:os';
+import dns from 'node:dns/promises';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import busboy from 'busboy';
@@ -107,9 +108,16 @@ export default async function router(schema: Schema, config: Config) {
                 default: false,
                 description: 'Should the Data Package be a public package, if so it will be published to the Data Package list'
             }),
-            uids: Type.Array(Type.String(), {
+            destinations: Type.Array(Type.Object({
+                uid: Type.Optional(Type.String({
+                    description: 'A User UID to share the package with'
+                })),
+                group: Type.Optional(Type.String({
+                    description: 'A Channel/Group to share the package with'
+                }))
+            }), {
                 default: [],
-                description: 'A list of client UIDs to automatically share the data package with'
+                description: 'A list of destinations to automatically share the data package with'
             }),
             assets: Type.Array(Type.Object({
                 type: Type.Literal('profile'),
@@ -240,21 +248,25 @@ export default async function router(schema: Schema, config: Config) {
 
             const client = config.conns.get(profile.username);
 
-            if (client && req.body.uids.length) {
+            if (client && req.body.destinations.length) {
+                const url = new URL(config.server.api);
+
+
                 const cot = new FileShare({
                     filename: id,
                     name: id,
                     senderCallsign: profile.tak_callsign,
                     senderUid: `ANDROID-CloudTAK-${profile.username}`,
-                    senderUrl: `${config.server.api}/Marti/sync/content?hash=${content.Hash}`,
+                    // iTAK currently doesn't support DNS - Ref: https://issues.tak.gov/projects/ITAK/issues/ITAK-57
+                    senderUrl: `https://${(await dns.lookup(url.hostname)).address}:${url.port}/Marti/sync/content?hash=${content.Hash}`,
                     sha256: content.Hash,
                     sizeInBytes: size
                 });
 
                 if (!cot.raw.event.detail) cot.raw.event.detail = {};
                 cot.raw.event.detail.marti = {
-                    dest: req.body.uids.map((uid) => {
-                        return { _attributes: { uid: uid } };
+                    dest: req.body.destinations.map((dest) => {
+                        return { _attributes: dest };
                     })
                 }
 
