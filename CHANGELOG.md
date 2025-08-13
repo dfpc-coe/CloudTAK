@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v10.45.1 - 2025-08-12
+
+- :rocket: Update StatusDot for Admin Users to be in dark mode
+
 ### v10.45.0 - 2025-08-12
 
 - :rocket: Rewrite Share pane as a Modal for more consistent UI
