@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v10.45.0 - 2025-08-12
+
+- :rocket: Rewrite Share pane as a Modal for more consistent UI
+- :tada: Add the ability to share COTs to all users in a given channel
+- :bug: iTAK doesn't support DNS based FileShare - as such lookup the IP address of the FileShare server
+
 ### v10.44.1 - 2025-08-11
 
 - :bug: Truncate Sink MessageGroupID to 128 characters
