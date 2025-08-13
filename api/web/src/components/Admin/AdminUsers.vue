@@ -59,7 +59,10 @@
                                             v-if='h.name === "username"'
                                             class='d-flex align-items-center'
                                         >
-                                            <StatusDot :status='user.active ? "Success" : "Unknown"' />
+                                            <StatusDot
+                                                :dark='true'
+                                                :status='user.active ? "Success" : "Unknown"'
+                                            />
                                             <span
                                                 class='mx-2'
                                                 v-text='user[h.name]'
