@@ -227,13 +227,8 @@ export const JobResponse = Type.Object({
     updated: Type.Optional(Type.Integer())
 });
 
-export const ProfileAssetResponse = Type.Object({
-    name: Type.String({ "description": "The filename of the asset" }),
-    visualized: Type.Optional(Type.String()),
-    vectorized: Type.Optional(Type.String()),
-    updated: Type.Integer(),
-    etag: Type.String({ "description": "AWS S3 generated ETag of the asset" }),
-    size: Type.Integer({ "description": "Size in bytes of the asset" })
+export const ProfileFileResponse = createSelectSchema(schemas.ProfileFile, {
+    id: Type.String()
 })
 
 export const AssetResponse = Type.Object({

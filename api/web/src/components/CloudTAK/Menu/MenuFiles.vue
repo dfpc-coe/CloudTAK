@@ -39,18 +39,18 @@
                 :err='error'
             />
             <TablerNone
-                v-else-if='!list.assets.length'
+                v-else-if='!list.items.length'
                 label='Imports'
                 :create='false'
             />
             <template v-else>
                 <div
-                    v-for='asset in list.assets'
-                    :key='asset.name'
+                    v-for='asset in list.items'
+                    :key='asset.id'
                 >
                     <div
                         class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover'
-                        @click='opened.has(asset.name) ? opened.delete(asset.name) : opened.add(asset.name)'
+                        @click='opened.has(asset.id) ? opened.delete(asset.id) : opened.add(asset.id)'
                     >
                         <div class='col-auto'>
                             <IconMapPlus
@@ -80,7 +80,7 @@
                     </div>
 
                     <div
-                        v-if='opened.has(asset.name)'
+                        v-if='opened.has(asset.id)'
                         class='pt-1 mx-4'
                     >
                         <div class='rounded bg-child'>
@@ -118,7 +118,7 @@
                             </div>
                             <div
                                 class='cursor-pointer col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
-                                @click.stop.prevent='shareToPackage = asset.name'
+                                @click.stop.prevent='shareToPackage = asset.id'
                             >
                                 <IconPackage
                                     :size='32'
