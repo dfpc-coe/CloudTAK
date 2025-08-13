@@ -283,16 +283,16 @@ async function share() {
 
         await mapStore.worker.conn.sendCOT(feat);
     } else {
+        const destinations: Array<{ uid?: string, group?: string }> = [
+            ...Array.from(selectedUsers.value).map((contact): { uid: string } => ({ uid: contact.uid })),
+            ...Array.from(selectedGroups.value).map((group): { group: string } => ({ group: group.name })),
+        ];
+
         await std('/api/marti/package', {
             method: 'PUT',
             body: {
                 type: 'FeatureCollection',
-                destinations: [].concat(
-                    Array.from(selectedUsers.value)
-                        .map((contact) => { return { uid: contact.uid } }),
-                    Array.from(selectedGroups.value)
-                        .map((group) => { return { group: group.name } }),
-                ),
+                destinations,
                 basemaps: props.basemaps || [],
                 features: feats.map((f) => {
                     f = JSON.parse(JSON.stringify(f));

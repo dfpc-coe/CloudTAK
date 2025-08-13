@@ -795,7 +795,7 @@
     </template>
 
     <Share
-        v-if='share'
+        v-if='share && cot'
         :feats='[cot.as_feature()]'
         @done='share = false'
         @cancel='share = false'
