@@ -71,6 +71,20 @@ export const Profile = pgTable('profile', {
     agency_admin: json().notNull().$type<Array<number>>().default([])
 });
 
+export const ProfileFile = pgTable('profile_files', {
+    id: uuid().primaryKey().default(sql`gen_random_uuid()`),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    username: text().notNull().references(() => Profile.username),
+    path: text().notNull().default('/'),
+    name: text().notNull(),
+    size: integer().notNull(),
+    artifacts: json().$type<Array<{
+        ext: string;
+        size: string
+    }>>().notNull().default([]),
+});
+
 export const ProfileChat = pgTable('profile_chats', {
     id: serial().primaryKey(),
     username: text().notNull().references(() => Profile.username),
