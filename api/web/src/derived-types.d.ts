@@ -12107,6 +12107,16 @@ export interface paths {
                             };
                             items: {
                                 id: string;
+                                created: string;
+                                updated: string;
+                                username: string;
+                                path: string;
+                                name: string;
+                                size: number;
+                                artifacts: {
+                                    ext: string;
+                                    size: number;
+                                }[];
                             }[];
                         };
                     };

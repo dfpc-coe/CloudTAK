@@ -228,7 +228,11 @@ export const JobResponse = Type.Object({
 });
 
 export const ProfileFileResponse = createSelectSchema(schemas.ProfileFile, {
-    id: Type.String()
+    id: Type.String(),
+    artifacts: Type.Array(Type.Object({
+        ext: Type.String(),
+        size: Type.Integer(),
+    }))
 })
 
 export const AssetResponse = Type.Object({

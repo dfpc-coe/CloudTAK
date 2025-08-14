@@ -54,7 +54,7 @@
                     >
                         <div class='col-auto'>
                             <IconMapPlus
-                                v-if='asset.visualized'
+                                v-if='asset.artifacts.map(a => a.ext).includes(".pmtiles")'
                                 :size='32'
                                 stroke='1'
                             />
@@ -85,7 +85,7 @@
                     >
                         <div class='rounded bg-child'>
                             <div
-                                v-if='asset.visualized'
+                                v-if='asset.artifacts.map(a => a.ext).includes(".pmtiles")'
                                 class='cursor-pointer rounded-top col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
                                 @click.stop.prevent='createOverlay(asset)'
                             >
@@ -154,7 +154,7 @@
 <script setup lang='ts'>
 import { useRouter } from 'vue-router';
 import { ref, onMounted } from 'vue';
-import type { ProfileAsset, ProfileAssetList } from '../../../types.ts';
+import type { ProfileFile, ProfileFileList } from '../../../types.ts';
 import { std, stdurl } from '../../../std.ts';
 import {
     TablerDelete,
@@ -188,20 +188,20 @@ const shareToPackage = ref<string | undefined>();
 const error = ref<Error | undefined>(undefined);
 const loading = ref(true);
 
-const list = ref<ProfileAssetList>({
+const list = ref<ProfileFileList>({
     total: 0,
     tiles: { url: '' },
-    assets: [],
+    items: [],
 });
 
 onMounted(async () => {
     await fetchList();
 });
 
-async function createOverlay(asset: ProfileAsset) {
-    if (!asset.visualized) throw new Error('Cannot add an Overlay for an asset that is not Cloud Optimized');
+async function createOverlay(asset: ProfileFile) {
+    if (!asset.artifacts.map(a => a.ext).includes(".pmtiles")) throw new Error('Cannot add an Overlay for an asset that is not Cloud Optimized');
 
-    const url = stdurl(`/api/profile/asset/${encodeURIComponent(asset.visualized)}/tile`);
+    const url = stdurl(`/api/profile/asset/${encodeURIComponent(asset.id)}.pmtiles/tile`);
 
     loading.value = true;
 
@@ -245,7 +245,7 @@ function uploadComplete(event: string) {
     router.push(`/menu/imports/${imp.imports[0].uid}`)
 }
 
-async function downloadAsset(asset: ProfileAsset) {
+async function downloadAsset(asset: ProfileFile) {
     const url = stdurl(`/api/profile/asset/${asset.name}`);
     url.searchParams.append('token', localStorage.token);
     window.open(url, "_blank")
@@ -255,14 +255,14 @@ async function fetchList() {
     try {
         loading.value = true;
         error.value = undefined;
-        list.value = await std(`/api/profile/asset`) as ProfileAssetList;
+        list.value = await std(`/api/profile/asset`) as ProfileFileList;
         loading.value = false;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }
 }
 
-async function deleteAsset(asset: ProfileAsset) {
+async function deleteAsset(asset: ProfileFile) {
     loading.value = true;
     await std(`/api/profile/asset/${asset.name}`, {
         method: 'DELETE'
