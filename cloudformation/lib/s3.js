@@ -16,7 +16,7 @@ export default {
             Type: 'AWS::S3::Bucket',
             DependsOn: ['AssetBucketLambdaPermission'],
             Properties: {
-                BucketName: cf.join('-', [cf.stackName, cf.accountId, cf.region]),
+                BucketName: cf.join('-', [cf.stackName, cf.accountId, cf.region])
             }
         }
     }
