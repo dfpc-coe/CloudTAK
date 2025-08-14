@@ -5,10 +5,10 @@ export default {
         EventLambdaRoute: {
             Type: 'AWS::ApiGatewayV2::Route',
             Properties: {
-                Name: cf.join([cf.stackName, '-internal-events']),
-                DisableExecuteApiEndpoint: true,
-                ProtocolType: 'HTTP'
-            }
+                RouteKey: 'POST /internal',
+                ApiId: cf.importValue(cf.join(['tak-cloudtak-webhooks-', cf.ref('Environment'), '-api'])),
+                Target: cf.join(['integrations/', cf.ref('EventLambdaRouteIntegration')])
+            },
         },
         EventLambdaRouteIntegration: {
             Type: 'AWS::ApiGatewayV2::Integration',
