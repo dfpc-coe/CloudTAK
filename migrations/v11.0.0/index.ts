@@ -50,6 +50,8 @@ const map = new Map<string, {
 async function main(bucket: string, prefix = '') {
     const migration = fs.createWriteStream(new URL('./migration.sql', import.meta.url));
 
+    migration.write('BEGIN TRANSACTION;\n');
+
     for await (const key of listS3Objects(bucket, 'profile/')) {
         const [username, file] = key.split('/').slice(1, 3)
 
@@ -118,6 +120,8 @@ async function main(bucket: string, prefix = '') {
     `)
 
     migration.write(`DROP FUNCTION IF EXISTS decode_url_part(varchar);\n`);
+
+    migration.write('COMMIT;\n');
 
     migration.close();
     console.log(`Migration file created at ${migration.path}`);
