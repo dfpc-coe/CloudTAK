@@ -81,7 +81,7 @@ export const ProfileFile = pgTable('profile_files', {
     size: integer().notNull(),
     artifacts: json().$type<Array<{
         ext: string;
-        size: string
+        size: number;
     }>>().notNull().default([]),
 });
 
