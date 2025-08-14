@@ -183,6 +183,7 @@ npx deploy create <stack> --template cloudformation/webhooks.template.js
 ```
 
 This will create the API Gateway resources necessary for accepting incoming ETL Data Events
+as well as internal data processing webhooks.
 
 Deployment of the main stack can then be performed via the following:
 
