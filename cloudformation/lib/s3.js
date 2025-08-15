@@ -16,13 +16,7 @@ export default {
             Type: 'AWS::S3::Bucket',
             DependsOn: ['AssetBucketLambdaPermission'],
             Properties: {
-                BucketName: cf.join('-', [cf.stackName, cf.accountId, cf.region]),
-                NotificationConfiguration: {
-                    LambdaConfigurations: [{
-                        Event: 's3:ObjectCreated:*',
-                        Function: cf.getAtt('EventLambda', 'Arn')
-                    }]
-                }
+                BucketName: cf.join('-', [cf.stackName, cf.accountId, cf.region])
             }
         }
     }

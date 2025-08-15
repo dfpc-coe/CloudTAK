@@ -2,6 +2,24 @@ import cf from '@openaddresses/cloudfriend';
 
 export default {
     Resources: {
+        EventLambdaRoute: {
+            Type: 'AWS::ApiGatewayV2::Route',
+            Properties: {
+                RouteKey: 'POST /internal',
+                ApiId: cf.importValue(cf.join(['tak-cloudtak-webhooks-', cf.ref('Environment'), '-api'])),
+                Target: cf.join(['integrations/', cf.ref('EventLambdaRouteIntegration')])
+            }
+        },
+        EventLambdaRouteIntegration: {
+            Type: 'AWS::ApiGatewayV2::Integration',
+            Properties: {
+                ApiId: cf.importValue(cf.join(['tak-cloudtak-webhooks-', cf.ref('Environment'), '-api'])),
+                IntegrationType: 'AWS_PROXY',
+                IntegrationUri: cf.getAtt('EventLambda', 'Arn'),
+                CredentialsArn: cf.getAtt('EventLambdaRole', 'Arn'),
+                PayloadFormatVersion: '2.0'
+            }
+        },
         EventLambda: {
             Type: 'AWS::Lambda::Function',
             DependsOn: ['SigningSecret'],
