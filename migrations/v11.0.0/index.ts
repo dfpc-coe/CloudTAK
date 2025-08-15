@@ -76,11 +76,18 @@ async function main(bucket: string, prefix = '') {
         console.error(`Renaming ${key} to ${newKey}`);
 
         try {
-            //await s3.send(new CopyObjectCommand({ CopySource: key, Bucket: bucket, Key: newKey }));
-            //await s3.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }));
+            await s3.send(new CopyObjectCommand({
+                CopySource: `${bucket}/${key}`,
+                Bucket: bucket,
+                Key: newKey
+            }));
 
-            // TODO Change to newKey
-            const head = await s3.send(new HeadObjectCommand({ Bucket: bucket, Key: key }));
+            await s3.send(new DeleteObjectCommand({
+                Bucket: bucket,
+                Key: key
+            }));
+
+            const head = await s3.send(new HeadObjectCommand({ Bucket: bucket, Key: newKey }));
 
             if (['.geojsonld', '.pmtiles'].includes(fileExt)) {
                 existing.artifacts.push({
