@@ -201,18 +201,17 @@ export default class Config {
         // Update server with environment variables
         console.error(`ok - Initial server state: auth.cert=${!!server.auth?.cert}, auth.key=${!!server.auth?.key}, webtak=${!!server.webtak}`);
         console.error(`ok - Environment variables: CLOUDTAK_Server_name=${process.env.CLOUDTAK_Server_name}, CLOUDTAK_Server_url=${process.env.CLOUDTAK_Server_url}, CLOUDTAK_Server_api=${process.env.CLOUDTAK_Server_api}, CLOUDTAK_Server_webtak=${process.env.CLOUDTAK_Server_webtak}`);
-        console.error(`ok - Auth env vars: CLOUDTAK_Server_auth_cert=${!!process.env.CLOUDTAK_Server_auth_cert}, CLOUDTAK_Server_auth_key=${!!process.env.CLOUDTAK_Server_auth_key}, CLOUDTAK_Server_auth_p12=${!!process.env.CLOUDTAK_Server_auth_p12}`);
+        console.error(`ok - Auth env vars: CLOUDTAK_Server_auth_cert=${!!process.env.CLOUDTAK_Server_auth_cert}, CLOUDTAK_Server_auth_key=${!!process.env.CLOUDTAK_Server_auth_key}, CLOUDTAK_Server_auth_p12_secret_arn=${!!process.env.CLOUDTAK_Server_auth_p12_secret_arn}`);
         console.error(`ok - Admin env vars: CLOUDTAK_ADMIN_USERNAME=${!!process.env.CLOUDTAK_ADMIN_USERNAME}, CLOUDTAK_ADMIN_PASSWORD=${!!process.env.CLOUDTAK_ADMIN_PASSWORD}`);
 
         // Debug all CLOUDTAK environment variables
         const cloudtakEnvs = Object.keys(process.env).filter(key => key.startsWith('CLOUDTAK_')).sort();
         console.error(`ok - All CLOUDTAK env vars: ${cloudtakEnvs.join(', ')}`);
 
-        if (process.env.CLOUDTAK_Server_auth_p12) {
-            console.error(`ok - P12 content length: ${process.env.CLOUDTAK_Server_auth_p12.length}`);
-            console.error(`ok - P12 starts with: ${process.env.CLOUDTAK_Server_auth_p12.substring(0, 50)}...`);
+        if (process.env.CLOUDTAK_Server_auth_p12_secret_arn) {
+            console.error(`ok - P12 secret ARN: ${process.env.CLOUDTAK_Server_auth_p12_secret_arn}`);
         } else {
-            console.error('ok - CLOUDTAK_Server_auth_p12 is undefined/empty');
+            console.error('ok - CLOUDTAK_Server_auth_p12_secret_arn is undefined/empty');
         }
 
         if (process.env.CLOUDTAK_Server_auth_cert) {
