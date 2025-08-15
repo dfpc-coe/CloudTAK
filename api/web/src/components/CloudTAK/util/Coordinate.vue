@@ -17,7 +17,7 @@
                 :hover='hover && config.mode === "dd"'
                 :validate='validateInput'
                 :size='24'
-                @update:model-value='coordinateEntry($event)'
+                @update:modelValue='coordinateEntry($event)'
             />
             <template v-if='modes.length'>
                 <div role='menu'>
