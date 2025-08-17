@@ -15,24 +15,6 @@ permissions:
   contents: read
 
 jobs:
-  data:
-    if: github.event.pull_request.draft == false
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{github.event.pull_request.head.sha || github.sha}}
-
-      - name: Docker Data Task Build
-        run: docker buildx build ./tasks/data -t cloudtak-data
-
-      - name: Docker Data Task Lint
-        run: docker run cloudtak-data:latest npm run lint
-
-      - name: Docker Data Task Test
-        run: docker run cloudtak-data:latest npm run test
-
   events:
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
