@@ -2,80 +2,158 @@ import cf from '@openaddresses/cloudfriend';
 
 export default {
     Resources: {
-        EventLambdaRoute: {
-            Type: 'AWS::ApiGatewayV2::Route',
+        Logs: {
+            Type: 'AWS::Logs::LogGroup',
             Properties: {
-                RouteKey: 'POST /internal',
-                ApiId: cf.importValue(cf.join(['tak-cloudtak-webhooks-', cf.ref('Environment'), '-api'])),
-                Target: cf.join(['integrations/', cf.ref('EventLambdaRouteIntegration')])
+                LogGroupName: cf.join([cf.stackName, '-events']),
+                RetentionInDays: 7
             }
         },
-        EventLambdaRouteIntegration: {
-            Type: 'AWS::ApiGatewayV2::Integration',
-            Properties: {
-                ApiId: cf.importValue(cf.join(['tak-cloudtak-webhooks-', cf.ref('Environment'), '-api'])),
-                IntegrationType: 'AWS_PROXY',
-                IntegrationUri: cf.getAtt('EventLambda', 'Arn'),
-                CredentialsArn: cf.getAtt('EventLambdaRole', 'Arn'),
-                PayloadFormatVersion: '2.0'
-            }
-        },
-        EventLambda: {
-            Type: 'AWS::Lambda::Function',
-            DependsOn: ['SigningSecret'],
-            Properties: {
-                FunctionName: cf.join([cf.stackName, '-events']),
-                MemorySize: 512,
-                Timeout: 900,
-                Description: 'Respond to events on the S3 Asset Bucket & Stack SQS Queue',
-                ReservedConcurrentExecutions: 20,
-                PackageType: 'Image',
-                Environment: {
-                    Variables: {
-                        TAK_ETL_API: cf.join(['https://', cf.ref('SubdomainPrefix'), '.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
-                        StackName: cf.stackName,
-                        SigningSecret: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/secret:SecretString::AWSCURRENT}}')
-                    }
-                },
-                Role: cf.getAtt('EventLambdaRole', 'Arn'),
-                Code: {
-                    ImageUri: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/coe-ecr-etl:events-', cf.ref('GitSha')])
-                }
-            }
-        },
-        EventLambdaRole: {
+        EventsTaskRole: {
             Type: 'AWS::IAM::Role',
             Properties: {
-                RoleName: cf.join([cf.stackName, '-events']),
                 AssumeRolePolicyDocument: {
                     Version: '2012-10-17',
                     Statement: [{
                         Effect: 'Allow',
                         Principal: {
-                            Service: 'lambda.amazonaws.com'
+                            Service: 'ecs-tasks.amazonaws.com'
                         },
                         Action: 'sts:AssumeRole'
                     }]
                 },
-                Path: '/',
                 Policies: [{
-                    PolicyName: cf.join([cf.stackName, '-hook-queue']),
+                    PolicyName: cf.join('-', [cf.stackName, 'api-policy']),
                     PolicyDocument: {
-                        Version: '2012-10-17',
                         Statement: [{
                             Effect: 'Allow',
-                            Resource: [
-                                cf.join(['arn:', cf.partition, ':s3:::', cf.join('-', [cf.stackName, cf.accountId, cf.region])]),
-                                cf.join(['arn:', cf.partition, ':s3:::', cf.join('-', [cf.stackName, cf.accountId, cf.region]), '/*'])
+                            Action: [
+                                'ssmmessages:CreateControlChannel',
+                                'ssmmessages:CreateDataChannel',
+                                'ssmmessages:OpenControlChannel',
+                                'ssmmessages:OpenDataChannel'
                             ],
-                            Action: '*'
+                            Resource: '*'
+                        },{
+                            Effect: 'Allow',
+                            Action: [
+                                'kms:Decrypt',
+                                'kms:GenerateDataKey'
+                            ],
+                            Resource: [cf.getAtt('KMS', 'Arn')]
+                        },{
+                            Effect: 'Allow',
+                            Action: [
+                                'secretsmanager:Describe*',
+                                'secretsmanager:Get*',
+                                'secretsmanager:List*'
+                            ],
+                            Resource: [
+                                cf.join(['arn:', cf.partition, ':secretsmanager:', cf.region, ':', cf.accountId, ':secret:', cf.stackName, '/*'])
+                            ]
                         }]
                     }
-                }],
-                ManagedPolicyArns: [
-                    cf.join(['arn:', cf.partition, ':iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'])
-                ]
+                }]
             }
-        }
-    }
+        },
+        TaskDefinition: {
+            Type: 'AWS::ECS::TaskDefinition',
+            DependsOn: ['SigningSecret', 'MediaSecret'],
+            Properties: {
+                Family: cf.join([cf.stackName, '-events']),
+                Cpu: 1024 * 1,
+                Memory: 4096 * 2,
+                NetworkMode: 'awsvpc',
+                RequiresCompatibilities: ['FARGATE'],
+                Tags: [{
+                    Key: 'Name',
+                    Value: cf.join('-', [cf.stackName, 'events'])
+                }],
+                ExecutionRoleArn: cf.getAtt('ExecRole', 'Arn'),
+                TaskRoleArn: cf.getAtt('EventsTaskRole', 'Arn'),
+                ContainerDefinitions: [{
+                    Name: 'api',
+                    Image: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/coe-ecr-etl:', cf.ref('GitSha'), '-events']),
+                    PortMappings: [{
+                        ContainerPort: 5000
+                    }],
+                    Environment: [
+                        {
+                            Name: 'POSTGRES',
+                            Value: cf.join([
+                                'postgresql://',
+                                cf.sub('{{resolve:secretsmanager:${AWS::StackName}/rds/secret:SecretString:username:AWSCURRENT}}'),
+                                ':',
+                                cf.sub('{{resolve:secretsmanager:${AWS::StackName}/rds/secret:SecretString:password:AWSCURRENT}}'),
+                                '@',
+                                cf.getAtt('DBInstance', 'Endpoint.Address'),
+                                ':5432/tak_ps_etl?sslmode=require'
+                            ])
+                        },
+                        { Name: 'AWS_REGION', Value: cf.region },
+                        { Name: 'CLOUDTAK_Mode', Value: 'AWS' },
+                        { Name: 'StackName', Value: cf.stackName },
+                        { Name: 'ASSET_BUCKET', Value: cf.ref('AssetBucket') },
+                        { Name: 'API_URL', Value: cf.join([cf.ref('SubdomainPrefix'), '.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]) },
+                        { Name: 'VpcId', Value: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-vpc'])) },
+                    ],
+                    RestartPolicy: {
+                        Enabled: true,
+                        RestartAttemptPeriod: 300
+                    },
+                    LogConfiguration: {
+                        LogDriver: 'awslogs',
+                        Options: {
+                            'awslogs-group': cf.join([cf.stackName, '-events']),
+                            'awslogs-region': cf.region,
+                            'awslogs-stream-prefix': cf.stackName,
+                            'awslogs-create-group': true
+                        }
+                    },
+                    Essential: true
+                }]
+            }
+        },
+        Service: {
+            Type: 'AWS::ECS::Service',
+            Properties: {
+                ServiceName: cf.join('-', [cf.stackName, 'events']),
+                Cluster: cf.join(['tak-vpc-', cf.ref('Environment')]),
+                TaskDefinition: cf.ref('TaskDefinition'),
+                LaunchType: 'FARGATE',
+                PropagateTags: 'SERVICE',
+                EnableExecuteCommand: cf.ref('EnableExecute'),
+                HealthCheckGracePeriodSeconds: 300,
+                DesiredCount: 1,
+                NetworkConfiguration: {
+                    AwsvpcConfiguration: {
+                        AssignPublicIp: 'ENABLED',
+                        SecurityGroups: [cf.ref('ServiceSecurityGroup')],
+                        Subnets:  [
+                            cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-public-a'])),
+                            cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-public-b']))
+                        ]
+                    }
+                },
+                LoadBalancers: [{
+                    ContainerName: 'api',
+                    ContainerPort: 5000,
+                    TargetGroupArn: cf.ref('TargetGroup')
+                }]
+            }
+        },
+        ServiceSecurityGroup: {
+            Type: 'AWS::EC2::SecurityGroup',
+            Properties: {
+                Tags: [{
+                    Key: 'Name',
+                    Value: cf.join('-', [cf.stackName, 'events-sg'])
+                }],
+                GroupName: cf.join('-', [cf.stackName, 'events-sg']),
+                GroupDescription: 'No direct access to this security group',
+                VpcId: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-vpc'])),
+                SecurityGroupIngress: []
+            }
+        },
+    },
 };
