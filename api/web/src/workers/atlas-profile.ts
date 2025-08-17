@@ -304,6 +304,13 @@ export default class AtlasProfile {
             });
         }
 
+        if (body.display_icon_rotation !== undefined) {
+            this.atlas.postMessage({
+                type: WorkerMessageType.Profile_Icon_Rotation,
+                body: { enabled: body.display_icon_rotation === 'Enabled' }
+            });
+        }
+
         if (body.tak_loc || body.tak_type) {
             this.updateLocation();
         }

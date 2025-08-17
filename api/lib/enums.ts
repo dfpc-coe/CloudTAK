@@ -124,3 +124,8 @@ export enum Profile_Elevation {
     METER = 'meter',
     FEET = 'feet'
 }
+
+export enum Profile_IconRotation {
+    ENABLED = 'Enabled',
+    DISABLED = 'Disabled'
+}

@@ -22,7 +22,9 @@ export default async function router(schema: Schema, config: Config) {
             // @ts-expect-error Update Batch-Generic to specify actual geometry type (Point) instead of Geometry
             res.json({
                 active: config.wsClients.has(profile.username),
-                ...profile
+                ...profile,
+                // Convert boolean to string for API contract
+                display_icon_rotation: profile.display_icon_rotation ? 'Enabled' : 'Disabled'
             });
         } catch (err) {
              Err.respond(err, res);
@@ -40,6 +42,7 @@ export default async function router(schema: Schema, config: Config) {
             display_projection: Type.Optional(Type.Enum(Profile_Projection)),
             display_speed: Type.Optional(Type.Enum(Profile_Speed)),
             display_zoom: Type.Optional(Type.Enum(Profile_Zoom)),
+            display_icon_rotation: Type.Optional(Type.String()),
             display_text: Type.Optional(Type.Enum(Profile_Text)),
             tak_callsign: Type.Optional(Type.String()),
             tak_remarks: Type.Optional(Type.String()),
@@ -56,15 +59,21 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
-            const profile = await config.models.Profile.commit(user.email, {
-                ...req.body,
-                updated: sql`Now()`
-            });
+            
+            // Convert string to boolean for database storage
+            const updateData = { ...req.body, updated: sql`Now()` };
+            if (req.body.display_icon_rotation !== undefined) {
+                updateData.display_icon_rotation = req.body.display_icon_rotation === 'Enabled';
+            }
+            
+            const profile = await config.models.Profile.commit(user.email, updateData);
 
             // @ts-expect-error Update Batch-Generic to specify actual geometry type (Point) instead of Geometry
             res.json({
                 active: config.wsClients.has(profile.username),
-                ...profile
+                ...profile,
+                // Convert boolean to string for API contract
+                display_icon_rotation: profile.display_icon_rotation ? 'Enabled' : 'Disabled'
             });
         } catch (err) {
              Err.respond(err, res);

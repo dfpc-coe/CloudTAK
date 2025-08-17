@@ -5,7 +5,7 @@ import ProfileControl, { DefaultUnits } from '../lib/control/profile.js';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import {
-    Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Text, Profile_Projection, Profile_Zoom,
+    Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Text, Profile_Projection, Profile_Zoom, Profile_IconRotation,
 } from '../lib/enums.js'
 import Config from '../lib/config.js';
 
@@ -67,7 +67,7 @@ export default async function router(schema: Schema, config: Config) {
                 minimum: 0,
                 maximum: 360
             })),
-            'map::zoom': Type.Optional(Type.Integer({
+            'map::zoom': Type.Optional(Type.Number({
                 description: 'Default Map Zoom Level',
                 minimum: 0,
                 maximum: 20
@@ -80,6 +80,7 @@ export default async function router(schema: Schema, config: Config) {
             'display::projection': Type.Optional(Type.Enum(Profile_Projection)),
             'display::zoom': Type.Optional(Type.Enum(Profile_Zoom)),
             'display::text': Type.Optional(Type.Enum(Profile_Text)),
+            'display::icon_rotation': Type.Optional(Type.Enum(Profile_IconRotation)),
 
             'group::Yellow': Type.Optional(Type.String()),
             'group::Cyan': Type.Optional(Type.String()),
@@ -267,7 +268,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Return Map Config',
         res: Type.Object({
             center: Type.String({ default: '-100,40' }),
-            zoom: Type.Integer({ default: 4 }),
+            zoom: Type.Number({ default: 4 }),
             pitch: Type.Integer({ default: 0 }),
             bearing: Type.Integer({ default: 0 }),
         })
