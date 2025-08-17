@@ -827,6 +827,13 @@
       "when": 1754762719464,
       "tag": "0117_military_lila_cheney",
       "breakpoints": true
+    },
+    {
+      "idx": 118,
+      "version": "7",
+      "when": 1754762719465,
+      "tag": "0115_add_display_icon_rotation",
+      "breakpoints": true
     }
   ]
 }

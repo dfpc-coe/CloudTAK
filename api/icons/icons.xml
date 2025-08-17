@@ -6481,6 +6481,7 @@
 <id>f-S-N</id>
 <id>f-S-O</id>
 <id>f-S-S</id>
+<id>f-S-X</id>
 </childrenIDs>
 <parentID>f</parentID>
 </icon>
@@ -7062,6 +7063,19 @@
 <childrenIDs>
 </childrenIDs>
 <parentID>f-S-X</parentID>
+</icon>
+<icon>
+<id>f-S-X</id>
+<displayName>Friendly Non-military</displayName>
+<filePath>Data/2525_Icons/sfspx----------.png</filePath>
+<childrenIDs>
+<id>f-S-X-F</id>
+<id>f-S-X-H</id>
+<id>f-S-X-L</id>
+<id>f-S-X-M</id>
+<id>f-S-X-R</id>
+</childrenIDs>
+<parentID>f-S</parentID>
 </icon>
 <icon>
 <id>f-U</id>
@@ -13773,6 +13787,7 @@
 <id>h-S-N</id>
 <id>h-S-O</id>
 <id>h-S-S</id>
+<id>h-S-X</id>
 </childrenIDs>
 <parentID>h</parentID>
 </icon>
@@ -14354,6 +14369,19 @@
 <childrenIDs>
 </childrenIDs>
 <parentID>h-S-X</parentID>
+</icon>
+<icon>
+<id>h-S-X</id>
+<displayName>Hostile Non-military</displayName>
+<filePath>Data/2525_Icons/shspx----------.png</filePath>
+<childrenIDs>
+<id>h-S-X-F</id>
+<id>h-S-X-H</id>
+<id>h-S-X-L</id>
+<id>h-S-X-M</id>
+<id>h-S-X-R</id>
+</childrenIDs>
+<parentID>h-S</parentID>
 </icon>
 <icon>
 <id>h-U</id>
@@ -21065,6 +21093,7 @@
 <id>n-S-N</id>
 <id>n-S-O</id>
 <id>n-S-S</id>
+<id>n-S-X</id>
 </childrenIDs>
 <parentID>n</parentID>
 </icon>
@@ -21646,6 +21675,19 @@
 <childrenIDs>
 </childrenIDs>
 <parentID>n-S-X</parentID>
+</icon>
+<icon>
+<id>n-S-X</id>
+<displayName>Neutral Non-military</displayName>
+<filePath>Data/2525_Icons/snspx----------.png</filePath>
+<childrenIDs>
+<id>n-S-X-F</id>
+<id>n-S-X-H</id>
+<id>n-S-X-L</id>
+<id>n-S-X-M</id>
+<id>n-S-X-R</id>
+</childrenIDs>
+<parentID>n-S</parentID>
 </icon>
 <icon>
 <id>n-U</id>
@@ -28357,6 +28399,7 @@
 <id>u-S-N</id>
 <id>u-S-O</id>
 <id>u-S-S</id>
+<id>u-S-X</id>
 </childrenIDs>
 <parentID>u</parentID>
 </icon>
@@ -28938,6 +28981,19 @@
 <childrenIDs>
 </childrenIDs>
 <parentID>u-S-X</parentID>
+</icon>
+<icon>
+<id>u-S-X</id>
+<displayName>Unknown Non-military</displayName>
+<filePath>Data/2525_Icons/suspx----------.png</filePath>
+<childrenIDs>
+<id>u-S-X-F</id>
+<id>u-S-X-H</id>
+<id>u-S-X-L</id>
+<id>u-S-X-M</id>
+<id>u-S-X-R</id>
+</childrenIDs>
+<parentID>u-S</parentID>
 </icon>
 <icon>
 <id>u-U</id>

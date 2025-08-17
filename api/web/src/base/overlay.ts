@@ -257,6 +257,7 @@ export default class Overlay {
                 group: this.mode !== "mission",
                 icons: true,
                 course: true,
+                rotateIcons: profile.display_icon_rotation === 'Enabled',
                 labels: { size }
             });
         } else if (!this.styles.length) {
@@ -410,7 +411,7 @@ export default class Overlay {
             this.styles = overlay.styles as Array<LayerSpecification>;
         }
 
-        this.init({
+        await this.init({
             clickable: this._clickable,
             before: opts.before
         });
