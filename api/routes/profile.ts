@@ -22,9 +22,7 @@ export default async function router(schema: Schema, config: Config) {
             // @ts-expect-error Update Batch-Generic to specify actual geometry type (Point) instead of Geometry
             res.json({
                 active: config.wsClients.has(profile.username),
-                ...profile,
-                // Convert boolean to string for API contract
-                display_icon_rotation: profile.display_icon_rotation ? 'Enabled' : 'Disabled'
+                ...profile
             });
         } catch (err) {
              Err.respond(err, res);
@@ -60,20 +58,14 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req);
             
-            // Convert string to boolean for database storage
             const updateData: any = { ...req.body, updated: sql`Now()` };
-            if (req.body.display_icon_rotation !== undefined) {
-                updateData.display_icon_rotation = req.body.display_icon_rotation === 'Enabled';
-            }
-            
+                        
             const profile = await config.models.Profile.commit(user.email, updateData);
 
             // @ts-expect-error Update Batch-Generic to specify actual geometry type (Point) instead of Geometry
             res.json({
                 active: config.wsClients.has(profile.username),
-                ...profile,
-                // Convert boolean to string for API contract
-                display_icon_rotation: profile.display_icon_rotation ? 'Enabled' : 'Disabled'
+                ...profile
             });
         } catch (err) {
              Err.respond(err, res);

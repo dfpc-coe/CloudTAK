@@ -66,7 +66,7 @@ export const Profile = pgTable('profile', {
     display_speed: text().$type<Profile_Speed>().notNull().default(Profile_Speed.MPH),
     display_projection: text().$type<Profile_Projection>().notNull().default(Profile_Projection.GLOBE),
     display_zoom: text().$type<Profile_Zoom>().notNull().default(Profile_Zoom.CONDITIONAL),
-    display_icon_rotation: boolean().notNull().default(true),
+    display_icon_rotation: text().notNull().default('Enabled'),
     display_text: text().$type<Profile_Text>().notNull().default(Profile_Text.Medium),
     system_admin: boolean().notNull().default(false),
     agency_admin: json().notNull().$type<Array<number>>().default([])

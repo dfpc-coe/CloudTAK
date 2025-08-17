@@ -76,7 +76,7 @@ export default class ProfileControl {
         if (!input.display_projection) input.display_projection = defaults.projection.value;
         if (!input.display_zoom) input.display_zoom = defaults.zoom.value;
         if (!input.display_text) input.display_text = defaults.text.value;
-        if (input.display_icon_rotation === undefined) input.display_icon_rotation = true;
+        if (input.display_icon_rotation === undefined) input.display_icon_rotation = 'Enabled';
 
         const profile = await this.config.models.Profile.generate(input);
 
