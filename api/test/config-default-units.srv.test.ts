@@ -44,6 +44,10 @@ test('GET api/config/display', async (t) => {
              text: {
                  value: 'Medium',
                  options: [ 'Small', 'Medium', 'Large' ]
+             },
+             icon_rotation: {
+                 value: 'Enabled',
+                 options: [ 'Enabled', 'Disabled' ]
              }
         });
     } catch (err) {
