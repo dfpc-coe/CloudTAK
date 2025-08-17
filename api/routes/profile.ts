@@ -61,7 +61,7 @@ export default async function router(schema: Schema, config: Config) {
             const user = await Auth.as_user(config, req);
             
             // Convert string to boolean for database storage
-            const updateData = { ...req.body, updated: sql`Now()` };
+            const updateData: any = { ...req.body, updated: sql`Now()` };
             if (req.body.display_icon_rotation !== undefined) {
                 updateData.display_icon_rotation = req.body.display_icon_rotation === 'Enabled';
             }
