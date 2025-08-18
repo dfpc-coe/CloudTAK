@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import EventJob from './src/job.js';
 import S3 from "@aws-sdk/client-s3";
+import type { ImportList } from './src/types.js';
 import { includesWithGlob } from "array-includes-with-glob";
 import { pipeline } from 'node:stream/promises';
 import Import from './src/import.js';
@@ -26,13 +27,15 @@ export default class WorkerPool {
         secret: string,
         interval: number
     }) {
-        // Determine number of CPUs
-        this.maxWorkers = 1;
+        this.maxWorkers = os.availableParallelism();
+        console.log(`ok - Worker Pool started with ${this.maxWorkers} workers`);
 
         this.api = opts.api;
         this.secret = opts.secret;
 
         this.workers = new Set();
+
+        // TODO monitor for SIGKILL? (check ECS docs) and return tasks on deployment
 
         this.interval = setInterval(async () => {
             // Don't pick up new work if we are already maxed out
@@ -40,14 +43,18 @@ export default class WorkerPool {
 
             console.log('ok - Polling for new work');
 
-            const jobs = await this.poll();
+            try {
+                const jobs = await this.poll();
 
-            for (const job of jobs) {
-                // start worker thread
-                this.workers.add({
-                    worker: undefined,
-                    job
-                });
+                for (const job of jobs) {
+                    // start worker thread
+                    this.workers.add({
+                        worker: undefined,
+                        job
+                    });
+                }
+            } catch (err) {
+                console.error('error - Failed to poll for new work:', err);
             }
         }, opts.interval);
     }
@@ -60,6 +67,11 @@ export default class WorkerPool {
     async poll(jobs: number): Array<Job<unknown>> {
         if (jobs === 0) return [];
 
+        const url = new URL(`/api/jobs`, this.api);
+
+        url.searchParams.set('limit', String(jobs));
+        url.searchParams.set('status', 'Pending');
+
         const res = await fetch(new URL(`/api/import`, this.api), {
             method: 'GET',
             headers: {
@@ -67,21 +79,16 @@ export default class WorkerPool {
             },
         });
 
-        const json = await res.json();
+        if (!res.ok) throw new Error(await json.text());
 
-        if (!res.ok) {
-            console.error(JSON.stringify(json))
-            const err = json as { message: string };
-            throw new Error(err.message);
-        }
-
-        return json as {
-
-        };
+        const json = await res.json() as ImportList;
+        return json.items;
     }
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
+    if (!process.env.SigningSecret) throw new Error('SigningSecret environment variable is required');
+
     const pool = new WorkerPool({
         api: process.env.TAK_ETL_API || 'http://localhost:5001',
         secret: process.env.SigningSecret,

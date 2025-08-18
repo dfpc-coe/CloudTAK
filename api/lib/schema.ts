@@ -10,6 +10,7 @@ import { TAKGroup, TAKRole } from  '@tak-ps/node-tak/lib/api/types';
 import { Layer_Config } from './models/Layer.js';
 import {
     Layer_Priority,
+    Import_Status,
     Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Text, Profile_Projection, Profile_Zoom,
     Basemap_Type, Basemap_Format, Basemap_Scheme, VideoLease_SourceType, BasicGeometryType
 } from  './enums.js';
@@ -195,7 +196,7 @@ export const Import = pgTable('imports', {
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     name: text().notNull(),
-    status: text().notNull().default('Pending'),
+    status: text().notNull().default(Import_Status.PENDING),
     error: text(),
     batch: text(),
     result: json().notNull().default({}),

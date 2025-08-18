@@ -11,6 +11,7 @@ import crypto from 'node:crypto';
 import { sql } from 'drizzle-orm';
 import Auth, { AuthResourceAccess, AuthUser } from '../lib/auth.js';
 import { ImportResponse, StandardResponse } from '../lib/types.js';
+import { Import_Status } from '../lib/enums.js';
 import { Import } from '../lib/schema.js';
 import * as Default from '../lib/limits.js';
 
@@ -26,6 +27,7 @@ export default async function router(schema: Schema, config: Config) {
             page: Default.Page,
             filter: Default.Filter,
             order: Default.Order,
+            status: Type.Optional(Type.Enum(Import_Status)),
             sort: Type.String({
                 default: 'created',
                 enum: Object.keys(Import)
@@ -51,7 +53,8 @@ export default async function router(schema: Schema, config: Config) {
                 order: req.query.order,
                 sort: req.query.sort,
                 where: sql`
-                    (Param(${username}) IS NULL OR username = ${username})
+                    (${Param(username)}::TEXT IS NULL OR username = ${username}::TEXT)
+                    AND (${Param(req.query.status)}::TEXT IS NULL OR ${Param(req.query.status)}::TEXT = status)
                     AND (${Param(req.query.mode)}::TEXT IS NULL OR ${Param(req.query.mode)}::TEXT = mode)
                     AND (${Param(req.query.mode_id)}::TEXT IS NULL OR ${Param(req.query.mode_id)}::TEXT = mode_id)
                     AND (
@@ -112,7 +115,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const imported = await config.models.Import.from(req.params.import);
 
-            if (imported.status !== 'Empty') throw new Err(400, null, 'An asset is already associated with this import');
+            if (imported.status !== Import_Status.EMPTY) throw new Err(400, null, 'An asset is already associated with this import');
             if (imported.username !== user.email) throw new Err(400, null, 'You did not create this import');
 
             const bb = busboy({
@@ -129,7 +132,7 @@ export default async function router(schema: Schema, config: Config) {
                     };
 
                     await config.models.Import.commit(imported.id, {
-                        status: 'Pending'
+                        status: Import_Status.PENDING,
                     });
 
                     await S3.put(`import/${imported.id}${res.ext}`, file)
@@ -248,7 +251,7 @@ export default async function router(schema: Schema, config: Config) {
             import: Type.String()
         }),
         body: Type.Object({
-            status: Type.Optional(Type.String()),
+            status: Type.Optional(Type.Enum(Import_Status)),
             error: Type.Optional(Type.String()),
             result: Type.Optional(Type.Any())
         }),
