@@ -1,7 +1,6 @@
 import Config from '../config.js';
 import S3 from '../aws/s3.js'
 import { Static } from '@sinclair/typebox';
-import Batch from '../aws/batch.js';
 import type { ImportResponse } from '../types.js';
 import crypto from 'node:crypto';
 import { sql } from 'drizzle-orm';
@@ -51,19 +50,6 @@ export default class ImportControl {
                 status: 'Pending'
             });
         }
-
-        return imp;
-    }
-
-    async batch(username: string, id: string): Promise<Static<typeof ImportResponse>> {
-        let imp = await this.config.models.Import.from(id);
-
-        const batch = await Batch.submitImport(this.config, username, id, imp.name);
-
-        imp = await this.config.models.Import.commit(id, {
-            batch: batch.jobId,
-            updated: sql`Now()`
-        });
 
         return imp;
     }
