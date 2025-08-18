@@ -28,7 +28,10 @@ export default async function router(schema: Schema, config: Config) {
             limit: Default.Limit,
             page: Default.Page,
             order: Default.Order,
-            sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(LayerAlert) })),
+            sort: Type.String({
+                default: 'created',
+                enum: Object.keys(LayerAlert)
+            }),
             filter: Default.Filter
         }),
         res: Type.Object({
