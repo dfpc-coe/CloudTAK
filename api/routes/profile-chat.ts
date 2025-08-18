@@ -37,7 +37,10 @@ export default async function router(schema: Schema, config: Config) {
             limit: Default.Limit,
             page: Default.Page,
             order: Default.Order,
-            sort: Type.Optional(Type.String({ default: 'created', enum: Object.keys(ProfileChat) })),
+            sort: Type.String({
+                default: 'created',
+                enum: Object.keys(ProfileChat)
+            }),
         }),
         res: Type.Object({
             total: Type.Integer(),

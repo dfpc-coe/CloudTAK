@@ -3,7 +3,6 @@ import S3 from '../aws/s3.js'
 import { Static } from '@sinclair/typebox';
 import type { ImportResponse } from '../types.js';
 import crypto from 'node:crypto';
-import { sql } from 'drizzle-orm';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 
 export enum ImportModeEnum {

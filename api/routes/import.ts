@@ -1,6 +1,4 @@
 import ImportControl, { ImportModeEnum } from '../lib/control/import.js';
-import Batch from '../lib/aws/batch.js';
-import Logs from '../lib/aws/batch-logs.js';
 import { Type } from '@sinclair/typebox'
 import path from 'node:path';
 import Schema from '@openaddresses/batch-schema';
@@ -12,12 +10,59 @@ import S3 from '../lib/aws/s3.js'
 import crypto from 'node:crypto';
 import { sql } from 'drizzle-orm';
 import Auth, { AuthResourceAccess, AuthUser } from '../lib/auth.js';
-import { ImportResponse, StandardResponse, JobLogResponse } from '../lib/types.js';
+import { ImportResponse, StandardResponse } from '../lib/types.js';
 import { Import } from '../lib/schema.js';
 import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: Config) {
     const importControl = new ImportControl(config);
+
+    await schema.get('/import', {
+        name: 'List Imports',
+        group: 'Import',
+        description: 'List Imports',
+        query: Type.Object({
+            limit: Default.Limit,
+            page: Default.Page,
+            filter: Default.Filter,
+            order: Default.Order,
+            sort: Type.String({
+                default: 'created',
+                enum: Object.keys(Import)
+            }),
+            mode: Type.Optional(Type.Enum(ImportModeEnum)),
+            mode_id: Type.Optional(Type.String())
+        }),
+        res: Type.Object({
+            total: Type.Integer(),
+            items: Type.Array(ImportResponse)
+        })
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            const list = await config.models.Import.list({
+                limit: req.query.limit,
+                page: req.query.page,
+                order: req.query.order,
+                sort: req.query.sort,
+                where: sql`
+                    (${Param(req.query.mode)}::TEXT IS NULL OR ${Param(req.query.mode)}::TEXT = mode)
+                    AND (${Param(req.query.mode_id)}::TEXT IS NULL OR ${Param(req.query.mode_id)}::TEXT = mode_id)
+                    AND (
+                        ${Param(req.query.filter)}::TEXT IS NULL
+                        OR ${Param(req.query.filter)}::TEXT = ''
+                        OR ${Param(req.query.filter)}::TEXT ~* name
+                    )
+                    AND username = ${user.email}
+                `
+            });
+
+            res.json(list);
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
 
     await schema.post('/import', {
         name: 'Import',
@@ -263,48 +308,5 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.get('/import', {
-        name: 'List Imports',
-        group: 'Import',
-        description: 'List Imports',
-        query: Type.Object({
-            limit: Default.Limit,
-            page: Default.Page,
-            filter: Default.Filter,
-            order: Default.Order,
-            sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(Import) })),
-            mode: Type.Optional(Type.Enum(ImportModeEnum)),
-            mode_id: Type.Optional(Type.String())
-        }),
-        res: Type.Object({
-            total: Type.Integer(),
-            items: Type.Array(ImportResponse)
-        })
-    }, async (req, res) => {
-        try {
-            const user = await Auth.as_user(config, req);
-
-            const list = await config.models.Import.list({
-                limit: req.query.limit,
-                page: req.query.page,
-                order: req.query.order,
-                sort: req.query.sort,
-                where: sql`
-                    (${Param(req.query.mode)}::TEXT IS NULL OR ${Param(req.query.mode)}::TEXT = mode)
-                    AND (${Param(req.query.mode_id)}::TEXT IS NULL OR ${Param(req.query.mode_id)}::TEXT = mode_id)
-                    AND (
-                        ${Param(req.query.filter)}::TEXT IS NULL
-                        OR ${Param(req.query.filter)}::TEXT = ''
-                        OR ${Param(req.query.filter)}::TEXT ~* name
-                    )
-                    AND username = ${user.email}
-                `
-            });
-
-            res.json(list);
-        } catch (err) {
-            Err.respond(err, res);
-        }
-    });
 }
 

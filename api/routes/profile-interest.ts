@@ -21,7 +21,10 @@ export default async function router(schema: Schema, config: Config) {
             limit: Default.Limit,
             page: Default.Page,
             order: Default.Order,
-            sort: Type.Optional(Type.String({ default: 'name', enum: Object.keys(ProfileInterest) })),
+            sort: Type.String({
+                default: 'name',
+                enum: Object.keys(ProfileInterest)
+            }),
         }),
         res: Type.Object({
             total: Type.Integer(),
