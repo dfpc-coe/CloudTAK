@@ -47,11 +47,7 @@ export default class WorkerPool {
                 const jobs = await this.poll();
 
                 for (const job of jobs) {
-                    // start worker thread
-                    this.workers.add({
-                        worker: undefined,
-                        job
-                    });
+                    await
                 }
             } catch (err) {
                 console.error('error - Failed to poll for new work:', err);
@@ -59,12 +55,31 @@ export default class WorkerPool {
         }, opts.interval);
     }
 
+    async lock(import: number): Promise<boolean> {
+        const url = new URL(`/api/jobs`, this.api);
+
+        const res = await fetch(new URL(`/api/import/${import}`, this.api), {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer etl.${jwt.sign({ access: 'import', id: import, internal: true }, this.secret)}`,
+            },
+            body: JSON.stringify({
+                status: 'Processing'
+            })
+        });
+
+        if (!res.ok) throw new Error(await json.text());
+
+        return true;
+    }
+
     /**
      * Poll the CloudTAK API To look for new work
      *
      * @param jobs Number of Job Slots available
      */
-    async poll(jobs: number): Array<Job<unknown>> {
+    async poll(jobs: number): Promise<Array<Job<unknown>>> {
         if (jobs === 0) return [];
 
         const url = new URL(`/api/jobs`, this.api);

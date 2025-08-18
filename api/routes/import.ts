@@ -269,6 +269,12 @@ export default async function router(schema: Schema, config: Config) {
                 if (imported.username !== user.email) throw new Err(400, null, 'You did not create this import');
             }
 
+            if ([Import_Status.EMPTY, Import_Status.PENDING].includes(req.body.status)) {
+                throw new Err(400, null, `Cannot set status to ${req.body.status}`);
+            } else if (req.body.status === Import_Status.Processing && imported.status === Import_Status.PROCESSING) {
+                throw new Err(400, null, `Cannot Process and import that is already processing`);
+            }
+
             imported = await config.models.Import.commit(req.params.import, {
                 ...req.body,
                 updated: sql`Now()`
