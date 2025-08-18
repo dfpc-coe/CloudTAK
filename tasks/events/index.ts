@@ -4,6 +4,7 @@ import path from 'node:path';
 import EventJob from './src/job.js';
 import S3 from "@aws-sdk/client-s3";
 import type { ImportList } from './src/types.js';
+import { Worker } from 'node:worker_threads';
 import { includesWithGlob } from "array-includes-with-glob";
 import { pipeline } from 'node:stream/promises';
 import Import from './src/import.js';
@@ -47,7 +48,7 @@ export default class WorkerPool {
                 const jobs = await this.poll();
 
                 for (const job of jobs) {
-                    await
+                    console.error(job);
                 }
             } catch (err) {
                 console.error('error - Failed to poll for new work:', err);
