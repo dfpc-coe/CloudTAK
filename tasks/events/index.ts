@@ -1,7 +1,7 @@
 import os from 'node:os';
 import fs from 'node:fs';
 import path from 'node:path';
-import EventJob fom './src/job.js';
+import EventJob from './src/job.js';
 import S3 from "@aws-sdk/client-s3";
 import { includesWithGlob } from "array-includes-with-glob";
 import { pipeline } from 'node:stream/promises';
@@ -10,20 +10,35 @@ import jwt from 'jsonwebtoken';
 import API from './src/api.js';
 
 export default class WorkerPool {
+    interval: ReturnType<typeof setInterval>;
+
+    api: string;
+    secret: string;
+
     maxWorkes: number;
     workers: Set<{
         worker: unknown,
         job: Job
     }>;
 
-    constructor(rate: string) {
+    constructor(opts: {
+        api: string
+        secret: string,
+        interval: number
+    }) {
         // Determine number of CPUs
         this.maxWorkers = 1;
 
-        // node-cron
-        () => {
+        this.api = opts.api;
+        this.secret = opts.secret;
+
+        this.workers = new Set();
+
+        this.interval = setInterval(async () => {
             // Don't pick up new work if we are already maxed out
-            if (set.size === this.maxWorkers) return;
+            if (this.workers.size === this.maxWorkers) return;
+
+            console.log('ok - Polling for new work');
 
             const jobs = await this.poll();
 
@@ -34,7 +49,7 @@ export default class WorkerPool {
                     job
                 });
             }
-        }
+        }, opts.interval);
     }
 
     /**
@@ -45,11 +60,36 @@ export default class WorkerPool {
     async poll(jobs: number): Array<Job<unknown>> {
         if (jobs === 0) return [];
 
+        const res = await fetch(new URL(`/api/import`, this.api), {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer etl.${jwt.sign({ access: 'import', internal: true }, this.secret)}`,
+            },
+        });
+
+        const json = await res.json();
+
+        if (!res.ok) {
+            console.error(JSON.stringify(json))
+            const err = json as { message: string };
+            throw new Error(err.message);
+        }
+
+        return json as {
+
+        };
     }
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
+    const pool = new WorkerPool({
+        api: process.env.TAK_ETL_API || 'http://localhost:5001',
+        secret: process.env.SigningSecret,
+        interval: 1000
+    });
 
+
+    /**
     console.log(`ok - New file detected in s3://${md.Bucket}/${md.Key}`);
     if (md.Key.startsWith('import/')) {
         await Import(md);
@@ -104,4 +144,5 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     } else {
         throw new Error('Unknown Import Type');
     }
+    */
 }

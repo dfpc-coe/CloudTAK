@@ -23,7 +23,7 @@ function castUserAccessEnum(str: string): AuthUserAccess | undefined {
 
 export type AuthResourceAccepted = {
     access: AuthResourceAccess;
-    id: string | number | undefined;
+    id?: string | number | undefined;
 }
 
 export enum AuthResourceAccess {
@@ -43,7 +43,7 @@ function castResourceAccessEnum(str: string): AuthResourceAccess | undefined {
 }
 
 export class AuthResource {
-    id: number | string;
+    id: number | string | undefined;
     access: AuthResourceAccess;
     token: string;
     internal: boolean;
@@ -51,7 +51,7 @@ export class AuthResource {
     constructor(
         token: string,
         access: AuthResourceAccess,
-        id: number | string,
+        id: number | string | undefined,
         internal: boolean
     ) {
         this.token = token;
@@ -316,7 +316,7 @@ export async function tokenParser(
         if (typeof decoded === 'string') throw new Err(400, null, 'Decoded JWT Should be Object');
         if (!decoded.access || typeof decoded.access !== 'string') throw new Err(401, null, 'Invalid Token');
         if (!decoded.internal || typeof decoded.internal !== 'boolean') decoded.internal = false;
-        if (!decoded.id) throw new Err(401, null, 'Invalid Token');
+        if (!decoded.internal && !decoded.id) throw new Err(401, null, 'Invalid Token');
 
         const access = castResourceAccessEnum(decoded.access);
         if (!access) throw new Err(400, null, 'Invalid Resource Access Value');
