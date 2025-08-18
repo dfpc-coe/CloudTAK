@@ -274,6 +274,7 @@ export const CreateProfileTokenResponse = createSelectSchema(schemas.ProfileToke
 export const ProfileTokenResponse = Type.Object({
     id: Type.Integer(),
     name: Type.String(),
+    username: Type.String(),
     created: Type.String(),
     updated: Type.String(),
 });

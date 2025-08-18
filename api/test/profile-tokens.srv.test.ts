@@ -9,9 +9,9 @@ flight.takeoff();
 flight.user({ username: 'first' });
 flight.user({ username: 'second' });
 
-test('GET: api/token', async (t) => {
+test('GET: api/profile/token', async (t) => {
     try {
-        const res = await flight.fetch('/api/token', {
+        const res = await flight.fetch('/api/profile/token', {
             method: 'GET',
             auth: {
                 bearer: flight.token.first
@@ -29,9 +29,9 @@ test('GET: api/token', async (t) => {
     t.end();
 });
 
-test('POST: api/token', async (t) => {
+test('POST: api/profile/token', async (t) => {
     try {
-        const res = await flight.fetch('/api/token', {
+        const res = await flight.fetch('/api/profile/token', {
             method: 'POST',
             auth: {
                 bearer: flight.token.first
@@ -53,7 +53,7 @@ test('POST: api/token', async (t) => {
 
         t.deepEquals(res.body, {
             id: 1,
-            email: 'first@example.com',
+            username: 'first@example.com',
             name: 'Test Token'
         });
 
@@ -75,9 +75,9 @@ test('POST: api/token', async (t) => {
     t.end();
 });
 
-test('GET: api/token - Ensure ACL is respected', async (t) => {
+test('GET: api/profile/token - Ensure ACL is respected', async (t) => {
     try {
-        const res = await flight.fetch('/api/token', {
+        const res = await flight.fetch('/api/profile/token', {
             method: 'GET',
             auth: {
                 bearer: flight.token.second
@@ -95,9 +95,9 @@ test('GET: api/token - Ensure ACL is respected', async (t) => {
     t.end();
 });
 
-test('GET: api/token', async (t) => {
+test('GET: api/profile/token', async (t) => {
     try {
-        const res = await flight.fetch('/api/token', {
+        const res = await flight.fetch('/api/profile/token', {
             method: 'GET',
             auth: {
                 bearer: flight.token.first
@@ -114,6 +114,7 @@ test('GET: api/token', async (t) => {
             total: 1,
             items: [{
                 id: 1,
+                username: 'first@example.com',
                 name: 'Test Token'
             }]
         });
@@ -124,9 +125,9 @@ test('GET: api/token', async (t) => {
     t.end();
 });
 
-test('PATCH: api/token/1 - Ensure ACL is respected', async (t) => {
+test('PATCH: api/profile/token/1 - Ensure ACL is respected', async (t) => {
     try {
-        const res = await flight.fetch('/api/token/1', {
+        const res = await flight.fetch('/api/profile/token/1', {
             method: 'PATCH',
             auth: {
                 bearer: flight.token.second
@@ -149,9 +150,9 @@ test('PATCH: api/token/1 - Ensure ACL is respected', async (t) => {
 });
 
 
-test('PATCH: api/token/1', async (t) => {
+test('PATCH: api/profile/token/1', async (t) => {
     try {
-        const res = await flight.fetch('/api/token/1', {
+        const res = await flight.fetch('/api/profile/token/1', {
             method: 'PATCH',
             auth: {
                 bearer: flight.token.first
@@ -172,9 +173,9 @@ test('PATCH: api/token/1', async (t) => {
     t.end();
 });
 
-test('DELETE: api/token/1 - Ensure ACL is respected', async (t) => {
+test('DELETE: api/profile/token/1 - Ensure ACL is respected', async (t) => {
     try {
-        const res = await flight.fetch('/api/token/1', {
+        const res = await flight.fetch('/api/profile/token/1', {
             method: 'DELETE',
             auth: {
                 bearer: flight.token.second
@@ -193,9 +194,9 @@ test('DELETE: api/token/1 - Ensure ACL is respected', async (t) => {
     t.end();
 });
 
-test('DELETE: api/token/1', async (t) => {
+test('DELETE: api/profile/token/1', async (t) => {
     try {
-        const res = await flight.fetch('/api/token/1', {
+        const res = await flight.fetch('/api/profile/token/1', {
             method: 'DELETE',
             auth: {
                 bearer: flight.token.first
