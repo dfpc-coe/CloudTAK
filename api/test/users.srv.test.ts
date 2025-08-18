@@ -18,7 +18,11 @@ test('GET: api/user', async (t) => {
             }
         }, true);
 
-        res.body.items.forEach((i) => {
+        res.body.items.forEach((i: {
+            last_login: string;
+            created: string;
+            updated: string;
+        }) => {
             i.last_login = time;
             i.created = time;
             i.updated = time;

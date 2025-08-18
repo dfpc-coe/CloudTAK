@@ -267,7 +267,7 @@ export const ConnectionTokenResponse = Type.Object({
 });
 
 /** Includes Token itself */
-export const CreateProfileTokenResponse = createSelectSchema(schemas.Token, {
+export const CreateProfileTokenResponse = createSelectSchema(schemas.ProfileToken, {
     id: Type.Integer(),
 });
 

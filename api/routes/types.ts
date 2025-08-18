@@ -69,12 +69,12 @@ export default async function router(schema: Schema, config: Config) {
                         desc: 'Unknown CoT Type'
                     })
                 } else {
-                    info.cot = req.params.type.replace('-.-', `-${split[1]}-`),
+                    info.cot = req.params.type.replace('-.-', `-${split[1]}-`);
 
                     res.json(info);
                 }
             } else {
-                const info = types.cots.get(type);
+                const info = types.cots.get(req.params.type);
 
                 if (!info) {
                     res.json({
