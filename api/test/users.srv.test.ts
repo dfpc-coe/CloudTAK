@@ -1,0 +1,152 @@
+import test from 'tape';
+import Flight from './flight.js';
+
+const flight = new Flight();
+
+flight.init();
+flight.takeoff();
+flight.user();
+
+const time = new Date('2025-03-04T22:54:15.447Z').toISOString()
+
+test('GET: api/user', async (t) => {
+    try {
+        const res = await flight.fetch('/api/user', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin
+            }
+        }, true);
+
+        res.body.items.forEach((i) => {
+            i.last_login = time;
+            i.created = time;
+            i.updated = time;
+        })
+
+        t.deepEquals(res.body, {
+             total: 1,
+             items: [{
+                 active: false,
+                 username: 'admin@example.com',
+                 last_login: time,
+                 created: time,
+                 updated: time,
+                 phone: '',
+                 tak_callsign: 'CloudTAK User',
+                 tak_remarks: 'CloudTAK User',
+                 tak_group: 'Orange',
+                 tak_role: 'Team Member',
+                 tak_type: 'a-f-G-E-V-C',
+                 tak_loc: null,
+                 tak_loc_freq: 2000,
+                 display_stale: '10 Minutes',
+                 display_distance: 'mile',
+                 display_elevation: 'feet',
+                 display_speed: 'mi/h',
+                 display_projection: 'globe',
+                 display_zoom: 'conditional',
+                 display_text: 'Medium',
+                 system_admin: true,
+                 agency_admin: []
+             }]
+        });
+    } catch (err) {
+        t.error(err, 'no error');
+    }
+
+    t.end();
+});
+
+test('PATCH: api/user/admin@example.com', async (t) => {
+    try {
+        const res = await flight.fetch('/api/user/admin@example.com', {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin
+            },
+            body: {
+                 tak_callsign: 'New Callsign',
+            }
+        }, true);
+
+        res.body.last_login = time;
+        res.body.created = time;
+        res.body.updated = time;
+
+        t.deepEquals(res.body, {
+             active: false,
+             username: 'admin@example.com',
+             last_login: time,
+             created: time,
+             updated: time,
+             phone: '',
+             tak_callsign: 'New Callsign',
+             tak_remarks: 'CloudTAK User',
+             tak_group: 'Orange',
+             tak_role: 'Team Member',
+             tak_type: 'a-f-G-E-V-C',
+             tak_loc: null,
+             tak_loc_freq: 2000,
+             display_stale: '10 Minutes',
+             display_distance: 'mile',
+             display_elevation: 'feet',
+             display_speed: 'mi/h',
+             display_projection: 'globe',
+             display_zoom: 'conditional',
+             display_text: 'Medium',
+             system_admin: true,
+             agency_admin: []
+        });
+    } catch (err) {
+        t.error(err, 'no error');
+    }
+
+    t.end();
+});
+
+test('GET: api/user/admin@example.com', async (t) => {
+    try {
+        const res = await flight.fetch('/api/user/admin@example.com', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin
+            },
+        }, true);
+
+        res.body.last_login = time;
+        res.body.created = time;
+        res.body.updated = time;
+
+        t.deepEquals(res.body, {
+             active: false,
+             username: 'admin@example.com',
+             last_login: time,
+             created: time,
+             updated: time,
+             phone: '',
+             tak_callsign: 'New Callsign',
+             tak_remarks: 'CloudTAK User',
+             tak_group: 'Orange',
+             tak_role: 'Team Member',
+             tak_type: 'a-f-G-E-V-C',
+             tak_loc: null,
+             tak_loc_freq: 2000,
+             display_stale: '10 Minutes',
+             display_distance: 'mile',
+             display_elevation: 'feet',
+             display_speed: 'mi/h',
+             display_projection: 'globe',
+             display_zoom: 'conditional',
+             display_text: 'Medium',
+             system_admin: true,
+             agency_admin: []
+        });
+    } catch (err) {
+        t.error(err, 'no error');
+    }
+
+    t.end();
+});
+
+flight.landing();
