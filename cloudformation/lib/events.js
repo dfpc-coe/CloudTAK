@@ -2,7 +2,7 @@ import cf from '@openaddresses/cloudfriend';
 
 export default {
     Resources: {
-        Logs: {
+        EventsLogs: {
             Type: 'AWS::Logs::LogGroup',
             Properties: {
                 LogGroupName: cf.join([cf.stackName, '-events']),
@@ -56,7 +56,7 @@ export default {
                 }]
             }
         },
-        TaskDefinition: {
+        EventsTaskDefinition: {
             Type: 'AWS::ECS::TaskDefinition',
             DependsOn: ['SigningSecret', 'MediaSecret'],
             Properties: {
@@ -73,7 +73,7 @@ export default {
                 TaskRoleArn: cf.getAtt('EventsTaskRole', 'Arn'),
                 ContainerDefinitions: [{
                     Name: 'api',
-                    Image: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/coe-ecr-etl:', cf.ref('GitSha'), '-events']),
+                    Image: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/coe-ecr-etl:events-', cf.ref('GitSha')]),
                     PortMappings: [{
                         ContainerPort: 5000
                     }],
@@ -114,12 +114,12 @@ export default {
                 }]
             }
         },
-        Service: {
+        EventsService: {
             Type: 'AWS::ECS::Service',
             Properties: {
                 ServiceName: cf.join('-', [cf.stackName, 'events']),
                 Cluster: cf.join(['tak-vpc-', cf.ref('Environment')]),
-                TaskDefinition: cf.ref('TaskDefinition'),
+                TaskDefinition: cf.ref('EventsTaskDefinition'),
                 LaunchType: 'FARGATE',
                 PropagateTags: 'SERVICE',
                 EnableExecuteCommand: cf.ref('EnableExecute'),
@@ -128,21 +128,16 @@ export default {
                 NetworkConfiguration: {
                     AwsvpcConfiguration: {
                         AssignPublicIp: 'ENABLED',
-                        SecurityGroups: [cf.ref('ServiceSecurityGroup')],
+                        SecurityGroups: [cf.ref('EventsServiceSecurityGroup')],
                         Subnets:  [
                             cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-public-a'])),
                             cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-public-b']))
                         ]
                     }
                 },
-                LoadBalancers: [{
-                    ContainerName: 'api',
-                    ContainerPort: 5000,
-                    TargetGroupArn: cf.ref('TargetGroup')
-                }]
             }
         },
-        ServiceSecurityGroup: {
+        EventsServiceSecurityGroup: {
             Type: 'AWS::EC2::SecurityGroup',
             Properties: {
                 Tags: [{
