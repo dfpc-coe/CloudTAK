@@ -10,9 +10,9 @@ import { StandardResponse, CreateProfileTokenResponse, ProfileTokenResponse } fr
 import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: Config) {
-    await schema.get('/token', {
+    await schema.get('/profile/token', {
         name: 'List Tokens',
-        group: 'Token',
+        group: 'ProfileToken',
         description: 'List all tokens associated with the requester\'s account',
         query: Type.Object({
             limit: Default.Limit,
@@ -49,9 +49,9 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.post('/token', {
+    await schema.post('/profile/token', {
         name: 'Create Tokens',
-        group: 'Token',
+        group: 'ProfileToken',
         description: 'Create a new API token for programatic access',
         body: Type.Object({
             name: Type.String()
@@ -73,9 +73,9 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.patch('/token/:id', {
+    await schema.patch('/profile/token/:id', {
         name: 'Update Token',
-        group: 'Token',
+        group: 'ProfileToken',
         params: Type.Object({
             id: Type.Integer(),
         }),
@@ -102,9 +102,9 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.delete('/token/:id', {
+    await schema.delete('/profile/token/:id', {
         name: 'Delete Tokens',
-        group: 'Token',
+        group: 'ProfileToken',
         description: 'Delete a user\'s API Token',
         params: Type.Object({
             id: Type.Integer(),

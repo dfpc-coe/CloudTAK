@@ -75,7 +75,7 @@ onMounted(async () => {
 async function fetch() {
     token.value = false;
     loading.value = true;
-    tokens.value = await std('/api/token');
+    tokens.value = await std('/api/profile/token');
     loading.value = false;
 }
 </script>
