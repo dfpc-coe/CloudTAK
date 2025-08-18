@@ -41,6 +41,7 @@ export const useMapStore = defineStore('cloudtak', {
         callsign: string;
         zoom: string;
         location: LocationState;
+        distanceUnit: string;
 
         permissions: {
             location: boolean;
@@ -90,6 +91,7 @@ export const useMapStore = defineStore('cloudtak', {
             location: LocationState.Loading,
             channel: new BroadcastChannel("cloudtak"),
             zoom: 'conditional',
+            distanceUnit: 'meter',
             locked: [],
             notifications: [],
             hasTerrain: false,
@@ -335,6 +337,8 @@ export const useMapStore = defineStore('cloudtak', {
                     this.callsign = msg.body.callsign;
                 } else if (msg.type === WorkerMessageType.Profile_Display_Zoom) {
                     this.zoom = msg.body.zoom;
+                } else if (msg.type === WorkerMessageType.Profile_Distance_Unit) {
+                    this.updateDistanceUnit(msg.body.unit);
                 } else if (msg.type === WorkerMessageType.Map_Projection) {
                     map.setProjection(msg.body);
                 } else if (msg.type === WorkerMessageType.Connection_Open) {
@@ -414,7 +418,7 @@ export const useMapStore = defineStore('cloudtak', {
             const init: mapgl.MapOptions = {
                 container: this.container,
                 hash: true,
-                attributionControl: false,
+                attributionControl: {},
                 fadeDuration: 0,
                 zoom: this.mapConfig.zoom,
                 pitch: this.mapConfig.pitch,
@@ -445,6 +449,16 @@ export const useMapStore = defineStore('cloudtak', {
 
             const map = new mapgl.Map(init);
 
+            // Add scale control
+            const scaleControl = new mapgl.ScaleControl({
+                maxWidth: 100,
+                unit: 'metric'
+            });
+            map.addControl(scaleControl, 'bottom-left');
+            
+            // Store reference for later use
+            (map as mapgl.Map & { _scaleControl?: mapgl.ScaleControl })._scaleControl = scaleControl;
+
             this._map = map;
             this._draw = new DrawTool(this);
             this._icons = new IconManager(map);
@@ -456,6 +470,10 @@ export const useMapStore = defineStore('cloudtak', {
             const profile = await this.worker.profile.load()
             this.callsign = profile.tak_callsign;
             this.zoom = profile.display_zoom;
+            this.distanceUnit = profile.display_distance;
+            
+            // Initialize scale control settings
+            this.updateDistanceUnit(profile.display_distance);
 
             this.isOpen = await this.worker.conn.isOpen;
         },
@@ -647,6 +665,9 @@ export const useMapStore = defineStore('cloudtak', {
             }
 
             this.isLoaded = true;
+            
+            // Update attribution with basemap data
+            await this.updateAttribution();            
         },
         /**
          * Determine if the feature is from the CoT store or a clicked VT feature
@@ -663,6 +684,44 @@ export const useMapStore = defineStore('cloudtak', {
             const click = clickMap.get(feat.layer.id);
             if (!click) return;
             return click.type;
+        },
+
+        updateDistanceUnit: function(unit: string): void {
+            this.distanceUnit = unit;
+            // Remove existing scale control and add new one with correct unit
+            const mapWithControl = this.map as mapgl.Map & { _scaleControl?: mapgl.ScaleControl };
+            const existingControl = mapWithControl._scaleControl;
+            if (existingControl) {
+                this.map.removeControl(existingControl);
+                const scaleControl = new mapgl.ScaleControl({
+                    maxWidth: 100,
+                    unit: unit === 'mile' ? 'imperial' : 'metric'
+                });
+                this.map.addControl(scaleControl, 'bottom-left');
+                mapWithControl._scaleControl = scaleControl;
+            }
+        },
+        updateAttribution: async function(): Promise<void> {
+            const attributions: string[] = [];
+            
+            for (const overlay of this.overlays) {
+                if (overlay.mode === 'basemap' && overlay.mode_id && overlay.visible) {
+                    try {
+                        const basemap = await std(`/api/basemap/${overlay.mode_id}`) as { attribution?: string };
+                        if (basemap.attribution) {
+                            attributions.push(basemap.attribution);
+                        }
+                    } catch (err) {
+                        console.warn('Failed to load basemap attribution:', err);
+                    }
+                }
+            }
+            
+            // Update attribution by manipulating the DOM directly
+            const attributionContainer = document.querySelector('.maplibregl-ctrl-attrib-inner');
+            if (attributionContainer && attributions.length > 0) {
+                attributionContainer.innerHTML = attributions.join(' | ');
+            }
         },
         radialClick: async function(feat: MapGeoJSONFeature | Feature, opts: {
             lngLat: LngLat;
