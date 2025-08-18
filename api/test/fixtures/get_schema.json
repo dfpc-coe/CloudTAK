@@ -514,6 +514,21 @@
         "query": false,
         "res": true
     },
+    "GET /layer": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /data/:dataid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /layer/:layerid": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
     "GET /iconset": {
         "body": false,
         "query": true,
@@ -578,21 +593,6 @@
         "body": false,
         "query": true,
         "res": false
-    },
-    "GET /layer": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /data/:dataid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /layer/:layerid": {
-        "body": false,
-        "query": true,
-        "res": true
     },
     "GET /template": {
         "body": false,
@@ -1009,6 +1009,26 @@
         "query": true,
         "res": true
     },
+    "GET /profile/token": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /profile/token": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /profile/token/:id": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /profile/token/:id": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /profile/video": {
         "body": false,
         "query": true,
@@ -1135,26 +1155,6 @@
         "res": true
     },
     "GET /task/:task/readme": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /profile/token": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "POST /profile/token": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "PATCH /profile/token/:id": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "DELETE /profile/token/:id": {
         "body": false,
         "query": false,
         "res": true
