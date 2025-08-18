@@ -209,7 +209,6 @@ export const DataListResponse = createSelectSchema(schemas.Data, {
     connection: Type.Integer(),
     assets: Type.Array(Type.String()),
     mission_groups: Type.Array(Type.String()),
-    auto_transform: Type.Boolean(),
     mission_sync: Type.Boolean({description: "Is the mission syncing with TAK Server"}),
     mission_diff: Type.Boolean({description: "Allow a single layer to diff sync with TAK"}),
 });
