@@ -39,7 +39,11 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req);
+            const auth = await Auth.is_auth(config, req, {
+                resources: [{ access: AuthResourceAccess.IMPORT }]
+            });
+
+            const username = auth instanceof AuthUser ? auth.email : null;
 
             const list = await config.models.Import.list({
                 limit: req.query.limit,
@@ -47,14 +51,14 @@ export default async function router(schema: Schema, config: Config) {
                 order: req.query.order,
                 sort: req.query.sort,
                 where: sql`
-                    (${Param(req.query.mode)}::TEXT IS NULL OR ${Param(req.query.mode)}::TEXT = mode)
+                    (Param(${username}) IS NULL OR username = ${username})
+                    AND (${Param(req.query.mode)}::TEXT IS NULL OR ${Param(req.query.mode)}::TEXT = mode)
                     AND (${Param(req.query.mode_id)}::TEXT IS NULL OR ${Param(req.query.mode_id)}::TEXT = mode_id)
                     AND (
                         ${Param(req.query.filter)}::TEXT IS NULL
                         OR ${Param(req.query.filter)}::TEXT = ''
                         OR ${Param(req.query.filter)}::TEXT ~* name
                     )
-                    AND username = ${user.email}
                 `
             });
 

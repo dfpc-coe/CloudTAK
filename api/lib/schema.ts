@@ -198,7 +198,6 @@ export const Import = pgTable('imports', {
     status: text().notNull().default('Pending'),
     error: text(),
     batch: text(),
-    logs: text().notNull().default(''),
     result: json().notNull().default({}),
     username: text().notNull().references(() => Profile.username),
     mode: text().notNull().default('Unknown'),
