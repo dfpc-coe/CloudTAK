@@ -5,7 +5,6 @@ import busboy from 'busboy';
 import Auth, { AuthResourceAccess }  from '../lib/auth.js';
 import S3 from '../lib/aws/s3.js';
 import Stream from 'node:stream';
-import Batch from '../lib/aws/batch.js';
 import jwt from 'jsonwebtoken';
 import { includesWithGlob } from "array-includes-with-glob";
 import assetList from '../lib/asset.js';
@@ -182,42 +181,6 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             req.pipe(bb);
-        } catch (err) {
-            Err.respond(err, res);
-        }
-    });
-
-    await schema.post('/connection/:connectionid/data/:dataid/asset/:asset.:ext', {
-        name: 'Convert Asset',
-        group: 'DataAssets',
-        description: 'Convert Asset into a cloud native or TAK Native format automatically',
-        params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 }),
-            dataid: Type.Integer({ minimum: 1 }),
-            asset: Type.String(),
-            ext: Type.String()
-        }),
-        res: StandardResponse
-    }, async (req, res) => {
-        try {
-            const { connection } = await Auth.is_connection(config, req, {
-                resources: [
-                    { access: AuthResourceAccess.DATA, id: req.params.dataid },
-                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }
-                ]
-            }, req.params.connectionid);
-
-            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
-
-            const data = await config.models.Data.from(req.params.dataid);
-            if (data.connection !== connection.id) throw new Err(400, null, 'Data Sync does not belong to given Connection');
-
-            await Batch.submitData(config, data, `${req.params.asset}.${req.params.ext}`);
-
-            res.json({
-                status: 200,
-                message: 'Conversion Initiated'
-            });
         } catch (err) {
             Err.respond(err, res);
         }
