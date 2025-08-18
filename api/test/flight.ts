@@ -92,6 +92,8 @@ export default class Flight {
 
             this._tak = new MockTAKServer();
 
+            process.env.ASSET_BUCKET = 'fake-asset-bucket';
+
             t.end();
         });
     }
