@@ -368,15 +368,6 @@ export const Server = pgTable('server', {
     webtak: text().notNull().default(''),
 });
 
-export const Token = pgTable('tokens', {
-    id: serial().notNull(),
-    email: text().notNull(),
-    name: text().notNull(),
-    token: text().primaryKey(),
-    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-});
-
 export const ConnectionToken = pgTable('connection_tokens', {
     id: serial().notNull(),
     connection: integer().notNull().references(() => Connection.id),
@@ -398,6 +389,16 @@ export const ProfileFusionSource = pgTable('profile_fusion', {
     fusion: integer().notNull().references(() => FusionType.id),
     value: json().$type<Record<string, string>>().notNull().default({}),
 });
+
+export const ProfileToken = pgTable('profile_tokens', {
+    id: serial().notNull(),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    username: text().notNull().references(() => Profile.username),
+    name: text().notNull(),
+    token: text().primaryKey(),
+});
+
 
 export const ProfileInterest = pgTable('profile_interests', {
     id: serial().primaryKey(),

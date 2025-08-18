@@ -154,11 +154,6 @@
         "query": false,
         "res": true
     },
-    "POST /connection/:connectionid/data/:dataid/asset/:asset.:ext": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "DELETE /connection/:connectionid/data/:dataid/asset/:asset.:ext": {
         "body": false,
         "query": false,
@@ -173,21 +168,6 @@
         "body": false,
         "query": false,
         "res": false
-    },
-    "GET /connection/:connectionid/data/:dataid/job": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /connection/:connectionid/data/:dataid/job/:jobid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /connection/:connectionid/data/:dataid/job/:jobid/logs": {
-        "body": false,
-        "query": false,
-        "res": true
     },
     "GET /data": {
         "body": false,
@@ -499,6 +479,11 @@
         "query": true,
         "res": true
     },
+    "GET /import": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
     "POST /import": {
         "body": true,
         "query": false,
@@ -525,21 +510,6 @@
         "res": true
     },
     "DELETE /import/:import": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /import": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "POST /import/:import/batch": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /import/:import/batch": {
         "body": false,
         "query": false,
         "res": true
@@ -1169,22 +1139,22 @@
         "query": false,
         "res": true
     },
-    "GET /token": {
+    "GET /profile/token": {
         "body": false,
         "query": true,
         "res": true
     },
-    "POST /token": {
+    "POST /profile/token": {
         "body": true,
         "query": false,
         "res": true
     },
-    "PATCH /token/:id": {
+    "PATCH /profile/token/:id": {
         "body": true,
         "query": false,
         "res": true
     },
-    "DELETE /token/:id": {
+    "DELETE /profile/token/:id": {
         "body": false,
         "query": false,
         "res": true
