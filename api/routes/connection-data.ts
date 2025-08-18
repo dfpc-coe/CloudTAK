@@ -116,9 +116,6 @@ export default async function router(schema: Schema, config: Config) {
         body: Type.Object({
             name: Default.NameField,
             description: Default.DescriptionField,
-            auto_transform: Type.Boolean({
-                default: true
-            }),
             mission_diff: Type.Optional(Type.Boolean()),
             mission_sync: Type.Boolean({
                 default: true
@@ -181,7 +178,6 @@ export default async function router(schema: Schema, config: Config) {
         }),
         body: Type.Object({
             description: Type.String(),
-            auto_transform: Type.Optional(Type.Boolean()),
             mission_diff: Type.Optional(Type.Boolean()),
             mission_sync: Type.Optional(Type.Boolean())
         }),
