@@ -14108,6 +14108,7 @@ export interface paths {
                             tak_loc_freq: number;
                             display_projection: "mercator" | "globe";
                             display_zoom: "always" | "conditional" | "never";
+                            display_scale_bar: boolean;
                             display_stale: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
                             display_text: "Small" | "Medium" | "Large";
                             display_distance: "meter" | "kilometer" | "mile";
