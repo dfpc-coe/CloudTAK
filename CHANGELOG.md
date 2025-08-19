@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v10.46.0 - 2025-08-19
+
+- :rocket: Hide Raster-Dem in basemap list
+
 ### v10.45.2 - 2025-08-19
 
 - :bug: Fix Iconset Download Bug
