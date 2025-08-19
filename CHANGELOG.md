@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v10.45.2 - 2025-08-19
+
+- :bug: Fix Iconset Download Bug
+
 ### v10.45.1 - 2025-08-12
 
 - :rocket: Update StatusDot for Admin Users to be in dark mode
