@@ -734,6 +734,29 @@ async function mountMap(): Promise<void> {
 </script>
 
 <style>
+.maplibregl-ctrl-scale {
+    background-color: hsla(0,0%, %,.75) !important;
+    color: #ffffff;
+    text-shadow: 1px 0 0 black, -1px 0 0 black, 0 1px 0 black, 0 -1px 0 black;
+    border-bottom: 1px solid #fff;
+    border-left: 1px solid #fff;
+    border-right: 1px solid #fff;
+}
+
+.maplibregl-ctrl-scale::before {
+  background: none;
+  border-bottom: 1px solid #000;
+  border-left: 1px solid #000;
+  border-right: 1px solid #000;
+  content: "";
+  display: block;
+  position: absolute;
+  top: 0px;
+  left: 1px;
+  right: 1px;
+  bottom: 1px;
+}
+
 .maplibregl-ctrl-bottom-left {
     bottom: 0;
     left: 260px;
