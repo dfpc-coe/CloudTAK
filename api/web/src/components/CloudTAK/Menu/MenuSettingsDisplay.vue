@@ -122,6 +122,10 @@ async function updateProfile() {
     if (!profile.value) return;
 
     await mapStore.worker.profile.update(toRaw(profile.value));
+    
+    // Update distance unit
+    mapStore.updateDistanceUnit(profile.value.display_distance);
+ 
     router.push("/menu/settings");
 }
 </script>
