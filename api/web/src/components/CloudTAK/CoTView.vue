@@ -606,7 +606,7 @@
                                 />
                             </div>
                             <div class='col-12'>
-                                <label class='subheader user-select-none'>Point Colour</label>
+                                <label class='subheader user-select-none'>Point Color</label>
                                 <TablerInput
                                     :model-value='cot.properties["marker-color"]'
                                     label=''
@@ -1010,6 +1010,7 @@ function updatePropertyIcon(event: string | null) {
 
     if (!cot.value.properties.icon && event) {
         cot.value.properties.icon = event;
+        cot.value.properties["marker-color"] = '#FFFFFF';
         cot.value.update({});
     } else if (cot.value.properties.icon && !event)
         if (cot.value.properties.type !== 'u-d-p') {
@@ -1021,6 +1022,7 @@ function updatePropertyIcon(event: string | null) {
         cot.value.update({});
     if (event && cot.value.properties.icon && event.replace(/\.png$/g, '').replace(':', '/') !== cot.value.properties.icon.replace(/\.png$/, '').replace(':', '/')) {
         cot.value.properties.icon = event;
+        cot.value.properties["marker-color"] = '#FFFFFF';
         cot.value.update({});
     }
 }
