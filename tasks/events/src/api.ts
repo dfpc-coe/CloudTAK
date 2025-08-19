@@ -15,63 +15,6 @@ export type Import = {
 };
 
 export default class API {
-    static async fetchLayer(event: {
-        layer: number;
-        token: string;
-    }): Promise<{
-        layer: number;
-        connection: number;
-    }> {
-        const url = new URL(`/api/layer/${event.layer}`, process.env.TAK_ETL_API);
-
-        const res = await fetch(url, {
-            headers: {
-                'Authorization': `Bearer ${event.token}`
-            },
-        });
-
-        const json = await res.json();
-
-        if (!res.ok) {
-            console.error(JSON.stringify(json))
-            const err = json as { message: string };
-            throw new Error(err.message);
-        }
-
-        const jsont = json as {
-            connection: number;
-        };
-
-        return {
-            layer: event.layer,
-            connection: jsont.connection
-        }
-    }
-
-    static async fetchSchema(event: {
-        connection: number;
-        layer: number;
-        token: string;
-    }) {
-        const url = new URL(`/api/connection${event.connection}/layer/${event.layer}/task/schema`, process.env.TAK_ETL_API);
-        url.searchParams.append('type', 'schema:output');
-        const res = await fetch(url, {
-            headers: {
-                'Authorization': `Bearer ${event.token}`
-            },
-        });
-
-        const json = await res.json();
-
-        if (!res.ok) {
-            console.error(JSON.stringify(json))
-            const err = json as { message: string };
-            throw new Error(err.message);
-        }
-
-        return json as any;
-    }
-
     static async putFeature(event: {
         token: string;
         broadcast: boolean;
