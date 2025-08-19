@@ -1,7 +1,6 @@
 import os from 'node:os';
 import fs from 'node:fs';
 import path from 'node:path';
-import EventJob from './src/job.js';
 import S3 from "@aws-sdk/client-s3";
 import type { Import, ImportList } from './src/types.js';
 import { Worker } from 'node:worker_threads';
@@ -19,8 +18,8 @@ export default class WorkerPool {
 
     maxWorkes: number;
     workers: Set<{
-        worker: unknown,
-        job: Job
+        worker: Worker,
+        job: Import
     }>;
 
     constructor(opts: {
@@ -48,8 +47,16 @@ export default class WorkerPool {
                 const jobs = await this.poll(this.maxWorkers - this.workers.size);
 
                 for (const job of jobs) {
-                    console.error(job);
                     await this.lock(job.id)
+
+                    const locked = {
+                        job: job,
+                        worker: new Worker(new URL('./src/worker.ts', import.meta.url))
+                    }
+
+                    this.workers.add(locked);
+
+                    locked.worker.postMessage(job);
                 }
             } catch (err) {
                 console.error('error - Failed to poll for new work:', err);
