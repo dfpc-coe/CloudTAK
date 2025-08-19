@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import EventJob from './src/job.js';
 import S3 from "@aws-sdk/client-s3";
-import type { ImportList } from './src/types.js';
+import type { Import, ImportList } from './src/types.js';
 import { Worker } from 'node:worker_threads';
 import { includesWithGlob } from "array-includes-with-glob";
 import { pipeline } from 'node:stream/promises';
@@ -40,15 +40,16 @@ export default class WorkerPool {
 
         this.interval = setInterval(async () => {
             // Don't pick up new work if we are already maxed out
-            if (this.workers.size === this.maxWorkers) return;
+            if (this.workers.size >= this.maxWorkers) return;
 
             console.log('ok - Polling for new work');
 
             try {
-                const jobs = await this.poll();
+                const jobs = await this.poll(this.maxWorkers - this.workers.size);
 
                 for (const job of jobs) {
                     console.error(job);
+                    await this.lock(job.id)
                 }
             } catch (err) {
                 console.error('error - Failed to poll for new work:', err);
@@ -56,21 +57,21 @@ export default class WorkerPool {
         }, opts.interval);
     }
 
-    async lock(import: number): Promise<boolean> {
+    async lock(importid: number): Promise<boolean> {
         const url = new URL(`/api/jobs`, this.api);
 
-        const res = await fetch(new URL(`/api/import/${import}`, this.api), {
+        const res = await fetch(new URL(`/api/import/${importid}`, this.api), {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer etl.${jwt.sign({ access: 'import', id: import, internal: true }, this.secret)}`,
+                'Authorization': `Bearer etl.${jwt.sign({ access: 'import', id: importid, internal: true }, this.secret)}`,
             },
             body: JSON.stringify({
                 status: 'Processing'
             })
         });
 
-        if (!res.ok) throw new Error(await json.text());
+        if (!res.ok) throw new Error(await res.text());
 
         return true;
     }
@@ -80,22 +81,22 @@ export default class WorkerPool {
      *
      * @param jobs Number of Job Slots available
      */
-    async poll(jobs: number): Promise<Array<Job<unknown>>> {
+    async poll(jobs: number): Promise<Array<Import>> {
         if (jobs === 0) return [];
 
-        const url = new URL(`/api/jobs`, this.api);
+        const url = new URL(`/api/import`, this.api);
 
         url.searchParams.set('limit', String(jobs));
         url.searchParams.set('status', 'Pending');
 
-        const res = await fetch(new URL(`/api/import`, this.api), {
+        const res = await fetch(url, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer etl.${jwt.sign({ access: 'import', internal: true }, this.secret)}`,
             },
         });
 
-        if (!res.ok) throw new Error(await json.text());
+        if (!res.ok) throw new Error(await res.text());
 
         const json = await res.json() as ImportList;
         return json.items;
