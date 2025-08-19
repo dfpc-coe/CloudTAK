@@ -12,6 +12,15 @@
 
 ### Pending Release
 
+### v10.47.1 - 2025-08-19
+
+- :bug: Fix manual sharing of MapLibre Icon URLs
+
+### v10.47.0 - 2025-08-19
+
+- :rocket: Reset Color Property when assigning an icon so that the icon is uncoloured by default.
+- :rocket: Set primary color to green if dropping a `u-d-p` or white/uncoloured if dropped an `a-*` CoT type so ATAK doesn't try to recolour the icon.
+
 ### v10.46.0 - 2025-08-19
 
 - :rocket: Hide Raster-Dem in basemap list

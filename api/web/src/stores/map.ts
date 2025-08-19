@@ -455,7 +455,7 @@ export const useMapStore = defineStore('cloudtak', {
                 unit: 'metric'
             });
             map.addControl(scaleControl, 'bottom-left');
-            
+
             // Store reference for later use
             (map as mapgl.Map & { _scaleControl?: mapgl.ScaleControl })._scaleControl = scaleControl;
 
@@ -471,7 +471,7 @@ export const useMapStore = defineStore('cloudtak', {
             this.callsign = profile.tak_callsign;
             this.zoom = profile.display_zoom;
             this.distanceUnit = profile.display_distance;
-            
+
             // Initialize scale control settings
             this.updateDistanceUnit(profile.display_distance);
 
@@ -665,9 +665,9 @@ export const useMapStore = defineStore('cloudtak', {
             }
 
             this.isLoaded = true;
-            
+
             // Update attribution with basemap data
-            await this.updateAttribution();            
+            await this.updateAttribution();
         },
         /**
          * Determine if the feature is from the CoT store or a clicked VT feature
@@ -703,7 +703,7 @@ export const useMapStore = defineStore('cloudtak', {
         },
         updateAttribution: async function(): Promise<void> {
             const attributions: string[] = [];
-            
+
             for (const overlay of this.overlays) {
                 if (overlay.mode === 'basemap' && overlay.mode_id && overlay.visible) {
                     try {
@@ -716,7 +716,7 @@ export const useMapStore = defineStore('cloudtak', {
                     }
                 }
             }
-            
+
             // Update attribution by manipulating the DOM directly
             const attributionContainer = document.querySelector('.maplibregl-ctrl-attrib-inner');
             if (attributionContainer && attributions.length > 0) {
