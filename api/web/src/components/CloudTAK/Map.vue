@@ -732,3 +732,21 @@ async function mountMap(): Promise<void> {
     });
 }
 </script>
+
+<style>
+.maplibregl-ctrl-bottom-left {
+    bottom: 0;
+    left: 260px;
+}
+
+.maplibregl-ctrl-bottom-right {
+    bottom: 0;
+    right: 60px;
+    z-index: 1 !important;
+    color: black !important;
+}
+
+.maplibregl-ctrl-attrib a {
+    color: black !important;
+}
+</style>
