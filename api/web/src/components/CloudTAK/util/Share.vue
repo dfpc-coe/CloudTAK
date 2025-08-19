@@ -279,8 +279,6 @@ async function share() {
             feat.properties.dest.push({ group: group.name });
         }
 
-        console.error(JSON.stringify(feat, null, 2));
-
         await mapStore.worker.conn.sendCOT(feat);
     } else {
         const destinations: Array<{ uid?: string, group?: string }> = [
