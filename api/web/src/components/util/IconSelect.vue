@@ -36,7 +36,7 @@
             desc='Loading Iconsets'
         />
         <template v-else>
-            <div class='d-flex'>
+            <div class='d-flex align-items-center'>
                 <template v-if='selected.name'>
                     <div class='d-flex align-items-center'>
                         <div>
@@ -46,7 +46,7 @@
                             >
                         </div>
                         <div
-                            class='mt-2 mx-2'
+                            class='mx-2'
                             v-text='selected.name'
                         />
                     </div>
