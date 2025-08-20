@@ -1,3 +1,4 @@
+import path from 'node:path';
 import { Type } from '@sinclair/typebox'
 import { StandardResponse, ProfileFileResponse } from '../lib/types.js';
 import { sql } from 'drizzle-orm';
@@ -53,7 +54,6 @@ export default async function router(schema: Schema, config: Config) {
                 `
             });
 
-
             res.json({
                 tiles: {
                     url: String(new URL(`${config.PMTILES_URL}/tiles/profile/${user.email}/`))
@@ -99,6 +99,97 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
+    await schema.post('/profile/asset', {
+        name: 'Create Asset',
+        group: 'ProfileFile',
+        description: 'Internal API used to create assets after S3 assets have been uploaded by the Events Task',
+        body: Type.Object({
+            id: Type.String({
+                description: 'Random UUID v4 of uploaded asset'
+            }),
+            name: Type.String(),
+            path: Type.String({
+                default: '/'
+            }),
+            size: Type.Integer(),
+            artifacts: Type.Array(Type.Object({
+                ext: Type.String()
+            }), {
+                default: []
+            })
+        })
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req, { token: true });
+
+            const head = await S3.head(`profile/${user.email}/${req.body.id}${path.parse(req.body.name).ext}`)
+
+            const artifacts = [];
+            for (const artifact of req.body.artifacts) {
+                artifacts.push({
+                    ext: artifact.ext,
+                    size: (await S3.head(`profile/${user.email}/${req.body.id}${artifact.ext}`)).ContentLength || 0
+                });
+            }
+
+            const file = await config.models.ProfileFile.generate({
+                username: user.email,
+                name: req.body.name,
+                path: req.body.path,
+                size: head.ContentLength || 0,
+                artifacts
+            });
+
+            res.json(file);
+        } catch (err) {
+             Err.respond(err, res);
+        }
+    });
+
+    await schema.patch('/profile/asset/:asset', {
+        name: 'Update Asset',
+        group: 'ProfileFile',
+        description: 'Internal API used to modify assets after S3 assets have been uploaded by the Events Task',
+        params: Type.Object({
+            asset: Type.String(),
+        }),
+        body: Type.Object({
+            path: Type.String({
+                default: '/'
+            }),
+            artifacts: Type.Array(Type.Object({
+                ext: Type.String()
+            }))
+        })
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req, { token: true });
+
+            let file = await config.models.ProfileFile.from(req.params.asset);
+
+            if (file.username !== user.email) {
+                throw new Err(403, null, 'You do not have permission to modify this asset');
+            }
+
+            const artifacts = [];
+            for (const artifact of req.body.artifacts) {
+                artifacts.push({
+                    ext: artifact.ext,
+                    size: (await S3.head(`profile/${user.email}/${file.id}${artifact.ext}`)).ContentLength
+                });
+            }
+
+            file = await config.models.ProfileFile.commit(req.params.asset, {
+                path: req.body.path,
+                artifacts
+            });
+
+            res.json(file);
+        } catch (err) {
+             Err.respond(err, res);
+        }
+    });
+
     await schema.get('/profile/asset/:asset.:ext', {
         name: 'Raw Asset',
         group: 'ProfileFile',
@@ -117,7 +208,7 @@ export default async function router(schema: Schema, config: Config) {
             const file = await config.models.ProfileFile.from(req.params.asset);
 
             if (file.username !== user.email) {
-                throw new Err(403, null, 'You do not have permission to delete this asset');
+                throw new Err(403, null, 'You do not have permission to download this asset');
             }
 
             const stream = await S3.get(`profile/${user.email}/${req.params.asset}.${req.params.ext}`);
@@ -145,7 +236,7 @@ export default async function router(schema: Schema, config: Config) {
             const file = await config.models.ProfileFile.from(req.params.asset);
 
             if (file.username !== user.email) {
-                throw new Err(403, null, 'You do not have permission to delete this asset');
+                throw new Err(403, null, 'You do not have permission to view this asset');
             }
 
             if (!await S3.exists(`profile/${user.email}/${req.params.asset}.pmtiles`)) {

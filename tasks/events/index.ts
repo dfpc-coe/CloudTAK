@@ -48,10 +48,18 @@ export default class WorkerPool {
                 for (const job of jobs) {
                     await this.lock(job.id)
 
-                    const locked = {
-                        job: job,
-                        worker: new Worker(new URL('./src/worker.ts', import.meta.url))
-                    }
+                    const worker = new Worker(new URL('./src/worker.ts', import.meta.url))
+                    const locked = { job, worker }
+
+                    worker.on('message', (message) => {
+                        if (message.type === 'success') {
+                            await this.success(job.id);
+                        } else if (message.type === 'error') {
+                            await this.error(job.id, message.error);
+                        } else {
+                            console.error('Unknown message type from worker:', message);
+                        }
+                    });
 
                     this.workers.add(locked);
 
@@ -62,12 +70,27 @@ export default class WorkerPool {
                         secret: this.secret
                     });
                 }
-
-                // TODO Watch for response messages and handle failure or success
             } catch (err) {
                 console.error('error - Failed to poll for new work:', err);
             }
         }, opts.interval);
+    }
+
+    async success(importid: number): Promise<boolean> {
+        const res = await fetch(new URL(`/api/import/${importid}`, this.api), {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer etl.${jwt.sign({ access: 'import', id: importid, internal: true }, this.secret)}`,
+            },
+            body: JSON.stringify({
+                status: 'Success'
+            })
+        });
+
+        if (!res.ok) throw new Error(await res.text());
+
+        return true;
     }
 
     async lock(importid: number): Promise<boolean> {
@@ -79,6 +102,24 @@ export default class WorkerPool {
             },
             body: JSON.stringify({
                 status: 'Running'
+            })
+        });
+
+        if (!res.ok) throw new Error(await res.text());
+
+        return true;
+    }
+
+    async error(importid: number, error: string): Promise<boolean> {
+        const res = await fetch(new URL(`/api/import/${importid}`, this.api), {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer etl.${jwt.sign({ access: 'import', id: importid, internal: true }, this.secret)}`,
+            },
+            body: JSON.stringify({
+                status: 'Fail',
+                error: error
             })
         });
 
