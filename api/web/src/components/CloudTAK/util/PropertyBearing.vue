@@ -21,7 +21,7 @@
                 v-tooltip='"Degrees"'
                 class='my-1 px-2 user-select-none'
                 :class='{
-                    "bg-gray-500 rounded-bottom": mode === "deg",
+                    "bg-gray-500 rounded-bottom text-blue": mode === "deg",
                     "cursor-pointer": mode !== "deg",
                 }'
                 role='menuitem'
@@ -33,7 +33,7 @@
                 v-tooltip='"Radians"'
                 class='my-1 px-2 user-select-none'
                 :class='{
-                    "bg-gray-500 rounded-bottom": mode === "rad",
+                    "bg-gray-500 rounded-bottom text-blue": mode === "rad",
                     "cursor-pointer": mode !== "rad",
                 }'
                 role='menuitem'
@@ -45,7 +45,7 @@
                 v-tooltip='"Mil-Radians"'
                 class='my-1 px-2 user-select-none'
                 :class='{
-                    "bg-gray-500 rounded-bottom": mode === "mil",
+                    "bg-gray-500 rounded-bottom text-blue": mode === "mil",
                     "cursor-pointer": mode !== "mil",
                 }'
                 role='menuitem'

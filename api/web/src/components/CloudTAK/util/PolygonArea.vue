@@ -16,7 +16,7 @@
                 v-tooltip='"Square Feet"'
                 class='my-1 px-2 user-select-none'
                 :class='{
-                    "bg-gray-500 rounded-bottom": mode === "sqfeet",
+                    "bg-gray-500 rounded-bottom text-blue": mode === "sqfeet",
                     "cursor-pointer": mode !== "sqfeet",
                 }'
                 role='menuitem'
@@ -28,7 +28,7 @@
                 v-tooltip='"Square Meters"'
                 class='my-1 px-2 user-select-none'
                 :class='{
-                    "bg-gray-500 rounded-bottom": mode === "sqmeter",
+                    "bg-gray-500 rounded-bottom text-blue": mode === "sqmeter",
                     "cursor-pointer": mode !== "sqmeter",
                 }'
                 role='menuitem'

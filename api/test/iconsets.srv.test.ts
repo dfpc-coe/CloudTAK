@@ -7,7 +7,7 @@ flight.init();
 flight.takeoff();
 flight.user();
 
-test('GET: api/iconset', async (t) => {
+test('GET: /api/iconset', async (t) => {
     try {
         const res = await flight.fetch('/api/iconset', {
             method: 'GET',

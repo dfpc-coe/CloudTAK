@@ -27083,6 +27083,7 @@ export interface paths {
                                 ShortLabel: string;
                                 Addr_type: string;
                             } | null;
+                            elevation: string | null;
                         };
                     };
                 };
