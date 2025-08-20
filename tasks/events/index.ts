@@ -62,6 +62,8 @@ export default class WorkerPool {
                         secret: this.secret
                     });
                 }
+
+                // TODO Watch for response messages and handle failure or success
             } catch (err) {
                 console.error('error - Failed to poll for new work:', err);
             }
