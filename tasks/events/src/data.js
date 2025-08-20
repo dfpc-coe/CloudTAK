@@ -61,7 +61,7 @@ export default class DataTransform {
     }
 
     async control() {
-        const s3 = new S3.S3Client({ region: process.env.AWS_DEFAULT_REGION });
+        const s3 = new S3.S3Client({ region: process.env.AWS_REGION });
 
         console.log(`ok - fetching s3://${this.etl.bucket}/${this.etl.type}/${this.etl.id}/${this.etl.task.asset}`);
         const res = await s3.send(new S3.GetObjectCommand({

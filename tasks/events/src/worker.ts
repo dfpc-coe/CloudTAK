@@ -1,20 +1,20 @@
 import { parentPort } from 'worker_threads';
 import type { Import } from './types.js';
+import jwt from 'jsonwebtoken';
 import os from 'node:os';
 import fsp from 'node:fs/promises';
 import fs from 'node:fs';
 import path from 'node:path';
 import S3 from "@aws-sdk/client-s3";
-import type { Import } from './api.js';
-import StreamZip, { StreamZipAsync } from 'node-stream-zip'
+import type { Import } from './types.js';
+import StreamZip from 'node-stream-zip'
+import type { StreamZipAsync } from 'node-stream-zip';
 import { pipeline } from 'node:stream/promises';
-import jwt from 'jsonwebtoken';
-import API from './api.js';
+//import API from './api.js';
 import { CoTParser, DataPackage } from '@tak-ps/node-cot';
 import xml2js from 'xml2js';
-import { Event } from './index.js';
 
-parentPort.on('message', (message) => {
+parentPort.on('message', async (message) => {
     try {
         const msg: {
             api: string
@@ -28,17 +28,19 @@ parentPort.on('message', (message) => {
         // Use a user token to ensure data for a given user import doesn't exceed their ACL
         const token = jwt.sign({ access: 'user', email: msg.job.username }, msg.secret);
 
-        const s3 = new S3.S3Client({ region: process.env.AWS_DEFAULT_REGION || 'us-east-1' });
+        const s3 = new S3.S3Client({ region: process.env.AWS_REGION || 'us-east-1' });
 
-        return;
+        const tmpdir = fs.mkdtempSync(path.resolve(os.tmpdir(), 'cloudtak'));
+        const name = `${msg.job.id}${path.parse(msg.job.name).ext}`;
+        const local = path.resolve(tmpdir, name);
 
         await pipeline(
             // @ts-expect-error 'StreamingBlobPayloadOutputTypes | undefined' is not assignable to parameter of type 'ReadableStream'
             (await s3.send(new S3.GetObjectCommand({
                 Bucket: msg.bucket,
-                Key: md.Key
+                Key: `import/${name}`,
             }))).Body,
-            fs.createWriteStream(md.Local)
+            fs.createWriteStream(local)
         );
 
         const result = {};
@@ -152,19 +154,19 @@ parentPort.on('message', (message) => {
             }
         }
     } catch (err) {
-        console.error(err);
+        console.error('Error processing import:', err);
 
-        await API.updateImport(md, {
-            status: 'Fail',
-            error: err instanceof Error ? err.message : String(err)
+        parentPort.postMessage({
+            type: 'error',
+            error: err
         });
     }
-}
+});
 
 async function submitBatch(event: Event, imported: Import) {
     console.log('ok - Treating as profile asset');
 
-    const s3 = new S3.S3Client({ region: process.env.AWS_DEFAULT_REGION || 'us-east-1' });
+    const s3 = new S3.S3Client({ region: process.env.AWS_REGION || 'us-east-1' });
 
     await s3.send(new S3.CopyObjectCommand({
         CopySource: `${event.Bucket}/${event.Key}`,
@@ -251,11 +253,3 @@ async function processIndex(event: Event, xmlstr: string, zip?: StreamZipAsync) 
         });
     }
 }
-
-    } catch (err) {
-        parentPort.postMessage({
-            type: 'error',
-            error: err
-        });
-    }
-});
