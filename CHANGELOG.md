@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v10.48.0 - 2025-08-20
+
+- :rocket: Add addition UI Area Units
+
 ### v10.47.1 - 2025-08-19
 
 - :bug: Fix manual sharing of MapLibre Icon URLs
