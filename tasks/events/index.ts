@@ -1,20 +1,16 @@
 import os from 'node:os';
-import fs from 'node:fs';
-import path from 'node:path';
-import S3 from "@aws-sdk/client-s3";
 import type { Import, ImportList } from './src/types.js';
 import { Worker } from 'node:worker_threads';
-import { includesWithGlob } from "array-includes-with-glob";
-import { pipeline } from 'node:stream/promises';
 import Import from './src/import.js';
 import jwt from 'jsonwebtoken';
-import API from './src/api.js';
 
 export default class WorkerPool {
     interval: ReturnType<typeof setInterval>;
 
     api: string;
     secret: string;
+
+    bucket: string;
 
     maxWorkes: number;
     workers: Set<{
@@ -25,6 +21,7 @@ export default class WorkerPool {
     constructor(opts: {
         api: string
         secret: string,
+        bucket: string,
         interval: number
     }) {
         this.maxWorkers = os.availableParallelism();
@@ -32,6 +29,8 @@ export default class WorkerPool {
 
         this.api = opts.api;
         this.secret = opts.secret;
+
+        this.bucket = opts.bucket;
 
         this.workers = new Set();
 
@@ -56,7 +55,12 @@ export default class WorkerPool {
 
                     this.workers.add(locked);
 
-                    locked.worker.postMessage(job);
+                    locked.worker.postMessage({
+                        job: job,
+                        api: this.api,
+                        bucket: this.bucket,
+                        secret: this.secret
+                    });
                 }
             } catch (err) {
                 console.error('error - Failed to poll for new work:', err);
@@ -65,8 +69,6 @@ export default class WorkerPool {
     }
 
     async lock(importid: number): Promise<boolean> {
-        const url = new URL(`/api/jobs`, this.api);
-
         const res = await fetch(new URL(`/api/import/${importid}`, this.api), {
             method: 'PATCH',
             headers: {
@@ -74,7 +76,7 @@ export default class WorkerPool {
                 'Authorization': `Bearer etl.${jwt.sign({ access: 'import', id: importid, internal: true }, this.secret)}`,
             },
             body: JSON.stringify({
-                status: 'Processing'
+                status: 'Running'
             })
         });
 
@@ -112,68 +114,12 @@ export default class WorkerPool {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
     if (!process.env.SigningSecret) throw new Error('SigningSecret environment variable is required');
+    if (!process.env.AssetBucket) throw new Error('AssetBucket environment variable is required');
 
-    const pool = new WorkerPool({
+    new WorkerPool({
         api: process.env.TAK_ETL_API || 'http://localhost:5001',
         secret: process.env.SigningSecret,
+        bucket: process.env.AssetBucket,
         interval: 1000
     });
-
-
-    /**
-    console.log(`ok - New file detected in s3://${md.Bucket}/${md.Key}`);
-    if (md.Key.startsWith('import/')) {
-        await Import(md);
-    } else if (md.Key.startsWith('data/')) {
-        md.ID = path.parse(md.Key).dir.replace('data/', '');
-        md.Token = `etl.${jwt.sign({ access: 'data' , id: parseInt(md.ID), internal: true }, String(process.env.SigningSecret))}`;
-
-        const data = await API.fetchData(md);
-
-        if (data.mission_sync && !['.geojsonld', '.pmtiles'].includes(md.Ext)) {
-            let sync = false;
-            for (const glob of data.assets) {
-                sync = includesWithGlob([md.Name], glob);
-                if (sync) break;
-            }
-
-            if (sync) {
-                console.log(`ok - Data ${md.Key} syncing with ${data.name}`);
-                const s3 = new S3.S3Client({ region: process.env.AWS_DEFAULT_REGION || 'us-east-1' });
-                await pipeline(
-                    // @ts-expect-error 'StreamingBlobPayloadOutputTypes | undefined' is not assignable to parameter of type 'ReadableStream'
-                    (await s3.send(new S3.GetObjectCommand({
-                        Bucket: md.Bucket,
-                        Key: md.Key
-                    }))).Body,
-                    fs.createWriteStream(md.Local)
-                );
-
-                console.log(`ok - Data ${md.Key} posting to mission ${data.name}`);
-                const res = await API.uploadDataMission(md, {
-                    filename: md.Name,
-                    connection: data.connection
-                });
-
-                console.log(JSON.stringify(res));
-            } else {
-                console.log(`ok - Data ${md.Key} does not match mission sync globs`);
-            }
-        } else {
-            console.log(`ok - Data ${md.Key} has no mission assigned or is a geojsonld or pmtiles file`);
-        }
-
-        if (data.auto_transform) {
-            await API.transformData(md, {
-                connection: data.connection
-            });
-        } else {
-            console.log(`ok - Data ${md.ID} has auto-transform turned off`);
-        }
-    } else if (md.Key.startsWith('profile/')) {
-        console.error('Ignoring Profile Imports as these are handled programatically');
-    } else {
-        throw new Error('Unknown Import Type');
-    }
-    */
 }

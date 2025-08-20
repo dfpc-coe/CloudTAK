@@ -134,7 +134,7 @@ export default {
                             cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-public-b']))
                         ]
                     }
-                },
+                }
             }
         },
         EventsServiceSecurityGroup: {

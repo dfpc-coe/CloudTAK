@@ -342,12 +342,7 @@ export default {
                                 'lambda:UpdateEventSourceMapping',
                                 'lambda:GetEventSourceMapping',
                                 'lambda:DeleteEventSourceMapping',
-                                'batch:SubmitJob',
-                                'batch:ListJobs',
-                                'batch:DescribeJobs',
                                 'logs:GetLogEvents',
-                                'batch:CancelJob',
-                                'batch:DescribeJobs'
                             ],
                             Resource: [
                                 '*'

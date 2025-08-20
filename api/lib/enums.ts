@@ -21,7 +21,7 @@ export class toEnum {
 export enum Import_Status {
     EMPTY = 'Empty',
     PENDING = 'Pending',
-    PROCESSING = 'Processing',
+    RUNNING = 'Running',
     SUCCESS = 'Success',
     FAIL = 'Fail',
 }

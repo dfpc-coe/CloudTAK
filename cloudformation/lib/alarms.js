@@ -15,6 +15,6 @@ export default {
                 DisplayName: cf.join([cf.stackName, '-low-urgency']),
                 TopicName: cf.join([cf.stackName, '-low-urgency'])
             }
-        },
+        }
     }
 };
