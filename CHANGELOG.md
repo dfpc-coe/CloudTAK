@@ -12,7 +12,7 @@
 
 ### Pending Release
 
-### v10.47.2 - 2025-08-20
+### v10.48.0 - 2025-08-20
 
 - :rocket: Add addition UI Area Units
 
