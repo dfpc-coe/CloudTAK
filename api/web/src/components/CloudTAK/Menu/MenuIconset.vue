@@ -112,7 +112,7 @@ async function refresh() {
 }
 
 function download() {
-    window.location.href = stdurl(`api/iconset/${iconset.value.uid}?format=zip&download=true&token=${localStorage.token}`);
+    window.location.href = stdurl(`/api/iconset/${iconset.value.uid}?format=zip&download=true&token=${localStorage.token}`);
 }
 
 async function fetchIconset() {

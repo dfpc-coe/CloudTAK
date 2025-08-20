@@ -307,6 +307,7 @@
                         >Chats</span>
                     </div>
                     <div
+                        v-if='isArcGISEnabled'
                         role='menuitem'
                         :tabindex='compact ? undefined : 0'
                         class='cursor-pointer col-12 d-flex align-items-center'
@@ -725,6 +726,7 @@ const username = ref<string>('Username')
 const menuWidth = ref<number>(400);
 const isSystemAdmin = ref<boolean>(false)
 const isAgencyAdmin = ref<boolean>(false)
+const isArcGISEnabled = ref<boolean>(false)
 
 defineProps({
     compact: Boolean,
@@ -783,6 +785,21 @@ onMounted(async () => {
     username.value = await mapStore.worker.profile.username();
     isSystemAdmin.value = await mapStore.worker.profile.isSystemAdmin();
     isAgencyAdmin.value = await mapStore.worker.profile.isAgencyAdmin();
+
+    try {
+        const response = await fetch('/api/config?keys=agol::enabled', {
+            headers: { 'Authorization': `Bearer ${localStorage.token}` }
+        });
+        if (response.ok) {
+            const config = await response.json();
+            isArcGISEnabled.value = config['agol::enabled'] === 'true';
+            console.log('ArcGIS setting loaded:', config['agol::enabled'], 'Routes visible:', isArcGISEnabled.value);
+        } else {
+            console.error('Failed to fetch config:', response.status);
+        }
+    } catch (err) {
+        console.error('Failed to load ArcGIS setting:', err);
+    }
 })
 
 function external(url: string) {

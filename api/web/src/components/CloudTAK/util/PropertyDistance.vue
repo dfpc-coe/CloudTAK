@@ -18,7 +18,7 @@
                 v-tooltip='"Feet"'
                 class='my-1 px-2 user-select-none'
                 :class='{
-                    "bg-gray-500 rounded-bottom": mode === "feet",
+                    "bg-gray-500 rounded-bottom text-blue": mode === "feet",
                     "cursor-pointer": mode !== "feet",
                 }'
                 role='menuitem'
@@ -30,7 +30,7 @@
                 v-tooltip='"Yards"'
                 class='my-1 px-2 user-select-none'
                 :class='{
-                    "bg-gray-500 rounded-bottom": mode === "yard",
+                    "bg-gray-500 rounded-bottom text-blue": mode === "yard",
                     "cursor-pointer": mode !== "yard",
                 }'
                 role='menuitem'
@@ -42,7 +42,7 @@
                 v-tooltip='"Meters"'
                 class='my-1 px-2 user-select-none'
                 :class='{
-                    "bg-gray-500 rounded-bottom": mode === "meter",
+                    "bg-gray-500 rounded-bottom text-blue": mode === "meter",
                     "cursor-pointer": mode !== "meter",
                 }'
                 role='menuitem'
@@ -54,7 +54,7 @@
                 v-tooltip='"Kilometers"'
                 class='my-1 px-2 user-select-none'
                 :class='{
-                    "bg-gray-500 rounded-bottom": mode === "kilometer",
+                    "bg-gray-500 rounded-bottom text-blue": mode === "kilometer",
                     "cursor-pointer": mode !== "kilometer",
                 }'
                 role='menuitem'
@@ -66,7 +66,7 @@
                 v-tooltip='"Miles"'
                 class='my-1 px-2 user-select-none'
                 :class='{
-                    "bg-gray-500 rounded-bottom": mode === "mile",
+                    "bg-gray-500 rounded-bottom text-blue": mode === "mile",
                     "cursor-pointer": mode !== "mile",
                 }'
                 role='menuitem'
