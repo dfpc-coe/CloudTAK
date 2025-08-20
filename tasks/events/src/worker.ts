@@ -31,7 +31,8 @@ parentPort.on('message', async (message) => {
         const s3 = new S3.S3Client({ region: process.env.AWS_REGION || 'us-east-1' });
 
         const tmpdir = fs.mkdtempSync(path.resolve(os.tmpdir(), 'cloudtak'));
-        const name = `${msg.job.id}${path.parse(msg.job.name).ext}`;
+        const ext = path.parse(msg.job.name).ext;
+        const name = `${msg.job.id}${ext}`;
         const local = path.resolve(tmpdir, name);
 
         await pipeline(
@@ -44,13 +45,13 @@ parentPort.on('message', async (message) => {
         );
 
         const result = {};
-        if (imported.mode === 'Mission') {
-            if (!imported.config.id) throw new Error('No mission name defined');
+        if (msg.job.mode === 'Mission') {
+            if (!msg.job.config.id) throw new Error('No mission name defined');
 
             const res = await API.uploadMission(md, {
-                name: imported.config.id,
-                filename: imported.name,
-                token: md.UserToken
+                name: msg.job.config.id,
+                filename: msg.job.name,
+                token
             });
 
             console.error(JSON.stringify(res));
@@ -59,8 +60,8 @@ parentPort.on('message', async (message) => {
                 status: 'Success',
                 result
             });
-        } else if (imported.mode === 'Package') {
-            const pkg = await DataPackage.parse(md.Local);
+        } else if (msg.job.mode === 'Package') {
+            const pkg = await DataPackage.parse(local);
 
             const cots = await pkg.cots();
             for (const cot of cots) {
@@ -76,9 +77,9 @@ parentPort.on('message', async (message) => {
                             const hash = await pkg.hash(content._attributes.zipEntry)
                             const name = path.parse(content._attributes.zipEntry).base;
 
-                            console.log(`ok - uploading: s3://${md.Bucket}/attachment/${hash}/${name}`);
+                            console.log(`ok - uploading: s3://${msg.bucket}/attachment/${hash}/${name}`);
                             await s3.send(new S3.PutObjectCommand({
-                                Bucket: md.Bucket,
+                                Bucket: msg.bucket,
                                 Key: `attachment/${hash}/${name}`,
                                 Body: await pkg.getFile(content._attributes.zipEntry)
                             }))
@@ -87,7 +88,7 @@ parentPort.on('message', async (message) => {
                 }
 
                 await API.putFeature({
-                    token: md.UserToken,
+                    token,
                     broadcast: true,
                     body: {
                         ...feat,
@@ -100,10 +101,10 @@ parentPort.on('message', async (message) => {
             for (const file of files) {
                 const name = path.parse(file).base;
 
-                console.log(`ok - uploading: s3://${md.Bucket}/profile/${imported.username}/${name}`);
+                console.log(`ok - uploading: s3://${msg.bucket}/profile/${msg.job.username}/${name}`);
                 await s3.send(new S3.PutObjectCommand({
-                    Bucket: md.Bucket,
-                    Key: `profile/${imported.username}/${name}`,
+                    Bucket: msg.bucket,
+                    Key: `profile/${msg.job.username}/${name}`,
                     Body: await pkg.getFile(file)
                 }))
             }
@@ -112,10 +113,10 @@ parentPort.on('message', async (message) => {
                 status: 'Success',
                 result
             });
-        } else if (imported.mode === 'Unknown') {
-            if (md.Ext === '.zip') {
+        } else if (msg.job.mode === 'Unknown') {
+            if (ext === '.zip') {
                 const zip = new StreamZip.async({
-                    file: path.resolve(os.tmpdir(), md.Local),
+                    file: path.resolve(os.tmpdir(), local),
                     skipEntryNameValidation: true
                 });
 
@@ -140,17 +141,17 @@ parentPort.on('message', async (message) => {
                         result
                     });
                 } else {
-                    await submitBatch(md, imported)
+                    await submitBatch(md, msg.job)
                 }
-            } else if (md.Ext === '.xml') {
-                await processIndex(md, String(await fsp.readFile(md.Local)));
+            } else if (ext === '.xml') {
+                await processIndex(md, String(await fsp.readFile(local)));
 
                 await API.updateImport(md, {
                     status: 'Success',
                     result
                 });
             } else {
-                await submitBatch(md, imported)
+                await submitBatch(md, msg.job)
             }
         }
     } catch (err) {
@@ -198,7 +199,7 @@ async function processIndex(event: Event, xmlstr: string, zip?: StreamZipAsync) 
         const check = await fetch(new URL(`/api/iconset/${iconset.uid}`, process.env.TAK_ETL_API), {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${event.UserToken}`
+                'Authorization': `Bearer ${token}`
             },
         });
 
@@ -214,7 +215,7 @@ async function processIndex(event: Event, xmlstr: string, zip?: StreamZipAsync) 
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${event.UserToken}`
+                'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify(iconset)
         });
@@ -234,7 +235,7 @@ async function processIndex(event: Event, xmlstr: string, zip?: StreamZipAsync) 
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${event.UserToken}`
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({
                     name: lookup.get(icon.$.name).name,
