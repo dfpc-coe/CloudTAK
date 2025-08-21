@@ -6,6 +6,10 @@ import path from 'node:path';
 import { Event } from './index.js'
 
 export default class API {
+    static async fetch({
+        token: string,
+    })
+
     static async putFeature(event: {
         token: string;
         broadcast: boolean;
@@ -108,7 +112,6 @@ export default class API {
         updated: number;
         description: string;
         connection: number;
-        auto_transform: boolean;
         mission_sync: boolean;
         assets: string[];
     }> {
