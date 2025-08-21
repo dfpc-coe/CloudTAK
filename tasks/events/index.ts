@@ -59,9 +59,14 @@ export default class WorkerPool {
                             } else {
                                 console.error(`Import: ${job.id} -`, message);
                             }
+
                         } catch (err) {
                             console.error(`Import ${job.id} - failed to handle Job Finalization`, err);
                         }
+
+                        worker.terminate()
+
+                        this.workers.delete(locked);
                     });
 
                     this.workers.add(locked);
