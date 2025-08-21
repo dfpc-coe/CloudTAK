@@ -1,10 +1,23 @@
-let CSP = `add_header 'Content-Security-Policy' "default-src 'self' *.${process.env.API_URL}; $\{IMG}; $\{MEDIA}; $\{WORKER}; $\{CONNECT}; $\{STYLE_SRC_ATTR}; $\{STYLE_SRC_ELEM}; $\{FONT}; upgrade-insecure-requests;" always;`
+import net from 'node:net';
+
+const url = new URL(process.env.API_URL);
+
+
+let ROOT_URL = '';
+let WILD_SUB = ''
+if (
+    !net.isIP(url.hostname)
+    && !net.isIPv6(url.hostname)
+    && process.env.API_URL.match(/.*\.*\..*?\..*?$/)
+) {
+    // FQDN: Check if API_URL is something.example.com vs example.com
+    ROOT_URL = `*.${process.env.API_URL.replace(/^.*?\./, '')}:*`;
+    WILD_SUB = '*.'
+}
+
+let CSP = `add_header 'Content-Security-Policy' "default-src 'self' ${WILD_SUB}${process.env.API_URL}; $\{IMG}; $\{MEDIA}; $\{WORKER}; $\{CONNECT}; $\{STYLE_SRC_ATTR}; $\{STYLE_SRC_ELEM}; $\{FONT}; upgrade-insecure-requests;" always;`
 if (process.env.API_URL.includes('localhost')) CSP = '';
 
-// Check if API_URL is something.example.com vs example.com
-const ROOT_URL = process.env.API_URL.match(/.*\.*\..*?\..*?$/)
-    ? `*.${process.env.API_URL.replace(/^.*?\./, '')}:*`
-    : ''
 
 console.log(`
 user nginx;
@@ -40,13 +53,13 @@ http {
         add_header 'Strict-Transport-Security' 'max-age=31536000; includeSubDomains; preload' always;
         add_header 'Permissions-Policy' 'fullscreen=(self), geolocation=(self), clipboard-read=(self), clipboard-write=(self)' always;
 
-        set $IMG "img-src 'self' data: *.${process.env.API_URL} ${ROOT_URL}";
-        set $MEDIA "media-src 'self' blob: *.${process.env.API_URL}:* ${ROOT_URL}";
+        set $IMG "img-src 'self' data: ${WILD_SUB}${process.env.API_URL} ${ROOT_URL}";
+        set $MEDIA "media-src 'self' blob: ${WILD_SUB}${process.env.API_URL}:* ${ROOT_URL}";
         set $FONT "font-src 'self' data:";
         set $WORKER "worker-src 'self' blob:";
         set $STYLE_SRC_ELEM "style-src-elem 'self' 'unsafe-inline'";
         set $STYLE_SRC_ATTR "style-src-attr 'unsafe-inline'";
-        set $CONNECT "connect-src 'self' *.${process.env.API_URL}:* ${ROOT_URL}";
+        set $CONNECT "connect-src 'self' ${WILD_SUB}${process.env.API_URL}:* ${ROOT_URL}";
         ${CSP}
 
         location = / {
