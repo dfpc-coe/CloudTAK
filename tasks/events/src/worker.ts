@@ -1,5 +1,5 @@
 import { parentPort } from 'worker_threads';
-import DataTransform from './transform.js';
+// import DataTransform from './transform.js';
 import type { Import } from './types.js';
 import jwt from 'jsonwebtoken';
 import os from 'node:os';
@@ -22,6 +22,13 @@ export type Message = {
     job: Import
 };
 
+export type LocalMessage = {
+    tmpdir: string;
+    ext: string;
+    name: string;
+    raw: string;
+}
+
 parentPort.on('message', async (message) => {
     try {
         const msg: Message = message;
@@ -36,18 +43,21 @@ parentPort.on('message', async (message) => {
         const tmpdir = fs.mkdtempSync(path.resolve(os.tmpdir(), 'cloudtak'));
         const ext = path.parse(msg.job.name).ext;
         const name = `${msg.job.id}${ext}`;
-        const local = path.resolve(tmpdir, name);
+
+        const local: LocalMessage = {
+            ext, name, tmpdir,
+            raw: path.resolve(tmpdir, name)
+        }
 
         await pipeline(
             // @ts-expect-error 'StreamingBlobPayloadOutputTypes | undefined' is not assignable to parameter of type 'ReadableStream'
             (await s3.send(new S3.GetObjectCommand({
                 Bucket: msg.bucket,
-                Key: `import/${name}`,
+                Key: `import/${local.name}`,
             }))).Body,
-            fs.createWriteStream(local)
+            fs.createWriteStream(local.raw)
         );
 
-        const result = {};
         if (msg.job.mode === 'Mission') {
             if (!msg.job.config.id) throw new Error('No mission name defined');
 
@@ -58,11 +68,6 @@ parentPort.on('message', async (message) => {
             });
 
             console.error(JSON.stringify(res));
-
-            await API.updateImport(md, {
-                status: 'Success',
-                result
-            });
         } else if (msg.job.mode === 'Package') {
             await processArchive(msg);
         } else if (msg.job.mode === 'Unknown') {
@@ -70,15 +75,14 @@ parentPort.on('message', async (message) => {
                 await processArchive(msg);
             } else if (ext === '.xml') {
                 await processIndex(md, String(await fsp.readFile(local)));
-
-                await API.updateImport(md, {
-                    status: 'Success',
-                    result
-                });
             } else {
                 await processFile(msg)
             }
         }
+
+        parentPort.postMessage({
+            type: 'success'
+        });
     } catch (err) {
         console.error('Error processing import:', err);
 
@@ -180,10 +184,6 @@ async function processFile(msg: Message): Promise<void> {
         Bucket: msg.bucket,
         Key: `profile/${msg.job.username}/${msg.job.id}${path.parse(msg.job.name).ext}`,
     }))
-
-    parentPort.postMessage({
-        type: 'success',
-    });
 }
 
 /**
@@ -263,10 +263,5 @@ async function processIndex(msg: Message, dp: DataPackage, file: string): Promis
 
             if (!icon_req.ok) console.error(await icon_req.text());
         }
-
-        await API.updateImport(event, {
-            status: 'Success',
-            result: { url: `/iconset/${iconset.uid}` }
-        });
     }
 }
