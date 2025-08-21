@@ -3,7 +3,6 @@ import type { Import } from './types.js';
 import fs from 'node:fs';
 import { Readable } from 'node:stream';
 import path from 'node:path';
-import { Event } from './index.js'
 
 export default class API {
     static async fetch({

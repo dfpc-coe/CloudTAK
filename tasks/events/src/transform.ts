@@ -1,17 +1,19 @@
 import fs from 'node:fs';
+import type { Message, LocalMessage } from './types.ts';
 import S3 from '@aws-sdk/client-s3';
 import { pipeline } from 'node:stream/promises';
 import { Upload } from '@aws-sdk/lib-storage';
-import Tippecanoe from './lib/tippecanoe.js';
 import jwt from 'jsonwebtoken';
 import path from 'node:path';
-import API from './lib/api.js';
 import cp from 'node:child_process';
 
+import API from './api.ts';
+import Tippecanoe from './transforms/tippecanoe.ts';
+
 // Formats
-import KML from './lib/kml.js';
-import Translate from './lib/translate.js';
-import GeoJSON from './lib/geojson.js';
+import KML from './transforms/kml.ts';
+import Translate from './transforms/translate.ts';
+import GeoJSON from './transforms/geojson.ts';
 
 const FORMATS = [KML, Translate, GeoJSON];
 const formats = new Map();
@@ -26,61 +28,32 @@ for (const format of FORMATS) {
 }
 
 export default class DataTransform {
-    constructor(tmpdir: string) {
-        if (!process.env.AWS_REGION) process.env.AWS_REGION = 'us-east-1';
+    msg: Message;
+    local: LocalMessage;
 
-        this.temp = tmpdir;
-
-        this.etl = {
-            api: process.env.TAK_ETL_URL || '',
-            bucket: process.env.TAK_ETL_BUCKET || '',
-            id: process.env.ETL_ID || '',
-            type: process.env.ETL_TYPE || '',
-            token: process.env.ETL_TOKEN || '',
-            task: process.env.ETL_TASK || '{}'
-        };
-
-        if (!this.etl.api) throw new Error('No ETL API URL Provided');
-        if (!this.etl.type) throw new Error('No ETL Type Provided');
-        if (!this.etl.id) throw new Error('No ETL ID Provided');
-        if (!this.etl.token) throw new Error('No ETL Token Provided');
-        if (!this.etl.bucket) throw new Error('No ETL Bucket Provided');
-        if (!this.etl.task) throw new Error('No ETL Task Provided');
-
-        // This is just a helper function for local development, signing with the (unsecure) default secret
-        if (!this.etl.token && (new URL(this.etl.api)).hostname === 'localhost') {
-            const jwtPayload = { access: this.etl.type };
-            jwtPayload[this.etl.type] = this.etl.id;
-            this.etl.token = jwt.sign({ access: this.etl.type }, 'coe-wildland-fire');
-        }
-
-        this.etl.task = JSON.parse(this.etl.task);
-
-        if (!this.etl.task.asset) throw new Error('.task.asset Not Provided');
+    constructor(
+        msg: Message,
+        local: LocalMessage
+    ) {
+        this.msg = msg;
+        this.local = local;
     }
 
-    async control() {
+    async run() {
         const s3 = new S3.S3Client({ region: process.env.AWS_REGION });
 
-        console.log(`ok - fetching s3://${this.etl.bucket}/${this.etl.type}/${this.etl.id}/${this.etl.task.asset}`);
-        const res = await s3.send(new S3.GetObjectCommand({
-            Bucket: this.etl.bucket,
-            Key: `${this.etl.type}/${this.etl.id}/${this.etl.task.asset}`
-        }));
-
-        await pipeline(res.Body, fs.createWriteStream(path.resolve(this.temp, this.etl.task.asset)));
-
-        const { ext } = path.parse(this.etl.task.asset);
-        if (!formats.has(ext)) throw new Error('Unsupported Input Format');
+        if (!formats.has(local.ext)) throw new Error('Unsupported Input Format');
         const convert = new (formats.get(ext))(this);
 
         const asset = await convert.convert();
+
+        return;
 
         if (path.parse(asset).ext === '.geojsonld') {
             const geouploader = new Upload({
                 client: s3,
                 params: {
-                    Bucket: this.etl.bucket,
+                    Bucket: this.msg.bucket,
                     Key: `${this.etl.type}/${this.etl.id}/${path.parse(this.etl.task.asset).name}.geojsonld`,
                     Body: fs.createReadStream(asset)
                 }

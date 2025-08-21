@@ -1,6 +1,7 @@
 import { parentPort } from 'worker_threads';
-// import DataTransform from './transform.js';
-import type { Import } from './types.js';
+import DataTransform from './transform.ts';
+import API from './api.ts';
+import type { Import, Message, LocalMessage } from './types.ts';
 import jwt from 'jsonwebtoken';
 import os from 'node:os';
 import fsp from 'node:fs/promises';
@@ -8,26 +9,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import S3 from "@aws-sdk/client-s3";
 import type { Import } from './types.js';
-import StreamZip from 'node-stream-zip'
-import type { StreamZipAsync } from 'node-stream-zip';
 import { pipeline } from 'node:stream/promises';
-//import API from './api.js';
 import { CoTParser, DataPackage } from '@tak-ps/node-cot';
 import xml2js from 'xml2js';
-
-export type Message = {
-    api: string
-    bucket: string
-    secret: string
-    job: Import
-};
-
-export type LocalMessage = {
-    tmpdir: string;
-    ext: string;
-    name: string;
-    raw: string;
-}
 
 parentPort.on('message', async (message) => {
     try {
@@ -66,17 +50,15 @@ parentPort.on('message', async (message) => {
                 filename: msg.job.name,
                 token
             });
-
-            console.error(JSON.stringify(res));
         } else if (msg.job.mode === 'Package') {
-            await processArchive(msg);
+            await processArchive(msg, local);
         } else if (msg.job.mode === 'Unknown') {
             if (ext === '.zip') {
-                await processArchive(msg);
+                await processArchive(msg, local);
             } else if (ext === '.xml') {
                 await processIndex(md, String(await fsp.readFile(local)));
             } else {
-                await processFile(msg)
+                await processFile(msg, local)
             }
         }
 
@@ -99,7 +81,7 @@ parentPort.on('message', async (message) => {
  *
  * @param msg - Job Description Object
  */
-async function processArchive(msg: Message): Promise<void> {
+async function processArchive(msg: Message, local: LocalMessage): Promise<void> {
     const pkg = await DataPackage.parse(local);
 
     const cots = await pkg.cots();
@@ -145,6 +127,7 @@ async function processArchive(msg: Message): Promise<void> {
         if (path.parse(file).ext === '.xml') {
             indexes.push(entry);
         } else {
+            await processFile(msg, local);
             console.log(`ok - uploading: s3://${msg.bucket}/profile/${msg.job.username}/${name}`);
                 await s3.send(new S3.PutObjectCommand({
                 Bucket: msg.bucket,
@@ -171,7 +154,10 @@ async function processArchive(msg: Message): Promise<void> {
  *
  * @param msg - Job Description Object
  */
-async function processFile(msg: Message): Promise<void> {
+async function processFile(
+    msg: Message,
+    local: LocalMessage
+): Promise<void> {
     console.log(`Import: ${msg.job.id} - uploading profile asset`);
 
     const s3 = new S3.S3Client({ region: process.env.AWS_REGION || 'us-east-1' });
@@ -184,17 +170,23 @@ async function processFile(msg: Message): Promise<void> {
         Bucket: msg.bucket,
         Key: `profile/${msg.job.username}/${msg.job.id}${path.parse(msg.job.name).ext}`,
     }))
+
+    const transformer = new DataTransform(msg, local);
 }
 
 /**
  * XML Files are typeically TAK Native documents describing how to import data into TAK
  * This function processes the XML file, determines the type and processes it accordingly
  *
- * @param msg - Job Description Object
- * @param dp - The DataPackage container
- * @param file - The file path of the XML document
+ * @param msg   - Job Description Object
+ * @param dp    - The DataPackage container
+ * @param file  - The file path of the XML document
  */
-async function processIndex(msg: Message, dp: DataPackage, file: string): Promise<void> {
+async function processIndex(
+    msg: Message,
+    dp: DataPackage,
+    file: string
+): Promise<void> {
     const xml = await xml2js.parseStringPromise(xmlstr);
 
     if (xml.iconset) {
