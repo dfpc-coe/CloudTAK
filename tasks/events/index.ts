@@ -40,8 +40,6 @@ export default class WorkerPool {
             // Don't pick up new work if we are already maxed out
             if (this.workers.size >= this.maxWorkers) return;
 
-            console.log('ok - Polling for new work');
-
             try {
                 const jobs = await this.poll(this.maxWorkers - this.workers.size);
 
@@ -51,13 +49,18 @@ export default class WorkerPool {
                     const worker = new Worker(new URL('./src/worker.ts', import.meta.url))
                     const locked = { job, worker }
 
-                    worker.on('message', (message) => {
-                        if (message.type === 'success') {
-                            await this.success(job.id);
-                        } else if (message.type === 'error') {
-                            await this.error(job.id, message.error);
-                        } else {
-                            console.error('Unknown message type from worker:', message);
+                    worker.on('message', async (message) => {
+                        try {
+                            if (message.type === 'success') {
+                                await this.success(job.id);
+                                console.log(`Import: ${job.id} - completed successfully`);
+                            } else if (message.type === 'error') {
+                                await this.error(job.id, message.error);
+                            } else {
+                                console.error(`Import: ${job.id} -`, message);
+                            }
+                        } catch (err) {
+                            console.error(`Import ${job.id} - failed to handle Job Finalization`, err);
                         }
                     });
 

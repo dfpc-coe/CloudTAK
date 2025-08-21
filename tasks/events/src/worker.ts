@@ -1,4 +1,5 @@
 import { parentPort } from 'worker_threads';
+import DataTransform from './transform.js';
 import type { Import } from './types.js';
 import jwt from 'jsonwebtoken';
 import os from 'node:os';
@@ -14,16 +15,18 @@ import { pipeline } from 'node:stream/promises';
 import { CoTParser, DataPackage } from '@tak-ps/node-cot';
 import xml2js from 'xml2js';
 
+export type Message = {
+    api: string
+    bucket: string
+    secret: string
+    job: Import
+};
+
 parentPort.on('message', async (message) => {
     try {
-        const msg: {
-            api: string
-            bucket: string
-            secret: string
-            job: Import
-        } = message;
+        const msg: Message = message;
 
-        console.error('Import:', msg.job);
+        console.error(`Import: ${msg.job.id}`, JSON.stringify(msg.job));
 
         // Use a user token to ensure data for a given user import doesn't exceed their ACL
         const token = jwt.sign({ access: 'user', email: msg.job.username }, msg.secret);
@@ -61,88 +64,10 @@ parentPort.on('message', async (message) => {
                 result
             });
         } else if (msg.job.mode === 'Package') {
-            const pkg = await DataPackage.parse(local);
-
-            const cots = await pkg.cots();
-            for (const cot of cots) {
-                const feat = await CoTParser.to_geojson(cot);
-
-                if (feat.properties.attachments) {
-                    const attachments = await pkg.attachments();
-                    for (const uid of attachments.keys()) {
-                        const contents = attachments.get(uid);
-                        if (!contents || !contents.length) continue;
-
-                        for (const content of contents) {
-                            const hash = await pkg.hash(content._attributes.zipEntry)
-                            const name = path.parse(content._attributes.zipEntry).base;
-
-                            console.log(`ok - uploading: s3://${msg.bucket}/attachment/${hash}/${name}`);
-                            await s3.send(new S3.PutObjectCommand({
-                                Bucket: msg.bucket,
-                                Key: `attachment/${hash}/${name}`,
-                                Body: await pkg.getFile(content._attributes.zipEntry)
-                            }))
-                        }
-                    }
-                }
-
-                await API.putFeature({
-                    token,
-                    broadcast: true,
-                    body: {
-                        ...feat,
-                        path: `/${pkg.settings.name.replace(/\//g, '')}/`,
-                    }
-                });
-            }
-
-            const files = await pkg.files();
-            for (const file of files) {
-                const name = path.parse(file).base;
-
-                console.log(`ok - uploading: s3://${msg.bucket}/profile/${msg.job.username}/${name}`);
-                await s3.send(new S3.PutObjectCommand({
-                    Bucket: msg.bucket,
-                    Key: `profile/${msg.job.username}/${name}`,
-                    Body: await pkg.getFile(file)
-                }))
-            }
-
-            await API.updateImport(md, {
-                status: 'Success',
-                result
-            });
+            await processArchive(msg);
         } else if (msg.job.mode === 'Unknown') {
             if (ext === '.zip') {
-                const zip = new StreamZip.async({
-                    file: path.resolve(os.tmpdir(), local),
-                    skipEntryNameValidation: true
-                });
-
-                const preentries = await zip.entries();
-
-                const indexes = [];
-                for (const entrykey in preentries) {
-                    const entry = preentries[entrykey];
-
-                    if (path.parse(entry.name).ext === '.xml') {
-                        indexes.push(entry);
-                    }
-                }
-
-                if (indexes.length) {
-                    for (const index of indexes) {
-                        await processIndex(md, String(await zip.entryData(index)), zip);
-                    }
-
-                    await API.updateImport(md, {
-                        status: 'Success',
-                        result
-                    });
-                } else {
-                    await submitBatch(md, msg.job)
-                }
+                await processArchive(msg);
             } else if (ext === '.xml') {
                 await processIndex(md, String(await fsp.readFile(local)));
 
@@ -151,7 +76,7 @@ parentPort.on('message', async (message) => {
                     result
                 });
             } else {
-                await submitBatch(md, msg.job)
+                await processFile(msg)
             }
         }
     } catch (err) {
@@ -164,21 +89,112 @@ parentPort.on('message', async (message) => {
     }
 });
 
-async function submitBatch(event: Event, imported: Import) {
-    console.log('ok - Treating as profile asset');
+/**
+ * Processes a zip file that may or may not be a DataPackage.
+ * Zip Files that are not valid datapackages will be standardize to the same interface
+ *
+ * @param msg - Job Description Object
+ */
+async function processArchive(msg: Message): Promise<void> {
+    const pkg = await DataPackage.parse(local);
+
+    const cots = await pkg.cots();
+    for (const cot of cots) {
+        const feat = await CoTParser.to_geojson(cot);
+
+        if (feat.properties.attachments) {
+            const attachments = await pkg.attachments();
+            for (const uid of attachments.keys()) {
+                const contents = attachments.get(uid);
+                if (!contents || !contents.length) continue;
+
+                for (const content of contents) {
+                    const hash = await pkg.hash(content._attributes.zipEntry)
+                    const name = path.parse(content._attributes.zipEntry).base;
+
+                    console.log(`ok - uploading: s3://${msg.bucket}/attachment/${hash}/${name}`);
+                        await s3.send(new S3.PutObjectCommand({
+                        Bucket: msg.bucket,
+                        Key: `attachment/${hash}/${name}`,
+                        Body: await pkg.getFile(content._attributes.zipEntry)
+                    }))
+                }
+            }
+        }
+
+        await API.putFeature({
+            token,
+            broadcast: true,
+            body: {
+                ...feat,
+                path: `/${pkg.settings.name.replace(/\//g, '')}/`,
+            }
+        });
+    }
+
+    const files = await pkg.files();
+    const indexes = [];
+
+    for (const file of files) {
+        const name = path.parse(file).base;
+
+        if (path.parse(file).ext === '.xml') {
+            indexes.push(entry);
+        } else {
+            console.log(`ok - uploading: s3://${msg.bucket}/profile/${msg.job.username}/${name}`);
+                await s3.send(new S3.PutObjectCommand({
+                Bucket: msg.bucket,
+                Key: `profile/${msg.job.username}/${name}`,
+                Body: await pkg.getFile(file)
+            }))
+        }
+    }
+
+    if (indexes.length) {
+        for (const index of indexes) {
+            await processIndex(msg, index);
+        }
+    }
+
+    await API.updateImport(md, {
+        status: 'Success',
+        result
+    });
+}
+
+/**
+ * Processes a file upload for a user profile asset.
+ *
+ * @param msg - Job Description Object
+ */
+async function processFile(msg: Message): Promise<void> {
+    console.log(`Import: ${msg.job.id} - uploading profile asset`);
 
     const s3 = new S3.S3Client({ region: process.env.AWS_REGION || 'us-east-1' });
 
+    const ext = path.parse(msg.job.name).ext;
+    const name = `${msg.job.id}${ext}`;
+
     await s3.send(new S3.CopyObjectCommand({
-        CopySource: `${event.Bucket}/${event.Key}`,
-        Bucket: event.Bucket,
-        Key: `profile/${imported.username}/${imported.name}`
+        CopySource: `${msg.bucket}/import/${name}`,
+        Bucket: msg.bucket,
+        Key: `profile/${msg.job.username}/${msg.job.id}${path.parse(msg.job.name).ext}`,
     }))
 
-    await API.createBatch(event, imported);
+    parentPort.postMessage({
+        type: 'success',
+    });
 }
 
-async function processIndex(event: Event, xmlstr: string, zip?: StreamZipAsync) {
+/**
+ * XML Files are typeically TAK Native documents describing how to import data into TAK
+ * This function processes the XML file, determines the type and processes it accordingly
+ *
+ * @param msg - Job Description Object
+ * @param dp - The DataPackage container
+ * @param file - The file path of the XML document
+ */
+async function processIndex(msg: Message, dp: DataPackage, file: string): Promise<void> {
     const xml = await xml2js.parseStringPromise(xmlstr);
 
     if (xml.iconset) {

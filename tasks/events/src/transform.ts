@@ -1,4 +1,3 @@
-import os from 'node:os';
 import fs from 'node:fs';
 import S3 from '@aws-sdk/client-s3';
 import { pipeline } from 'node:stream/promises';
@@ -27,10 +26,10 @@ for (const format of FORMATS) {
 }
 
 export default class DataTransform {
-    constructor() {
+    constructor(tmpdir: string) {
         if (!process.env.AWS_REGION) process.env.AWS_REGION = 'us-east-1';
 
-        this.temp = fs.mkdtempSync(path.resolve(os.tmpdir(), 'cloudtak-'));
+        this.temp = tmpdir;
 
         this.etl = {
             api: process.env.TAK_ETL_URL || '',
