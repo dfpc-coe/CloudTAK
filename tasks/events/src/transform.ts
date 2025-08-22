@@ -42,11 +42,15 @@ export default class DataTransform {
     async run() {
         const s3 = new S3.S3Client({ region: process.env.AWS_REGION });
 
-        if (!formats.has(local.ext)) throw new Error('Unsupported Input Format');
-        const convert = new (formats.get(ext))(this);
+        if (!formats.has(this.local.ext)) {
+            throw new Error('Unsupported Input Format');
+        }
+
+        const convert = new (formats.get(this.local.ext))(this);
 
         const asset = await convert.convert();
 
+        console.error('HERE');
         return;
 
         if (path.parse(asset).ext === '.geojsonld') {

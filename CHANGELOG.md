@@ -12,6 +12,15 @@
 
 ### Pending Release
 
+### v10.50.0 - 2025-08-22
+
+- :rocket: DEPLOY NOTE: API_URL env vars must now be valid URLs, not just the hostname
+- :rocket: NGINX Configuration in HTTP environments
+
+### v10.49.0 - 2025-08-22
+
+- :rocket: Enhanced Location Handling with Manual Override
+
 ### v10.48.0 - 2025-08-20
 
 - :rocket: Add addition UI Area Units

@@ -1,7 +1,7 @@
 {
     "name": "@tak-ps/CloudTAK.web",
     "type": "module",
-    "version": "10.48.0",
+    "version": "10.50.0",
     "private": true,
     "engines": {
         "node": ">= 22"
@@ -55,6 +55,7 @@
         "swagger-ui": "^5.25.4",
         "terra-draw": "^1.7.0",
         "terra-draw-maplibre-gl-adapter": "^1.1.1",
+        "uuid": "^11.1.0",
         "vue": "^3.2.31",
         "vue-mention": "^2.0.0-alpha.3",
         "vue-router": "^4.0.14"

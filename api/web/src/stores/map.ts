@@ -7,6 +7,7 @@
 * - Source - MapLibre - Ref: https://maplibre.org/maplibre-style-spec/sources/
 */
 
+import { v4 as randomUUID } from 'uuid';
 import { defineStore } from 'pinia'
 import DrawTool, { DrawToolMode } from './modules/draw.ts';
 import IconManager from './modules/icons.ts';
@@ -42,6 +43,8 @@ export const useMapStore = defineStore('cloudtak', {
         zoom: string;
         location: LocationState;
         distanceUnit: string;
+        manualLocationMode: boolean;
+        gpsWatchId: number | null;
 
         permissions: {
             location: boolean;
@@ -92,6 +95,8 @@ export const useMapStore = defineStore('cloudtak', {
             channel: new BroadcastChannel("cloudtak"),
             zoom: 'conditional',
             distanceUnit: 'meter',
+            manualLocationMode: false,
+            gpsWatchId: null,
             locked: [],
             notifications: [],
             hasTerrain: false,
@@ -147,6 +152,12 @@ export const useMapStore = defineStore('cloudtak', {
     actions: {
         destroy: function() {
             this.channel.close();
+
+            // Clean up GPS watch
+            if (this.gpsWatchId !== null) {
+                navigator.geolocation.clearWatch(this.gpsWatchId);
+                this.gpsWatchId = null;
+            }
 
             if (this._map) {
                 try {
@@ -368,25 +379,7 @@ export const useMapStore = defineStore('cloudtak', {
                     this.permissions.location = status.state === 'granted' ? true : false
                 };
 
-                navigator.geolocation.watchPosition((position) => {
-                    if (position.coords.accuracy <= 50) {
-                        this.channel.postMessage({
-                            type: WorkerMessageType.Profile_Location_Coordinates,
-                            body: {
-                                accuracy: position.coords.accuracy,
-                                coordinates: [ position.coords.longitude, position.coords.latitude ]
-                            }
-                        })
-                    }
-                }, (err) => {
-                    if (err.code !== 0) {
-                        console.error('Location Error', err);
-                    }
-                },{
-                    maximumAge: 0,
-                    timeout: 1500,
-                    enableHighAccuracy: true
-                });
+                this.startGPSWatch();
             } else {
                 console.error('Browser does not appear to support Geolocation');
             }
@@ -476,6 +469,34 @@ export const useMapStore = defineStore('cloudtak', {
             this.updateDistanceUnit(profile.display_distance);
 
             this.isOpen = await this.worker.conn.isOpen;
+        },
+        startGPSWatch: function(): void {
+            if (!("geolocation" in navigator)) return;
+            
+            // Clear existing watch if any
+            if (this.gpsWatchId !== null) {
+                navigator.geolocation.clearWatch(this.gpsWatchId);
+            }
+            
+            this.gpsWatchId = navigator.geolocation.watchPosition((position) => {
+                if (!this.manualLocationMode) {
+                    this.channel.postMessage({
+                        type: WorkerMessageType.Profile_Location_Coordinates,
+                        body: {
+                            accuracy: position.coords.accuracy,
+                            coordinates: [ position.coords.longitude, position.coords.latitude ]
+                        }
+                    })
+                }
+            }, (err) => {
+                if (err.code !== 0) {
+                    console.error('Location Error', err);
+                }
+            }, {
+                maximumAge: 0,
+                timeout: 10000,
+                enableHighAccuracy: true
+            });
         },
         initOverlays: async function() {
             if (!this.map) throw new Error('Cannot initLayers before map has loaded');
@@ -569,7 +590,7 @@ export const useMapStore = defineStore('cloudtak', {
             map.on('contextmenu', (e) => {
                 if (this.draw.editing) return;
 
-                const id = window.crypto.randomUUID();
+                const id = randomUUID();
                 this.radialClick({
                     id,
                     type: 'Feature',

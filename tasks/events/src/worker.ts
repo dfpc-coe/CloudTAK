@@ -172,6 +172,8 @@ async function processFile(
     }))
 
     const transformer = new DataTransform(msg, local);
+
+    await transformer.run();
 }
 
 /**
