@@ -1,3 +1,4 @@
+import { v4 as randomUUID } from 'uuid';
 import * as terraDraw from 'terra-draw';
 import mapgl from 'maplibre-gl'
 import { coordEach } from '@turf/meta';
@@ -80,7 +81,7 @@ export default class DrawTool {
                 },
                 getId: (function () {
                     return function () {
-                        return crypto.randomUUID()
+                        return randomUUID()
                     };
                 })()
             },
