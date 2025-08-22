@@ -23,7 +23,6 @@ services:
             - AWS_S3_SecretAccessKey=cloudtakminioadmin
             - POSTGRES=postgres://docker:docker@postgis:5432/gis
             - API_URL=http://localhost:5000
-            - ROOT_URL=http://localhost:5001
             - PMTILES_URL=http://tiles:5002
 
     tiles:
