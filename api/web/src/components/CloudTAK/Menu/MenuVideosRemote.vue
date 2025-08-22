@@ -74,6 +74,7 @@
 </template>
 
 <script setup lang='ts'>
+import { v4 as randomUUID } from 'uuid';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import type { VideoConnection, VideoConnectionFeed } from '../../../types.ts';
 import VideosRemoteFeed from './Videos/VideosRemoteFeed.vue';
@@ -98,7 +99,7 @@ const router = useRouter();
 const loading = ref(String(route.params.connectionid) !== "new");
 const err = ref<Error | undefined>(undefined);
 const connection = ref<VideoConnection>({
-    uuid: self.crypto.randomUUID(),
+    uuid: randomUUID(),
     active: true,
     classification: '',
     thumbnail: '',
@@ -116,7 +117,7 @@ onMounted(async () => {
 
 function newFeed() {
     connection.value.feeds.push({
-        uuid: self.crypto.randomUUID(),
+        uuid: randomUUID(),
         alias: "",
         url: "",
         active: true
