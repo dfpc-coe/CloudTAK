@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v10.49.0 - 2025-08-22
+
+- :rocket: Enhanced Location Handling with Manual Override
+
 ### v10.48.0 - 2025-08-20
 
 - :rocket: Add addition UI Area Units
