@@ -4,12 +4,13 @@ if (!process.env.API_URL) {
     throw new Error('API_URL environment variable is not set');
 }
 
+const url = new URL(process.env.API_URL);
+
 let cspstr = '';
-if (process.env.API_URL.includes('localhost')) {
+if (url.hostname === 'localhost') {
     // CSP is disabled when running on localhost
     cspstr = '';
 } else {
-    const url = new URL(process.env.API_URL);
     const isIP = net.isIP(url.hostname) || net.isIPv6(url.hostname)
     // FQDN: Check if API_URL is something.example.com vs example.com
     const isSub = process.env.API_URL.match(/.*\.*\..*?\..*?$/)
