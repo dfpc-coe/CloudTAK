@@ -31,7 +31,7 @@ export default class AtlasConnection {
         url.searchParams.append('connection', connection);
         url.searchParams.append('token', this.atlas.token);
 
-        if (self.location.hostname === 'localhost') {
+        if (self.location.protocol === 'http:') {
             url.protocol = 'ws:';
         } else {
             url.protocol = 'wss:';
