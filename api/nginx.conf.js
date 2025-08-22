@@ -45,7 +45,12 @@ if (url.hostname === 'localhost') {
 
         cspstr += ';';
     }
-    cspstr += `upgrade-insecure-requests;" always;`;
+
+    if (url.protocol === 'https:') {
+        cspstr += `upgrade-insecure-requests;" always;`;
+    } else {
+        cspstr += `" always;`;
+    }
 }
 
 let sts = '';
