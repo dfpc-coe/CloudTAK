@@ -132,6 +132,7 @@
 </template>
 
 <script setup lang='ts'>
+import { v4 as randomUUID } from 'uuid';
 import { useRouter } from 'vue-router'
 import { ref, computed } from 'vue';
 import { useMapStore } from '../../stores/map.ts';
@@ -177,7 +178,7 @@ async function cutFeature() {
     if (!overlay.value) throw new Error("Could not determine Overlay");
 
     const rawFeature = await std(`/api/basemap/${overlay.value.mode_id}/feature/${props.feat.id}`) as Feature;
-    const id = crypto.randomUUID();
+    const id = randomUUID();
 
     if (
         rawFeature.geometry.type !== "Point"

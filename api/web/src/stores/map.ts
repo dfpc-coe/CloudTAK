@@ -7,6 +7,7 @@
 * - Source - MapLibre - Ref: https://maplibre.org/maplibre-style-spec/sources/
 */
 
+import { v4 as randomUUID } from 'uuid';
 import { defineStore } from 'pinia'
 import DrawTool, { DrawToolMode } from './modules/draw.ts';
 import IconManager from './modules/icons.ts';
@@ -589,7 +590,7 @@ export const useMapStore = defineStore('cloudtak', {
             map.on('contextmenu', (e) => {
                 if (this.draw.editing) return;
 
-                const id = window.crypto.randomUUID();
+                const id = randomUUID();
                 this.radialClick({
                     id,
                     type: 'Feature',

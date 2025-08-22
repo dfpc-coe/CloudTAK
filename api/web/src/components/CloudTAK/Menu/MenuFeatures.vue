@@ -168,6 +168,7 @@
 </template>
 
 <script setup lang='ts'>
+import { v4 as randomUUID } from 'uuid';
 import { ref, watch, nextTick, onMounted, onBeforeUnmount, useTemplateRef } from 'vue';
 import { stdurl } from '../../../std.ts';
 import COT from '../../../base/cot.ts';
@@ -336,7 +337,7 @@ async function refresh(load = false): Promise<void> {
             return path !== '/'
         }).map((path) => {
             return {
-                id: crypto.randomUUID(),
+                id: randomUUID(),
                 name: path,
                 opened: false,
                 loading: false,
