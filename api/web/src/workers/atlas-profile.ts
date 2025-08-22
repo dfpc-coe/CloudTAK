@@ -189,10 +189,6 @@ export default class AtlasProfile {
         if (
             this.profile
             && this.profile.tak_loc
-            && (
-                this.location.source === LocationState.Disabled
-                || this.location.source === LocationState.Preset
-            )
         ) {
             this.location.source = LocationState.Preset;
             this.location.accuracy = undefined;
@@ -201,6 +197,16 @@ export default class AtlasProfile {
             this.atlas.postMessage({
                 type: WorkerMessageType.Profile_Location_Source,
                 body: { source: LocationState.Preset }
+            });
+        } else if (this.profile && !this.profile.tak_loc && this.location.source === LocationState.Preset) {
+            // Reset to disabled when manual location is cleared
+            this.location.source = LocationState.Disabled;
+            this.location.accuracy = undefined;
+            this.location.coordinates = [0, 0];
+
+            this.atlas.postMessage({
+                type: WorkerMessageType.Profile_Location_Source,
+                body: { source: LocationState.Disabled }
             });
         }
     }
@@ -311,7 +317,7 @@ export default class AtlasProfile {
             });
         }
 
-        if (body.tak_loc || body.tak_type) {
+        if (body.tak_loc !== undefined || body.tak_type) {
             this.updateLocation();
         }
 
