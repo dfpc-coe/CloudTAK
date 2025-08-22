@@ -23,15 +23,13 @@ export default class KML {
     }
 
     async convert() {
-        const { ext } = path.parse(path.resolve(this.task.temp, this.task.etl.task.asset));
-
         const icons = new Map();
 
         let asset;
 
-        if (ext === '.kmz') {
+        if (this.task.local.ext === '.kmz') {
             const zip = new StreamZip.async({
-                file: path.resolve(this.task.temp, this.task.etl.task.asset),
+                file: this.task.local.raw,
                 skipEntryNameValidation: true
             });
 
@@ -39,11 +37,11 @@ export default class KML {
 
             if (!preentries['doc.kml']) throw new Error('No doc.kml found in KMZ');
 
-            await zip.extract(null, this.task.temp);
+            await zip.extract(null, this.task.local.tmpdir);
 
-            asset = path.resolve(this.task.temp, 'doc.kml');
+            asset = path.resolve(this.task.local.tmpdir, 'doc.kml');
         } else {
-            asset = path.resolve(this.task.temp, this.task.etl.task.asset);
+            asset = path.resolve(this.task.local.raw);
         }
 
         const dom = new DOMParser().parseFromString(String(await fs.readFile(asset)), 'text/xml');
@@ -52,7 +50,7 @@ export default class KML {
 
         for (const feat of converted) {
             if (feat.properties.icon && !icons.has(feat.properties.icon)) {
-                const search = await glob(path.resolve(this.task.temp, '**/' + feat.properties.icon));
+                const search = await glob(path.resolve(this.task.local.tmpdir, '**/' + feat.properties.icon));
                 if (!search.length) continue;
 
                 icons.set(feat.properties.icon, await fs.readFile(search[0]));
@@ -61,7 +59,7 @@ export default class KML {
 
         console.error('ok - converted to GeoJSON');
 
-        const output = path.resolve(this.task.temp, path.parse(this.task.etl.task.asset).name + '.geojsonld');
+        const output = path.resolve(this.task.local.tmpdir, path.parse(this.task.name).name + '.geojsonld');
 
         await fs.writeFile(output, converted.map((feat) => {
             return JSON.stringify(feat);

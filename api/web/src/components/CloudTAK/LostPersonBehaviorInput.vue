@@ -66,6 +66,7 @@
 </template>
 
 <script setup lang='ts'>
+import { v4 as randomUUID } from 'uuid';
 import { ref, toRaw } from 'vue'
 import Coordinate from './util/Coordinate.vue';
 import PropertyDistance from './util/PropertyDistance.vue';
@@ -100,7 +101,7 @@ const config = ref({
 });
 
 async function submitRings() {
-    const id = crypto.randomUUID();
+    const id = randomUUID();
 
     await mapStore.worker.db.add({
         id,
@@ -130,7 +131,7 @@ async function submitRings() {
     for (const ring of keys) {
         if (config.value.rings[ring] === 0) continue;
 
-        const ringid = crypto.randomUUID();
+        const ringid = randomUUID();
 
         await mapStore.worker.db.add({
             id: ringid,

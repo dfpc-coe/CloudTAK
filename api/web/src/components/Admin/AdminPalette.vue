@@ -113,6 +113,7 @@
 </template>
 
 <script setup lang='ts'>
+import { v4 as randomUUID } from 'uuid';
 import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { std } from '../../../src/std.ts';
@@ -142,7 +143,7 @@ const disabled = ref(true);
 const loading = ref(true);
 
 const palette = ref<Palette>({
-    uuid: crypto.randomUUID(),
+    uuid: randomUUID(),
     created: new Date().toISOString(),
     updated: new Date().toISOString(),
     name: '',
