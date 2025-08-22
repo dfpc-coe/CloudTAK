@@ -33,17 +33,20 @@ export default class Atlas {
             if (!msg || !msg.type) return;
 
             if (msg.type === WorkerMessageType.Profile_Location_Coordinates) {
-                this.postMessage({
-                    type: WorkerMessageType.Profile_Location_Source,
-                    body: {
-                        source: LocationState.Live
-                    }
-                })
+                // Only process GPS coordinates if not in manual location mode
+                if (this.profile.location.source !== LocationState.Preset) {
+                    this.postMessage({
+                        type: WorkerMessageType.Profile_Location_Source,
+                        body: {
+                            source: LocationState.Live
+                        }
+                    })
 
-                this.profile.location = {
-                    source: LocationState.Live,
-                    ...msg.body
-                } as ProfileLocation;
+                    this.profile.location = {
+                        source: LocationState.Live,
+                        ...msg.body
+                    } as ProfileLocation;
+                }
             }
         }
     }
