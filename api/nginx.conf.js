@@ -1,5 +1,9 @@
 import net from 'node:net';
 
+if (!process.env.API_URL) {
+    throw new Error('API_URL environment variable is not set');
+}
+
 let cspstr = '';
 if (process.env.API_URL.includes('localhost')) {
     // CSP is disabled when running on localhost
@@ -43,6 +47,12 @@ if (process.env.API_URL.includes('localhost')) {
     cspstr += `upgrade-insecure-requests;" always;`;
 }
 
+let sts = '';
+if (url.protocol === 'https:') {
+    // Production use should always use HSTS but in dev/testing mode we disable it
+    sts = `add_header 'Strict-Transport-Security' 'max-age=31536000; includeSubDomains; preload' always;`;
+}
+
 console.log(`
 user nginx;
 worker_processes auto;
@@ -74,9 +84,9 @@ http {
         add_header 'X-Content-Type-Options' 'nosniff' always;
         add_header 'X-Frame-Options' 'DENY' always;
         add_header 'Referrer-Policy' 'strict-origin-when-cross-origin' always;
-        add_header 'Strict-Transport-Security' 'max-age=31536000; includeSubDomains; preload' always;
         add_header 'Permissions-Policy' 'fullscreen=(self), geolocation=(self), clipboard-read=(self), clipboard-write=(self)' always;
         ${cspstr}
+        ${sts}
 
         location = / {
             if ($request_uri ~ ^/(.*)\.html) {
@@ -86,9 +96,9 @@ http {
             add_header 'X-Content-Type-Options' 'nosniff' always;
             add_header 'X-Frame-Options' 'DENY' always;
             add_header 'Referrer-Policy' 'strict-origin-when-cross-origin' always;
-            add_header 'Strict-Transport-Security' 'max-age=31536000; includeSubDomains; preload' always;
             add_header 'Permissions-Policy' 'fullscreen=(self), geolocation=(self), clipboard-read=(self), clipboard-write=(self)' always;
             ${cspstr}
+            ${sts}
 
             add_header 'Cache-Control' 'no-store, no-cache, must-revalidate' always;
             add_header 'Expires' 0 always;
