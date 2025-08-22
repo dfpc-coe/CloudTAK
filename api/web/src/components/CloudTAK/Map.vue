@@ -26,36 +26,44 @@
             <DrawOverlay
                 v-if='mapStore.draw.mode !== DrawToolMode.STATIC'
             />
-            
-            <!-- Manual Location Instruction Overlay -->
+
             <div
                 v-if='mode === "SetLocation"'
-                class='position-absolute top-50 start-50 translate-middle'
-                style='z-index: 1000;'
+                class='position-absolute bottom-0 text-white bg-dark rounded-top'
+                style='
+                    z-index: 1;
+                    left: calc(50% - 250px);
+                    width: 500px;
+                '
             >
                 <div
-                    class='alert alert-info d-flex flex-column'
-                    style='background-color: rgba(13, 110, 253, 0.9); border: none; color: white; min-width: 300px; margin-bottom: 0;'
+                    class='card user-select-none'
                 >
-                    <div class='d-flex align-items-center mb-2'>
-                        <IconLocationPin class='me-2' :size='20' />
-                        <span>Click on the map to {{ mapStore.location === LocationState.Preset ? 'update' : 'set' }} your location</span>
-                    </div>
-                    <div class='d-flex gap-2'>
-                        <button
-                            class='btn btn-sm btn-outline-light'
-                            @click='exitManualMode'
-                        >
-                            <IconLocation :size='16' class='me-1' />
-                            Use GPS
-                        </button>
-                        <button
-                            class='btn btn-sm btn-outline-light'
-                            @click='cancelLocationSetting'
-                        >
-                            <IconX :size='16' class='me-1' />
-                            Cancel
-                        </button>
+                    <div class='card-header'>
+                        <div class='col-8'>
+                            <IconLocationPin class='me-2' :size='20' />
+                            <span>Click on the map to {{ mapStore.location === LocationState.Preset ? 'update' : 'set' }} your location</span>
+                        </div>
+                        <div class='col-4 d-flex align-items-center'>
+                            <div class='ms-auto btn-list'>
+                                <button
+                                    class='btn btn-sm btn-outline-light'
+                                    @click='exitManualMode'
+                                >
+                                    <IconLocation :size='16' class='me-1' />
+                                    Use GPS
+                                </button>
+                                <TablerIconButton
+                                    title='Cancel Manual Location'
+                                    @click='cancelLocationSetting'
+                                >
+                                    <IconX
+                                        :size='24'
+                                        stroke='1'
+                                    />
+                                </TablerIconButton>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -572,7 +580,7 @@ watch(() => mapStore.location, async () => {
 
 const locationColor = computed(() => {
     if (mapStore.location !== LocationState.Live || !locationAccuracy.value) return '#ffffff';
-    
+
     const accuracy = locationAccuracy.value;
     // Color-code based on accuracy ranges
     if (accuracy <= 50) return '#22c55e';      // Green - high accuracy
@@ -584,11 +592,11 @@ const locationTooltip = computed(() => {
     if (mode.value === 'SetLocation') {
         return 'Click on map to set location';
     }
-    
+
     if (mapStore.location === LocationState.Preset) {
         return 'Manual Location - Click to adjust or switch to GPS';
     }
-    
+
     if (mapStore.location === LocationState.Live && locationAccuracy.value) {
         const accuracy = locationAccuracy.value;
         // Convert to user's preferred distance unit
@@ -599,7 +607,7 @@ const locationTooltip = computed(() => {
             return `Live Location (±${Math.round(accuracy)}m) - Click to set manually`;
         }
     }
-    
+
     return 'Set Your Location - Click to enable GPS or set manually';
 })
 
@@ -727,7 +735,7 @@ function setLocation() {
     mapStore.manualLocationMode = true;
     mode.value = 'SetLocation';
     mapStore.map.getCanvas().style.cursor = 'crosshair';
-    
+
     // Store the handler so we can remove it later if needed
     locationClickHandler.value = async (e: MapMouseEvent) => {
         mapStore.map.getCanvas().style.cursor = '';
@@ -743,14 +751,14 @@ function setLocation() {
 
         await mapStore.refresh();
     };
-    
+
     mapStore.map.once('click', locationClickHandler.value);
 }
 
 function cancelLocationSetting() {
     mode.value = 'Default';
     mapStore.map.getCanvas().style.cursor = '';
-    
+
     // Remove the specific location click handler if it exists
     if (locationClickHandler.value) {
         mapStore.map.off('click', locationClickHandler.value);
@@ -763,26 +771,26 @@ async function exitManualMode() {
     mapStore.manualLocationMode = false;
     mode.value = 'Default';
     mapStore.map.getCanvas().style.cursor = '';
-    
+
     // Remove the specific location click handler if it exists
     if (locationClickHandler.value) {
         mapStore.map.off('click', locationClickHandler.value);
         locationClickHandler.value = null;
     }
-    
+
     // Immediately set location to loading state for UI feedback
     mapStore.location = LocationState.Loading;
-    
+
     // Remove current location dot from map by removing user's CoT
     const userUid = `ANDROID-CloudTAK-${(await mapStore.worker.profile.load()).username}`;
     await mapStore.worker.db.remove(userUid);
-    
+
     // Clear manual location and wait for it to complete
     await mapStore.worker.profile.update({ tak_loc: null });
-    
+
     // Restart GPS watch to ensure fresh GPS acquisition
     mapStore.startGPSWatch();
-    
+
     await mapStore.refresh();
 }
 
