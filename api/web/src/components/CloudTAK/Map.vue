@@ -92,7 +92,7 @@
                                 style='margin: 5px 8px'
                             />
                         </TablerIconButton>
-                       <TablerIconButton
+                        <TablerIconButton
                             v-else-if='mapStore.location === LocationState.Live'
                             :title='locationTooltip'
                             @click='setLocation'
