@@ -122,7 +122,7 @@ export default class AtlasProfile {
         this.timerSelf = setInterval(async () => {
             // Always send CoT - use GPS coordinates if available, manual location if set, otherwise default to 0,0
             if (this.location.accuracy) {
-                await this.CoT(this.location.coordinates, this.location.accuracy);
+                await this.CoT(this.location.coordinates, this.location.accuracy, this.location.altitude);
             } else if (this.profile && this.profile.tak_loc) {
                 await this.CoT();
             } else {
@@ -379,11 +379,14 @@ export default class AtlasProfile {
                     platform: 'CloudTAK',
                     os: navigator.platform,
                     version: this.server.version
-                },
-                hae,
-                ...(accuracy !== undefined && { ce: accuracy })
+                }
             } as Feature['properties'],
-            geometry: { type: 'Point', coordinates: [...coordinates, hae] }
+            geometry: { 
+                type: 'Point', 
+                coordinates: accuracy !== undefined 
+                    ? [...coordinates, hae, accuracy] 
+                    : [...coordinates, hae]
+            }
         }
 
         await this.atlas.db.add(feat);
