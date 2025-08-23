@@ -366,14 +366,11 @@ export default class AtlasProfile {
                     platform: 'CloudTAK',
                     os: navigator.platform,
                     version: this.server.version
-                }
+                },
+                hae,
+                ...(accuracy !== undefined && { ce: accuracy })
             } as Feature['properties'],
-            geometry: { 
-                type: 'Point', 
-                coordinates: accuracy !== undefined 
-                    ? [...coordinates, hae, accuracy] 
-                    : [...coordinates, hae]
-            }
+            geometry: { type: 'Point', coordinates: [...coordinates, hae] }
         }
 
         await this.atlas.db.add(feat);
