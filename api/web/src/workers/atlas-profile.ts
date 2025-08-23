@@ -118,10 +118,14 @@ export default class AtlasProfile {
         }
 
         this.timerSelf = setInterval(async () => {
+            // Always send CoT - use GPS coordinates if available, manual location if set, otherwise default to 0,0
             if (this.location.accuracy) {
-                await this.CoT(this.location.coordinates);
+                await this.CoT(this.location.coordinates, this.location.accuracy);
             } else if (this.profile && this.profile.tak_loc) {
                 await this.CoT();
+            } else {
+                // Send 0,0 location when no valid location is available
+                await this.CoT([0, 0]);
             }
 
             const me = await this.atlas.db.get(this.uid());
@@ -336,7 +340,7 @@ export default class AtlasProfile {
         return `ANDROID-CloudTAK-${this.profile.username}`;
     }
 
-    async CoT(coords?: number[]): Promise<void> {
+    async CoT(coords?: number[], accuracy?: number): Promise<void> {
         if (!this.profile || !this.server) throw new Error('Profile must be loaded before CoT is called');
 
         const feat: Feature = {
@@ -367,8 +371,9 @@ export default class AtlasProfile {
                     platform: 'CloudTAK',
                     os: navigator.platform,
                     version: this.server.version
-                }
-            },
+                },
+                ...(accuracy !== undefined && { hae: accuracy })
+            } as Feature['properties'],
             geometry: coords
                 ? { type: 'Point', coordinates: coords }
                 : (toRaw(this.profile.tak_loc) || { type: 'Point', coordinates: [0,0] })
