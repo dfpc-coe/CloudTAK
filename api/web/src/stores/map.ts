@@ -365,6 +365,7 @@ export const useMapStore = defineStore('cloudtak', {
                             type: WorkerMessageType.Profile_Location_Coordinates,
                             body: {
                                 accuracy: position.coords.accuracy,
+                                altitude: position.coords.altitude,
                                 coordinates: [ position.coords.longitude, position.coords.latitude ]
                             }
                         })
