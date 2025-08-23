@@ -187,12 +187,7 @@ export default class DrawTool {
                     } else if (this.mode === DrawToolMode.POINT) {
                         feat.properties.type = this.point.type
                         feat.properties["marker-opacity"] = 1;
-
-                        if (this.point.type === 'u-d-p') {
-                            feat.properties["marker-color"] = '#00FF00';
-                        } else {
-                            feat.properties["marker-color"] = '#FFFFFF';
-                        }
+                        feat.properties["marker-color"] = '#00FF00';
                     }
 
                     this.removeFeature(id);
