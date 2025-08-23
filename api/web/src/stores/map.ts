@@ -41,7 +41,6 @@ export const useMapStore = defineStore('cloudtak', {
         callsign: string;
         zoom: string;
         location: LocationState;
-        distanceUnit: string;
 
         permissions: {
             location: boolean;
@@ -91,7 +90,6 @@ export const useMapStore = defineStore('cloudtak', {
             location: LocationState.Loading,
             channel: new BroadcastChannel("cloudtak"),
             zoom: 'conditional',
-            distanceUnit: 'meter',
             locked: [],
             notifications: [],
             hasTerrain: false,
@@ -337,8 +335,8 @@ export const useMapStore = defineStore('cloudtak', {
                     this.callsign = msg.body.callsign;
                 } else if (msg.type === WorkerMessageType.Profile_Display_Zoom) {
                     this.zoom = msg.body.zoom;
-                } else if (msg.type === WorkerMessageType.Profile_Distance_Unit) {
-                    this.updateDistanceUnit(msg.body.unit);
+                } else if (msg.type === WorkerMessageType.Profile_Icon_Rotation) {
+                    this.updateIconRotation(msg.body.enabled);
                 } else if (msg.type === WorkerMessageType.Map_Projection) {
                     map.setProjection(msg.body);
                 } else if (msg.type === WorkerMessageType.Connection_Open) {
@@ -418,7 +416,7 @@ export const useMapStore = defineStore('cloudtak', {
             const init: mapgl.MapOptions = {
                 container: this.container,
                 hash: true,
-                attributionControl: {},
+                attributionControl: false,
                 fadeDuration: 0,
                 zoom: this.mapConfig.zoom,
                 pitch: this.mapConfig.pitch,
@@ -449,16 +447,6 @@ export const useMapStore = defineStore('cloudtak', {
 
             const map = new mapgl.Map(init);
 
-            // Add scale control
-            const scaleControl = new mapgl.ScaleControl({
-                maxWidth: 100,
-                unit: 'metric'
-            });
-            map.addControl(scaleControl, 'bottom-left');
-
-            // Store reference for later use
-            (map as mapgl.Map & { _scaleControl?: mapgl.ScaleControl })._scaleControl = scaleControl;
-
             this._map = map;
             this._draw = new DrawTool(this);
             this._icons = new IconManager(map);
@@ -470,10 +458,11 @@ export const useMapStore = defineStore('cloudtak', {
             const profile = await this.worker.profile.load()
             this.callsign = profile.tak_callsign;
             this.zoom = profile.display_zoom;
-            this.distanceUnit = profile.display_distance;
-
-            // Initialize scale control settings
-            this.updateDistanceUnit(profile.display_distance);
+            
+            // Initialize icon rotation setting after overlays are loaded
+            setTimeout(() => {
+                this.updateIconRotation(profile.display_icon_rotation === 'Enabled');
+            }, 100);
 
             this.isOpen = await this.worker.conn.isOpen;
         },
@@ -665,9 +654,6 @@ export const useMapStore = defineStore('cloudtak', {
             }
 
             this.isLoaded = true;
-
-            // Update attribution with basemap data
-            await this.updateAttribution();
         },
         /**
          * Determine if the feature is from the CoT store or a clicked VT feature
@@ -685,43 +671,46 @@ export const useMapStore = defineStore('cloudtak', {
             if (!click) return;
             return click.type;
         },
-
-        updateDistanceUnit: function(unit: string): void {
-            this.distanceUnit = unit;
-            // Remove existing scale control and add new one with correct unit
-            const mapWithControl = this.map as mapgl.Map & { _scaleControl?: mapgl.ScaleControl };
-            const existingControl = mapWithControl._scaleControl;
-            if (existingControl) {
-                this.map.removeControl(existingControl);
-                const scaleControl = new mapgl.ScaleControl({
-                    maxWidth: 100,
-                    unit: unit === 'mile' ? 'imperial' : 'metric'
-                });
-                this.map.addControl(scaleControl, 'bottom-left');
-                mapWithControl._scaleControl = scaleControl;
-            }
-        },
-        updateAttribution: async function(): Promise<void> {
-            const attributions: string[] = [];
-
+        updateIconRotation: function(enabled: boolean): void {
             for (const overlay of this.overlays) {
-                if (overlay.mode === 'basemap' && overlay.mode_id && overlay.visible) {
-                    try {
-                        const basemap = await std(`/api/basemap/${overlay.mode_id}`) as { attribution?: string };
-                        if (basemap.attribution) {
-                            attributions.push(basemap.attribution);
+                if (overlay.type === 'geojson') {
+                    // Update icon rotation
+                    const iconLayerId = `${overlay.id}-icon`;
+                    if (this.map.getLayer(iconLayerId)) {
+                        this.map.setLayoutProperty(iconLayerId, 'icon-rotate', enabled ? ['get', 'course'] : 0);
+                    }
+
+                    // Update course arrow filter based on rotation setting
+                    const courseLayerId = `${overlay.id}-course`;
+                    if (this.map.getLayer(courseLayerId)) {
+                        if (enabled) {
+                            // When rotation enabled, only show course arrows for grouped features
+                            this.map.setFilter(courseLayerId, [
+                                'all',
+                                ['==', '$type', 'Point'],
+                                ['has', 'course'],
+                                ['has', 'group']
+                            ]);
+                        } else {
+                            // When rotation disabled, show course arrows for all features with course
+                            this.map.setFilter(courseLayerId, [
+                                'all',
+                                ['==', '$type', 'Point'],
+                                ['has', 'course']
+                            ]);
                         }
-                    } catch (err) {
-                        console.warn('Failed to load basemap attribution:', err);
+                    }
+
+                    // Update text offset
+                    const textLayerId = `${overlay.id}-text-point`;
+                    if (this.map.getLayer(textLayerId)) {
+                        this.map.setLayoutProperty(textLayerId, 'text-offset', [0, enabled ? 2 : 2.5]);
                     }
                 }
             }
-
-            // Update attribution by manipulating the DOM directly
-            const attributionContainer = document.querySelector('.maplibregl-ctrl-attrib-inner');
-            if (attributionContainer && attributions.length > 0) {
-                attributionContainer.innerHTML = attributions.join(' | ');
-            }
+            
+            // Force a map repaint to ensure changes are visible immediately
+            this.map.triggerRepaint();
         },
         radialClick: async function(feat: MapGeoJSONFeature | Feature, opts: {
             lngLat: LngLat;
