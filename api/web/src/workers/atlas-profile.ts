@@ -14,6 +14,7 @@ export type TAKNotification = {
 export type ProfileLocation = {
     source: LocationState
     accuracy: number | undefined
+    altitude: number | null | undefined
     coordinates: number[]
 }
 
@@ -37,6 +38,7 @@ export default class AtlasProfile {
         this.location = {
             source: LocationState.Disabled,
             accuracy: undefined,
+            altitude: undefined,
             coordinates: [0, 0]
         };
 
@@ -196,6 +198,7 @@ export default class AtlasProfile {
         ) {
             this.location.source = LocationState.Preset;
             this.location.accuracy = undefined;
+            this.location.altitude = undefined;
             this.location.coordinates = this.profile.tak_loc.coordinates;
 
             this.atlas.postMessage({
@@ -340,9 +343,14 @@ export default class AtlasProfile {
         return `ANDROID-CloudTAK-${this.profile.username}`;
     }
 
-    async CoT(coords?: number[], accuracy?: number): Promise<void> {
+    async CoT(coords?: number[], accuracy?: number, altitude?: number | null): Promise<void> {
         if (!this.profile || !this.server) throw new Error('Profile must be loaded before CoT is called');
 
+        const coordinates = coords || (this.profile.tak_loc ? toRaw(this.profile.tak_loc.coordinates) : [ 0, 0 ]);
+        
+        // HAE = Height Above Ellipsoid (altitude), CE = Circular Error (accuracy)
+        const hae = altitude !== null && altitude !== undefined ? altitude : 0;
+       
         const feat: Feature = {
             id: this.uid(),
             path: '/',
@@ -357,7 +365,7 @@ export default class AtlasProfile {
                 time: new Date().toISOString(),
                 start: new Date().toISOString(),
                 stale: new Date(new Date().getTime() + (1000 * 60)).toISOString(),
-                center: coords || (this.profile.tak_loc ? toRaw(this.profile.tak_loc.coordinates) : [ 0, 0 ]),
+                center: coordinates,
                 contact: {
                     endpoint: '*:-1:stcp',
                     callsign: this.profile.tak_callsign,
@@ -372,11 +380,10 @@ export default class AtlasProfile {
                     os: navigator.platform,
                     version: this.server.version
                 },
-                ...(accuracy !== undefined && { hae: accuracy })
+                hae,
+                ...(accuracy !== undefined && { ce: accuracy })
             } as Feature['properties'],
-            geometry: coords
-                ? { type: 'Point', coordinates: coords }
-                : (toRaw(this.profile.tak_loc) || { type: 'Point', coordinates: [0,0] })
+            geometry: { type: 'Point', coordinates: [...coordinates, hae] }
         }
 
         await this.atlas.db.add(feat);
