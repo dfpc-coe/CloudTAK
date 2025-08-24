@@ -87,7 +87,6 @@
                         v-model='profile.display_icon_rotation'
                         label='Rotate Icons with Course'
                         :options='[true, false]'
-                        :option-labels='["Enabled", "Disabled"]'
                     />
                 </div>
                 <div class='col-12 d-flex py-3'>
