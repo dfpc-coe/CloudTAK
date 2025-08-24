@@ -40,7 +40,7 @@ test('GET: api/profile', async (t) => {
             display_speed: 'mi/h',
             display_projection: 'globe',
             display_zoom: 'conditional',
-            display_icon_rotation: 'Enabled',
+            display_icon_rotation: true,
             display_text: 'Medium',
             system_admin: true,
             agency_admin: []

@@ -40,7 +40,7 @@ export default async function router(schema: Schema, config: Config) {
             display_projection: Type.Optional(Type.Enum(Profile_Projection)),
             display_speed: Type.Optional(Type.Enum(Profile_Speed)),
             display_zoom: Type.Optional(Type.Enum(Profile_Zoom)),
-            display_icon_rotation: Type.Optional(Type.String()),
+            display_icon_rotation: Type.Optional(Type.Boolean()),
             display_text: Type.Optional(Type.Enum(Profile_Text)),
             tak_callsign: Type.Optional(Type.String()),
             tak_remarks: Type.Optional(Type.String()),
