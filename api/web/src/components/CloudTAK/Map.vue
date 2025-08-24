@@ -26,6 +26,47 @@
             <DrawOverlay
                 v-if='mapStore.draw.mode !== DrawToolMode.STATIC'
             />
+
+            <div
+                v-if='mode === "SetLocation"'
+                class='position-absolute bottom-0 text-white bg-dark rounded-top'
+                style='
+                    z-index: 1;
+                    left: calc(50% - 250px);
+                    width: 500px;
+                '
+            >
+                <div
+                    class='card user-select-none'
+                >
+                    <div class='card-header'>
+                        <div class='col-8'>
+                            <IconLocationPin class='me-2' :size='20' />
+                            <span>Click on the map to {{ mapStore.location === LocationState.Preset ? 'update' : 'set' }} your location</span>
+                        </div>
+                        <div class='col-4 d-flex align-items-center'>
+                            <div class='ms-auto btn-list'>
+                                <button
+                                    class='btn btn-sm btn-outline-light'
+                                    @click='exitManualMode'
+                                >
+                                    <IconLocation :size='16' class='me-1' />
+                                    Use GPS
+                                </button>
+                                <TablerIconButton
+                                    title='Cancel Manual Location'
+                                    @click='cancelLocationSetting'
+                                >
+                                    <IconX
+                                        :size='24'
+                                        stroke='1'
+                                    />
+                                </TablerIconButton>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div
                 class='position-absolute bottom-0 begin-0 text-white'
                 style='
@@ -59,20 +100,25 @@
                                 style='margin: 5px 8px'
                             />
                         </TablerIconButton>
-                        <IconLocation
+                        <TablerIconButton
                             v-else-if='mapStore.location === LocationState.Live'
-                            title='Live Location'
-                            style='margin: 5px 8px'
-                            :size='20'
-                            stroke='1'
-                        />
+                            :title='locationTooltip'
+                            @click='setLocation'
+                        >
+                            <IconLocation
+                                style='margin: 5px 8px'
+                                :size='20'
+                                stroke='1'
+                                :color='locationColor'
+                            />
+                        </TablerIconButton>
                         <TablerIconButton
                             v-else-if='mapStore.location === LocationState.Preset'
-                            title='Update Your Location Button'
+                            :title='locationTooltip'
                             @click='setLocation'
                         >
                             <IconLocationPin
-                                title='Preset Location'
+                                title='Manual Location - Click to enable GPS'
                                 style='margin: 5px 8px'
                                 :size='20'
                                 stroke='1'
@@ -418,7 +464,7 @@ import Notifications from './Notifications.vue';
 import SearchBox from './util/SearchBox.vue';
 import WarnConfiguration from './util/WarnConfiguration.vue';
 import DrawTools from './DrawTools.vue';
-import type { MapGeoJSONFeature, LngLatLike } from 'maplibre-gl';
+import type { MapGeoJSONFeature, LngLatLike, MapMouseEvent } from 'maplibre-gl';
 import type { Feature } from '../../types.ts';
 import CloudTAKFeatView from './FeatView.vue';
 import {
@@ -462,6 +508,7 @@ const route = useRoute();
 const emit = defineEmits(['err']);
 
 const mode = ref<string>('Default');
+const locationClickHandler = ref<((e: MapMouseEvent) => void) | null>(null);
 const height = ref<number>(window.innerHeight);
 const width = ref<number>(window.innerWidth);
 
@@ -512,6 +559,56 @@ const humanBearing = computed(() => {
 
 const humanPitch = computed(() => {
     return Math.round(mapStore.pitch) + '°'
+})
+
+// Reactive location accuracy
+const locationAccuracy = ref<number | undefined>(undefined);
+
+// Watch for location updates and get accuracy
+watch(() => mapStore.location, async () => {
+    if (mapStore.location === LocationState.Live && !mapStore.manualLocationMode) {
+        try {
+            const location = await mapStore.worker.profile.location;
+            locationAccuracy.value = location.accuracy;
+        } catch {
+            locationAccuracy.value = undefined;
+        }
+    } else {
+        locationAccuracy.value = undefined;
+    }
+}, { immediate: true });
+
+const locationColor = computed(() => {
+    if (mapStore.location !== LocationState.Live || !locationAccuracy.value) return '#ffffff';
+
+    const accuracy = locationAccuracy.value;
+    // Color-code based on accuracy ranges
+    if (accuracy <= 50) return '#22c55e';      // Green - high accuracy
+    if (accuracy <= 200) return '#eab308';     // Yellow - medium accuracy
+    return '#ef4444';                          // Red - low accuracy
+})
+
+const locationTooltip = computed(() => {
+    if (mode.value === 'SetLocation') {
+        return 'Click on map to set location';
+    }
+
+    if (mapStore.location === LocationState.Preset) {
+        return 'Manual Location - Click to adjust or switch to GPS';
+    }
+
+    if (mapStore.location === LocationState.Live && locationAccuracy.value) {
+        const accuracy = locationAccuracy.value;
+        // Convert to user's preferred distance unit
+        if (mapStore.distanceUnit === 'mile') {
+            const accuracyFt = Math.round(accuracy * 3.28084);
+            return `Live Location (±${accuracyFt}ft) - Click to set manually`;
+        } else {
+            return `Live Location (±${Math.round(accuracy)}m) - Click to set manually`;
+        }
+    }
+
+    return 'Set Your Location - Click to enable GPS or set manually';
 })
 
 const mapRef = useTemplateRef<HTMLElement>('map');
@@ -590,6 +687,11 @@ onBeforeUnmount(() => {
         window.clearInterval(timer.value);
     }
 
+    // Clean up GPS watch
+    if (mapStore.gpsWatchId !== null) {
+        navigator.geolocation.clearWatch(mapStore.gpsWatchId);
+    }
+
     mapStore.destroy();
 });
 
@@ -629,22 +731,70 @@ async function toLocation() {
 }
 
 function setLocation() {
+    // Always enter manual location setting mode when button is clicked
+    mapStore.manualLocationMode = true;
     mode.value = 'SetLocation';
-    mapStore.map.getCanvas().style.cursor = 'pointer'
-    mapStore.map.once('click', async (e) => {
-        mapStore.map.getCanvas().style.cursor = ''
+    mapStore.map.getCanvas().style.cursor = 'crosshair';
+
+    // Store the handler so we can remove it later if needed
+    locationClickHandler.value = async (e: MapMouseEvent) => {
+        mapStore.map.getCanvas().style.cursor = '';
         mode.value = 'Default';
+        locationClickHandler.value = null;
 
         await mapStore.worker.profile.update({
             tak_loc: {
                 type: 'Point',
                 coordinates: [e.lngLat.lng, e.lngLat.lat]
             }
-        })
+        });
 
         await mapStore.refresh();
-    });
+    };
+
+    mapStore.map.once('click', locationClickHandler.value);
 }
+
+function cancelLocationSetting() {
+    mode.value = 'Default';
+    mapStore.map.getCanvas().style.cursor = '';
+
+    // Remove the specific location click handler if it exists
+    if (locationClickHandler.value) {
+        mapStore.map.off('click', locationClickHandler.value);
+        locationClickHandler.value = null;
+    }
+}
+
+async function exitManualMode() {
+    // Switch back to automatic GPS mode
+    mapStore.manualLocationMode = false;
+    mode.value = 'Default';
+    mapStore.map.getCanvas().style.cursor = '';
+
+    // Remove the specific location click handler if it exists
+    if (locationClickHandler.value) {
+        mapStore.map.off('click', locationClickHandler.value);
+        locationClickHandler.value = null;
+    }
+
+    // Immediately set location to loading state for UI feedback
+    mapStore.location = LocationState.Loading;
+
+    // Remove current location dot from map by removing user's CoT
+    const userUid = `ANDROID-CloudTAK-${(await mapStore.worker.profile.load()).username}`;
+    await mapStore.worker.db.remove(userUid);
+
+    // Clear manual location and wait for it to complete
+    await mapStore.worker.profile.update({ tak_loc: null });
+
+    // Restart GPS watch to ensure fresh GPS acquisition
+    mapStore.startGPSWatch();
+
+    await mapStore.refresh();
+}
+
+
 
 function fileUpload(event: string) {
     upload.value.shown = false;
@@ -732,3 +882,44 @@ async function mountMap(): Promise<void> {
     });
 }
 </script>
+
+<style>
+.maplibregl-ctrl-scale {
+    background-color: transparent !important;
+    color: #ffffff;
+    text-shadow: 1px 0 0 black, -1px 0 0 black, 0 1px 0 black, 0 -1px 0 black;
+    border-bottom: 1px solid #fff;
+    border-left: 1px solid #fff;
+    border-right: 1px solid #fff;
+}
+
+.maplibregl-ctrl-scale::before {
+    background-color: transparent !important;
+    border-bottom: 1px solid #000;
+    border-left: 1px solid #000;
+    border-right: 1px solid #000;
+    content: "";
+    display: block;
+    position: absolute;
+    top: 0px;
+    left: 1px;
+    right: 1px;
+    bottom: 1px;
+}
+
+.maplibregl-ctrl-bottom-left {
+    bottom: 0;
+    left: 260px;
+}
+
+.maplibregl-ctrl-bottom-right {
+    bottom: 0;
+    right: 60px;
+    z-index: 1 !important;
+    color: black !important;
+}
+
+.maplibregl-ctrl-attrib a {
+    color: black !important;
+}
+</style>

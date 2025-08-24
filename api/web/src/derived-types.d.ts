@@ -834,13 +834,28 @@ export interface paths {
             requestBody: {
                 content: {
                     "application/json": {
+                        /** @description Enable ArcGIS Online Integration */
                         "agol::enabled"?: boolean;
+                        /** @description ArcGIS Online API Token */
                         "agol::token"?: string;
+                        /** @description Base URL for Media Service */
                         "media::url"?: string;
+                        /** @description Map Center Coordinates (lng,lat) */
                         "map::center"?: string;
+                        /** @description Default Map Pitch Angle */
                         "map::pitch"?: number;
+                        /** @description Default Map Bearing */
                         "map::bearing"?: string;
+                        /** @description Default Map Zoom Level */
                         "map::zoom"?: number;
+                        "display::stale"?: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
+                        "display::distance"?: "meter" | "kilometer" | "mile";
+                        "display::elevation"?: "meter" | "feet";
+                        "display::speed"?: "m/s" | "km/h" | "mi/h";
+                        "display::projection"?: "mercator" | "globe";
+                        "display::zoom"?: "always" | "conditional" | "never";
+                        "display::text"?: "Small" | "Medium" | "Large";
+                        "display::icon_rotation"?: "Enabled" | "Disabled";
                         "group::Yellow"?: string;
                         "group::Cyan"?: string;
                         "group::Green"?: string;
@@ -864,8 +879,11 @@ export interface paths {
                         "provider::url"?: string;
                         "provider::secret"?: string;
                         "provider::client"?: string;
+                        /** @description URL for Signup Page */
                         "login::signup"?: string;
+                        /** @description URL for Forgot Password Page */
                         "login::forgot"?: string;
+                        /** @description Base64 encoded PNG for logo */
                         "login::logo"?: string;
                     };
                 };
@@ -882,6 +900,83 @@ export interface paths {
                 };
             };
         };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/config/display": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return Default Display Config */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            stale: {
+                                /** @default 10 Minutes */
+                                value: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
+                                options: string[];
+                            };
+                            distance: {
+                                /** @default mile */
+                                value: "meter" | "kilometer" | "mile";
+                                options: string[];
+                            };
+                            elevation: {
+                                /** @default feet */
+                                value: "meter" | "feet";
+                                options: string[];
+                            };
+                            speed: {
+                                /** @default mi/h */
+                                value: "m/s" | "km/h" | "mi/h";
+                                options: string[];
+                            };
+                            projection: {
+                                /** @default globe */
+                                value: "mercator" | "globe";
+                                options: string[];
+                            };
+                            zoom: {
+                                /** @default conditional */
+                                value: "always" | "conditional" | "never";
+                                options: string[];
+                            };
+                            text: {
+                                /** @default Medium */
+                                value: "Small" | "Medium" | "Large";
+                                options: string[];
+                            };
+                            icon_rotation: {
+                                /** @default Enabled */
+                                value: string;
+                                options: string[];
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -5423,6 +5518,7 @@ export interface paths {
                         recording?: boolean;
                         /** @description Publish stream URL to TAK Server Video Manager */
                         publish?: boolean;
+                        proxy?: string;
                     };
                 };
             };
@@ -10135,6 +10231,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/marti/missions/{:name}/qr": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return an SVG of a QR Code for a mission */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/marti/missions/{:name}/changes": {
         parameters: {
             query?: never;
@@ -10684,9 +10814,26 @@ export interface paths {
                          * @default false
                          */
                         public: boolean;
+                        /**
+                         * @description A list of destinations to automatically share the data package with
+                         * @default []
+                         */
+                        destinations: {
+                            /** @description A User UID to share the package with */
+                            uid?: string;
+                            /** @description A Channel/Group to share the package with */
+                            group?: string;
+                        }[];
                         /** @default [] */
-                        uids: string[];
-                        /** @default [] */
+                        assets: {
+                            /** @constant */
+                            type: "profile";
+                            name: string;
+                        }[];
+                        /**
+                         * @description A list of CloudTAK basemap IDs to include in the package
+                         * @default []
+                         */
                         basemaps: number[];
                         /** @default [] */
                         features: {
@@ -12928,14 +13075,12 @@ export interface paths {
             };
         };
         post?: never;
-        /**
-         *                 Delete features by path
-         *              */
+        /** Delete multiple features */
         delete: {
             parameters: {
-                query: {
+                query?: {
                     /** @description No Description */
-                    path: string;
+                    path?: string;
                 };
                 header?: never;
                 path?: never;
@@ -12970,7 +13115,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         *                 Delete a feature
+         *                 Get a feature
          *              */
         get: {
             parameters: {
@@ -13734,6 +13879,166 @@ export interface paths {
         };
         trace?: never;
     };
+    "/api/profile/video": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         *                 Return a list of Profile Videos
+         *              */
+        get: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                /** Format: uuid */
+                                id: string;
+                                created: string;
+                                updated: string;
+                                lease: number;
+                                username: string;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /**
+         *                 Push a new Profile Video to the database
+         *              */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        lease: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** Format: uuid */
+                            id: string;
+                            created: string;
+                            updated: string;
+                            lease: number;
+                            username: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/profile/video/{:id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         *                 Get a video
+         *              */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** Format: uuid */
+                            id: string;
+                            created: string;
+                            updated: string;
+                            lease: number;
+                            username: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /**
+         *                 Delete a Video
+         *              */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/profile": {
         parameters: {
             query?: never;
@@ -13991,6 +14296,280 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/search/route": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Generate a route given stop information */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Lat,Lng of starting position */
+                    start: string;
+                    /** @description Lat,Lng of end position */
+                    end: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @constant */
+                            type: "FeatureCollection";
+                            features: {
+                                id: string;
+                                /** @constant */
+                                type: "Feature";
+                                properties: {
+                                    /** @default UNKNOWN */
+                                    callsign: string;
+                                    /** @default a-f-G */
+                                    type: string;
+                                    how: string;
+                                    time: string;
+                                    start: string;
+                                    stale: string;
+                                    center: number[];
+                                    range?: number;
+                                    bearing?: number;
+                                    creator?: {
+                                        uid: string;
+                                        callsign: string;
+                                        time: string;
+                                        type: string;
+                                    };
+                                    course?: number;
+                                    slope?: number;
+                                    speed?: number;
+                                    labels?: boolean;
+                                    "marker-color"?: string;
+                                    "marker-opacity"?: number;
+                                    stroke?: string;
+                                    "stroke-opacity"?: number;
+                                    "stroke-width"?: number;
+                                    "stroke-style"?: string;
+                                    fill?: string;
+                                    "fill-opacity"?: number;
+                                    metadata?: Record<string, never>;
+                                    archived?: boolean;
+                                    geofence?: {
+                                        elevationMonitored?: string;
+                                        minElevation?: string;
+                                        maxElevation?: string;
+                                        monitor?: string;
+                                        trigger?: string;
+                                        tracking?: string;
+                                        boundingSphere?: number;
+                                    };
+                                    contact?: {
+                                        phone?: string;
+                                        name?: string;
+                                        callsign?: string;
+                                        endpoint?: string;
+                                    };
+                                    shape?: {
+                                        ellipse?: {
+                                            major: number;
+                                            minor: number;
+                                            angle: number;
+                                        };
+                                    };
+                                    remarks?: string;
+                                    milsym?: {
+                                        id: string;
+                                    };
+                                    mission?: {
+                                        type?: string;
+                                        tool?: string;
+                                        guid?: string;
+                                        name?: string;
+                                        authorUid?: string;
+                                        missionLayer?: {
+                                            name?: string;
+                                            parentUid?: string;
+                                            type?: string;
+                                            uid?: string;
+                                        };
+                                        missionChanges?: {
+                                            contentUid: string;
+                                            creatorUid: string;
+                                            isFederatedChange: string;
+                                            missionName: string;
+                                            timestamp: string;
+                                            type: string;
+                                            details: {
+                                                type: string;
+                                                callsign: string;
+                                                color: string;
+                                                lat: string;
+                                                lon: string;
+                                            };
+                                        }[];
+                                    };
+                                    fileshare?: {
+                                        filename: string;
+                                        name: string;
+                                        senderCallsign: string;
+                                        senderUid: string;
+                                        senderUrl: string;
+                                        sha256: string;
+                                        sizeInBytes: number;
+                                    };
+                                    ackrequest?: {
+                                        uid: string;
+                                        ackrequested: boolean;
+                                        tag: string;
+                                    };
+                                    attachments?: string[];
+                                    sensor?: {
+                                        elevation?: number;
+                                        vfov?: number;
+                                        fov?: number;
+                                        roll?: number;
+                                        range?: number;
+                                        azimuth?: number;
+                                        north?: number;
+                                        fovBlue?: number;
+                                        fovAlpha?: number;
+                                        fovGreen?: number;
+                                        fovRed?: number;
+                                        strokeWeight?: number;
+                                        strokeColor?: number;
+                                        rangeLines?: number;
+                                        rangeLineStrokeWeight?: number;
+                                        rangeLineStrokeColor?: number;
+                                        displayMagneticReference?: number;
+                                        hideFov?: boolean;
+                                        type?: string;
+                                        version?: string;
+                                        model?: string;
+                                    };
+                                    video?: {
+                                        uid?: string;
+                                        sensor?: string;
+                                        spi?: string;
+                                        url?: string;
+                                        connection?: {
+                                            uid: string;
+                                            address: string;
+                                            networkTimeout?: number;
+                                            path?: string;
+                                            protocol?: string;
+                                            bufferTime?: number;
+                                            port?: number;
+                                            roverPort?: number;
+                                            rtspReliable?: number;
+                                            ignoreEmbeddedKLV?: boolean;
+                                            alias?: string;
+                                        };
+                                    };
+                                    links?: {
+                                        uid?: string;
+                                        relation?: string;
+                                        type?: string;
+                                        point?: string;
+                                        callsign?: string;
+                                        url?: string;
+                                        mime?: string;
+                                        remarks?: string;
+                                        production_time?: string;
+                                        parent_callsign?: string;
+                                    }[];
+                                    chat?: {
+                                        parent?: string;
+                                        groupOwner?: string;
+                                        messageId?: string;
+                                        chatroom: string;
+                                        id: string;
+                                        senderCallsign: string;
+                                        chatgrp: unknown;
+                                    };
+                                    track?: {
+                                        speed?: string;
+                                        course?: string;
+                                        slope?: string;
+                                        eCourse?: string;
+                                        eSpeed?: string;
+                                        eSlope?: string;
+                                    };
+                                    dest?: {
+                                        uid?: string;
+                                        callsign?: string;
+                                        group?: string;
+                                        mission?: string;
+                                        "mission-guid"?: string;
+                                        after?: string;
+                                        path?: string;
+                                    } | {
+                                        uid?: string;
+                                        callsign?: string;
+                                        group?: string;
+                                        mission?: string;
+                                        "mission-guid"?: string;
+                                        after?: string;
+                                        path?: string;
+                                    }[];
+                                    icon?: string;
+                                    droid?: string;
+                                    takv?: {
+                                        device?: string;
+                                        platform?: string;
+                                        os?: string;
+                                        version?: string;
+                                    };
+                                    group?: {
+                                        name: string;
+                                        role: string;
+                                    };
+                                    status?: {
+                                        battery?: string;
+                                        readiness?: string;
+                                    };
+                                    precisionlocation?: {
+                                        geopointsrc?: string;
+                                        altsrc?: string;
+                                    };
+                                    flow?: Record<string, never>;
+                                };
+                                path?: string;
+                                geometry: {
+                                    /** @constant */
+                                    type: "Point";
+                                    coordinates: number[];
+                                } | {
+                                    /** @constant */
+                                    type: "LineString";
+                                    coordinates: number[][];
+                                } | {
+                                    /** @constant */
+                                    type: "Polygon";
+                                    coordinates: number[][][];
+                                };
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/search/forward": {
         parameters: {
             query?: never;
@@ -14038,6 +14617,10 @@ export interface paths {
                                     ymin: number;
                                     xmax: number;
                                     ymax: number;
+                                    spatialReference?: {
+                                        wkid: number;
+                                        latestWkid: number;
+                                    };
                                 };
                             }[];
                         };
@@ -15092,7 +15675,7 @@ export interface paths {
                                 tak_loc_freq: number;
                                 display_projection: "mercator" | "globe";
                                 display_zoom: "always" | "conditional" | "never";
-                            display_icon_rotation: string;
+                                display_icon_rotation: string;
                                 display_stale: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
                                 display_text: "Small" | "Medium" | "Large";
                                 display_distance: "meter" | "kilometer" | "mile";
@@ -15383,7 +15966,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort?: "id" | "email" | "name" | "token" | "created" | "updated" | "enableRLS";
+                    sort?: "id" | "name" | "created" | "updated" | "username" | "connection" | "layer" | "source_id" | "source_type" | "source_model" | "publish" | "recording" | "ephemeral" | "channel" | "expiration" | "path" | "stream_user" | "stream_pass" | "read_user" | "read_pass" | "proxy" | "enableRLS";
                     /** @description No Description */
                     expired: "true" | "false" | "all";
                     /** @description No Description */
@@ -15598,11 +16181,7 @@ export interface paths {
                             };
                             config?: {
                                 name: string;
-                                source: string;
-                                sourceFingerprint: string;
-                                sourceOnDemand: boolean;
-                                sourceOnDemandStartTimeout: string;
-                                sourceOnDemandCloseAfter: string;
+                                runOnInit: string;
                                 maxReaders: number;
                                 record: boolean;
                             };
@@ -15709,6 +16288,7 @@ export interface paths {
                          * @default false
                          */
                         permanent: boolean;
+                        proxy?: string;
                     };
                 };
             };
@@ -15852,90 +16432,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/video/server": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Let Admins list video servers */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            total: number;
-                            versions: number[];
-                            items: {
-                                id: string;
-                                version: number;
-                                created: string;
-                                status: string;
-                                statusDesired: string;
-                                ipPublic?: string;
-                                ipPrivate?: string;
-                                memory: number;
-                                cpu: number;
-                            }[];
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        /** Create a new Media Server */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": Record<string, never>;
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: string;
-                            version: number;
-                            created: string;
-                            status: string;
-                            statusDesired: string;
-                            ipPublic?: string;
-                            ipPrivate?: string;
-                            memory: number;
-                            cpu: number;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/video/service/path/{:path}": {
         parameters: {
             query?: never;
@@ -15962,11 +16458,7 @@ export interface paths {
                         "application/json": {
                             config: {
                                 name: string;
-                                source: string;
-                                sourceFingerprint: string;
-                                sourceOnDemand: boolean;
-                                sourceOnDemandStartTimeout: string;
-                                sourceOnDemandCloseAfter: string;
+                                runOnInit: string;
                                 maxReaders: number;
                                 record: boolean;
                             };
@@ -15995,75 +16487,6 @@ export interface paths {
         put?: never;
         post?: never;
         delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/video/server/{:serverid}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get all info about a particular video server */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: string;
-                            version: number;
-                            created: string;
-                            status: string;
-                            statusDesired: string;
-                            ipPublic?: string;
-                            ipPrivate?: string;
-                            memory: number;
-                            cpu: number;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        /** Shut down an existing video server */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
         options?: never;
         head?: never;
         patch?: never;

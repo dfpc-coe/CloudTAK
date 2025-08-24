@@ -429,7 +429,7 @@ export default {
                         { Name: 'CLOUDTAK_Mode', Value: 'AWS' },
                         { Name: 'StackName', Value: cf.stackName },
                         { Name: 'ASSET_BUCKET', Value: cf.ref('AssetBucket') },
-                        { Name: 'API_URL', Value: cf.join([cf.ref('SubdomainPrefix'), '.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]) },
+                        { Name: 'API_URL', Value: cf.join(['https://', cf.ref('SubdomainPrefix'), '.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]) },
                         { Name: 'VpcId', Value: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-vpc'])) },
                         { Name: 'SubnetPublicA', Value: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-public-a'])) },
                         { Name: 'SubnetPublicB', Value: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-subnet-public-b'])) },

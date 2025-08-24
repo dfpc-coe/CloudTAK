@@ -52,6 +52,7 @@
 </template>
 
 <script setup lang='ts'>
+import { v4 as randomUUID } from 'uuid';
 import { ref, toRaw } from 'vue'
 import { destination } from '@turf/destination'
 import Coordinate from './util/Coordinate.vue';
@@ -79,7 +80,7 @@ const config = ref({
 });
 
 async function submitPoint() {
-    const id = crypto.randomUUID();
+    const id = randomUUID();
 
     const end = destination(
         config.value.coordinates,

@@ -98,6 +98,7 @@
 </template>
 
 <script setup lang='ts'>
+import { v4 as randomUUID } from 'uuid';
 import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import CopyField from '../CloudTAK/util/CopyField.vue';
@@ -126,7 +127,7 @@ const loading = ref(true);
 
 const palette = ref<Palette | undefined>();
 const paletteFeature = ref<PaletteFeature>({
-    uuid: crypto.randomUUID(),
+    uuid: randomUUID(),
     type: 'Point',
     name: '',
     created: new Date().toISOString(),
