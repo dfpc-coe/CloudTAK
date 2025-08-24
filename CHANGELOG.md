@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v10.51.0 - 2025-08-24
+
+- :bug: Always report SA location to TAK Server to ensure inclusion in contacts list
+- :rocket: Add altitude tracking to SA location updates
+- :bug: Fix GPS Accuracy tag on SA location updates
+
 ### v10.50.0 - 2025-08-22
 
 - :rocket: DEPLOY NOTE: API_URL env vars must now be valid URLs, not just the hostname
