@@ -444,6 +444,15 @@ export const useMapStore = defineStore('cloudtak', {
 
             const map = new mapgl.Map(init);
 
+            // Add scale control
+            const scaleControl = new mapgl.ScaleControl({
+                maxWidth: 100,
+                unit: 'metric'
+            });
+            map.addControl(scaleControl, 'bottom-left');
+            // Store reference for later use
+            (map as mapgl.Map & { _scaleControl?: mapgl.ScaleControl })._scaleControl = scaleControl;
+
             this._map = map;
             this._draw = new DrawTool(this);
             this._icons = new IconManager(map);
