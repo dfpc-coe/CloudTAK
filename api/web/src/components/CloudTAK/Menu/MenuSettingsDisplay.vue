@@ -130,6 +130,9 @@ async function updateProfile() {
 
     await mapStore.worker.profile.update(toRaw(profile.value));
 
+    // Update distance unit
+    mapStore.updateDistanceUnit(profile.value.display_distance);
+
     // Immediately update icon rotation to avoid requiring page reload
     mapStore.updateIconRotation(profile.value.display_icon_rotation as unknown as boolean);
 
