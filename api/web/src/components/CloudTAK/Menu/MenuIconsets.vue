@@ -238,7 +238,7 @@ function uploadHeaders() {
 }
 
 function download(iconset) {
-    window.location.href = stdurl(`api/iconset/${iconset.uid}?format=zip&download=true&token=${localStorage.token}`);
+    window.location.href = stdurl(`/api/iconset/${iconset.uid}?format=zip&download=true&token=${localStorage.token}`);
 }
 
 async function fetchList() {
