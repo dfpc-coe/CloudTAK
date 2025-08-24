@@ -148,7 +148,7 @@ import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import type { Ref } from 'vue';
 import { std } from '../../../std.ts';
-import type { ContactList, ConfigGroups } from '../../../types.ts';
+import type { ContactList, ConfigGroups, Feature } from '../../../types.ts';
 import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();
 import MenuTemplate from '../util/MenuTemplate.vue';
@@ -191,13 +191,14 @@ const visibleActiveContacts = ref<ContactList>([]);
 const visibleOfflineContacts = ref<ContactList>([]);
 
 const channel = new BroadcastChannel("cloudtak");
+let refreshInterval: ReturnType<typeof setInterval> | undefined;
 
 channel.onmessage = async (event: MessageEvent<WorkerMessage>) => {
     const msg = event.data;
     if (!msg || !msg.type) return;
 
     if (msg.type === WorkerMessageType.Contact_Change) {
-        await fetchList(refresh);
+        // Only update the contact status, don't reload from server
         await updateContacts();
     }
 }
@@ -209,11 +210,19 @@ onMounted(async () => {
     ]);
 
     await updateContacts();
+    
+    // Refresh contacts every 5 seconds
+    refreshInterval = setInterval(() => {
+        updateContacts();
+    }, 5000);
 });
 
 onBeforeUnmount(() => {
     if (channel) {
         channel.close();
+    }
+    if (refreshInterval) {
+        clearInterval(refreshInterval);
     }
 })
 
@@ -231,10 +240,46 @@ async function updateContacts() {
     visibleActiveContacts.value = [];
     visibleOfflineContacts.value = [];
 
+    // Deduplicate contacts by callsign + notes (username) combination
+    const uniqueContacts = new Map<string, typeof contacts.value[0]>();
     for (const contact of contacts.value) {
-        if (!contact.callsign.toLowerCase().includes(paging.value.filter.toLowerCase())) continue;
+        const key = `${contact.callsign}:${contact.notes}`;
+        if (!uniqueContacts.has(key)) {
+            uniqueContacts.set(key, contact);
+        }
+    }
 
-        if (await mapStore.worker.db.has(contact.uid)) {
+    // Get CoT list once for performance
+    let localCots: Array<{ id: string, properties: Feature['properties'], geometry: Feature['geometry'], is_skittle: boolean }> = [];
+    try {
+        localCots = await mapStore.worker.db.list();
+    } catch (err) {
+        console.warn('Error loading CoT list:', err);
+    }
+
+    // Get current user info to filter out self
+    let currentUserCallsign = '';
+    try {
+        const profile = await mapStore.worker.profile.load();
+        currentUserCallsign = profile.tak_callsign;
+    } catch (err) {
+        console.warn('Error loading profile for self-filtering:', err);
+    }
+
+    for (const contact of uniqueContacts.values()) {
+        if (!contact.callsign.toLowerCase().includes(paging.value.filter.toLowerCase())) continue;
+        
+        // Skip current user from contact list
+        if (contact.callsign === currentUserCallsign) continue;
+
+        // Check if contact is online by looking for matching callsign only
+        // This allows cross-platform compatibility between ATAK and CloudTAK
+        const isOnline = localCots.some(cot => 
+            cot.is_skittle && 
+            cot.properties.callsign === contact.callsign
+        );
+
+        if (isOnline) {
             if (contact.team) {
                 teams.value.add(contact.team);
                 opened.value.add(contact.team);

@@ -96,21 +96,46 @@ const emit = defineEmits([
 ]);
 
 async function isZoomable(contact) {
-    return mapStore.worker.db.has(contact.uid);
+    try {
+        const localCots = await mapStore.worker.db.list();
+        for (const cot of localCots) {
+            if (cot.is_skittle && cot.properties.callsign === contact.callsign) {
+                return true;
+            }
+        }
+    } catch (err) {
+        console.warn('Error checking if contact is zoomable:', err);
+    }
+    return false;
 }
 
 async function isChatable(contact) {
-    if (!await mapStore.worker.db.has(contact.uid)) return false;
-    const cot = await mapStore.worker.db.get(contact.uid);
-    return cot.properties.contact && cot.properties.contact.endpoint;
+    try {
+        const localCots = await mapStore.worker.db.list();
+        for (const cot of localCots) {
+            if (cot.is_skittle && cot.properties.callsign === contact.callsign) {
+                return cot.properties.contact && cot.properties.contact.endpoint;
+            }
+        }
+    } catch (err) {
+        console.warn('Error checking if contact is chatable:', err);
+    }
+    return false;
 }
 
 async function flyTo(contact) {
     if (!props.buttonZoom || !await isZoomable(contact)) return;
 
-    const cot = await mapStore.worker.db.get(contact.uid);
-    if (!cot) return;
-
-    cot.flyTo();
+    try {
+        const localCots = await mapStore.worker.db.list();
+        for (const cot of localCots) {
+            if (cot.is_skittle && cot.properties.callsign === contact.callsign) {
+                await mapStore.worker.db.flyTo(cot.id);
+                return;
+            }
+        }
+    } catch (err) {
+        console.warn('Error flying to contact:', err);
+    }
 }
 </script>
