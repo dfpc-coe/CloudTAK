@@ -55,6 +55,7 @@
         "@turf/bbox-polygon": "^7.2.0",
         "@turf/meta": "^7.0.0",
         "@turf/point-on-feature": "^7.1.0",
+        "@turf/random": "^7.2.0",
         "ajv": "^8.11.2",
         "ajv-formats": "^3.0.0",
         "archiver": "^7.0.0",
