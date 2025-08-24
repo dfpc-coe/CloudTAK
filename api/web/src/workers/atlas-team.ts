@@ -51,6 +51,10 @@ export default class AtlasTeam {
         }
     }
 
+    async get(uid: string): Promise<Contact | undefined> {
+        return this.contacts.get(uid);
+    }
+
     async load(): Promise<Contact[]> {
         try {
             const url = stdurl('/api/marti/api/contacts/all');
