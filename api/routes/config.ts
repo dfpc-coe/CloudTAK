@@ -80,7 +80,7 @@ export default async function router(schema: Schema, config: Config) {
             'display::projection': Type.Optional(Type.Enum(Profile_Projection)),
             'display::zoom': Type.Optional(Type.Enum(Profile_Zoom)),
             'display::text': Type.Optional(Type.Enum(Profile_Text)),
-            'display::icon_rotation': Type.Optional(Type.Enum(Profile_IconRotation)),
+            'display::icon_rotation': Type.Optional(Type.Boolean()),
 
             'group::Yellow': Type.Optional(Type.String()),
             'group::Cyan': Type.Optional(Type.String()),

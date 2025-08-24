@@ -36,30 +36,6 @@
                 @keyup.enter='mode = "sqmeter"'
                 @click='mode = "sqmeter"'
             >Meters<sup>2</sup></span>
-            <span
-                v-tooltip='"Acres"'
-                class='my-1 px-2 user-select-none'
-                :class='{
-                    "bg-gray-500 rounded-bottom": mode === "acre",
-                    "cursor-pointer": mode !== "acre",
-                }'
-                role='menuitem'
-                tabindex='0'
-                @keyup.enter='mode = "acre"'
-                @click='mode = "acre"'
-            >Acres</span>
-            <span
-                v-tooltip='"Hectare"'
-                class='my-1 px-2 user-select-none'
-                :class='{
-                    "bg-gray-500 rounded-bottom": mode === "ha",
-                    "cursor-pointer": mode !== "ha",
-                }'
-                role='menuitem'
-                tabindex='0'
-                @keyup.enter='mode = "ha"'
-                @click='mode = "ha"'
-            >Ha</span>
         </div>
     </div>
 </template>
@@ -93,10 +69,6 @@ const inMode = computed(() => {
         return cotArea * 10.7639;
     } else if (mode.value === 'sqmeter') {
         return cotArea;
-    } else if (mode.value === 'acre') {
-        return cotArea * 0.000247105;
-    } else if (mode.value === 'ha') {
-        return cotArea * 0.0001;
     } else {
         return 'UNKNOWN';
     }

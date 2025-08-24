@@ -141,7 +141,7 @@ export const ProfileResponse = Type.Object({
     tak_loc_freq: Type.Integer(),
     display_projection: Type.Enum(Profile_Projection),
     display_zoom: Type.Enum(Profile_Zoom),
-    display_icon_rotation: Type.String(),
+    display_icon_rotation: Type.Boolean(),
     display_stale: Type.Enum(Profile_Stale),
     display_text: Type.Enum(Profile_Text),
     display_distance: Type.Enum(Profile_Distance),
