@@ -7,6 +7,7 @@
 * - Source - MapLibre - Ref: https://maplibre.org/maplibre-style-spec/sources/
 */
 
+import { v4 as randomUUID } from 'uuid';
 import { defineStore } from 'pinia'
 import DrawTool, { DrawToolMode } from './modules/draw.ts';
 import IconManager from './modules/icons.ts';
@@ -41,6 +42,9 @@ export const useMapStore = defineStore('cloudtak', {
         callsign: string;
         zoom: string;
         location: LocationState;
+        distanceUnit: string;
+        manualLocationMode: boolean;
+        gpsWatchId: number | null;
 
         permissions: {
             location: boolean;
@@ -90,6 +94,9 @@ export const useMapStore = defineStore('cloudtak', {
             location: LocationState.Loading,
             channel: new BroadcastChannel("cloudtak"),
             zoom: 'conditional',
+            distanceUnit: 'meter',
+            manualLocationMode: false,
+            gpsWatchId: null,
             locked: [],
             notifications: [],
             hasTerrain: false,
@@ -145,6 +152,12 @@ export const useMapStore = defineStore('cloudtak', {
     actions: {
         destroy: function() {
             this.channel.close();
+
+            // Clean up GPS watch
+            if (this.gpsWatchId !== null) {
+                navigator.geolocation.clearWatch(this.gpsWatchId);
+                this.gpsWatchId = null;
+            }
 
             if (this._map) {
                 try {
@@ -337,6 +350,8 @@ export const useMapStore = defineStore('cloudtak', {
                     this.zoom = msg.body.zoom;
                 } else if (msg.type === WorkerMessageType.Profile_Icon_Rotation) {
                     this.updateIconRotation(msg.body.enabled);
+                } else if (msg.type === WorkerMessageType.Profile_Distance_Unit) {
+                    this.updateDistanceUnit(msg.body.unit);
                 } else if (msg.type === WorkerMessageType.Map_Projection) {
                     map.setProjection(msg.body);
                 } else if (msg.type === WorkerMessageType.Connection_Open) {
@@ -366,25 +381,7 @@ export const useMapStore = defineStore('cloudtak', {
                     this.permissions.location = status.state === 'granted' ? true : false
                 };
 
-                navigator.geolocation.watchPosition((position) => {
-                    if (position.coords.accuracy <= 50) {
-                        this.channel.postMessage({
-                            type: WorkerMessageType.Profile_Location_Coordinates,
-                            body: {
-                                accuracy: position.coords.accuracy,
-                                coordinates: [ position.coords.longitude, position.coords.latitude ]
-                            }
-                        })
-                    }
-                }, (err) => {
-                    if (err.code !== 0) {
-                        console.error('Location Error', err);
-                    }
-                },{
-                    maximumAge: 0,
-                    timeout: 1500,
-                    enableHighAccuracy: true
-                });
+                this.startGPSWatch();
             } else {
                 console.error('Browser does not appear to support Geolocation');
             }
@@ -416,7 +413,7 @@ export const useMapStore = defineStore('cloudtak', {
             const init: mapgl.MapOptions = {
                 container: this.container,
                 hash: true,
-                attributionControl: false,
+                attributionControl: {},
                 fadeDuration: 0,
                 zoom: this.mapConfig.zoom,
                 pitch: this.mapConfig.pitch,
@@ -447,6 +444,16 @@ export const useMapStore = defineStore('cloudtak', {
 
             const map = new mapgl.Map(init);
 
+            // Add scale control
+            const scaleControl = new mapgl.ScaleControl({
+                maxWidth: 100,
+                unit: 'metric'
+            });
+            map.addControl(scaleControl, 'bottom-left');
+
+            // Store reference for later use
+            (map as mapgl.Map & { _scaleControl?: mapgl.ScaleControl })._scaleControl = scaleControl;
+
             this._map = map;
             this._draw = new DrawTool(this);
             this._icons = new IconManager(map);
@@ -458,13 +465,47 @@ export const useMapStore = defineStore('cloudtak', {
             const profile = await this.worker.profile.load()
             this.callsign = profile.tak_callsign;
             this.zoom = profile.display_zoom;
-            
+
             // Initialize icon rotation setting after overlays are loaded
             setTimeout(() => {
                 this.updateIconRotation(profile.display_icon_rotation === 'Enabled');
             }, 100);
 
+            this.distanceUnit = profile.display_distance;
+
+            // Initialize scale control settings
+            this.updateDistanceUnit(profile.display_distance);
+
             this.isOpen = await this.worker.conn.isOpen;
+        },
+        startGPSWatch: function(): void {
+            if (!("geolocation" in navigator)) return;
+
+            // Clear existing watch if any
+            if (this.gpsWatchId !== null) {
+                navigator.geolocation.clearWatch(this.gpsWatchId);
+            }
+
+            this.gpsWatchId = navigator.geolocation.watchPosition((position) => {
+                if (!this.manualLocationMode) {
+                    this.channel.postMessage({
+                        type: WorkerMessageType.Profile_Location_Coordinates,
+                        body: {
+                            accuracy: position.coords.accuracy,
+                            altitude: position.coords.altitude,
+                            coordinates: [ position.coords.longitude, position.coords.latitude ]
+                        }
+                    })
+                }
+            }, (err) => {
+                if (err.code !== 0) {
+                    console.error('Location Error', err);
+                }
+            }, {
+                maximumAge: 0,
+                timeout: 1500,
+                enableHighAccuracy: true
+            });
         },
         initOverlays: async function() {
             if (!this.map) throw new Error('Cannot initLayers before map has loaded');
@@ -558,7 +599,7 @@ export const useMapStore = defineStore('cloudtak', {
             map.on('contextmenu', (e) => {
                 if (this.draw.editing) return;
 
-                const id = window.crypto.randomUUID();
+                const id = randomUUID();
                 this.radialClick({
                     id,
                     type: 'Feature',
@@ -654,6 +695,9 @@ export const useMapStore = defineStore('cloudtak', {
             }
 
             this.isLoaded = true;
+
+            // Update attribution with basemap data
+            await this.updateAttribution();
         },
         /**
          * Determine if the feature is from the CoT store or a clicked VT feature
@@ -708,9 +752,46 @@ export const useMapStore = defineStore('cloudtak', {
                     }
                 }
             }
-            
+
             // Force a map repaint to ensure changes are visible immediately
             this.map.triggerRepaint();
+        },
+        updateDistanceUnit: function(unit: string): void {
+            this.distanceUnit = unit;
+            // Remove existing scale control and add new one with correct unit
+            const mapWithControl = this.map as mapgl.Map & { _scaleControl?: mapgl.ScaleControl };
+            const existingControl = mapWithControl._scaleControl;
+            if (existingControl) {
+                this.map.removeControl(existingControl);
+                const scaleControl = new mapgl.ScaleControl({
+                    maxWidth: 100,
+                    unit: unit === 'mile' ? 'imperial' : 'metric'
+                });
+                this.map.addControl(scaleControl, 'bottom-left');
+                mapWithControl._scaleControl = scaleControl;
+            }
+        },
+        updateAttribution: async function(): Promise<void> {
+            const attributions: string[] = [];
+
+            for (const overlay of this.overlays) {
+                if (overlay.mode === 'basemap' && overlay.mode_id && overlay.visible) {
+                    try {
+                        const basemap = await std(`/api/basemap/${overlay.mode_id}`) as { attribution?: string };
+                        if (basemap.attribution) {
+                            attributions.push(basemap.attribution);
+                        }
+                    } catch (err) {
+                        console.warn('Failed to load basemap attribution:', err);
+                    }
+                }
+            }
+
+            // Update attribution by manipulating the DOM directly
+            const attributionContainer = document.querySelector('.maplibregl-ctrl-attrib-inner');
+            if (attributionContainer && attributions.length > 0) {
+                attributionContainer.innerHTML = attributions.join(' | ');
+            }
         },
         radialClick: async function(feat: MapGeoJSONFeature | Feature, opts: {
             lngLat: LngLat;

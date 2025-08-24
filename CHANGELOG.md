@@ -12,6 +12,44 @@
 
 ### Pending Release
 
+### v10.51.0 - 2025-08-24
+
+- :bug: Always report SA location to TAK Server to ensure inclusion in contacts list
+- :rocket: Add altitude tracking to SA location updates
+- :bug: Fix GPS Accuracy tag on SA location updates
+
+### v10.50.0 - 2025-08-22
+
+- :rocket: DEPLOY NOTE: API_URL env vars must now be valid URLs, not just the hostname
+- :rocket: NGINX Configuration in HTTP environments
+
+### v10.49.0 - 2025-08-22
+
+- :rocket: Enhanced Location Handling with Manual Override
+
+### v10.48.0 - 2025-08-20
+
+- :rocket: Add addition UI Area Units
+
+### v10.47.1 - 2025-08-19
+
+- :bug: Fix manual sharing of MapLibre Icon URLs
+
+### v10.47.0 - 2025-08-19
+
+- :rocket: Reset Color Property when assigning an icon so that the icon is uncoloured by default.
+- :rocket: Set primary color to green if dropping a `u-d-p` or white/uncoloured if dropped an `a-*` CoT type so ATAK doesn't try to recolour the icon.
+
+### v10.46.0 - 2025-08-19
+
+- :rocket: Hide Raster-Dem in basemap list
+- :tada: Add scale bar w/ custom styling
+- :rocket: Add basic attribtion support
+
+### v10.45.2 - 2025-08-19
+
+- :bug: Fix Iconset Download Bug
+
 ### v10.45.1 - 2025-08-12
 
 - :rocket: Update StatusDot for Admin Users to be in dark mode
