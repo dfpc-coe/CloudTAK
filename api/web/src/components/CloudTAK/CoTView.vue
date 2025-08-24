@@ -606,7 +606,7 @@
                                 />
                             </div>
                             <div class='col-12'>
-                                <label class='subheader user-select-none'>Point Colour</label>
+                                <label class='subheader user-select-none'>Point Color</label>
                                 <TablerInput
                                     :model-value='cot.properties["marker-color"]'
                                     label=''
