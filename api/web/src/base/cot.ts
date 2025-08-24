@@ -425,7 +425,7 @@ export default class COT {
             body: {
                 bounds: this.bounds(),
                 options: {
-                    maxZoom: 14,
+                    maxZoom: 18,
                     padding: {
                         top: 20,
                         bottom: 20,

@@ -317,10 +317,17 @@ export default class AtlasProfile {
             });
         }
 
+        if (body.display_icon_rotation !== undefined) {
+            this.atlas.postMessage({
+                type: WorkerMessageType.Profile_Icon_Rotation,
+                body: { enabled: body.display_icon_rotation === 'Enabled' }
+            });
+        }
+
         if (body.display_distance) {
             this.atlas.postMessage({
-                type: WorkerMessageType.Profile_Distance_Unit,
-                body: { unit: body.display_distance }
+                type: WorkerMessageType.Profile_Icon_Rotation,
+                body: { enabled: body.display_icon_rotation === 'Enabled' }
             });
         }
 

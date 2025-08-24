@@ -44,6 +44,10 @@ test('GET api/config/display', async (t) => {
              text: {
                  value: 'Medium',
                  options: [ 'Small', 'Medium', 'Large' ]
+             },
+             icon_rotation: {
+                 value: true,
+                 options: [ true, false ]
              }
         });
     } catch (err) {
@@ -65,14 +69,72 @@ test('PUT api/config', async (t) => {
                 'display::stale': '30 Minutes',
                 'display::distance': 'kilometer',
                 'display::elevation': 'meter',
+                'display::icon_rotation': 'false'
             }
         }, false);
 
         t.deepEquals(res.body, {
             'display::stale': '30 Minutes',
             'display::distance': 'kilometer',
-            'display::elevation': 'meter'
+            'display::elevation': 'meter',
+            'display::icon_rotation': 'false'
         });
+    } catch (err) {
+        t.error(err, 'no error');
+    }
+
+    t.end();
+});
+
+test('GET api/config/display - icon_rotation false conversion', async (t) => {
+    try {
+        const res = await flight.fetch('/api/config/display', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin
+            },
+        }, true);
+
+        t.equals(res.body.icon_rotation.value, false, 'string "false" converted to boolean false');
+    } catch (err) {
+        t.error(err, 'no error');
+    }
+
+    t.end();
+});
+
+test('PUT api/config - reset icon_rotation to true', async (t) => {
+    try {
+        const res = await flight.fetch('/api/config', {
+            method: 'PUT',
+            auth: {
+                bearer: flight.token.admin
+            },
+            body: {
+                'display::icon_rotation': 'true'
+            }
+        }, false);
+
+        t.deepEquals(res.body, {
+            'display::icon_rotation': 'true'
+        });
+    } catch (err) {
+        t.error(err, 'no error');
+    }
+
+    t.end();
+});
+
+test('GET api/config/display - icon_rotation true conversion', async (t) => {
+    try {
+        const res = await flight.fetch('/api/config/display', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin
+            },
+        }, true);
+
+        t.equals(res.body.icon_rotation.value, true, 'string "true" converted to boolean true');
     } catch (err) {
         t.error(err, 'no error');
     }
