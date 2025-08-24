@@ -147,6 +147,9 @@ async function fetchSearch(
         const url = stdurl('/api/search/suggest');
         url.searchParams.append('query', query.value.filter);
         url.searchParams.append('limit', '5');
+        const center = mapStore.map.getCenter();
+        url.searchParams.append('longitude', String(center.lng));
+        url.searchParams.append('latitude', String(center.lat));
 
         results.value = [];
         results.value.push(...((await std(url)) as SearchSuggest).items)
@@ -157,6 +160,9 @@ async function fetchSearch(
         const url = stdurl('/api/search/forward');
         url.searchParams.append('query', queryText);
         url.searchParams.append('magicKey', magicKey);
+        const center = mapStore.map.getCenter();
+        url.searchParams.append('longitude', String(center.lng));
+        url.searchParams.append('latitude', String(center.lat));
         const items = ((await std(url)) as SearchForward).items;
 
         if (!items.length) return;
@@ -177,6 +183,37 @@ async function fetchSearch(
                 right: 25
             }
         });
+
+        // Create a draw point on the map
+        const pointName = items[0].address.split(',')[0].trim();
+        const now = new Date().toISOString();
+        const featureId = crypto.randomUUID();
+        const feature = {
+            id: featureId,
+            type: 'Feature' as const,
+            path: '/',
+            properties: {
+                id: featureId,
+                callsign: pointName,
+                type: 'u-d-p',
+                how: 'h-g-i-g-o',
+                archived: true,
+                time: now,
+                start: now,
+                stale: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+                center: [items[0].location.x, items[0].location.y],
+                "marker-opacity": 1,
+                "marker-color": "#FF0000",
+                creator: await mapStore.worker.profile.creator(),
+                remarks: 'Created from search result'
+            },
+            geometry: {
+                type: 'Point' as const,
+                coordinates: [items[0].location.x, items[0].location.y]
+            }
+        };
+        
+        await mapStore.worker.db.add(feature);
 
         emit('select', {
             name: items[0].address,

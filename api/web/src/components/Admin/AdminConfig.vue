@@ -81,11 +81,31 @@
                                 :disabled='!edit'
                                 label='ArcGIS Online Enabled'
                             />
+                            <TablerEnum
+                                v-model='config["agol::auth_method"]'
+                                :disabled='!edit'
+                                label='Authentication Method'
+                                :options='["oauth2", "legacy"]'
+                            />
+                            <TablerInput
+                                v-model='config["agol::client_id"]'
+                                :disabled='!edit'
+                                label='OAuth2 Client ID'
+                                description='Client ID from your ArcGIS Location Platform or ArcGIS Enterprise account'
+                            />
+                            <TablerInput
+                                v-model='config["agol::client_secret"]'
+                                type='password'
+                                :disabled='!edit'
+                                label='OAuth2 Client Secret'
+                                description='Client Secret from your ArcGIS Location Platform or ArcGIS Enterprise account'
+                            />
                             <TablerInput
                                 v-model='config["agol::token"]'
                                 type='password'
                                 :disabled='!edit'
-                                label='ArcGIS Online API Token'
+                                label='Legacy Token'
+                                description='ArcGIS Online access token'
                             />
                         </div>
                     </div>
@@ -330,7 +350,10 @@ const groups = ref([
 
 const config = ref({
     'agol::enabled': false,
+    'agol::auth_method': 'oauth2',
     'agol::token': '',
+    'agol::client_id': '',
+    'agol::client_secret': '',
 
     'media::url': '',
 
@@ -342,6 +365,8 @@ const config = ref({
     'provider::url': '',
     'provider::secret': '',
     'provider::client': '',
+
+    'oidc::secret': '',
 
     'login::logo': '',
     'login::forgot': '',
@@ -372,8 +397,11 @@ async function fetch() {
         displayUnits.value[key] = value.options;
     }
 
+    // Get public config (exclude sensitive keys)
+    const sensitiveKeys = ['agol::auth_method', 'agol::client_id', 'agol::client_secret', 'agol::token', 'provider::secret', 'provider::client', 'oidc::secret'];
+    const publicKeys = Object.keys(config.value).filter(key => !sensitiveKeys.includes(key));
     const url = stdurl('/api/config')
-    url.searchParams.append('keys', Object.keys(config.value).join(','));
+    url.searchParams.append('keys', publicKeys.join(','));
     const configRes = await std(url);
 
     for (const key of Object.keys(configRes)) {
@@ -387,6 +415,14 @@ async function fetch() {
         }
     }
 
+    // Get admin-only config
+    try {
+        const adminConfig = await std('/api/admin/config');
+        Object.assign(config.value, adminConfig);
+    } catch (err) {
+        console.error('Failed to load admin config:', err);
+    }
+
     for (const key of Object.keys(display)) {
         config.value[`display::${key}`]  = display[key].value
     }
@@ -396,12 +432,31 @@ async function fetch() {
 
 async function postConfig() {
     loading.value = true;
+    
+    // Save public config (exclude sensitive keys)
+    const sensitiveKeys = ['agol::auth_method', 'agol::client_id', 'agol::client_secret', 'agol::token', 'provider::secret', 'provider::client', 'oidc::secret'];
+    const publicConfig = { ...config.value };
+    sensitiveKeys.forEach(key => delete publicConfig[key]);
+    
     await std(`/api/config`, {
         method: 'PUT',
         body: {
-            ...config.value,
+            ...publicConfig,
             'map::center': config.value['map::center'].split(',').reverse().join(','),
         }
+    });
+    
+    // Save admin-only config
+    const adminConfig = {};
+    sensitiveKeys.forEach(key => {
+        if (config.value[key] !== undefined) {
+            adminConfig[key] = config.value[key];
+        }
+    });
+    
+    await std('/api/admin/config', {
+        method: 'PUT',
+        body: adminConfig
     });
 
     edit.value = false;
