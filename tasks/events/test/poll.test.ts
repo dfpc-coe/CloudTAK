@@ -2,7 +2,6 @@ import test from 'tape';
 import type { ImportList } from '../src/types.js';
 import WorkerPool from '../index.js';
 import { MockAgent, setGlobalDispatcher, getGlobalDispatcher } from 'undici';
-import type { Dispatcher } from 'undici';
 
 test('Ensure Poll Triggers Job', async (t) => {
     const mockAgent = new MockAgent();
@@ -72,9 +71,27 @@ test('Ensure Poll Triggers Job', async (t) => {
         maxWorkers: 1
     });
 
-    pool.on('job', async () => {
-        await pool.close();
-        setGlobalDispatcher(originalDispatcher);
-        mockAgent.close();
-    });
+    return new Promise((resolve) => {
+        pool.on('job', async (job) => {
+            t.deepEquals(job, {
+                id: 'ba58a298-a3fe-46b4-a29a-9dd33fbb2139',
+                created: '2025-08-25T18:08:21.563Z',
+                updated: '2025-08-25T18:08:21.563Z',
+                status: 'Running',
+                error: null,
+                result: {},
+                name: 'import.kml',
+                username: 'admin@example.com',
+                mode: 'Unknown',
+                config: {},
+                mode_id: null,
+            });
+
+            await pool.close();
+            setGlobalDispatcher(originalDispatcher);
+            mockAgent.close();
+
+            return resolve();
+        });
+})
 });

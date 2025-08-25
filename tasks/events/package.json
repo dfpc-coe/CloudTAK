@@ -9,7 +9,7 @@
     "scripts": {
         "test": "StackName='test' test/test",
         "check": "tsc --noEmit",
-        "lint": "eslint index.ts src/",
+        "lint": "eslint index.ts src/ test/",
         "build": "tsup --target es2022 --format esm index.ts src/",
         "typegen": "openapi-typescript http://localhost:5001/api/swagger --output src/derived-types.d.ts"
     },

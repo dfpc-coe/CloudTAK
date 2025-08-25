@@ -50,8 +50,8 @@ export default class WorkerPool extends EventEmitter {
             try {
                 const jobs = await this.poll(this.maxWorkers - this.workers.size);
 
-                for (const job of jobs) {
-                    await this.lock(job.id)
+                for (let job of jobs) {
+                    job = await this.lock(job.id)
 
                     this.emit('job', job);
 
@@ -110,7 +110,7 @@ export default class WorkerPool extends EventEmitter {
         return true;
     }
 
-    async lock(importid: number): Promise<boolean> {
+    async lock(importid: number): Promise<Import> {
         const res = await fetch(new URL(`/api/import/${importid}`, this.api), {
             method: 'PATCH',
             headers: {
@@ -124,7 +124,7 @@ export default class WorkerPool extends EventEmitter {
 
         if (!res.ok) throw new Error(await res.text());
 
-        return true;
+        return await res.json() as Import;
     }
 
     async error(
