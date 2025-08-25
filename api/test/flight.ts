@@ -92,6 +92,8 @@ export default class Flight {
 
             this._tak = new MockTAKServer();
 
+            process.env.ASSET_BUCKET = 'fake-asset-bucket';
+
             t.end();
         });
     }
@@ -276,10 +278,33 @@ export default class Flight {
 
            const profileControl = new ProfileControl(this.config);
 
+            CP.execSync(`
+                openssl req \
+                    -newkey rsa:4096 \
+                    -keyout /tmp/cloudtak-test-${opts.username}.key \
+                    -out /tmp/cloudtak-test-${opts.username}.csr \
+                    -nodes \
+                    -subj "/CN=${opts.username}"
+            `);
+
+            CP.execSync(`
+               openssl x509 \
+                    -req \
+                    -in /tmp/cloudtak-test-${opts.username}.csr \
+                    -CA ${this.tak.keys.cert} \
+                    -CAkey ${this.tak.keys.key} \
+                    -out /tmp/cloudtak-test-${opts.username}.cert \
+                    -set_serial 01 \
+                    -days 365
+            `);
+
            await profileControl.generate({
                 username: username + '@example.com',
                 system_admin: opts.admin,
-                auth: { cert: 'cert123', key: 'key123' },
+                auth: {
+                    key: String(fs.readFileSync(`/tmp/cloudtak-test-${opts.username}.key`)),
+                    cert: String(fs.readFileSync(`/tmp/cloudtak-test-${opts.username}.cert`))
+                }
             });
 
             if (opts.admin) {

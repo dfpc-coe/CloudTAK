@@ -21,7 +21,10 @@ export default async function router(schema: Schema, config: Config) {
             limit: Default.Limit,
             page: Default.Page,
             order: Default.Order,
-            sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(ConnectionToken)})),
+            sort: Type.String({
+                default: 'created',
+                enum: Object.keys(ConnectionToken)
+            }),
             filter: Default.Filter
         }),
         res: Type.Object({
@@ -107,7 +110,7 @@ export default async function router(schema: Schema, config: Config) {
             const token = await config.models.ConnectionToken.from(sql`id = ${req.params.id}::INT`);
             if (token.connection !== req.params.connectionid) throw new Err(400, null, `Token does not belong to Connection ${req.params.connectionid}`);
 
-            await config.models.Token.commit(sql`id = ${token.id}::INT`, {
+            await config.models.ConnectionToken.commit(sql`id = ${token.id}::INT`, {
                 updated: sql`Now()`,
                 ...req.body
             });

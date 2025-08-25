@@ -1,6 +1,4 @@
 import ImportControl, { ImportModeEnum } from '../lib/control/import.js';
-import Batch from '../lib/aws/batch.js';
-import Logs from '../lib/aws/batch-logs.js';
 import { Type } from '@sinclair/typebox'
 import path from 'node:path';
 import Schema from '@openaddresses/batch-schema';
@@ -12,12 +10,66 @@ import S3 from '../lib/aws/s3.js'
 import crypto from 'node:crypto';
 import { sql } from 'drizzle-orm';
 import Auth, { AuthResourceAccess, AuthUser } from '../lib/auth.js';
-import { ImportResponse, StandardResponse, JobLogResponse } from '../lib/types.js';
+import { ImportResponse, StandardResponse } from '../lib/types.js';
+import { Import_Status } from '../lib/enums.js';
 import { Import } from '../lib/schema.js';
 import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: Config) {
     const importControl = new ImportControl(config);
+
+    await schema.get('/import', {
+        name: 'List Imports',
+        group: 'Import',
+        description: 'List Imports',
+        query: Type.Object({
+            limit: Default.Limit,
+            page: Default.Page,
+            filter: Default.Filter,
+            order: Default.Order,
+            status: Type.Optional(Type.Enum(Import_Status)),
+            sort: Type.String({
+                default: 'created',
+                enum: Object.keys(Import)
+            }),
+            mode: Type.Optional(Type.Enum(ImportModeEnum)),
+            mode_id: Type.Optional(Type.String())
+        }),
+        res: Type.Object({
+            total: Type.Integer(),
+            items: Type.Array(ImportResponse)
+        })
+    }, async (req, res) => {
+        try {
+            const auth = await Auth.is_auth(config, req, {
+                resources: [{ access: AuthResourceAccess.IMPORT }]
+            });
+
+            const username = auth instanceof AuthUser ? auth.email : null;
+
+            const list = await config.models.Import.list({
+                limit: req.query.limit,
+                page: req.query.page,
+                order: req.query.order,
+                sort: req.query.sort,
+                where: sql`
+                    (${Param(username)}::TEXT IS NULL OR username = ${username}::TEXT)
+                    AND (${Param(req.query.status)}::TEXT IS NULL OR ${Param(req.query.status)}::TEXT = status)
+                    AND (${Param(req.query.mode)}::TEXT IS NULL OR ${Param(req.query.mode)}::TEXT = mode)
+                    AND (${Param(req.query.mode_id)}::TEXT IS NULL OR ${Param(req.query.mode_id)}::TEXT = mode_id)
+                    AND (
+                        ${Param(req.query.filter)}::TEXT IS NULL
+                        OR ${Param(req.query.filter)}::TEXT = ''
+                        OR ${Param(req.query.filter)}::TEXT ~* name
+                    )
+                `
+            });
+
+            res.json(list);
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
 
     await schema.post('/import', {
         name: 'Import',
@@ -63,7 +115,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const imported = await config.models.Import.from(req.params.import);
 
-            if (imported.status !== 'Empty') throw new Err(400, null, 'An asset is already associated with this import');
+            if (imported.status !== Import_Status.EMPTY) throw new Err(400, null, 'An asset is already associated with this import');
             if (imported.username !== user.email) throw new Err(400, null, 'You did not create this import');
 
             const bb = busboy({
@@ -80,7 +132,7 @@ export default async function router(schema: Schema, config: Config) {
                     };
 
                     await config.models.Import.commit(imported.id, {
-                        status: 'Pending'
+                        status: Import_Status.PENDING,
                     });
 
                     await S3.put(`import/${imported.id}${res.ext}`, file)
@@ -199,7 +251,7 @@ export default async function router(schema: Schema, config: Config) {
             import: Type.String()
         }),
         body: Type.Object({
-            status: Type.Optional(Type.String()),
+            status: Type.Optional(Type.Enum(Import_Status)),
             error: Type.Optional(Type.String()),
             result: Type.Optional(Type.Any())
         }),
@@ -215,6 +267,12 @@ export default async function router(schema: Schema, config: Config) {
             if (auth instanceof AuthUser) {
                 const user = auth as AuthUser;
                 if (imported.username !== user.email) throw new Err(400, null, 'You did not create this import');
+            }
+
+            if (req.body.status && [Import_Status.EMPTY, Import_Status.PENDING].includes(req.body.status)) {
+                throw new Err(400, null, `Cannot set status to ${req.body.status}`);
+            } else if (req.body.status === Import_Status.RUNNING && imported.status === Import_Status.RUNNING) {
+                throw new Err(400, null, `Cannot set statust to running on an import that is already running`);
             }
 
             imported = await config.models.Import.commit(req.params.import, {
@@ -263,105 +321,5 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.get('/import', {
-        name: 'List Imports',
-        group: 'Import',
-        description: 'List Imports',
-        query: Type.Object({
-            limit: Default.Limit,
-            page: Default.Page,
-            filter: Default.Filter,
-            order: Default.Order,
-            sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(Import) })),
-            mode: Type.Optional(Type.Enum(ImportModeEnum)),
-            mode_id: Type.Optional(Type.String())
-        }),
-        res: Type.Object({
-            total: Type.Integer(),
-            items: Type.Array(ImportResponse)
-        })
-    }, async (req, res) => {
-        try {
-            const user = await Auth.as_user(config, req);
-
-            const list = await config.models.Import.list({
-                limit: req.query.limit,
-                page: req.query.page,
-                order: req.query.order,
-                sort: req.query.sort,
-                where: sql`
-                    (${Param(req.query.mode)}::TEXT IS NULL OR ${Param(req.query.mode)}::TEXT = mode)
-                    AND (${Param(req.query.mode_id)}::TEXT IS NULL OR ${Param(req.query.mode_id)}::TEXT = mode_id)
-                    AND (
-                        ${Param(req.query.filter)}::TEXT IS NULL
-                        OR ${Param(req.query.filter)}::TEXT = ''
-                        OR ${Param(req.query.filter)}::TEXT ~* name
-                    )
-                    AND username = ${user.email}
-                `
-            });
-
-            res.json(list);
-        } catch (err) {
-            Err.respond(err, res);
-        }
-    });
-
-    await schema.post('/import/:import/batch', {
-        name: 'Batch Import',
-        group: 'Import',
-        description: 'Attach a Batch Job to an instance',
-        params: Type.Object({
-            import: Type.String()
-        }),
-        res: ImportResponse
-    }, async (req, res) => {
-        try {
-            await Auth.is_auth(config, req, {
-                resources: [{ access: AuthResourceAccess.IMPORT, id: req.params.import }]
-            });
-
-            const imported = await config.models.Import.from(req.params.import);
-
-            await importControl.batch(imported.username, imported.id);
-
-            res.json(imported)
-        } catch (err) {
-            Err.respond(err, res);
-        }
-    });
-
-    await schema.get('/import/:import/batch', {
-        name: 'Get Batch',
-        group: 'Import',
-        description: 'List Import Batch Job Logs',
-        params: Type.Object({
-            import: Type.String(),
-        }),
-        res: Type.Object({
-            logs: Type.Array(JobLogResponse)
-        })
-    }, async (req, res) => {
-        try {
-            await Auth.is_auth(config, req);
-
-            const imported = await config.models.Import.from(req.params.import);
-
-            if (!imported.batch) {
-                res.json({ logs: [] })
-            } else {
-                const job = await Batch.job(config, imported.batch);
-
-                if (job.logstream) {
-                    const logs = await Logs.list(job.logstream);
-                    res.json(logs)
-                } else {
-                    res.json({ logs: [] })
-                }
-            }
-        } catch (err) {
-            Err.respond(err, res);
-        }
-    });
 }
 

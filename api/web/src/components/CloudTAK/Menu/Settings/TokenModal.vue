@@ -102,7 +102,7 @@ export default {
     },
     methods: {
         deleteToken: async function() {
-            await std(`/api/token/${this.token.id}`, {
+            await std(`/api/profile/token/${this.token.id}`, {
                 method: 'DELETE',
             });
 
@@ -110,13 +110,13 @@ export default {
         },
         saveToken: async function() {
             if (this.token.id) {
-                await std(`/api/token/${this.token.id}`, {
+                await std(`/api/profile/token/${this.token.id}`, {
                     method: 'PATCH',
                     body: this.editToken
                 });
                 this.$emit('refresh');
             } else {
-                const newtoken = await std('/api/token', {
+                const newtoken = await std('/api/profile/token', {
                     method: 'POST',
                     body: this.editToken
                 });

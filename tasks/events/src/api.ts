@@ -1,76 +1,13 @@
 import { fetch } from 'undici';
+import type { Import } from './types.js';
 import fs from 'node:fs';
 import { Readable } from 'node:stream';
 import path from 'node:path';
-import { Event } from './index.js'
-
-export type Import = {
-    id: string;
-    mode: string;
-    name: string;
-    username: string;
-    config: {
-        id: string;
-    }
-};
 
 export default class API {
-    static async fetchLayer(event: {
-        layer: number;
-        token: string;
-    }): Promise<{
-        layer: number;
-        connection: number;
-    }> {
-        const url = new URL(`/api/layer/${event.layer}`, process.env.TAK_ETL_API);
-
-        const res = await fetch(url, {
-            headers: {
-                'Authorization': `Bearer ${event.token}`
-            },
-        });
-
-        const json = await res.json();
-
-        if (!res.ok) {
-            console.error(JSON.stringify(json))
-            const err = json as { message: string };
-            throw new Error(err.message);
-        }
-
-        const jsont = json as {
-            connection: number;
-        };
-
-        return {
-            layer: event.layer,
-            connection: jsont.connection
-        }
-    }
-
-    static async fetchSchema(event: {
-        connection: number;
-        layer: number;
-        token: string;
-    }) {
-        const url = new URL(`/api/connection${event.connection}/layer/${event.layer}/task/schema`, process.env.TAK_ETL_API);
-        url.searchParams.append('type', 'schema:output');
-        const res = await fetch(url, {
-            headers: {
-                'Authorization': `Bearer ${event.token}`
-            },
-        });
-
-        const json = await res.json();
-
-        if (!res.ok) {
-            console.error(JSON.stringify(json))
-            const err = json as { message: string };
-            throw new Error(err.message);
-        }
-
-        return json as any;
-    }
+    static async fetch({
+        token: string,
+    })
 
     static async putFeature(event: {
         token: string;
@@ -84,32 +21,6 @@ export default class API {
             headers: {
                 'Authorization': `Bearer ${event.token}`,
                 'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(event.body)
-        });
-
-        const json = await res.json();
-
-        if (!res.ok) {
-            console.error(JSON.stringify(json))
-            const err = json as { message: string };
-            throw new Error(err.message);
-        }
-
-        return json as any;
-    }
-
-    static async updateLayer(event: {
-        connection: number;
-        layer: number;
-        token: string;
-        body: object;
-    }) {
-        const res = await fetch(new URL(`/api/connection/${event.connection}/layer/${event.layer}`, process.env.TAK_ETL_API), {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${event.token}`
             },
             body: JSON.stringify(event.body)
         });
@@ -200,7 +111,6 @@ export default class API {
         updated: number;
         description: string;
         connection: number;
-        auto_transform: boolean;
         mission_sync: boolean;
         assets: string[];
     }> {
@@ -222,45 +132,7 @@ export default class API {
         return json as any;
     }
 
-    static async createBatch(event: Event, imported: Import): Promise<Import> {
-        const res = await fetch(new URL(`/api/import/${imported.id}/batch`, process.env.TAK_ETL_API), {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${event.UserToken}`
-            },
-        });
-
-        const json = await res.json();
-
-        if (!res.ok) {
-            console.error(JSON.stringify(json))
-            const err = json as { message: string };
-            throw new Error(err.message);
-        }
-
-        return json as any;
-    }
-
-    static async fetchImport(event: Event): Promise<Import> {
-        const res = await fetch(new URL(`/api/import/${event.ID}`, process.env.TAK_ETL_API), {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${event.Token}`
-            },
-        });
-
-        const json = await res.json();
-
-        if (!res.ok) {
-            console.error(JSON.stringify(json))
-            const err = json as { message: string };
-            throw new Error(err.message);
-        }
-
-        return json as any;
-    }
-
-    static async updateImport(event: Event, body: object) {
+    static async updateImport(event: Event, body: object): Promise<Import> {
         const res = await fetch(new URL(`/api/import/${event.ID}`, process.env.TAK_ETL_API), {
             method: 'PATCH',
             headers: {
@@ -278,6 +150,6 @@ export default class API {
             throw new Error(err.message);
         }
 
-        return json as any;
+        return json as Import;
     }
 }
