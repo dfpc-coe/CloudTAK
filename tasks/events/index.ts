@@ -53,6 +53,8 @@ export default class WorkerPool extends EventEmitter {
                 for (const job of jobs) {
                     await this.lock(job.id)
 
+                    this.emit('job', job);
+
                     const worker = new Worker(new URL('./src/worker.ts', import.meta.url))
                     const locked = { job, worker }
 
