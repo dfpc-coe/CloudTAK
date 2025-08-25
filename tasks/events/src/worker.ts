@@ -48,24 +48,12 @@ export default class Worker extends EventEmitter {
                 fs.createWriteStream(local.raw)
             );
 
-            if (this.msg.job.mode === 'Mission') {
-                if (!this.msg.job.config.id) throw new Error('No mission name defined');
-
-                const res = await API.uploadMission(md, {
-                    name: this.msg.job.config.id,
-                    filename: this.msg.job.name,
-                    token
-                });
-            } else if (this.msg.job.mode === 'Package') {
+            if (ext === '.zip') {
                 await processArchive(msg, local);
-            } else if (this.msg.job.mode === 'Unknown') {
-                if (ext === '.zip') {
-                    await processArchive(msg, local);
-                } else if (ext === '.xml') {
-                    await processIndex(fsp.readFile(local));
-                } else {
-                    await this.processFile(local)
-                }
+            } else if (ext === '.xml') {
+                await processIndex(fsp.readFile(local));
+            } else {
+                await this.processFile(local)
             }
 
             this.emit('success');
