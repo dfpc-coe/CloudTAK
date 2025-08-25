@@ -63,21 +63,21 @@
                             />
                         </div>
                         <div
-                            v-tooltip='`${imported.mode} Import`'
+                            v-tooltip='`${imported.source} Import`'
                             class='col-auto mx-2'
                         >
                             <IconAmbulance
-                                v-if='imported.mode === "Mission"'
+                                v-if='imported.source === "Mission"'
                                 :size='32'
                                 stroke='0.5'
                             />
                             <IconFile
-                                v-else-if='imported.mode === "Unknown"'
+                                v-else-if='imported.source === "Unknown"'
                                 :size='32'
                                 stroke='0.5'
                             />
                             <IconPackages
-                                v-else-if='imported.mode === "Package"'
+                                v-else-if='imported.source === "Package"'
                                 :size='32'
                                 stroke='0.5'
                             />

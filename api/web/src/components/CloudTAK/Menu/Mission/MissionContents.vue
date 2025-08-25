@@ -191,8 +191,8 @@ async function importFile(name: string) {
         method: 'POST',
         body: {
             name: name,
-            mode: 'Mission',
-            mode_id: props.mission.guid
+            source: 'Mission',
+            source_id: props.mission.guid
         }
     }) as Import;
 
@@ -204,8 +204,8 @@ async function fetchImports() {
 
     try {
         const url = await stdurl(`/api/import`);
-        url.searchParams.append('mode', 'Mission');
-        url.searchParams.append('mode_id', props.mission.guid);
+        url.searchParams.append('source', 'Mission');
+        url.searchParams.append('source_id', props.mission.guid);
         const imps = await std(url) as ImportList;
 
         imps.items = imps.items.filter((i) => {

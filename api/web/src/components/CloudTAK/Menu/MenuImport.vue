@@ -43,7 +43,7 @@
                         </div>
                         <div
                             class='datagrid-content'
-                            v-text='imported.mode + ": " + imported.mode_id'
+                            v-text='imported.source + ": " + imported.source_id'
                         />
                     </div>
                 </div>
@@ -57,16 +57,6 @@
                             v-if='loading.run'
                             desc='Running Import'
                         />
-                        <template v-if='batch && batch.logs.length'>
-                            <label
-                                for='logs'
-                                class='subheader'
-                            >Import Logs</label>
-                            <pre
-                                id='logs'
-                                v-text='batch.logs.map((log) => { return log.message }).join("\n")'
-                            />
-                        </template>
                     </template>
                     <template v-else-if='imported.status === "Fail"'>
                         <div class='datagrid-item'>
@@ -109,7 +99,7 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { std, stdurl } from '../../../../src/std.ts';
-import type { Import, ImportBatch } from '../../../../src/types.ts';
+import type { Import } from '../../../../src/types.ts';
 import Status from '../../util/StatusDot.vue';
 import timeDiff from '../../../timediff.ts';
 import {
@@ -131,7 +121,6 @@ const loading = ref({
     run: true
 });
 const interval = ref<ReturnType<typeof setInterval>>();
-const batch = ref<ImportBatch | undefined>();
 const imported = ref<Import | undefined>();
 
 onMounted(async () => {
@@ -176,11 +165,6 @@ async function fetch(init = false) {
         if (imported.value && (imported.value.status === 'Fail' || imported.value.status === 'Success')) {
             if (interval.value) clearInterval(interval.value);
             loading.value.run = false;
-        }
-
-        if (imported.value.batch) {
-            const urlBatch = stdurl(`/api/import/${route.params.import}/batch`);
-            batch.value = await std(urlBatch) as ImportBatch;
         }
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
