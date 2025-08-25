@@ -163,7 +163,7 @@ export default class AtlasDatabase {
                 const min = coord.slice(0, 2) as [number, number];
 
                 // Don't Send Invalid Coords
-                if (coord < -90 || coord > 90 || coord < -180 || coord > 180) {
+                if (coord[0] < -90 || coord[0] > 90 || coord[1] < -180 || coord[1] > 180) {
                     return;
                 }
 
