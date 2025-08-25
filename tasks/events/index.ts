@@ -1,18 +1,21 @@
 import os from 'node:os';
 import type { Import, ImportList } from './src/types.js';
+import EventEmitter from 'node:events';
 import { Worker } from 'node:worker_threads';
 import Import from './src/import.js';
 import jwt from 'jsonwebtoken';
 
-export default class WorkerPool {
+export default class WorkerPool extends EventEmitter {
     interval: NodeJS.Timer;
+
+    isClosing: boolean;
 
     api: string;
     secret: string;
 
     bucket: string;
 
-    maxWorkes: number;
+    maxWorkers: number;
     workers: Set<{
         worker: Worker,
         job: Import
@@ -23,8 +26,12 @@ export default class WorkerPool {
         secret: string,
         bucket: string,
         interval: number
+
+        maxWorkers?: number;
     }) {
-        this.maxWorkers = os.availableParallelism();
+        super();
+
+        this.maxWorkers = opts.maxWorkers || os.availableParallelism();
         console.log(`ok - Worker Pool started with ${this.maxWorkers} workers`);
 
         this.api = opts.api;
@@ -166,6 +173,8 @@ export default class WorkerPool {
     }
 
     async close(): Promise<void> {
+        this.isClosing = true;
+
         clearInterval(this.interval);
 
         await Promise.all(
