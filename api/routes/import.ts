@@ -1,4 +1,4 @@
-import ImportControl, { ImportModeEnum } from '../lib/control/import.js';
+import ImportControl, { ImportSourceEnum } from '../lib/control/import.js';
 import { Type } from '@sinclair/typebox'
 import path from 'node:path';
 import Schema from '@openaddresses/batch-schema';
@@ -32,8 +32,8 @@ export default async function router(schema: Schema, config: Config) {
                 default: 'created',
                 enum: Object.keys(Import)
             }),
-            mode: Type.Optional(Type.Enum(ImportModeEnum)),
-            mode_id: Type.Optional(Type.String())
+            source: Type.Optional(Type.Enum(ImportSourceEnum)),
+            source_id: Type.Optional(Type.String())
         }),
         res: Type.Object({
             total: Type.Integer(),
@@ -55,8 +55,8 @@ export default async function router(schema: Schema, config: Config) {
                 where: sql`
                     (${Param(username)}::TEXT IS NULL OR username = ${username}::TEXT)
                     AND (${Param(req.query.status)}::TEXT IS NULL OR ${Param(req.query.status)}::TEXT = status)
-                    AND (${Param(req.query.mode)}::TEXT IS NULL OR ${Param(req.query.mode)}::TEXT = mode)
-                    AND (${Param(req.query.mode_id)}::TEXT IS NULL OR ${Param(req.query.mode_id)}::TEXT = mode_id)
+                    AND (${Param(req.query.source)}::TEXT IS NULL OR ${Param(req.query.source)}::TEXT = source)
+                    AND (${Param(req.query.source_id)}::TEXT IS NULL OR ${Param(req.query.source_id)}::TEXT = source_id)
                     AND (
                         ${Param(req.query.filter)}::TEXT IS NULL
                         OR ${Param(req.query.filter)}::TEXT = ''
@@ -77,8 +77,8 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Import an unknown asset into the imports manager',
         body: Type.Object({
             name: Default.NameField,
-            mode: Type.Optional(Type.Enum(ImportModeEnum)),
-            mode_id: Type.Optional(Type.String()),
+            source: Type.Optional(Type.Enum(ImportSourceEnum)),
+            source_id: Type.Optional(Type.String()),
             config: Type.Optional(Type.Any()),
         }),
         res: ImportResponse

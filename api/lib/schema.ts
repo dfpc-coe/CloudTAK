@@ -200,8 +200,8 @@ export const Import = pgTable('imports', {
     error: text(),
     result: json().notNull().default({}),
     username: text().notNull().references(() => Profile.username),
-    mode: text().notNull().default('Unknown'),
-    mode_id: text(),
+    source: text().notNull().default('Upload'),
+    source_id: text(),
     config: json().notNull().default({})
 });
 
