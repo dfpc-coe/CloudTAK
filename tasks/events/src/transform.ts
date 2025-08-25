@@ -50,9 +50,6 @@ export default class DataTransform {
 
         const asset = await convert.convert();
 
-        console.error('HERE');
-        return;
-
         if (path.parse(asset).ext === '.geojsonld') {
             const geouploader = new Upload({
                 client: s3,

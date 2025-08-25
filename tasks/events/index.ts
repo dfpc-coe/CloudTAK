@@ -5,7 +5,7 @@ import Import from './src/import.js';
 import jwt from 'jsonwebtoken';
 
 export default class WorkerPool {
-    interval: ReturnType<typeof setInterval>;
+    interval: NodeJS.Timer;
 
     api: string;
     secret: string;
@@ -55,7 +55,7 @@ export default class WorkerPool {
                                 await this.success(job.id);
                                 console.log(`Import: ${job.id} - completed successfully`);
                             } else if (message.type === 'error') {
-                                await this.error(job.id, message.error);
+                                await this.error(job.id, message.error instanceof Error ? message.error.message : String(message.error));
                             } else {
                                 console.error(`Import: ${job.id} -`, message);
                             }
@@ -118,7 +118,10 @@ export default class WorkerPool {
         return true;
     }
 
-    async error(importid: number, error: string): Promise<boolean> {
+    async error(
+        importid: number,
+        error: string
+    ): Promise<boolean> {
         const res = await fetch(new URL(`/api/import/${importid}`, this.api), {
             method: 'PATCH',
             headers: {
@@ -160,6 +163,20 @@ export default class WorkerPool {
 
         const json = await res.json() as ImportList;
         return json.items;
+    }
+
+    async close(): Promise<void> {
+        clearInterval(this.interval);
+
+        await Promise.all(
+            Array.from(this.workers)
+                .map(({ worker }) => {
+                    return new Promise<void>((resolve) => {
+                        worker.on('exit', () => resolve());
+                        worker.terminate();
+                    })
+                })
+            );
     }
 }
 

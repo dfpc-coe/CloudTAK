@@ -59,7 +59,7 @@ export default class KML {
 
         console.error('ok - converted to GeoJSON');
 
-        const output = path.resolve(this.task.local.tmpdir, path.parse(this.task.name).name + '.geojsonld');
+        const output = path.resolve(this.task.local.tmpdir, path.parse(this.task.local.name).name + '.geojsonld');
 
         await fs.writeFile(output, converted.map((feat) => {
             return JSON.stringify(feat);
