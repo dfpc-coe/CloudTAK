@@ -45,6 +45,15 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
     importControl: ImportControl;
     closed: boolean;
 
+    /**
+     * In Low Bandwith environments the WebSocket can persist
+     * even when the connection is not adequately transferring data
+     *
+     * Ping every 5 seconds to ensure the client can detect this and
+     * notify the user and/or attempt a reconnect
+     */
+    pingInterval: NodeJS.Timer;
+
     constructor(config: Config) {
         super();
 
@@ -53,6 +62,23 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         this.importControl = new ImportControl(config);
 
         this.sinks = new Sinks(config);
+
+        this.pingInterval = setInterval(() => {
+            try {
+                for (const clients of this.config.wsClients.values()) {
+                    for (const client of clients) {
+                        client.ws.send(JSON.stringify({
+                            type: 'ping',
+                            data: {
+                                time: new Date().toISOString()
+                            }
+                        }));
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to send ping: ', err);
+            }
+        }, 5000);
     }
 
     async close(): Promise<void> {
@@ -61,6 +87,8 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         for (const conn of this.values()) {
             conn.destroy();
         }
+
+        clearInterval(this.pingInterval);
 
         this.clear();
     }
