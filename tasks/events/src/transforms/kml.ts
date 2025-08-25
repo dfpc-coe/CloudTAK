@@ -1,4 +1,5 @@
 import fs from 'node:fs/promises';
+import type { Message, LocalMessage } from './types.ts';
 import path from 'node:path';
 import spritesmith from 'spritesmith';
 import Sharp from 'sharp';
@@ -18,8 +19,15 @@ export default class KML {
         };
     }
 
-    constructor(task) {
-        this.task = task;
+    msg: Message;
+    local: LocalMessage;
+
+    constructor(
+        msg: Message,
+        local: LocalMessage
+    ) {
+        this.msg = msg;
+        this.local = local;
     }
 
     async convert() {
@@ -27,9 +35,9 @@ export default class KML {
 
         let asset;
 
-        if (this.task.local.ext === '.kmz') {
+        if (this.local.ext === '.kmz') {
             const zip = new StreamZip.async({
-                file: this.task.local.raw,
+                file: this.local.raw,
                 skipEntryNameValidation: true
             });
 
@@ -37,11 +45,11 @@ export default class KML {
 
             if (!preentries['doc.kml']) throw new Error('No doc.kml found in KMZ');
 
-            await zip.extract(null, this.task.local.tmpdir);
+            await zip.extract(null, this.local.tmpdir);
 
-            asset = path.resolve(this.task.local.tmpdir, 'doc.kml');
+            asset = path.resolve(this.local.tmpdir, 'doc.kml');
         } else {
-            asset = path.resolve(this.task.local.raw);
+            asset = path.resolve(this.local.raw);
         }
 
         const dom = new DOMParser().parseFromString(String(await fs.readFile(asset)), 'text/xml');
@@ -50,7 +58,7 @@ export default class KML {
 
         for (const feat of converted) {
             if (feat.properties.icon && !icons.has(feat.properties.icon)) {
-                const search = await glob(path.resolve(this.task.local.tmpdir, '**/' + feat.properties.icon));
+                const search = await glob(path.resolve(this.local.tmpdir, '**/' + feat.properties.icon));
                 if (!search.length) continue;
 
                 icons.set(feat.properties.icon, await fs.readFile(search[0]));
@@ -59,7 +67,7 @@ export default class KML {
 
         console.error('ok - converted to GeoJSON');
 
-        const output = path.resolve(this.task.local.tmpdir, path.parse(this.task.local.name).name + '.geojsonld');
+        const output = path.resolve(this.local.tmpdir, path.parse(this.local.name).name + '.geojsonld');
 
         await fs.writeFile(output, converted.map((feat) => {
             return JSON.stringify(feat);
