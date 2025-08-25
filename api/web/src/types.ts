@@ -75,7 +75,6 @@ export type Login_Create = paths["/api/login"]["post"]["requestBody"]["content"]
 export type Login_CreateRes = paths["/api/login"]["post"]["responses"]["200"]["content"]["application/json"]
 
 export type Import = paths["/api/import/{:import}"]["get"]["responses"]["200"]["content"]["application/json"]
-export type ImportBatch = paths["/api/import/{:import}/batch"]["get"]["responses"]["200"]["content"]["application/json"]
 export type ImportList = paths["/api/import"]["get"]["responses"]["200"]["content"]["application/json"]
 
 export type Profile = paths["/api/profile"]["get"]["responses"]["200"]["content"]["application/json"]
