@@ -1,5 +1,5 @@
 import Err from '@openaddresses/batch-error';
-import ImportControl, { ImportModeEnum }  from './control/import.js';
+import ImportControl, { ImportSourceEnum }  from './control/import.js';
 import Sinks from './sinks.js';
 import Config from './config.js';
 import { randomUUID } from 'node:crypto';
@@ -152,8 +152,8 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                             await this.importControl.create({
                                 username: String(conn.id),
                                 name: feat.properties.fileshare.name,
-                                mode: ImportModeEnum.PACKAGE,
-                                mode_id: file.searchParams.get('hash') || undefined
+                                source: ImportSourceEnum.PACKAGE,
+                                source_id: file.searchParams.get('hash') || undefined
                             })
                         }
                     } catch (err) {
