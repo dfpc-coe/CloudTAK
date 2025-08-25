@@ -33,27 +33,4 @@ export default class API {
 
         return json as any;
     }
-
-    static async uploadMission(event: Event, mission: {
-        name: string;
-        filename: string;
-        token?: string;
-    }) {
-        const {size} = fs.statSync(event.Local);
-
-        const url = new URL(`/api/marti/missions/${encodeURIComponent(mission.name)}/upload`, process.env.TAK_ETL_API);
-        url.searchParams.append('name', mission.filename);
-        const res = await fetch(url, {
-            method: 'POST',
-            duplex: 'half',
-            headers: {
-                'Authorization': `Bearer ${mission.token ? mission.token : event.Token}`,
-                'Content-Length': String(size),
-                'Content-Type': 'application/octet-stream'
-            },
-            body: Readable.toWeb(fs.createReadStream(event.Local))
-        });
-
-        return await res.json();
-    }
 }
