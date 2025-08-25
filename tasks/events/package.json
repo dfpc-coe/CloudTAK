@@ -7,6 +7,7 @@
         "node": ">= 22"
     },
     "scripts": {
+        "test": "StackName='test' test/test",
         "check": "tsc --noEmit",
         "lint": "eslint index.ts src/",
         "build": "tsup --target es2022 --format esm index.ts src/",
@@ -29,7 +30,7 @@
         "spritesmith": "^3.5.1",
         "tiny-async-pool": "^2.1.0",
         "tsup": "^8.5.0",
-        "undici": "^7.8.0",
+        "undici": "^7.15.0",
         "vinyl": "^3.0.0",
         "xml2js": "^0.6.2"
     },
@@ -37,10 +38,12 @@
         "@types/aws-lambda": "^8.10.108",
         "@types/jsonwebtoken": "^9.0.5",
         "@types/node": "^24.0.0",
+        "@types/sinon": "^17.0.4",
         "@types/xml2js": "^0.4.14",
         "eslint": "^9.0.0",
         "globals": "^16.0.0",
         "openapi-typescript": "^7.9.1",
+        "sinon": "^21.0.0",
         "typescript": "^5.0.0",
         "typescript-eslint": "^8.0.0"
     }

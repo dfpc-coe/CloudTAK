@@ -14,9 +14,9 @@ import { CoTParser, DataPackage } from '@tak-ps/node-cot';
 import xml2js from 'xml2js';
 
 parentPort.on('message', async (message) => {
-    try {
-        const msg: Message = message;
+    const msg: Message = message;
 
+    try {
         console.error(`Import: ${msg.job.id}`, JSON.stringify(msg.job));
 
         // Use a user token to ensure data for a given user import doesn't exceed their ACL
@@ -66,7 +66,7 @@ parentPort.on('message', async (message) => {
             type: 'success'
         });
     } catch (err) {
-        console.error('Error processing import:', err);
+        console.error(`Import: ${msg.job.id} Error: `, err);
 
         parentPort.postMessage({
             type: 'error',
