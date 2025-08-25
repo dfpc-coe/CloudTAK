@@ -1,7 +1,7 @@
 import DataTransform from './transform.ts';
 import { EventEmitter } from 'node:events'
 import API from './api.ts';
-import type { Import, Message, LocalMessage } from './types.ts';
+import type { Message, LocalMessage } from './types.ts';
 import jwt from 'jsonwebtoken';
 import os from 'node:os';
 import fsp from 'node:fs/promises';
@@ -64,7 +64,7 @@ export default class Worker extends EventEmitter {
                 } else if (ext === '.xml') {
                     await processIndex(md, String(await fsp.readFile(local)));
                 } else {
-                    await processFile(msg, local)
+                    await this.processFile(local)
                 }
             }
 
@@ -83,7 +83,7 @@ export default class Worker extends EventEmitter {
      *
      * @param msg - Job Description Object
      */
-    async processArchive(msg: Message, local: LocalMessage): Promise<void> {
+    async processArchive(local: LocalMessage): Promise<void> {
         const pkg = await DataPackage.parse(local);
 
         const cots = await pkg.cots();
@@ -129,7 +129,7 @@ export default class Worker extends EventEmitter {
             if (path.parse(file).ext === '.xml') {
                 indexes.push(entry);
             } else {
-                await processFile(msg, local);
+                await processFile(local);
                 console.log(`ok - uploading: s3://${this.msg.bucket}/profile/${this.msg.job.username}/${name}`);
                     await s3.send(new S3.PutObjectCommand({
                     Bucket: this.msg.bucket,
@@ -157,7 +157,6 @@ export default class Worker extends EventEmitter {
      * @param msg - Job Description Object
      */
     async processFile(
-        msg: Message,
         local: LocalMessage
     ): Promise<void> {
         console.log(`Import: ${this.msg.job.id} - uploading profile asset`);
@@ -173,7 +172,7 @@ export default class Worker extends EventEmitter {
             Key: `profile/${this.msg.job.username}/${this.msg.job.id}${path.parse(this.msg.job.name).ext}`,
         }))
 
-        const transformer = new DataTransform(msg, local);
+        const transformer = new DataTransform(this.msg, local);
 
         await transformer.run();
     }

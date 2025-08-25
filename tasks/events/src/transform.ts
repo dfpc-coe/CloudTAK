@@ -38,7 +38,7 @@ export default class DataTransform {
     }
 
     async run() {
-        const s3 = new S3.S3Client({ region: process.env.AWS_REGION });
+        const s3 = new S3.S3Client({ region: process.env.AWS_REGION || 'us-east-1' });
 
         if (!formats.has(this.local.ext)) {
             throw new Error('Unsupported Input Format');
@@ -53,7 +53,7 @@ export default class DataTransform {
                 client: s3,
                 params: {
                     Bucket: this.msg.bucket,
-                    Key: `${this.etl.type}/${this.etl.id}/${path.parse(this.etl.task.asset).name}.geojsonld`,
+                    Key: `profile/${this.msg.job.username}/${this.msg.job.id}.geojsonld`,
                     Body: fs.createReadStream(asset)
                 }
             });
@@ -64,7 +64,7 @@ export default class DataTransform {
             console.log(`ok - tiling ${asset}`);
             await tp.tile(
                 fs.createReadStream(asset),
-                path.resolve(this.temp, path.parse(this.etl.task.asset).name + '.pmtiles'), {
+                path.resolve(this.local.tmpdir, path.parse(asset).name + '.pmtiles'), {
                     std: true,
                     quiet: false,
                     name: asset,
@@ -81,34 +81,24 @@ export default class DataTransform {
                     }
                 }
             );
-
-            const pmuploader = new Upload({
-                client: s3,
-                params: {
-                    Bucket: this.etl.bucket,
-                    Key: `${this.etl.type}/${this.etl.id}/${path.parse(this.etl.task.asset).name}.pmtiles`,
-                    Body: fs.createReadStream(path.resolve(this.temp, path.parse(this.etl.task.asset).name + '.pmtiles'))
-                }
-            });
-            await pmuploader.done();
         } else {
             console.log(`ok - converting ${asset}`);
-            const pmout = cp.execFileSync('pmtiles', ['convert', asset, path.resolve(this.temp, path.parse(this.etl.task.asset).name + '.pmtiles')]);
+            const pmout = cp.execFileSync('pmtiles', ['convert', asset, path.resolve(this.local.tmpdir, path.parse(asset).name + '.pmtiles')]);
             console.log(String(pmout));
 
-            console.log(`ok - converted: ${path.resolve(this.temp, path.parse(this.etl.task.asset).name + '.pmtiles')}`);
-
-            const pmuploader = new Upload({
-                client: s3,
-                params: {
-                    Bucket: this.etl.bucket,
-                    Key: `${this.etl.type}/${this.etl.id}/${path.parse(this.etl.task.asset).name}.pmtiles`,
-                    Body: fs.createReadStream(path.resolve(this.temp, path.parse(this.etl.task.asset).name + '.pmtiles'))
-                }
-            });
-
-            await pmuploader.done();
+            console.log(`ok - converted: ${path.resolve(this.local.tmpdir, path.parse(asset).name + '.pmtiles')}`);
         }
+
+        const pmuploader = new Upload({
+            client: s3,
+            params: {
+                Bucket: this.msg.bucket,
+                Key: `profile/${this.msg.job.username}/${this.msg.job.id}.pmtiles`,
+                Body: fs.createReadStream(path.resolve(this.local.tmpdir, path.parse(asset).name + '.pmtiles'))
+            }
+        });
+
+        await pmuploader.done();
     }
 
     async reporter(err) {

@@ -1,31 +1,57 @@
 import test from 'tape';
-import type { ImportList } from '../src/types.js';
 import Worker from '../src/worker.js';
-import { MockAgent, setGlobalDispatcher, getGlobalDispatcher } from 'undici';
-import type { Dispatcher } from 'undici';
+import fs from 'node:fs';
+import Sinon from 'sinon';
+import {
+    S3Client,
+    GetObjectCommand,
+    PutObjectCommand,
+    CopyObjectCommand
+} from '@aws-sdk/client-s3';
 
 test('Worker: KML Job', async (t) => {
-    const mockAgent = new MockAgent();
-    const originalDispatcher = getGlobalDispatcher();
+    const ExternalOperations = [
+            (command) => {
+                t.ok(command instanceof GetObjectCommand);
+                t.deepEquals(command.input, {
+                    Bucket: 'test-bucket',
+                    Key: 'import/ba58a298-a3fe-46b4-a29a-9dd33fbb2139.kml'
+                });
 
-    mockAgent.disableNetConnect();
+                return Promise.resolve({
+                    Body: fs.createReadStream(new URL('./fixtures/point.kml', import.meta.url))
+                })
+            },
+            (command) => {
+                t.ok(command instanceof CopyObjectCommand);
+                t.deepEquals(command.input, {
+                    CopySource: 'test-bucket/import/ba58a298-a3fe-46b4-a29a-9dd33fbb2139.kml',
+                    Bucket: 'test-bucket',
+                    Key: 'profile/admin@example.com/ba58a298-a3fe-46b4-a29a-9dd33fbb2139.kml'
+                });
 
-    setGlobalDispatcher(mockAgent);
+                return Promise.resolve({});
+            },
+            (command) => {
+                t.ok(command instanceof PutObjectCommand);
 
-    const mockPool = mockAgent.get('http://localhost:5001');
+                t.equals(command.input.Bucket, 'test-bucket')
+                t.equals(command.input.Key, 'profile/admin@example.com/ba58a298-a3fe-46b4-a29a-9dd33fbb2139.geojsonld');
 
-    mockPool.intercept({
-        path: '/api/import/ba58a298-a3fe-46b4-a29a-9dd33fbb2139',
-        method: 'PATCH',
-        body: JSON.stringify({
-            status: 'Running'
-        })
-    }).reply(() => {
-        return {
-            statusCode: 200,
-            data: JSON.stringify({
-            } as Import)
-        };
+                return Promise.resolve({});
+            },
+            (command) => {
+                t.ok(command instanceof PutObjectCommand);
+
+                t.equals(command.input.Bucket, 'test-bucket')
+                t.equals(command.input.Key, 'profile/admin@example.com/ba58a298-a3fe-46b4-a29a-9dd33fbb2139.pmtiles');
+
+                return Promise.resolve({});
+            },
+    ].reverse();
+
+    Sinon.stub(S3Client.prototype, 'send').callsFake((command) => {
+        return ExternalOperations.pop()(command);
     });
 
     const worker = new Worker({
@@ -51,7 +77,8 @@ test('Worker: KML Job', async (t) => {
         t.error(err);
     });
 
-    worker.on('success', (err) => {
+    worker.on('success', () => {
+        Sinon.restore();
         t.end()
     });
 
