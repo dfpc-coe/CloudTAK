@@ -55,7 +55,7 @@ export default class WorkerPool extends EventEmitter {
 
                     this.emit('job', job);
 
-                    const worker = new Worker(new URL('./src/worker.ts', import.meta.url))
+                    const worker = new Worker(new URL('./src/comms.ts', import.meta.url))
                     const locked = { job, worker }
 
                     worker.on('message', async (message) => {
