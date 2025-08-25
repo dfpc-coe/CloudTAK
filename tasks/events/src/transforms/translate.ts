@@ -1,4 +1,5 @@
 import path from 'node:path';
+import type { Message, LocalMessage } from './types.ts';
 import cp from 'node:child_process';
 
 export default class GDALTranslate {
@@ -8,16 +9,23 @@ export default class GDALTranslate {
         };
     }
 
-    constructor(task) {
-        this.task = task;
+    msg: Message;
+    local: LocalMessage;
+
+    constructor(
+        msg: Message,
+        local: LocalMessage
+    ) {
+        this.msg = msg;
+        this.local = local;
     }
 
     async convert() {
-        const input = path.resolve(this.task.temp, this.task.etl.task.asset);
-        const output = path.resolve(this.task.temp, path.parse(this.task.etl.task.asset).name + '.mbtiles');
+        const input = path.resolve(this.local.tmpdir, this.local.raw);
+        const output = path.resolve(this.local.tmpdir, path.parse(this.local.raw).name + '.mbtiles');
 
         const env = {};
-        if (path.parse(this.task.etl.task.asset).ext === '.pdf') {
+        if (path.parse(this.local.raw).ext === '.pdf') {
             env['GDAL_PDF_DPI'] = '300';
         }
 

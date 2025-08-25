@@ -5,7 +5,6 @@ import { Upload } from '@aws-sdk/lib-storage';
 import path from 'node:path';
 import cp from 'node:child_process';
 
-import API from './api.ts';
 import Tippecanoe from './transforms/tippecanoe.ts';
 
 // Formats
@@ -44,7 +43,7 @@ export default class DataTransform {
             throw new Error('Unsupported Input Format');
         }
 
-        const convert = new (formats.get(this.local.ext))(this);
+        const convert = new (formats.get(this.local.ext))(this.msg, this.local);
 
         const asset = await convert.convert();
 
@@ -99,25 +98,5 @@ export default class DataTransform {
         });
 
         await pmuploader.done();
-    }
-
-    async reporter(err) {
-        if (err) console.error(err);
-
-        if (this.etl.task.import) {
-            if (err) {
-                console.error('Import Detected - reporting failure');
-
-                await API.updateImport(this.etl.task.import, this.etl.token, {
-                    status: 'Fail',
-                    error: err.message
-                });
-            } else {
-                await API.updateImport(this.etl.task.import, this.etl.token, {
-                    status: 'Success',
-                    result: {}
-                });
-            }
-        }
     }
 }

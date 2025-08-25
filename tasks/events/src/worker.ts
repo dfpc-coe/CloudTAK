@@ -62,7 +62,7 @@ export default class Worker extends EventEmitter {
                 if (ext === '.zip') {
                     await processArchive(msg, local);
                 } else if (ext === '.xml') {
-                    await processIndex(md, String(await fsp.readFile(local)));
+                    await processIndex(fsp.readFile(local));
                 } else {
                     await this.processFile(local)
                 }
@@ -141,14 +141,9 @@ export default class Worker extends EventEmitter {
 
         if (indexes.length) {
             for (const index of indexes) {
-                await processIndex(msg, index);
+                await processIndex(index);
             }
         }
-
-        await API.updateImport(md, {
-            status: 'Success',
-            result
-        });
     }
 
     /**
@@ -186,7 +181,6 @@ export default class Worker extends EventEmitter {
      * @param file  - The file path of the XML document
      */
     async processIndex(
-        msg: Message,
         dp: DataPackage,
         file: string
     ): Promise<void> {
@@ -215,11 +209,7 @@ export default class Worker extends EventEmitter {
             });
 
             if (check.status === 200) {
-                await API.updateImport(event, {
-                    status: 'Fail',
-                    message: `Iconset ${iconset.name} (${iconset.uid}) already exists`
-                });
-                return;
+                throw new Error(`Iconset ${iconset.name} (${iconset.uid}) already exists`);
             }
 
             const iconset_req = await fetch(new URL(`/api/iconset`, process.env.TAK_ETL_API), {
