@@ -472,18 +472,19 @@ export const useMapStore = defineStore('cloudtak', {
         },
         startGPSWatch: function(): void {
             if (!("geolocation" in navigator)) return;
-            
+
             // Clear existing watch if any
             if (this.gpsWatchId !== null) {
                 navigator.geolocation.clearWatch(this.gpsWatchId);
             }
-            
+
             this.gpsWatchId = navigator.geolocation.watchPosition((position) => {
                 if (!this.manualLocationMode) {
                     this.channel.postMessage({
                         type: WorkerMessageType.Profile_Location_Coordinates,
                         body: {
                             accuracy: position.coords.accuracy,
+                            altitude: position.coords.altitude,
                             coordinates: [ position.coords.longitude, position.coords.latitude ]
                         }
                     })
@@ -494,7 +495,7 @@ export const useMapStore = defineStore('cloudtak', {
                 }
             }, {
                 maximumAge: 0,
-                timeout: 10000,
+                timeout: 1500,
                 enableHighAccuracy: true
             });
         },
