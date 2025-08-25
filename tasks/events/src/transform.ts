@@ -1,9 +1,7 @@
 import fs from 'node:fs';
 import type { Message, LocalMessage } from './types.ts';
 import S3 from '@aws-sdk/client-s3';
-import { pipeline } from 'node:stream/promises';
 import { Upload } from '@aws-sdk/lib-storage';
-import jwt from 'jsonwebtoken';
 import path from 'node:path';
 import cp from 'node:child_process';
 
