@@ -264,7 +264,7 @@ async function fetchList() {
 
 async function deleteAsset(asset: ProfileFile) {
     loading.value = true;
-    await std(`/api/profile/asset/${asset.name}`, {
+    await std(`/api/profile/asset/${asset.id}`, {
         method: 'DELETE'
     });
 

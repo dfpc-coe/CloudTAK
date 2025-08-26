@@ -71,7 +71,6 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Delete Asset',
         params: Type.Object({
             asset: Type.String(),
-            ext: Type.String()
         }),
         res: StandardResponse
     }, async (req, res) => {
