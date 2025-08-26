@@ -1,3 +1,4 @@
+import type { paths } from './derived-types.js';
 import type { APIError } from './types.js'
 import type { Router } from 'vue-router'
 
@@ -21,6 +22,32 @@ export function stdurl(url: string | URL): URL {
 
     return url;
 }
+
+type StandardFetchBody<
+  P extends keyof paths,
+  M extends keyof paths[P]
+> =
+  paths[P][M] extends { requestBody: { content: { 'application/json': infer T } } }
+    ? T
+    : never;
+
+export async function stdFetch<
+    P extends keyof paths,
+    M extends keyof paths[P],
+    Body = StandardFetchBody<P, M>
+>(
+    method: M,
+    path: P,
+    opts: {
+        token?: string;
+        download?: boolean | string;
+        headers?: Record<string, string>;
+        body?: Body;
+    }
+): Promise<void> {
+    return;
+}
+
 
 /**
  * Standardize interactions with the backend API
