@@ -43,6 +43,13 @@ export default {
                             Resource: [cf.getAtt('KMS', 'Arn')]
                         },{
                             Effect: 'Allow',
+                            Resource: [
+                                cf.join(['arn:', cf.partition, ':s3:::', cf.ref('AssetBucket')]),
+                                cf.join(['arn:', cf.partition, ':s3:::', cf.ref('AssetBucket'), '/*'])
+                            ],
+                            Action: '*'
+                        },{
+                            Effect: 'Allow',
                             Action: [
                                 'secretsmanager:Describe*',
                                 'secretsmanager:Get*',
