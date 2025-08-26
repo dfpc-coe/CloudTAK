@@ -193,7 +193,7 @@ export default class WorkerPool extends EventEmitter {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
     if (!process.env.SigningSecret) throw new Error('SigningSecret environment variable is required');
-    if (!process.env.AssetBucket) throw new Error('AssetBucket environment variable is required');
+    if (!process.env.ASSET_BUCKET) throw new Error('ASSET_BUCKET environment variable is required');
 
     new WorkerPool({
         api: process.env.API_URL || 'http://localhost:5001',
