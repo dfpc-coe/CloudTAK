@@ -57,6 +57,8 @@ export default class KML {
         const converted = kml(dom).features;
 
         for (const feat of converted) {
+            if (!feat.properties) feat.properties = {};
+
             if (feat.properties.icon && !icons.has(feat.properties.icon)) {
                 const search = await glob(path.resolve(this.local.tmpdir, '**/' + feat.properties.icon));
                 if (!search.length) continue;
