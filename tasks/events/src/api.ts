@@ -1,6 +1,4 @@
 import { fetch } from 'undici';
-import fs from 'node:fs';
-import { Readable } from 'node:stream';
 
 export default class API {
     static async fetch({

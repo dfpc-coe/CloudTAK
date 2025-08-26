@@ -25,9 +25,6 @@ export default class Worker extends EventEmitter {
         try {
             console.error(`Import: ${this.msg.job.id}`, JSON.stringify(this.msg.job));
 
-            // Use a user token to ensure data for a given user import doesn't exceed their ACL
-            const token = jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret);
-
             const s3 = new S3.S3Client({ region: process.env.AWS_REGION || 'us-east-1' });
 
             const tmpdir = fs.mkdtempSync(path.resolve(os.tmpdir(), 'cloudtak'));
@@ -49,9 +46,9 @@ export default class Worker extends EventEmitter {
             );
 
             if (ext === '.zip') {
-                await processArchive(msg, local);
+                await this.processArchive(msg, local);
             } else if (ext === '.xml') {
-                await processIndex(fsp.readFile(local));
+                await this.processIndex(fsp.readFile(local));
             } else {
                 await this.processFile(local)
             }
@@ -99,7 +96,7 @@ export default class Worker extends EventEmitter {
             }
 
             await API.putFeature({
-                token,
+                token: jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret),
                 broadcast: true,
                 body: {
                     ...feat,
@@ -192,7 +189,7 @@ export default class Worker extends EventEmitter {
             const check = await fetch(new URL(`/api/iconset/${iconset.uid}`, process.env.TAK_ETL_API), {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret)}`,
                 },
             });
 
@@ -204,7 +201,7 @@ export default class Worker extends EventEmitter {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret)}`,
                 },
                 body: JSON.stringify(iconset)
             });
@@ -224,7 +221,7 @@ export default class Worker extends EventEmitter {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret)}`,
                     },
                     body: JSON.stringify({
                         name: lookup.get(icon.$.name).name,

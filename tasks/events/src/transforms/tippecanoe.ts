@@ -38,11 +38,32 @@ export default class Tippecanoe {
      *
      * @returns {Promise} true if the vectorization succeeds
      */
-    tile(feats, output_path, options = {}) {
+    tile(
+        feats: Readable,
+        output_path: string,
+        options?: {
+            std?: boolean,
+            quiet?: boolean,
+            name?: string,
+            attribution?: string,
+            description?: string,
+            layer?: string,
+            zoom?: {
+                max?: number,
+                min?: number
+            },
+            force?: boolean,
+            limit?: {
+                features?: boolean,
+                size?: boolean
+            }
+        }
+    ) {
         return new Promise((resolve, reject) => {
             if (!feats) return reject(new Error('feats required'));
             if (!output_path) return reject(new Error('output_path required'));
 
+            if (!options) options = {};
             if (!options.zoom) options.zoom = {};
             if (!options.limit) options.limit = {};
 
@@ -97,7 +118,21 @@ export default class Tippecanoe {
      *
      * @returns {Promise}
      */
-    join(output_path, inputs, options = {}) {
+    join(
+        output_path: string,
+        inputs: string[],
+        options?: {
+            std?: boolean,
+            force?: boolean,
+            limit?: {
+                features?: boolean,
+                size?: boolean
+            }
+        }
+    ) {
+        if (!options) options = {};
+        if (!options.limit) options.limit = {};
+
         return new Promise((resolve, reject) => {
             if (!output_path) return reject(new Error('output_path required'));
             if (!inputs || !inputs.length) return reject(new Error('inputs required'));
