@@ -116,12 +116,12 @@ test('GET: api/connection/1 - Use Token', async (t) => {
     t.end();
 });
 
-test('PATCH: api/connection/1', async (t) => {
+test('PATCH: api/connection/1/token/1', async (t) => {
     try {
-        const res = await flight.fetch('/api/connection/1', {
+        const res = await flight.fetch('/api/connection/1/token/1', {
             method: 'PATCH',
             auth: {
-                bearer: token
+                bearer: flight.token.admin
             },
             body: {
                 name: 'New Token Name'
@@ -134,28 +134,12 @@ test('PATCH: api/connection/1', async (t) => {
         t.ok(res.body.created, 'has updated');
         res.body.updated = time
 
-        t.ok(res.body.certificate.validFrom, 'has certificate.validFrom');
-        res.body.certificate.validFrom = time
-
-        t.ok(res.body.certificate.validTo, 'has certificate.validTo');
-        res.body.certificate.validTo = time
-
         t.deepEquals(res.body, {
-            status: 'dead',
-            certificate: {
-                validFrom: time,
-                validTo: time,
-                subject: 'CN=Alice'
-            },
             id: 1,
-            readonly: false,
-            agency: null,
+            connection: 1,
+            name: 'New Test Token',
             created: time,
-            updated: time,
-            username: 'admin@example.com',
-            name: 'New Token Name',
-            description: 'Connection created by Flight Test Runner',
-            enabled: true
+            updated: time
         });
     } catch (err) {
         t.error(err, 'no error');
