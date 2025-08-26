@@ -1,4 +1,5 @@
 import os from 'node:os';
+import { fetch } from 'undici';
 import type { Import, ImportList } from './src/types.js';
 import EventEmitter from 'node:events';
 import { Worker } from 'node:worker_threads';
@@ -196,7 +197,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     if (!process.env.AssetBucket) throw new Error('AssetBucket environment variable is required');
 
     new WorkerPool({
-        api: process.env.TAK_ETL_API || 'http://localhost:5001',
+        api: process.env.API_URL || 'http://localhost:5001',
         secret: process.env.SigningSecret,
         bucket: process.env.AssetBucket,
         interval: 1000

@@ -8,13 +8,39 @@ import {
     S3Client,
     GetObjectCommand,
     PutObjectCommand,
-    CopyObjectCommand
 } from '@aws-sdk/client-s3';
+import { MockAgent, setGlobalDispatcher, getGlobalDispatcher } from 'undici';
 
 for (const fixturename of await fsp.readdir(new URL('./fixtures/transform/', import.meta.url))) {
     const { ext } = path.parse(fixturename);
 
     test(`Worker Data Transform: ${fixturename}`, async (t) => {
+        let id: string;
+
+        const mockAgent = new MockAgent();
+        const originalDispatcher = getGlobalDispatcher();
+        mockAgent.disableNetConnect();
+        setGlobalDispatcher(mockAgent);
+        const mockPool = mockAgent.get('http://localhost:5001');
+
+        mockPool.intercept({
+            path: /profile\/asset/,
+            method: 'POST'
+        }).reply((req) => {
+            const body = JSON.parse(req.body) as {
+                id: string
+            };
+
+            id = body.id;
+
+            return {
+                statusCode: 200,
+                data: JSON.stringify({
+                    id: body.id
+                })
+            };
+        });
+
         const ExternalOperations = [
                 (command) => {
                     t.ok(command instanceof GetObjectCommand);
@@ -28,12 +54,11 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform/', imp
                     })
                 },
                 (command) => {
-                    t.ok(command instanceof CopyObjectCommand);
-                    t.deepEquals(command.input, {
-                        CopySource: `test-bucket/import/ba58a298-a3fe-46b4-a29a-9dd33fbb2139${ext}`,
-                        Bucket: 'test-bucket',
-                        Key: `profile/admin@example.com/ba58a298-a3fe-46b4-a29a-9dd33fbb2139${ext}`
-                    });
+                    t.ok(command instanceof PutObjectCommand);
+
+                    t.equals(command.input.Bucket, 'test-bucket')
+                    t.ok(command.input.Key.startsWith(`profile/admin@example.com/`))
+                    t.ok(command.input.Key.endsWith(ext))
 
                     return Promise.resolve({});
                 },
@@ -41,7 +66,7 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform/', imp
                     t.ok(command instanceof PutObjectCommand);
 
                     t.equals(command.input.Bucket, 'test-bucket')
-                    t.equals(command.input.Key, 'profile/admin@example.com/ba58a298-a3fe-46b4-a29a-9dd33fbb2139.geojsonld');
+                    t.equals(command.input.Key, `profile/admin@example.com/${id}.geojsonld`);
 
                     return Promise.resolve({});
                 },
@@ -49,7 +74,7 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform/', imp
                     t.ok(command instanceof PutObjectCommand);
 
                     t.equals(command.input.Bucket, 'test-bucket')
-                    t.equals(command.input.Key, 'profile/admin@example.com/ba58a298-a3fe-46b4-a29a-9dd33fbb2139.pmtiles');
+                    t.equals(command.input.Key, `profile/admin@example.com/${id}.pmtiles`);
 
                     return Promise.resolve({});
                 },
@@ -84,6 +109,8 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform/', imp
 
         worker.on('success', () => {
             Sinon.restore();
+            setGlobalDispatcher(originalDispatcher);
+            mockAgent.close();
             t.end()
         });
 

@@ -1,5 +1,5 @@
 import fs from 'node:fs';
-import type { Message, LocalMessage } from './types.ts';
+import type { Message, LocalMessage, Asset } from './types.ts';
 import S3 from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import path from 'node:path';
@@ -27,13 +27,16 @@ for (const format of FORMATS) {
 export default class DataTransform {
     msg: Message;
     local: LocalMessage;
+    asset: Asset;
 
     constructor(
         msg: Message,
-        local: LocalMessage
+        local: LocalMessage,
+        asset: Asset
     ) {
         this.msg = msg;
         this.local = local;
+        this.asset = asset;
     }
 
     async run() {
@@ -52,7 +55,7 @@ export default class DataTransform {
                 client: s3,
                 params: {
                     Bucket: this.msg.bucket,
-                    Key: `profile/${this.msg.job.username}/${this.msg.job.id}.geojsonld`,
+                    Key: `profile/${this.msg.job.username}/${this.asset.id}.geojsonld`,
                     Body: fs.createReadStream(asset)
                 }
             });
@@ -92,7 +95,7 @@ export default class DataTransform {
             client: s3,
             params: {
                 Bucket: this.msg.bucket,
-                Key: `profile/${this.msg.job.username}/${this.msg.job.id}.pmtiles`,
+                Key: `profile/${this.msg.job.username}/${this.asset.id}.pmtiles`,
                 Body: fs.createReadStream(path.resolve(this.local.tmpdir, path.parse(asset).name + '.pmtiles'))
             }
         });

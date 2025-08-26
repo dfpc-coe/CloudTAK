@@ -111,7 +111,6 @@ export default async function router(schema: Schema, config: Config) {
             path: Type.String({
                 default: '/'
             }),
-            size: Type.Integer(),
             artifacts: Type.Array(Type.Object({
                 ext: Type.String()
             }), {

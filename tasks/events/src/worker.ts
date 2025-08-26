@@ -1,7 +1,9 @@
 import DataTransform from './transform.ts';
+import { randomUUID } from 'node:crypto';
+import { Upload } from '@aws-sdk/lib-storage';
 import { EventEmitter } from 'node:events'
 import API from './api.ts';
-import type { Message, LocalMessage } from './types.ts';
+import type { Message, LocalMessage, Asset } from './types.ts';
 import jwt from 'jsonwebtoken';
 import os from 'node:os';
 import fsp from 'node:fs/promises';
@@ -46,7 +48,7 @@ export default class Worker extends EventEmitter {
             );
 
             if (ext === '.zip') {
-                await this.processArchive(msg, local);
+                await this.processArchive(local);
             } else if (ext === '.xml') {
                 await this.processIndex(fsp.readFile(local));
             } else {
@@ -66,10 +68,12 @@ export default class Worker extends EventEmitter {
      * Processes a zip file that may or may not be a DataPackage.
      * Zip Files that are not valid datapackages will be standardize to the same interface
      *
-     * @param msg - Job Description Object
+     * @param local - Local File Information Object
      */
     async processArchive(local: LocalMessage): Promise<void> {
-        const pkg = await DataPackage.parse(local);
+        const pkg = await DataPackage.parse(local.raw, {
+            strict: false
+        });
 
         const cots = await pkg.cots();
         for (const cot of cots) {
@@ -111,16 +115,17 @@ export default class Worker extends EventEmitter {
         for (const file of files) {
             const name = path.parse(file).base;
 
-            if (path.parse(file).ext === '.xml') {
+            const { ext, base } = path.parse(file);
+
+            if (base !== 'MANIFEST.xml' && ext === '.xml') {
                 indexes.push(entry);
             } else {
-                await processFile(local);
-                console.log(`ok - uploading: s3://${this.msg.bucket}/profile/${this.msg.job.username}/${name}`);
-                    await s3.send(new S3.PutObjectCommand({
-                    Bucket: this.msg.bucket,
-                    Key: `profile/${this.msg.job.username}/${name}`,
-                    Body: await pkg.getFile(file)
-                }))
+                await this.processFile({
+                    tmpdir: local.tmpdir,
+                    ext: ext,
+                    name: base,
+                    raw: path.resolve(local.tmpdir, name)
+                });
             }
         }
 
@@ -134,25 +139,50 @@ export default class Worker extends EventEmitter {
     /**
      * Processes a file upload for a user profile asset.
      *
-     * @param msg - Job Description Object
+     * @param local - Local File Information Object
      */
     async processFile(
-        local: LocalMessage
+        local: LocalMessage,
     ): Promise<void> {
         console.log(`Import: ${this.msg.job.id} - uploading profile asset`);
 
         const s3 = new S3.S3Client({ region: process.env.AWS_REGION || 'us-east-1' });
 
-        const ext = path.parse(this.msg.job.name).ext;
-        const name = `${this.msg.job.id}${ext}`;
+        const id = randomUUID();
 
-        await s3.send(new S3.CopyObjectCommand({
-            CopySource: `${this.msg.bucket}/import/${name}`,
-            Bucket: this.msg.bucket,
-            Key: `profile/${this.msg.job.username}/${this.msg.job.id}${path.parse(this.msg.job.name).ext}`,
-        }))
+        const geouploader = new Upload({
+            client: s3,
+            params: {
+                Bucket: this.msg.bucket,
+                Key: `profile/${this.msg.job.username}/${id}${local.ext}`,
+                Body: fs.createReadStream(local.raw)
+            }
+        });
 
-        const transformer = new DataTransform(this.msg, local);
+        await geouploader.done();
+
+        const res = await fetch(new URL(`/api/profile/asset`, this.msg.api), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret)}`,
+            },
+            body: JSON.stringify({
+                id,
+                name: local.name,
+                path: '/', // TODO Use Data Package Prefix
+            })
+        });
+
+        if (!res.ok) throw new Error(await res.text());
+
+        const asset = await res.json() as Asset;
+
+        const transformer = new DataTransform(
+            this.msg,
+            local,
+            asset
+        );
 
         await transformer.run();
     }
@@ -161,7 +191,6 @@ export default class Worker extends EventEmitter {
      * XML Files are typeically TAK Native documents describing how to import data into TAK
      * This function processes the XML file, determines the type and processes it accordingly
      *
-     * @param msg   - Job Description Object
      * @param dp    - The DataPackage container
      * @param file  - The file path of the XML document
      */
