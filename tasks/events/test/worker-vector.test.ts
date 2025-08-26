@@ -11,10 +11,10 @@ import {
 } from '@aws-sdk/client-s3';
 import { MockAgent, setGlobalDispatcher, getGlobalDispatcher } from 'undici';
 
-for (const fixturename of await fsp.readdir(new URL('./fixtures/transform/', import.meta.url))) {
+for (const fixturename of await fsp.readdir(new URL('./fixtures/transform-vector/', import.meta.url))) {
     const { ext } = path.parse(fixturename);
 
-    test(`Worker Data Transform: ${fixturename}`, async (t) => {
+    test(`Worker Data Transform Vector: ${fixturename}`, async (t) => {
         let id: string;
 
         const mockAgent = new MockAgent();
@@ -50,7 +50,7 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform/', imp
                     });
 
                     return Promise.resolve({
-                        Body: fs.createReadStream(new URL(`./fixtures/transform/${fixturename}`, import.meta.url))
+                        Body: fs.createReadStream(new URL(`./fixtures/transform-vector/${fixturename}`, import.meta.url))
                     })
                 },
                 (command) => {
