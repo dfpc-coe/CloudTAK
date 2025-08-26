@@ -11,8 +11,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import S3 from "@aws-sdk/client-s3";
 import { pipeline } from 'node:stream/promises';
-import { CoTParser, DataPackage } from '@tak-ps/node-cot';
-import xml2js from 'xml2js';
+import { CoTParser, DataPackage, Iconset, Basemap } from '@tak-ps/node-cot';
 
 export default class Worker extends EventEmitter {
     msg: Message;
@@ -122,6 +121,9 @@ export default class Worker extends EventEmitter {
             if (base !== 'MANIFEST.xml' && ext === '.xml') {
                 indexes.push(file);
             } else {
+                if (base === 'MANIFEST.xml') continue;
+                if (['.png', '.xml'].includes(ext)) continue;
+
                 await this.processFile({
                     tmpdir: pkg.path,
                     ext: ext,
@@ -133,7 +135,7 @@ export default class Worker extends EventEmitter {
 
         if (indexes.length) {
             for (const index of indexes) {
-                await processIndex(pkg, index);
+                await this.processIndex(pkg, index);
             }
         }
     }
@@ -200,22 +202,10 @@ export default class Worker extends EventEmitter {
         dp: DataPackage,
         file: string
     ): Promise<void> {
-        const xml = await xml2js.parseStringPromise(xmlstr);
+        const xml = (await dp.getFileBuffer(file)).toString();
 
-        if (xml.iconset) {
-            if (!zip) throw new Error('Iconsets must be zipped');
-
-            const iconset = {
-                version: parseInt(xml.iconset.$.version),
-                name: xml.iconset.$.name,
-                default_group: xml.iconset.$.defaultGroup || null,
-                default_friendly: xml.iconset.$.defaultFriendly || null,
-                default_hostile: xml.iconset.$.defaultHostile || null,
-                default_neutral: xml.iconset.$.defaultNeutral || null,
-                default_unknown: xml.iconset.$.defaultUnknown || null,
-                skip_resize: xml.iconset.$.skipResize === "true" ? true : false,
-                uid: xml.iconset.$.uid
-            }
+        try {
+            const iconset = await Iconset.parse(xml);
 
             const check = await fetch(new URL(`/api/iconset/${iconset.uid}`, this.msg.api), {
                 method: 'GET',
@@ -234,7 +224,7 @@ export default class Worker extends EventEmitter {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret)}`,
                 },
-                body: JSON.stringify(iconset)
+                body: JSON.stringify(iconset.to_json())
             });
 
             if (!iconset_req.ok) throw new Error(await iconset_req.text());
@@ -264,6 +254,16 @@ export default class Worker extends EventEmitter {
 
                 if (!icon_req.ok) console.error(await icon_req.text());
             }
+        } catch (err) {
+            console.log(`Import: ${this.msg.job.id} - ${file} is not an Iconset:`, err.message);
+        }
+
+        try {
+            const basemap = await Basemap.parse(xml);
+
+            // TODO save to profile
+        } catch (err) {
+            console.log(`Import: ${this.msg.job.id} - ${file} is not a Basemap:`, err.message);
         }
     }
 }
