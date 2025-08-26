@@ -51,9 +51,8 @@ test(`Worker DataPackage Import: Iconset`, async (t) => {
     }).reply((req) => {
         const body = JSON.parse(req.body);
 
-        console.error(body.name, body.path);
-        t.ok(body.uid);
-        t.ok(body.path);
+        t.ok(body.name && body.name.endsWith('.png'));
+        t.ok(body.path && body.path.endsWith('.png'));
         t.ok(body.data);
 
         return {
