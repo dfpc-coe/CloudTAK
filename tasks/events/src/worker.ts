@@ -261,7 +261,7 @@ export default class Worker extends EventEmitter {
                     },
                     body: JSON.stringify({
                         name: lookup.get(icon.name),
-                        path: `${iconset.uid}/${lookup.get(icon.name).name}`,
+                        path: `${iconset.uid}/${lookup.get(icon.name)}`,
                         type2525b: icon.type2525b || null,
                         data: (await pkg.getFileBuffer(lookup.get(icon.name))).toString('base64')
                     })
