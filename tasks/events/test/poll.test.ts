@@ -30,9 +30,9 @@ test('Ensure Poll Triggers Job', async (t) => {
                     result: {},
                     name: 'import.kml',
                     username: 'admin@example.com',
-                    mode: 'Unknown',
+                    source: 'Upload',
+                    source_id: null,
                     config: {},
-                    mode_id: null,
                 }]
             } as ImportList)
         };
@@ -56,9 +56,9 @@ test('Ensure Poll Triggers Job', async (t) => {
                 result: {},
                 name: 'import.kml',
                 username: 'admin@example.com',
-                mode: 'Unknown',
+                source: 'Upload',
+                source_id: null,
                 config: {},
-                mode_id: null,
             } as Import)
         };
     });
@@ -82,7 +82,7 @@ test('Ensure Poll Triggers Job', async (t) => {
                 result: {},
                 name: 'import.kml',
                 username: 'admin@example.com',
-                mode: 'Unknown',
+                mode: 'Upload',
                 config: {},
                 mode_id: null,
             });

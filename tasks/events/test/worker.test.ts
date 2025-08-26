@@ -72,9 +72,9 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform/', imp
                 result: {},
                 name: `import${ext}`,
                 username: 'admin@example.com',
-                mode: 'Unknown',
+                source: 'Upload',
                 config: {},
-                mode_id: null,
+                source_id: null,
             }
         });
 
