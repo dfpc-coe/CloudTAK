@@ -1,5 +1,6 @@
 import CP from 'child_process';
-import stream from 'stream';
+import type { Readable } from 'node:stream';
+import stream from 'node:stream';
 
 /**
  * Create a new Tippecanoe instance
@@ -71,14 +72,14 @@ export default class Tippecanoe {
                 '-o', output_path
             ];
 
-            base.push(...['-l', options.layer || 'out']);
+            base.push(...['-l', options.layer ? esc(options.layer) : 'out']);
 
             if (options.force) base.push('-f');
-            if (options.name) base.push(...['-n', `"${options.name}"`]);
-            if (options.attribution) base.push(...['-A', `"${options.attribution}"`]);
-            if (options.description) base.concat(...['-N', `"${options.description}"`]);
-            if (options.zoom.max) base.push(...['--maximum-zoom', options.zoom.max]);
-            if (options.zoom.min) base.push(...['--minimum-zoom', options.zoom.min]);
+            if (options.name) base.push(...['-n', esc(options.name)]);
+            if (options.attribution) base.push(...['-A', esc(options.attribution)]);
+            if (options.description) base.concat(...['-N', esc(options.description)]);
+            if (options.zoom.max) base.push(...['--maximum-zoom', String(options.zoom.max)]);
+            if (options.zoom.min) base.push(...['--minimum-zoom', String(options.zoom.min)]);
             if (options.limit.features === false) base.push('--no-feature-limit');
             if (options.limit.size === false) base.push('--no-tile-size-limit');
             if (options.quiet) base.push('--quiet');
@@ -130,12 +131,12 @@ export default class Tippecanoe {
             }
         }
     ) {
-        if (!options) options = {};
-        if (!options.limit) options.limit = {};
-
         return new Promise((resolve, reject) => {
             if (!output_path) return reject(new Error('output_path required'));
             if (!inputs || !inputs.length) return reject(new Error('inputs required'));
+
+            if (!options) options = {};
+            if (!options.limit) options.limit = {};
 
             let base = [
                 '-o', output_path
@@ -157,4 +158,9 @@ export default class Tippecanoe {
             }
         });
     }
+}
+
+export function esc(str: string): string {
+    if (str.length === 0) return "''";
+    return `'${str.replace(/'/g, `'\\''`)}'`;
 }

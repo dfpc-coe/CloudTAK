@@ -1,5 +1,5 @@
 import path from 'node:path';
-import type { Message, LocalMessage } from './types.ts';
+import type { Message, LocalMessage } from '../types.ts';
 import cp from 'node:child_process';
 
 export default class GDALTranslate {
@@ -24,7 +24,7 @@ export default class GDALTranslate {
         const input = path.resolve(this.local.tmpdir, this.local.raw);
         const output = path.resolve(this.local.tmpdir, path.parse(this.local.raw).name + '.mbtiles');
 
-        const env = {};
+        const env: Record<string, string> = {};
         if (path.parse(this.local.raw).ext === '.pdf') {
             env['GDAL_PDF_DPI'] = '300';
         }
