@@ -198,7 +198,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     new WorkerPool({
         api: process.env.API_URL || 'http://localhost:5001',
         secret: process.env.SigningSecret,
-        bucket: process.env.AssetBucket,
+        bucket: process.env.ASSET_BUCKET,
         interval: 1000
     });
 }
