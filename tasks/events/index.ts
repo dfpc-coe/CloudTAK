@@ -2,7 +2,6 @@ import os from 'node:os';
 import type { Import, ImportList } from './src/types.js';
 import EventEmitter from 'node:events';
 import { Worker } from 'node:worker_threads';
-import Import from './src/import.js';
 import jwt from 'jsonwebtoken';
 
 export default class WorkerPool extends EventEmitter {

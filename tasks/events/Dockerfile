@@ -1,4 +1,4 @@
-FROM alpine:3.22 AS build
+FROM node:24-alpine3.22 AS build
 
 ENV HOME=/home/etl
 WORKDIR $HOME
@@ -14,6 +14,12 @@ RUN export VERSION_TIPPECANOE='2.79.0' && \
     rm -rf /tmp/tippecanoe
 
 FROM alpine:3.22 AS runtime
+
+COPY --from=build /usr/lib /usr/lib
+COPY --from=build /usr/local/share /usr/local/share
+COPY --from=build /usr/local/lib /usr/local/lib
+COPY --from=build /usr/local/include /usr/local/include
+COPY --from=build /usr/local/bin /usr/local/bin
 
 ENV HOME=/home/events
 WORKDIR $HOME
@@ -32,6 +38,5 @@ RUN export VERSION_PMTILES='1.28.0' && \
 COPY . $HOME
 
 RUN npm install
-RUN npm run build
 
-CMD ["node", "dist/index.js"]
+CMD ["node", "index.ts"]
