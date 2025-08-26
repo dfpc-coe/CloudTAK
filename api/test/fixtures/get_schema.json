@@ -919,6 +919,16 @@
         "query": false,
         "res": true
     },
+    "POST /profile/asset": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /profile/asset/:asset": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
     "GET /profile/asset/:asset.:ext": {
         "body": false,
         "query": true,
