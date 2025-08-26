@@ -133,6 +133,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             const file = await config.models.ProfileFile.generate({
+                id: req.body.id,
                 username: user.email,
                 name: req.body.name,
                 path: req.body.path,
