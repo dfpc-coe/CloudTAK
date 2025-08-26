@@ -29,7 +29,7 @@ export default class Worker extends EventEmitter {
 
             const s3 = new S3.S3Client({ region: process.env.AWS_REGION || 'us-east-1' });
 
-            const tmpdir = fs.mkdtempSync(path.resolve(os.tmpdir(), 'cloudtak'));
+            const tmpdir = fs.mkdtempSync(path.resolve(os.tmpdir(), 'cloudtak-'));
             const ext = path.parse(this.msg.job.name).ext;
             const name = `${this.msg.job.id}${ext}`;
 
@@ -55,9 +55,13 @@ export default class Worker extends EventEmitter {
                 await this.processFile(local)
             }
 
+            // TODO REMOVE tMP DIR
+
             this.emit('success');
         } catch (err) {
-            console.error(`Import: ${this.msg.job.id} Error: `, err);
+            console.error(`import: ${this.msg.job.id} Error: `, err);
+
+            // TODO REMOVE tMP DIR
 
             this.emit('error', err);
         }
@@ -113,25 +117,23 @@ export default class Worker extends EventEmitter {
         const indexes = [];
 
         for (const file of files) {
-            const name = path.parse(file).base;
-
             const { ext, base } = path.parse(file);
 
             if (base !== 'MANIFEST.xml' && ext === '.xml') {
-                indexes.push(entry);
+                indexes.push(file);
             } else {
                 await this.processFile({
-                    tmpdir: local.tmpdir,
+                    tmpdir: pkg.path,
                     ext: ext,
                     name: base,
-                    raw: path.resolve(local.tmpdir, name)
+                    raw: path.resolve(pkg.path, './raw/', file)
                 });
             }
         }
 
         if (indexes.length) {
             for (const index of indexes) {
-                await processIndex(index);
+                await processIndex(pkg, index);
             }
         }
     }
@@ -215,7 +217,7 @@ export default class Worker extends EventEmitter {
                 uid: xml.iconset.$.uid
             }
 
-            const check = await fetch(new URL(`/api/iconset/${iconset.uid}`, process.env.TAK_ETL_API), {
+            const check = await fetch(new URL(`/api/iconset/${iconset.uid}`, this.msg.api), {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret)}`,
@@ -226,7 +228,7 @@ export default class Worker extends EventEmitter {
                 throw new Error(`Iconset ${iconset.name} (${iconset.uid}) already exists`);
             }
 
-            const iconset_req = await fetch(new URL(`/api/iconset`, process.env.TAK_ETL_API), {
+            const iconset_req = await fetch(new URL(`/api/iconset`, this.msg.api), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -246,7 +248,7 @@ export default class Worker extends EventEmitter {
             }
 
             for (const icon of xml.iconset.icon) {
-                const icon_req = await fetch(new URL(`/api/iconset/${iconset.uid}/icon`, process.env.TAK_ETL_API), {
+                const icon_req = await fetch(new URL(`/api/iconset/${iconset.uid}/icon`, this.msg.api), {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
