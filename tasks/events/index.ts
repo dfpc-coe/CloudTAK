@@ -1,5 +1,4 @@
 import os from 'node:os';
-import { fetch } from 'undici';
 import type { Import, ImportList } from './src/types.js';
 import EventEmitter from 'node:events';
 import { Worker } from 'node:worker_threads';

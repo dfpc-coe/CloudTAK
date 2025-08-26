@@ -82,9 +82,9 @@ test('Ensure Poll Triggers Job', async (t) => {
                 result: {},
                 name: 'import.kml',
                 username: 'admin@example.com',
-                mode: 'Upload',
+                source: 'Upload',
                 config: {},
-                mode_id: null,
+                source_id: null,
             });
 
             await pool.close();
