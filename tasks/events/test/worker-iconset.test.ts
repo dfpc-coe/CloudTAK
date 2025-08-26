@@ -1,14 +1,10 @@
 import test from 'tape';
-import path from 'node:path';
 import Worker from '../src/worker.js';
 import fs from 'node:fs';
-import fsp from 'node:fs/promises';
 import Sinon from 'sinon';
 import {
     S3Client,
     GetObjectCommand,
-    PutObjectCommand,
-    CopyObjectCommand
 } from '@aws-sdk/client-s3';
 import { MockAgent, setGlobalDispatcher, getGlobalDispatcher } from 'undici';
 

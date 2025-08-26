@@ -342,7 +342,7 @@ export default {
                                 'lambda:UpdateEventSourceMapping',
                                 'lambda:GetEventSourceMapping',
                                 'lambda:DeleteEventSourceMapping',
-                                'logs:GetLogEvents',
+                                'logs:GetLogEvents'
                             ],
                             Resource: [
                                 '*'

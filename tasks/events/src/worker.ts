@@ -260,8 +260,24 @@ export default class Worker extends EventEmitter {
 
         try {
             const basemap = await Basemap.parse(xml);
+            const json = basemap.to_json();
 
-            // TODO save to profile
+            const basemap_req = await fetch(new URL(`/api/basemap`, this.msg.api), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret)}`,
+                },
+                body: JSON.stringify({
+                    name: json.name,
+                    url: json.url,
+                    minzoom: basemap.minZoom,
+                    maxzoom: basemap.maxZoom,
+                    format: basemap.tileType,
+                })
+            });
+
+            if (!icon_req.ok) console.error(await icon_req.text());
         } catch (err) {
             console.log(`Import: ${this.msg.job.id} - ${file} is not a Basemap:`, err.message);
         }
