@@ -34,7 +34,7 @@ parentPort.on('message', async (message) => {
         }
 
         parentPort.postMessage({
-            type: 'success',
+            type: 'error',
             error: err
         });
     });
