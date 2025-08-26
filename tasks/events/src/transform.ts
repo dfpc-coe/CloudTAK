@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import jwt from 'jsonwebtoken';
 import type { Message, LocalMessage, Asset } from './types.ts';
 import S3 from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
@@ -50,6 +51,8 @@ export default class DataTransform {
 
         const asset = await convert.convert();
 
+        const artifacts: Array<{ ext: string }> = this.asset.artifacts.map(a => ({ ext: a.ext }));
+
         if (path.parse(asset).ext === '.geojsonld') {
             const geouploader = new Upload({
                 client: s3,
@@ -60,6 +63,22 @@ export default class DataTransform {
                 }
             });
             await geouploader.done();
+
+            artifacts.push({ ext: '.geojsonld' });
+            const res = await fetch(new URL(`/api/profile/asset/${this.asset.id}`, this.msg.api), {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret)}`,
+                },
+                body: JSON.stringify({ artifacts })
+            });
+
+            if (!res.ok) {
+                throw new Error(`Failed to update asset: ${await res.text()}`);
+            } else {
+                this.asset = await res.json() as Asset;
+            }
 
             const tp = new Tippecanoe();
 
@@ -99,6 +118,22 @@ export default class DataTransform {
                 Body: fs.createReadStream(path.resolve(this.local.tmpdir, path.parse(asset).name + '.pmtiles'))
             }
         });
+
+        artifacts.push({ ext: '.pmtiles' });
+        const res = await fetch(new URL(`/api/profile/asset/${this.asset.id}`, this.msg.api), {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret)}`,
+            },
+            body: JSON.stringify({ artifacts })
+        });
+
+        if (!res.ok) {
+            throw new Error(`Failed to update asset: ${await res.text()}`);
+        } else {
+            this.asset = await res.json() as Asset;
+        }
 
         await pmuploader.done();
     }
