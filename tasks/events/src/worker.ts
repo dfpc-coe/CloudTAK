@@ -271,15 +271,15 @@ export default class Worker extends EventEmitter {
                 body: JSON.stringify({
                     name: json.name,
                     url: json.url,
-                    minzoom: basemap.minZoom,
-                    maxzoom: basemap.maxZoom,
-                    format: basemap.tileType,
+                    minzoom: json.minZoom,
+                    maxzoom: json.maxZoom,
+                    format: json.tileType,
                 })
             });
 
-            if (!icon_req.ok) console.error(await icon_req.text());
+            if (!basemap_req.ok) console.error(await basemap_req.text());
         } catch (err) {
-            console.log(`Import: ${this.msg.job.id} - ${file} is not a Basemap:`, err.message);
+            console.log(`Import: ${this.msg.job.id} - ${file} is not a Basemap:`, err instanceof Error ? err.message : String(err));
         }
     }
 }
