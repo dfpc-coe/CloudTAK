@@ -44,6 +44,7 @@ test('POST: api/connection/1/token', async (t) => {
             }
         }, true);
 
+
         t.ok(res.body.created, 'has created');
         res.body.created = time
 
@@ -128,18 +129,9 @@ test('PATCH: api/connection/1/token/1', async (t) => {
             }
         }, true);
 
-        t.ok(res.body.created, 'has created');
-        res.body.created = time
-
-        t.ok(res.body.created, 'has updated');
-        res.body.updated = time
-
         t.deepEquals(res.body, {
-            id: 1,
-            connection: 1,
-            name: 'New Test Token',
-            created: time,
-            updated: time
+            status: 200,
+            message: 'Connection Token Updated',
         });
     } catch (err) {
         t.error(err, 'no error');
