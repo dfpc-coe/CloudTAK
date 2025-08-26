@@ -45,6 +45,23 @@ test(`Worker DataPackage Import: Iconset`, async (t) => {
         };
     });
 
+    mockPool.intercept({
+        path: /\/api\/iconset\//,
+        method: 'POST'
+    }).reply((req) => {
+        const body = JSON.parse(req.body);
+
+        console.error(body.name, body.path);
+        t.ok(body.uid);
+        t.ok(body.path);
+        t.ok(body.data);
+
+        return {
+            statusCode: 200,
+            data: JSON.stringify({})
+        };
+    }).persist();
+
     const ExternalOperations = [
             (command) => {
                 t.ok(command instanceof GetObjectCommand);
