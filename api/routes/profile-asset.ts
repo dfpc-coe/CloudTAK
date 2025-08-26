@@ -116,7 +116,8 @@ export default async function router(schema: Schema, config: Config) {
             }), {
                 default: []
             })
-        })
+        }),
+        res: ProfileFileResponse
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req, { token: true });
@@ -159,7 +160,8 @@ export default async function router(schema: Schema, config: Config) {
             artifacts: Type.Array(Type.Object({
                 ext: Type.String()
             }))
-        })
+        }),
+        res: ProfileFileResponse
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req, { token: true });

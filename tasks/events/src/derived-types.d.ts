@@ -5042,7 +5042,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort: "id" | "email" | "name" | "token" | "created" | "updated" | "enableRLS";
+                    sort: "id" | "name" | "created" | "updated" | "username" | "connection" | "layer" | "source_id" | "source_type" | "source_model" | "publish" | "recording" | "ephemeral" | "channel" | "expiration" | "path" | "stream_user" | "stream_pass" | "read_user" | "read_pass" | "proxy" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                 };
@@ -6267,13 +6267,13 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    status?: "Empty" | "Pending" | "Processing" | "Success" | "Fail";
+                    status?: "Empty" | "Pending" | "Running" | "Success" | "Fail";
                     /** @description No Description */
-                    sort: "id" | "created" | "updated" | "name" | "status" | "error" | "batch" | "result" | "username" | "mode" | "mode_id" | "config" | "enableRLS";
+                    sort: "id" | "created" | "updated" | "name" | "status" | "error" | "result" | "username" | "source" | "source_id" | "config" | "enableRLS";
                     /** @description No Description */
-                    mode?: "Unknown" | "Mission" | "Package";
+                    source?: "Upload" | "Mission" | "Package";
                     /** @description No Description */
-                    mode_id?: string;
+                    source_id?: string;
                 };
                 header?: never;
                 path?: never;
@@ -6296,11 +6296,10 @@ export interface paths {
                                 name: string;
                                 status: string;
                                 error: string | null;
-                                batch: string | null;
                                 result: unknown;
                                 username: string;
-                                mode: string;
-                                mode_id: string | null;
+                                source: string;
+                                source_id: string | null;
                                 config: unknown;
                             }[];
                         };
@@ -6348,8 +6347,8 @@ export interface paths {
                     "application/json": {
                         /** @description Human readable name */
                         name: string;
-                        mode?: "Unknown" | "Mission" | "Package";
-                        mode_id?: string;
+                        source?: "Upload" | "Mission" | "Package";
+                        source_id?: string;
                         config?: unknown;
                     };
                 };
@@ -6368,11 +6367,10 @@ export interface paths {
                             name: string;
                             status: string;
                             error: string | null;
-                            batch: string | null;
                             result: unknown;
                             username: string;
-                            mode: string;
-                            mode_id: string | null;
+                            source: string;
+                            source_id: string | null;
                             config: unknown;
                         };
                     };
@@ -6415,11 +6413,10 @@ export interface paths {
                             name: string;
                             status: string;
                             error: string | null;
-                            batch: string | null;
                             result: unknown;
                             username: string;
-                            mode: string;
-                            mode_id: string | null;
+                            source: string;
+                            source_id: string | null;
                             config: unknown;
                         };
                     };
@@ -6449,11 +6446,10 @@ export interface paths {
                             name: string;
                             status: string;
                             error: string | null;
-                            batch: string | null;
                             result: unknown;
                             username: string;
-                            mode: string;
-                            mode_id: string | null;
+                            source: string;
+                            source_id: string | null;
                             config: unknown;
                         };
                     };
@@ -6498,7 +6494,7 @@ export interface paths {
             requestBody: {
                 content: {
                     "application/json": {
-                        status?: "Empty" | "Pending" | "Processing" | "Success" | "Fail";
+                        status?: "Empty" | "Pending" | "Running" | "Success" | "Fail";
                         error?: string;
                         result?: unknown;
                     };
@@ -6518,602 +6514,16 @@ export interface paths {
                             name: string;
                             status: string;
                             error: string | null;
-                            batch: string | null;
                             result: unknown;
                             username: string;
-                            mode: string;
-                            mode_id: string | null;
+                            source: string;
+                            source_id: string | null;
                             config: unknown;
                         };
                     };
                 };
             };
         };
-        trace?: never;
-    };
-    "/api/iconset": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Iconsets */
-        get: {
-            parameters: {
-                query: {
-                    /** @description No Description */
-                    scope?: "server" | "user";
-                    /** @description Limit the number of responses returned */
-                    limit: number;
-                    /** @description Iterate through "pages" of items based on the "limit" query param */
-                    page: number;
-                    /** @description Order in which results are returned based on the "sort" query param */
-                    order: "asc" | "desc";
-                    /** @description No Description */
-                    sort: "uid" | "created" | "updated" | "version" | "name" | "username" | "default_group" | "default_friendly" | "default_hostile" | "default_neutral" | "default_unknown" | "skip_resize" | "spritesheet_data" | "spritesheet_json" | "enableRLS";
-                    /** @description Filter results by a human readable name field */
-                    filter: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            total: number;
-                            items: {
-                                uid: string;
-                                created: string;
-                                updated: string;
-                                version: number;
-                                name: string;
-                                username: null | string;
-                                default_group: null | string;
-                                default_friendly: null | string;
-                                default_hostile: null | string;
-                                default_neutral: null | string;
-                                default_unknown: null | string;
-                                skip_resize: boolean;
-                            }[];
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        /** Create Iconset */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        uid: string;
-                        version: number;
-                        /** @description Human readable name */
-                        name: string;
-                        scope?: "server" | "user";
-                        default_group?: string;
-                        default_friendly?: string;
-                        default_hostile?: string;
-                        default_neutral?: string;
-                        default_unknown?: string;
-                        skip_resize?: boolean;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            uid: string;
-                            created: string;
-                            updated: string;
-                            version: number;
-                            name: string;
-                            username: null | string;
-                            default_group: null | string;
-                            default_friendly: null | string;
-                            default_hostile: null | string;
-                            default_neutral: null | string;
-                            default_unknown: null | string;
-                            skip_resize: boolean;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/iconset/{:iconset}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Iconset */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description No Description */
-                    format?: "json" | "zip";
-                    /** @description No Description */
-                    download?: boolean;
-                    /** @description Resize Images to 32x32px */
-                    resize?: boolean;
-                    /** @description No Description */
-                    token?: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            uid: string;
-                            created: string;
-                            updated: string;
-                            version: number;
-                            name: string;
-                            username: null | string;
-                            default_group: null | string;
-                            default_friendly: null | string;
-                            default_hostile: null | string;
-                            default_neutral: null | string;
-                            default_unknown: null | string;
-                            skip_resize: boolean;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        /** Delete Iconset */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        /** Update Iconset */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        public?: boolean;
-                        default_group?: string;
-                        default_friendly?: string;
-                        default_hostile?: string;
-                        default_neutral?: string;
-                        default_unknown?: string;
-                        skip_resize?: boolean;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            uid: string;
-                            created: string;
-                            updated: string;
-                            version: number;
-                            name: string;
-                            username: null | string;
-                            default_group: null | string;
-                            default_friendly: null | string;
-                            default_hostile: null | string;
-                            default_neutral: null | string;
-                            default_unknown: null | string;
-                            skip_resize: boolean;
-                        };
-                    };
-                };
-            };
-        };
-        trace?: never;
-    };
-    "/api/iconset/{:iconset}/icon": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Create Icon */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        /** @description Human readable name */
-                        name: string;
-                        data: string;
-                        data_alt?: string;
-                        type2525b?: string | null;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: number;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            iconset: string;
-                            type2525b: string | null;
-                            data: string;
-                            data_alt: string | null;
-                            path: string;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/icon": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Icons */
-        get: {
-            parameters: {
-                query: {
-                    /** @description No Description */
-                    scope?: "server" | "user";
-                    /** @description No Description */
-                    limit?: number;
-                    /** @description Iterate through "pages" of items based on the "limit" query param */
-                    page: number;
-                    /** @description Order in which results are returned based on the "sort" query param */
-                    order: "asc" | "desc";
-                    /** @description No Description */
-                    sort?: "id" | "created" | "updated" | "name" | "iconset" | "type2525b" | "data" | "data_alt" | "path" | "enableRLS";
-                    /** @description No Description */
-                    iconset?: string;
-                    /** @description Filter results by a human readable name field */
-                    filter: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            total: number;
-                            items: {
-                                id: number;
-                                created: string;
-                                updated: string;
-                                name: string;
-                                iconset: string;
-                                type2525b: string | null;
-                                data: string;
-                                data_alt: string | null;
-                                path: string;
-                            }[];
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/iconset/{:iconset}/icon/{:icon}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Icon Metadata */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: number;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            iconset: string;
-                            type2525b: string | null;
-                            data: string;
-                            data_alt: string | null;
-                            path: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        /** Remove Icon from Iconset */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        /** Update Icon in Iconset */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        name?: string;
-                        data?: string;
-                        data_alt?: string;
-                        type2525b?: string | null;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: number;
-                            created: string;
-                            updated: string;
-                            name: string;
-                            iconset: string;
-                            type2525b: string | null;
-                            data: string;
-                            data_alt: string | null;
-                            path: string;
-                        };
-                    };
-                };
-            };
-        };
-        trace?: never;
-    };
-    "/api/iconset/{:iconset}/icon/{:icon}/raw": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Icon Data */
-        get: {
-            parameters: {
-                query: {
-                    /** @description No Description */
-                    token?: string;
-                    /** @description Use alternate icon if possible */
-                    alt: boolean;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/iconset/{:iconset}/sprite{:size}.json": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Spriteset JSON for CoT types */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description No Description */
-                    scope?: "server" | "user";
-                    /** @description No Description */
-                    token?: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": unknown;
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/iconset/{:iconset}/sprite{:size}.png": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Return a sprite sheet for CoT Types */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description No Description */
-                    token?: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
         trace?: never;
     };
     "/api/layer": {
@@ -8278,6 +7688,591 @@ export interface paths {
                 };
             };
         };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/iconset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Iconsets */
+        get: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    scope?: "server" | "user";
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort: "uid" | "created" | "updated" | "version" | "name" | "username" | "default_group" | "default_friendly" | "default_hostile" | "default_neutral" | "default_unknown" | "skip_resize" | "spritesheet_data" | "spritesheet_json" | "enableRLS";
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                uid: string;
+                                created: string;
+                                updated: string;
+                                version: number;
+                                name: string;
+                                username: null | string;
+                                default_group: null | string;
+                                default_friendly: null | string;
+                                default_hostile: null | string;
+                                default_neutral: null | string;
+                                default_unknown: null | string;
+                                skip_resize: boolean;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create Iconset */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        uid: string;
+                        version: number;
+                        /** @description Human readable name */
+                        name: string;
+                        scope?: "server" | "user";
+                        default_group?: string;
+                        default_friendly?: string;
+                        default_hostile?: string;
+                        default_neutral?: string;
+                        default_unknown?: string;
+                        skip_resize?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            uid: string;
+                            created: string;
+                            updated: string;
+                            version: number;
+                            name: string;
+                            username: null | string;
+                            default_group: null | string;
+                            default_friendly: null | string;
+                            default_hostile: null | string;
+                            default_neutral: null | string;
+                            default_unknown: null | string;
+                            skip_resize: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/iconset/{:iconset}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Iconset */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description No Description */
+                    format?: "json" | "zip";
+                    /** @description No Description */
+                    download?: boolean;
+                    /** @description Resize Images to 32x32px */
+                    resize?: boolean;
+                    /** @description No Description */
+                    token?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            uid: string;
+                            created: string;
+                            updated: string;
+                            version: number;
+                            name: string;
+                            username: null | string;
+                            default_group: null | string;
+                            default_friendly: null | string;
+                            default_hostile: null | string;
+                            default_neutral: null | string;
+                            default_unknown: null | string;
+                            skip_resize: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /** Delete Iconset */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update Iconset */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        public?: boolean;
+                        default_group?: string;
+                        default_friendly?: string;
+                        default_hostile?: string;
+                        default_neutral?: string;
+                        default_unknown?: string;
+                        skip_resize?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            uid: string;
+                            created: string;
+                            updated: string;
+                            version: number;
+                            name: string;
+                            username: null | string;
+                            default_group: null | string;
+                            default_friendly: null | string;
+                            default_hostile: null | string;
+                            default_neutral: null | string;
+                            default_unknown: null | string;
+                            skip_resize: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/iconset/{:iconset}/icon": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Icon */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Human readable name */
+                        name: string;
+                        data: string;
+                        data_alt?: string;
+                        type2525b?: string | null;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            iconset: string;
+                            type2525b: string | null;
+                            data: string;
+                            data_alt: string | null;
+                            path: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/icon": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Icons */
+        get: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    scope?: "server" | "user";
+                    /** @description No Description */
+                    limit?: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort?: "id" | "created" | "updated" | "name" | "iconset" | "type2525b" | "data" | "data_alt" | "path" | "enableRLS";
+                    /** @description No Description */
+                    iconset?: string;
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: number;
+                                created: string;
+                                updated: string;
+                                name: string;
+                                iconset: string;
+                                type2525b: string | null;
+                                data: string;
+                                data_alt: string | null;
+                                path: string;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/iconset/{:iconset}/icon/{:icon}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Icon Metadata */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            iconset: string;
+                            type2525b: string | null;
+                            data: string;
+                            data_alt: string | null;
+                            path: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /** Remove Icon from Iconset */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update Icon in Iconset */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name?: string;
+                        data?: string;
+                        data_alt?: string;
+                        type2525b?: string | null;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            iconset: string;
+                            type2525b: string | null;
+                            data: string;
+                            data_alt: string | null;
+                            path: string;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/iconset/{:iconset}/icon/{:icon}/raw": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Icon Data */
+        get: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    token?: string;
+                    /** @description Use alternate icon if possible */
+                    alt: boolean;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/iconset/{:iconset}/sprite{:size}.json": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Spriteset JSON for CoT types */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description No Description */
+                    scope?: "server" | "user";
+                    /** @description No Description */
+                    token?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": unknown;
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/iconset/{:iconset}/sprite{:size}.png": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return a sprite sheet for CoT Types */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description No Description */
+                    token?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -11894,7 +11889,53 @@ export interface paths {
             };
         };
         put?: never;
-        post?: never;
+        /** Internal API used to create assets after S3 assets have been uploaded by the Events Task */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Random UUID v4 of uploaded asset */
+                        id: string;
+                        name: string;
+                        /** @default / */
+                        path: string;
+                        /** @default [] */
+                        artifacts: {
+                            ext: string;
+                        }[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            created: string;
+                            updated: string;
+                            username: string;
+                            path: string;
+                            name: string;
+                            size: number;
+                            artifacts: {
+                                ext: string;
+                                size: number;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -11937,7 +11978,49 @@ export interface paths {
         };
         options?: never;
         head?: never;
-        patch?: never;
+        /** Internal API used to modify assets after S3 assets have been uploaded by the Events Task */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @default / */
+                        path: string;
+                        artifacts: {
+                            ext: string;
+                        }[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            created: string;
+                            updated: string;
+                            username: string;
+                            path: string;
+                            name: string;
+                            size: number;
+                            artifacts: {
+                                ext: string;
+                                size: number;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
         trace?: never;
     };
     "/api/profile/asset/{:asset}.{:ext}": {
@@ -13672,6 +13755,163 @@ export interface paths {
         };
         trace?: never;
     };
+    "/api/profile/token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all tokens associated with the requester's account */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort: "id" | "created" | "updated" | "username" | "name" | "token" | "enableRLS";
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: number;
+                                name: string;
+                                username: string;
+                                created: string;
+                                updated: string;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create a new API token for programatic access */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            created: string;
+                            updated: string;
+                            username: string;
+                            name: string;
+                            token: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/profile/token/{:id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a user's API Token */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update properties of a Token */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
     "/api/profile/video": {
         parameters: {
             query?: never;
@@ -15158,162 +15398,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/token": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List all tokens associated with the requester's account */
-        get: {
-            parameters: {
-                query: {
-                    /** @description Limit the number of responses returned */
-                    limit: number;
-                    /** @description Iterate through "pages" of items based on the "limit" query param */
-                    page: number;
-                    /** @description Order in which results are returned based on the "sort" query param */
-                    order: "asc" | "desc";
-                    /** @description No Description */
-                    sort: "id" | "email" | "name" | "token" | "created" | "updated" | "enableRLS";
-                    /** @description Filter results by a human readable name field */
-                    filter: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            total: number;
-                            items: {
-                                id: number;
-                                name: string;
-                                created: string;
-                                updated: string;
-                            }[];
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        /** Create a new API token for programatic access */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        name: string;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            id: number;
-                            email: string;
-                            name: string;
-                            token: string;
-                            created: string;
-                            updated: string;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/token/{:id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /** Delete a user's API Token */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        /** Update properties of a Token */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        name?: string;
-                    };
-                };
-            };
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        trace?: never;
-    };
     "/api/type/cot": {
         parameters: {
             query?: never;
@@ -15556,6 +15640,11 @@ export interface paths {
             requestBody: {
                 content: {
                     "application/json": {
+                        tak_callsign?: string;
+                        tak_remarks?: string;
+                        tak_group?: "White" | "Yellow" | "Orange" | "Magenta" | "Red" | "Maroon" | "Purple" | "Dark Blue" | "Blue" | "Cyan" | "Teal" | "Green" | "Dark Green" | "Brown";
+                        tak_type?: string;
+                        tak_role?: "Team Member" | "Team Lead" | "HQ" | "Sniper" | "Medic" | "Forward Observer" | "RTO" | "K9";
                         system_admin?: boolean;
                     };
                 };

@@ -1,5 +1,5 @@
 import path from 'node:path';
-import type { Message, LocalMessage } from './types.ts';
+import type { Message, LocalMessage } from '../types.ts';
 
 export default class GeoJSON {
     static register() {

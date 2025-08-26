@@ -1,12 +1,11 @@
 import DataTransform from './transform.ts';
+import { rimraf } from 'rimraf';
 import { randomUUID } from 'node:crypto';
 import { Upload } from '@aws-sdk/lib-storage';
 import { EventEmitter } from 'node:events'
-import API from './api.ts';
 import type { Message, LocalMessage, Asset } from './types.ts';
 import jwt from 'jsonwebtoken';
 import os from 'node:os';
-import fsp from 'node:fs/promises';
 import fs from 'node:fs';
 import path from 'node:path';
 import S3 from "@aws-sdk/client-s3";
@@ -23,6 +22,8 @@ export default class Worker extends EventEmitter {
     }
 
     async process() {
+        let local: LocalMessage | undefined = undefined;
+
         try {
             console.error(`Import: ${this.msg.job.id}`, JSON.stringify(this.msg.job));
 
@@ -32,7 +33,7 @@ export default class Worker extends EventEmitter {
             const ext = path.parse(this.msg.job.name).ext;
             const name = `${this.msg.job.id}${ext}`;
 
-            const local: LocalMessage = {
+            local = {
                 ext, name, tmpdir,
                 raw: path.resolve(tmpdir, name)
             }
@@ -48,19 +49,17 @@ export default class Worker extends EventEmitter {
 
             if (ext === '.zip') {
                 await this.processArchive(local);
-            } else if (ext === '.xml') {
-                await this.processIndex(fsp.readFile(local));
             } else {
                 await this.processFile(local)
             }
 
-            // TODO REMOVE tMP DIR
+            if (local) await rimraf(local.tmpdir);
 
             this.emit('success');
         } catch (err) {
             console.error(`import: ${this.msg.job.id} Error: `, err);
 
-            // TODO REMOVE tMP DIR
+            if (local) await rimraf(local.tmpdir);
 
             this.emit('error', err);
         }
@@ -77,6 +76,8 @@ export default class Worker extends EventEmitter {
         const pkg = await DataPackage.parse(local.raw, {
             strict: false
         });
+
+        const s3 = new S3.S3Client({ region: process.env.AWS_REGION || 'us-east-1' });
 
         const cots = await pkg.cots();
         for (const cot of cots) {
@@ -102,14 +103,24 @@ export default class Worker extends EventEmitter {
                 }
             }
 
-            await API.putFeature({
-                token: jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret),
-                broadcast: true,
-                body: {
+            const url = new URL(`/api/profile/feature`, this.msg.api);
+            url.searchParams.append('broadcast', String(true));
+            const res = await fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret)}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
                     ...feat,
                     path: `/${pkg.settings.name.replace(/\//g, '')}/`,
-                }
+                })
             });
+
+            if (!res.ok) {
+                const json = (await res.json()) as { message: string };
+                console.error(json.message);
+            }
         }
 
         const files = await pkg.files();
@@ -138,6 +149,8 @@ export default class Worker extends EventEmitter {
                 await this.processIndex(pkg, index);
             }
         }
+
+        await pkg.destroy();
     }
 
     /**
@@ -199,10 +212,10 @@ export default class Worker extends EventEmitter {
      * @param file  - The file path of the XML document
      */
     async processIndex(
-        dp: DataPackage,
+        pkg: DataPackage,
         file: string
     ): Promise<void> {
-        const xml = (await dp.getFileBuffer(file)).toString();
+        const xml = (await pkg.getFileBuffer(file)).toString();
 
         try {
             const iconset = await Iconset.parse(xml);
@@ -231,13 +244,15 @@ export default class Worker extends EventEmitter {
 
             // Someone decided that the icon name should be the name without the folder prefix
             // This was a dumb idea and this code tries to match 1:1 without the prefix
-            const icons = await zip.entries();
+            const files = await pkg.files();
             const lookup = new Map();
-            for (const icon in icons) {
-                lookup.set(path.parse(icons[icon].name).base, icons[icon]);
+
+            for (const file of files) {
+                if (path.parse(file).ext !== '.png') continue;
+                lookup.set(path.parse(file).base, file);
             }
 
-            for (const icon of xml.iconset.icon) {
+            for (const icon of iconset.icons()) {
                 const icon_req = await fetch(new URL(`/api/iconset/${iconset.uid}/icon`, this.msg.api), {
                     method: 'POST',
                     headers: {
@@ -245,17 +260,17 @@ export default class Worker extends EventEmitter {
                         'Authorization': `Bearer ${jwt.sign({ access: 'user', email: this.msg.job.username }, this.msg.secret)}`,
                     },
                     body: JSON.stringify({
-                        name: lookup.get(icon.$.name).name,
-                        path: `${iconset.uid}/${lookup.get(icon.$.name).name}`,
-                        type2525b: icon.$.type2525b || null,
-                        data: (await zip.entryData(lookup.get(icon.$.name))).toString('base64')
+                        name: lookup.get(icon.name),
+                        path: `${iconset.uid}/${lookup.get(icon.name).name}`,
+                        type2525b: icon.type2525b || null,
+                        data: (await pkg.getFileBuffer(lookup.get(icon.name))).toString('base64')
                     })
                 });
 
                 if (!icon_req.ok) console.error(await icon_req.text());
             }
         } catch (err) {
-            console.log(`Import: ${this.msg.job.id} - ${file} is not an Iconset:`, err.message);
+            console.log(`Import: ${this.msg.job.id} - ${file} is not an Iconset:`, err instanceof Error ? err.message : String(err));
         }
 
         try {

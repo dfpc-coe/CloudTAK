@@ -16,5 +16,4 @@ export type LocalMessage = {
 
 export type ImportList = paths["/api/import"]["get"]["responses"]["200"]["content"]["application/json"]
 export type Import = paths["/api/import/{:import}"]["get"]["responses"]["200"]["content"]["application/json"]
-
-export type Asset = paths["/api/asset"]["post"]["responses"]["200"]["content"]["application/json"]
+export type Asset = paths["/api/profile/asset"]["post"]["responses"]["200"]["content"]["application/json"]

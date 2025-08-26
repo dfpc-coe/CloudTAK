@@ -1,5 +1,5 @@
 import fs from 'node:fs/promises';
-import type { Message, LocalMessage } from './types.ts';
+import type { Message, LocalMessage } from '../types.ts';
 import path from 'node:path';
 import spritesmith from 'spritesmith';
 import Sharp from 'sharp';
@@ -97,7 +97,7 @@ export default class KML {
 
         const doc = await SpriteSmith({ src });
 
-        const coords = {};
+        const coords: Record<string, any> = {};
         for (const key in doc.coordinates) {
             coords[key.replace(/.png/, '')] = {
                 ...doc.coordinates[key],
