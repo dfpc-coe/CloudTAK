@@ -136,6 +136,16 @@
                         </div>
                     </div>
                 </div>
+
+                <div class='col-12 d-flex justify-content-center pt-3'>
+                    <TablerPager
+                        v-if='list.total > paging.limit'
+                        :page='paging.page'
+                        :total='list.total'
+                        :limit='paging.limit'
+                        @page='paging.page = $event'
+                    />
+                </div>
             </template>
         </template>
     </MenuTemplate>
@@ -153,13 +163,14 @@
 
 <script setup lang='ts'>
 import { useRouter } from 'vue-router';
-import { ref, onMounted } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import type { ProfileFile, ProfileFileList } from '../../../types.ts';
 import { std, stdurl, server } from '../../../std.ts';
 import {
     TablerDelete,
     TablerIconButton,
     TablerRefreshButton,
+    TablerPager,
     TablerAlert,
     TablerNone,
     TablerLoading,
@@ -194,7 +205,17 @@ const list = ref<ProfileFileList>({
     items: [],
 });
 
+const paging = ref({
+    page: 0,
+    filter: '',
+    limit: 20
+})
+
 onMounted(async () => {
+    await fetchList();
+});
+
+watch(paging.value, async () => {
     await fetchList();
 });
 
@@ -256,7 +277,17 @@ async function fetchList() {
         loading.value = true;
         error.value = undefined;
 
-        const res = await server(`/api/profile/asset`);
+        const res = await server.GET(`/api/profile/asset`, {
+            params: {
+                query: {
+                    filter: paging.value.filter,
+                    order: 'desc',
+                    sort: 'created',
+                    limit: paging.value.limit,
+                    page: paging.value.page
+                }
+            }
+        });
         if (res.error) throw new Error(res.error.message);
 
         list.value = res.data;
