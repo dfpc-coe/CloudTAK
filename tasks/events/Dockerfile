@@ -27,7 +27,7 @@ WORKDIR $HOME
 COPY --from=0 /usr/local/bin/tippecanoe* /usr/local/bin/
 COPY --from=0 /usr/local/bin/tile-join /usr/local/bin/
 
-RUN apk add nodejs npm gdal-tools curl
+RUN apk add nodejs npm gdal-tools curl gdal-driver-pdf gdal-driver-libkml
 
 # PMTiles: https://github.com/protomaps/go-pmtiles/releases
 RUN export VERSION_PMTILES='1.28.0' && \
