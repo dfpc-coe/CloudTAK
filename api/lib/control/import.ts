@@ -35,12 +35,12 @@ export default class ImportControl {
             config: body.config
         });
 
-        if (body.source === ImportSourceEnum.PACKAGE) {
+        // Both Package and Mission Imports fetch from the File API
+        if (body.source === ImportSourceEnum.PACKAGE || body.source === ImportSourceEnum.MISSION) {
             const profile = await this.config.models.Profile.from(body.username);
             const api = await TAKAPI.init(new URL(String(this.config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
-
-            if (!body.source_id) throw new Error('Source ID Must be set for Package Type');
+            if (!body.source_id) throw new Error('Source ID Must be set for Package Import Source');
             const file = await api.Files.download(body.source_id);
 
             await S3.put(`import/${imp.id}.zip`, file)
