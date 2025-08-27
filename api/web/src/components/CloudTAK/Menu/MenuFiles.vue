@@ -155,7 +155,7 @@
 import { useRouter } from 'vue-router';
 import { ref, onMounted } from 'vue';
 import type { ProfileFile, ProfileFileList } from '../../../types.ts';
-import { std, stdurl } from '../../../std.ts';
+import { std, stdurl, server } from '../../../std.ts';
 import {
     TablerDelete,
     TablerIconButton,
@@ -255,7 +255,11 @@ async function fetchList() {
     try {
         loading.value = true;
         error.value = undefined;
-        list.value = await std(`/api/profile/asset`) as ProfileFileList;
+
+        const res = await server(`/api/profile/asset`);
+        if (res.error) throw new Error(res.error.message);
+
+        list.value = res.data;
         loading.value = false;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
