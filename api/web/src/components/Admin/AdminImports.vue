@@ -52,9 +52,6 @@
                             v-for='imp in list.items'
                             :key='imp.id'
                             tabindex='0'
-                            class='cursor-pointer'
-                            @keyup.enter='stdclick(router, $event, `/admin/import/${imp.id}`)'
-                            @click='stdclick(router, $event, `/admin/import/${imp.id}`)'
                         >
                             <template v-for='h in header'>
                                 <template v-if='h.display'>
