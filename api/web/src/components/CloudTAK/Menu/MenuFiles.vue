@@ -118,7 +118,7 @@
                             </div>
                             <div
                                 class='cursor-pointer col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
-                                @click.stop.prevent='shareToPackage = asset.id'
+                                @click.stop.prevent='shareToPackage = asset'
                             >
                                 <IconPackage
                                     :size='32'
@@ -152,10 +152,11 @@
 
     <ShareToPackage
         v-if='shareToPackage'
-        :name='shareToPackage'
+        :name='shareToPackage.name'
         :assets='[{
             type: "profile",
-            name: shareToPackage
+            id: shareToPackage.id,
+            name: shareToPackage.name
         }]'
         @close='shareToPackage = undefined'
     />
@@ -195,7 +196,7 @@ const mapStore = useMapStore();
 const router = useRouter();
 const upload = ref(false)
 const opened = ref<Set<string>>(new Set());
-const shareToPackage = ref<string | undefined>();
+const shareToPackage = ref<ProfileFile | undefined>();
 const error = ref<Error | undefined>(undefined);
 const loading = ref(true);
 
