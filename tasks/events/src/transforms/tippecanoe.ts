@@ -72,12 +72,12 @@ export default class Tippecanoe {
                 '-o', output_path
             ];
 
-            base.push(...['-l', options.layer ? esc(options.layer) : 'out']);
+            base.push(...['-l', options.layer || 'out']);
 
             if (options.force) base.push('-f');
-            if (options.name) base.push(...['-n', esc(options.name)]);
-            if (options.attribution) base.push(...['-A', esc(options.attribution)]);
-            if (options.description) base.concat(...['-N', esc(options.description)]);
+            if (options.name) base.push(...['-n', options.name]);
+            if (options.attribution) base.push(...['-A', options.attribution]);
+            if (options.description) base.concat(...['-N', options.description]);
             if (options.zoom.max) base.push(...['--maximum-zoom', String(options.zoom.max)]);
             if (options.zoom.min) base.push(...['--minimum-zoom', String(options.zoom.min)]);
             if (options.limit.features === false) base.push('--no-feature-limit');
@@ -158,9 +158,4 @@ export default class Tippecanoe {
             }
         });
     }
-}
-
-export function esc(str: string): string {
-    if (str.length === 0) return "''";
-    return `'${str.replace(/'/g, `'\\''`)}'`;
 }
