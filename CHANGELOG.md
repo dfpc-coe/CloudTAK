@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v10.51.2 - 2025-08-27
+
+- :arrow_up Update node-tak
+
 ### v10.51.1 - 2025-08-27
 
 - :arrow_up Update node-tak
