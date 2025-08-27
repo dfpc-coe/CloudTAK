@@ -29,7 +29,6 @@
     "author": "Nick Ingalls <nick@ingalls.ca>",
     "license": "ISC",
     "dependencies": {
-        "@aws-sdk/client-batch": "^3.301.0",
         "@aws-sdk/client-cloudformation": "^3.279.0",
         "@aws-sdk/client-cloudwatch": "^3.279.0",
         "@aws-sdk/client-cloudwatch-logs": "^3.423.0",
