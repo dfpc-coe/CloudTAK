@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v10.51.1 - 2025-08-27
+
+- :arrow_up Update node-tak
+
 ### v10.51.0 - 2025-08-24
 
 - :bug: Always report SA location to TAK Server to ensure inclusion in contacts list
