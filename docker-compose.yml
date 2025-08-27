@@ -44,8 +44,8 @@ services:
     events:
         platform: linux/amd64
         build:
-          context: ./tasks/pmtiles/
-          dockerfile: Dockerfile.compose
+          context: ./tasks/events/
+          dockerfile: Dockerfile
         restart: 'always'
         depends_on:
             - api
