@@ -24,6 +24,10 @@ export default async function router(schema: Schema, config: Config) {
         description: 'List Imports',
         query: Type.Object({
             limit: Default.Limit,
+            impersonate: Type.Optional(Type.Union([
+                Type.Boolean({ description: 'List all of the given resource, regardless of ACL' }),
+                Type.String({ description: 'Filter the given resource by a given username' }),
+            ])),
             page: Default.Page,
             filter: Default.Filter,
             order: Default.Order,
