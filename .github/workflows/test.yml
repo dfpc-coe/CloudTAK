@@ -34,7 +34,7 @@ jobs:
         run: docker run cloudtak-events:latest npm run check
 
       - name: Docker Events Test
-        run: docker run cloudtak-events:latest npm run check
+        run: docker run cloudtak-events:latest npm test
 
   pmtiles:
     if: github.event.pull_request.draft == false
