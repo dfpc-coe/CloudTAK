@@ -105,27 +105,20 @@
 
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { std, stdurl, stdclick } from '../../../src/std.ts';
-import type { Basemap, BasemapList } from '../../../src/types.ts';
+import { std, stdurl } from '../../../src/std.ts';
+import type { Import, ImportList } from '../../../src/types.ts';
 import StatusDot from '../util/StatusDot.vue';
 import TableHeader from '../util/TableHeader.vue'
 import TableFooter from '../util/TableFooter.vue'
 import {
     TablerNone,
     TablerInput,
-    TablerEnum,
     TablerAlert,
     TablerRefreshButton,
     TablerLoading
 } from '@tak-ps/vue-tabler';
-import {
-    IconPlus,
-} from '@tabler/icons-vue'
 
-type Header = { name: keyof Basemap, display: boolean };
-
-const router = useRouter();
+type Header = { name: keyof Import, display: boolean };
 
 const error = ref<Error | undefined>();
 const loading = ref(true);
@@ -139,9 +132,8 @@ const paging = ref({
     page: 0
 });
 
-const list = ref<BasemapList>({
+const list = ref<ImportList>({
     total: 0,
-    collections: [],
     items: []
 });
 
@@ -150,14 +142,14 @@ watch(paging.value, async () => {
 });
 
 onMounted(async () => {
-    await listBasemapSchema();
+    await listImportSchema();
     await fetchList();
 });
 
-async function listBasemapSchema() {
+async function listImportSchema() {
     const schema = await std('/api/schema?method=GET&url=/import');
 
-    const defaults: Array<keyof Basemap> = ['username', 'name'];
+    const defaults: Array<keyof Import> = ['username', 'name'];
     header.value = defaults.map((h) => {
         return { name: h, display: true };
     });
@@ -183,7 +175,7 @@ async function fetchList() {
     url.searchParams.append('filter', paging.value.filter);
     url.searchParams.append('limit', String(paging.value.limit));
     url.searchParams.append('page', String(paging.value.page));
-    list.value = await std(url) as BasemapList;
+    list.value = await std(url) as ImportList;
     loading.value = false;
 }
 </script>
