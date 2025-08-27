@@ -1,4 +1,5 @@
-import createClient from 'openapi-fetch'
+import createClient from "openapi-fetch";
+import type { Middleware } from "openapi-fetch";
 import type { paths } from './derived-types.js'
 import type { APIError } from './types.js'
 import type { Router } from 'vue-router'
@@ -13,6 +14,18 @@ if (
 ) baseUrl.port = '5001'
 
 export const server = createClient<paths>({ baseUrl: String(baseUrl) });
+
+const AuthMiddleware: Middleware = {
+    async onRequest({ request }) {
+        if (!isWebWorker() && localStorage.token) {
+            request.headers.set("Authorization", `Bearer ${localStorage.token}`);
+        }
+
+        return request;
+    }
+};
+
+server.use(AuthMiddleware);
 
 export function stdurl(url: string | URL): URL {
     try {
