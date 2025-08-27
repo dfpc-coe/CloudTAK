@@ -121,7 +121,7 @@ export default async function router(schema: Schema, config: Config) {
             }),
             assets: Type.Array(Type.Object({
                 type: Type.Literal('profile'),
-                name: Type.String()
+                id: Type.String()
             }), {
                 default: []
             }),
@@ -206,8 +206,14 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             for (const asset of req.body.assets) {
-                await pkg.addFile(await S3.get(`profile/${user.email}/${asset.name}`), {
-                    name: path.parse(asset.name).base
+                const file = await config.models.ProfileFile.from(asset.id);
+
+                if (file.username !== user.email) {
+                    throw new Err(400, null, 'You can only attach your own files');
+                }
+
+                await pkg.addFile(await S3.get(`profile/${user.email}/${file.id}${path.parse(file.name).ext}`), {
+                    name: file.name
                 });
             }
 
@@ -275,7 +281,7 @@ export default async function router(schema: Schema, config: Config) {
 
             res.json(content)
         } catch (err) {
-             Err.respond(err, res);
+            Err.respond(err, res);
         }
     });
 
