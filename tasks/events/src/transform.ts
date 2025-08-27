@@ -119,6 +119,8 @@ export default class DataTransform {
             }
         });
 
+        await pmuploader.done();
+
         artifacts.push({ ext: '.pmtiles' });
         const res = await fetch(new URL(`/api/profile/asset/${this.asset.id}`, this.msg.api), {
             method: 'PATCH',
@@ -134,7 +136,5 @@ export default class DataTransform {
         } else {
             this.asset = await res.json() as Asset;
         }
-
-        await pmuploader.done();
     }
 }
