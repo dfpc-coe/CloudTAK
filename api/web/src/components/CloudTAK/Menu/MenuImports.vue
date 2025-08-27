@@ -72,7 +72,7 @@
                                 stroke='0.5'
                             />
                             <IconFile
-                                v-else-if='imported.source === "Unknown"'
+                                v-else-if='imported.source === "Upload"'
                                 :size='32'
                                 stroke='0.5'
                             />

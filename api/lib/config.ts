@@ -41,10 +41,6 @@ export default class Config {
     conns: ConnectionPool;
     server: InferSelectModel<typeof Server>;
     events: EventsPool;
-    VpcId?: string;
-    SubnetPublicA?: string;
-    SubnetPublicB?: string;
-    MediaSecurityGroup?: string;
     arnPrefix?: string;
 
     constructor(init: {
@@ -172,11 +168,6 @@ export default class Config {
 
         const external = await External.init(config);
         config.external = external;
-
-        if (process.env.VpcId) config.VpcId = process.env.VpcId;
-        if (process.env.SubnetPublicA) config.SubnetPublicA = process.env.SubnetPublicA;
-        if (process.env.SubnetPublicB) config.SubnetPublicB = process.env.SubnetPublicB;
-        if (process.env.MediaSecurityGroup) config.MediaSecurityGroup = process.env.MediaSecurityGroup;
 
         for (const envkey in process.env) {
             if (!envkey.startsWith('CLOUDTAK')) continue;
