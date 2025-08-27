@@ -70,7 +70,9 @@ export default async function router(schema: Schema, config: Config) {
         group: 'ProfileFile',
         description: 'Delete Asset',
         params: Type.Object({
-            asset: Type.String(),
+            asset: Type.String({
+                format: 'uuid'
+            }),
         }),
         res: StandardResponse
     }, async (req, res) => {
@@ -151,7 +153,9 @@ export default async function router(schema: Schema, config: Config) {
         group: 'ProfileFile',
         description: 'Internal API used to modify assets after S3 assets have been uploaded by the Events Task',
         params: Type.Object({
-            asset: Type.String(),
+            asset: Type.String({
+                format: 'uuid'
+            }),
         }),
         body: Type.Object({
             path: Type.String({
@@ -199,7 +203,9 @@ export default async function router(schema: Schema, config: Config) {
             token: Type.Optional(Type.String())
         }),
         params: Type.Object({
-            asset: Type.String(),
+            asset: Type.String({
+                format: 'uuid'
+            }),
             ext: Type.String()
         }),
     }, async (req, res) => {
