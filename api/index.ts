@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import cors from 'cors';
 import express from 'express';
+import { StandardResponse } from './lib/types.js';
 import Bulldozer from './lib/initialization.js';
 import history, {Context} from 'connect-history-api-fallback';
 import Schema from '@openaddresses/batch-schema';
@@ -83,6 +84,13 @@ export default async function server(config: Config): Promise<ServerManager> {
         prefix: '/api',
         logging: true,
         limit: 50,
+        error: {
+            400: StandardResponse,
+            401: StandardResponse,
+            403: StandardResponse,
+            404: StandardResponse,
+            500: StandardResponse,
+        },
         openapi: {
             info: {
                 title: 'CloudTAK API',

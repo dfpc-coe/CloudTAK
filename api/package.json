@@ -44,7 +44,7 @@
         "@maplibre/maplibre-gl-style-spec": "^23.0.0",
         "@openaddresses/batch-error": "^2.1.4",
         "@openaddresses/batch-generic": "^24.9.0",
-        "@openaddresses/batch-schema": "^10.15.0",
+        "@openaddresses/batch-schema": "^10.17.1",
         "@openaddresses/cloudfriend": "^7.0.0",
         "@sinclair/typebox": "^0.34.0",
         "@tak-ps/etl": "^9.14.0",
