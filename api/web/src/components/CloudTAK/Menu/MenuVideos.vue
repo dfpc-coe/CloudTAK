@@ -322,7 +322,7 @@ async function fetchLeases(): Promise<void> {
             }
         })
 
-        if (res.error) throw new Error('Could not fetch video leases');
+        if (res.error) throw new Error(res.error.message);
 
         leases.value = res.data;
     } catch (err) {
