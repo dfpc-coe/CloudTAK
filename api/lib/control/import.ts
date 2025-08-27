@@ -45,7 +45,13 @@ export default class ImportControl {
 
             await S3.put(`import/${imp.id}.zip`, file)
 
+            // The ext in the name is currently used to obtain the file
+            if (!imp.name.endsWith('.zip')) {
+                imp.name = `${imp.name}.zip`;
+            }
+
             await this.config.models.Import.commit(imp.id, {
+                name: imp.name,
                 status: 'Pending'
             });
         }
