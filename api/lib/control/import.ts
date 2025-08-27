@@ -44,12 +44,14 @@ export default class ImportControl {
             if (!body.source_id) throw new Error('Source ID Must be set for Package Import Source');
             const file = await api.Files.download(body.source_id);
 
-            await S3.put(`import/${imp.id}.zip`, file)
+            const { ext } = path.parse(body.name);
 
             // The ext in the name is currently used to obtain the file, assume a data package if not set
             if (path.parse(imp.name).ext === '') {
-                imp.name = `${imp.name}.zip`;
+                imp.name = `${imp.name}${ext}`;
             }
+
+            await S3.put(`import/${imp.id}${ext}`, file)
 
             await this.config.models.Import.commit(imp.id, {
                 name: imp.name,
