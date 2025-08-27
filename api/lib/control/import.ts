@@ -45,8 +45,8 @@ export default class ImportControl {
 
             await S3.put(`import/${imp.id}.zip`, file)
 
-            // The ext in the name is currently used to obtain the file
-            if (!imp.name.endsWith('.zip')) {
+            // The ext in the name is currently used to obtain the file, assume a data package if not set
+            if (path.parse(imp.name).ext === '') {
                 imp.name = `${imp.name}.zip`;
             }
 
