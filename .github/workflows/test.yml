@@ -41,6 +41,10 @@ jobs:
         working-directory: ./tasks/events/
         run: npm run check
 
+      - name: Test
+        working-directory: ./tasks/events/
+        run: npm test
+
   pmtiles:
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
