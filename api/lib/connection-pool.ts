@@ -1,4 +1,5 @@
 import Err from '@openaddresses/batch-error';
+import path from 'node:path';
 import ImportControl, { ImportSourceEnum }  from './control/import.js';
 import Sinks from './sinks.js';
 import Config from './config.js';
