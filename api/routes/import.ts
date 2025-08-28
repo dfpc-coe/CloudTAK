@@ -252,6 +252,10 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Import',
         description: 'Download Import File',
         query: Type.Object({
+            download: Type.Boolean({
+                default: false,
+                description: 'Set the Content-Disposition Header'
+            }),
             token: Type.Optional(Type.String())
         }),
         params: Type.Object({
@@ -268,6 +272,10 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             const stream = await S3.get(`import/${req.params.import}${path.parse(imp.name).ext}`);
+
+            if (req.query.download) {
+                res.setHeader('Content-Disposition', `attachment; filename="import-${imp.id}-${imp.name}"`);
+            }
 
             stream.pipe(res);
         } catch (err) {
