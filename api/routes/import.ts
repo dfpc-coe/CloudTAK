@@ -247,6 +247,35 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
+    await schema.get('/import/:import/raw', {
+        name: 'Download Import',
+        group: 'Import',
+        description: 'Download Import File',
+        query: Type.Object({
+            token: Type.Optional(Type.String())
+        }),
+        params: Type.Object({
+            import: Type.String()
+        }),
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req, { token: true });
+
+            const imp = await config.models.Import.from(req.params.import);
+
+            if (imp.username !== user.email) {
+                throw new Err(403, null, 'You do not have permission to download this import');
+            }
+
+            const stream = await S3.get(`import/${req.params.import}${path.parse(imp.name).ext}`);
+
+            stream.pipe(res);
+        } catch (err) {
+             Err.respond(err, res);
+        }
+    });
+
+
     await schema.patch('/import/:import', {
         name: 'Update Import',
         group: 'Import',
