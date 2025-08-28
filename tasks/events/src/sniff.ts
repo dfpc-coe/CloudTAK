@@ -1,5 +1,4 @@
 import * as fs from 'fs/promises';
-import * as path from 'path';
 
 // The magic bytes for a ZIP: "PK\x03\x04".
 const ZIP_MAGIC_BYTES = Buffer.from([0x50, 0x4B, 0x03, 0x04]);
