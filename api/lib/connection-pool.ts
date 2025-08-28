@@ -149,9 +149,13 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                         } else if (conn instanceof ProfileConnConfig && feat.properties.fileshare) {
                             const file = new URL(feat.properties.fileshare.senderUrl);
 
+                            let name = feat.properties.fileshare.name;
+                            const { ext } = path.parse(name);
+                            if (!ext) name = name + '.zip'
+
                             await this.importControl.create({
                                 username: String(conn.id),
-                                name: feat.properties.fileshare.name,
+                                name,
                                 source: ImportSourceEnum.PACKAGE,
                                 source_id: file.searchParams.get('hash') || undefined
                             })
