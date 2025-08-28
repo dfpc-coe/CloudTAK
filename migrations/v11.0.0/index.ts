@@ -107,7 +107,7 @@ async function main(bucket: string, prefix = '') {
         migration.write(`UPDATE profile_files SET artifacts = '${JSON.stringify(value.artifacts)}'::JSON WHERE id = '${value.uuid}'::UUID ;\n`);
     }
 
-    migration.write(`UPDATE profile_overlays SET url = REPLACE(url, 'https://map.cotak.gov', '');\n`)
+    migration.write(`UPDATE profile_overlays SET url = REPLACE(url, '${host}', '');\n`)
 
     migration.write(`
         CREATE OR REPLACE FUNCTION decode_url_part(p varchar) RETURNS varchar AS $$
@@ -136,8 +136,11 @@ async function main(bucket: string, prefix = '') {
 
 const bucket = process.argv[2]
 
-if (!bucket) {
-    console.error('Usage: tsx index.ts <bucket>');
+// IE: https://map.cotak.gov
+const host = process.argv[3]
+
+if (!bucket || !host) {
+    console.error('Usage: tsx index.ts <bucket> <host>');
     process.exit(1);
 } else {
     console.log(`Processing bucket: ${bucket}`);
