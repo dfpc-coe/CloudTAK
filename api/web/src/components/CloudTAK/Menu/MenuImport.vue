@@ -6,6 +6,15 @@
                 displaytype='icon'
                 @delete='deleteImport'
             />
+            <TablerIconButton
+                title='Download File'
+                @click='downloadImport'
+            >
+                <IconDownload
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
             <TablerRefreshButton
                 :loading='loading.initial'
                 @click='fetch(true)'
@@ -107,8 +116,13 @@ import {
     TablerAlert,
     TablerDelete,
     TablerLoading,
+    TablerIconButton,
     TablerRefreshButton
 } from '@tak-ps/vue-tabler';
+import {
+    IconDownload
+} from '@tabler/icons-vue';
+
 import MenuTemplate from '../util/MenuTemplate.vue';
 
 const route = useRoute();
@@ -136,6 +150,12 @@ onUnmounted(() => {
         clearInterval(interval.value);
     }
 });
+
+function downloadImport(): string {
+    const url = stdurl(`/api/import/${route.params.import}/raw`)
+    url.searchParams.append('token', localStorage.token);
+    window.location.href = String(url);
+}
 
 async function deleteImport() {
     loading.value.initial = true;
