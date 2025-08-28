@@ -97,6 +97,7 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform-vector
 
                     t.equals(command.input.Bucket, 'test-bucket')
                     t.ok(command.input.Key.startsWith(`profile/admin@example.com/`))
+
                     t.ok(command.input.Key.endsWith(ext))
 
                     return Promise.resolve({});

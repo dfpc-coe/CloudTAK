@@ -1,4 +1,5 @@
 import DataTransform from './transform.ts';
+import { isZipFile } from './sniff.ts';
 import { rimraf } from 'rimraf';
 import { randomUUID } from 'node:crypto';
 import { Upload } from '@aws-sdk/lib-storage';
@@ -47,7 +48,7 @@ export default class Worker extends EventEmitter {
                 fs.createWriteStream(local.raw)
             );
 
-            if (ext === '.zip') {
+            if (await isZipFile(local.raw) && !local.raw.endsWith('.kmz')) {
                 await this.processArchive(local);
             } else {
                 await this.processFile(local)
