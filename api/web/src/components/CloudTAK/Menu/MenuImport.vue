@@ -151,7 +151,7 @@ onUnmounted(() => {
     }
 });
 
-function downloadImport(): string {
+function downloadImport() {
     const url = stdurl(`/api/import/${route.params.import}/raw`)
     url.searchParams.append('token', localStorage.token);
     window.location.href = String(url);
