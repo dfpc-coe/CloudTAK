@@ -433,7 +433,7 @@
                     >
                         <IconNetwork
                             v-tooltip='{
-                                content: "Connections",
+                                content: "Connections (Admin)",
                                 placement: "left",
                             }'
                             :tabindex='compact ? 0 : undefined'
@@ -473,7 +473,7 @@
                     >
                         <IconBug
                             v-tooltip='{
-                                content: "Debugger",
+                                content: "Debugger (Admin)",
                                 placement: "left",
                             }'
                             :tabindex='compact ? 0 : undefined'
@@ -513,7 +513,7 @@
                     >
                         <IconServerCog
                             v-tooltip='{
-                                content: "Server Settings",
+                                content: "Server Settings (Admin)",
                                 placement: "left",
                             }'
                             :tabindex='compact ? 0 : undefined'
