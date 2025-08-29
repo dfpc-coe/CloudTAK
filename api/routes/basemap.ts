@@ -168,7 +168,10 @@ export default async function router(schema: Schema, config: Config) {
             page: Default.Page,
             order: Default.Order,
             type: Type.Optional(Type.Enum(Basemap_Type)),
-            sort: Type.String({ default: 'created', enum: Object.keys(Basemap) }),
+            sort: Type.String({
+                default: 'created',
+                enum: Object.keys(Basemap)
+            }),
             filter: Default.Filter,
             collection: Type.Optional(Type.String({
                 description: 'Only show Basemaps belonging to a given collection'

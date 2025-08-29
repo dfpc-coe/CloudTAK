@@ -175,19 +175,6 @@
                                                 :size='32'
                                                 stroke='1'
                                             /><span class='mx-3'>Layers</span></span>
-                                            <span
-                                                tabindex='0'
-                                                role='menuitem'
-                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
-                                                :class='{
-                                                    "active": route.name === "data-jobs",
-                                                    "cursor-pointer": route.name !== "data-jobs"
-                                                }'
-                                                @click='router.push(`/connection/${route.params.connectionid}/data/${route.params.dataid}/jobs`)'
-                                            ><IconTransform
-                                                :size='32'
-                                                stroke='1'
-                                            /><span class='mx-3'>Jobs</span></span>
                                         </div>
                                     </div>
                                 </div>
@@ -225,7 +212,6 @@ import {
     IconFiles,
     IconAffiliate,
     IconBuildingBroadcastTower,
-    IconTransform,
     IconSettings,
     IconAccessPoint,
     IconAccessPointOff,

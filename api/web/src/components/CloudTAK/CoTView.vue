@@ -330,10 +330,11 @@
                     }'
                 >
                     <Coordinate
+                        :label='cot.geometry.type === "Point" ? "Location" : "Center"'
                         :edit='is_editable'
                         :hover='is_editable'
                         :model-value='center'
-                        @update:model-value='updatePropertyCenter($event)'
+                        @update:modelValue='updateCoordinates($event)'
                     />
                 </div>
                 <div
@@ -1048,7 +1049,8 @@ function updatePropertyType(type: string): void {
     cot.value.update({});
 }
 
-function updatePropertyCenter(center: number[]): void {
+function updateCoordinates(center: number[]): void {
+    console.error('PRE UPDATE COORDINATES', cot.value);
     if (!cot.value) return;
 
     cot.value.properties.center = center;
@@ -1057,6 +1059,7 @@ function updatePropertyCenter(center: number[]): void {
         cot.value.geometry.coordinates = center;
     }
 
+    console.error('PRE UPDATE COORDINATES', cot.value);
     cot.value.update({});
 }
 

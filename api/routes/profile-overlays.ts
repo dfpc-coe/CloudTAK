@@ -34,7 +34,10 @@ export default async function router(schema: Schema, config: Config) {
             limit: Default.Limit,
             page: Default.Page,
             order: Default.Order,
-            sort: Type.Optional(Type.String({ default: 'pos', enum: Object.keys(ProfileOverlay) })),
+            sort: Type.String({
+                default: 'pos',
+                enum: Object.keys(ProfileOverlay)
+            }),
         }),
         res: Type.Object({
             total: Type.Integer(),

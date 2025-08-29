@@ -72,7 +72,7 @@
                     />
                     <TablerIconButton
                         title='Import File'
-                        @click='importFile(content.data.name)'
+                        @click='importFile(content.data.name, content.data.hash)'
                     >
                         <IconFileImport
                             :size='32'
@@ -184,15 +184,15 @@ function genConfig() {
     return { id: props.mission.name }
 }
 
-async function importFile(name: string) {
+async function importFile(name: string, hash: string) {
     loading.value = true;
 
     const imp = await std('/api/import', {
         method: 'POST',
         body: {
             name: name,
-            mode: 'Mission',
-            mode_id: props.mission.guid
+            source: 'Mission',
+            source_id: hash
         }
     }) as Import;
 
@@ -204,8 +204,8 @@ async function fetchImports() {
 
     try {
         const url = await stdurl(`/api/import`);
-        url.searchParams.append('mode', 'Mission');
-        url.searchParams.append('mode_id', props.mission.guid);
+        url.searchParams.append('source', 'Mission');
+        url.searchParams.append('source_id', props.mission.guid);
         const imps = await std(url) as ImportList;
 
         imps.items = imps.items.filter((i) => {
