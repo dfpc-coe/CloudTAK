@@ -42,13 +42,6 @@
                                         />
                                     </div>
                                     <div class='col-md-12'>
-                                        <TablerToggle
-                                            v-model='data.auto_transform'
-                                            label='Auto Transform'
-                                            description='If Enabled, Assets uploaded to the Data package will be automatically transformed into Cloud & TAK Native formats'
-                                        />
-                                    </div>
-                                    <div class='col-md-12'>
                                         <GroupSelect
                                             v-model='data.mission_groups'
                                             :connection='route.params.connectionid'
@@ -150,7 +143,6 @@ const errors = ref({
 
 const data = ref({
     name: '',
-    auto_transform: true,
     mission_sync: true,
     mission_groups: [],
     mission_role: 'MISSION_READONLY_SUBSCRIBER',
