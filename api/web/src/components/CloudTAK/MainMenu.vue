@@ -423,7 +423,7 @@
                         v-if='isAgencyAdmin || isSystemAdmin'
                         role='menuitem'
                         :tabindex='compact ? undefined : 0'
-                        class='cursor-pointer col-12 d-flex align-items-center'
+                        class='cursor-pointer col-12 d-flex align-items-center position-relative'
                         :class='{
                             "py-2 px-3 hover": !compact,
                             "py-1 px-2 hover-button": compact
@@ -443,13 +443,18 @@
                             stroke='1'
                         />
                         <span
+                            v-if='compact'
+                            class='position-absolute badge bg-blue text-white'
+                            style='top: 5px; right: 5px; font-size: 10px; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; border-radius: 50%;'
+                        >A</span>
+                        <span
                             v-if='!compact'
                             class='mx-2 user-select-none'
                             style='font-size: 18px;'
                         >Connections</span>
                         <span
                             v-if='!compact'
-                            class='ms-auto badge border border-red bg-red text-white'
+                            class='ms-auto badge border border-blue bg-blue text-white'
                         >
                             Admin
                         </span>
@@ -458,7 +463,7 @@
                         v-if='isSystemAdmin'
                         role='menuitem'
                         :tabindex='compact ? undefined : 0'
-                        class='cursor-pointer col-12 d-flex align-items-center'
+                        class='cursor-pointer col-12 d-flex align-items-center position-relative'
                         :class='{
                             "py-2 px-3 hover": !compact,
                             "py-1 px-2 hover-button": compact
@@ -478,13 +483,18 @@
                             stroke='1'
                         />
                         <span
+                            v-if='compact'
+                            class='position-absolute badge bg-blue text-white'
+                            style='top: 5px; right: 5px; font-size: 10px; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; border-radius: 50%;'
+                        >A</span>
+                        <span
                             v-if='!compact'
                             class='mx-2 user-select-none'
                             style='font-size: 18px;'
                         >COT Debugger</span>
                         <span
                             v-if='!compact'
-                            class='ms-auto badge border border-red bg-red text-white'
+                            class='ms-auto badge border border-blue bg-blue text-white'
                         >
                             Admin
                         </span>
@@ -493,7 +503,7 @@
                         v-if='isSystemAdmin'
                         role='menuitem'
                         :tabindex='compact ? undefined : 0'
-                        class='cursor-pointer col-12 d-flex align-items-center'
+                        class='cursor-pointer col-12 d-flex align-items-center position-relative'
                         :class='{
                             "py-2 px-3 hover": !compact,
                             "py-1 px-2 hover-button": compact
@@ -513,13 +523,18 @@
                             stroke='1'
                         />
                         <span
+                            v-if='compact'
+                            class='position-absolute badge bg-blue text-white'
+                            style='top: 5px; right: 5px; font-size: 10px; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; border-radius: 50%;'
+                        >A</span>
+                        <span
                             v-if='!compact'
                             class='mx-2 user-select-none'
                             style='font-size: 18px;'
                         >Server</span>
                         <span
                             v-if='!compact'
-                            class='ms-auto badge border border-red bg-red text-white'
+                            class='ms-auto badge border border-blue bg-blue text-white'
                         >
                             Admin
                         </span>
