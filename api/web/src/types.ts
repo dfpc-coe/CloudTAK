@@ -75,7 +75,6 @@ export type Login_Create = paths["/api/login"]["post"]["requestBody"]["content"]
 export type Login_CreateRes = paths["/api/login"]["post"]["responses"]["200"]["content"]["application/json"]
 
 export type Import = paths["/api/import/{:import}"]["get"]["responses"]["200"]["content"]["application/json"]
-export type ImportBatch = paths["/api/import/{:import}/batch"]["get"]["responses"]["200"]["content"]["application/json"]
 export type ImportList = paths["/api/import"]["get"]["responses"]["200"]["content"]["application/json"]
 
 export type Profile = paths["/api/profile"]["get"]["responses"]["200"]["content"]["application/json"]
@@ -100,9 +99,9 @@ export type Palette = paths["/api/palette/{:palette}"]["get"]["responses"]["200"
 export type PaletteList = paths["/api/palette"]["get"]["responses"]["200"]["content"]["application/json"]
 export type PaletteFeature = paths["/api/palette/{:palette}/feature/{:feature}"]["get"]["responses"]["200"]["content"]["application/json"]
 
-export type ProfileAssetList = paths["/api/profile/asset"]["get"]["responses"]["200"]["content"]["application/json"]
+export type ProfileFileList = paths["/api/profile/asset"]["get"]["responses"]["200"]["content"]["application/json"]
 
-export type ProfileAsset = ProfileAssetList["assets"][0];
+export type ProfileFile = ProfileFileList["items"][0];
 
 export type Feature = paths["/api/profile/feature/{:id}"]["get"]["responses"]["200"]["content"]["application/json"] & {
     origin?: Origin
@@ -169,8 +168,6 @@ export type ETLLayerOutgoing = paths["/api/connection/{:connectionid}/layer/{:la
 export type ETLData = paths["/api/connection/{:connectionid}/data/{:dataid}"]["get"]["responses"]["200"]["content"]["application/json"]
 
 export type VideoService = paths["/api/video/service"]["get"]["responses"]["200"]["content"]["application/json"];
-export type VideoServer = paths["/api/video/server"]["post"]["responses"]["200"]["content"]["application/json"];
-export type VideoServerList = paths["/api/video/server"]["get"]["responses"]["200"]["content"]["application/json"];
 
 export type InjectorList = paths["/api/server/injector"]["get"]["responses"]["200"]["content"]["application/json"];
 export type Injector = paths["/api/server/injector"]["get"]["responses"]["200"]["content"]["application/json"]["items"][0];

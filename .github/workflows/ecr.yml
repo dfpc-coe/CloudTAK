@@ -22,7 +22,7 @@ jobs:
     timeout-minutes: 20
     strategy:
       matrix:
-        task: [api, data, pmtiles, events]
+        task: [api, pmtiles, events]
     steps:
       - uses: actions/checkout@v4
         with:

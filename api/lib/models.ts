@@ -13,7 +13,6 @@ export default class Models {
     Import: Modeler<typeof pgtypes.Import>;
     Data: Data;
     Server: Modeler<typeof pgtypes.Server>;
-    Token: Modeler<typeof pgtypes.Token>;
 
     Connection: Modeler<typeof pgtypes.Connection>;
     ConnectionToken: Modeler<typeof pgtypes.ConnectionToken>;
@@ -25,10 +24,12 @@ export default class Models {
 
     Profile: Modeler<typeof pgtypes.Profile>;
     ProfileChat: ProfileChat;
+    ProfileToken: Modeler<typeof pgtypes.ProfileToken>;
     ProfileInterest: Modeler<typeof pgtypes.ProfileInterest>;
     ProfileFeature: Modeler<typeof pgtypes.ProfileFeature>;
     ProfileOverlay: Modeler<typeof pgtypes.ProfileOverlay>;
     ProfileMission: Modeler<typeof pgtypes.ProfileMission>;
+    ProfileFile: Modeler<typeof pgtypes.ProfileFile>;
     ProfileVideo: Modeler<typeof pgtypes.ProfileVideo>;
 
     VideoLease: Modeler<typeof pgtypes.VideoLease>;
@@ -51,7 +52,6 @@ export default class Models {
 
         this.Errors = new Modeler(pg, pgtypes.Errors);
 
-        this.Token = new Modeler(pg, pgtypes.Token);
         this.Setting = new Setting(pg);
         this.Server = new Modeler(pg, pgtypes.Server);
 
@@ -59,6 +59,8 @@ export default class Models {
         this.PaletteFeature = new Modeler(pg, pgtypes.PaletteFeature);
 
         this.Profile = new Modeler(pg, pgtypes.Profile);
+        this.ProfileToken = new Modeler(pg, pgtypes.ProfileToken);
+        this.ProfileFile = new Modeler(pg, pgtypes.ProfileFile);
         this.ProfileInterest = new Modeler(pg, pgtypes.ProfileInterest);
         this.ProfileFeature = new Modeler(pg, pgtypes.ProfileFeature);
         this.ProfileOverlay = new Modeler(pg, pgtypes.ProfileOverlay);

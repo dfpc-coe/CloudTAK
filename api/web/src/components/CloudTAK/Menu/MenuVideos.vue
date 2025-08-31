@@ -169,7 +169,7 @@
                     <div class='row g-0 w-100'>
                         <div class='d-flex align-items-center w-100'>
                             <VideoLeaseSourceType :source-type='l.source_type' />
-                        
+
                             <span
                                 class='mx-2'
                                 v-text='l.name'
@@ -229,7 +229,7 @@ import MenuTemplate from '../util/MenuTemplate.vue';
 import VideoLeaseModal from './Videos/VideoLeaseModal.vue';
 import EmptyInfo from '../util/EmptyInfo.vue';
 import Feature from '../util/FeatureRow.vue';
-import { std, stdurl } from '../../../std.ts';
+import { std, server } from '../../../std.ts';
 import COT from '../../../base/cot.ts';
 import VideoLeaseSourceType from '../util/VideoLeaseSourceType.vue';
 import type { VideoLease, VideoLeaseList, VideoConnectionList } from '../../../types.ts';
@@ -307,12 +307,24 @@ async function fetchLeases(): Promise<void> {
         lease.value = undefined;
         loading.value.leases = true;
         error.value = undefined;
-        const url = stdurl('/api/video/lease');
-        url.searchParams.append('filter', leasePaging.value.filter);
-        url.searchParams.append('expired', 'all');
-        url.searchParams.append('limit', String(leasePaging.value.limit));
-        url.searchParams.append('page', String(leasePaging.value.page));
-        leases.value = await std(url) as VideoLeaseList
+
+        const res = await server.GET('/api/video/lease', {
+            params: {
+                query: {
+                    filter: leasePaging.value.filter,
+                    expired: 'all',
+                    order: 'desc',
+                    sort: 'created',
+                    ephemeral: 'false',
+                    limit: leasePaging.value.limit,
+                    page: leasePaging.value.page
+                }
+            }
+        })
+
+        if (res.error) throw new Error(res.error.message);
+
+        leases.value = res.data;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }

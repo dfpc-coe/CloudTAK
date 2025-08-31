@@ -44,6 +44,7 @@ export default class S3 {
 
             return head;
         } catch (err) {
+            console.error(`s3://${process.env.ASSET_BUCKET}/${key} - HEAD ERROR:`, err);
             throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to head file');
         }
     }
