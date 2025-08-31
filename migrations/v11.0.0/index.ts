@@ -14,9 +14,6 @@ import fsp from 'node:fs/promises';
 
 const s3 = new S3Client({});
 
-/**
- * List all keys in a bucket with optional prefix
- */
 async function* listS3Objects(
     bucket: string,
     prefix = ''
@@ -47,7 +44,7 @@ const map = new Map<string, {
     }>
 }>();
 
-async function main(bucket: string, prefix = '') {
+async function main(bucket: string, host: string) {
     const migration = fs.createWriteStream(new URL('./migration.sql', import.meta.url));
 
     migration.write('BEGIN TRANSACTION;\n');
@@ -146,4 +143,4 @@ if (!bucket || !host) {
     console.log(`Processing bucket: ${bucket}`);
 }
 
-await main(bucket);
+await main(bucket, host);
