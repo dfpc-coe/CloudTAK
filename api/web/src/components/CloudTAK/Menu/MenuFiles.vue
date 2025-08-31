@@ -39,22 +39,22 @@
                 :err='error'
             />
             <TablerNone
-                v-else-if='!list.assets.length'
-                label='Imports'
+                v-else-if='!list.items.length'
+                label='Uploaded Files'
                 :create='false'
             />
             <template v-else>
                 <div
-                    v-for='asset in list.assets'
-                    :key='asset.name'
+                    v-for='asset in list.items'
+                    :key='asset.id'
                 >
                     <div
                         class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover'
-                        @click='opened.has(asset.name) ? opened.delete(asset.name) : opened.add(asset.name)'
+                        @click='opened.has(asset.id) ? opened.delete(asset.id) : opened.add(asset.id)'
                     >
                         <div class='col-auto'>
                             <IconMapPlus
-                                v-if='asset.visualized'
+                                v-if='asset.artifacts.map(a => a.ext).includes(".pmtiles")'
                                 :size='32'
                                 stroke='1'
                             />
@@ -80,12 +80,12 @@
                     </div>
 
                     <div
-                        v-if='opened.has(asset.name)'
+                        v-if='opened.has(asset.id)'
                         class='pt-1 mx-4'
                     >
                         <div class='rounded bg-child'>
                             <div
-                                v-if='asset.visualized'
+                                v-if='asset.artifacts.map(a => a.ext).includes(".pmtiles")'
                                 class='cursor-pointer rounded-top col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
                                 @click.stop.prevent='createOverlay(asset)'
                             >
@@ -118,7 +118,7 @@
                             </div>
                             <div
                                 class='cursor-pointer col-12 hover d-flex align-items-center px-2 py-2 user-select-none'
-                                @click.stop.prevent='shareToPackage = asset.name'
+                                @click.stop.prevent='shareToPackage = asset'
                             >
                                 <IconPackage
                                     :size='32'
@@ -136,16 +136,27 @@
                         </div>
                     </div>
                 </div>
+
+                <div class='col-12 d-flex justify-content-center pt-3'>
+                    <TablerPager
+                        v-if='list.total > paging.limit'
+                        :page='paging.page'
+                        :total='list.total'
+                        :limit='paging.limit'
+                        @page='paging.page = $event'
+                    />
+                </div>
             </template>
         </template>
     </MenuTemplate>
 
     <ShareToPackage
         v-if='shareToPackage'
-        :name='shareToPackage'
+        :name='shareToPackage.name'
         :assets='[{
             type: "profile",
-            name: shareToPackage
+            id: shareToPackage.id,
+            name: shareToPackage.name
         }]'
         @close='shareToPackage = undefined'
     />
@@ -153,13 +164,14 @@
 
 <script setup lang='ts'>
 import { useRouter } from 'vue-router';
-import { ref, onMounted } from 'vue';
-import type { ProfileAsset, ProfileAssetList } from '../../../types.ts';
-import { std, stdurl } from '../../../std.ts';
+import { ref, watch, onMounted } from 'vue';
+import type { ProfileFile, ProfileFileList } from '../../../types.ts';
+import { std, stdurl, server } from '../../../std.ts';
 import {
     TablerDelete,
     TablerIconButton,
     TablerRefreshButton,
+    TablerPager,
     TablerAlert,
     TablerNone,
     TablerLoading,
@@ -184,24 +196,34 @@ const mapStore = useMapStore();
 const router = useRouter();
 const upload = ref(false)
 const opened = ref<Set<string>>(new Set());
-const shareToPackage = ref<string | undefined>();
+const shareToPackage = ref<ProfileFile | undefined>();
 const error = ref<Error | undefined>(undefined);
 const loading = ref(true);
 
-const list = ref<ProfileAssetList>({
+const list = ref<ProfileFileList>({
     total: 0,
     tiles: { url: '' },
-    assets: [],
+    items: [],
 });
+
+const paging = ref({
+    page: 0,
+    filter: '',
+    limit: 20
+})
 
 onMounted(async () => {
     await fetchList();
 });
 
-async function createOverlay(asset: ProfileAsset) {
-    if (!asset.visualized) throw new Error('Cannot add an Overlay for an asset that is not Cloud Optimized');
+watch(paging.value, async () => {
+    await fetchList();
+});
 
-    const url = stdurl(`/api/profile/asset/${encodeURIComponent(asset.visualized)}/tile`);
+async function createOverlay(asset: ProfileFile) {
+    if (!asset.artifacts.map(a => a.ext).includes(".pmtiles")) throw new Error('Cannot add an Overlay for an asset that is not Cloud Optimized');
+
+    const url = stdurl(`/api/profile/asset/${encodeURIComponent(asset.id)}.pmtiles/tile`);
 
     loading.value = true;
 
@@ -245,8 +267,8 @@ function uploadComplete(event: string) {
     router.push(`/menu/imports/${imp.imports[0].uid}`)
 }
 
-async function downloadAsset(asset: ProfileAsset) {
-    const url = stdurl(`/api/profile/asset/${asset.name}`);
+async function downloadAsset(asset: ProfileFile) {
+    const url = stdurl(`/api/profile/asset/${asset.id}.${asset.name.split('.').pop()}`);
     url.searchParams.append('token', localStorage.token);
     window.open(url, "_blank")
 }
@@ -255,16 +277,30 @@ async function fetchList() {
     try {
         loading.value = true;
         error.value = undefined;
-        list.value = await std(`/api/profile/asset`) as ProfileAssetList;
+
+        const res = await server.GET(`/api/profile/asset`, {
+            params: {
+                query: {
+                    filter: paging.value.filter,
+                    order: 'desc',
+                    sort: 'created',
+                    limit: paging.value.limit,
+                    page: paging.value.page
+                }
+            }
+        });
+        if (res.error) throw new Error(res.error.message);
+
+        list.value = res.data;
         loading.value = false;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }
 }
 
-async function deleteAsset(asset: ProfileAsset) {
+async function deleteAsset(asset: ProfileFile) {
     loading.value = true;
-    await std(`/api/profile/asset/${asset.name}`, {
+    await std(`/api/profile/asset/${asset.id}`, {
         method: 'DELETE'
     });
 

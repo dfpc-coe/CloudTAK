@@ -15,9 +15,9 @@
             :autofocus='true'
             label=''
             :error='error'
-            @update:model-value='testValidate(text)'
-            @blur='blurChange'
-            @submit='rows > 1 ? undefined : editing = false'
+            @update:model-value='validUpdate(text)'
+            @blur='validUpdate(text, { editing: true })'
+            @submit='validUpdate(text, { editing: rows > 1 ? true : false })'
         />
 
         <TablerIconButton
@@ -194,27 +194,22 @@ watch(infoboxRef, () => {
 })
 
 watch(props, () => {
-    if (text.value !== props.modelValue) {
+    if (text.value !== props.modelValue && !editing.value) {
         text.value = props.modelValue;
     }
 })
 
-function blurChange() {
-    editing.value = false;
+function validUpdate(text: string | number, opts = {
+    editing: true
+}) {
+    editing.value = opts.editing;
 
-    if (typeof props.validate === 'function' && props.validate(text.value) !== true) {
-        text.value = props.modelValue
-        emit("update:modelValue", text.value);
-    }
-}
-
-function testValidate(text: string | number) {
     if (typeof props.validate !== 'function') {
         emit("update:modelValue", text);
     } else {
         const res = props.validate(text);
 
-        if (typeof res === 'string') {
+        if (res.length) {
             error.value = res;
         } else {
             error.value = undefined;

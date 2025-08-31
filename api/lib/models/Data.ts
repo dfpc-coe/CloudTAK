@@ -19,7 +19,6 @@ export const AugmentedData = Type.Object({
     assets: Type.Array(Type.String()),
     description: Type.String(),
     connection: Type.Integer(),
-    auto_transform: Type.Boolean()
 });
 
 export default class DataModel extends Modeler<typeof Data> {
@@ -42,7 +41,6 @@ export default class DataModel extends Modeler<typeof Data> {
                 username: Data.username,
                 name: Data.name,
                 description: Data.description,
-                auto_transform: Data.auto_transform,
                 connection: Data.connection,
                 mission_sync: Data.mission_sync,
                 assets: Data.assets,

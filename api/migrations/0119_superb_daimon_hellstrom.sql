@@ -1,0 +1,2 @@
+ALTER TABLE "profile_files" ADD COLUMN "created" timestamp with time zone DEFAULT Now() NOT NULL;--> statement-breakpoint
+ALTER TABLE "profile_files" ADD COLUMN "updated" timestamp with time zone DEFAULT Now() NOT NULL;

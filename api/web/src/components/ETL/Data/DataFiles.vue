@@ -87,14 +87,6 @@
                                     displaytype='icon'
                                     @delete='deleteAsset(asset)'
                                 />
-                                <IconTransform
-                                    v-if='!asset.visualized'
-                                    v-tooltip='"Convert Asset"'
-                                    :size='32'
-                                    stroke='1'
-                                    class='cursor-pointer'
-                                    @click='initTransform(asset)'
-                                />
                                 <IconDownload
                                     v-tooltip='"Download Asset"'
                                     :size='32'
@@ -133,12 +125,6 @@
                 :compact='true'
             />
         </div>
-
-        <TransformModal
-            v-if='transform.shown'
-            :asset='transform.asset'
-            @close='initTransform'
-        />
     </div>
 </template>
 
@@ -152,9 +138,7 @@ import {
     IconMapOff,
     IconRefresh,
     IconDownload,
-    IconTransform,
 } from '@tabler/icons-vue'
-import TransformModal from './TransformModal.vue';
 import Upload from '../../util/Upload.vue';
 import {
     TablerAlert,
@@ -175,7 +159,6 @@ export default {
         IconMap,
         IconMapOff,
         IconRefresh,
-        IconTransform,
         IconRefreshDot,
         IconRefreshOff,
         IconDownload,
@@ -183,7 +166,6 @@ export default {
         TablerLoading,
         TablerBytes,
         TablerEpoch,
-        TransformModal
     },
     props: {
         data: {

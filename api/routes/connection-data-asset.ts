@@ -5,7 +5,6 @@ import busboy from 'busboy';
 import Auth, { AuthResourceAccess }  from '../lib/auth.js';
 import S3 from '../lib/aws/s3.js';
 import Stream from 'node:stream';
-import Batch from '../lib/aws/batch.js';
 import jwt from 'jsonwebtoken';
 import { includesWithGlob } from "array-includes-with-glob";
 import assetList from '../lib/asset.js';
@@ -13,7 +12,7 @@ import Config from '../lib/config.js';
 import DataMission from '../lib/data-mission.js';
 import { InferSelectModel } from 'drizzle-orm';
 import type { Data } from '../lib/schema.js';
-import { StandardResponse, AssetResponse, GenericMartiResponse } from '../lib/types.js';
+import { StandardResponse, AssetResponse } from '../lib/types.js';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 
 export default async function router(schema: Schema, config: Config) {
@@ -61,66 +60,6 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.post('/connection/:connectionid/data/:dataid/upload', {
-        private: true,
-        name: 'Internal Upload',
-        group: 'DataAssets',
-        params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 }),
-            dataid: Type.Integer({ minimum: 1 })
-        }),
-        description: 'Create an upload after the file as been processed by Event Lambda',
-        query: Type.Object({
-            name: Type.String()
-        }),
-        res: GenericMartiResponse
-    }, async (req, res) => {
-        try {
-            const { connection } = await Auth.is_connection(config, req, {
-                resources: [
-                    // Connection tokens shouldn't use this, only internal Data/Lambda Tokens
-                    { access: AuthResourceAccess.DATA, id: req.params.dataid }
-                ]
-            }, req.params.connectionid);
-
-            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
-
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(connection.auth.cert, connection.auth.key));
-
-            const data = await config.models.Data.from(req.params.dataid);
-            if (data.connection !== connection.id) throw new Err(400, null, 'Data Sync does not belong to given Connection');
-
-            const content = await api.Files.upload({
-                name: String(req.query.name),
-                contentLength: Number(req.headers['content-length']),
-                keywords: [],
-                creatorUid: `CloudTAK-Conn-${req.params.connectionid}`,
-            }, req);
-
-            // @ts-expect-error Morgan will throw an error after not getting req.ip and there not being req.connection.remoteAddress
-            req.connection = {
-                // @ts-expect-error Not in spec
-                remoteAddress: req._remoteAddress || '127.0.0.1'
-            }
-
-            try {
-                await DataMission.sync(config, data);
-            } catch (err) {
-                console.error(err)
-            }
-
-            const missionContent = await api.Mission.attachContents(data.name, {
-                hashes: [content.Hash]
-            }, {
-                token: data.mission_token || undefined
-            });
-
-            res.json(missionContent);
-        } catch (err) {
-            Err.respond(err, res);
-        }
-    });
-
     await schema.post('/connection/:connectionid/data/:dataid/asset', {
         name: 'Create Asset',
         group: 'DataAssets',
@@ -156,12 +95,14 @@ export default async function router(schema: Schema, config: Config) {
                 }
             });
 
+            let name = '';
             const assets: Promise<void>[] = [];
             bb.on('file', async (fieldname, file, blob) => {
                 try {
                     const passThrough = new Stream.PassThrough();
                     file.pipe(passThrough);
 
+                    name = blob.filename;
                     assets.push(S3.put(`data/${data.id}/${blob.filename}`, passThrough));
                 } catch (err) {
                     Err.respond(err, res);
@@ -171,6 +112,36 @@ export default async function router(schema: Schema, config: Config) {
                     if (!assets.length) throw new Err(400, null, 'No Asset Provided');
 
                     await assets[0];
+
+                    const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(connection.auth.cert, connection.auth.key));
+
+                    const data = await config.models.Data.from(req.params.dataid);
+                    if (data.connection !== connection.id) throw new Err(400, null, 'Data Sync does not belong to given Connection');
+
+                    const content = await api.Files.upload({
+                        name: name,
+                        contentLength: Number(req.headers['content-length']),
+                        keywords: [],
+                        creatorUid: `CloudTAK-Conn-${req.params.connectionid}`,
+                    }, req);
+
+                    // @ts-expect-error Morgan will throw an error after not getting req.ip and there not being req.connection.remoteAddress
+                    req.connection = {
+                        // @ts-expect-error Not in spec
+                        remoteAddress: req._remoteAddress || '127.0.0.1'
+                    }
+
+                    try {
+                        await DataMission.sync(config, data);
+                    } catch (err) {
+                        console.error(err)
+                    }
+
+                    await api.Mission.attachContents(data.name, {
+                        hashes: [content.Hash]
+                    }, {
+                        token: data.mission_token || undefined
+                    });
 
                     res.json({
                         status: 200,
@@ -182,42 +153,6 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             req.pipe(bb);
-        } catch (err) {
-            Err.respond(err, res);
-        }
-    });
-
-    await schema.post('/connection/:connectionid/data/:dataid/asset/:asset.:ext', {
-        name: 'Convert Asset',
-        group: 'DataAssets',
-        description: 'Convert Asset into a cloud native or TAK Native format automatically',
-        params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 }),
-            dataid: Type.Integer({ minimum: 1 }),
-            asset: Type.String(),
-            ext: Type.String()
-        }),
-        res: StandardResponse
-    }, async (req, res) => {
-        try {
-            const { connection } = await Auth.is_connection(config, req, {
-                resources: [
-                    { access: AuthResourceAccess.DATA, id: req.params.dataid },
-                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }
-                ]
-            }, req.params.connectionid);
-
-            if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
-
-            const data = await config.models.Data.from(req.params.dataid);
-            if (data.connection !== connection.id) throw new Err(400, null, 'Data Sync does not belong to given Connection');
-
-            await Batch.submitData(config, data, `${req.params.asset}.${req.params.ext}`);
-
-            res.json({
-                status: 200,
-                message: 'Conversion Initiated'
-            });
         } catch (err) {
             Err.respond(err, res);
         }

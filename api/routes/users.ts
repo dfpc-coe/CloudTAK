@@ -5,6 +5,7 @@ import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import { ProfileResponse } from '../lib/types.js'
 import Config from '../lib/config.js';
+import { TAKRole, TAKGroup } from '@tak-ps/node-tak/lib/api/types'
 import { Profile } from '../lib/schema.js';
 import * as Default from '../lib/limits.js';
 
@@ -17,7 +18,10 @@ export default async function router(schema: Schema, config: Config) {
             limit: Default.Limit,
             page: Default.Page,
             order: Default.Order,
-            sort: Type.Optional(Type.String({default: 'last_login', enum: Object.keys(Profile)})),
+            sort: Type.String({
+                default: 'last_login',
+                enum: Object.keys(Profile)
+            }),
             filter: Default.Filter
         }),
         res: Type.Object({
@@ -60,6 +64,12 @@ export default async function router(schema: Schema, config: Config) {
             username: Type.String(),
         }),
         body: Type.Object({
+            tak_callsign: Type.Optional(Type.String()),
+            tak_remarks: Type.Optional(Type.String()),
+            tak_group: Type.Optional(Type.Enum(TAKGroup)),
+            tak_type: Type.Optional(Type.String()),
+            tak_role: Type.Optional(Type.Enum(TAKRole)),
+
             system_admin: Type.Optional(Type.Boolean())
         }),
         res: ProfileResponse

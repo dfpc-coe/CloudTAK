@@ -209,7 +209,6 @@ export const DataListResponse = createSelectSchema(schemas.Data, {
     connection: Type.Integer(),
     assets: Type.Array(Type.String()),
     mission_groups: Type.Array(Type.String()),
-    auto_transform: Type.Boolean(),
     mission_sync: Type.Boolean({description: "Is the mission syncing with TAK Server"}),
     mission_diff: Type.Boolean({description: "Allow a single layer to diff sync with TAK"}),
 });
@@ -227,13 +226,12 @@ export const JobResponse = Type.Object({
     updated: Type.Optional(Type.Integer())
 });
 
-export const ProfileAssetResponse = Type.Object({
-    name: Type.String({ "description": "The filename of the asset" }),
-    visualized: Type.Optional(Type.String()),
-    vectorized: Type.Optional(Type.String()),
-    updated: Type.Integer(),
-    etag: Type.String({ "description": "AWS S3 generated ETag of the asset" }),
-    size: Type.Integer({ "description": "Size in bytes of the asset" })
+export const ProfileFileResponse = createSelectSchema(schemas.ProfileFile, {
+    id: Type.String(),
+    artifacts: Type.Array(Type.Object({
+        ext: Type.String(),
+        size: Type.Integer(),
+    }))
 })
 
 export const AssetResponse = Type.Object({
@@ -269,13 +267,14 @@ export const ConnectionTokenResponse = Type.Object({
 });
 
 /** Includes Token itself */
-export const CreateProfileTokenResponse = createSelectSchema(schemas.Token, {
+export const CreateProfileTokenResponse = createSelectSchema(schemas.ProfileToken, {
     id: Type.Integer(),
 });
 
 export const ProfileTokenResponse = Type.Object({
     id: Type.Integer(),
     name: Type.String(),
+    username: Type.String(),
     created: Type.String(),
     updated: Type.String(),
 });
