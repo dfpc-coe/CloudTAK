@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v11.0.0 - 2025-08-31
+
+- :tada: Entirely rewrite Events Manager to be a server service that handles file conversion of all file types via polling
+- :rocket: Remove unused `auto_transform` options from Connection Data Syncs
+- :tada: Migrate Profile File storage to be managed in the database and reference an S3 object by UUID
+- :rocket: Add Role Admin indicators to Main Menu
+
 ### v10.51.2 - 2025-08-27
 
 - :arrow_up Update node-tak
