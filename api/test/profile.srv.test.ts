@@ -89,6 +89,7 @@ test('PATCH: api/profile', async (t) => {
             display_projection: 'globe',
             display_zoom: 'conditional',
             display_text: 'Medium',
+            display_icon_rotation: true,
             system_admin: true,
             agency_admin: []
         });
