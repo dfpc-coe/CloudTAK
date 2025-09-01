@@ -413,7 +413,7 @@ export const useMapStore = defineStore('cloudtak', {
             const init: mapgl.MapOptions = {
                 container: this.container,
                 hash: true,
-                attributionControl: false,
+                attributionControl: {},
                 fadeDuration: 0,
                 zoom: this.mapConfig.zoom,
                 pitch: this.mapConfig.pitch,
@@ -466,7 +466,7 @@ export const useMapStore = defineStore('cloudtak', {
             this.zoom = profile.display_zoom;
             // Initialize icon rotation setting after overlays are loaded
             setTimeout(() => {
-                this.updateIconRotation(profile.display_icon_rotation === 'Enabled');
+                this.updateIconRotation(profile.display_icon_rotation);
             }, 100);
 
             this.distanceUnit = profile.display_distance;
@@ -693,6 +693,8 @@ export const useMapStore = defineStore('cloudtak', {
             }
 
             this.isLoaded = true;
+
+            await this.updateAttribution();
         },
         /**
          * Determine if the feature is from the CoT store or a clicked VT feature
@@ -770,44 +772,23 @@ export const useMapStore = defineStore('cloudtak', {
             const attributions: string[] = [];
 
             for (const overlay of this.overlays) {
-                if (overlay.type === 'geojson') {
-                    // Update icon rotation
-                    const iconLayerId = `${overlay.id}-icon`;
-                    if (this.map.getLayer(iconLayerId)) {
-                        this.map.setLayoutProperty(iconLayerId, 'icon-rotate', enabled ? ['get', 'course'] : 0);
-                    }
-
-                    // Update course arrow filter based on rotation setting
-                    const courseLayerId = `${overlay.id}-course`;
-                    if (this.map.getLayer(courseLayerId)) {
-                        if (enabled) {
-                            // When rotation enabled, only show course arrows for grouped features
-                            this.map.setFilter(courseLayerId, [
-                                'all',
-                                ['==', '$type', 'Point'],
-                                ['has', 'course'],
-                                ['has', 'group']
-                            ]);
-                        } else {
-                            // When rotation disabled, show course arrows for all features with course
-                            this.map.setFilter(courseLayerId, [
-                                'all',
-                                ['==', '$type', 'Point'],
-                                ['has', 'course']
-                            ]);
+                if (overlay.mode === 'basemap' && overlay.mode_id && overlay.visible) {
+                    try {
+                        const basemap = await std(`/api/basemap/${overlay.mode_id}`) as { attribution?: string };
+                        if (basemap.attribution) {
+                            attributions.push(basemap.attribution);
                         }
-                    }
-
-                    // Update text offset
-                    const textLayerId = `${overlay.id}-text-point`;
-                    if (this.map.getLayer(textLayerId)) {
-                        this.map.setLayoutProperty(textLayerId, 'text-offset', [0, enabled ? 2 : 2.5]);
+                    } catch (err) {
+                        console.warn('Failed to load basemap attribution:', err);
                     }
                 }
             }
 
-            // Force a map repaint to ensure changes are visible immediately
-            this.map.triggerRepaint();
+            // Update attribution by manipulating the DOM directly
+            const attributionContainer = document.querySelector('.maplibregl-ctrl-attrib-inner');
+            if (attributionContainer && attributions.length > 0) {
+                attributionContainer.innerHTML = attributions.join(' | ');
+            }
         },
         radialClick: async function(feat: MapGeoJSONFeature | Feature, opts: {
             lngLat: LngLat;
