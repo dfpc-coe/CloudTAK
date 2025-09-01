@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.1.0 - 2025-09-01
+
+- :rocket: Allow user to select icon rotation preferences
+
 ### v11.0.2 - 2025-08-31
 
 - :bug: Lowercase Comparison in v11 migration script
