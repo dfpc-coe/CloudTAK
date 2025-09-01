@@ -892,7 +892,6 @@ async function mountMap(): Promise<void> {
     border-left: 1px solid #fff;
     border-right: 1px solid #fff;
 }
-
 .maplibregl-ctrl-scale::before {
     background-color: transparent !important;
     border-bottom: 1px solid #000;
@@ -906,19 +905,16 @@ async function mountMap(): Promise<void> {
     right: 1px;
     bottom: 1px;
 }
-
 .maplibregl-ctrl-bottom-left {
     bottom: 0;
     left: 260px;
 }
-
 .maplibregl-ctrl-bottom-right {
     bottom: 0;
     right: 60px;
     z-index: 1 !important;
     color: black !important;
 }
-
 .maplibregl-ctrl-attrib a {
     color: black !important;
 }

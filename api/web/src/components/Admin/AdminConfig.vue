@@ -144,7 +144,7 @@
                         >
                             <TablerEnum
                                 v-model='config[display]'
-                                :label='display.replace("display::", "").replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())'
+                                :label='display.replace("display::", "") === "icon_rotation" ? "Rotate Icons with Course" : display.replace("display::", "").replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())'
                                 :options='displayUnits[display.replace("display::", "")] || []'
                                 :disabled='!edit'
                             />
@@ -367,28 +367,33 @@ async function fetch() {
     edit.value = false;
     loading.value = true;
 
-    const display = await std('/api/config/display')
-    for (const [key, value] of Object.entries(display)) {
-        displayUnits.value[key] = value.options;
-    }
-
-    const url = stdurl('/api/config')
-    url.searchParams.append('keys', Object.keys(config.value).join(','));
-    const configRes = await std(url);
-
-    for (const key of Object.keys(configRes)) {
-        if (configRes[key] === undefined) continue;
-
-        // Keep coordinate format consistent for users
-        if (key === 'map::center') {
-            configRes[key] = key.split(',').reverse().join(',');
-        } else {
-            config.value[key] = configRes[key];
+    try {
+        const display = await std('/api/config/display')
+        for (const [key, value] of Object.entries(display)) {
+            displayUnits.value[key] = value.options;
         }
-    }
 
-    for (const key of Object.keys(display)) {
-        config.value[`display::${key}`]  = display[key].value
+        const url = stdurl('/api/config')
+        url.searchParams.append('keys', Object.keys(config.value).join(','));
+        const configRes = await std(url);
+
+        for (const key of Object.keys(configRes)) {
+            if (configRes[key] === undefined) continue;
+
+            // Keep coordinate format consistent for users
+            if (key === 'map::center') {
+                config.value[key] = configRes[key].split(',').reverse().join(',');
+            } else {
+                config.value[key] = configRes[key];
+            }
+        }
+
+        for (const key of Object.keys(display)) {
+            config.value[`display::${key}`] = display[key].value;
+        }
+    } catch (error) {
+        console.error('Failed to load admin config:', error);
+        // Page will load with default values from config.value initialization
     }
 
     loading.value = false;
@@ -396,15 +401,28 @@ async function fetch() {
 
 async function postConfig() {
     loading.value = true;
-    await std(`/api/config`, {
-        method: 'PUT',
-        body: {
-            ...config.value,
-            'map::center': config.value['map::center'].split(',').reverse().join(','),
+    try {
+        await std(`/api/config`, {
+            method: 'PUT',
+            body: {
+                ...config.value,
+                'map::center': config.value['map::center'].split(',').reverse().join(','),
+            }
+        });
+        
+        // Force reload display config to clear any caching
+        const display = await std('/api/config/display');
+        for (const [key, value] of Object.entries(display)) {
+            displayUnits.value[key] = value.options;
+            config.value[`display::${key}`] = value.value;
         }
-    });
-
-    edit.value = false;
-    loading.value = false;
+        
+        edit.value = false;
+    } catch (error) {
+        console.error('Failed to save admin config:', error);
+        // Keep edit mode active so user can try again
+    } finally {
+        loading.value = false;
+    }
 }
 </script>
