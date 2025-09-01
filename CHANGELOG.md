@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.1.1 - 2025-09-01
+
+- :rocket: Fix cursor management when ending draw mode
+
 ### v11.1.0 - 2025-09-01
 
 - :rocket: Allow user to select icon rotation preferences
