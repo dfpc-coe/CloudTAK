@@ -212,8 +212,8 @@ async function createImport() {
         method: 'POST',
         body: {
             name: pkg.value.Name,
-            mode: 'Package',
-            mode_id: pkg.value.UID
+            source: 'Package',
+            source_id: pkg.value.UID
         }
     }) as Import;
 

@@ -1,7 +1,7 @@
 {
     "name": "@tak-ps/CloudTAK.api",
     "type": "module",
-    "version": "10.51.0",
+    "version": "11.0.2",
     "description": "Facilitate ETL operations to bring non-TAK sources into a TAK Server",
     "main": "index.js",
     "scripts": {
@@ -29,7 +29,6 @@
     "author": "Nick Ingalls <nick@ingalls.ca>",
     "license": "ISC",
     "dependencies": {
-        "@aws-sdk/client-batch": "^3.301.0",
         "@aws-sdk/client-cloudformation": "^3.279.0",
         "@aws-sdk/client-cloudwatch": "^3.279.0",
         "@aws-sdk/client-cloudwatch-logs": "^3.423.0",
@@ -44,13 +43,13 @@
         "@maplibre/maplibre-gl-style-spec": "^23.0.0",
         "@openaddresses/batch-error": "^2.1.4",
         "@openaddresses/batch-generic": "^24.9.0",
-        "@openaddresses/batch-schema": "^10.15.0",
+        "@openaddresses/batch-schema": "^10.17.1",
         "@openaddresses/cloudfriend": "^7.0.0",
         "@sinclair/typebox": "^0.34.0",
         "@tak-ps/etl": "^9.14.0",
         "@tak-ps/geojson-vt": "^4.2.0",
         "@tak-ps/node-cot": "^14.2.2",
-        "@tak-ps/node-tak": "^11.0.0",
+        "@tak-ps/node-tak": "^11.2.2",
         "@turf/bbox": "^7.1.0",
         "@turf/bbox-polygon": "^7.2.0",
         "@turf/meta": "^7.0.0",

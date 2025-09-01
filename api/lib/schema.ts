@@ -10,6 +10,7 @@ import { TAKGroup, TAKRole } from  '@tak-ps/node-tak/lib/api/types';
 import { Layer_Config } from './models/Layer.js';
 import {
     Layer_Priority,
+    Import_Status,
     Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Text, Profile_Projection, Profile_Zoom,
     Basemap_Type, Basemap_Format, Basemap_Scheme, VideoLease_SourceType, BasicGeometryType
 } from  './enums.js';
@@ -70,6 +71,20 @@ export const Profile = pgTable('profile', {
     display_text: text().$type<Profile_Text>().notNull().default(Profile_Text.Medium),
     system_admin: boolean().notNull().default(false),
     agency_admin: json().notNull().$type<Array<number>>().default([])
+});
+
+export const ProfileFile = pgTable('profile_files', {
+    id: uuid().primaryKey().default(sql`gen_random_uuid()`),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    username: text().notNull().references(() => Profile.username),
+    path: text().notNull().default('/'),
+    name: text().notNull(),
+    size: integer().notNull(),
+    artifacts: json().$type<Array<{
+        ext: string;
+        size: number;
+    }>>().notNull().default([]),
 });
 
 export const ProfileChat = pgTable('profile_chats', {
@@ -182,13 +197,12 @@ export const Import = pgTable('imports', {
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     name: text().notNull(),
-    status: text().notNull().default('Pending'),
+    status: text().notNull().default(Import_Status.PENDING),
     error: text(),
-    batch: text(),
     result: json().notNull().default({}),
     username: text().notNull().references(() => Profile.username),
-    mode: text().notNull().default('Unknown'),
-    mode_id: text(),
+    source: text().notNull().default('Upload'),
+    source_id: text(),
     config: json().notNull().default({})
 });
 
@@ -261,7 +275,6 @@ export const Data = pgTable('data', {
     username: text().references(() => Profile.username),
     name: text().notNull(),
     description: text().notNull().default(''),
-    auto_transform: boolean().notNull().default(false),
     mission_sync: boolean().notNull().default(false),
     mission_diff: boolean().notNull().default(false),
     mission_role: text().notNull().default('MISSION_SUBSCRIBER'),
@@ -355,15 +368,6 @@ export const Server = pgTable('server', {
     webtak: text().notNull().default(''),
 });
 
-export const Token = pgTable('tokens', {
-    id: serial().notNull(),
-    email: text().notNull(),
-    name: text().notNull(),
-    token: text().primaryKey(),
-    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-});
-
 export const ConnectionToken = pgTable('connection_tokens', {
     id: serial().notNull(),
     connection: integer().notNull().references(() => Connection.id),
@@ -385,6 +389,16 @@ export const ProfileFusionSource = pgTable('profile_fusion', {
     fusion: integer().notNull().references(() => FusionType.id),
     value: json().$type<Record<string, string>>().notNull().default({}),
 });
+
+export const ProfileToken = pgTable('profile_tokens', {
+    id: serial().notNull(),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    username: text().notNull().references(() => Profile.username),
+    name: text().notNull(),
+    token: text().primaryKey(),
+});
+
 
 export const ProfileInterest = pgTable('profile_interests', {
     id: serial().primaryKey(),

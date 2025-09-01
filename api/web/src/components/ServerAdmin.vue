@@ -112,6 +112,27 @@
                                                 role='menuitem'
                                                 class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
                                                 :class='{
+                                                    "active": String(route.name).startsWith("admin-import"),
+                                                    "cursor-pointer": !String(route.name).startsWith("admin-import")
+                                                }'
+                                                @keyup.enter='router.push(`/admin/import`)'
+                                                @click='router.push(`/admin/import`)'
+                                            >
+                                                <IconFileImport
+                                                    v-tooltip='nest ? "User Imports" : false'
+                                                    :size='32'
+                                                    stroke='1'
+                                                />
+                                                <span
+                                                    v-if='!nest'
+                                                    class='mx-3'
+                                                >User Imports</span>
+                                            </span>
+                                            <span
+                                                tabindex='0'
+                                                role='menuitem'
+                                                class='list-group-item list-group-item-action d-flex align-items-center user-select-none'
+                                                :class='{
                                                     "active": String(route.name).includes("admin-overlays"),
                                                     "cursor-pointer": !String(route.name).includes("admin-overlays")
                                                 }'
@@ -336,6 +357,7 @@ import {
     IconNetwork,
     IconVideo,
     IconUsers,
+    IconFileImport,
     IconSettings,
     IconServer,
     IconDatabase,

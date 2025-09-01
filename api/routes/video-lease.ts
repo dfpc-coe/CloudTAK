@@ -190,7 +190,10 @@ export default async function router(schema: Schema, config: Config) {
             limit: Default.Limit,
             page: Default.Page,
             order: Default.Order,
-            sort: Type.Optional(Type.String({ default: 'created', enum: Object.keys(VideoLease) })),
+            sort: Type.String({
+                default: 'created',
+                enum: Object.keys(VideoLease)
+            }),
             expired: Type.Enum(AllBoolean, {
                 default: AllBoolean.FALSE
             }),

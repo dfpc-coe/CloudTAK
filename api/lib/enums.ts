@@ -18,6 +18,14 @@ export class toEnum {
     }
 }
 
+export enum Import_Status {
+    EMPTY = 'Empty',
+    PENDING = 'Pending',
+    RUNNING = 'Running',
+    SUCCESS = 'Success',
+    FAIL = 'Fail',
+}
+
 export enum AllBoolean {
     TRUE = 'true',
     FALSE = 'false',
