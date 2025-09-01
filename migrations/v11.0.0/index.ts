@@ -120,7 +120,7 @@ async function main(bucket: string, host: string) {
             WHERE
                 Starts_With(url, '/api/profile/asset/')
                 AND profile_files.username = profile_overlays.username
-                AND REGEXP_REPLACE(profile_files.name, '\.[^.]+$', '') = decode_url_part(Replace(Replace(url, '/api/profile/asset/', ''), '.pmtiles/tile', ''));
+                AND LOWER(REGEXP_REPLACE(profile_files.name, '\.[^.]+$', '')) = LOWER(decode_url_part(Replace(Replace(url, '/api/profile/asset/', ''), '.pmtiles/tile', '')));
     `)
 
     migration.write(`DROP FUNCTION IF EXISTS decode_url_part(varchar);\n`);
