@@ -5,7 +5,7 @@ import ProfileControl, { DefaultUnits } from '../lib/control/profile.js';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import {
-    Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Text, Profile_Projection, Profile_Zoom, Profile_IconRotation,
+    Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance, Profile_Text, Profile_Projection, Profile_Zoom
 } from '../lib/enums.js'
 import Config from '../lib/config.js';
 
