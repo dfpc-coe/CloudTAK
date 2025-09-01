@@ -82,6 +82,13 @@
                         ]'
                     />
                 </div>
+                <div class='col-12'>
+                    <TablerEnum
+                        v-model='profile.display_icon_rotation'
+                        label='Rotate Icons with Course'
+                        :options='[true, false]'
+                    />
+                </div>
                 <div class='col-12 d-flex py-3'>
                     <div class='ms-auto'>
                         <button
@@ -122,10 +129,16 @@ async function updateProfile() {
     if (!profile.value) return;
 
     await mapStore.worker.profile.update(toRaw(profile.value));
-    
+
     // Update distance unit
     mapStore.updateDistanceUnit(profile.value.display_distance);
- 
+
+    // Immediately update icon rotation to avoid requiring page reload
+    mapStore.updateIconRotation(profile.value.display_icon_rotation as unknown as boolean);
+
+    // Refresh profile data to reflect persisted changes
+    profile.value = await mapStore.worker.profile.load();
+
     router.push("/menu/settings");
 }
 </script>
