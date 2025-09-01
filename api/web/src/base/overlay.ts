@@ -417,10 +417,19 @@ export default class Overlay {
         });
 
         await this.save();
+
+        
+        // Update attribution if this is a basemap
+        if (this.mode === 'basemap') {
+            const mapStore = useMapStore();
+            await mapStore.updateAttribution();
+        }
     }
 
     async delete(): Promise<void> {
         this._destroyed = true;
+
+        const wasBasemap = this.mode === 'basemap';
 
         this.remove();
 
@@ -430,6 +439,12 @@ export default class Overlay {
             await std(`/api/profile/overlay?id=${this.id}`, {
                 method: 'DELETE'
             });
+        }
+
+        // Update attribution if this was a basemap
+        if (wasBasemap) {
+            const mapStore = useMapStore();
+            await mapStore.updateAttribution();
         }
     }
 
@@ -454,6 +469,11 @@ export default class Overlay {
             for (const l of this.styles) {
                 mapStore.map.setLayoutProperty(l.id, 'visibility', this.visible ? 'visible' : 'none');
             }
+        }
+
+        // Update attribution if this is a basemap
+        if (this.mode === 'basemap') {
+            await mapStore.updateAttribution();
         }
 
         if (body.pos !== undefined) {
