@@ -619,6 +619,8 @@ export default class AtlasDatabase {
                     geometry: feat.geometry
                 }, { skipSave: opts.skipSave })
             } else {
+                const wasNewCoT = !this.cots.has(feat.id);
+
                 exists = new COT(this.atlas, feat, {
                     mode: OriginMode.CONNECTION
                 }, opts);
@@ -628,10 +630,24 @@ export default class AtlasDatabase {
                         type: WorkerMessageType.Feature_Archived_Added,
                     });
                 }
-            }
-
-            if (exists.is_skittle) {
-                await this.atlas.team.set(exists);
+                
+                if (exists.is_skittle) {
+                    const isNewContact = !this.atlas.team.contacts.has(exists.id);
+                    await this.atlas.team.set(exists);
+                    
+                    // Only notify for truly new contacts coming online via WebSocket (new CoT + new contact)
+                    if (isNewContact && wasNewCoT && this.atlas.profile.uid() !== exists.id && !opts.skipBroadcast) {
+                        this.atlas.postMessage({
+                            type: WorkerMessageType.Notification,
+                            body: {
+                                type: 'Contact',
+                                name: `${exists.properties.callsign} Online`,
+                                body: '',
+                                url: `/cot/${exists.id}`
+                            }
+                        });
+                    }
+                }
             }
 
             return exists;
@@ -675,6 +691,28 @@ export default class AtlasDatabase {
      */
     has(id: string): boolean {
         return this.cots.has(id);
+    }
+
+    /**
+     * Return all CoTs as an array (serializable across worker boundary)
+     */
+    async list(): Promise<Array<{ id: string, properties: Feature['properties'], geometry: Feature['geometry'], is_skittle: boolean }>> {
+        return Array.from(this.cots.values()).map(cot => ({
+            id: cot.id,
+            properties: cot.properties,
+            geometry: cot.geometry,
+            is_skittle: cot.is_skittle
+        }));
+    }
+
+    /**
+     * Fly to a CoT by ID
+     */
+    async flyTo(id: string): Promise<void> {
+        const cot = this.get(id);
+        if (cot) {
+            await cot.flyTo();
+        }
     }
 
     groups(store?: Map<string, COT>): Array<string> {

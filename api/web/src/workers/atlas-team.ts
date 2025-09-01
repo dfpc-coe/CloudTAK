@@ -40,19 +40,10 @@ export default class AtlasTeam {
 
             this.contacts.set(cot.id, contact);
 
-            this.atlas.postMessage({
-                type: WorkerMessageType.Contact_Change
-            });
-
+            // Only trigger Contact_Change for truly new contacts, not self
             if (this.atlas.profile.uid() !== cot.id) {
                 this.atlas.postMessage({
-                    type: WorkerMessageType.Notification,
-                    body: {
-                        type: 'Contact',
-                        name: `${cot.properties.callsign} Online`,
-                        body: '',
-                        url: `/cot/${cot.id}`
-                    }
+                    type: WorkerMessageType.Contact_Change
                 });
             }
 
@@ -64,19 +55,24 @@ export default class AtlasTeam {
         return this.contacts.get(uid);
     }
 
-    async load(): Promise<Map<string, Contact>> {
-        const url = stdurl('/api/marti/api/contacts/all');
-        const contacts = await std(url, {
-            token: this.atlas.token
-        }) as ContactList;
+    async load(): Promise<Contact[]> {
+        try {
+            const url = stdurl('/api/marti/api/contacts/all');
+            const contacts = await std(url, {
+                token: this.atlas.token
+            }) as ContactList;
 
-        this.contacts.clear();
+            this.contacts.clear();
 
-        for (const contact of contacts) {
-            if (!contact.uid) continue;
-            this.contacts.set(contact.uid, contact);
+            for (const contact of contacts) {
+                if (!contact.uid) continue;
+                this.contacts.set(contact.uid, contact);
+            }
+        } catch (err) {
+            console.warn('Failed to load contacts from TAK server:', err);
+            // Continue with empty contacts list rather than failing completely
         }
 
-        return this.contacts;
+        return Array.from(this.contacts.values());
     }
 }
