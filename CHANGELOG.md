@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.0.2 - 2025-08-31
+
+- :bug: Lowercase Comparison in v11 migration script
+
 ### v11.0.1 - 2025-08-31
 
 - :rocket: Pass the host url as a fn param in the v11 migration script
