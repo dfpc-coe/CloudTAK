@@ -3,10 +3,9 @@ import Media from './lib/media.js';
 import S3 from './lib/s3.js';
 import API from './lib/api.js';
 import KMS from './lib/kms.js';
-import Batch from './lib/batch.js';
 import DB from './lib/db.js';
-import Events from './lib/events.js';
 import Signing from './lib/signing.js';
+import Events from './lib/events.js';
 import PMTiles from './lib/pmtiles.js';
 import Alarms from './lib/alarms.js';
 import {
@@ -15,7 +14,7 @@ import {
 } from '@openaddresses/batch-alarms';
 
 export default cf.merge(
-    S3, DB, API, KMS, Batch, Signing, Alarms, PMTiles, Events, Media,
+    S3, DB, API, KMS, Signing, Alarms, PMTiles, Events, Media,
     {
         Description: 'Template for @tak-ps/etl',
         Parameters: {

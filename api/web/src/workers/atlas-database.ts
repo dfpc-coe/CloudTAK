@@ -161,6 +161,12 @@ export default class AtlasDatabase {
         for (const cot of this.cots.values()) {
             coordEach(cot.geometry, (coord) => {
                 const min = coord.slice(0, 2) as [number, number];
+
+                // Don't Send Invalid Coords
+                if (coord[0] < -90 || coord[0] > 90 || coord[1] < -180 || coord[1] > 180) {
+                    return;
+                }
+
                 if (bounds.contains(min as LngLatLike)) {
                     coords.add(min);
                 }

@@ -1,5 +1,6 @@
 import Err from '@openaddresses/batch-error';
-import ImportControl, { ImportModeEnum }  from './control/import.js';
+import path from 'node:path';
+import ImportControl, { ImportSourceEnum }  from './control/import.js';
 import Sinks from './sinks.js';
 import Config from './config.js';
 import { randomUUID } from 'node:crypto';
@@ -149,11 +150,15 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                         } else if (conn instanceof ProfileConnConfig && feat.properties.fileshare) {
                             const file = new URL(feat.properties.fileshare.senderUrl);
 
+                            let name = feat.properties.fileshare.name;
+                            const { ext } = path.parse(name);
+                            if (!ext) name = name + '.zip'
+
                             await this.importControl.create({
                                 username: String(conn.id),
-                                name: feat.properties.fileshare.name,
-                                mode: ImportModeEnum.PACKAGE,
-                                mode_id: file.searchParams.get('hash') || undefined
+                                name,
+                                source: ImportSourceEnum.PACKAGE,
+                                source_id: file.searchParams.get('hash') || undefined
                             })
                         }
                     } catch (err) {

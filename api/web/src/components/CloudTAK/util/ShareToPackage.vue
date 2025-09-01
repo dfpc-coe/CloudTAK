@@ -113,6 +113,7 @@ const props = defineProps({
     assets: {
         type: Array as PropType<Array<{
             type: string;
+            id: number | string;
             name: string;
         }>>,
         default: () => []

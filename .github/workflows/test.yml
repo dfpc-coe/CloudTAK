@@ -15,24 +15,6 @@ permissions:
   contents: read
 
 jobs:
-  data:
-    if: github.event.pull_request.draft == false
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{github.event.pull_request.head.sha || github.sha}}
-
-      - name: Docker Data Task Build
-        run: docker buildx build ./tasks/data -t cloudtak-data
-
-      - name: Docker Data Task Lint
-        run: docker run cloudtak-data:latest npm run lint
-
-      - name: Docker Data Task Test
-        run: docker run cloudtak-data:latest npm run test
-
   events:
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
@@ -42,22 +24,17 @@ jobs:
         with:
           ref: ${{github.event.pull_request.head.sha || github.sha}}
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          registry-url: https://registry.npmjs.org/
+      - name: Docker Build Events
+        run: docker compose build events
 
-      - name: Install
-        working-directory: ./tasks/events/
-        run: npm install
+      - name: Docker Events Lint
+        run: docker run cloudtak-events:latest sh -c "npm install --include=dev && npm run lint"
 
-      - name: Lint
-        working-directory: ./tasks/events/
-        run: npm run lint
+      - name: Docker Events Check
+        run: docker run cloudtak-events:latest sh -c "npm install --include=dev && npm run check"
 
-      - name: Check
-        working-directory: ./tasks/events/
-        run: npm run check
+      - name: Docker Events Test
+        run: docker run cloudtak-events:latest sh -c "npm install --include=dev && npm run test"
 
   pmtiles:
     if: github.event.pull_request.draft == false

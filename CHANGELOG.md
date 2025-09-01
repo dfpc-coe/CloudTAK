@@ -12,6 +12,31 @@
 
 ### Pending Release
 
+### v11.0.2 - 2025-08-31
+
+- :bug: Lowercase Comparison in v11 migration script
+
+### v11.0.1 - 2025-08-31
+
+- :rocket: Pass the host url as a fn param in the v11 migration script
+
+### v11.0.0 - 2025-08-31
+
+Note: The v11.0.0 migration script must be run after deploying and the resultant migration.sql file applied to the database
+
+- :tada: Entirely rewrite Events Manager to be a server service that handles file conversion of all file types via polling
+- :rocket: Remove unused `auto_transform` options from Connection Data Syncs
+- :tada: Migrate Profile File storage to be managed in the database and reference an S3 object by UUID
+- :rocket: Add Role Admin indicators to Main Menu
+
+### v10.51.2 - 2025-08-27
+
+- :arrow_up Update node-tak
+
+### v10.51.1 - 2025-08-27
+
+- :arrow_up Update node-tak
+
 ### v10.51.0 - 2025-08-24
 
 - :bug: Always report SA location to TAK Server to ensure inclusion in contacts list

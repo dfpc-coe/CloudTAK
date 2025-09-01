@@ -1,23 +1,42 @@
+import createClient from "openapi-fetch";
+import type { Middleware } from "openapi-fetch";
+import type { paths } from './derived-types.js'
 import type { APIError } from './types.js'
 import type { Router } from 'vue-router'
+
+
+// Allow serving through Vue for hotloading
+// Disable if serving over 5000 as that's likely a docker compose install
+const baseUrl = new URL(process.env.API_URL || self.location.origin);
+if (
+    baseUrl.hostname === 'localhost'
+    && baseUrl.port !== '5000'
+) baseUrl.port = '5001'
+
+export const server = createClient<paths>({ baseUrl: String(baseUrl) });
+
+const AuthMiddleware: Middleware = {
+    async onRequest({ request }) {
+        if (!isWebWorker() && localStorage.token) {
+            request.headers.set("Authorization", `Bearer ${localStorage.token}`);
+        }
+
+        return request;
+    }
+};
+
+server.use(AuthMiddleware);
 
 export function stdurl(url: string | URL): URL {
     try {
         url = new URL(url);
     } catch (err) {
         if (err instanceof TypeError) {
-            url = new URL((process.env.API_URL || self.location.origin) + url);
+            url = new URL(String(baseUrl).replace(/\/$/, '') + url);
         } else {
             throw err;
         }
     }
-
-    // Allow serving through Vue for hotloading
-    // Disable if serving over 5000 as that's likely a docker compose install
-    if (
-        url.hostname === 'localhost'
-        && url.port !== '5000'
-    ) url.port = '5001'
 
     return url;
 }

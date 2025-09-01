@@ -57,18 +57,34 @@ export default async function router(schema: Schema, config: Config) {
         try {
             await Auth.is_auth(config, req);
 
-            const type = req.params.type.replace(/a-.-/, `a-.-`);
+            const split = req.params.type.split('-');
 
-            const info = types.cots.get(type);
+            if (split[0] === 'a' && split[1]) {
+                const info = types.cots.get(req.params.type.replace(/a-.-/, `a-.-`));
 
-            if (!info) {
-                res.json({
-                    cot: req.params.type,
-                    full: req.params.type,
-                    desc: 'Unknown CoT Type'
-                })
+                if (!info) {
+                    res.json({
+                        cot: req.params.type,
+                        full: req.params.type,
+                        desc: 'Unknown CoT Type'
+                    })
+                } else {
+                    info.cot = req.params.type.replace('-.-', `-${split[1]}-`);
+
+                    res.json(info);
+                }
             } else {
-                res.json(info);
+                const info = types.cots.get(req.params.type);
+
+                if (!info) {
+                    res.json({
+                        cot: req.params.type,
+                        full: req.params.type,
+                        desc: 'Unknown CoT Type'
+                    })
+                } else {
+                    res.json(info);
+                }
             }
         } catch (err) {
              Err.respond(err, res);
