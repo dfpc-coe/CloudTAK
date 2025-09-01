@@ -247,8 +247,11 @@ export default class DrawTool {
 
     async stop(): Promise<void> {
         this.mode = DrawToolMode.STATIC;
-        this.draw.stop();
 
+        // Reset cursor to default BEFORE stopping draw operations
+        this.mapStore.map.getCanvas().style.cursor = '';
+
+        this.draw.stop();
         this.snapping.clear()
 
         if (this.editing) {
