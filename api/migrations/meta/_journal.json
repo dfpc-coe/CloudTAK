@@ -862,6 +862,13 @@
       "when": 1756165886580,
       "tag": "0122_tiny_silvermane",
       "breakpoints": true
+    },
+    {
+      "idx": 123,
+      "version": "7",
+      "when": 1756738590883,
+      "tag": "0123_far_cassandra_nova",
+      "breakpoints": true
     }
   ]
 }
