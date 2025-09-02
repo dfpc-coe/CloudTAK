@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.2.0 - 2025-09-02
+
+- :rocket: Use centralized S3 Client generator for Docker Context
+
 ### v11.1.1 - 2025-09-01
 
 - :rocket: Fix cursor management when ending draw mode
