@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.2.4 - 2025-09-02
+
+- :rocket: Mirror 256mb Layer Default from DB to API Schema
+
 ### v11.2.3 - 2025-09-02
 
 - :rocket: Move to a more intuitive icon for 3d
