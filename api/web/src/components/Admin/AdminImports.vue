@@ -128,7 +128,7 @@ const header = ref<Array<Header>>([]);
 
 const paging = ref({
     filter: '',
-    sort: 'name',
+    sort: 'created',
     order: 'desc',
     limit: 100,
     page: 0
