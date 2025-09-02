@@ -141,7 +141,7 @@ async function share() {
             // FileShare is manually generated and won't exist in CoT Store
             return f;
         } else {
-            const feat = await mapStore.worker.db.get(f.id, {
+            const feat = await mapStore.worker.db.get(f.properties.id || f.id, {
                 mission: true
             });
             console.error(feat);
@@ -161,7 +161,7 @@ async function share() {
                 assets: props.assets,
                 features: feats.map((f) => {
                     f = JSON.parse(JSON.stringify(f));
-                    return { id: f.id || f.properties.id, type: f.type, properties: f.properties, geometry: f.geometry }
+                    return { id: f.properties.id || f.id, type: f.type, properties: f.properties, geometry: f.geometry }
                 })
             }
         }) as Content;

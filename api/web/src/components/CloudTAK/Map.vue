@@ -827,7 +827,8 @@ async function handleRadial(event: string): Promise<void> {
             router.push('/');
         }
 
-        await mapStore.worker.db.remove(String(cot.id || cot.properties.id), {
+        console.error(cot, cot.id);
+        await mapStore.worker.db.remove(String(cot.properties.id || cot.id), {
             mission: true
         })
 
