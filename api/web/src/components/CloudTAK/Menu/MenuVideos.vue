@@ -58,7 +58,7 @@
                     v-tooltip='"Video Connections"'
                     :size='32'
                     stroke='1'
-                /></label>
+                /><span class='ms-2'>Streams</span></label>
 
                 <input
                     id='lease'
@@ -77,7 +77,7 @@
                     v-tooltip='"Video Leases"'
                     :size='32'
                     stroke='1'
-                /></label>
+                /><span class='ms-2'>Leases</span></label>
             </div>
 
             <template v-if='mode === "connections"'>
