@@ -176,7 +176,7 @@ export default async function router(schema: Schema, config: Config) {
                 description: 'Enable Logging for this Layer'
             }),
             memory: Type.Integer({
-                default: 128,
+                default: 256,
                 description: 'Memory in MB for this Layer',
                 minimum: 128,
                 maximum: 10240
