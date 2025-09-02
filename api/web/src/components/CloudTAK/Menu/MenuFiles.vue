@@ -289,6 +289,7 @@ async function fetchList() {
                 }
             }
         });
+
         if (res.error) throw new Error(res.error.message);
 
         list.value = res.data;

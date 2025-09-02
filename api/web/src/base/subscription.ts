@@ -116,7 +116,19 @@ export default class Subscription {
         await this._atlas.conn.sendCOT(feat);
     }
 
-    async deleteFeature(uid: string): Promise<void> {
+    /**
+     * Delete a feature from the mission.
+     *
+     * @param uid - The unique ID of the feature to delete
+     * @param opts - Options for deleting the feature
+     * @param opts.skipNetwork - If true, the feature will not be deleted from the server - IE in response to a Mission Change event
+     */
+    async deleteFeature(
+        uid: string,
+        opts: {
+            skipNetwork?: boolean
+        } = {}
+    ): Promise<void> {
         if (this._remote) return;
 
         this.cots.delete(uid);
@@ -125,12 +137,14 @@ export default class Subscription {
 
         const atlas = this._atlas as Atlas;
 
-        const url = stdurl(`/api/marti/missions/${this.meta.guid}/cot/${uid}`);
-        await std(url, {
-            method: 'DELETE',
-            headers: Subscription.headers(this.token),
-            token:  atlas.token
-        })
+        if (!opts.skipNetwork) {
+            const url = stdurl(`/api/marti/missions/${this.meta.guid}/cot/${uid}`);
+            await std(url, {
+                method: 'DELETE',
+                headers: Subscription.headers(this.token),
+                token:  atlas.token
+            })
+        }
     }
 
     async updateLogs(): Promise<void> {
