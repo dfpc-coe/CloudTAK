@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.2.3 - 2025-09-02
+
+- :rocket: Move to a more intuitive icon for 3d
+
 ### v11.2.2 - 2025-09-02
 
 - :rocket: Always surface Video Lease & Video Stream Creation buttons
