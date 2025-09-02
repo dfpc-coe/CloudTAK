@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import jwt from 'jsonwebtoken';
 import type { Message, LocalMessage, Asset } from './types.ts';
-import S3 from '@aws-sdk/client-s3';
+import s3client from './s3.ts'
 import { Upload } from '@aws-sdk/lib-storage';
 import path from 'node:path';
 import cp from 'node:child_process';
@@ -41,7 +41,7 @@ export default class DataTransform {
     }
 
     async run() {
-        const s3 = new S3.S3Client({ region: process.env.AWS_REGION || 'us-east-1' });
+        const s3 = s3client();
 
         if (!formats.has(this.local.ext)) {
             throw new Error('Unsupported Input Format');
