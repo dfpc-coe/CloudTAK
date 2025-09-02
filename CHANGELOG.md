@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.2.1 - 2025-09-02
+
+- :rocket: Add text to Video Menu Mode Selector Buttons
+
 ### v11.2.0 - 2025-09-02
 
 - :rocket: Use centralized S3 Client generator for Docker Context
