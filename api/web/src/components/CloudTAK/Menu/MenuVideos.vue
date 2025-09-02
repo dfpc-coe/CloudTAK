@@ -4,33 +4,33 @@
         :loading='loading.main'
     >
         <template #buttons>
-            <template v-if='mode === "lease"'>
-                <TablerIconButton
-                    title='Get Lease'
-                    @click='lease={}'
-                >
-                    <IconPlus
-                        :size='32'
-                        stroke='1'
-                    />
-                </TablerIconButton>
+            <TablerIconButton
+                title='Publish Video Stream'
+                @click='router.push(`/menu/videos/remote/new`)'
+            >
+                <IconVideoPlus
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
 
+            <TablerIconButton
+                title='Get Lease'
+                @click='lease={}'
+            >
+                <IconPlus
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
+
+            <template v-if='mode === "lease"'>
                 <TablerRefreshButton
                     :loading='loading.main'
                     @click='fetchLeases'
                 />
             </template>
             <template v-else>
-                <TablerIconButton
-                    title='Publish Video Stream'
-                    @click='router.push(`/menu/videos/remote/new`)'
-                >
-                    <IconPlus
-                        :size='32'
-                        stroke='1'
-                    />
-                </TablerIconButton>
-
                 <TablerRefreshButton
                     :loading='loading.main'
                     @click='fetchConnections'
@@ -250,6 +250,7 @@ import {
     IconVideo,
     IconPencil,
     IconServer2,
+    IconVideoPlus,
 } from '@tabler/icons-vue';
 
 import { ref, watch, onMounted } from 'vue'
