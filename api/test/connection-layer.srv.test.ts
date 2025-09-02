@@ -105,7 +105,7 @@ test('POST: api/connection/1/layer', async (t) => {
              task: 'etl-test-v1.0.0',
              template: false,
              connection: 1,
-             memory: 128,
+             memory: 256,
              timeout: 120,
              parent: {
                  id: 1,
@@ -154,7 +154,7 @@ test('GET: api/connection/1/layer/1', async (t) => {
              task: 'etl-test-v1.0.0',
              template: false,
              connection: 1,
-             memory: 128,
+             memory: 256,
              timeout: 120,
              parent: {
                  id: 1,
