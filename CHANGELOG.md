@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.2.2 - 2025-09-02
+
+- :rocket: Always surface Video Lease & Video Stream Creation buttons
+
 ### v11.2.1 - 2025-09-02
 
 - :rocket: Add text to Video Menu Mode Selector Buttons
