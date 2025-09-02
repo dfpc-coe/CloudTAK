@@ -4,7 +4,7 @@ import { NodeHttpHandler } from "@aws-sdk/node-http-handler";
 export default function s3client(): S3.S3Client {
     // the region should default to the same one as the function
     const s3config: S3.S3ClientConfig = {
-        region: process.env.AWS_REGION,
+        region: process.env.AWS_REGION || 'us-east-1',
         requestHandler: new NodeHttpHandler({
             connectionTimeout: 500,
             socketTimeout: 500,
