@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v11.3.0 - 2025-09-02
+
+- :bug: Wire up the Impersonation feature in the Imports API
+- :bug: Fix recursion bug where deleting a CoT from a Mission would result in a Change Task which would then make an API call to delete the CoT from the mission, etc, etc, etc.
+
 ### v11.2.4 - 2025-09-02
 
 - :rocket: Mirror 256mb Layer Default from DB to API Schema
