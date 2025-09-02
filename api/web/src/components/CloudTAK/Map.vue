@@ -296,7 +296,8 @@
                         />
                     </div>
 
-                    <Icon3dCubeSphere
+                    <IconMountain
+                        v-if='mapStore.hasTerrain'
                         v-tooltip='mapStore.isTerrainEnabled ? "Disable 3D Terrain" : "Enable 3D Terrain"'
                         role='button'
                         tabindex='0'
@@ -488,7 +489,7 @@ import {
     IconBell,
     IconAngle,
     IconCircleArrowUp,
-    Icon3dCubeSphere,
+    IconMountain,
 } from '@tabler/icons-vue';
 import SelectFeats from './util/SelectFeats.vue';
 import MultipleSelect from './util/MultipleSelect.vue';
