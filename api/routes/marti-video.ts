@@ -5,7 +5,8 @@ import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import {
     VideoConnection,
-    VideoConnectionInput,
+    VideoConnectionCreateInput,
+    VideoConnectionUpdateInput,
     VideoConnectionList,
     VideoConnectionListInput,
 } from '@tak-ps/node-tak/lib/api/video';
@@ -61,7 +62,7 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Create Video',
         group: 'MartiVideos',
         description: 'Helper API to create video streams',
-        body: VideoConnectionInput,
+        body: VideoConnectionCreateInput,
         res: VideoConnection
     }, async (req, res) => {
         try {
@@ -84,7 +85,7 @@ export default async function router(schema: Schema, config: Config) {
         params: Type.Object({
             uid: Type.String()
         }),
-        body: VideoConnectionInput,
+        body: VideoConnectionUpdateInput,
         res: VideoConnection
     }, async (req, res) => {
         try {

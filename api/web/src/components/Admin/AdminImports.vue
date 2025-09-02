@@ -107,8 +107,8 @@
 
 <script setup lang='ts'>
 import { ref, watch, onMounted } from 'vue';
-import { std, stdurl } from '../../../src/std.ts';
-import type { Import, ImportList } from '../../../src/types.ts';
+import { std, server } from '../../std.ts';
+import type { Import, ImportList } from '../../types.ts';
 import StatusDot from '../util/StatusDot.vue';
 import TableHeader from '../util/TableHeader.vue'
 import TableFooter from '../util/TableFooter.vue'
@@ -128,8 +128,8 @@ const header = ref<Array<Header>>([]);
 
 const paging = ref({
     filter: '',
-    sort: 'name',
-    order: 'asc',
+    sort: 'created',
+    order: 'desc',
     limit: 100,
     page: 0
 });
@@ -151,7 +151,7 @@ onMounted(async () => {
 async function listImportSchema() {
     const schema = await std('/api/schema?method=GET&url=/import');
 
-    const defaults: Array<keyof Import> = ['username', 'name'];
+    const defaults: Array<keyof Import> = ['username', 'updated', 'name'];
     header.value = defaults.map((h) => {
         return { name: h, display: true };
     });
@@ -172,12 +172,26 @@ async function listImportSchema() {
 
 async function fetchList() {
     loading.value = true;
-    const url = stdurl('/api/import');
 
-    url.searchParams.append('filter', paging.value.filter);
-    url.searchParams.append('limit', String(paging.value.limit));
-    url.searchParams.append('page', String(paging.value.page));
-    list.value = await std(url) as ImportList;
+    const res = await server.GET('/api/import', {
+        params: {
+            query: {
+                impersonate: true,
+                filter: paging.value.filter,
+                // @ts-expect-error - Sort should be string list, not string
+                sort: paging.value.sort,
+                // @ts-expect-error - Order should be string list, not string
+                order: paging.value.order,
+                limit: paging.value.limit,
+                page: paging.value.page,
+            }
+        }
+    });
+
+    if (res.error) throw new Error(res.error.message);
+
+    list.value = res.data;
+
     loading.value = false;
 }
 </script>
