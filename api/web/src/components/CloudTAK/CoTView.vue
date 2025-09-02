@@ -334,7 +334,7 @@
                         :edit='is_editable'
                         :hover='is_editable'
                         :model-value='center'
-                        @update:modelValue='updateCoordinates($event)'
+                        @update:model-value='updateCoordinates($event)'
                     />
                 </div>
                 <div

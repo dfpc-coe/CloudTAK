@@ -41,7 +41,10 @@
                 >
                     <div class='card-header'>
                         <div class='col-8'>
-                            <IconLocationPin class='me-2' :size='20' />
+                            <IconLocationPin
+                                class='me-2'
+                                :size='20'
+                            />
                             <span>Click on the map to {{ mapStore.location === LocationState.Preset ? 'update' : 'set' }} your location</span>
                         </div>
                         <div class='col-4 d-flex align-items-center'>
@@ -50,7 +53,10 @@
                                     class='btn btn-sm btn-outline-light'
                                     @click='exitManualMode'
                                 >
-                                    <IconLocation :size='16' class='me-1' />
+                                    <IconLocation
+                                        :size='16'
+                                        class='me-1'
+                                    />
                                     Use GPS
                                 </button>
                                 <TablerIconButton
