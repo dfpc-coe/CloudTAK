@@ -9,7 +9,8 @@ import jwt from 'jsonwebtoken';
 import os from 'node:os';
 import fs from 'node:fs';
 import path from 'node:path';
-import S3 from "@aws-sdk/client-s3";
+import s3client from "./s3.ts";
+import { GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 import { pipeline } from 'node:stream/promises';
 import { CoTParser, DataPackage, Iconset, Basemap } from '@tak-ps/node-cot';
 
@@ -28,7 +29,7 @@ export default class Worker extends EventEmitter {
         try {
             console.error(`Import: ${this.msg.job.id}`, JSON.stringify(this.msg.job));
 
-            const s3 = new S3.S3Client({ region: process.env.AWS_REGION || 'us-east-1' });
+            const s3 = s3client();
 
             const tmpdir = fs.mkdtempSync(path.resolve(os.tmpdir(), 'cloudtak-'));
             const ext = path.parse(this.msg.job.name).ext;
@@ -41,7 +42,7 @@ export default class Worker extends EventEmitter {
 
             await pipeline(
                 // @ts-expect-error 'StreamingBlobPayloadOutputTypes | undefined' is not assignable to parameter of type 'ReadableStream'
-                (await s3.send(new S3.GetObjectCommand({
+                (await s3.send(new GetObjectCommand({
                     Bucket: this.msg.bucket,
                     Key: `import/${local.name}`,
                 }))).Body,
@@ -78,7 +79,7 @@ export default class Worker extends EventEmitter {
             strict: false
         });
 
-        const s3 = new S3.S3Client({ region: process.env.AWS_REGION || 'us-east-1' });
+        const s3 = s3client();
 
         const cots = await pkg.cots();
         for (const cot of cots) {
@@ -95,7 +96,7 @@ export default class Worker extends EventEmitter {
                         const name = path.parse(content._attributes.zipEntry).base;
 
                         console.log(`ok - uploading: s3://${this.msg.bucket}/attachment/${hash}/${name}`);
-                            await s3.send(new S3.PutObjectCommand({
+                            await s3.send(new PutObjectCommand({
                             Bucket: this.msg.bucket,
                             Key: `attachment/${hash}/${name}`,
                             Body: await pkg.getFile(content._attributes.zipEntry)
@@ -164,7 +165,7 @@ export default class Worker extends EventEmitter {
     ): Promise<void> {
         console.log(`Import: ${this.msg.job.id} - uploading profile asset`);
 
-        const s3 = new S3.S3Client({ region: process.env.AWS_REGION || 'us-east-1' });
+        const s3 = s3client();
 
         const id = randomUUID();
 
