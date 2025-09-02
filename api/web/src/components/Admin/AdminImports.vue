@@ -73,10 +73,12 @@
                                                         <span v-text='imp[h.name]' />
                                                     </div>
                                                     <div class='col-12'>
-                                                        <span class='subheader' v-text='imp.id' />
+                                                        <span
+                                                            class='subheader'
+                                                            v-text='imp.id'
+                                                        />
                                                     </div>
                                                 </div>
-
                                             </template>
                                             <template v-else>
                                                 <span v-text='imp[h.name]' />
