@@ -107,6 +107,9 @@ test('POST: api/connection/1/layer', async (t) => {
              connection: 1,
              memory: 256,
              timeout: 120,
+             alarm_period: 30,
+             alarm_evals: 5,
+             alarm_points: 4,
              parent: {
                  id: 1,
                  name: 'Test Connection',
@@ -156,6 +159,9 @@ test('GET: api/connection/1/layer/1', async (t) => {
              connection: 1,
              memory: 256,
              timeout: 120,
+             alarm_period: 30,
+             alarm_evals: 5,
+             alarm_points: 4,
              parent: {
                  id: 1,
                  name: 'Test Connection',
