@@ -6,9 +6,21 @@
         <template #default>
             <TablerLoading
                 v-if='loading'
-                desc='Loading Features'
+                desc='Loading'
+            />
+            <TablerAlert
+                v-else-if='error'
+                :err='error'
             />
             <template v-else>
+                <div class='mx-2 my-2'>
+                    <TablerEnum
+                        label='Routing Provider'
+                        v-model='routePlan.provider'
+                        :default='config.providers[0].name'
+                        :options='config.providers.map(p => p.name)'
+                    />
+                </div>
                 <div class='mx-2 my-2'>
                     <SearchBox
                         label='Start Location'
@@ -25,19 +37,31 @@
                         @select='routePlan.end = $event ? $event.coordinates : null'
                     />
                 </div>
-                <div class='mx-2 my-2'>
-                    <label class='form-label'>Travel Mode</label>
+                <div
+                    v-if='modes.length > 0'
+                    class='mx-2 my-2'
+                >
+                    <label>Travel Mode</label>
                     <div class='px-2 py-2 round btn-group w-100' role='group'>
-                        <input id='driving' v-model='routePlan.travelMode' value='1' type='radio' class='btn-check' autocomplete='off'>
-                        <label for='driving' type='button' class='btn btn-sm'>Driving</label>
-                        <input id='trucking' v-model='routePlan.travelMode' value='3' type='radio' class='btn-check' autocomplete='off'>
-                        <label for='trucking' type='button' class='btn btn-sm'>Trucking</label>
-                        <input id='rural' v-model='routePlan.travelMode' value='7' type='radio' class='btn-check' autocomplete='off'>
-                        <label for='rural' type='button' class='btn btn-sm'>Rural</label>
-                        <input id='walking' v-model='routePlan.travelMode' value='5' type='radio' class='btn-check' autocomplete='off'>
-                        <label for='walking' type='button' class='btn btn-sm'>Walking</label>
+                        <template v-for='mode in modes' :key='mode.id'>
+                            <input
+                                :id='`route-mode-${mode.id}`'
+                                v-model='routePlan.travelMode'
+                                :value='mode.id'
+                                type='radio'
+                                class='btn-check'
+                                autocomplete='off'
+                            >
+                            <label
+                                :for='`route-mode-${mode.id}`'
+                                type='button'
+                                class='btn btn-sm'
+                            >
+                                {{ mode.name }}
+                            </label>
+                        </template>
                     </div>
-                </div>                
+                </div>
                 <div class='mx-2 my-3'>
                     <button
                         :disabled='!routePlan.start || !routePlan.end'
@@ -53,23 +77,26 @@
 </template>
 
 <script setup lang='ts'>
-import { ref } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import SearchBox from '../util/SearchBox.vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import {
+    TablerEnum,
+    TablerAlert,
     TablerLoading,
 } from '@tak-ps/vue-tabler';
-import { std, stdurl } from '../../../std.ts';
+import { std, stdurl, server } from '../../../std.ts';
 import { useMapStore } from '../../../stores/map.ts';
-import type { FeatureCollection } from '../../../types.ts';
+import type { Search, FeatureCollection } from '../../../types.ts';
 
 const router = useRouter();
 const mapStore = useMapStore();
 
-const loading = ref(false);
+const loading = ref(true);
 
 const routePlan = ref<{
+    provider: string;
     start: null | [number, number];
     end: null | [number, number];
     travelMode: string;
@@ -78,6 +105,39 @@ const routePlan = ref<{
     end: null,
     travelMode: '1'
 });
+
+const error = ref<Error | undefined>();
+const config = ref<Search["route"]>();
+
+const modes = computed(() => {
+    if (!config.value) return [];
+
+    for (const p of config.value.providers) {
+        if (p.name === routePlan.value.provider) {
+            return p.modes;
+        }
+    }
+
+    return [];
+});
+
+onMounted(async () => {
+    await settings();
+});
+
+async function settings() {
+    const res = await server.GET('/api/search');
+
+    try  {
+        if (res.error) throw new Error(res.error.message);
+        config.value = res.data.route;
+
+        loading.value = false;
+    } catch (err) {
+        loading.value = false;
+        error.value = err instanceof Error ? err : new Error(String(err));
+    }
+}
 
 async function generateRoute(): Promise<void> {
     if (!routePlan.value.start || !routePlan.value.end) {
