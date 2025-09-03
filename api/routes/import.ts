@@ -45,29 +45,55 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            const auth = await Auth.is_auth(config, req, {
-                resources: [{ access: AuthResourceAccess.IMPORT }]
-            });
+            let list;
 
-            const username = auth instanceof AuthUser ? auth.email : null;
+            if (req.query.impersonate) {
+                await Auth.as_user(config, req, { admin: true });
 
-            const list = await config.models.Import.list({
-                limit: req.query.limit,
-                page: req.query.page,
-                order: req.query.order,
-                sort: req.query.sort,
-                where: sql`
-                    (${Param(username)}::TEXT IS NULL OR username = ${username}::TEXT)
-                    AND (${Param(req.query.status)}::TEXT IS NULL OR ${Param(req.query.status)}::TEXT = status)
-                    AND (${Param(req.query.source)}::TEXT IS NULL OR ${Param(req.query.source)}::TEXT = source)
-                    AND (${Param(req.query.source_id)}::TEXT IS NULL OR ${Param(req.query.source_id)}::TEXT = source_id)
-                    AND (
-                        ${Param(req.query.filter)}::TEXT IS NULL
-                        OR ${Param(req.query.filter)}::TEXT = ''
-                        OR ${Param(req.query.filter)}::TEXT ~* name
-                    )
-                `
-            });
+                const impersonate: string | null = req.query.impersonate === true ? null : req.query.impersonate;
+
+                list = await config.models.Import.list({
+                    limit: req.query.limit,
+                    page: req.query.page,
+                    order: req.query.order,
+                    sort: req.query.sort,
+                    where: sql`
+                        (${impersonate}::TEXT IS NULL OR username = ${impersonate}::TEXT)
+                        AND (${Param(req.query.status)}::TEXT IS NULL OR ${Param(req.query.status)}::TEXT = status)
+                        AND (${Param(req.query.source)}::TEXT IS NULL OR ${Param(req.query.source)}::TEXT = source)
+                        AND (${Param(req.query.source_id)}::TEXT IS NULL OR ${Param(req.query.source_id)}::TEXT = source_id)
+                        AND (
+                            ${Param(req.query.filter)}::TEXT IS NULL
+                            OR ${Param(req.query.filter)}::TEXT = ''
+                            OR ${Param(req.query.filter)}::TEXT ~* name
+                        )
+                    `
+                });
+            } else {
+                const auth = await Auth.is_auth(config, req, {
+                    resources: [{ access: AuthResourceAccess.IMPORT }]
+                });
+
+                const username = auth instanceof AuthUser ? auth.email : null;
+
+                list = await config.models.Import.list({
+                    limit: req.query.limit,
+                    page: req.query.page,
+                    order: req.query.order,
+                    sort: req.query.sort,
+                    where: sql`
+                        (${Param(username)}::TEXT IS NULL OR username = ${username}::TEXT)
+                        AND (${Param(req.query.status)}::TEXT IS NULL OR ${Param(req.query.status)}::TEXT = status)
+                        AND (${Param(req.query.source)}::TEXT IS NULL OR ${Param(req.query.source)}::TEXT = source)
+                        AND (${Param(req.query.source_id)}::TEXT IS NULL OR ${Param(req.query.source_id)}::TEXT = source_id)
+                        AND (
+                            ${Param(req.query.filter)}::TEXT IS NULL
+                            OR ${Param(req.query.filter)}::TEXT = ''
+                            OR ${Param(req.query.filter)}::TEXT ~* name
+                        )
+                    `
+                });
+            }
 
             res.json(list);
         } catch (err) {

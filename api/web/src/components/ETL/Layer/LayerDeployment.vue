@@ -175,15 +175,6 @@
                         />
                     </div>
 
-                    <div class='col-md-12'>
-                        <TablerEnum
-                            v-model='config.priority'
-                            label='Alarm Urgency'
-                            :disabled='disabled'
-                            :options='["off", "high", "low"]'
-                        />
-                    </div>
-
                     <div
                         v-if='!disabled'
                         class='col-12 pt-3 d-flex'
@@ -229,7 +220,6 @@ import TaskModal from './utils/TaskModal.vue';
 import { std } from '../../../std.ts';
 import {
     TablerAlert,
-    TablerEnum,
     TablerIconButton,
     TablerInput,
     TablerLoading

@@ -251,7 +251,7 @@ async function currentFeats(): Promise<Feature[]> {
             // FileShare is manually generated and won't exist in CoT Store
             feats.push(f);
         } else {
-            const cot = await mapStore.worker.db.get(f.id)
+            const cot = await mapStore.worker.db.get(f.properties.id || f.id)
             if (cot) feats.push(cot.as_feature());
         }
     }
@@ -294,7 +294,7 @@ async function share() {
                 basemaps: props.basemaps || [],
                 features: feats.map((f) => {
                     f = JSON.parse(JSON.stringify(f));
-                    return { id: f.id || f.properties.id, type: f.type, properties: f.properties, geometry: f.geometry }
+                    return { id: f.properties.id || f.id, type: f.type, properties: f.properties, geometry: f.geometry }
                 })
             }
         });
@@ -323,7 +323,7 @@ async function broadcast() {
                     f = JSON.parse(JSON.stringify(f));
 
                     return {
-                        id: f.id || f.properties.id,
+                        id: f.properties.id || f.id,
                         type: f.type,
                         properties: f.properties,
                         geometry: f.geometry

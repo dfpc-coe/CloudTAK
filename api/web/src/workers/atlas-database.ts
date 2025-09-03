@@ -386,6 +386,8 @@ export default class AtlasDatabase {
 
     /**
      * Return CoTs touching a given polygon
+     *
+     * @param poly - GeoJSON Polygon to test CoTs against
      */
     async touching(poly: Polygon): Promise<Set<COT>> {
         const within: Set<COT> = new Set();
@@ -421,6 +423,11 @@ export default class AtlasDatabase {
 
     /**
      * Remove a given CoT from the store
+     *
+     * @param id - UID of the CoT to remove
+     * @param opts - Options
+     * @param opts.mission      - If true, search Mission Stores for the CoT
+     * @param opts.skipNetwork  - If an archived CoT, don't delete from the server
      */
     async remove(
         id: string,
@@ -462,19 +469,27 @@ export default class AtlasDatabase {
             const subscription = await this.subscriptionGet(cot.origin.mode_id);
             if (!subscription) throw new Error('Could not delete as Mission Subscription does not exist');
 
-            await subscription.deleteFeature(cot.id);
+            await subscription.deleteFeature(cot.id, {
+                skipNetwork: opts.skipNetwork
+            });
         }
     }
 
     /**
      * Empty the store
+     *
+     * @param opts - Options
+     * @param opts.ignoreArchived   - Don't delete archived features
+     * @param opts.skipNetwork      - Don't delete archived features from the server
      */
     async clear(opts = {
         ignoreArchived: false,
         skipNetwork: false
     }): Promise<void> {
         for (const feat of this.cots.values()) {
-            if (opts.ignoreArchived && feat.properties.archived) continue;
+            if (opts.ignoreArchived && feat.properties.archived) {
+                continue;
+            }
 
             this.remove(feat.id, {
                 skipNetwork: opts.skipNetwork
@@ -482,6 +497,11 @@ export default class AtlasDatabase {
         }
     }
 
+    /**
+     * Called everytime a Mission Task message is received
+     *
+     * @param task - GeoJSON Feature representing the Mission Task
+     */
     async subChange(task: Feature): Promise<void> {
         if (task.properties.type === 't-x-m-c' && task.properties.mission && task.properties.mission.missionChanges) {
             let updateGuid;
@@ -501,7 +521,10 @@ export default class AtlasDatabase {
                         continue;
                     }
 
-                    await sub.deleteFeature(change.contentUid);
+                    await sub.deleteFeature(change.contentUid, {
+                        skipNetwork: true
+                    });
+
                     updateGuid = task.properties.mission.guid;
                 }
             }
@@ -640,6 +663,10 @@ export default class AtlasDatabase {
 
     /**
      * Return a CoT by ID if it exists
+     *
+     * @param id - ID of the CoT to return
+     * @param opts - Options
+     * @param opts.mission - If true, search Mission Stores for the CoT
      */
     get(
         id: string,
