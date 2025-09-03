@@ -113,7 +113,7 @@ export default async function router(schema: Schema, config: Config) {
                     id: 'agol',
                     name: 'ArcGIS Online',
                     modes: [
-                        { id: 'driving', name: 'Driving Time' },
+                        { id: 'driving', name: 'Driving' },
                         { id: 'trucking', name: 'Trucking' },
                         { id: 'rural', name: 'Rural' },
                         { id: 'walking', name: 'Walking' }
