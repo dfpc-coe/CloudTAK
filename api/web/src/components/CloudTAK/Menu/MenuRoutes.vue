@@ -135,7 +135,7 @@ watch(query.value, async () => {
 
 onMounted(async () => {
     await refresh();
-    await search();
+    await settings();
 });
 
 onBeforeUnmount(() => {
@@ -144,7 +144,7 @@ onBeforeUnmount(() => {
     }
 })
 
-async function search() {
+async function settings() {
     try {
         const { data, error } = await server.GET('/api/search');
         if (error) throw new Error(error.message);

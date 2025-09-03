@@ -62,14 +62,18 @@ export default async function router(schema: Schema, config: Config) {
                 enabled: Type.Boolean(),
                 providers: Type.Array(Type.Object({
                     id: Type.String(),
-                    name: Type.String()
+                    name: Type.String(),
                 }))
             }),
             route: Type.Object({
                 enabled: Type.Boolean(),
                 providers: Type.Array(Type.Object({
                     id: Type.String(),
-                    name: Type.String()
+                    name: Type.String(),
+                    modes: Type.Array(Type.Object({
+                        id: Type.String(),
+                        name: Type.String(),
+                    }))
                 }))
             }),
             forward: Type.Object({
@@ -99,7 +103,33 @@ export default async function router(schema: Schema, config: Config) {
                 }
             };
 
-            console.error('SEARCH', search);
+            if (search) {
+                settings.reverse.providers.push({
+                    id: 'agol',
+                    name: 'ArcGIS Online'
+                });
+
+                settings.route.providers.push({
+                    id: 'agol',
+                    name: 'ArcGIS Online',
+                    modes: [
+                        { id: 'driving', name: 'Driving Time' },
+                        { id: 'trucking', name: 'Trucking' },
+                        { id: 'rural', name: 'Rural' },
+                        { id: 'walking', name: 'Walking' }
+                    ]
+                });
+
+                settings.forward.providers.push({
+                    id: 'agol',
+                    name: 'ArcGIS Online'
+                });
+            }
+
+            // Eventually allow an admin to manually turn these off and on as well
+            settings.reverse.enabled = settings.reverse.providers.length > 0;
+            settings.forward.enabled = settings.forward.providers.length > 0;
+            settings.route.enabled = settings.route.providers.length > 0;
 
             return res.json(settings);
         } catch (err) {
