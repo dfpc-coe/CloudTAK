@@ -77,7 +77,7 @@
                                 label='Data Points to Alarm'
                                 :disabled='disabled'
                                 :min='1'
-                                :max='10'
+                                :max='config.alarm_evals'
                             >
                                 <span>{{ config.alarm_points }}</span>
                             </TablerRange>
@@ -88,7 +88,7 @@
                                 label='Period (seconds)'
                                 :disabled='disabled'
                                 :min='2'
-                                :max='10'
+                                :max='300'
                                 @change='periods = generatePeriodData()'
                             >
                                 <span>{{ config.alarm_period }}s</span>
