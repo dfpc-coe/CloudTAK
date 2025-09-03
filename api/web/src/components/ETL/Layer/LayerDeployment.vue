@@ -184,6 +184,75 @@
                         />
                     </div>
 
+                <div
+                    v-if='config.priority !== "off"'
+                    class='col-md-12'
+                >
+                    <label
+                        class='subheader mt-3 cursor-pointer d-flex align-items-center'
+                    >
+                        <TablerIconButton
+                            v-if='!advanced'
+                            title='Open Advanced Settings'
+                            @click='advanced = true'
+                        ><IconSquareChevronRight
+                            :size='32'
+                            stroke='1'
+                        /></TablerIconButton>
+                        <TablerIconButton
+                            v-else
+                            title='Close Advanced Settings'
+                            @click='advanced = false'
+                        ><IconChevronDown
+                            :size='32'
+                            stroke='1'
+                        /></TablerIconButton>
+                        <span class='mx-2'>Advanced Alarm Options</span>
+                    </label>
+                </div>
+
+                <div
+                    v-if='advanced && config.priority !== "off"'
+                    class='border rounded col-12 mt-0'
+                >
+                    <div class='row py-2'>
+                        <div class='col-md-3'>
+                            <TablerInput
+                                v-model='incoming.alarm_period'
+                                label='Alarm Period (s)'
+                                :disabled='disabled'
+                                class='w-100'
+                            />
+                        </div>
+                        <div class='col-md-3'>
+                            <TablerInput
+                                v-model='incoming.alarm_evals'
+                                label='Alarm Evals'
+                                :disabled='disabled'
+                                class='w-100'
+                            />
+                        </div>
+                        <div class='col-md-3'>
+                            <TablerInput
+                                v-model='incoming.alarm_points'
+                                label='Alarm Points to Alarm'
+                                :disabled='disabled'
+                                class='w-100'
+                            />
+                        </div>
+                        <div class='col-md-3'>
+                            <TablerInput
+                                v-model='incoming.alarm_threshold'
+                                label='Alarm Threshold'
+                                :disabled='disabled'
+                                class='w-100'
+                            />
+                        </div>
+                    </div>
+                </div>
+
+
+
                     <div
                         v-if='!disabled'
                         class='col-12 pt-3 d-flex'
@@ -239,6 +308,8 @@ import {
     IconRefresh,
     IconSettings,
     IconCloudUpload,
+    IconChevronDown,
+    IconSquareChevronRight,
 } from '@tabler/icons-vue';
 
 const props = defineProps({
@@ -273,6 +344,7 @@ const loading = ref({
     version: false
 });
 
+const advanced = ref(false);
 const logs = ref({});
 
 onMounted(async () => {
