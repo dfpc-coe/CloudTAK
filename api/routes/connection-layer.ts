@@ -191,7 +191,6 @@ export default async function router(schema: Schema, config: Config) {
             alarm_period: Type.Optional(Type.Integer()),
             alarm_evals: Type.Optional(Type.Integer()),
             alarm_points: Type.Optional(Type.Integer()),
-            alarm_threshold: Type.Optional(Type.Integer()),
         }),
         res: LayerResponse
     }, async (req, res) => {
@@ -723,7 +722,6 @@ export default async function router(schema: Schema, config: Config) {
             alarm_period: Type.Optional(Type.Integer()),
             alarm_evals: Type.Optional(Type.Integer()),
             alarm_points: Type.Optional(Type.Integer()),
-            alarm_threshold: Type.Optional(Type.Integer()),
         }),
         res: LayerResponse
     }, async (req, res) => {
@@ -745,7 +743,7 @@ export default async function router(schema: Schema, config: Config) {
 
             let changed = false;
             // Avoid Updating CF unless necessary as it blocks further updates until deployed
-            for (const prop of [ 'task', 'memory', 'timeout', 'enabled', 'priority', 'alarm_period', 'alarm_evals', 'alarm_points', 'alarm_threshold' ]) {
+            for (const prop of [ 'task', 'memory', 'timeout', 'enabled', 'priority', 'alarm_period', 'alarm_evals', 'alarm_points']) {
                 // @ts-expect-error Doesn't like indexed values
                 if (req.body[prop] !== undefined && req.body[prop] !== layer[prop]) changed = true;
             }
