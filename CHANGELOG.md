@@ -12,6 +12,25 @@
 
 ### Pending Release
 
+### v11.5.0 - 2025-09-03
+
+- :tada: Move Alarms to top level Layer Object
+- :rocket: Add UI for visualizing alarm settings and make High Urgency alarms clearer
+
+### v11.4.0 - 2025-09-02
+
+- :bug: `UI` Use consistent Integer Hash for tiled features
+- :bug: `UI` Consistently use `feat.properties.id` where present
+
+### v11.3.0 - 2025-09-02
+
+- :bug: Wire up the Impersonation feature in the Imports API
+- :bug: Fix recursion bug where deleting a CoT from a Mission would result in a Change Task which would then make an API call to delete the CoT from the mission, etc, etc, etc.
+
+### v11.2.4 - 2025-09-02
+
+- :rocket: Mirror 256mb Layer Default from DB to API Schema
+
 ### v11.2.3 - 2025-09-02
 
 - :rocket: Move to a more intuitive icon for 3d

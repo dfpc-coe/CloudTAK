@@ -175,51 +175,51 @@ export default class Lambda {
             }
         }
 
+        stack.Resources.LambdaAlarm = {
+            Type: 'AWS::CloudWatch::Alarm',
+            Properties: {
+                AlarmName: StackName,
+                ActionsEnabled: true,
+                AlarmActions: [ ],
+                MetricName: 'Errors',
+                Namespace: 'AWS/Lambda',
+                Statistic: 'Average',
+                Dimensions: [{
+                    Name: 'FunctionName',
+                    Value: StackName
+                }],
+                Period: layer.alarm_period,
+                EvaluationPeriods: layer.alarm_evals,
+                DatapointsToAlarm: layer.alarm_points,
+                Threshold: 0,
+                ComparisonOperator: 'GreaterThanThreshold',
+                TreatMissingData: 'missing'
+            }
+        };
+
+        stack.Resources.LambdaNoInvocationAlarm = {
+            Type: 'AWS::CloudWatch::Alarm',
+            Properties: {
+                AlarmName: cf.join([StackName, '-no-invocations']),
+                ActionsEnabled: true,
+                AlarmActions: [ ],
+                MetricName: 'Invocations',
+                Namespace: 'AWS/Lambda',
+                Statistic: 'Average',
+                Dimensions: [{
+                    Name: 'FunctionName',
+                    Value: StackName
+                }],
+                Period: layer.alarm_period,
+                EvaluationPeriods: layer.alarm_evals,
+                DatapointsToAlarm: layer.alarm_points,
+                Threshold: 0,
+                ComparisonOperator: 'LessThanOrEqualToThreshold',
+                TreatMissingData: 'missing'
+            }
+        };
+
         if (layer.incoming) {
-            stack.Resources.LambdaAlarm = {
-                Type: 'AWS::CloudWatch::Alarm',
-                Properties: {
-                    AlarmName: StackName,
-                    ActionsEnabled: true,
-                    AlarmActions: [ ],
-                    MetricName: 'Errors',
-                    Namespace: 'AWS/Lambda',
-                    Statistic: 'Maximum',
-                    Dimensions: [{
-                        Name: 'FunctionName',
-                        Value: StackName
-                    }],
-                    Period: layer.incoming.alarm_period,
-                    EvaluationPeriods: layer.incoming.alarm_evals,
-                    DatapointsToAlarm: layer.incoming.alarm_points,
-                    Threshold: layer.incoming.alarm_threshold,
-                    ComparisonOperator: 'GreaterThanThreshold',
-                    TreatMissingData: 'missing'
-                }
-            };
-
-            stack.Resources.LambdaNoInvocationAlarm = {
-                Type: 'AWS::CloudWatch::Alarm',
-                Properties: {
-                    AlarmName: cf.join([StackName, '-no-invocations']),
-                    ActionsEnabled: true,
-                    AlarmActions: [ ],
-                    MetricName: 'Invocations',
-                    Namespace: 'AWS/Lambda',
-                    Statistic: 'Maximum',
-                    Dimensions: [{
-                        Name: 'FunctionName',
-                        Value: StackName
-                    }],
-                    Period: layer.incoming.alarm_period,
-                    EvaluationPeriods: layer.incoming.alarm_evals,
-                    DatapointsToAlarm: layer.incoming.alarm_points,
-                    Threshold: layer.incoming.alarm_threshold,
-                    ComparisonOperator: 'LessThanOrEqualToThreshold',
-                    TreatMissingData: 'missing'
-                }
-            };
-
             if (layer.incoming.webhooks) {
                 stack.Resources.WebHookResourceBase = {
                     Type: 'AWS::ApiGatewayV2::Route',

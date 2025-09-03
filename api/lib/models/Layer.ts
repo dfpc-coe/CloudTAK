@@ -31,10 +31,6 @@ export const AugmentedLayerIncoming = Type.Object({
     config: Layer_Config,
     cron: Type.Union([Type.String(), Type.Null()]),
     webhooks: Type.Boolean(),
-    alarm_period: Type.Integer(),
-    alarm_evals: Type.Integer(),
-    alarm_points: Type.Integer(),
-    alarm_threshold: Type.Integer(),
     enabled_styles: Type.Boolean(),
     styles: StyleContainer,
     stale: Type.Integer(),
@@ -60,6 +56,10 @@ export const AugmentedLayer = Type.Object({
     memory: Type.Integer(),
     timeout: Type.Integer(),
     priority: Type.Enum(Layer_Priority),
+
+    alarm_period: Type.Integer(),
+    alarm_evals: Type.Integer(),
+    alarm_points: Type.Integer(),
 
     parent: Type.Optional(Type.Object({
         id: Type.Integer(),
@@ -158,6 +158,10 @@ export default class LayerModel extends Modeler<typeof Layer> {
                 memory: Layer.memory,
                 timeout: Layer.timeout,
 
+                alarm_period: Layer.alarm_period,
+                alarm_evals: Layer.alarm_evals,
+                alarm_points: Layer.alarm_points,
+
                 parent: jsonBuildObject({
                     id: Connection.id,
                     name: Connection.name,
@@ -171,10 +175,6 @@ export default class LayerModel extends Modeler<typeof Layer> {
                     cron: LayerIncoming.cron,
                     stale: LayerIncoming.stale,
                     webhooks: LayerIncoming.webhooks,
-                    alarm_period: LayerIncoming.alarm_period,
-                    alarm_evals: LayerIncoming.alarm_evals,
-                    alarm_points: LayerIncoming.alarm_points,
-                    alarm_threshold: LayerIncoming.alarm_threshold,
                     environment: LayerIncoming.environment,
                     ephemeral: LayerIncoming.ephemeral,
                     config: LayerIncoming.config,
@@ -240,6 +240,10 @@ export default class LayerModel extends Modeler<typeof Layer> {
                 memory: Layer.memory,
                 timeout: Layer.timeout,
 
+                alarm_period: Layer.alarm_period,
+                alarm_evals: Layer.alarm_evals,
+                alarm_points: Layer.alarm_points,
+
                 parent: jsonBuildObject({
                     id: Connection.id,
                     name: Connection.name,
@@ -253,10 +257,6 @@ export default class LayerModel extends Modeler<typeof Layer> {
                     cron: LayerIncoming.cron,
                     stale: LayerIncoming.stale,
                     webhooks: LayerIncoming.webhooks,
-                    alarm_period: LayerIncoming.alarm_period,
-                    alarm_evals: LayerIncoming.alarm_evals,
-                    alarm_points: LayerIncoming.alarm_points,
-                    alarm_threshold: LayerIncoming.alarm_threshold,
                     environment: LayerIncoming.environment,
                     ephemeral: LayerIncoming.ephemeral,
                     config: LayerIncoming.config,
