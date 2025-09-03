@@ -183,7 +183,7 @@ export default class Lambda {
                 AlarmActions: [ ],
                 MetricName: 'Errors',
                 Namespace: 'AWS/Lambda',
-                Statistic: 'Maximum',
+                Statistic: 'Average',
                 Dimensions: [{
                     Name: 'FunctionName',
                     Value: StackName
@@ -191,7 +191,7 @@ export default class Lambda {
                 Period: layer.alarm_period,
                 EvaluationPeriods: layer.alarm_evals,
                 DatapointsToAlarm: layer.alarm_points,
-                Threshold: layer.alarm_threshold,
+                Threshold: 0,
                 ComparisonOperator: 'GreaterThanThreshold',
                 TreatMissingData: 'missing'
             }
@@ -205,7 +205,7 @@ export default class Lambda {
                 AlarmActions: [ ],
                 MetricName: 'Invocations',
                 Namespace: 'AWS/Lambda',
-                Statistic: 'Maximum',
+                Statistic: 'Average',
                 Dimensions: [{
                     Name: 'FunctionName',
                     Value: StackName
@@ -213,7 +213,7 @@ export default class Lambda {
                 Period: layer.alarm_period,
                 EvaluationPeriods: layer.alarm_evals,
                 DatapointsToAlarm: layer.alarm_points,
-                Threshold: layer.alarm_threshold,
+                Threshold: 0,
                 ComparisonOperator: 'LessThanOrEqualToThreshold',
                 TreatMissingData: 'missing'
             }
