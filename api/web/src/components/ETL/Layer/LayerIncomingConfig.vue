@@ -220,9 +220,7 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
-    IconSquareChevronRight,
     IconCalendarClock,
-    IconChevronDown,
     IconPlayerPlay,
     IconWebhook,
     IconPencil,
@@ -249,7 +247,6 @@ const emit = defineEmits([
 
 const disabled = ref(true);
 const cronEnabled = ref(true);
-const advanced = ref(false);
 
 const loading = ref({
     init: true,
