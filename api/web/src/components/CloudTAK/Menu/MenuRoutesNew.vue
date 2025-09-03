@@ -41,8 +41,8 @@
                     v-if='modes.length > 0'
                     class='mx-2 my-2'
                 >
-                    <label>Travel Mode</label>
-                    <div class='px-2 py-2 round btn-group w-100' role='group'>
+                    <label class='mx-2'>Travel Mode</label>
+                    <div class='py-2 round btn-group w-100' role='group'>
                         <template v-for='mode in modes' :key='mode.id'>
                             <input
                                 :id='`route-mode-${mode.id}`'
@@ -101,9 +101,10 @@ const routePlan = ref<{
     end: null | [number, number];
     travelMode: string;
 }>({
+    provider: '',
     start: null,
     end: null,
-    travelMode: '1'
+    travelMode: ''
 });
 
 const error = ref<Error | undefined>();
@@ -132,6 +133,9 @@ async function settings() {
         if (res.error) throw new Error(res.error.message);
         config.value = res.data.route;
 
+        routePlan.value.provider = config.value.providers[0].name;
+        routePlan.value.travelMode = config.value.providers[0].modes[0].name;
+
         loading.value = false;
     } catch (err) {
         loading.value = false;
@@ -148,6 +152,7 @@ async function generateRoute(): Promise<void> {
 
     try {
         const url = stdurl('/api/search/route');
+        url.searchParams.set('provider', routePlan.value.provider);
         url.searchParams.set('start', routePlan.value.start.join(','));
         url.searchParams.set('end', routePlan.value.end.join(','));
         url.searchParams.set('travelMode', routePlan.value.travelMode);
