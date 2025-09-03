@@ -178,9 +178,9 @@
                                                 @keyup.enter='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/alarm`)'
                                                 @click='router.push(`/connection/${route.params.connectionid}/layer/${route.params.layerid}/alarm`)'
                                             ><IconAlarm
-                                                :size='32'
-                                                stroke='1'
-                                            />
+                                                 :size='32'
+                                                 stroke='1'
+                                             />
                                                 <span class='mx-3'>Alarms</span>
 
                                                 <div class='ms-auto'>
