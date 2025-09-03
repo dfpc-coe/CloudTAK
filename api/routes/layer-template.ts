@@ -92,7 +92,6 @@ export default async function router(schema: Schema, config: Config) {
                 alarm_period: baseLayer.alarm_period,
                 alarm_evals: baseLayer.alarm_evals,
                 alarm_points: baseLayer.alarm_points,
-                alarm_threshold: baseLayer.alarm_threshold,
             }, {
                 incoming: baseLayer.incoming ? {
                     config: baseLayer.incoming.config,

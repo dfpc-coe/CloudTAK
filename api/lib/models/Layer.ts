@@ -60,7 +60,6 @@ export const AugmentedLayer = Type.Object({
     alarm_period: Type.Integer(),
     alarm_evals: Type.Integer(),
     alarm_points: Type.Integer(),
-    alarm_threshold: Type.Integer(),
 
     parent: Type.Optional(Type.Object({
         id: Type.Integer(),
@@ -162,7 +161,6 @@ export default class LayerModel extends Modeler<typeof Layer> {
                 alarm_period: Layer.alarm_period,
                 alarm_evals: Layer.alarm_evals,
                 alarm_points: Layer.alarm_points,
-                alarm_threshold: Layer.alarm_threshold,
 
                 parent: jsonBuildObject({
                     id: Connection.id,
@@ -245,7 +243,6 @@ export default class LayerModel extends Modeler<typeof Layer> {
                 alarm_period: Layer.alarm_period,
                 alarm_evals: Layer.alarm_evals,
                 alarm_points: Layer.alarm_points,
-                alarm_threshold: Layer.alarm_threshold,
 
                 parent: jsonBuildObject({
                     id: Connection.id,

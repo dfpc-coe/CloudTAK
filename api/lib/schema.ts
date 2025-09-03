@@ -304,7 +304,6 @@ export const Layer = pgTable('layers', {
     alarm_period: integer().notNull().default(30),
     alarm_evals: integer().notNull().default(5),
     alarm_points: integer().notNull().default(4),
-    alarm_threshold: integer().notNull().default(0),
 }, (t) => ({
     unq: unique().on(t.connection, t.name)
 }));
