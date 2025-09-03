@@ -100,16 +100,19 @@ export const ForwardContainer = Type.Object({
     }))
 });
 
-export default class Geocode {
+export default class Search {
     reverseApi: string;
     suggestApi: string;
     forwardApi: string;
+    routingApi: string;
+
     tokenManager?: ArcGISTokenManager;
 
     constructor(tokenManager?: ArcGISTokenManager) {
         this.reverseApi = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/reverseGeocode';
         this.suggestApi = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/suggest';
         this.forwardApi = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates';
+        this.routingApi = 'https://route-api.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World/solve';
         this.tokenManager = tokenManager;
     }
 
@@ -117,7 +120,7 @@ export default class Geocode {
         const url = new URL(this.reverseApi)
         url.searchParams.append('location', `${lon},${lat}`);
         url.searchParams.append('f', 'json');
-        
+
         if (this.tokenManager) {
             const token = await this.tokenManager.getValidToken();
             if (token) url.searchParams.append('token', token);
@@ -144,12 +147,12 @@ export default class Geocode {
         stops: Array<[number, number]>,
         travelMode?: string
     ): Promise<Static<typeof Feature.FeatureCollection>> {
-        const url = new URL('https://route-api.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World/solve');
+        const url = new URL(this.routingApi);
         url.searchParams.append('stops', stops.map(stop => stop.join(',')).join(';'));
         url.searchParams.append('f', 'json');
 
         if (travelMode && travelMode.trim()) url.searchParams.append('travelMode', travelMode);
-        
+
         if (this.tokenManager) {
             const token = await this.tokenManager.getValidToken();
             if (token) url.searchParams.append('token', token);
@@ -180,7 +183,7 @@ export default class Geocode {
         if (body.routes?.features) {
             for (const feat of body.routes.features) {
                 if (!feat.geometry?.paths?.[0] || !feat.attributes) continue;
-                
+
                 const norm = await CoTParser.normalize_geojson({
                     id: String(randomUUID()),
                     type: 'Feature',
@@ -199,7 +202,7 @@ export default class Geocode {
                 norm.properties.how = 'm-g';
                 norm.properties.callsign = String(feat.attributes.Name);
                 norm.properties.archived = true;
-                
+
                 // Add directions as remarks if available
                 const directions = body.directions?.[0]?.features?.map(dir => dir.attributes?.text).filter(Boolean).join('\n');
                 if (directions) norm.properties.remarks = directions;
@@ -217,7 +220,7 @@ export default class Geocode {
         url.searchParams.append('singleLine', query);
         if (limit) url.searchParams.append('maxLocations', String(limit));
         url.searchParams.append('f', 'json');
-        
+
         if (this.tokenManager) {
             const token = await this.tokenManager.getValidToken();
             if (token) url.searchParams.append('token', token);
@@ -242,7 +245,7 @@ export default class Geocode {
         url.searchParams.append('f', 'json');
         if (limit) url.searchParams.append('maxSuggestions', String(limit));
         if (location) url.searchParams.append('location', `${location[0]},${location[1]}`);
-        
+
         if (this.tokenManager) {
             const token = await this.tokenManager.getValidToken();
             if (token) url.searchParams.append('token', token);
