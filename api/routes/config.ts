@@ -47,6 +47,23 @@ export default async function router(schema: Schema, config: Config) {
                 description: 'Enable ArcGIS Online Integration'
             })),
 
+            'agol::auth_method': Type.Optional(Type.String({
+                description: 'AGOL Auth Type',
+                enum: ['oauth2', 'legacy']
+            })),
+
+            'agol::token': Type.Optional(Type.String({
+                description: 'AGOL Legacy Token'
+            })),
+
+            'agol::client_id': Type.Optional(Type.String({
+                description: 'AGOL OAuth2 Client ID'
+            })),
+
+            'agol::client_secret': Type.Optional(Type.String({
+                description: 'AGOL OAuth2 Client Secret'
+            })),
+
             'media::url': Type.Optional(Type.String({
                 description: 'Base URL for Media Service'
             })),

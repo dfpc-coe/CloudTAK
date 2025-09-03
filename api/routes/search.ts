@@ -84,7 +84,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             await Auth.as_user(config, req);
 
-            const res = {
+            const settings = {
                 reverse: {
                     enabled: false,
                     providers: []
@@ -99,7 +99,9 @@ export default async function router(schema: Schema, config: Config) {
                 }
             };
 
-            return res.json(res);
+            console.error('SEARCH', search);
+
+            return res.json(settings);
         } catch (err) {
              Err.respond(err, res);
         }
