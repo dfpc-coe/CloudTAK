@@ -40,50 +40,71 @@
                         />
                     </div>
 
-                    <div v-if='config.priority !== "off"' class="row g-3 mb-4 align-items-end">
-                        <div class="col-md">
+                    <TablerInlineAlert
+                        v-if='config.priority === "high"'
+                        severity='danger'
+                        title='High Urgency Alarms'
+                        description='Use only for mission-critical layers that require immediate attention'
+                        :dismissable='false'
+                    />
+                    <TablerInlineAlert
+                        v-else-if='config.priority === "low"'
+                        severity='info'
+                        title='Low Urgency Alarms'
+                        description='Use for layers that are important but not mission-critical'
+                        :dismissable='false'
+                    />
+
+                    <div
+                        v-if='config.priority !== "off"'
+                        class='row g-3 mb-4 align-items-end'
+                    >
+                        <div class='col-md'>
                             <TablerRange
-                                v-model="config.alarm_evals"
-                                label="Evaluation Periods"
-                                @change='periods = generatePeriodData()'
-                                :disabled="disabled"
+                                v-model='config.alarm_evals'
+                                label='Evaluation Periods'
+                                :disabled='disabled'
                                 :min='1'
                                 :max='10'
+                                @change='periods = generatePeriodData()'
                             >
                                 <span>{{ config.alarm_evals }}</span>
                             </TablerRange>
                         </div>
-                        <div class="col-md">
+                        <div class='col-md'>
                             <TablerRange
-                                v-model="config.alarm_points"
-                                label="Data Points to Alarm"
-                                :disabled="disabled"
-                                :min='2'
+                                v-model='config.alarm_points'
+                                label='Data Points to Alarm'
+                                :disabled='disabled'
+                                :min='1'
                                 :max='10'
                             >
                                 <span>{{ config.alarm_points }}</span>
                             </TablerRange>
                         </div>
-                        <div class="col-md">
+                        <div class='col-md'>
                             <TablerRange
-                                v-model="config.alarm_period"
-                                @change='periods = generatePeriodData()'
-                                label="Period (seconds)"
-                                :disabled="disabled"
+                                v-model='config.alarm_period'
+                                label='Period (seconds)'
+                                :disabled='disabled'
                                 :min='2'
                                 :max='10'
+                                @change='periods = generatePeriodData()'
                             >
                                 <span>{{ config.alarm_period }}s</span>
                             </TablerRange>
                         </div>
                     </div>
 
-                    <div v-if='config.priority !== "off"' class="card text-center mb-4">
-                        <div class="card-body">
-                            <p class="card-text fs-5">
+                    <div
+                        v-if='config.priority !== "off"'
+                        class='card text-center mb-4'
+                    >
+                        <div class='card-body'>
+                            <p class='card-text fs-5'>
                                 Alarm State:
                                 <span
-                                    class="fw-bold"
+                                    class='fw-bold'
                                     :class='{
                                         "text-success": alarmState === "OK",
                                         "text-danger": alarmState === "ALARM",
@@ -91,54 +112,68 @@
                                     }'
                                 >{{ alarmState }}</span>
                             </p>
-                            <p class="card-text text-muted">{{ periods.filter(p => p).length }} out of {{ config.alarm_evals }} recent periods are breaching the threshold.</p>
+                            <p class='card-text text-muted'>
+                                {{ periods.filter(p => p).length }} out of {{ config.alarm_evals }} recent periods are breaching the threshold.
+                            </p>
                         </div>
 
-                        <div class="d-flex align-items-center px-3 pb-2">
+                        <div class='d-flex align-items-center px-3 pb-2'>
                             <div class='subheader'>
-                                <span v-text='`${periods.length * config.alarm_period} Seconds Ago`'/>
+                                <span v-text='`${periods.length * config.alarm_period} Seconds Ago`' />
                             </div>
                             <div class='ms-auto subheader'>
                                 Current Time
                             </div>
                         </div>
-                        <div class="d-flex align-items-stretch gap-1 ps-3 pe-3 pb-3" style="height: 250px;">
+                        <div
+                            class='d-flex align-items-stretch gap-1 ps-3 pe-3 pb-3'
+                            style='height: 250px;'
+                        >
                             <div
-                                class="h-100 d-flex flex-column justify-content-end p-1 border rounded"
-                                 v-for="(periodData, periodIndex) in periods.slice(0, EXTRA_PERIODS)"
-                                 :key="periodIndex"
-                                 :style='`width: calc(${100 / periods.length}%)`'
-                             >
-                                <div class="text-center small fw-bold mt-1 text-body-secondary">
+                                v-for='(periodData, periodIndex) in periods.slice(0, EXTRA_PERIODS)'
+                                :key='periodIndex'
+                                class='h-100 d-flex flex-column justify-content-end p-1 border rounded'
+                                :style='`width: calc(${100 / periods.length}%)`'
+                            >
+                                <div class='text-center small fw-bold mt-1 text-body-secondary'>
                                     Ignored
                                 </div>
                             </div>
                             <div
-                                class="cursor-pointer hover h-100 d-flex flex-column justify-content-end p-1 border rounded"
-                                 v-for="(periodData, periodIndex) in periods.slice(EXTRA_PERIODS)"
-                                 :key="periodIndex"
-                                 :class='{
+                                v-for='(periodData, periodIndex) in periods.slice(EXTRA_PERIODS)'
+                                :key='periodIndex'
+                                class='cursor-pointer hover h-100 d-flex flex-column justify-content-end p-1 border rounded'
+                                :class='{
                                     "border-danger bg-danger-subtle": periodData,
                                     "border-success bd-success-suble": !periodData
-                                 }'
-                                 @click='periods[periodIndex + EXTRA_PERIODS] = !periods[periodIndex + EXTRA_PERIODS]'
-                                 style="transition: all 0.3s ease-in-out"
-                                 :style='`width: calc(${100 / periods.length}%)`'
-                             >
-                                <div class="small fw-bold text-body-secondary">
-                                    {{ periodData ? "ALARM" : "OK"}}
+                                }'
+                                style='transition: all 0.3s ease-in-out'
+                                :style='`width: calc(${100 / periods.length}%)`'
+                                @click='periods[periodIndex + EXTRA_PERIODS] = !periods[periodIndex + EXTRA_PERIODS]'
+                            >
+                                <div class='small fw-bold text-body-secondary'>
+                                    {{ periodData ? "ALARM" : "OK" }}
                                 </div>
                             </div>
                         </div>
-                        <div class="d-flex justify-content-center gap-4 mt-3 small text-muted pb-3">
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="d-inline-block rounded border" style="width: 14px; height: 14px;"></span> Outside Evaluation
+                        <div class='d-flex justify-content-center gap-4 mt-3 small text-muted pb-3'>
+                            <div class='d-flex align-items-center gap-2'>
+                                <span
+                                    class='d-inline-block rounded border'
+                                    style='width: 14px; height: 14px;'
+                                /> Outside Evaluation
                             </div>
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="d-inline-block rounded border border-success bg-success-subtle" style="width: 14px; height: 14px;"></span> OK Period
+                            <div class='d-flex align-items-center gap-2'>
+                                <span
+                                    class='d-inline-block rounded border border-success bg-success-subtle'
+                                    style='width: 14px; height: 14px;'
+                                /> OK Period
                             </div>
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="d-inline-block rounded border border-danger bg-danger-subtle" style="width: 14px; height: 14px;"></span> Alarming Period
+                            <div class='d-flex align-items-center gap-2'>
+                                <span
+                                    class='d-inline-block rounded border border-danger bg-danger-subtle'
+                                    style='width: 14px; height: 14px;'
+                                /> Alarming Period
                             </div>
                         </div>
                     </div>
@@ -173,17 +208,15 @@ import { ref, watch, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { std } from '../../../std.ts';
 import {
-    TablerAlert,
+    TablerInlineAlert,
     TablerRange,
     TablerEnum,
     TablerIconButton,
     TablerRefreshButton,
-    TablerInput,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
     IconPencil,
-    IconCloudUpload,
 } from '@tabler/icons-vue';
 
 const props = defineProps({
@@ -259,7 +292,7 @@ const alarmState = computed(() => {
 });
 
 function generatePeriodData() {
-    const data = new Array();
+    const data = [];
 
     EXTRA_PERIODS.value = Math.ceil(config.value.alarm_evals / 2);
 
