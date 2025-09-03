@@ -53,6 +53,58 @@ export default async function router(schema: Schema, config: Config) {
 
     const RouteResponse = Feature.FeatureCollection;
 
+    await schema.get('/search', {
+        name: 'Search Config',
+        group: 'Search',
+        description: 'Get information about the configured search provider(s)',
+        res: Type.Object({
+            reverse: Type.Object({
+                enabled: Type.Boolean(),
+                providers: Type.Array(Type.Object({
+                    id: Type.String(),
+                    name: Type.String()
+                }))
+            }),
+            route: Type.Object({
+                enabled: Type.Boolean(),
+                providers: Type.Array(Type.Object({
+                    id: Type.String(),
+                    name: Type.String()
+                }))
+            }),
+            forward: Type.Object({
+                enabled: Type.Boolean(),
+                providers: Type.Array(Type.Object({
+                    id: Type.String(),
+                    name: Type.String()
+                }))
+            })
+        })
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req);
+
+            const res = {
+                reverse: {
+                    enabled: false,
+                    providers: []
+                },
+                route: {
+                    enabled: false,
+                    providers: []
+                },
+                forward: {
+                    enabled: false,
+                    providers: []
+                }
+            };
+
+            return res.json(res);
+        } catch (err) {
+             Err.respond(err, res);
+        }
+    });
+
     await schema.get('/search/reverse/:longitude/:latitude', {
         name: 'Reverse Geocode',
         group: 'Search',
@@ -122,7 +174,7 @@ export default async function router(schema: Schema, config: Config) {
                 sun: response.sun,
                 weather: response.weather,
                 reverse: response.reverse,
-                elevation: req.query.elevation !== undefined 
+                elevation: req.query.elevation !== undefined
                     ? (elevationUnit === 'feet' || elevationUnit === 'FEET'
                         ? ((req.query.elevation / 1.5) * 3.28084).toFixed(2) + ' ft'
                         : (req.query.elevation / 1.5).toFixed(2) + ' m')
@@ -245,7 +297,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (search && req.query.query.trim().length) {
                 try {
-                    const location = (req.query.longitude !== undefined && req.query.latitude !== undefined) 
+                    const location = (req.query.longitude !== undefined && req.query.latitude !== undefined)
                         ? [req.query.longitude, req.query.latitude] as [number, number]
                         : undefined;
                     response.items = await search.suggest(req.query.query, req.query.limit, location);
