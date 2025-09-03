@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v11.5.0 - 2025-09-03
+
+- :tada: Move Alarms to top level Layer Object
+- :rocket: Add UI for visualizing alarm settings and make High Urgency alarms clearer
+
 ### v11.4.0 - 2025-09-02
 
 - :bug: `UI` Use consistent Integer Hash for tiled features
