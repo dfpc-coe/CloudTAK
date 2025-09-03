@@ -300,6 +300,11 @@ export const Layer = pgTable('layers', {
     task: text().notNull(),
     memory: integer().notNull().default(256),
     timeout: integer().notNull().default(120),
+
+    alarm_period: integer().notNull().default(30),
+    alarm_evals: integer().notNull().default(5),
+    alarm_points: integer().notNull().default(4),
+    alarm_threshold: integer().notNull().default(0),
 }, (t) => ({
     unq: unique().on(t.connection, t.name)
 }));
@@ -322,11 +327,6 @@ export const LayerIncoming = pgTable('layers_incoming', {
 
     cron: text(),
     webhooks: boolean().notNull().default(false),
-
-    alarm_period: integer().notNull().default(30),
-    alarm_evals: integer().notNull().default(5),
-    alarm_points: integer().notNull().default(4),
-    alarm_threshold: integer().notNull().default(0),
 
     enabled_styles: boolean().notNull().default(false),
     styles: json().$type<Static<typeof StyleContainer>>().notNull().default({}),
