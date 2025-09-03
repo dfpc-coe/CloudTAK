@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v11.4.0 - 2025-09-02
+
+- :bug: `UI` Use consistent Integer Hash for tiled features
+- :bug: `UI` Consistently use `feat.properties.id` where present
+
 ### v11.3.0 - 2025-09-02
 
 - :bug: Wire up the Impersonation feature in the Imports API
