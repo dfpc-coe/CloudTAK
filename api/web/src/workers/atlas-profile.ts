@@ -151,7 +151,6 @@ export default class AtlasProfile {
 
             n.onclick = (event) => {
                 event.preventDefault(); // prevent the browser from focusing the Notification's tab
-                console.error(n);
             };
 
         }

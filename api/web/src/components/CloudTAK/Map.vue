@@ -823,11 +823,10 @@ async function handleRadial(event: string): Promise<void> {
         const cot = mapStore.radial.cot;
         closeRadial()
 
-        if (route.name === 'home-menu-cot' && route.params.uid === cot.id) {
+        if (route.name === 'home-menu-cot' && route.params.uid === (cot.properties.id || cot.id)) {
             router.push('/');
         }
 
-        console.error(cot, cot.id);
         await mapStore.worker.db.remove(String(cot.properties.id || cot.id), {
             mission: true
         })
@@ -837,7 +836,7 @@ async function handleRadial(event: string): Promise<void> {
         mapStore.locked.push(mapStore.radial.cot.properties ? mapStore.radial.cot.properties.id : mapStore.radial.cot.id);
         closeRadial()
     } else if (event === 'cot:edit') {
-        const cot = await mapStore.worker.db.get(String(mapStore.radial.cot.id ? mapStore.radial.cot.id : mapStore.radial.cot.properties.id))
+        const cot = await mapStore.worker.db.get(mapStore.radial.cot.properties.id || mapStore.radial.cot.id)
         if (!cot) throw new Error('Cannot Find COT Marker');
         await mapStore.draw.edit(cot);
 
