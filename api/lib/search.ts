@@ -142,9 +142,9 @@ export class Search implements SearchInterface {
     _name: string;
     _config: Config;
 
-    constructor(config: Config) {
-        this._id = 'generic'
-        this._name = 'generic'
+    constructor(config: Config, id: string, name: string) {
+        this._id = id;
+        this._name = name;
         this._config = config;
     }
 
@@ -298,7 +298,7 @@ export class SearchManager extends Map<string, Search> {
     ): Promise<Static<typeof FetchReverse>> {
         const search = this.getProvider(provider);
 
-        if (!search.suggest) throw new Err(400, null, `Search provider ${provider} does not support reverse geocoding`);
+        if (!search.reverse) throw new Err(400, null, `Search provider ${provider} does not support reverse geocoding`);
 
         return await search.reverse(lon, lat);
     }
@@ -310,7 +310,7 @@ export class SearchManager extends Map<string, Search> {
     ): Promise<Static<typeof Feature.FeatureCollection>> {
         const search = this.getProvider(provider);
 
-        if (!search.suggest) throw new Err(400, null, `Search provider ${provider} does not support routing`);
+        if (!search.route) throw new Err(400, null, `Search provider ${provider} does not support routing`);
 
         return await search.route(stops, travelMode);
     }
@@ -323,7 +323,7 @@ export class SearchManager extends Map<string, Search> {
     ): Promise<Array<Static<typeof FetchForward>>> {
         const search = this.getProvider(provider);
 
-        if (!search.suggest) throw new Err(400, null, `Search provider ${provider} does not support forward geocoding`);
+        if (!search.forward) throw new Err(400, null, `Search provider ${provider} does not support forward geocoding`);
 
         return await search.forward(query, magicKey, limit);
     }
