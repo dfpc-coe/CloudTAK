@@ -1,13 +1,84 @@
 import fetch from '../fetch.js';
 import Config from '../config.js';
+import { EsriSpatialReference, EsriExtent } from '../esri/types.js';
 import { randomUUID } from 'node:crypto';
-import { Static } from "@sinclair/typebox";
+import { Static, Type } from "@sinclair/typebox";
 import { Feature } from '@tak-ps/node-cot';
 import { CoTParser } from '@tak-ps/node-cot';
 import ArcGISTokenManager from './arcgis-token-manager.js';
 import ArcGISConfigService from './arcgis-config.js'
-import { FetchSuggest, SuggestContainer, FetchReverse, FetchForward, ForwardContainer, RouteContainer } from '../search.js'
+import { FetchSuggest, FetchReverse, FetchForward } from '../search.js'
 import { Search } from '../search.js'
+
+export const AGOLReverseContainer = Type.Object({
+    address: Type.Optional(FetchReverse),
+    error: Type.Optional(Type.Object({
+        code: Type.Number(),
+        message: Type.String()
+    }))
+});
+
+export const AGOLSuggestContainer = Type.Object({
+    suggestions: Type.Optional(Type.Array(FetchSuggest)),
+    error: Type.Optional(Type.Object({
+        code: Type.Number(),
+        message: Type.String()
+    }))
+});
+
+export const AGOLForwardContainer = Type.Object({
+    candidates: Type.Optional(Type.Array(FetchForward)),
+    error: Type.Optional(Type.Object({
+        code: Type.Number(),
+        message: Type.String()
+    }))
+});
+
+export const AGOLRouteContainer = Type.Object({
+    checksum: Type.Optional(Type.String()),
+    requestID: Type.Optional(Type.String()),
+    error: Type.Optional(Type.Object({
+        code: Type.Number(),
+        message: Type.String()
+    })),
+    routes: Type.Optional(Type.Object({
+        fieldAliases: Type.Optional(Type.Object({})),
+        geometryType: Type.Optional(Type.String()),
+        spatialReference: Type.Optional(EsriSpatialReference),
+        fields: Type.Optional(Type.Array(Type.Object({
+            name: Type.String(),
+            type: Type.String(),
+            alias: Type.String(),
+            length: Type.Optional(Type.Integer())
+        }))),
+        features: Type.Optional(Type.Array(Type.Object({
+            attributes: Type.Optional(Type.Record(Type.String(), Type.Union([Type.Number(), Type.String()]))),
+            geometry: Type.Optional(Type.Object({
+                paths: Type.Optional(Type.Array(Type.Array(Type.Array(Type.Number()))))
+            }))
+        }))),
+    })),
+    directions: Type.Optional(Type.Array(Type.Object({
+        routeId: Type.Optional(Type.Integer()),
+        routeName: Type.Optional(Type.String()),
+        summary: Type.Optional(Type.Object({
+            totalLength: Type.Optional(Type.Number()),
+            totalTime: Type.Optional(Type.Number()),
+            totalDriveTime: Type.Optional(Type.Number()),
+            envelope: Type.Optional(EsriExtent)
+        })),
+        features: Type.Optional(Type.Array(Type.Object({
+            attributes: Type.Optional(Type.Record(Type.String(), Type.Union([Type.Number(), Type.String()]))),
+            compressedGeometry: Type.Optional(Type.String()),
+            strings: Type.Optional(Type.Array(Type.Object({
+                string: Type.String(),
+                stringType: Type.String()
+            })))
+        })))
+    })))
+});
+
+
 
 export default class AGOLSearch extends Search {
     reverseApi: string;
@@ -74,7 +145,7 @@ export default class AGOLSearch extends Search {
         }
 
         const res = await fetch(url);
-        const body = await res.typed(ReverseContainer);
+        const body = await res.typed(AGOLReverseContainer);
 
         if (body.error) {
             if (body.error.code === 498 || body.error.code === 499) {
@@ -107,7 +178,7 @@ export default class AGOLSearch extends Search {
 
         const res = await fetch(url);
 
-        const body = await res.typed(RouteContainer)
+        const body = await res.typed(AGOLRouteContainer)
 
         // Check for API errors first
         if (body.error) {
@@ -174,7 +245,7 @@ export default class AGOLSearch extends Search {
         }
 
         const res = await fetch(url);
-        const body = await res.typed(ForwardContainer);
+        const body = await res.typed(AGOLForwardContainer);
 
         if (body.error) {
             if (body.error.code === 498 || body.error.code === 499) {
@@ -199,7 +270,7 @@ export default class AGOLSearch extends Search {
         }
 
         const res = await fetch(url);
-        const body = await res.typed(SuggestContainer);
+        const body = await res.typed(AGOLSuggestContainer);
 
         if (body.error) {
             if (body.error.code === 498 || body.error.code === 499) {
