@@ -1,9 +1,9 @@
 import Config from './config.js';
 import Err from '@openaddresses/batch-error';
+import { EsriExtent } from './esri/types.js';
 import { Static, Type } from "@sinclair/typebox";
 import { Feature } from '@tak-ps/node-cot';
 import AGOL from './search/agol.js';
-import { EsriSpatialReference, EsriExtent } from './esri/types.js';
 
 export const SearchConfig = Type.Object({
     id: Type.String(),
@@ -57,62 +57,10 @@ export const FetchReverse = Type.Object({
     Addr_type: Type.String(),
 });
 
-export const RouteContainer = Type.Object({
-    checksum: Type.Optional(Type.String()),
-    requestID: Type.Optional(Type.String()),
-    error: Type.Optional(Type.Object({
-        code: Type.Number(),
-        message: Type.String()
-    })),
-    routes: Type.Optional(Type.Object({
-        fieldAliases: Type.Optional(Type.Object({})),
-        geometryType: Type.Optional(Type.String()),
-        spatialReference: Type.Optional(EsriSpatialReference),
-        fields: Type.Optional(Type.Array(Type.Object({
-            name: Type.String(),
-            type: Type.String(),
-            alias: Type.String(),
-            length: Type.Optional(Type.Integer())
-        }))),
-        features: Type.Optional(Type.Array(Type.Object({
-            attributes: Type.Optional(Type.Record(Type.String(), Type.Union([Type.Number(), Type.String()]))),
-            geometry: Type.Optional(Type.Object({
-                paths: Type.Optional(Type.Array(Type.Array(Type.Array(Type.Number()))))
-            }))
-        }))),
-    })),
-    directions: Type.Optional(Type.Array(Type.Object({
-        routeId: Type.Optional(Type.Integer()),
-        routeName: Type.Optional(Type.String()),
-        summary: Type.Optional(Type.Object({
-            totalLength: Type.Optional(Type.Number()),
-            totalTime: Type.Optional(Type.Number()),
-            totalDriveTime: Type.Optional(Type.Number()),
-            envelope: Type.Optional(EsriExtent)
-        })),
-        features: Type.Optional(Type.Array(Type.Object({
-            attributes: Type.Optional(Type.Record(Type.String(), Type.Union([Type.Number(), Type.String()]))),
-            compressedGeometry: Type.Optional(Type.String()),
-            strings: Type.Optional(Type.Array(Type.Object({
-                string: Type.String(),
-                stringType: Type.String()
-            })))
-        })))
-    })))
-});
-
 export const FetchSuggest = Type.Object({
     text: Type.String(),
     magicKey: Type.String(),
     isCollection: Type.Boolean()
-});
-
-export const SuggestContainer = Type.Object({
-    suggestions: Type.Optional(Type.Array(FetchSuggest)),
-    error: Type.Optional(Type.Object({
-        code: Type.Number(),
-        message: Type.String()
-    }))
 });
 
 export const FetchForward = Type.Object({
@@ -129,14 +77,6 @@ export const FetchForward = Type.Object({
     extent: EsriExtent
 });
 
-export const ForwardContainer = Type.Object({
-    candidates: Type.Optional(Type.Array(FetchForward)),
-    error: Type.Optional(Type.Object({
-        code: Type.Number(),
-        message: Type.String()
-    }))
-});
-
 export class Search implements SearchInterface {
     _id: string;
     _name: string;
@@ -149,7 +89,7 @@ export class Search implements SearchInterface {
     }
 
     static async init(config: Config): Promise<Search | null> {
-        return null;
+        return new Search(config, 'none', 'No Search Provider');
     }
 
     config(): Promise<Static<typeof SearchConfig>> {
