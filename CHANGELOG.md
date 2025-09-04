@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v11.7.0 - 2025-09-04
+
+- :bug: Version Sync
+
 ### v11.6.0 - 2025-09-04
 
 - :bug: Fix critical Map Rendering Bug
